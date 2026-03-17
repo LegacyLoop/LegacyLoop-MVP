@@ -1,0 +1,617 @@
+"use client";
+
+import { useState } from "react";
+import { PROCESSING_FEE } from "@/lib/constants/pricing";
+
+interface Props {
+  itemId: string;
+  saleZip: string | null;
+  saleRadius: number;
+  isVehicle?: boolean;
+  itemWeight?: number;
+  isFragile?: boolean;
+  isAntique?: boolean;
+  itemDimensions?: string | null;
+  listingPrice?: number;
+}
+
+const RADIUS_OPTIONS = [10, 25, 50, 100];
+const TIME_SLOTS = [
+  { label: "Morning", detail: "8 AM – 12 PM" },
+  { label: "Afternoon", detail: "12 PM – 5 PM" },
+  { label: "Evening", detail: "5 PM – 8 PM" },
+  { label: "Flexible", detail: "Any time works" },
+];
+
+const LOCATION_OPTIONS = [
+  { key: "my_location", icon: "📍", label: "My location", desc: "City-level only until confirmed" },
+  { key: "police_station", icon: "🏛️", label: "Police station / public safety", desc: "Safest option" },
+  { key: "bank", icon: "🏦", label: "Bank parking lot", desc: "Public and secure" },
+  { key: "coffee_shop", icon: "☕", label: "Coffee shop / restaurant", desc: "Casual and public" },
+  { key: "post_office", icon: "📬", label: "Post office", desc: "Public building" },
+  { key: "other", icon: "📍", label: "Other public place", desc: "Specify below" },
+];
+
+const CONTACT_OPTIONS = [
+  { key: "in_app", icon: "💬", label: "In-app message", desc: "Safest — keeps communication in our system" },
+  { key: "text", icon: "📱", label: "Text message", desc: "Phone masked until both confirm" },
+  { key: "email", icon: "📧", label: "Email", desc: "Email masked until both confirm" },
+];
+
+const PAYMENT_OPTIONS = [
+  { key: "legacyloop", icon: "💳", label: "Through LegacyLoop", desc: "Secure buyer protection", recommended: true },
+  { key: "cash", icon: "💵", label: "Cash at meetup", desc: "No buyer protection" },
+  { key: "venmo", icon: "💳", label: "Venmo/Zelle at meetup", desc: "Direct transfer" },
+  { key: "decide_later", icon: "🤝", label: "Decide when we meet", desc: "Discuss at pickup" },
+];
+
+export default function LocalPickupPanel({
+  itemId, saleZip, saleRadius, isVehicle, itemWeight, isFragile, isAntique, itemDimensions, listingPrice,
+}: Props) {
+  const [selectedRadius, setSelectedRadius] = useState(saleRadius || 25);
+  const [pickupDate, setPickupDate] = useState("");
+  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+  const [instructions, setInstructions] = useState("");
+  const [location, setLocation] = useState(isVehicle ? "my_location" : "");
+  const [otherLocation, setOtherLocation] = useState("");
+  const [contactMethod, setContactMethod] = useState("in_app");
+  const [paymentMethod, setPaymentMethod] = useState(isVehicle ? "legacyloop" : "legacyloop");
+  const [testDrive, setTestDrive] = useState(false);
+  const [titleReady, setTitleReady] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [inviteSent, setInviteSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  // Precision location
+  const [preciseAddress, setPreciseAddress] = useState("");
+  const [preciseMapLink, setPreciseMapLink] = useState("");
+  const [precisionSpot, setPrecisionSpot] = useState("");
+  const [locationName, setLocationName] = useState("");
+  const [locationSubSpot, setLocationSubSpot] = useState("");
+  // Payment sub-options
+  const [denomPref, setDenomPref] = useState("Any");
+  const [venmoService, setVenmoService] = useState("");
+  const [venmoHandle, setVenmoHandle] = useState("");
+  const [venmoTiming, setVenmoTiming] = useState("");
+  // Contact sub-options
+  const [contactPhone, setContactPhone] = useState("");
+  const [contactTimePref, setContactTimePref] = useState("");
+  const [contactEmailAddr, setContactEmailAddr] = useState("");
+  const [contactResponseTime, setContactResponseTime] = useState("");
+  const [contactNotifyPref, setContactNotifyPref] = useState("");
+  const [useDiffEmail, setUseDiffEmail] = useState(false);
+
+  const toggleSlot = (detail: string) => {
+    setSelectedSlots((prev) =>
+      prev.includes(detail) ? prev.filter((s) => s !== detail) : prev.length < 3 ? [...prev, detail] : prev
+    );
+  };
+
+  const sendInvite = async () => {
+    setSending(true);
+    try {
+      // TODO: connect to real messaging API
+      await new Promise((r) => setTimeout(r, 800));
+      setInviteSent(true);
+    } catch { /* ignore */ }
+    setSending(false);
+  };
+
+  const header = isVehicle ? "🚗 Vehicle Pickup" : "🤝 Local Pickup — Schedule a Meetup";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+        {header}
+      </div>
+
+      {/* Item handling notes from AI */}
+      {(itemWeight || isFragile || isAntique || itemDimensions) && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: "rgba(234,179,8,0.06)", border: "1px solid rgba(234,179,8,0.15)", fontSize: "0.78rem" }}>
+          {itemWeight != null && itemWeight > 30 && (
+            <div style={{ color: "var(--warning-text, #b45309)" }}>⚠️ This item weighs approximately {itemWeight} lbs. Buyer may need help loading.</div>
+          )}
+          {isFragile && (
+            <div style={{ color: "var(--warning-text, #b45309)" }}>⚠️ Fragile item — bring padding or blankets for transport</div>
+          )}
+          {itemDimensions && (
+            <div style={{ color: "var(--text-secondary)" }}>📏 Item dimensions: approximately {itemDimensions}. Make sure your vehicle can fit it.</div>
+          )}
+          {isAntique && (
+            <div style={{ color: "var(--text-secondary)" }}>🏛️ Antique item — handle with extra care</div>
+          )}
+        </div>
+      )}
+
+      {/* Meetup Location */}
+      <div>
+        <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.4rem" }}>
+          Meetup Location
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+          {LOCATION_OPTIONS.map((opt) => (
+            <div key={opt.key}>
+              <label
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.6rem",
+                  borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.78rem",
+                  border: `1px solid ${location === opt.key ? "var(--accent)" : "var(--border-default)"}`,
+                  background: location === opt.key ? "rgba(0,188,212,0.06)" : "transparent",
+                }}
+              >
+                <input type="radio" name="location" checked={location === opt.key} onChange={() => setLocation(opt.key)} style={{ accentColor: "var(--accent)" }} />
+                <span>{opt.icon}</span>
+                <div style={{ flex: 1 }}>
+                  <span style={{ color: location === opt.key ? "var(--accent)" : "var(--text-primary)", fontWeight: 500 }}>{opt.label}</span>
+                  <span style={{ color: "var(--text-muted)", marginLeft: "0.4rem", fontSize: "0.7rem" }}>— {opt.desc}</span>
+                </div>
+              </label>
+              {location === "my_location" && opt.key === "my_location" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>Choose how to specify your location:</div>
+                  <div>
+                    <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Enter address or intersection</label>
+                    <input type="text" placeholder="e.g. 123 Main St, Waterville ME or Main & Elm" value={preciseAddress} onChange={e => setPreciseAddress(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Exact address only shared with confirmed buyer</div>
+                  </div>
+                  <div>
+                    <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🗺️ Or drop a pin on Google Maps</label>
+                    <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#00bcd4", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>📍 Open Google Maps — drop a pin and paste the link below</a>
+                    <input type="text" placeholder="Paste Google Maps link here..." value={preciseMapLink} onChange={e => setPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                  <div>
+                    <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📝 Precise meetup instructions</label>
+                    <input type="text" placeholder="e.g. I'll be parked in the blue truck near the entrance" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                </div>
+              )}
+              {location === "police_station" && opt.key === "police_station" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>🚔 Find a police station near you:</div>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <a href={`https://www.google.com/maps/search/police+station+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>🔍 Find Nearby →</a>
+                  </div>
+                  <input type="text" placeholder="Station name or address (e.g. Waterville Police Dept, 9 Colby St)" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Precise spot (e.g. visitor parking lot, front entrance)" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <div style={{ color: "rgba(16,185,129,0.7)", fontSize: "0.7rem" }}>✓ Safest option — many departments offer exchange programs</div>
+                </div>
+              )}
+              {location === "bank" && opt.key === "bank" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>🏦 Find a bank near you:</div>
+                  <a href={`https://www.google.com/maps/search/bank+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ alignSelf: "flex-start", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none" }}>🔍 Find Nearby Banks →</a>
+                  <input type="text" placeholder="Bank name (e.g. TD Bank, 15 Elm St)" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Which entrance or section of parking lot?" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                </div>
+              )}
+              {location === "coffee_shop" && opt.key === "coffee_shop" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>☕ Find a coffee shop or restaurant near you:</div>
+                  <a href={`https://www.google.com/maps/search/coffee+shop+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ alignSelf: "flex-start", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none" }}>🔍 Find Nearby →</a>
+                  <input type="text" placeholder="Name of coffee shop or restaurant" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Where to meet — inside? outside? which table?" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                </div>
+              )}
+              {location === "post_office" && opt.key === "post_office" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>📬 Find a post office near you:</div>
+                  <a href={`https://www.google.com/maps/search/post+office+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ alignSelf: "flex-start", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none" }}>🔍 Find Nearby USPS →</a>
+                  <input type="text" placeholder="Post office address" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Where to meet (e.g. parking lot, front entrance)" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                </div>
+              )}
+              {location === "other" && opt.key === "other" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+                  <input type="text" placeholder="Name of the meetup place" value={otherLocation} onChange={e => setOtherLocation(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Address" value={preciseAddress} onChange={e => setPreciseAddress(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <div>
+                    <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#00bcd4", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>📍 Open Google Maps — drop a pin and paste the link</a>
+                    <input type="text" placeholder="Paste Google Maps link here..." value={preciseMapLink} onChange={e => setPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                  <input type="text" placeholder="Precise meetup instructions" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "0.35rem", fontStyle: "italic" }}>
+          💡 We recommend public meetup spots for safety
+        </div>
+        {location && (
+          <div style={{ marginTop: "0.75rem", padding: "0.85rem", background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px" }}>
+            <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.78rem", marginBottom: "0.4rem" }}>📌 Precision Meetup Point</div>
+            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.72rem", marginBottom: "0.55rem" }}>Give the buyer a precise spot so there&apos;s no confusion — &quot;north entrance&quot;, &quot;blue Honda&quot;, &quot;table by the window&quot;</div>
+            <input type="text" placeholder="e.g. I'll be in the blue truck at the north end of the parking lot" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+          </div>
+        )}
+      </div>
+
+      {/* Radius selector */}
+      <div>
+        <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.4rem" }}>Pickup Radius</div>
+        <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+          {RADIUS_OPTIONS.map((r) => (
+            <button
+              key={r}
+              onClick={() => setSelectedRadius(r)}
+              style={{
+                padding: "0.4rem 0.75rem", borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.78rem",
+                fontWeight: selectedRadius === r ? 600 : 400,
+                border: selectedRadius === r ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
+                background: selectedRadius === r ? "rgba(0,188,212,0.08)" : "transparent",
+                color: selectedRadius === r ? "var(--accent)" : "var(--text-secondary)",
+              }}
+            >
+              {r} mi — {r <= 10 ? "Neighborhood" : r <= 25 ? "City" : r <= 50 ? "Regional" : "Extended"}
+            </button>
+          ))}
+        </div>
+        {saleZip && (
+          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "0.3rem" }}>Centered around ZIP: {saleZip}</div>
+        )}
+      </div>
+
+      {/* Date & Time */}
+      <div>
+        <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.4rem" }}>
+          Availability <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 400 }}>(select up to 3 time slots)</span>
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.4rem" }}>
+          <input
+            type="date"
+            className="input"
+            value={pickupDate}
+            onChange={(e) => setPickupDate(e.target.value)}
+            min={new Date().toISOString().split("T")[0]}
+            style={{ fontSize: "0.78rem", width: "auto" }}
+          />
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
+          {TIME_SLOTS.map((slot) => {
+            const active = selectedSlots.includes(slot.detail);
+            return (
+              <button
+                key={slot.label}
+                onClick={() => toggleSlot(slot.detail)}
+                style={{
+                  padding: "0.35rem 0.65rem", borderRadius: "0.5rem", fontSize: "0.75rem", cursor: "pointer",
+                  fontWeight: active ? 600 : 400,
+                  border: active ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
+                  background: active ? "rgba(0,188,212,0.08)" : "transparent",
+                  color: active ? "var(--accent)" : "var(--text-secondary)",
+                }}
+              >
+                {slot.label} <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>({slot.detail})</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Contact Method */}
+      <div>
+        <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.4rem" }}>
+          How should the buyer reach you?
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+          {CONTACT_OPTIONS.map((opt) => (
+            <div key={opt.key}>
+              <label
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.5rem",
+                  borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.78rem",
+                  border: `1px solid ${contactMethod === opt.key ? "var(--accent)" : "var(--border-default)"}`,
+                  background: contactMethod === opt.key ? "rgba(0,188,212,0.06)" : "transparent",
+                }}
+              >
+                <input type="radio" name="contact" checked={contactMethod === opt.key} onChange={() => setContactMethod(opt.key)} style={{ accentColor: "var(--accent)" }} />
+                <span>{opt.icon} {opt.label}</span>
+                <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginLeft: "auto" }}>{opt.desc}</span>
+              </label>
+              {contactMethod === "in_app" && opt.key === "in_app" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.05)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+                  <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.78rem" }}>💬 In-App Messaging</div>
+                  <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "0.65rem" }}>
+                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.68rem", marginBottom: "0.4rem", textAlign: "center" }}>Message thread preview</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                      <div style={{ alignSelf: "flex-end", background: "rgba(0,188,212,0.15)", borderRadius: "10px 10px 2px 10px", padding: "0.35rem 0.65rem", maxWidth: "80%" }}>
+                        <span style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.72rem" }}>Hi! Ready to schedule pickup?</span>
+                      </div>
+                      <div style={{ alignSelf: "flex-start", background: "rgba(255,255,255,0.08)", borderRadius: "10px 10px 10px 2px", padding: "0.35rem 0.65rem", maxWidth: "80%" }}>
+                        <span style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.72rem" }}>Yes! How&apos;s Thursday afternoon?</span>
+                      </div>
+                    </div>
+                  </div>
+                  {["✓ Identity verified — both parties are LegacyLoop users", "✓ Messages logged for dispute resolution", "✓ No personal info shared until both confirm", "✓ Notifications via app and email", "✓ Message history saved with your transaction"].map(f => (
+                    <div key={f} style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem" }}>{f}</div>
+                  ))}
+                  <div>
+                    <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Notify me when buyer messages via:</div>
+                    <div style={{ display: "flex", gap: "0.35rem" }}>
+                      {["App notification", "Email", "Both"].map(opt => (
+                        <button key={opt} onClick={() => setContactNotifyPref(opt)} type="button" style={{ background: contactNotifyPref === opt ? "rgba(0,188,212,0.15)" : "rgba(0,188,212,0.06)", border: `1px solid ${contactNotifyPref === opt ? "rgba(0,188,212,0.4)" : "rgba(0,188,212,0.15)"}`, borderRadius: "20px", padding: "0.2rem 0.55rem", color: "#00bcd4", fontSize: "0.7rem", cursor: "pointer" }}>{opt}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {contactMethod === "text" && opt.key === "text" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+                  <div style={{ color: "#10b981", fontWeight: 700, fontSize: "0.78rem" }}>📱 Text Message Setup</div>
+                  <div>
+                    <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Your phone number for this transaction</label>
+                    <input type="tel" placeholder="(207) 555-0000" value={contactPhone} onChange={e => setContactPhone(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                  <div style={{ background: "rgba(16,185,129,0.08)", borderRadius: "8px", padding: "0.55rem" }}>
+                    <div style={{ color: "#10b981", fontSize: "0.72rem", fontWeight: 700, marginBottom: "0.35rem" }}>🔒 How we protect your number</div>
+                    {["Your number is masked until both parties confirm the meetup", "Buyer sees only the last 4 digits until confirmation", "Full number revealed only after mutual confirmation", "Number is never stored in buyer's LegacyLoop profile"].map(s => (
+                      <div key={s} style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.7rem", marginBottom: "0.15rem" }}>• {s}</div>
+                    ))}
+                  </div>
+                  <div>
+                    <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.35rem" }}>Best time to text you</label>
+                    <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
+                      {["Anytime", "Morning", "Afternoon", "Evening"].map(t => (
+                        <button key={t} onClick={() => setContactTimePref(t)} type="button" style={{ background: contactTimePref === t ? "rgba(16,185,129,0.15)" : "rgba(16,185,129,0.06)", border: `1px solid ${contactTimePref === t ? "rgba(16,185,129,0.35)" : "rgba(16,185,129,0.15)"}`, borderRadius: "20px", padding: "0.2rem 0.55rem", color: "#10b981", fontSize: "0.7rem", cursor: "pointer" }}>{t}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {contactMethod === "email" && opt.key === "email" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(139,92,246,0.05)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+                  <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.78rem" }}>📧 Email Contact Setup</div>
+                  <div>
+                    <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Email address to use for this transaction</label>
+                    <input type="email" placeholder="your@email.com" value={contactEmailAddr} onChange={e => setContactEmailAddr(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Shown as r****@****.com until both parties confirm</div>
+                  </div>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}>
+                    <input type="checkbox" checked={useDiffEmail} onChange={e => setUseDiffEmail(e.target.checked)} style={{ accentColor: "#8b5cf6" }} />
+                    <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>Use a different email than my account email</span>
+                  </label>
+                  <div>
+                    <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Typical response time:</div>
+                    <div style={{ display: "flex", gap: "0.35rem" }}>
+                      {["Within 1hr", "Same day", "Within 24hrs"].map(t => (
+                        <button key={t} onClick={() => setContactResponseTime(t)} type="button" style={{ background: contactResponseTime === t ? "rgba(139,92,246,0.15)" : "rgba(139,92,246,0.06)", border: `1px solid ${contactResponseTime === t ? "rgba(139,92,246,0.35)" : "rgba(139,92,246,0.15)"}`, borderRadius: "20px", padding: "0.2rem 0.55rem", color: "#8b5cf6", fontSize: "0.7rem", cursor: "pointer" }}>{t}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
+          Your contact info is shared only after both parties confirm the meetup
+        </div>
+      </div>
+
+      {/* Payment */}
+      <div>
+        <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.4rem" }}>
+          How do you want to get paid?
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+          {PAYMENT_OPTIONS.map((opt) => (
+            <div key={opt.key}>
+              <label
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.5rem",
+                  borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.78rem",
+                  border: `1px solid ${paymentMethod === opt.key ? "var(--accent)" : "var(--border-default)"}`,
+                  background: paymentMethod === opt.key ? "rgba(0,188,212,0.06)" : "transparent",
+                }}
+              >
+                <input type="radio" name="payment" checked={paymentMethod === opt.key} onChange={() => setPaymentMethod(opt.key)} style={{ accentColor: "var(--accent)" }} />
+                <span>{opt.icon} {opt.label}</span>
+                <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginLeft: "auto" }}>{opt.desc}</span>
+                {opt.recommended && <span style={{ fontSize: "0.58rem", fontWeight: 700, background: "rgba(0,188,212,0.12)", color: "var(--accent)", padding: "0.1rem 0.3rem", borderRadius: "9999px" }}>Recommended</span>}
+              </label>
+              {paymentMethod === "legacyloop" && opt.key === "legacyloop" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.05)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+                  <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.78rem" }}>💳 How LegacyLoop Escrow Works</div>
+                  {[{ step: "1", text: "Buyer pays at checkout — funds held securely" }, { step: "2", text: "You meet and complete the handoff" }, { step: "3", text: "Both confirm handoff in app" }, { step: "4", text: "Funds released to your account within 24hrs" }].map(s => (
+                    <div key={s.step} style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
+                      <div style={{ width: "1.3rem", height: "1.3rem", background: "rgba(0,188,212,0.15)", border: "1px solid rgba(0,188,212,0.3)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#00bcd4", fontSize: "0.68rem", fontWeight: 800, flexShrink: 0 }}>{s.step}</div>
+                      <span style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.75rem" }}>{s.text}</span>
+                    </div>
+                  ))}
+                  <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "0.65rem" }}>
+                    <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.7rem", marginBottom: "0.35rem", fontWeight: 700, letterSpacing: "0.04em" }}>PROCESSING FEE</div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.35rem" }}>
+                      <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>Buyer pays</span>
+                      <span style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.75rem" }}>{PROCESSING_FEE.display}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.2rem" }}>
+                      <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>Seller pays</span>
+                      <span style={{ color: "rgba(16,185,129,0.8)", fontWeight: 700, fontSize: "0.75rem" }}>0%</span>
+                    </div>
+                    <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.3rem", display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem" }}>Total processing fee</span>
+                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem" }}>{PROCESSING_FEE.display}</span>
+                    </div>
+                  </div>
+                  <div style={{ color: "rgba(16,185,129,0.8)", fontSize: "0.7rem" }}>✓ Dispute resolution included · ✓ Buyer protection · ✓ Seller guarantee</div>
+                </div>
+              )}
+              {paymentMethod === "cash" && opt.key === "cash" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+                  <div style={{ color: "#f59e0b", fontWeight: 700, fontSize: "0.78rem" }}>💵 Cash Payment Details</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>Exact amount to request</span>
+                    <span style={{ color: "#f59e0b", fontWeight: 800, fontSize: "0.95rem" }}>${listingPrice ?? "—"}</span>
+                  </div>
+                  <div>
+                    <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Preferred denominations:</div>
+                    <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
+                      {["Any", "All $20s", "Larger bills OK", "Exact change only"].map(opt => (
+                        <button key={opt} onClick={() => setDenomPref(opt)} type="button" style={{ background: denomPref === opt ? "rgba(245,158,11,0.18)" : "rgba(245,158,11,0.08)", border: `1px solid ${denomPref === opt ? "rgba(245,158,11,0.4)" : "rgba(245,158,11,0.2)"}`, borderRadius: "20px", padding: "0.2rem 0.55rem", color: "#f59e0b", fontSize: "0.7rem", fontWeight: 600, cursor: "pointer" }}>{opt}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ background: "rgba(245,158,11,0.08)", borderRadius: "8px", padding: "0.55rem" }}>
+                    <div style={{ color: "#f59e0b", fontSize: "0.7rem", fontWeight: 700, marginBottom: "0.35rem" }}>⚠️ Cash Safety Tips</div>
+                    {["Count bills before handing over the item", "Meet in a well-lit public location", "Bring a friend for large transactions", "No buyer protection with cash — trust your instincts"].map(tip => (
+                      <div key={tip} style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.7rem", marginBottom: "0.15rem" }}>• {tip}</div>
+                    ))}
+                  </div>
+                  <div style={{ color: "rgba(245,158,11,0.6)", fontSize: "0.7rem" }}>⚠️ Cash transactions have no buyer or seller protection</div>
+                </div>
+              )}
+              {paymentMethod === "venmo" && opt.key === "venmo" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(139,92,246,0.05)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+                  <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.78rem" }}>📱 Venmo / Zelle Setup</div>
+                  <div>
+                    <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Which service will you use?</div>
+                    <div style={{ display: "flex", gap: "0.4rem" }}>
+                      {["Venmo", "Zelle", "Either works"].map(opt => (
+                        <button key={opt} onClick={() => setVenmoService(opt)} type="button" style={{ background: venmoService === opt ? "rgba(139,92,246,0.18)" : "rgba(139,92,246,0.08)", border: `1px solid ${venmoService === opt ? "rgba(139,92,246,0.4)" : "rgba(139,92,246,0.2)"}`, borderRadius: "20px", padding: "0.25rem 0.75rem", color: "#8b5cf6", fontSize: "0.72rem", fontWeight: 600, cursor: "pointer" }}>{opt}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Your Venmo/Zelle handle or phone number</label>
+                    <input type="text" placeholder="@yourhandle or phone number" value={venmoHandle} onChange={e => setVenmoHandle(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Only shared with buyer after both parties confirm meetup</div>
+                  </div>
+                  <div>
+                    <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>When should buyer send payment?</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                      {[{ value: "before", label: "Before handoff — item stays with me until confirmed" }, { value: "after", label: "After handoff — I trust the buyer" }, { value: "simultaneous", label: "Simultaneous — we confirm together on-site" }].map(opt => (
+                        <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}>
+                          <input type="radio" name="venmoTiming" value={opt.value} checked={venmoTiming === opt.value} onChange={() => setVenmoTiming(opt.value)} style={{ accentColor: "#8b5cf6" }} />
+                          <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem" }}>{opt.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ color: "rgba(139,92,246,0.6)", fontSize: "0.7rem" }}>⚠️ Limited dispute protection — LegacyLoop escrow recommended for added security</div>
+                </div>
+              )}
+              {paymentMethod === "decide_later" && opt.key === "decide_later" && (
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px" }}>
+                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem", marginBottom: "0.4rem" }}>💬 You&apos;ll discuss payment when you meet. The buyer knows payment hasn&apos;t been decided yet.</div>
+                  <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem" }}>Tip: Decide before you meet to avoid awkward conversations — LegacyLoop escrow is the easiest option.</div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Vehicle-specific toggles */}
+      {isVehicle && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+          <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.2rem" }}>Vehicle Details</div>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--text-secondary)", cursor: "pointer" }}>
+            <input type="checkbox" checked={testDrive} onChange={(e) => setTestDrive(e.target.checked)} style={{ accentColor: "var(--accent)" }} />
+            Test drive available?
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--text-secondary)", cursor: "pointer" }}>
+            <input type="checkbox" checked={titleReady} onChange={(e) => setTitleReady(e.target.checked)} style={{ accentColor: "var(--accent)" }} />
+            Title transfer ready?
+          </label>
+          {testDrive && (
+            <div style={{ fontSize: "0.7rem", color: "var(--warning-text, #b45309)", padding: "0.3rem 0.5rem", borderRadius: "0.4rem", background: "rgba(234,179,8,0.06)", border: "1px solid rgba(234,179,8,0.15)" }}>
+              Buyer must bring their own insurance for test drive
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Notes */}
+      <div>
+        <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.4rem" }}>
+          Anything the buyer should know?
+        </div>
+        <textarea
+          className="input"
+          value={instructions}
+          onChange={(e) => setInstructions(e.target.value)}
+          placeholder="Ex: I'll be in a blue truck. Ring doorbell. Item is heavy, bring help. Cash preferred."
+          rows={2}
+          style={{ resize: "vertical", width: "100%", fontSize: "0.78rem" }}
+        />
+      </div>
+
+      {/* Confirmation / Send */}
+      {!inviteSent ? (
+        !showConfirmation ? (
+          <button
+            className="btn-primary"
+            onClick={() => setShowConfirmation(true)}
+            style={{ padding: "0.5rem 1.25rem", fontSize: "0.85rem" }}
+          >
+            Preview Pickup Invite
+          </button>
+        ) : (
+          <div style={{ padding: "0.75rem", borderRadius: "0.6rem", border: "1px solid rgba(22,163,74,0.25)", background: "rgba(22,163,74,0.04)" }}>
+            <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--success-text)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.5rem" }}>
+              📋 Pickup Details
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.78rem", color: "var(--text-secondary)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--text-muted)" }}>Location</span>
+                <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>
+                  {LOCATION_OPTIONS.find((o) => o.key === location)?.label || "Not set"}{location === "other" && otherLocation ? ` — ${otherLocation}` : ""}
+                </span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--text-muted)" }}>Area</span>
+                <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>Within {selectedRadius} mi of {saleZip || "your location"}</span>
+              </div>
+              {pickupDate && (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "var(--text-muted)" }}>Date</span>
+                  <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>
+                    {new Date(pickupDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                  </span>
+                </div>
+              )}
+              {selectedSlots.length > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "var(--text-muted)" }}>Time slots</span>
+                  <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{selectedSlots.join(", ")}</span>
+                </div>
+              )}
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--text-muted)" }}>Contact</span>
+                <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{CONTACT_OPTIONS.find((o) => o.key === contactMethod)?.label}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--text-muted)" }}>Payment</span>
+                <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{PAYMENT_OPTIONS.find((o) => o.key === paymentMethod)?.label}</span>
+              </div>
+              {isVehicle && testDrive && (
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ color: "var(--text-muted)" }}>Test drive</span>
+                  <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>Available</span>
+                </div>
+              )}
+              {instructions && (
+                <div style={{ marginTop: "0.25rem", padding: "0.35rem 0.5rem", borderRadius: "0.4rem", background: "var(--bg-card-hover, rgba(255,255,255,0.03))", color: "var(--text-secondary)", fontSize: "0.75rem" }}>
+                  {instructions}
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.6rem" }}>
+              <button className="btn-primary" onClick={sendInvite} disabled={sending} style={{ padding: "0.5rem 1.25rem", fontSize: "0.85rem" }}>
+                {sending ? "Sending..." : "📤 Send Pickup Invite to Buyer"}
+              </button>
+              <button className="btn-ghost" onClick={() => setShowConfirmation(false)} style={{ padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>
+                Edit
+              </button>
+            </div>
+          </div>
+        )
+      ) : (
+        <div style={{ padding: "0.6rem 0.75rem", borderRadius: "0.5rem", background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.2)", fontSize: "0.82rem" }}>
+          <div style={{ color: "var(--success-text, #16a34a)", fontWeight: 600 }}>✅ Pickup invite sent!</div>
+          <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginTop: "0.2rem" }}>We&apos;ll notify you when the buyer responds.</div>
+          <div style={{ marginTop: "0.3rem", fontSize: "0.72rem", color: "var(--text-muted)" }}>Status: <span style={{ color: "var(--warning-text, #b45309)", fontWeight: 600 }}>Pending buyer response</span></div>
+        </div>
+      )}
+    </div>
+  );
+}

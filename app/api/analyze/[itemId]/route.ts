@@ -1,0 +1,363 @@
+import { authAdapter } from "@/lib/adapters/auth";
+import { prisma } from "@/lib/db";
+import { aiAdapter } from "@/lib/adapters/ai";
+import { pricingAdapter } from "@/lib/adapters/pricing";
+import { detectAntiqueFromAi } from "@/lib/antique-detect";
+import { calculatePricing } from "@/lib/pricing/calculate";
+import { blurPlatesForItem } from "@/lib/blur-plate";
+import { populateFromAnalysis } from "@/lib/data/populate-intelligence";
+import { logUserEvent } from "@/lib/data/user-events";
+import { isDemoMode, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { checkCredits, deductCredits, isFreeAnalysisAvailable } from "@/lib/credits";
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Extract a [Tag: value] from the description string */
+function extractTag(description: string | null, tagName: string): string | null {
+  if (!description) return null;
+  const re = new RegExp(`\\[${tagName}:\\s*([^\\]]+)\\]`, "i");
+  const m = description.match(re);
+  return m ? m[1].trim() : null;
+}
+
+/** Build a structured seller data block for the AI prompt */
+function buildSellerContext(item: any): string {
+  const lines: string[] = [];
+  const add = (label: string, val: any) => {
+    if (val != null && val !== "" && val !== "Unknown" && val !== "Not sure") {
+      lines.push(`- ${label}: ${val}`);
+    } else {
+      lines.push(`- ${label}: Not provided by seller`);
+    }
+  };
+
+  add("Title", item.title);
+  add("Condition (seller-reported)", item.condition);
+  add("Number of owners", item.numberOfOwners || extractTag(item.description, "Owners"));
+  add("Known damage or repairs", item.knownDamage || extractTag(item.description, "Damage/Repairs"));
+  add("Original packaging", item.hasOriginalPackaging || extractTag(item.description, "Original Packaging"));
+  add("Works properly", item.worksProperly || extractTag(item.description, "Functionality"));
+  add("Approximate age", item.approximateAge || extractTag(item.description, "Age Estimate"));
+  add("Purchase price", item.purchasePrice != null ? `$${item.purchasePrice}` : null);
+  add("Purchase date", item.purchaseDate ? new Date(item.purchaseDate).toISOString().slice(0, 10) : null);
+  add("Sale method", item.saleMethod);
+  add("Sale ZIP code", item.saleZip);
+  add("Sale radius", item.saleRadiusMi != null ? `${item.saleRadiusMi} miles` : null);
+
+  if (item.description) {
+    // Strip tags from description for the "Additional notes" line
+    const cleaned = item.description.replace(/\[[^\]]+\]/g, "").trim();
+    if (cleaned) lines.push(`- Additional notes: ${cleaned}`);
+  }
+
+  return lines.join("\n");
+}
+
+// ─── Route ────────────────────────────────────────────────────────────────────
+
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ itemId: string }> }
+) {
+  const { itemId } = await params;
+
+  const user = await authAdapter.getSession();
+  if (!user) return new Response("Unauthorized", { status: 401 });
+
+  const item = await prisma.item.findUnique({
+    where: { id: itemId },
+    include: { photos: true, aiResult: true, valuation: true, antiqueCheck: true },
+  });
+
+  if (!item || item.userId !== user.id) {
+    return new Response("Not found", { status: 404 });
+  }
+
+  const force = new URL(req.url).searchParams.get("force") === "1";
+
+  if (!force && item.aiResult && item.valuation) {
+    return new Response("SKIPPED (cached)", { status: 200 });
+  }
+
+  // ── Tier + Credit Gate (free first run, then 1 credit) ──
+  if (!isDemoMode()) {
+    const isFirstRun = await isFreeAnalysisAvailable(user.id);
+    if (!isFirstRun) {
+      const cc = await checkCredits(user.id, BOT_CREDIT_COSTS.singleBotRun);
+      if (!cc.hasEnough) {
+        return Response.json(
+          { error: "insufficient_credits", message: "Not enough credits. Your free analysis has been used.", balance: cc.balance, required: BOT_CREDIT_COSTS.singleBotRun, buyUrl: "/credits" },
+          { status: 402 }
+        );
+      }
+      await deductCredits(user.id, BOT_CREDIT_COSTS.singleBotRun, "AnalyzeBot re-run", itemId);
+    }
+  }
+
+  const photoPaths = item.photos.map((p) => p.filePath);
+
+  // Build structured seller data block
+  const sellerContext = buildSellerContext(item);
+
+  // 1) Vision analysis
+  let analysis;
+  try {
+    analysis = await aiAdapter.analyze(photoPaths, sellerContext || undefined);
+  } catch (aiErr: any) {
+    const msg = aiErr?.message ?? String(aiErr);
+    return new Response(`AI analysis failed: ${msg}`, { status: 422 });
+  }
+
+  await prisma.aiResult.upsert({
+    where: { itemId: item.id },
+    update: { rawJson: JSON.stringify(analysis), confidence: analysis.confidence },
+    create: { itemId: item.id, rawJson: JSON.stringify(analysis), confidence: analysis.confidence },
+  });
+
+  // Fire-and-forget: populate structured intelligence fields from AI analysis
+  populateFromAnalysis(itemId, analysis as unknown as Record<string, unknown>).catch(() => null);
+
+  // 2) New pricing pipeline (calculate.ts) — pass all seller data
+  const numOwners = (item as any).numberOfOwners || extractTag(item.description, "Owners");
+
+  let pricingResult;
+  try {
+    pricingResult = calculatePricing({
+      ai: analysis,
+      sellerCondition: item.condition,
+      numOwners,
+      saleZip: item.saleZip,
+      userTier: user.tier,
+      isHero: false,
+      purchasePrice: item.purchasePrice,
+      category: analysis.category,
+    });
+  } catch (pricingErr: any) {
+    console.error("Pricing pipeline error:", pricingErr);
+    return new Response(`AI analysis succeeded but pricing failed: ${pricingErr?.message || "unknown error"}`, { status: 422 });
+  }
+
+  // 3) Also run legacy pricing pipeline for comps + backward compat
+  let estimate: any = { low: 0, high: 0, comps: [], source: "none", sources: {} };
+  try {
+    estimate = await pricingAdapter.getEstimate({
+      ai: analysis,
+      condition: item.condition,
+      notes: item.description,
+      purchasePrice: item.purchasePrice,
+      purchaseDate: item.purchaseDate,
+      saleMethod: item.saleMethod,
+      saleZip: item.saleZip,
+      saleRadiusMi: item.saleRadiusMi,
+    });
+  } catch (legacyErr: any) {
+    console.error("Legacy pricing fallback error (non-fatal):", legacyErr);
+  }
+
+  const aiRationale = estimate.sources?.ai?.rationale ?? analysis.pricing_rationale ?? null;
+
+  // Store the full pricing pipeline result as JSON in onlineRationale
+  const extendedJson = JSON.stringify(pricingResult);
+
+  // Use the new pipeline prices as primary, with legacy as fallback
+  const primaryLow = pricingResult.localPrice.low || estimate.low;
+  const primaryMid = pricingResult.localPrice.mid || Math.round((primaryLow + (pricingResult.localPrice.high || estimate.high)) / 2);
+  const primaryHigh = pricingResult.localPrice.high || estimate.high;
+
+  const valuationData = {
+    low: primaryLow,
+    mid: primaryMid,
+    high: primaryHigh,
+    confidence: pricingResult.confidence,
+    source: `AI pricing pipeline (tier ${user.tier})`,
+    rationale: aiRationale,
+    localLow: pricingResult.localPrice.low,
+    localMid: pricingResult.localPrice.mid,
+    localHigh: pricingResult.localPrice.high,
+    localConfidence: pricingResult.confidence,
+    localSource: pricingResult.localPrice.label,
+    onlineLow: pricingResult.nationalPrice.low,
+    onlineMid: pricingResult.nationalPrice.mid,
+    onlineHigh: pricingResult.nationalPrice.high,
+    onlineConfidence: pricingResult.confidence,
+    onlineSource: "National average",
+    onlineRationale: extendedJson,
+    bestMarketLow: pricingResult.bestMarket.low,
+    bestMarketMid: pricingResult.bestMarket.mid,
+    bestMarketHigh: pricingResult.bestMarket.high,
+    bestMarketCity: pricingResult.bestMarket.label,
+    sellerNetLocal: pricingResult.sellerNet.local,
+    sellerNetNational: pricingResult.sellerNet.national,
+    sellerNetBestMarket: pricingResult.sellerNet.bestMarket,
+    recommendation: pricingResult.recommendation,
+    adjustments: JSON.stringify(pricingResult.adjustments),
+  };
+
+  try {
+    await prisma.valuation.upsert({
+      where: { itemId: item.id },
+      update: valuationData,
+      create: { itemId: item.id, ...valuationData },
+    });
+  } catch (valErr: any) {
+    console.error("Valuation save error:", valErr);
+    return new Response(`Analysis succeeded but failed to save pricing: ${valErr?.message || "database error"}`, { status: 500 });
+  }
+
+  // Fire-and-forget: create PriceSnapshot from analyze pipeline pricing
+  prisma.priceSnapshot.create({
+    data: {
+      itemId: item.id,
+      source: "ANALYZE_PIPELINE",
+      priceLow: primaryLow ? Math.round(primaryLow) : null,
+      priceHigh: primaryHigh ? Math.round(primaryHigh) : null,
+      priceMedian: primaryMid ? Math.round(primaryMid) : null,
+      confidence: `pipeline confidence ${pricingResult.confidence}`,
+    },
+  }).catch(() => null);
+
+  // 4) Save live comps (from legacy pipeline)
+  try {
+    await prisma.marketComp.deleteMany({ where: { itemId: item.id } });
+
+    if (estimate.comps && estimate.comps.length) {
+      await prisma.marketComp.createMany({
+        data: estimate.comps.slice(0, 8).map((c: any) => ({
+          itemId: item.id,
+          platform: c.platform,
+          title: c.title,
+          price: c.price,
+          currency: c.currency,
+          url: c.url,
+          shipping: c.shipping ?? null,
+        })),
+      });
+    }
+  } catch (compErr: any) {
+    console.error("Market comp save error (non-fatal):", compErr);
+  }
+
+  // 5) Enhanced antique detection
+  let antiqueResult: any = { isAntique: false, reason: "Detection skipped", markers: [], score: 0, auctionLow: null, auctionHigh: null };
+  try {
+    antiqueResult = detectAntiqueFromAi(analysis);
+
+    // Boost score if AI directly detected antique
+    if (analysis.is_antique === true) {
+      antiqueResult.score = Math.min(100, (antiqueResult.score ?? 0) + 5);
+      if (!antiqueResult.isAntique && antiqueResult.score >= 3) {
+        antiqueResult.isAntique = true;
+      }
+    }
+  } catch (antiqueErr: any) {
+    console.error("Antique detection error (non-fatal):", antiqueErr);
+  }
+
+  const reasonWithMeta = antiqueResult.isAntique
+    ? JSON.stringify({ reason: antiqueResult.reason, markers: antiqueResult.markers, score: antiqueResult.score })
+    : antiqueResult.reason;
+
+  try {
+    await prisma.antiqueCheck.upsert({
+      where: { itemId: item.id },
+      update: {
+        isAntique: antiqueResult.isAntique,
+        reason: reasonWithMeta,
+        auctionLow: antiqueResult.auctionLow,
+        auctionHigh: antiqueResult.auctionHigh,
+      },
+      create: {
+        itemId: item.id,
+        isAntique: antiqueResult.isAntique,
+        reason: reasonWithMeta,
+        auctionLow: antiqueResult.auctionLow,
+        auctionHigh: antiqueResult.auctionHigh,
+      },
+    });
+  } catch (antiqueDbErr: any) {
+    console.error("Antique check save error (non-fatal):", antiqueDbErr);
+  }
+
+  // 6) Auto-fill blanks + set status to ANALYZED
+  try {
+    await prisma.item.update({
+      where: { id: item.id },
+      data: {
+        status: "ANALYZED",
+        title: item.title ?? analysis.item_name ?? null,
+        condition: item.condition ?? analysis.condition_guess ?? null,
+        description: item.description ?? analysis.notes ?? null,
+      },
+    });
+  } catch (updateErr: any) {
+    console.error("Item status update error (non-fatal):", updateErr);
+  }
+
+  // 7) Auto-blur license plates if vehicle detected
+  console.log("=== BLUR DIAGNOSTIC ===");
+  console.log("analysis.category:", (analysis as any).category);
+  console.log("analysis.item_type:", (analysis as any).item_type);
+  console.log("analysis.is_vehicle:", (analysis as any).is_vehicle);
+  console.log("analysis.vehicle_type:", (analysis as any).vehicle_type);
+  console.log("analysis.vehicle_make:", (analysis as any).vehicle_make);
+  console.log("analysis.vehicle_model:", (analysis as any).vehicle_model);
+  console.log("analysis.vehicle_year:", (analysis as any).vehicle_year);
+
+  const a = analysis as any;
+  const isVehicle = !!(
+    a.is_vehicle === true ||
+    a.isVehicle === true ||
+    a.vehicle_type != null ||
+    a.vehicleType != null ||
+    a.vehicle_make != null ||
+    a.vehicle_model != null ||
+    a.vehicle_year != null ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.category ?? "")) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.item_type ?? "")) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.itemType ?? "")) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.type ?? ""))
+  );
+  console.log("=== VEHICLE CHECK RESULT:", isVehicle, "===");
+
+  if (isVehicle) {
+    console.log("[analyze] Vehicle confirmed — triggering automatic plate blur for item:", item.id);
+    try {
+      const { blurredCount } = await blurPlatesForItem(item.id);
+      console.log("[analyze] Auto plate blur complete —", blurredCount, "photos blurred");
+    } catch (blurErr: any) {
+      console.error("[analyze] Auto plate blur failed (non-fatal):", blurErr?.message);
+    }
+  } else {
+    console.log("[analyze] Not a vehicle — skipping plate blur");
+  }
+
+  try {
+    await prisma.eventLog.create({
+      data: {
+        itemId: item.id,
+        eventType: force ? "ANALYZED_FORCE" : "ANALYZED",
+        payload: JSON.stringify({
+          provider: "openai",
+          comps: estimate.comps?.length ?? 0,
+          isAntique: antiqueResult.isAntique,
+          suggestMegabot: estimate.suggestMegabot ?? false,
+          pricingSource: `pipeline + ${estimate.source}`,
+          pipelineConfidence: pricingResult.confidence,
+          adjustments: pricingResult.adjustments.length,
+          sellerNetLocal: pricingResult.sellerNet.local,
+          sellerNetBestMarket: pricingResult.sellerNet.bestMarket,
+        }),
+      },
+    });
+  } catch (logErr: any) {
+    console.error("Event log error (non-fatal):", logErr);
+  }
+
+  // Fire-and-forget: log user event for analytics
+  logUserEvent(user.id, "BOT_RUN", {
+    itemId,
+    metadata: { botType: "ANALYZEBOT", success: true },
+  }).catch(() => null);
+
+  return new Response("OK", { status: 200 });
+}

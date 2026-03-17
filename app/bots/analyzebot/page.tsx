@@ -1,0 +1,60 @@
+import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
+import { authAdapter } from "@/lib/adapters/auth";
+import { prisma } from "@/lib/db";
+import AnalyzeBotClient from "./AnalyzeBotClient";
+
+export const metadata = { title: "AnalyzeBot — LegacyLoop" };
+
+export default async function AnalyzeBotPage() {
+  const user = await authAdapter.getSession();
+  if (!user) redirect("/auth/login");
+
+  const rawItems = await prisma.item.findMany({
+    where: { userId: user.id },
+    include: {
+      photos: { orderBy: { order: "asc" }, take: 1 },
+      aiResult: true,
+      valuation: true,
+      antiqueCheck: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const serialized = rawItems.map((item) => {
+    const ai = item.aiResult?.rawJson ? (() => { try { return JSON.parse(item.aiResult!.rawJson); } catch { return null; } })() : null;
+    return {
+      id: item.id,
+      title: item.title || `Item #${item.id.slice(0, 6)}`,
+      status: item.status,
+      photo: item.photos[0]?.filePath ?? null,
+      hasAnalysis: !!item.aiResult,
+      aiResult: item.aiResult?.rawJson ?? null,
+      valuation: item.valuation ? {
+        low: item.valuation.low,
+        high: item.valuation.high,
+        confidence: item.valuation.confidence,
+      } : null,
+      antique: item.antiqueCheck ? {
+        isAntique: item.antiqueCheck.isAntique,
+        auctionLow: item.antiqueCheck.auctionLow,
+        auctionHigh: item.antiqueCheck.auctionHigh,
+      } : null,
+    };
+  });
+
+  return (
+    <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Bots", href: "/bots" }, { label: "AnalyzeBot" }]} />
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
+        <div style={{ width: 48, height: 48, borderRadius: "0.75rem", background: "rgba(0,188,212,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem" }}>🧠</div>
+        <div>
+          <h1 className="h2">AnalyzeBot</h1>
+          <p className="muted" style={{ fontSize: "0.85rem" }}>Comprehensive AI identification, condition assessment, and valuation</p>
+        </div>
+      </div>
+      <Suspense><AnalyzeBotClient items={serialized} /></Suspense>
+    </div>
+  );
+}

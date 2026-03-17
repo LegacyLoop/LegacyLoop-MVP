@@ -1,0 +1,1087 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// TODO: Returns flow — add RETURN_REQUESTED, RETURNED, REFUNDED statuses.
+// Also need ReturnRequest model with: returnReason, returnLabelId, refundAmount, refundStatus.
+enum ItemStatus {
+  DRAFT
+  ANALYZED
+  READY
+  LISTED
+  INTERESTED
+  OFFER_PENDING
+  SOLD
+  SHIPPED
+  COMPLETED
+}
+
+enum SaleMethod {
+  LOCAL_PICKUP
+  ONLINE_SHIPPING
+  BOTH
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  tier         Int      @default(1)
+  heroVerified Boolean  @default(false)
+  heroCategory String?
+  googleId     String?  @unique
+  displayName  String?
+  avatarUrl    String?
+  phoneNumber  String?  @unique
+  createdAt    DateTime @default(now())
+
+  items                 Item[]
+  projects              Project[]
+  transactions          Transaction[]
+  subscriptions         Subscription[]
+  whiteGloveProjects    WhiteGloveProject[]
+  credits               UserCredits?
+  connectedPlatforms    ConnectedPlatform[]
+  referralsSent         Referral[]
+  passwordResets        PasswordReset[]
+  subscriptionChanges   SubscriptionChange[]
+  reconBots             ReconBot[]
+  dataCollectionConsent DataCollectionConsent?
+  heroVerifications     HeroVerification[]
+  testimonials          Testimonial[]
+  paymentLedger         PaymentLedger[]
+  sellerEarnings        SellerEarnings[]
+  userEvents            UserEvent[]
+  offers                Offer[]
+  userAddons            UserAddon[]
+  listingPublishes      ListingPublish[]
+}
+
+model UserCredits {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  balance      Int      @default(0)
+  lifetime     Int      @default(0)
+  spent        Int      @default(0)
+  transactions CreditTransaction[]
+  updatedAt    DateTime @updatedAt
+}
+
+model CreditTransaction {
+  id            String      @id @default(cuid())
+  userCreditsId String
+  userCredits   UserCredits @relation(fields: [userCreditsId], references: [id])
+  type          String      // "purchase" | "spend" | "bonus" | "earned" | "refund"
+  amount        Int         // positive = earned, negative = spent
+  balance       Int         // balance AFTER this transaction
+  description   String
+  itemId        String?
+  paymentAmount Float?
+  createdAt     DateTime    @default(now())
+
+  @@index([userCreditsId])
+}
+
+model ConnectedPlatform {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  platform         String    // "facebook" | "instagram" | "ebay" | etc.
+  platformUsername String?
+  isActive         Boolean   @default(true)
+  lastSync         DateTime?
+  settingsJson     String    @default("{}")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([userId, platform])
+  @@index([userId])
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  tier      String   // FREE | STARTER | PLUS | PRO
+  price     Float    @default(0)
+  commission Float   @default(0.05)
+
+  limitsJson String  @default("{}") // JSON: { items, photos, projects }
+  featuresJson String @default("[]") // JSON array of feature keys
+
+  status    String   @default("ACTIVE") // ACTIVE | CANCELLED | EXPIRED
+
+  billingPeriod        String   @default("monthly")
+  currentPeriodStart   DateTime @default(now())
+  currentPeriodEnd     DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model WhiteGloveProject {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  tier          String  // ESSENTIALS | PROFESSIONAL | LEGACY
+  basePrice     Float
+  additionalFees Float  @default(0)
+  totalUpfront  Float
+  commission    Float   @default(0.30)
+
+  estimatedValue Float?
+  actualRevenue  Float  @default(0)
+
+  address   String
+  city      String
+  state     String
+  zip       String
+  bedrooms  Int?
+  estimatedItems Int    @default(0)
+
+  projectManager String?
+  teamJson       String  @default("{}") // {photographer, appraiser, coordinator, cleaner}
+  currentPhase   String  @default("CONSULTATION")
+
+  consultDate    DateTime?
+  startDate      DateTime?
+  completionDate DateTime?
+  estimatedWeeks Int?
+
+  includedServicesJson String @default("[]") // JSON array
+  addOnServicesJson    String @default("[]") // JSON array
+
+  status      String @default("QUOTE_REQUESTED")
+  // QUOTE_REQUESTED | QUOTE_SENT | DEPOSIT_PAID | IN_PROGRESS | COMPLETED
+
+  contractUrl  String?
+  inventoryUrl String?
+  archiveUrl   String?
+  notes        String?
+
+  phases WhiteGlovePhase[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model WhiteGlovePhase {
+  id          String            @id @default(cuid())
+  projectId   String
+  project     WhiteGloveProject @relation(fields: [projectId], references: [id])
+  phaseNumber Int
+  phaseName   String
+  status      String            @default("PENDING") // PENDING | IN_PROGRESS | COMPLETED
+  startedAt   DateTime?
+  completedAt DateTime?
+  tasksJson   String            @default("[]") // JSON: [{label, done}]
+  notes       String?
+  createdAt   DateTime          @default(now())
+
+  @@index([projectId])
+}
+
+model Contractor {
+  id          String          @id @default(cuid())
+  type        String          // JUNK_REMOVAL | CLEANING | STAGING | DONATION | PHOTOGRAPHY | APPRAISAL
+  company     String
+  contactName String
+  phone       String
+  email       String
+  serviceArea String          @default("Maine")
+  ratesJson   String          @default("{}") // {baseRate, perHour, unit}
+  rating      Float           @default(5.0)
+  reviewCount Int             @default(0)
+  available   Boolean         @default(true)
+  notes       String?
+  jobs        ContractorJob[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([type])
+}
+
+model ContractorJob {
+  id            String     @id @default(cuid())
+  contractorId  String
+  contractor    Contractor @relation(fields: [contractorId], references: [id])
+  projectId     String
+  jobType       String
+  scheduledDate DateTime
+  completedDate DateTime?
+  cost          Float
+  paid          Boolean    @default(false)
+  notes         String?
+  createdAt     DateTime   @default(now())
+
+  @@index([contractorId])
+  @@index([projectId])
+}
+
+model ServiceQuote {
+  id     String @id @default(cuid())
+  userId String?
+
+  fullName  String
+  email     String
+  phone     String
+
+  address     String
+  city        String
+  state       String
+  zip         String
+
+  propertyType   String
+  bedrooms       Int?
+  squareFeet     Int?
+  estimatedItems String
+
+  requestedTier  String
+  addOnsJson     String @default("[]") // JSON array
+  urgency        String @default("flexible")
+
+  specialItems    String?
+  accessConcerns  String?
+  additionalNotes String?
+
+  quotedPrice      Float?
+  quotedCommission Float?
+  quoteSentAt      DateTime?
+  quoteSentBy      String?
+
+  status    String @default("NEW")
+  // NEW | REVIEWING | QUOTE_SENT | ACCEPTED | DECLINED
+
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  userId      String
+  type        String    @default("ESTATE_SALE") // ESTATE_SALE | GARAGE_SALE
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  location    String?
+  city        String?
+  state       String?
+  status      String    @default("DRAFT") // DRAFT | ACTIVE | COMPLETED
+
+  // ── Project Rollup Fields (computed, cached) ──
+  itemCount     Int      @default(0)
+  totalValue    Float    @default(0)
+  soldCount     Int      @default(0)
+  totalRevenue  Float    @default(0)
+
+  user        User      @relation(fields: [userId], references: [id])
+  items       Item[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Item {
+  id            String     @id @default(cuid())
+  userId        String
+  projectId     String?
+  status        ItemStatus @default(DRAFT)
+  createdAt     DateTime   @default(now())
+
+  title         String?
+  description   String?
+  condition     String?
+  purchasePrice Float?
+  purchaseDate  DateTime?
+
+  saleMethod    SaleMethod @default(BOTH)
+  saleZip       String?
+  saleRadiusMi  Int        @default(25)
+
+  megabotUsed   Boolean    @default(false)
+  listingPrice  Float?
+
+  // Shipping dimensions (from AI suggestion or manual entry)
+  shippingWeight Float?
+  shippingLength Float?
+  shippingWidth  Float?
+  shippingHeight Float?
+  isFragile      Boolean @default(false)
+  shippingPreference String @default("BUYER_PAYS") // BUYER_PAYS | FREE_SHIPPING | LOCAL_ONLY
+
+  // Post-sale pickup/meetup tracking
+  pickupStatus        String?  // INVITE_SENT | CONFIRMED | EN_ROUTE | HANDED_OFF | COMPLETED
+  pickupConfirmedAt   DateTime?
+  pickupCompletedAt   DateTime?
+  pickupLocation      String?  // JSON: {type, address, otherDesc?}
+  pickupNotes         String?
+  pickupInviteSentAt  DateTime?
+  pickupScheduledAt   DateTime?
+  pickupTimeSlots     String?  // JSON array: ["8 AM – 12 PM", ...]
+  pickupBuyerTimeSlot String?  // slot buyer selected
+  pickupBuyerMessage  String?
+  pickupContactMethod String?  // in_app | text | email
+  pickupPaymentMethod String?  // legacyloop | cash | venmo | decide_later
+  pickupHandoffCode   String?  // 4-digit confirmation code
+  pickupConfirmedBy   String?  // seller | buyer | both
+  pickupRadius        Int?     // miles
+
+  // Post-sale LTL freight tracking
+  ltlStatus         String?  // QUOTE_ACCEPTED | PICKUP_SCHEDULED | PICKED_UP | IN_TRANSIT | DELIVERED
+  ltlCarrierName    String?
+  ltlTrackingNumber String?
+  ltlBolNumber      String?
+  ltlPickupDate     DateTime?
+  ltlDeliveryDate   DateTime?
+  ltlQuoteJson      String?  // JSON: full quote details
+
+  // Seller-provided item details
+  numberOfOwners      String?
+  approximateAge      String?
+  worksProperly       String?
+  knownDamage         String?
+  hasOriginalPackaging String?
+
+  // Legacy storytelling
+  story         String?
+
+  // ── Structured Intelligence Fields (populated from AI analysis) ──
+  category          String?
+  brand             String?
+  era               String?
+  material          String?
+  maker             String?
+  itemStyle         String?
+  countryOfOrigin   String?
+  conditionGrade    String?
+
+  // ── Financial Truth Fields ──
+  soldPrice         Int?
+  soldAt            DateTime?
+
+  photos             ItemPhoto[]
+  aiResult           AiResult?
+  valuation          Valuation?
+  antiqueCheck       AntiqueCheck?
+  eventLogs          EventLog[]
+  marketComps        MarketComp[]
+  conversations      Conversation[]
+  transactions       Transaction[]
+  buyerBots          BuyerBot[]
+  engagementMetrics  ItemEngagementMetrics?
+  shipmentLabels     ShipmentLabel[]
+  reconBots          ReconBot[]
+  documents          ItemDocument[]
+  priceSnapshots     PriceSnapshot[]
+  offers             Offer[]
+  listingPublishes   ListingPublish[]
+
+  user          User       @relation(fields: [userId], references: [id])
+  project       Project?   @relation(fields: [projectId], references: [id])
+
+  @@index([userId])
+  @@index([projectId])
+}
+
+model ItemPhoto {
+  id        String   @id @default(cuid())
+  itemId    String
+  filePath  String
+  order     Int      @default(1)
+  isPrimary Boolean  @default(false)
+  caption   String?
+  createdAt DateTime @default(now())
+
+  item      Item     @relation(fields: [itemId], references: [id])
+
+  @@index([itemId])
+}
+
+model AiResult {
+  id         String   @id @default(cuid())
+  itemId     String   @unique
+  rawJson    String
+  confidence Float
+  createdAt  DateTime @default(now())
+
+  item       Item     @relation(fields: [itemId], references: [id])
+}
+
+model Valuation {
+  id         String   @id @default(cuid())
+  itemId     String   @unique
+
+  low        Float
+  mid        Float?
+  high       Float
+  confidence Float
+  source     String
+  rationale  String?
+
+  localLow        Float?
+  localMid        Float?
+  localHigh       Float?
+  localConfidence Float?
+  localSource     String?
+  localRationale  String?
+
+  onlineLow        Float?
+  onlineMid        Float?
+  onlineHigh       Float?
+  onlineConfidence Float?
+  onlineSource     String?
+  onlineRationale  String?
+
+  bestMarketLow    Float?
+  bestMarketMid    Float?
+  bestMarketHigh   Float?
+  bestMarketCity   String?
+
+  sellerNetLocal      Float?
+  sellerNetNational   Float?
+  sellerNetBestMarket Float?
+
+  recommendation String?
+  adjustments    String?
+
+  createdAt  DateTime @default(now())
+
+  item       Item     @relation(fields: [itemId], references: [id])
+}
+
+model AntiqueCheck {
+  id          String   @id @default(cuid())
+  itemId      String   @unique
+  isAntique   Boolean
+  reason      String
+  auctionLow  Float?
+  auctionHigh      Float?
+  authenticityScore Int?     @default(0)
+  createdAt   DateTime @default(now())
+
+  item        Item     @relation(fields: [itemId], references: [id])
+}
+
+model EventLog {
+  id        String   @id @default(cuid())
+  itemId    String
+  userId    String?
+  eventType String
+  payload   String?
+  createdAt DateTime @default(now())
+
+  item      Item     @relation(fields: [itemId], references: [id])
+
+  @@index([itemId])
+  @@index([userId])
+}
+
+model UserEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  eventType String   // ITEM_CREATED | ITEM_ANALYZED | ITEM_LISTED | ITEM_SOLD | SALE_CREATED | DOCUMENT_UPLOADED | BOT_ACTIVATED | CREDIT_PURCHASED | LOGIN
+  itemId    String?
+  metadata  String?  // JSON string for extra context
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([eventType])
+}
+
+model MarketComp {
+  id        String   @id @default(cuid())
+  itemId    String
+  platform  String
+  title     String
+  price     Float
+  currency  String
+  url       String
+  shipping  Float?
+  createdAt DateTime @default(now())
+
+  item      Item     @relation(fields: [itemId], references: [id])
+
+  @@index([itemId])
+}
+
+model Conversation {
+  id         String    @id @default(cuid())
+  itemId     String
+  buyerName  String
+  buyerEmail String?
+  platform   String    @default("direct")
+  botScore   Int       @default(50)
+  createdAt  DateTime  @default(now())
+
+  item       Item      @relation(fields: [itemId], references: [id])
+  messages   Message[]
+  offers     Offer[]
+
+  @@index([itemId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  sender         String       // "buyer" | "seller"
+  content        String
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+
+  @@index([conversationId])
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  userId      String
+  itemId      String?
+  type        String   // "ITEM_SALE" | "ADDON" | "TIER_FEE"
+  description String
+  amount      Float
+  commission  Float    @default(0)
+  netAmount   Float
+  status      String   @default("PENDING") // PENDING | COMPLETED | REFUNDED
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+  item        Item?    @relation(fields: [itemId], references: [id])
+
+  @@index([userId])
+}
+
+model BuyerBot {
+  id                  String      @id @default(cuid())
+  itemId              String
+  item                Item        @relation(fields: [itemId], references: [id])
+  isActive            Boolean     @default(true)
+  isMegaBot           Boolean     @default(false)
+  platformsJson       String      @default("[]") // JSON array of platform names
+  radius              Int         @default(50)    // miles
+  scansCompleted      Int         @default(0)
+  buyersFound         Int         @default(0)
+  outreachSent        Int         @default(0)
+  responsesReceived   Int         @default(0)
+  conversionsToSale   Int         @default(0)
+  lastScanAt          DateTime?
+  nextScanAt          DateTime?
+  leads               BuyerLead[]
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@index([itemId])
+}
+
+model BuyerLead {
+  id              String    @id @default(cuid())
+  botId           String
+  bot             BuyerBot  @relation(fields: [botId], references: [id])
+  itemId          String
+  platform        String
+  sourceType      String    @default("group_post") // group_post | listing | profile | forum
+  sourceUrl       String?
+  buyerName       String
+  buyerHandle     String?
+  buyerEmail      String?
+  searchingFor    String?
+  maxBudget       Float?
+  location        String?
+  urgency         String    @default("medium")     // low | medium | high
+  matchScore      Int       @default(75)           // 0-100
+  matchReason     String?
+  aiConfidence    Float     @default(0.8)
+  botScore        Int       @default(75)
+  outreachStatus  String    @default("PENDING")    // PENDING | CONTACTED | REPLIED | CONVERTED
+  messageSent     String?
+  contactedAt     DateTime?
+  firstResponseAt DateTime?
+  responseText    String?
+  viewedItem      Boolean   @default(false)
+  madeOffer       Boolean   @default(false)
+  offerAmount     Float?
+  converted       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([botId])
+  @@index([itemId])
+}
+
+model ItemEngagementMetrics {
+  id           String   @id @default(cuid())
+  itemId       String   @unique
+  item         Item     @relation(fields: [itemId], references: [id])
+  totalViews   Int      @default(0)
+  uniqueViews  Int      @default(0)
+  saves        Int      @default(0)
+  shares       Int      @default(0)
+  inquiries    Int      @default(0)
+  botScans     Int      @default(0)
+  buyersFound  Int      @default(0)
+  outreachSent Int      @default(0)
+  lastUpdated  DateTime @updatedAt
+}
+
+model Referral {
+  id             String    @id @default(cuid())
+  referrerId     String
+  referrer       User      @relation(fields: [referrerId], references: [id])
+  referredEmail  String?
+  code           String    @unique
+  rewardCredits  Int       @default(25)
+  status         String    @default("PENDING") // PENDING | USED
+  usedAt         DateTime?
+  createdAt      DateTime  @default(now())
+
+  @@index([referrerId])
+  @@index([code])
+}
+
+model PasswordReset {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  token          String   @unique
+  expiresAt      DateTime
+  used           Boolean  @default(false)
+  requestedFrom  String?
+  createdAt      DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model SubscriptionChange {
+  id                   String   @id @default(cuid())
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id])
+  fromTier             String?
+  toTier               String?
+  changeType           String   // upgrade | downgrade | cancel
+  amountPaid           Float
+  daysUsed             Int
+  daysRemaining        Int
+  proratedRefund       Float
+  creditIssued         Float    @default(0)
+  originalPeriodStart  DateTime
+  originalPeriodEnd    DateTime
+  changeDate           DateTime @default(now())
+  refundStatus         String   @default("PENDING")
+  refundedAt           DateTime?
+  refundMethod         String?
+  reason               String?
+  createdAt            DateTime @default(now())
+
+  @@index([userId])
+}
+
+model ShipmentLabel {
+  id               String   @id @default(cuid())
+  itemId           String
+  item             Item     @relation(fields: [itemId], references: [id])
+  fromAddressJson  String
+  toAddressJson    String
+  weight           Float
+  carrier          String
+  service          String
+  rate             Float
+  labelUrl         String
+  trackingNumber   String
+  trackingUrl      String?
+  qrCodeUrl        String?
+  status           String   @default("CREATED")
+  deliveryMethod   String   @default("print") // print | qr | pickup
+  estimatedDays    Int?
+  statusHistory    String   @default("[]") // JSON array of {status, timestamp, location?}
+  createdAt        DateTime @default(now())
+
+  @@index([itemId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // SALE_COMPLETE | SHIP_REMINDER | TRACKING_UPDATE | DELIVERY_CONFIRMED
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false)
+  metadata  String   @default("{}") // JSON string
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, isRead])
+}
+
+// ─── Market Intelligence / Recon Bot ────────────────────────────────────────
+
+model ReconBot {
+  id     String @id @default(cuid())
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  isActive      Boolean @default(true)
+  // JSON array of platform names e.g. ["facebook","ebay","craigslist"]
+  platformsJson String  @default("[\"facebook\",\"ebay\",\"craigslist\"]")
+  searchRadius  Int     @default(50) // miles
+  scanFrequency Int     @default(6)  // hours
+
+  // Latest aggregate market data
+  competitorCount       Int    @default(0)
+  lowestPrice           Float?
+  highestPrice          Float?
+  averagePrice          Float?
+  medianPrice           Float?
+  // JSON array of up to 15 mock competitor listings from last scan
+  latestCompetitorsJson String @default("[]")
+
+  // Status & recommendation
+  currentStatus   String  @default("ANALYZING")
+  // ANALYZING | PRICED_WELL | TOO_HIGH | TOO_LOW | NO_COMPETITORS | NOT_PRICED | MARKET_SHIFTING
+  recommendation  String?
+  confidenceScore Float?
+
+  alerts         ReconAlert[]
+
+  lastScan       DateTime?
+  nextScan       DateTime?
+  scansCompleted Int      @default(0)
+  alertsSent     Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([itemId])
+  @@index([isActive])
+}
+
+model ReconAlert {
+  id         String   @id @default(cuid())
+  reconBotId String
+  reconBot   ReconBot @relation(fields: [reconBotId], references: [id])
+
+  alertType       String
+  // PRICE_TOO_HIGH | PRICE_TOO_LOW | COMPETITOR_LOWER_PRICE | SIMILAR_SOLD | MARKET_SHIFT | NEW_COMPETITOR
+  severity        String
+  // LOW | MEDIUM | HIGH | URGENT
+  title           String
+  message         String
+  actionable      Boolean @default(true)
+  suggestedAction String?
+  triggerDataJson String  @default("{}")
+
+  viewed      Boolean  @default(false)
+  viewedAt    DateTime?
+  dismissed   Boolean  @default(false)
+  dismissedAt DateTime?
+  actionTaken String?
+
+  createdAt DateTime @default(now())
+
+  @@index([reconBotId])
+  @@index([viewed])
+  @@index([dismissed])
+}
+
+// ─── Testimonials ────────────────────────────────────────────────────────────
+
+model Testimonial {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  itemId     String?
+  buyerName  String
+  buyerEmail String?
+  rating     Int      @default(5) // 1-5
+  text       String
+  itemTitle  String?
+  isApproved Boolean  @default(false)
+  isFeatured Boolean  @default(false)
+  isDemo     Boolean  @default(false)
+  approvedBy String?
+  createdAt  DateTime @default(now())
+
+  @@index([isApproved])
+}
+
+// ─── Hero Verification ──────────────────────────────────────────────────────
+
+model HeroVerification {
+  id              String    @id @default(cuid())
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+  fullName        String
+  email           String
+  serviceCategory String    // MILITARY | LAW_ENFORCEMENT | FIRE_EMS
+  serviceDetail   String
+  department      String?
+  proofFileName   String?
+  proofFilePath   String?
+  status          String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  reviewNotes     String?
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ─── Payment Ledger ─────────────────────────────────────────────────────────
+
+model PaymentLedger {
+  id              String   @id @default(cuid())
+  userId          String
+  type            String   // subscription, credit_pack, item_purchase, refund, payout, estate_service
+  squarePaymentId String?  @unique
+  squareOrderId   String?
+  subtotal        Float    // amount before processing fee
+  processingFee   Float    // 3.5% fee charged to buyer/purchaser
+  totalCharged    Float    // subtotal + processingFee = what buyer actually paid
+  currency        String   @default("USD")
+  status          String   @default("pending") // pending, completed, failed, refunded
+  description     String
+  metadata        String?  // JSON: tier name, credit count, item id, pack id, etc.
+  isDemo          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+model SellerEarnings {
+  id               String    @id @default(cuid())
+  userId           String
+  itemId           String?
+  saleAmount       Float     // what buyer paid for item (not including shipping or processing fee)
+  commissionRate   Float     // 0.05, 0.08, etc.
+  commissionAmount Float     // saleAmount * commissionRate
+  netEarnings      Float     // saleAmount - commissionAmount (NO processing fee deduction)
+  status           String    @default("pending") // pending, available, paid_out, refunded
+  holdUntil        DateTime? // 3 days after delivery confirmed
+  payoutMethod     String?
+  paidOutAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  user             User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+// ─── Auth: OTP Codes (Phone Login) ──────────────────────────────────────────
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+}
+
+// ─── Auth: Magic Links (Passwordless Login) ─────────────────────────────────
+
+model MagicLink {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+// ─── Data Collection Consent ─────────────────────────────────────────────────
+
+model DataCollectionConsent {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  dataCollection   Boolean @default(false)
+  aiTraining       Boolean @default(false)
+  marketResearch   Boolean @default(false)
+  anonymousSharing Boolean @default(false)
+
+  // Credits awarded as incentive
+  creditsEarned Int @default(0)
+
+  consentedAt DateTime?
+  revokedAt   DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model ItemDocument {
+  id            String   @id @default(cuid())
+  itemId        String
+  item          Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  fileName      String
+  fileUrl       String
+  fileType      String   // MIME type
+  fileSizeBytes Int
+  docType       String   // RECEIPT | CERTIFICATE | LEGAL | MAINTENANCE | MANUAL | PROVENANCE | APPRAISAL | OTHER
+  label         String?
+  aiSummary     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([itemId])
+}
+
+// ─── Price History Snapshots ────────────────────────────────────────────────
+
+model PriceSnapshot {
+  id          String   @id @default(cuid())
+  itemId      String
+  item        Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  source      String   // PRICEBOT | MEGABOT | RAINFOREST | ANTIQUE_EVAL | MANUAL
+  priceLow    Int?
+  priceHigh   Int?
+  priceMedian Int?
+  confidence  String?
+  rawPayload  String?
+  createdAt   DateTime @default(now())
+
+  @@index([itemId])
+}
+
+// ─── Offer Engine ────────────────────────────────────────────────────────────
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COUNTERED
+  EXPIRED
+  WITHDRAWN
+}
+
+enum ActorType {
+  BUYER
+  SELLER
+}
+
+enum OfferAction {
+  SUBMITTED
+  ACCEPTED
+  DECLINED
+  COUNTERED
+  EXPIRED
+  WITHDRAWN
+}
+
+model Offer {
+  id             String      @id @default(cuid())
+  itemId         String
+  sellerId       String
+  conversationId String?
+  buyerName      String
+  buyerEmail     String
+  buyerToken     String      @unique
+  status         OfferStatus @default(PENDING)
+  currentPrice   Int
+  originalPrice  Int
+  round          Int         @default(1)
+  expiresAt      DateTime
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  item           Item          @relation(fields: [itemId], references: [id])
+  seller         User          @relation(fields: [sellerId], references: [id])
+  conversation   Conversation? @relation(fields: [conversationId], references: [id])
+  events         OfferEvent[]
+
+  @@index([itemId])
+  @@index([sellerId])
+  @@index([buyerToken])
+}
+
+model OfferEvent {
+  id        String      @id @default(cuid())
+  offerId   String
+  actorType ActorType
+  action    OfferAction
+  price     Int
+  message   String?
+  createdAt DateTime    @default(now())
+
+  offer     Offer       @relation(fields: [offerId], references: [id])
+
+  @@index([offerId])
+}
+
+// ─── Add-ons ─────────────────────────────────────────────────────────────────
+
+model Addon {
+  id          String      @id @default(cuid())
+  addonId     String      @unique
+  name        String
+  description String
+  credits     Int
+  category    String
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  purchases   UserAddon[]
+}
+
+model UserAddon {
+  id          String    @id @default(cuid())
+  userId      String
+  addonId     String
+  itemId      String?
+  status      String    @default("PENDING")
+  creditsCost Int
+  redeemedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id])
+  addon       Addon     @relation(fields: [addonId], references: [addonId])
+}
+
+// ─── Listing Publish Hub ────────────────────────────────────────────────────
+
+model ListingPublish {
+  id           String    @id @default(cuid())
+  itemId       String
+  userId       String
+  platform     String
+  status       String    @default("READY")
+  copiedAt     DateTime?
+  postedAt     DateTime?
+  postUrl      String?
+  listingTitle String?
+  listingPrice String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  item         Item      @relation(fields: [itemId], references: [id])
+  user         User      @relation(fields: [userId], references: [id])
+}

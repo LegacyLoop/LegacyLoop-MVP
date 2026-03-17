@@ -1,0 +1,14 @@
+{
+  "name": "LegacyLoop",
+  "short_name": "LegacyLoop",
+  "description": "AI-powered estate and garage sale assistant",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0a0a1a",
+  "theme_color": "#00bcd4",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/images/logos/logo-icon.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/images/logos/logo-icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

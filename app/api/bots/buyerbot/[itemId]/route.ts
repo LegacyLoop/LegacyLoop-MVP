@@ -1,0 +1,628 @@
+import { NextRequest, NextResponse } from "next/server";
+import { authAdapter } from "@/lib/adapters/auth";
+import { prisma } from "@/lib/db";
+import OpenAI from "openai";
+import { getItemEnrichmentContext } from "@/lib/enrichment";
+import { logUserEvent } from "@/lib/data/user-events";
+import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
+
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
+
+function safeJson(s: string | null | undefined): any {
+  if (!s) return null;
+  try { return JSON.parse(s); } catch { return null; }
+}
+
+/**
+ * GET /api/bots/buyerbot/[itemId]
+ * Retrieve existing BuyerBot result for an item
+ */
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ itemId: string }> }
+) {
+  try {
+    const user = await authAdapter.getSession();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { itemId } = await params;
+
+    const item = await prisma.item.findUnique({ where: { id: itemId }, select: { userId: true } });
+    if (!item || item.userId !== user.id) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    const existing = await prisma.eventLog.findFirst({
+      where: { itemId, eventType: "BUYERBOT_RESULT" },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!existing) return NextResponse.json({ hasResult: false, result: null });
+
+    return NextResponse.json({
+      hasResult: true,
+      result: safeJson(existing.payload),
+      createdAt: existing.createdAt,
+    });
+  } catch (e) {
+    console.error("[buyerbot GET]", e);
+    return NextResponse.json({ error: "Failed to fetch BuyerBot result" }, { status: 500 });
+  }
+}
+
+/**
+ * POST /api/bots/buyerbot/[itemId]
+ * Run dedicated BuyerBot buyer-finding deep-dive
+ */
+export async function POST(
+  _req: NextRequest,
+  { params }: { params: Promise<{ itemId: string }> }
+) {
+  try {
+    const user = await authAdapter.getSession();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { itemId } = await params;
+
+    // ── Tier + Credit Gate ──
+    if (!isDemoMode()) {
+      if (!canUseBotOnTier(user.tier, "buyerBot")) {
+        return NextResponse.json({ error: "upgrade_required", message: "Upgrade your plan to access BuyerBot.", upgradeUrl: "/pricing?upgrade=true" }, { status: 403 });
+      }
+      const isRerun = await hasPriorBotRun(user.id, itemId, "BUYERBOT");
+      const cost = isRerun ? BOT_CREDIT_COSTS.singleBotReRun : BOT_CREDIT_COSTS.singleBotRun;
+      const cc = await checkCredits(user.id, cost);
+      if (!cc.hasEnough) {
+        return NextResponse.json({ error: "insufficient_credits", message: "Not enough credits to run BuyerBot.", balance: cc.balance, required: cost, buyUrl: "/credits" }, { status: 402 });
+      }
+      await deductCredits(user.id, cost, isRerun ? "BuyerBot re-run" : "BuyerBot run", itemId);
+    }
+
+    const item = await prisma.item.findUnique({
+      where: { id: itemId },
+      include: {
+        aiResult: true,
+        valuation: true,
+        antiqueCheck: true,
+        photos: { orderBy: { order: "asc" }, take: 4 },
+      },
+    });
+
+    if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
+    if (item.userId !== user.id) return NextResponse.json({ error: "Not your item" }, { status: 403 });
+
+    const ai = safeJson(item.aiResult?.rawJson);
+    const v = item.valuation;
+
+    if (!ai || !v) {
+      return NextResponse.json({ error: "Run AI analysis first" }, { status: 400 });
+    }
+
+    // Build context from existing analysis
+    const itemName = ai.item_name || item.title || "Unknown item";
+    const category = ai.category || "General";
+    const subcategory = ai.subcategory || "";
+    const material = ai.material || "Unknown";
+    const era = ai.era || ai.estimated_age || "Unknown";
+    const condScore = ai.condition_score || 5;
+    const condLabel = condScore >= 8 ? "Excellent" : condScore >= 5 ? "Good" : "Fair";
+    const lowPrice = Math.round(v.low);
+    const highPrice = Math.round(v.high);
+    const midPrice = v.mid ? Math.round(v.mid) : Math.round((v.low + v.high) / 2);
+    const sellerZip = item.saleZip || "04901";
+    const isAntique = item.antiqueCheck?.isAntique || false;
+    const keywords = (ai.best_keywords || ai.keywords || []).join(", ");
+    const isVehicle = category.toLowerCase().includes("vehicle");
+
+    // ── CROSS-BOT ENRICHMENT ──
+    const enrichment = await getItemEnrichmentContext(itemId, "buyerbot").catch(() => null);
+    const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
+
+    // ── BUYERBOT PROMPT ──
+    const systemPrompt = enrichmentPrefix + `You are a world-class buyer acquisition specialist and marketplace researcher. You have 15 years of experience finding buyers for every type of item — from antiques to electronics to vehicles. You know every platform, every community, every trick to find the RIGHT buyer who will pay the best price.
+
+You are finding buyers for: ${itemName} — ${category}${subcategory ? ` — ${subcategory}` : ""}
+Condition: ${condLabel} (${condScore}/10)
+Location: ZIP ${sellerZip} (Maine, USA)
+Estimated value: $${lowPrice} — $${highPrice} (mid: $${midPrice})
+Era/Age: ${era}
+Material: ${material}
+Keywords: ${keywords || "none provided"}
+
+Your job: Find EVERY type of buyer who would want this item. Be specific about WHERE they are and HOW to reach them.
+
+Return a JSON object with ALL of the following:
+
+{
+  "buyer_profiles": [
+    {
+      "profile_name": "Descriptive name (e.g. 'Vintage Guitar Gear Collector', 'Mid-Century Furniture Flipper')",
+      "buyer_type": "Collector | Reseller | Decorator | Hobbyist | Gift Buyer | Dealer | Museum/Gallery | Personal Use",
+      "motivation": "Why this person wants this item specifically",
+      "price_sensitivity": "Will Pay Premium | Fair Market | Bargain Hunter | Lowballer",
+      "likelihood_to_buy": "Very High | High | Medium | Low",
+      "estimated_offer_range": "$X — $Y",
+      "location_preference": "Local Only | Regional | National | International",
+      "platforms_active_on": ["list of platforms where this buyer type shops"],
+      "best_approach": "How to reach and pitch to this buyer type",
+      "time_sensitivity": "Buys immediately | Takes time to decide | Seasonal buyer"
+    }
+  ],
+
+  "platform_opportunities": [
+    {
+      "platform": "Platform name",
+      "opportunity_level": "Excellent | Good | Moderate | Low",
+      "estimated_buyers": number,
+      "avg_sale_price_here": number,
+      "avg_days_to_sell": number,
+      "audience_description": "Who shops here for this type of item",
+      "how_to_list": "Specific tips for listing on this platform",
+      "search_terms_buyers_use": ["what buyers search for"],
+      "groups_or_communities": ["specific Facebook groups, subreddits, forums relevant to this item"],
+      "best_time_to_post": "When to post for maximum visibility"
+    }
+  ],
+
+  "outreach_strategies": [
+    {
+      "strategy_name": "Direct approach name",
+      "channel": "The platform or method",
+      "target_audience": "Who you're reaching",
+      "message_template": "A ready-to-send warm personal message the seller can customize",
+      "expected_response_rate": "X%",
+      "effort_level": "Easy | Medium | Hard",
+      "cost": "Free | Paid ($X)"
+    }
+  ],
+
+  "local_opportunities": {
+    "antique_shops_nearby": "Types of local shops that might buy or consign",
+    "flea_markets": "Local flea markets or swap meets",
+    "estate_sale_companies": "Companies that might include this in a sale",
+    "local_collector_clubs": "Clubs or groups in the seller's area",
+    "consignment_options": "Local consignment shops suited for this item",
+    "word_of_mouth": "How to leverage personal network"
+  },
+
+  "hot_leads": [
+    {
+      "lead_description": "A specific type of buyer actively searching right now",
+      "evidence": "Why we think they're actively looking",
+      "urgency": "Act now | This week | This month | Anytime",
+      "how_to_reach": "Specific action to take",
+      "estimated_price_theyd_pay": number
+    }
+  ],
+
+  "competitive_landscape": {
+    "similar_items_listed": number,
+    "price_range_of_competitors": "$X — $Y",
+    "your_advantage": "What makes the seller's item stand out",
+    "your_disadvantage": "What competing listings have that this one doesn't",
+    "differentiation_tip": "How to stand out from other listings"
+  },
+
+  "timing_advice": {
+    "best_day_to_list": "Day of week",
+    "best_time_to_list": "Morning/Afternoon/Evening",
+    "seasonal_peak": "Best month or season",
+    "avoid_listing": "When NOT to list",
+    "urgency_recommendation": "List now or wait?"
+  },
+
+  "executive_summary": "4-6 sentence plain-language summary for a senior citizen. Who are the most likely buyers, where to find them, what to say, and what to expect. Be warm, specific, and actionable."
+}
+
+IMPORTANT INSTRUCTIONS:
+- Generate 6-12 buyer profiles based on real market behavior for this item category.
+- Generate 5-10 platform opportunities.
+- Generate 3-6 outreach strategies with WARM, HUMAN message templates.
+- Generate 3-8 hot leads with urgency levels.
+- Be SPECIFIC. Don't say 'post on Facebook.' Say which specific groups or communities.
+- Consider the seller's location (Maine) for local opportunities.
+- Message templates must sound HUMAN and WARM — never like a bot or spam.
+${isAntique ? "- This IS an antique: include auction houses, collector forums, specialty dealers." : ""}
+${isVehicle ? "- This IS a vehicle: focus on LOCAL buyers, dealerships, enthusiast groups within 100 miles. LOCAL PICKUP ONLY." : ""}
+- Every recommendation must be actionable — the seller should be able to DO something immediately.
+- All prices in USD.`;
+
+    let buyerbotResult: any;
+
+    if (openai) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60_000);
+      try {
+        const photoDescs = item.photos.map((p) =>
+          `[Photo: ${p.filePath}${p.caption ? ` — ${p.caption}` : ""}]`
+        );
+
+        const response = await openai.responses.create({
+          model: "gpt-4o-mini",
+          instructions: systemPrompt,
+          input: `Find all potential buyers for this item. Photos: ${photoDescs.join(", ")}. Return ONLY valid JSON.`,
+        }, { signal: controller.signal });
+
+        const text = typeof response.output === "string"
+          ? response.output
+          : response.output_text || JSON.stringify(response.output);
+
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          buyerbotResult = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("No JSON in response");
+        }
+      } catch (aiErr: any) {
+        console.error("[buyerbot] OpenAI error:", aiErr);
+        return NextResponse.json({ error: `BuyerBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` }, { status: 422 });
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    } else {
+      buyerbotResult = generateDemoResult(itemName, category, midPrice, era, material, sellerZip, isAntique, isVehicle);
+      buyerbotResult._isDemo = true;
+    }
+
+    // Validate expected fields
+    const requiredKeys = [
+      "buyer_profiles", "platform_opportunities", "outreach_strategies",
+      "local_opportunities", "hot_leads", "competitive_landscape",
+      "timing_advice", "executive_summary",
+    ];
+    for (const key of requiredKeys) {
+      if (buyerbotResult[key] === undefined) buyerbotResult[key] = null;
+    }
+
+    // Store in EventLog
+    await prisma.eventLog.create({
+      data: {
+        itemId,
+        eventType: "BUYERBOT_RESULT",
+        payload: JSON.stringify(buyerbotResult),
+      },
+    });
+
+    await prisma.eventLog.create({
+      data: {
+        itemId,
+        eventType: "BUYERBOT_RUN",
+        payload: JSON.stringify({ userId: user.id, timestamp: new Date().toISOString() }),
+      },
+    });
+
+    // Fire-and-forget: log user event
+    logUserEvent(user.id, "BOT_RUN", { itemId, metadata: { botType: "BUYERBOT", success: true } }).catch(() => null);
+
+    return NextResponse.json({
+      success: true,
+      result: buyerbotResult,
+      isDemo: !!buyerbotResult._isDemo,
+    });
+  } catch (e) {
+    console.error("[buyerbot POST]", e);
+    return NextResponse.json({ error: "BuyerBot analysis failed" }, { status: 500 });
+  }
+}
+
+// ── Demo Result Generator ──────────────────────────────────────────────────
+
+function generateDemoResult(
+  itemName: string, category: string, midPrice: number,
+  era: string, material: string, zip: string,
+  isAntique: boolean, isVehicle: boolean,
+) {
+  const cat = category.toLowerCase();
+  const price = midPrice || 150;
+  const lowOffer = Math.round(price * 0.65);
+  const highOffer = Math.round(price * 1.15);
+  const condLabel = "Good";
+
+  return {
+    buyer_profiles: [
+      {
+        profile_name: `${category} Collector`,
+        buyer_type: "Collector",
+        motivation: `Actively building a ${cat} collection and looking for quality ${era} pieces`,
+        price_sensitivity: "Will Pay Premium",
+        likelihood_to_buy: "Very High",
+        estimated_offer_range: `$${Math.round(price * 0.9)} — $${Math.round(price * 1.1)}`,
+        location_preference: "National",
+        platforms_active_on: ["eBay", "Ruby Lane", "Facebook Groups"],
+        best_approach: `Mention the ${era} provenance and ${material} construction — collectors pay more for documented history`,
+        time_sensitivity: "Buys immediately",
+      },
+      {
+        profile_name: "Local Estate Sale Hunter",
+        buyer_type: "Personal Use",
+        motivation: `Searching for unique ${cat} items for their home — prefers local pickup to inspect in person`,
+        price_sensitivity: "Fair Market",
+        likelihood_to_buy: "High",
+        estimated_offer_range: `$${Math.round(price * 0.8)} — $${price}`,
+        location_preference: "Local Only",
+        platforms_active_on: ["Facebook Marketplace", "Craigslist", "Nextdoor"],
+        best_approach: "Post with great photos, mention local pickup available, be responsive to messages",
+        time_sensitivity: "Buys immediately",
+      },
+      {
+        profile_name: "Resale Flipper",
+        buyer_type: "Reseller",
+        motivation: `Buys ${cat} items at below market to resell on eBay/Etsy for profit`,
+        price_sensitivity: "Bargain Hunter",
+        likelihood_to_buy: "High",
+        estimated_offer_range: `$${lowOffer} — $${Math.round(price * 0.75)}`,
+        location_preference: "Regional",
+        platforms_active_on: ["Craigslist", "OfferUp", "Facebook Marketplace"],
+        best_approach: "Price firmly — flippers will lowball. Counter with evidence of recent comparable sales",
+        time_sensitivity: "Buys immediately",
+      },
+      {
+        profile_name: "Interior Designer / Decorator",
+        buyer_type: "Decorator",
+        motivation: `Sourcing unique ${cat} pieces for client projects — values character and story`,
+        price_sensitivity: "Will Pay Premium",
+        likelihood_to_buy: "Medium",
+        estimated_offer_range: `$${price} — $${highOffer}`,
+        location_preference: "Regional",
+        platforms_active_on: ["Instagram", "1stDibs", "Chairish", "Facebook Groups"],
+        best_approach: "Emphasize the aesthetic appeal, measurements, and condition. Offer to stage photos in-situ",
+        time_sensitivity: "Takes time to decide",
+      },
+      {
+        profile_name: "Gift Buyer",
+        buyer_type: "Gift Buyer",
+        motivation: `Looking for a special ${cat} gift — birthday, anniversary, or holiday`,
+        price_sensitivity: "Fair Market",
+        likelihood_to_buy: "Medium",
+        estimated_offer_range: `$${Math.round(price * 0.85)} — $${Math.round(price * 1.05)}`,
+        location_preference: "National",
+        platforms_active_on: ["Etsy", "eBay", "Facebook Marketplace"],
+        best_approach: "Highlight the uniqueness and story behind the item — gift buyers love provenance",
+        time_sensitivity: "Seasonal buyer",
+      },
+      {
+        profile_name: isAntique ? "Antique Dealer / Shop Owner" : "Consignment Shop",
+        buyer_type: "Dealer",
+        motivation: isAntique
+          ? `Stocks ${era} ${cat} items for their shop — always buying inventory`
+          : `Accepts quality ${cat} items on consignment for their retail customers`,
+        price_sensitivity: "Bargain Hunter",
+        likelihood_to_buy: "High",
+        estimated_offer_range: `$${Math.round(price * 0.5)} — $${Math.round(price * 0.7)}`,
+        location_preference: "Local Only",
+        platforms_active_on: ["Direct contact", "Antique Forums", "Facebook Groups"],
+        best_approach: "Visit in person with the item. Dealers buy in volume so expect 50-70% of retail value",
+        time_sensitivity: "Buys immediately",
+      },
+      {
+        profile_name: "Online Marketplace Browser",
+        buyer_type: "Personal Use",
+        motivation: `Casually browsing for ${cat} items — impulse buyer if price is right`,
+        price_sensitivity: "Fair Market",
+        likelihood_to_buy: "Low",
+        estimated_offer_range: `$${Math.round(price * 0.7)} — $${Math.round(price * 0.95)}`,
+        location_preference: "National",
+        platforms_active_on: ["eBay", "Mercari", "Facebook Marketplace"],
+        best_approach: "Great photos and competitive pricing are key. These buyers comparison-shop extensively",
+        time_sensitivity: "Takes time to decide",
+      },
+      {
+        profile_name: `${category} Hobbyist`,
+        buyer_type: "Hobbyist",
+        motivation: `Uses ${cat} items as part of their hobby or craft — values functionality`,
+        price_sensitivity: "Fair Market",
+        likelihood_to_buy: "Medium",
+        estimated_offer_range: `$${Math.round(price * 0.8)} — $${price}`,
+        location_preference: "National",
+        platforms_active_on: ["Reddit", "Specialty Forums", "Facebook Groups", "eBay"],
+        best_approach: "Post in hobby-specific communities. Mention functionality and completeness",
+        time_sensitivity: "Takes time to decide",
+      },
+    ],
+
+    platform_opportunities: [
+      {
+        platform: "eBay",
+        opportunity_level: "Excellent",
+        estimated_buyers: 245,
+        avg_sale_price_here: Math.round(price * 0.95),
+        avg_days_to_sell: 12,
+        audience_description: `National buyers specifically searching for ${cat} items`,
+        how_to_list: "Use auction format for rare items, Buy It Now for common ones. Include 'best offer' option",
+        search_terms_buyers_use: [itemName.split(" ").slice(0, 3).join(" "), category, era, material].filter(Boolean),
+        groups_or_communities: [],
+        best_time_to_post: "Sunday evening 7-9 PM EST",
+      },
+      {
+        platform: "Facebook Marketplace",
+        opportunity_level: "Excellent",
+        estimated_buyers: 180,
+        avg_sale_price_here: Math.round(price * 0.85),
+        avg_days_to_sell: 5,
+        audience_description: "Local buyers within 50 miles who prefer pickup and inspection",
+        how_to_list: "Great photos, honest description, price slightly above your minimum. Respond within 1 hour",
+        search_terms_buyers_use: [itemName.split(" ")[0], category, "vintage", "antique"].filter(Boolean),
+        groups_or_communities: ["Maine Buy/Sell/Trade", "New England Antiques & Collectibles", `${category} Enthusiasts`],
+        best_time_to_post: "Thursday-Saturday morning",
+      },
+      {
+        platform: "Craigslist",
+        opportunity_level: "Good",
+        estimated_buyers: 85,
+        avg_sale_price_here: Math.round(price * 0.8),
+        avg_days_to_sell: 8,
+        audience_description: "Local deal-seekers and small dealers looking for underpriced items",
+        how_to_list: "Post in correct category, include dimensions and condition details, firm price discourages lowballers",
+        search_terms_buyers_use: [category, era, "estate sale", material].filter(Boolean),
+        groups_or_communities: [],
+        best_time_to_post: "Wednesday-Friday afternoon",
+      },
+      {
+        platform: isAntique ? "Ruby Lane" : "Mercari",
+        opportunity_level: isAntique ? "Excellent" : "Good",
+        estimated_buyers: isAntique ? 120 : 95,
+        avg_sale_price_here: isAntique ? Math.round(price * 1.1) : Math.round(price * 0.88),
+        avg_days_to_sell: isAntique ? 21 : 7,
+        audience_description: isAntique
+          ? "Serious antique collectors willing to pay premium for authenticated items"
+          : "Young deal-hunters who browse casually and buy impulsively",
+        how_to_list: isAntique
+          ? "Detailed provenance, measurements, maker marks. High-quality photos from multiple angles"
+          : "Competitive pricing, free shipping if possible, quick ship guarantee",
+        search_terms_buyers_use: isAntique
+          ? [era, material, "antique", category].filter(Boolean)
+          : [itemName.split(" ")[0], category, "vintage"].filter(Boolean),
+        groups_or_communities: [],
+        best_time_to_post: isAntique ? "Tuesday morning" : "Weekend mornings",
+      },
+      {
+        platform: "Etsy",
+        opportunity_level: isAntique ? "Good" : "Moderate",
+        estimated_buyers: 110,
+        avg_sale_price_here: Math.round(price * 1.05),
+        avg_days_to_sell: 18,
+        audience_description: "Buyers who appreciate handmade, vintage, and unique items — willing to pay more",
+        how_to_list: "Great SEO in title/tags, lifestyle photos, story in description. Label as 'vintage' if 20+ years old",
+        search_terms_buyers_use: ["vintage " + category, era + " " + material, itemName].filter(Boolean),
+        groups_or_communities: ["Etsy Teams for Vintage Sellers"],
+        best_time_to_post: "Monday morning",
+      },
+      {
+        platform: "Facebook Groups",
+        opportunity_level: "Good",
+        estimated_buyers: 150,
+        avg_sale_price_here: Math.round(price * 0.92),
+        avg_days_to_sell: 4,
+        audience_description: "Enthusiasts and collectors in niche groups specifically for this category",
+        how_to_list: "Join relevant groups first, read rules, post with great photos and fair price",
+        search_terms_buyers_use: [],
+        groups_or_communities: [
+          `Maine Antiques & Collectibles`,
+          `New England ${category} Collectors`,
+          `Vintage ${category} Buy/Sell/Trade`,
+          `${category} Enthusiasts Worldwide`,
+        ],
+        best_time_to_post: "Saturday morning 9-11 AM",
+      },
+    ],
+
+    outreach_strategies: [
+      {
+        strategy_name: "Facebook Group Post",
+        channel: "Facebook Groups",
+        target_audience: `${category} collectors and enthusiasts in 3-5 targeted groups`,
+        message_template: `Hi everyone! I have a beautiful ${itemName} that I'm looking to find a good home for. It's in ${cat.includes("excellent") ? "excellent" : "great"} condition and dates to the ${era} era. Made of ${material}. I'm asking $${price} but happy to discuss. Located in Maine — local pickup available or I can ship. Would love to share more photos if anyone's interested! 📸`,
+        expected_response_rate: "15-25%",
+        effort_level: "Easy",
+        cost: "Free",
+      },
+      {
+        strategy_name: "eBay Targeted Listing",
+        channel: "eBay",
+        target_audience: "National buyers with saved searches for this type of item",
+        message_template: `${itemName} — ${era} ${material} — ${condLabel} Condition. Detailed photos showing all angles. Ships securely from Maine. Buy It Now or Best Offer welcome.`,
+        expected_response_rate: "8-12%",
+        effort_level: "Medium",
+        cost: "Free to list (13.25% on sale)",
+      },
+      {
+        strategy_name: "Local Marketplace Blitz",
+        channel: "Facebook Marketplace + Craigslist + Nextdoor",
+        target_audience: "Local buyers within 50 miles who prefer to inspect before buying",
+        message_template: `Hey neighbor! Selling a ${itemName} — ${era}, ${material}, in ${condLabel.toLowerCase()} condition. $${price} or best offer. Located in central Maine, can meet at a convenient public spot. Happy to send more photos! 📷`,
+        expected_response_rate: "20-30%",
+        effort_level: "Easy",
+        cost: "Free",
+      },
+      {
+        strategy_name: isAntique ? "Collector Direct Outreach" : "Reddit Community Post",
+        channel: isAntique ? "Email / Direct Message" : "Reddit",
+        target_audience: isAntique
+          ? "Known collectors and dealers who specialize in this category"
+          : `r/${cat.includes("furniture") ? "furniture" : "ThriftStoreHauls"} and r/vintage community members`,
+        message_template: isAntique
+          ? `Hi! Fellow ${category.toLowerCase()} enthusiast here. I have a ${era} ${itemName} in ${condLabel.toLowerCase()} condition that I think might interest you. ${material} construction with beautiful patina. I'm asking $${price} — happy to share detailed photos and discuss provenance. Would you like to take a look?`
+          : `[For Sale] ${itemName} — ${era}, ${material}, ${condLabel} condition. $${price} shipped or local pickup in Maine. More photos in comments!`,
+        expected_response_rate: isAntique ? "30-40%" : "10-15%",
+        effort_level: isAntique ? "Medium" : "Easy",
+        cost: "Free",
+      },
+    ],
+
+    local_opportunities: {
+      antique_shops_nearby: isAntique
+        ? "Antique shops in Portland, Augusta, and Bangor frequently buy estate pieces. Try Maine Antique Digest advertisers"
+        : "Local consignment shops and thrift stores may accept quality items on consignment (typically 40-60% split)",
+      flea_markets: "Portland Flea (seasonal), Fairfield Antiques Mall, Montsweag Flea Market on Route 1",
+      estate_sale_companies: "Maine Estate Liquidators, Downeast Auctions, New England Estate Services",
+      local_collector_clubs: `Maine Antiques Association, New England ${category} Society, local historical society`,
+      consignment_options: "Local consignment shops typically take 40-50% commission but handle all selling. Good for items over $100",
+      word_of_mouth: "Post on your personal Facebook, mention to friends and neighbors. Word-of-mouth often finds the best buyers for unique items",
+    },
+
+    hot_leads: [
+      {
+        lead_description: `Active ${category.toLowerCase()} collector searching on eBay with saved alerts`,
+        evidence: `${Math.floor(Math.random() * 20 + 15)} saved-search alerts active for "${itemName.split(" ").slice(0, 2).join(" ")}" on eBay this month. Category demand is up ${Math.floor(Math.random() * 15 + 5)}% year-over-year`,
+        urgency: "Act now",
+        how_to_reach: `List on eBay with Buy It Now at $${Math.round(price * 1.05)} with Best Offer enabled. These buyers get instant alerts`,
+        estimated_price_theyd_pay: Math.round(price * 0.95),
+      },
+      {
+        lead_description: `Facebook Marketplace buyers in Maine actively browsing ${category.toLowerCase()} items`,
+        evidence: `${Math.floor(Math.random() * 30 + 40)} active listings viewed in the past week for similar items in your area. Local demand is strong`,
+        urgency: "This week",
+        how_to_reach: "Post on Facebook Marketplace with great photos. Price at $" + price + " — local buyers expect 5-10% negotiation",
+        estimated_price_theyd_pay: Math.round(price * 0.9),
+      },
+      {
+        lead_description: isAntique
+          ? "Antique dealer network in New England actively buying inventory"
+          : `${category} enthusiast groups with active "ISO" posts`,
+        evidence: isAntique
+          ? "Multiple dealers posted 'buying' ads in Maine Antique Digest this month. Spring buying season has begun"
+          : `3 "In Search Of" posts matching your item type in relevant Facebook groups in the past 2 weeks`,
+        urgency: "This week",
+        how_to_reach: isAntique
+          ? "Contact 3-4 antique shops directly with photos and asking price. Dealers decide quickly"
+          : "Reply to ISO posts in Facebook groups with your item details and photos",
+        estimated_price_theyd_pay: isAntique ? Math.round(price * 0.65) : Math.round(price * 0.88),
+      },
+      {
+        lead_description: "Etsy vintage buyers searching for this exact category",
+        evidence: `"${category}" search volume on Etsy is trending up. ${Math.floor(Math.random() * 50 + 80)} searches per day for similar items`,
+        urgency: "This month",
+        how_to_reach: "Create an Etsy listing with strong SEO keywords. Include " + (era || "vintage") + " and " + (material || category) + " in title",
+        estimated_price_theyd_pay: Math.round(price * 1.05),
+      },
+      {
+        lead_description: "Weekend flea market and estate sale shoppers",
+        evidence: "Spring flea market season just started. Weekend foot traffic at Maine antique venues is at seasonal peak",
+        urgency: "This month",
+        how_to_reach: "Book a table at Portland Flea or Montsweag Flea Market. Bring this item plus any others you're selling",
+        estimated_price_theyd_pay: Math.round(price * 0.75),
+      },
+    ],
+
+    competitive_landscape: {
+      similar_items_listed: Math.floor(Math.random() * 30 + 8),
+      price_range_of_competitors: `$${Math.round(price * 0.6)} — $${Math.round(price * 1.4)}`,
+      your_advantage: `Your item is in ${condLabel.toLowerCase()} condition with documented provenance. ${isAntique ? "Antique status adds collector value" : "Clean presentation and honest description builds trust"}`,
+      your_disadvantage: "Some competitors offer free shipping or have established seller reputations with high feedback scores",
+      differentiation_tip: `Highlight the ${material} construction and ${era} era in your title. Include close-up photos of any maker marks or unique details. Story sells — mention the item's history if known`,
+    },
+
+    timing_advice: {
+      best_day_to_list: "Thursday or Sunday",
+      best_time_to_list: "Sunday evening 7-9 PM EST or Thursday morning 9-11 AM EST",
+      seasonal_peak: isAntique
+        ? "October-December (holiday gift buying) and April-June (spring decorating)"
+        : "Spring and early fall — avoid mid-summer when buyers are on vacation",
+      avoid_listing: "Avoid major holiday weekends (July 4th, Thanksgiving week). Listings get buried",
+      urgency_recommendation: "List within the next 7 days — spring buying season is strong and demand is above average for this category",
+    },
+
+    executive_summary: `Great news — there are solid buyers out there for your ${itemName}. Your best bet is to list on Facebook Marketplace for quick local interest (expect a sale within 5-7 days) and simultaneously on eBay to reach national collectors (may take 2-3 weeks but can fetch a higher price). ${isAntique ? "As an antique, consider reaching out to local antique shops in Portland or Augusta — they're always buying inventory." : "Post in 2-3 Facebook groups related to " + category.toLowerCase() + " for free exposure to enthusiasts."} At $${price}, you're priced competitively. Expect initial offers 10-15% below your asking price — that's normal. Be responsive to messages and you should have strong interest within the first week.`,
+  };
+}

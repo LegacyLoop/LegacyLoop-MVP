@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /store/
+Allow: /pricing
+Allow: /heroes
+Allow: /search
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /items/
+Disallow: /messages/
+Disallow: /bots/
+Disallow: /credits/
+Disallow: /integrations/
+Disallow: /onboarding/
+
+Sitemap: https://legacyloop.com/sitemap.xml

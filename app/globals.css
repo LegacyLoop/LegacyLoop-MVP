@@ -1,0 +1,703 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Theme Tokens — Light / Dark mode
+───────────────────────────────────────────────────────────────────────────── */
+
+/* Brand accent — always the same */
+:root {
+  --accent:          #00bcd4;
+  --accent-bright:   #22d3ee;
+  --accent-deep:     #0097a7;
+  --accent-glow:     rgba(0, 188, 212, 0.35);
+  --accent-dim:      rgba(0, 188, 212, 0.12);
+  --accent-border:   rgba(0, 188, 212, 0.3);
+}
+
+html.dark {
+  --bg-primary:      #0a0a0f;
+  --bg-secondary:    #111118;
+  --bg-card:         rgba(255, 255, 255, 0.05);
+  --bg-card-solid:   #16161e;
+  --bg-card-hover:   rgba(255, 255, 255, 0.1);
+  --bg-dark-card:    rgba(13, 13, 25, 0.92);
+  --border-default:  rgba(255, 255, 255, 0.12);
+  --border-hover:    rgba(255, 255, 255, 0.22);
+  --border-card:     rgba(255, 255, 255, 0.12);
+  --text-primary:    #f1f5f9;
+  --text-secondary:  #cbd5e1;
+  --text-muted:      #94a3b8;
+  --text-card:       #f1f5f9;
+  --accent-theme:    #00bcd4;
+  --accent-theme-hover: #22d3ee;
+  --accent-theme-glow: rgba(0, 188, 212, 0.25);
+  --btn-primary-bg:  linear-gradient(135deg, #22d3ee, #0097a7);
+  --btn-primary-text: #ffffff;
+  --card-shadow:     0 4px 24px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --card-shadow-hover: 0 8px 40px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --card-inset:      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --card-inset-hover: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --section-title:   #94a3b8;
+  --section-title-card: #94a3b8;
+  --muted-color:     #94a3b8;
+  --muted-card:      #cbd5e1;
+  --ghost-bg:        rgba(255, 255, 255, 0.07);
+  --ghost-border:    rgba(255, 255, 255, 0.18);
+  --ghost-color:     #e2e8f0;
+  --ghost-hover-bg:  rgba(255, 255, 255, 0.14);
+  --ghost-hover-border: rgba(255, 255, 255, 0.28);
+  --ghost-hover-color: #fff;
+  --ghost-card-bg:   rgba(255, 255, 255, 0.08);
+  --ghost-card-border: rgba(255, 255, 255, 0.16);
+  --ghost-card-color: #e2e8f0;
+  --ghost-card-hover-bg: rgba(255, 255, 255, 0.14);
+  --ghost-card-hover-border: rgba(255, 255, 255, 0.25);
+  --ghost-card-hover-color: #fff;
+  --input-bg:        rgba(255, 255, 255, 0.06);
+  --input-border:    rgba(255, 255, 255, 0.16);
+  --input-color:     #f1f5f9;
+  --input-placeholder: #94a3b8;
+  --label-color:     #cbd5e1;
+  --badge-bg:        rgba(0, 188, 212, 0.14);
+  --badge-color:     #22d3ee;
+  --badge-border:    rgba(0, 188, 212, 0.35);
+  --skeleton-bg:     rgba(255, 255, 255, 0.1);
+  --scrollbar-track: rgba(255, 255, 255, 0.03);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.15);
+  --star-field:      rgba(255,255,255,0.012);
+  /* Semantic colors */
+  --success-bg:      rgba(34, 197, 94, 0.1);
+  --success-border:  rgba(34, 197, 94, 0.25);
+  --success-text:    #4ade80;
+  --error-bg:        rgba(239, 68, 68, 0.1);
+  --error-border:    rgba(239, 68, 68, 0.3);
+  --error-text:      #f87171;
+  --warning-bg:      rgba(245, 158, 11, 0.1);
+  --warning-border:  rgba(245, 158, 11, 0.25);
+  --warning-text:    #fbbf24;
+  --antique-text:    #fbbf24;
+  --antique-bg:      rgba(245, 158, 11, 0.1);
+  --purple-text:     #c4b5fd;
+  --purple-bg:       rgba(139, 92, 246, 0.1);
+  --purple-border:   rgba(139, 92, 246, 0.25);
+  --overlay-dark:    rgba(0, 0, 0, 0.6);
+  --overlay-light:   rgba(255, 255, 255, 0.1);
+  --stripe-bg:       rgba(255, 255, 255, 0.03);
+  color-scheme: dark;
+}
+
+html.light {
+  --bg-primary:      #f8fafc;
+  --bg-secondary:    #ffffff;
+  --bg-card:         rgba(255, 255, 255, 0.9);
+  --bg-card-solid:   #ffffff;
+  --bg-card-hover:   rgba(255, 255, 255, 1);
+  --bg-dark-card:    rgba(13, 13, 25, 0.88);
+  --border-default:  rgba(0, 0, 0, 0.08);
+  --border-hover:    rgba(0, 0, 0, 0.15);
+  --border-card:     rgba(0, 0, 0, 0.08);
+  --text-primary:    #0f172a;
+  --text-secondary:  #475569;
+  --text-muted:      #94a3b8;
+  --text-card:       #1c1917;
+  --accent-theme:    #0097a7;
+  --accent-theme-hover: #00838f;
+  --accent-theme-glow: rgba(0, 151, 167, 0.15);
+  --btn-primary-bg:  linear-gradient(135deg, #00bcd4, #00838f);
+  --btn-primary-text: #ffffff;
+  --card-shadow:     0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+  --card-shadow-hover: 0 2px 8px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06);
+  --card-inset:      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --card-inset-hover: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --section-title:   #64748b;
+  --section-title-card: #94a3b8;
+  --muted-color:     #78716c;
+  --muted-card:      #78716c;
+  --ghost-bg:        rgba(0, 0, 0, 0.04);
+  --ghost-border:    rgba(0, 0, 0, 0.1);
+  --ghost-color:     #475569;
+  --ghost-hover-bg:  rgba(0, 0, 0, 0.08);
+  --ghost-hover-border: rgba(0, 0, 0, 0.18);
+  --ghost-hover-color: #1e293b;
+  --ghost-card-bg:   rgba(0, 0, 0, 0.04);
+  --ghost-card-border: rgba(0, 0, 0, 0.1);
+  --ghost-card-color: #475569;
+  --ghost-card-hover-bg: rgba(0, 0, 0, 0.08);
+  --ghost-card-hover-border: rgba(0, 0, 0, 0.18);
+  --ghost-card-hover-color: #1e293b;
+  --input-bg:        #ffffff;
+  --input-border:    #d1d5db;
+  --input-color:     #1c1917;
+  --input-placeholder: #9ca3af;
+  --label-color:     #374151;
+  --badge-bg:        rgba(0, 188, 212, 0.1);
+  --badge-color:     #0097a7;
+  --badge-border:    rgba(0, 151, 167, 0.3);
+  --skeleton-bg:     rgba(0, 0, 0, 0.06);
+  --scrollbar-track: rgba(0, 0, 0, 0.02);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.12);
+  --star-field:      transparent;
+  /* Semantic colors */
+  --success-bg:      #f0fdf4;
+  --success-border:  #86efac;
+  --success-text:    #15803d;
+  --error-bg:        #fef2f2;
+  --error-border:    #fecaca;
+  --error-text:      #dc2626;
+  --warning-bg:      #fffbeb;
+  --warning-border:  #fde68a;
+  --warning-text:    #b45309;
+  --antique-text:    #92400e;
+  --antique-bg:      rgba(245, 158, 11, 0.08);
+  --purple-text:     #6d28d9;
+  --purple-bg:       #f5f3ff;
+  --purple-border:   #c4b5fd;
+  --overlay-dark:    rgba(0, 0, 0, 0.5);
+  --overlay-light:   rgba(255, 255, 255, 0.85);
+  --stripe-bg:       rgba(0, 0, 0, 0.02);
+  color-scheme: light;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Base
+───────────────────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Display",
+                 "Segoe UI", system-ui, Helvetica, Arial, sans-serif;
+  }
+
+  html.dark body {
+    background: linear-gradient(160deg, #0a0a0f 0%, #0d0f1a 50%, #0a0c14 100%);
+    background-attachment: fixed;
+  }
+
+  html.light body {
+    background: var(--bg-primary);
+  }
+
+  body {
+    color: var(--text-primary);
+    font-size: 17px;
+    line-height: 1.65;
+    min-height: 100vh;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* Focus-visible for keyboard users */
+  *:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar         { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track   { background: var(--scrollbar-track); }
+  ::-webkit-scrollbar-thumb   { background: var(--scrollbar-thumb); border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0, 188, 212, 0.35); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Animations
+───────────────────────────────────────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes floatDot {
+  0%, 100% { transform: translateY(0)    scale(1);   opacity: 0.35; }
+  50%       { transform: translateY(-22px) scale(1.1); opacity: 0.12; }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%       { opacity: 0.25; }
+}
+
+@keyframes accentPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50%       { box-shadow: 0 0 0 6px transparent; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.92; transform: scale(1.02); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg);   }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Components
+───────────────────────────────────────────────────────────────────────────── */
+@layer components {
+
+  /* ── Layout ── */
+  .container-app {
+    @apply mx-auto max-w-5xl px-6;
+  }
+
+  /* ── Card ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-card);
+    border-radius: 1.25rem;
+    box-shadow: var(--card-shadow), var(--card-inset);
+    color: var(--text-card);
+    transition: box-shadow 0.25s ease, transform 0.2s ease;
+  }
+
+  .card:hover {
+    box-shadow: var(--card-shadow-hover), var(--card-inset-hover);
+  }
+
+  /* ── Dark glass card (auth pages, modals, overlays — always dark) ── */
+  .card-dark {
+    background: var(--bg-dark-card);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.25rem;
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.6),
+      0 4px  16px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+
+  /* ── Typography ── */
+  .section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--section-title);
+  }
+
+  .h1 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .h2 {
+    font-size: 1.625rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    line-height: 1.3;
+  }
+
+  .muted {
+    color: var(--muted-color);
+  }
+
+  /* ── Form labels ── */
+  .label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--label-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .label-light {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: rgba(255, 255, 255, 0.65);
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── Inputs ── */
+  .input {
+    @apply w-full rounded-xl px-4 py-3 shadow-sm focus:outline-none;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-color);
+    min-height: 48px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .input::placeholder {
+    color: var(--input-placeholder);
+  }
+
+  .input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  .textarea {
+    @apply w-full rounded-xl px-4 py-3 shadow-sm focus:outline-none;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-color);
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .textarea::placeholder {
+    color: var(--input-placeholder);
+  }
+
+  .textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  /* ── Input dark — always dark (auth pages) ── */
+  .input-dark {
+    width: 100%;
+    background: rgba(10, 10, 20, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #f5f5f7;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .input-dark::placeholder {
+    color: #8a8a9a;
+  }
+
+  .input-dark:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  /* ── Badge ── */
+  .badge {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+    background: var(--bg-card);
+    border: 1px solid var(--border-default);
+    color: var(--text-secondary);
+  }
+
+  .badge-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    background: var(--badge-bg);
+    border: 1px solid var(--badge-border);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--badge-color);
+  }
+
+  /* ── Primary button — teal gradient ── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+           font-semibold shadow-md
+           focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed;
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    min-height: 44px;
+    font-size: 0.95rem;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 15px var(--accent-theme-glow);
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary:focus {
+    box-shadow: 0 0 0 3px var(--accent-dim), 0 4px 15px var(--accent-theme-glow);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 28px var(--accent-theme-glow);
+  }
+
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  /* ── Ghost button ── */
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+           font-medium focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed;
+    background: var(--ghost-bg);
+    border: 1px solid var(--ghost-border);
+    color: var(--ghost-color);
+    min-height: 44px;
+    font-size: 0.95rem;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--ghost-hover-bg);
+    border-color: var(--ghost-hover-border);
+    color: var(--ghost-hover-color);
+  }
+
+  .btn-ghost:focus {
+    box-shadow: 0 0 0 2px var(--accent-dim);
+  }
+
+  /* ── Skeleton loader ── */
+  .skeleton {
+    background: var(--skeleton-bg);
+    border-radius: 0.75rem;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+  }
+
+  /* ── Card-context overrides ── */
+  .card .section-title {
+    color: var(--section-title-card);
+  }
+
+  .card .h1,
+  .card .h2 {
+    color: var(--text-card);
+  }
+
+  .card .muted {
+    color: var(--muted-card);
+  }
+
+  .card .label-light {
+    color: var(--label-color);
+  }
+
+  .card .btn-ghost {
+    background: var(--ghost-card-bg);
+    border: 1px solid var(--ghost-card-border);
+    color: var(--ghost-card-color);
+  }
+
+  .card .btn-ghost:hover:not(:disabled) {
+    background: var(--ghost-card-hover-bg);
+    border-color: var(--ghost-card-hover-border);
+    color: var(--ghost-card-hover-color);
+  }
+
+  .card .badge-accent {
+    background: var(--badge-bg);
+    color: var(--badge-color);
+    border-color: var(--badge-border);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Dark mode: override Tailwind text utilities inside cards
+   Cards in dark mode have dark bg — stone/gray/neutral Tailwind classes
+   designed for white cards need overrides.
+───────────────────────────────────────────────────────────────────────────── */
+html.dark .card [class*="text-stone-9"],
+html.dark .card [class*="text-stone-8"],
+html.dark .card [class*="text-stone-7"] {
+  color: var(--text-primary) !important;
+}
+
+html.dark .card [class*="text-stone-6"],
+html.dark .card [class*="text-stone-5"],
+html.dark .card [class*="text-stone-4"],
+html.dark .card [class*="text-stone-3"] {
+  color: var(--text-secondary) !important;
+}
+
+html.dark .card [class*="text-gray-9"],
+html.dark .card [class*="text-gray-8"],
+html.dark .card [class*="text-gray-7"] {
+  color: var(--text-primary) !important;
+}
+
+html.dark .card [class*="text-slate-9"],
+html.dark .card [class*="text-slate-8"],
+html.dark .card [class*="text-slate-7"] {
+  color: var(--text-primary) !important;
+}
+
+/* Keep colored text on dark cards — these are accent colors */
+html.dark .card [class*="text-teal-"]  { color: #2dd4bf !important; }
+html.dark .card [class*="text-green-"] { color: #4ade80 !important; }
+html.dark .card [class*="text-red-"]   { color: #f87171 !important; }
+html.dark .card [class*="text-blue-"]  { color: #60a5fa !important; }
+
+/* Dark mode: cards, borders, and background utilities */
+html.dark .card [class*="bg-stone-1"],
+html.dark .card [class*="bg-stone-5"] {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+html.dark .card [class*="border-stone-1"],
+html.dark .card [class*="border-stone-2"] {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Dark mode: inline style overrides for common patterns in cards */
+html.dark .card [style*="color: #1c1917"],
+html.dark .card [style*="color:#1c1917"] {
+  color: var(--text-primary) !important;
+}
+
+html.dark .card [style*="color: #78716c"],
+html.dark .card [style*="color:#78716c"] {
+  color: var(--text-secondary) !important;
+}
+
+html.dark .card [style*="color: #57534e"],
+html.dark .card [style*="color:#57534e"] {
+  color: var(--text-secondary) !important;
+}
+
+html.dark .card [style*="color: #a8a29e"],
+html.dark .card [style*="color:#a8a29e"] {
+  color: var(--text-muted) !important;
+}
+
+/* Dark mode: recolor card backgrounds that use inline light bg */
+html.dark .card [style*="background: #fff"],
+html.dark .card [style*="background:#fff"],
+html.dark .card [style*="background: white"] {
+  background: var(--bg-card) !important;
+}
+
+html.dark .card [style*="background: #fafaf9"],
+html.dark .card [style*="background:#fafaf9"],
+html.dark .card [style*="background: #f5f5f4"],
+html.dark .card [style*="background:#f5f5f4"] {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Login / Auth page helpers — always dark
+───────────────────────────────────────────────────────────────────────────── */
+
+.login-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 20%,
+    rgba(0, 188, 212, 0.07) 0%,
+    transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.login-logo {
+  animation: fadeSlideUp 0.8s ease-out both;
+  animation-delay: 0.05s;
+}
+
+.login-form-card {
+  animation: fadeSlideUp 0.8s ease-out both;
+  animation-delay: 0.2s;
+  width: 100%;
+  max-width: 420px;
+}
+
+.particle-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.3;
+  animation: floatDot linear infinite;
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Star-field overlay — dark mode only
+───────────────────────────────────────────────────────────────────────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--star-field) 1px, transparent 0);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#__next {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Login page — force dark background regardless of theme
+───────────────────────────────────────────────────────────────────────────── */
+.login-page-wrapper {
+  background: linear-gradient(160deg, #0a0a0f 0%, #0d0f1a 50%, #0a0c14 100%) !important;
+  color: #f5f5f7 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Light mode: body-level dark text utilities need to be dark
+───────────────────────────────────────────────────────────────────────────── */
+html.light .text-white {
+  color: var(--text-primary) !important;
+}
+
+/* Light mode: ensure card backgrounds look right */
+html.light .card {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+html.light .card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Print styles
+───────────────────────────────────────────────────────────────────────────── */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+  }
+
+  nav, .app-nav, .sidebar, .mobile-menu, .notification-bell,
+  .help-widget, .cookie-banner, footer, .fab-button,
+  .no-print,
+  button:not(.print-button) {
+    display: none !important;
+  }
+
+  * {
+    color: black !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .card {
+    border: 1px solid #ccc !important;
+    background: white !important;
+  }
+
+  a {
+    text-decoration: none !important;
+  }
+
+  img {
+    max-width: 300px;
+  }
+
+  .item-card, .transaction-row {
+    page-break-inside: avoid;
+  }
+}
+
+.page-break {
+  page-break-before: always;
+}
