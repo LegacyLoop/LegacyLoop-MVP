@@ -87,13 +87,13 @@ export default function NeighborhoodBundlePage() {
       >
         <div style={{ position: "absolute", top: 0, right: 0, bottom: 0, width: "300px", background: "radial-gradient(ellipse at right, rgba(255,255,255,0.08), transparent 70%)" }} />
 
-        <div style={{ fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.7)", fontWeight: 700, marginBottom: "0.75rem" }}>
+        <div style={{ fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-secondary)", fontWeight: 700, marginBottom: "0.75rem" }}>
           🏘️ Neighborhood Bundle
         </div>
         <h1 style={{ fontSize: "2.5rem", fontWeight: 900, lineHeight: 1.2, marginBottom: "1rem" }}>
           Better Together.<br />Save More, Sell More.
         </h1>
-        <p style={{ color: "rgba(255,255,255,0.8)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
+        <p style={{ color: "var(--text-primary)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
           When neighbors or family members sell together, buyers come from farther away, marketing costs are shared,
           and everyone gets a better deal. LegacyLoop's Neighborhood Bundle makes it easy.
         </p>
@@ -122,21 +122,21 @@ export default function NeighborhoodBundlePage() {
               display: "inline-flex",
               alignItems: "center",
               gap: "0.5rem",
-              background: "rgba(255,255,255,0.1)",
+              background: "var(--bg-card-hover)",
               color: "#fff",
               padding: "0.85rem 2rem",
               borderRadius: "9999px",
               fontWeight: 700,
               textDecoration: "none",
               fontSize: "0.95rem",
-              border: "1px solid rgba(255,255,255,0.2)",
+              border: "1px solid var(--border-default)",
             }}
           >
             View All Plans
           </Link>
         </div>
 
-        <div style={{ display: "flex", gap: "2.5rem", marginTop: "2.5rem", paddingTop: "2rem", borderTop: "1px solid rgba(255,255,255,0.15)", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "2.5rem", marginTop: "2.5rem", paddingTop: "2rem", borderTop: "1px solid var(--border-default)", flexWrap: "wrap" }}>
           {[
             { value: "Up to 50%", label: "Off per-family pricing" },
             { value: "Shared", label: "Buyer marketplace" },
@@ -145,7 +145,7 @@ export default function NeighborhoodBundlePage() {
           ].map((s) => (
             <div key={s.label}>
               <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "#fff" }}>{s.value}</div>
-              <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.6)", marginTop: "0.1rem" }}>{s.label}</div>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "0.1rem" }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -322,7 +322,7 @@ export default function NeighborhoodBundlePage() {
         <h2 style={{ fontSize: "1.75rem", fontWeight: 800, marginBottom: "0.75rem" }}>
           Ready to sell together?
         </h2>
-        <p style={{ color: "rgba(255,255,255,0.8)", marginBottom: "1.5rem", maxWidth: "480px", margin: "0 auto 1.5rem" }}>
+        <p style={{ color: "var(--text-primary)", marginBottom: "1.5rem", maxWidth: "480px", margin: "0 auto 1.5rem" }}>
           Start a neighborhood bundle today. Invite your neighbors and everyone saves. No commitment required.
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
@@ -331,7 +331,7 @@ export default function NeighborhoodBundlePage() {
             Start Bundle Free
           </Link>
           <a href="mailto:hello@legacyloop.com"
-            style={{ background: "rgba(255,255,255,0.15)", color: "#fff", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem", border: "1px solid rgba(255,255,255,0.3)" }}>
+            style={{ background: "var(--bg-card-hover)", color: "#fff", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem", border: "1px solid var(--border-default)" }}>
             Email Us About Your Group
           </a>
         </div>

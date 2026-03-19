@@ -11,7 +11,6 @@ import { computeCollectiblesScore } from "@/lib/collectibles-score";
 import { detectCollectible } from "@/lib/collectible-detect";
 import AmazonPriceBadge from "./AmazonPriceBadge";
 import SoldPriceWidget from "./SoldPriceWidget";
-import TradeToggle from "./TradeToggle";
 import TradeProposalsPanel from "./TradeProposalsPanel";
 type Params = Promise<{ id: string }>;
 
@@ -281,7 +280,7 @@ export default async function ItemPage({ params }: { params: Params }) {
             borderRadius: "9999px",
             fontSize: "0.62rem",
             fontWeight: 600,
-            background: "rgba(255,255,255,0.06)",
+            background: "var(--ghost-bg)",
             color: "var(--text-muted)",
             border: "1px solid var(--border-default)",
           }}>
@@ -359,11 +358,8 @@ export default async function ItemPage({ params }: { params: Params }) {
         />
       </div>
 
-      {/* ═══ Trade System ═══ */}
+      {/* ═══ Trade Proposals ═══ */}
       <div style={{ marginTop: "1rem" }}>
-        <TradeToggle itemId={item.id} />
-      </div>
-      <div style={{ marginTop: "0.75rem" }}>
         <TradeProposalsPanel itemId={item.id} />
       </div>
 

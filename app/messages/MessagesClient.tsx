@@ -44,7 +44,7 @@ type Props = {
   itemsForForm: { id: string; displayTitle: string }[];
 };
 
-type FilterMode = "all" | "unread" | "bot" | "byItem";
+type FilterMode = "all" | "unread" | "bot" | "byItem" | "hot" | "needs_reply" | "agent" | "closed";
 
 function getBotStyle(score: number) {
   if (score >= 80) return { label: "Likely Human", color: "#15803d", bg: "#dcfce7", border: "#86efac" };
@@ -168,6 +168,17 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
   const [filterMode, setFilterMode] = useState<FilterMode>("all");
   const [selectedItemFilter, setSelectedItemFilter] = useState<string>("");
   const [itemDropdownOpen, setItemDropdownOpen] = useState(false);
+  const [starred, setStarred] = useState<Set<string>>(new Set());
+
+  // Listen for AI Agent sidebar filter changes
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const filter = (e as CustomEvent).detail?.filter;
+      if (filter) setFilterMode(filter as FilterMode);
+    };
+    window.addEventListener("inbox-filter-change", handler);
+    return () => window.removeEventListener("inbox-filter-change", handler);
+  }, []);
 
   // Debounce search input by 300ms
   useEffect(() => {
@@ -221,6 +232,14 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
       results = results.filter((c) => c.botScore < 50);
     } else if (filterMode === "byItem" && selectedItemFilter) {
       results = results.filter((c) => c.itemId === selectedItemFilter);
+    } else if (filterMode === "hot") {
+      results = results.filter((c) => c.botScore >= 80);
+    } else if (filterMode === "needs_reply") {
+      results = results.filter((c) => c.messages.length > 0 && c.messages[c.messages.length - 1].sender === "buyer");
+    } else if (filterMode === "agent") {
+      results = []; // No agent-handled conversations yet
+    } else if (filterMode === "closed") {
+      results = []; // No closed status yet
     }
 
     // Apply search query (debounced)
@@ -394,7 +413,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
           {/* All Messages */}
           <button
-            onClick={() => { setFilterMode("all"); setSelectedItemFilter(""); }}
+            onClick={() => { setFilterMode("all"); setSelectedItemFilter(""); window.dispatchEvent(new CustomEvent("inbox-filter-reset", { detail: { filter: "all" } })); }}
             style={{
               padding: "0.35rem 0.85rem",
               borderRadius: "9999px",
@@ -443,7 +462,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                   fontSize: "0.65rem",
                   fontWeight: 700,
                   padding: "0 0.3rem",
-                  background: filterMode === "unread" ? "rgba(255,255,255,0.25)" : "var(--accent)",
+                  background: filterMode === "unread" ? "var(--bg-card-hover)" : "var(--accent)",
                   color: "#fff",
                 }}
               >
@@ -484,7 +503,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                   fontSize: "0.65rem",
                   fontWeight: 700,
                   padding: "0 0.3rem",
-                  background: filterMode === "bot" ? "rgba(255,255,255,0.25)" : "#ef4444",
+                  background: filterMode === "bot" ? "var(--bg-card-hover)" : "#ef4444",
                   color: "#fff",
                 }}
               >
@@ -633,11 +652,12 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
       </div>
 
       {/* ─── MAIN LAYOUT (sidebar + thread + right panel) ── */}
-      <div style={{ display: "flex", gap: "1.5rem", flex: 1, minHeight: 0, overflow: "hidden" }}>
+      <div style={{ display: "flex", gap: 0, flex: 1, minHeight: 0, overflow: "hidden" }}>
         {/* ─── LEFT SIDEBAR ───────────────────────────────────── */}
         <div
           style={{
-            width: "320px",
+            width: "300px",
+            borderRight: "1px solid var(--border-default)",
             flexShrink: 0,
             display: "flex",
             flexDirection: "column",
@@ -690,7 +710,8 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                       padding: "0.65rem 0.75rem",
                       borderRadius: "0.875rem",
                       border: `1.5px solid ${isSelected ? "var(--accent)" : "var(--border-default)"}`,
-                      background: isSelected ? "var(--bg-card-hover)" : "var(--bg-card-solid)",
+                      borderLeft: isSelected ? "3px solid #00bcd4" : "1.5px solid var(--border-default)",
+                      background: isSelected ? "rgba(0,188,212,0.08)" : "var(--bg-card-solid)",
                       cursor: "pointer",
                       display: "flex",
                       gap: "0.65rem",
@@ -848,6 +869,32 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                         )}
                       </div>
                     </div>
+                    {/* Star button */}
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStarred(prev => {
+                          const next = new Set(prev);
+                          if (next.has(conv.id)) next.delete(conv.id);
+                          else next.add(conv.id);
+                          return next;
+                        });
+                      }}
+                      style={{
+                        cursor: "pointer",
+                        padding: "2px",
+                        fontSize: 14,
+                        color: starred.has(conv.id) ? "#fbbf24" : "var(--text-muted)",
+                        opacity: starred.has(conv.id) ? 1 : 0.3,
+                        transition: "all 0.15s",
+                        flexShrink: 0,
+                        alignSelf: "flex-start",
+                        marginTop: "0.2rem",
+                      }}
+                      title={starred.has(conv.id) ? "Remove star" : "Star this buyer"}
+                    >
+                      ★
+                    </span>
                   </button>
                 );
               })
@@ -860,7 +907,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
             className="btn-primary"
             style={{ padding: "0.6rem", fontSize: "0.85rem" }}
           >
-            + Log Buyer Message
+            + New Conversation
           </button>
         </div>
 
@@ -869,7 +916,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
           {composing ? (
             <div className="card p-6">
               <div style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: "1rem" }}>
-                Log a buyer message
+                New Conversation
               </div>
               <form onSubmit={handleNewConv} style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
                 <div>
@@ -942,11 +989,11 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
               )}
 
               {/* ═══ ZONE 0: Buyer Header (fixed) ═══ */}
-              <div style={{ flexShrink: 0, padding: "12px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.03)" }}>
+              <div style={{ flexShrink: 0, padding: "12px 16px", borderBottom: "1px solid var(--border-default)", background: "var(--bg-card)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#fff" }}>{selected.buyerName}</div>
-                    <div style={{ fontSize: 11, color: "rgba(207,216,220,0.5)" }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>{selected.buyerName}</div>
+                    <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
                       {selected.platform !== "direct" && `via ${selected.platform} \u00b7 `}
                       {selected.buyerEmail && `${selected.buyerEmail} \u00b7 `}
                       {new Date(selected.createdAt).toLocaleDateString()}
@@ -960,6 +1007,18 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                       </div>
                     );
                   })()}
+                  {/* Item context (compact) */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: "auto" }}>
+                    {selected.item.photos[0] && (
+                      <img src={selected.item.photos[0].filePath} alt="" style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover" }} />
+                    )}
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {selected.item.title || "Item"}
+                      </div>
+                      <a href={`/items/${selected.item.id}`} style={{ fontSize: 10, color: "var(--accent)", textDecoration: "none" }}>View item →</a>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -976,8 +1035,8 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                       {/* Date separator */}
                       {showDate && (
                         <div style={{ textAlign: "center", margin: "16px 0", position: "relative" }}>
-                          <div style={{ height: 1, background: "rgba(255,255,255,0.06)", position: "absolute", left: 0, right: 0, top: "50%" }} />
-                          <span style={{ position: "relative", zIndex: 1, background: "#0a1929", padding: "0 12px", fontSize: 10, color: "rgba(255,255,255,0.3)" }}>
+                          <div style={{ height: 1, background: "var(--ghost-bg)", position: "absolute", left: 0, right: 0, top: "50%" }} />
+                          <span style={{ position: "relative", zIndex: 1, background: "var(--bg-primary)", padding: "0 12px", fontSize: 10, color: "var(--text-muted)" }}>
                             {new Date(msg.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                           </span>
                         </div>
@@ -986,7 +1045,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                       {isSystem ? (
                         /* System message (centered) */
                         <div style={{ textAlign: "center", margin: "8px 0" }}>
-                          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontStyle: "italic", padding: "4px 12px" }}>{msg.content}</span>
+                          <span style={{ fontSize: 11, color: "var(--text-muted)", fontStyle: "italic", padding: "4px 12px" }}>{msg.content}</span>
                         </div>
                       ) : (
                         /* Chat bubble */
@@ -998,15 +1057,15 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                             lineHeight: 1.5,
                             wordBreak: "break-word" as const,
                             borderRadius: isSeller ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                            background: isSeller ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "rgba(255,255,255,0.08)",
-                            color: isSeller ? "#000" : "#fff",
+                            background: isSeller ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "var(--ghost-bg)",
+                            color: isSeller ? "#fff" : "var(--text-primary)",
                             fontWeight: isSeller ? 500 : 400,
-                            border: isSeller ? "none" : "1px solid rgba(255,255,255,0.1)",
+                            border: isSeller ? "none" : "1px solid var(--border-default)",
                             boxShadow: isSeller ? "0 2px 8px rgba(0,188,212,0.3)" : "none",
                           }}>
                             {msg.content}
                           </div>
-                          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 4, display: "flex", alignItems: "center", gap: 4, ...(isSeller ? { paddingRight: 4 } : { paddingLeft: 4 }) }}>
+                          <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, display: "flex", alignItems: "center", gap: 4, ...(isSeller ? { paddingRight: 4 } : { paddingLeft: 4 }) }}>
                             {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                             {msg.sender === "buyer" && !msg.isRead && (
                               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00bcd4", display: "inline-block" }} />
@@ -1021,14 +1080,14 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
               </div>
 
               {/* ═══ ZONE 2: AI Tools + Templates (contained, max 280px) ═══ */}
-              <div style={{ flexShrink: 0, maxHeight: 280, overflowY: "auto", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "8px 16px" }}>
+              <div style={{ flexShrink: 0, maxHeight: 180, overflowY: "auto", borderTop: "1px solid var(--border-default)", padding: "6px 12px" }}>
                 {/* Reply templates */}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>
                   {TEMPLATES.map((t) => (
                     <button
                       key={t.label}
                       onClick={() => useTemplate(t.text)}
-                      style={{ padding: "3px 10px", borderRadius: 20, fontSize: 10, fontWeight: 500, border: "1px solid rgba(255,255,255,0.1)", background: copiedTemplate === t.text.slice(0, 15) ? "rgba(0,188,212,0.15)" : "transparent", color: copiedTemplate === t.text.slice(0, 15) ? "#00bcd4" : "rgba(255,255,255,0.5)", cursor: "pointer" }}
+                      style={{ padding: "3px 10px", borderRadius: 20, fontSize: 10, fontWeight: 500, border: "1px solid var(--border-default)", background: copiedTemplate === t.text.slice(0, 15) ? "rgba(0,188,212,0.15)" : "transparent", color: copiedTemplate === t.text.slice(0, 15) ? "#00bcd4" : "var(--text-muted)", cursor: "pointer" }}
                     >
                       {copiedTemplate === t.text.slice(0, 15) ? "✓" : t.label}
                     </button>
@@ -1046,19 +1105,19 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
               </div>
 
               {/* ═══ ZONE 3: Reply Input (always visible) ═══ */}
-              <div style={{ flexShrink: 0, borderTop: "1px solid rgba(255,255,255,0.06)", padding: "10px 16px", background: "rgba(0,0,0,0.2)" }}>
+              <div style={{ flexShrink: 0, borderTop: "1px solid var(--border-default)", padding: "10px 16px", background: "var(--ghost-bg)" }}>
                 <form onSubmit={handleReply} style={{ display: "flex", gap: 8 }}>
                   <textarea
-                    style={{ flex: 1, resize: "none", padding: "10px 12px", fontSize: 14, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 10, color: "#fff", outline: "none", minHeight: 44, maxHeight: 100 }}
+                    style={{ flex: 1, resize: "none", padding: "10px 12px", fontSize: 14, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 10, color: "var(--text-primary)", outline: "none", minHeight: 44, maxHeight: 100 }}
                     rows={2}
                     value={reply}
                     onChange={(e) => setReply(e.target.value)}
                     placeholder="Type your reply..."
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleReply(e as any); } }}
                     onFocus={(e) => { e.currentTarget.style.borderColor = "#00bcd4"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-default)"; }}
                   />
-                  <button type="submit" disabled={busyReply || !reply.trim()} style={{ alignSelf: "flex-end", padding: "10px 20px", background: (!reply.trim() || busyReply) ? "rgba(0,188,212,0.3)" : "linear-gradient(135deg, #00bcd4, #0097a7)", color: "#000", fontWeight: 700, fontSize: 13, borderRadius: 10, border: "none", cursor: (!reply.trim() || busyReply) ? "not-allowed" : "pointer", minHeight: 44 }}>
+                  <button type="submit" disabled={busyReply || !reply.trim()} style={{ alignSelf: "flex-end", padding: "10px 20px", background: (!reply.trim() || busyReply) ? "rgba(0,188,212,0.3)" : "linear-gradient(135deg, #00bcd4, #0097a7)", color: "#fff", fontWeight: 700, fontSize: 13, borderRadius: 10, border: "none", cursor: (!reply.trim() || busyReply) ? "not-allowed" : "pointer", minHeight: 44 }}>
                     {busyReply ? "..." : "Send"}
                   </button>
                 </form>
@@ -1080,55 +1139,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
           )}
         </div>
 
-        {/* ─── RIGHT SIDEBAR (item info) ─────────────────────── */}
-        {selected && !composing && (
-          <div style={{ width: "220px", flexShrink: 0, display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {/* Item preview */}
-            <div className="card overflow-hidden">
-              {selected.item.photos[0] ? (
-                <img
-                  src={selected.item.photos[0].filePath}
-                  alt=""
-                  style={{ width: "100%", height: "120px", objectFit: "cover" }}
-                />
-              ) : (
-                <div style={{ width: "100%", height: "80px", background: "var(--bg-card-solid)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", color: "var(--text-muted)" }}>
-                  <svg viewBox="0 0 20 20" fill="currentColor" style={{ width: "24px", height: "24px" }}>
-                    <path fillRule="evenodd" d="M1 8a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 018.07 3h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0016.07 6H17a2 2 0 012 2v7a2 2 0 01-2 2H3a2 2 0 01-2-2V8zm13.5 3a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM10 14a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                  </svg>
-                </div>
-              )}
-              <div style={{ padding: "0.75rem" }}>
-                <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)" }}>
-                  {selected.item.title || safeJson(selected.item.aiResult?.rawJson)?.item_name || "Item"}
-                </div>
-                <a
-                  href={`/items/${selected.item.id}`}
-                  style={{ fontSize: "0.72rem", color: "var(--accent)", textDecoration: "underline", display: "block", marginTop: "0.25rem" }}
-                >
-                  View item
-                </a>
-              </div>
-            </div>
-
-            {/* Actions */}
-            {selected.botScore < 50 && (
-              <div
-                style={{
-                  padding: "0.75rem",
-                  background: "var(--error-bg)",
-                  border: "1px solid var(--error-border)",
-                  borderRadius: "0.875rem",
-                  fontSize: "0.78rem",
-                  color: "var(--error-text)",
-                  fontWeight: 600,
-                }}
-              >
-                Bot risk detected. Verify this buyer before sharing personal details.
-              </div>
-            )}
-          </div>
-        )}
+        {/* Right sidebar removed — item context now in buyer header, intelligence in InboxCommandCenter panel */}
       </div>
     </div>
   );

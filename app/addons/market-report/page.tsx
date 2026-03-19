@@ -140,7 +140,7 @@ function MarketReportInner() {
       >
         <a
           href="/marketplace"
-          style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", textDecoration: "none", marginBottom: 12, display: "inline-block" }}
+          style={{ fontSize: 12, color: "var(--text-muted)", textDecoration: "none", marginBottom: 12, display: "inline-block" }}
         >
           ← Back to Store
         </a>
@@ -183,8 +183,8 @@ function MarketReportInner() {
       {!report && !loading && (
         <div
           style={{
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-default)",
             borderRadius: 14,
             padding: 32,
             marginBottom: 28,
@@ -245,8 +245,8 @@ function MarketReportInner() {
             style={{
               padding: "0 40px",
               height: 56,
-              background: itemCount ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "rgba(255,255,255,0.1)",
-              color: itemCount ? "#000" : "rgba(255,255,255,0.3)",
+              background: itemCount ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "var(--text-muted)",
+              color: itemCount ? "#000" : "var(--text-muted)",
               fontWeight: 800,
               fontSize: 16,
               borderRadius: 12,
@@ -278,8 +278,8 @@ function MarketReportInner() {
                 <div
                   key={e.key}
                   style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: `1px solid ${status === "complete" ? "#4caf50" : status === "failed" ? "#f44336" : "rgba(255,255,255,0.08)"}`,
+                    background: "var(--ghost-bg)",
+                    border: `1px solid ${status === "complete" ? "#4caf50" : status === "failed" ? "#f44336" : "var(--border-default)"}`,
                     borderRadius: 12,
                     padding: 16,
                     textAlign: "center",
@@ -297,7 +297,7 @@ function MarketReportInner() {
               );
             })}
           </div>
-          <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+          <div style={{ height: 4, borderRadius: 2, background: "var(--ghost-bg)", overflow: "hidden" }}>
             <div
               style={{
                 width: "60%",
@@ -400,8 +400,8 @@ function MarketReportInner() {
                 <div
                   key={agent.provider}
                   style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "var(--bg-card)",
+                    border: "1px solid var(--border-default)",
                     borderRadius: 10,
                     padding: 12,
                     textAlign: "center",
@@ -425,8 +425,8 @@ function MarketReportInner() {
           {report.summaries?.length > 0 && (
             <div
               style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border-default)",
                 borderRadius: 14,
                 padding: 20,
                 marginBottom: 28,
@@ -441,8 +441,8 @@ function MarketReportInner() {
                   <div
                     key={i}
                     style={{
-                      background: "rgba(255,255,255,0.02)",
-                      border: "1px solid rgba(255,255,255,0.06)",
+                      background: "var(--bg-card)",
+                      border: "1px solid var(--border-default)",
                       borderLeft: `3px solid ${engine?.color || "#00bcd4"}`,
                       borderRadius: 8,
                       padding: 14,
@@ -474,8 +474,8 @@ function MarketReportInner() {
                   style={{
                     flex: 1,
                     padding: "10px 0",
-                    background: activeTab === tab.key ? `${tab.color}18` : "rgba(255,255,255,0.03)",
-                    border: `1px solid ${activeTab === tab.key ? `${tab.color}44` : "rgba(255,255,255,0.08)"}`,
+                    background: activeTab === tab.key ? `${tab.color}18` : "var(--text-muted)",
+                    border: `1px solid ${activeTab === tab.key ? `${tab.color}44` : "var(--text-muted)"}`,
                     borderRadius: 10,
                     color: activeTab === tab.key ? tab.color : "rgba(207,216,220,0.5)",
                     fontSize: 12,
@@ -508,8 +508,8 @@ function MarketReportInner() {
                     <div
                       key={i}
                       style={{
-                        background: "rgba(255,255,255,0.03)",
-                        border: "1px solid rgba(255,255,255,0.07)",
+                        background: "var(--bg-card)",
+                        border: "1px solid var(--border-default)",
                         borderLeft: `4px solid ${isUp ? "#4caf50" : diff < 0 ? "#f44336" : "#ff9800"}`,
                         borderRadius: 10,
                         padding: "14px 18px",
@@ -528,7 +528,7 @@ function MarketReportInner() {
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <div style={{ textAlign: "center" }}>
                           <div style={{ fontSize: 10, color: "rgba(207,216,220,0.4)" }}>Current</div>
-                          <div style={{ fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.5)" }}>${adj.current || 0}</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-muted)" }}>${adj.current || 0}</div>
                         </div>
                         <div style={{ fontSize: 16, color: isUp ? "#4caf50" : "#f44336" }}>{isUp ? "→" : "→"}</div>
                         <div style={{ textAlign: "center" }}>
@@ -786,8 +786,8 @@ function MarketReportInner() {
               </div>
               <div
                 style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-default)",
                   borderRadius: 14,
                   padding: 20,
                 }}
@@ -802,7 +802,7 @@ function MarketReportInner() {
                         gap: 14,
                         alignItems: "flex-start",
                         padding: "14px 0",
-                        borderBottom: i < (report.recommendations || []).length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                        borderBottom: i < (report.recommendations || []).length - 1 ? "1px solid var(--border-default)" : "none",
                       }}
                     >
                       <div
@@ -904,7 +904,7 @@ function MarketReportInner() {
                   flex: 1,
                   height: 44,
                   background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.15)",
+                  border: "1px solid var(--border-default)",
                   color: copiedId === "__summary__" ? "#4caf50" : "rgba(207,216,220,0.6)",
                   fontWeight: 700,
                   fontSize: 13,

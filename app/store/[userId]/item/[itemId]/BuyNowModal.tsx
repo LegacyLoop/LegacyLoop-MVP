@@ -115,7 +115,7 @@ export default function BuyNowModal({ itemId, itemTitle, price, shippingEstimate
 
           {/* Price breakdown */}
           <div style={{
-            background: "rgba(255,255,255,0.03)",
+            background: "var(--bg-card)",
             border: "1px solid var(--border-default)",
             borderRadius: "0.75rem",
             padding: "1rem",

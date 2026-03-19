@@ -27,7 +27,7 @@ export default function NegotiationCoach({ conversationId, hasOffer, askingPrice
   };
 
   return (
-    <div style={{ padding: 16, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+    <div style={{ padding: 16, borderBottom: "1px solid var(--border-default)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(0,188,212,0.6)", letterSpacing: 2 }}>⚡ NEGOTIATION COACH</div>
         {round && <span style={{ fontSize: 9, padding: "2px 8px", borderRadius: 20, background: "rgba(0,188,212,0.15)", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4" }}>Round {round}</span>}
@@ -35,15 +35,15 @@ export default function NegotiationCoach({ conversationId, hasOffer, askingPrice
 
       {/* Price visualization */}
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={{ textAlign: "center" as const }}><div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>Asking</div><div style={{ fontSize: 14, fontWeight: 700, color: "#00bcd4" }}>${askingPrice || "—"}</div></div>
-        <div style={{ width: 1, background: "rgba(255,255,255,0.1)", margin: "0 8px" }} />
-        <div style={{ textAlign: "center" as const }}><div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>Current</div><div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>${currentOffer || "—"}</div></div>
-        <div style={{ width: 1, background: "rgba(255,255,255,0.1)", margin: "0 8px" }} />
-        <div style={{ textAlign: "center" as const }}><div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>Floor</div><div style={{ fontSize: 14, fontWeight: 700, color: "#f59e0b" }}>Private</div></div>
+        <div style={{ textAlign: "center" as const }}><div style={{ fontSize: 9, color: "var(--text-muted)" }}>Asking</div><div style={{ fontSize: 14, fontWeight: 700, color: "#00bcd4" }}>${askingPrice || "—"}</div></div>
+        <div style={{ width: 1, background: "var(--bg-card-hover)", margin: "0 8px" }} />
+        <div style={{ textAlign: "center" as const }}><div style={{ fontSize: 9, color: "var(--text-muted)" }}>Current</div><div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>${currentOffer || "—"}</div></div>
+        <div style={{ width: 1, background: "var(--bg-card-hover)", margin: "0 8px" }} />
+        <div style={{ textAlign: "center" as const }}><div style={{ fontSize: 9, color: "var(--text-muted)" }}>Floor</div><div style={{ fontSize: 14, fontWeight: 700, color: "#f59e0b" }}>Private</div></div>
       </div>
 
       {loading ? (
-        <div style={{ height: 40, background: "rgba(255,255,255,0.04)", borderRadius: 8 }} />
+        <div style={{ height: 40, background: "var(--ghost-bg)", borderRadius: 8 }} />
       ) : neg ? (
         <>
           {/* Recommendation */}
@@ -51,14 +51,14 @@ export default function NegotiationCoach({ conversationId, hasOffer, askingPrice
             <div style={{ marginBottom: 10 }}>
               <span style={{ display: "inline-block", fontSize: 11, fontWeight: 700, padding: "6px 14px", borderRadius: 20, background: rs.bg, border: `1px solid ${rs.border}`, color: rs.color }}>{rs.icon} {neg.recommendation?.toUpperCase()}</span>
               {neg.counterPrice && <div style={{ fontSize: 20, fontWeight: 700, color: "#00bcd4", marginTop: 8 }}>Counter at ${neg.counterPrice}</div>}
-              <div style={{ fontSize: 11, fontStyle: "italic" as const, color: "rgba(207,216,220,0.6)", lineHeight: 1.5, marginTop: 4 }}>{neg.reasoning}</div>
+              <div style={{ fontSize: 11, fontStyle: "italic" as const, color: "var(--text-muted)", lineHeight: 1.5, marginTop: 4 }}>{neg.reasoning}</div>
             </div>
           ); })()}
 
           {/* Suggested message */}
           {neg.suggestedMessage && (
-            <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderLeft: "3px solid #00bcd4", borderRadius: 8, padding: "10px 12px", marginBottom: 10 }}>
-              <div style={{ fontSize: 11, color: "#fff", lineHeight: 1.6, fontStyle: "italic" as const }}>{neg.suggestedMessage}</div>
+            <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderLeft: "3px solid #00bcd4", borderRadius: 8, padding: "10px 12px", marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: "var(--text-primary)", lineHeight: 1.6, fontStyle: "italic" as const }}>{neg.suggestedMessage}</div>
             </div>
           )}
           <button onClick={() => { if (neg.suggestedMessage) { window.dispatchEvent(new CustomEvent("agent-fill-message", { detail: { message: neg.suggestedMessage } })); } }} style={{ width: "100%", height: 44, background: "linear-gradient(135deg, #00bcd4, #0097a7)", border: "none", color: "#000", fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: "pointer", boxShadow: "0 4px 12px rgba(0,188,212,0.3)" }}>

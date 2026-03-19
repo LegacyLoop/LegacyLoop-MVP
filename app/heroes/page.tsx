@@ -141,7 +141,7 @@ export default function HeroesPage() {
         <h1 style={{ fontSize: "2.5rem", fontWeight: 900, lineHeight: 1.2, marginBottom: "1rem" }}>
           Honoring Those Who Serve
         </h1>
-        <p style={{ color: "rgba(255,255,255,0.75)", maxWidth: "620px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
+        <p style={{ color: "var(--text-primary)", maxWidth: "620px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
           Military veterans, law enforcement, firefighters, and EMS personnel dedicate their lives to service.
           LegacyLoop honors that commitment with exclusive pricing, dedicated support, and a platform
           that preserves your legacy the way it deserves.
@@ -171,14 +171,14 @@ export default function HeroesPage() {
               display: "inline-flex",
               alignItems: "center",
               gap: "0.5rem",
-              background: "rgba(255,255,255,0.1)",
+              background: "var(--bg-card-hover)",
               color: "#fff",
               padding: "0.85rem 2rem",
               borderRadius: "9999px",
               fontWeight: 700,
               textDecoration: "none",
               fontSize: "0.95rem",
-              border: "1px solid rgba(255,255,255,0.2)",
+              border: "1px solid var(--border-default)",
             }}
           >
             View All Plans
@@ -186,7 +186,7 @@ export default function HeroesPage() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: "flex", gap: "2.5rem", marginTop: "2.5rem", paddingTop: "2rem", borderTop: "1px solid rgba(255,255,255,0.15)", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "2.5rem", marginTop: "2.5rem", paddingTop: "2rem", borderTop: "1px solid var(--border-default)", flexWrap: "wrap" }}>
           {[
             { value: "25%", label: "Off all subscription tiers" },
             { value: "3", label: "Hero categories honored" },
@@ -195,7 +195,7 @@ export default function HeroesPage() {
           ].map((s) => (
             <div key={s.label}>
               <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "#fbbf24" }}>{s.value}</div>
-              <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.6)", marginTop: "0.1rem" }}>{s.label}</div>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "0.1rem" }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -217,7 +217,7 @@ export default function HeroesPage() {
                   </li>
                 ))}
               </ul>
-              <div style={{ padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.7)", border: `1px solid ${g.border}`, borderRadius: "0.6rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
+              <div style={{ padding: "0.5rem 0.75rem", background: "var(--text-secondary)", border: `1px solid ${g.border}`, borderRadius: "0.6rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
                 <span style={{ fontWeight: 700 }}>Verification:</span> {g.verify}
               </div>
             </div>

@@ -259,7 +259,7 @@ export default async function DashboardPage() {
     actionItems.push({
       label: `${draftItems} draft${draftItems !== 1 ? "s" : ""} to finish`,
       count: draftItems, href: "/dashboard",
-      color: "var(--text-muted)", bgColor: "rgba(255,255,255,0.03)", borderColor: "var(--border-default)",
+      color: "var(--text-muted)", bgColor: "var(--bg-card)", borderColor: "var(--border-default)",
     });
   }
 

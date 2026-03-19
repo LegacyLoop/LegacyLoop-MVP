@@ -5,8 +5,10 @@ import { pricingAdapter } from "@/lib/adapters/pricing";
 import { detectAntiqueFromAi } from "@/lib/antique-detect";
 import { calculatePricing } from "@/lib/pricing/calculate";
 import { blurPlatesForItem } from "@/lib/blur-plate";
-import { populateFromAnalysis } from "@/lib/data/populate-intelligence";
+import { populateFromAnalysis, populateFromRainforest } from "@/lib/data/populate-intelligence";
 import { logUserEvent } from "@/lib/data/user-events";
+import { searchAmazon, buildSearchTerm } from "@/lib/adapters/rainforest";
+import type { RainforestEnrichmentData } from "@/lib/adapters/rainforest";
 import { isDemoMode, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { checkCredits, deductCredits, isFreeAnalysisAvailable } from "@/lib/credits";
 
@@ -97,7 +99,72 @@ export async function POST(
   const photoPaths = item.photos.map((p) => p.filePath);
 
   // Build structured seller data block
-  const sellerContext = buildSellerContext(item);
+  let sellerContext = buildSellerContext(item);
+
+  // ── Pre-fetch Amazon market data (feeds AI analysis + all downstream bots) ──
+  let amazonData: RainforestEnrichmentData | null = null;
+  try {
+    // Check if this item already has stored Amazon data from a previous analysis
+    const existingAmazon = await prisma.eventLog.findFirst({
+      where: { itemId: item.id, eventType: "RAINFOREST_RESULT" },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (existingAmazon?.payload) {
+      // Re-run or downstream: use stored data — no API call
+      amazonData = JSON.parse(existingAmazon.payload) as RainforestEnrichmentData;
+      console.log(`[analyze] Using stored Amazon data (${amazonData.resultCount} results, from ${new Date(existingAmazon.createdAt).toLocaleDateString()})`);
+    } else {
+      // First analysis: fresh Amazon pull
+      const searchTerm = buildSearchTerm(item.title || "item");
+      amazonData = await searchAmazon(searchTerm).catch(() => null);
+
+      if (amazonData) {
+        await prisma.eventLog.create({
+          data: {
+            itemId: item.id,
+            eventType: "RAINFOREST_RESULT",
+            payload: JSON.stringify(amazonData),
+          },
+        });
+        console.log(`[analyze] Amazon data fetched and stored: ${amazonData.resultCount} results, ${amazonData.priceRange.low}-${amazonData.priceRange.high}`);
+        populateFromRainforest(item.id, amazonData as unknown as Record<string, unknown>).catch(() => null);
+      } else {
+        console.log("[analyze] No Amazon data found — proceeding without");
+      }
+    }
+
+    // Append Amazon context to seller data block for the AI prompt
+    if (amazonData && amazonData.resultCount > 0) {
+      const amazonLines: string[] = [
+        "",
+        "AMAZON MARKET CONTEXT (real-time product data — use for pricing accuracy):",
+        `- Amazon search term: "${amazonData.searchTerm}"`,
+        `- ${amazonData.resultCount} matching Amazon listings found`,
+        `- Amazon price range: ${amazonData.priceRange.low} – ${amazonData.priceRange.high} (avg: ${amazonData.priceRange.avg}, median: ${amazonData.priceRange.median})`,
+      ];
+      const topProducts = amazonData.results.slice(0, 3);
+      if (topProducts.length > 0) {
+        amazonLines.push("- Top Amazon matches:");
+        topProducts.forEach((p, i) => {
+          const parts = [`  ${i + 1}. "${p.title}"`];
+          if (p.price) parts.push(`${p.price}`);
+          if (p.rating) parts.push(`${p.rating}★`);
+          if (p.ratingsTotal) parts.push(`(${p.ratingsTotal} reviews)`);
+          if (p.condition !== "New") parts.push(`[${p.condition}]`);
+          amazonLines.push(parts.join(" — "));
+        });
+      }
+      amazonLines.push(
+        "- NOTE: These are NEW retail prices on Amazon. The item being analyzed is USED/SECONDHAND.",
+        "  Adjust pricing accordingly — used items typically sell for 30-70% of Amazon retail",
+        "  depending on condition, age, and demand. Use Amazon prices as a CEILING, not as the estimate."
+      );
+      sellerContext = (sellerContext || "") + "\n" + amazonLines.join("\n");
+    }
+  } catch (amazonErr: any) {
+    console.error("[analyze] Amazon pre-fetch failed (non-fatal):", amazonErr?.message);
+  }
 
   // 1) Vision analysis
   let analysis;
@@ -149,6 +216,7 @@ export async function POST(
       saleMethod: item.saleMethod,
       saleZip: item.saleZip,
       saleRadiusMi: item.saleRadiusMi,
+      amazonData: amazonData ?? undefined,
     });
   } catch (legacyErr: any) {
     console.error("Legacy pricing fallback error (non-fatal):", legacyErr);
@@ -346,6 +414,9 @@ export async function POST(
           adjustments: pricingResult.adjustments.length,
           sellerNetLocal: pricingResult.sellerNet.local,
           sellerNetBestMarket: pricingResult.sellerNet.bestMarket,
+          amazonEnriched: !!amazonData,
+          amazonResultCount: amazonData?.resultCount ?? 0,
+          amazonPriceRange: amazonData?.priceRange ?? null,
         }),
       },
     });

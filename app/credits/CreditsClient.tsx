@@ -299,7 +299,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
 
           {/* ── Custom Credit Purchase ── */}
           <div style={{
-            background: "rgba(255,255,255,0.03)",
+            background: "var(--bg-card)",
             border: "1px solid rgba(0,188,212,0.15)",
             borderRadius: "1.25rem",
             padding: "1.5rem",
@@ -349,8 +349,8 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                     style={{
                       width: "100%",
                       padding: "0.75rem 0.75rem 0.75rem 2rem",
-                      background: "rgba(255,255,255,0.04)",
-                      border: `1.5px solid ${isValidAmount ? "rgba(0,188,212,0.5)" : customAmount && !isValidAmount ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.1)"}`,
+                      background: "var(--ghost-bg)",
+                      border: `1.5px solid ${isValidAmount ? "rgba(0,188,212,0.5)" : customAmount && !isValidAmount ? "rgba(239,68,68,0.4)" : "var(--border-default)"}`,
                       borderRadius: "0.75rem",
                       color: "var(--text-primary)",
                       fontSize: "1.1rem",
@@ -444,7 +444,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                     flex: isBulk ? 2 : 1,
                     background: isActive
                       ? (isBulk ? "rgba(255,215,0,0.2)" : "rgba(0,188,212,0.15)")
-                      : "rgba(255,255,255,0.03)",
+                      : "var(--text-muted)",
                     borderTop: isActive ? `2px solid ${isBulk ? "#ffd700" : "#00bcd4"}` : "2px solid transparent",
                     padding: "0.5rem 0.35rem",
                     textAlign: "center",
@@ -495,7 +495,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                     display: "flex",
                     alignItems: "center",
                     gap: "0.75rem",
-                    background: "rgba(255,255,255,0.04)",
+                    background: "var(--ghost-bg)",
                     border: "1px solid rgba(34,197,94,0.15)",
                     borderRadius: "0.75rem",
                     padding: "0.75rem 1rem",
@@ -549,7 +549,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
             <div style={{ fontSize: 12, color: "rgba(207,216,220,0.6)", marginTop: 6, lineHeight: 1.5 }}>Premium AI tools powered by 4 engines working in parallel. MegaBot-level power on every add-on.</div>
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               {["16 Add-Ons", "4 AI Engines", "All Parallel"].map((s, i) => (
-                <span key={i} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, padding: "4px 12px", fontSize: 10, color: "rgba(207,216,220,0.6)" }}>{s}</span>
+                <span key={i} style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: 20, padding: "4px 12px", fontSize: 10, color: "rgba(207,216,220,0.6)" }}>{s}</span>
               ))}
             </div>
           </div>
@@ -557,7 +557,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
           {/* Loading */}
           {addonsLoading ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-              {[1,2,3].map(i => <div key={i} style={{ height: 180, background: "rgba(255,255,255,0.04)", borderRadius: 14 }} />)}
+              {[1,2,3].map(i => <div key={i} style={{ height: 180, background: "var(--ghost-bg)", borderRadius: 14 }} />)}
             </div>
           ) : (
             <>
@@ -577,7 +577,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                       const owned = purchasedIds.includes(addon.id);
                       const buying = purchasingId === addon.id;
                       return (
-                        <div key={addon.id} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: "18px 20px", transition: "all 0.2s" }}>
+                        <div key={addon.id} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 14, padding: "18px 20px", transition: "all 0.2s" }}>
                           <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{addon.name}</div>
                           <div style={{ fontSize: 11, color: "rgba(207,216,220,0.7)", lineHeight: 1.6, marginBottom: 12 }}>{addon.description}</div>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -627,10 +627,10 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 20 }}>✓</span>
                 <span>{purchaseSuccess.name} activated!</span>
-                <button onClick={() => setPurchaseSuccess(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", fontSize: 16, padding: 0 }}>×</button>
+                <button onClick={() => setPurchaseSuccess(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer", fontSize: 16, padding: 0 }}>×</button>
               </div>
               {ADDON_TOOL_ROUTES[purchaseSuccess.id] && (
-                <a href={ADDON_TOOL_ROUTES[purchaseSuccess.id]} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", fontWeight: 700, fontSize: 12, padding: "8px 16px", borderRadius: 8, textDecoration: "none", justifyContent: "center" }}>Launch Tool Now →</a>
+                <a href={ADDON_TOOL_ROUTES[purchaseSuccess.id]} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--bg-card-hover)", border: "1px solid var(--border-default)", color: "#fff", fontWeight: 700, fontSize: 12, padding: "8px 16px", borderRadius: 8, textDecoration: "none", justifyContent: "center" }}>Launch Tool Now →</a>
               )}
             </div>
           )}
@@ -669,7 +669,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
             }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr style={{ background: "rgba(255,255,255,0.03)", borderBottom: "1px solid var(--border-default)" }}>
+                  <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border-default)" }}>
                     {["", "Description", "Credits", "Balance", "Date"].map((h) => (
                       <th key={h} style={{
                         padding: "0.75rem 1rem", textAlign: "left", fontSize: "0.72rem",

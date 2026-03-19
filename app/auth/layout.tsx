@@ -80,8 +80,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           zIndex: 1,
           width: "100%",
           maxWidth: 440,
-          background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--bg-card)",
+          border: "1px solid var(--border-default)",
           borderRadius: 20,
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
@@ -98,7 +98,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           zIndex: 1,
           marginTop: "1.5rem",
           fontSize: "0.75rem",
-          color: "rgba(255,255,255,0.22)",
+          color: "var(--text-muted)",
           textAlign: "center",
           letterSpacing: "0.04em",
         }}
@@ -121,7 +121,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           href="/terms"
           style={{
             fontSize: "0.68rem",
-            color: "rgba(255,255,255,0.18)",
+            color: "var(--text-muted)",
             textDecoration: "none",
           }}
         >
@@ -131,7 +131,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           href="/privacy"
           style={{
             fontSize: "0.68rem",
-            color: "rgba(255,255,255,0.18)",
+            color: "var(--text-muted)",
             textDecoration: "none",
           }}
         >

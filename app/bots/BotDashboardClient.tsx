@@ -226,12 +226,12 @@ function ToggleSwitch({
           borderRadius: 13,
           background: active
             ? "var(--accent, #00bcd4)"
-            : "rgba(255,255,255,0.15)",
+            : "var(--bg-card-hover)",
           transition: "background 0.25s ease",
           flexShrink: 0,
           border: active
             ? "1px solid var(--accent, #00bcd4)"
-            : "1px solid var(--border-default, rgba(255,255,255,0.12))",
+            : "1px solid var(--border-default)",
         }}
       >
         {/* Knob */}
@@ -424,8 +424,8 @@ export default function BotDashboardClient({ bots, leads, user }: Props) {
             <div
               key={bot.key}
               style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid var(--border-default, rgba(255,255,255,0.12))",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border-default)",
                 borderRadius: "1rem",
                 padding: "1.75rem",
                 display: "flex",
@@ -462,7 +462,7 @@ export default function BotDashboardClient({ bots, leads, user }: Props) {
                     borderRadius: "0.75rem",
                     background: isActive
                       ? "var(--accent-dim, rgba(0,188,212,0.12))"
-                      : "rgba(255,255,255,0.05)",
+                      : "var(--ghost-bg)",
                     transition: "background 0.25s ease",
                   }}
                 >
@@ -517,8 +517,8 @@ export default function BotDashboardClient({ bots, leads, user }: Props) {
                     key={stat.label}
                     style={{
                       flex: 1,
-                      background: "rgba(255,255,255,0.04)",
-                      border: "1px solid var(--border-default, rgba(255,255,255,0.12))",
+                      background: "var(--ghost-bg)",
+                      border: "1px solid var(--border-default)",
                       borderRadius: "0.625rem",
                       padding: "0.625rem 0.75rem",
                       textAlign: "center",
@@ -613,10 +613,10 @@ export default function BotDashboardClient({ bots, leads, user }: Props) {
                       lineHeight: 1.55,
                       margin: 0,
                       padding: "0.75rem",
-                      background: "rgba(255,255,255,0.03)",
+                      background: "var(--bg-card)",
                       borderRadius: "0.5rem",
                       border:
-                        "1px solid var(--border-default, rgba(255,255,255,0.12))",
+                        "1px solid var(--border-default)",
                     }}
                   >
                     {bot.learnMore}
@@ -640,11 +640,11 @@ export default function BotDashboardClient({ bots, leads, user }: Props) {
                   transition: "all 0.2s ease",
                   background: isActive
                     ? "var(--accent, #00bcd4)"
-                    : "rgba(255,255,255,0.06)",
+                    : "var(--ghost-bg)",
                   color: isActive ? "#fff" : "var(--text-muted, #94a3b8)",
                   border: isActive
                     ? "1px solid var(--accent, #00bcd4)"
-                    : "1px solid var(--border-default, rgba(255,255,255,0.12))",
+                    : "1px solid var(--border-default)",
                 }}
               >
                 {bot.viewResultsLabel}

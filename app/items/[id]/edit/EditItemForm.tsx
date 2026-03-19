@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import UploadModal, { type PhotoFile } from "@/app/components/UploadModal";
 
 type SaleMethod = "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH";
 
@@ -13,7 +14,7 @@ type Initial = {
   description: string;
   condition: string;
   purchasePrice: number | null;
-  purchaseDate: string; // YYYY-MM-DD or ""
+  purchaseDate: string;
   saleMethod: SaleMethod;
   saleZip: string;
   saleRadiusMi: number;
@@ -23,9 +24,32 @@ type Initial = {
   shippingHeight: number | null;
   isFragile: boolean;
   shippingPreference: string;
+  category: string;
+  brand: string;
+  maker: string;
+  era: string;
+  material: string;
+  itemStyle: string;
+  countryOfOrigin: string;
+  story: string;
+  numberOfOwners: string;
+  approximateAge: string;
+  worksProperly: string;
+  knownDamage: string;
+  hasOriginalPackaging: string;
+  listingPrice: number | null;
 };
 
 const MAX_PHOTOS = 10;
+
+const CATEGORIES = [
+  "Furniture", "Antiques", "Electronics", "Clothing & Accessories",
+  "Art & Collectibles", "Kitchen & Dining", "Tools & Hardware",
+  "Books & Media", "Jewelry & Watches", "Toys & Games",
+  "Sports & Outdoors", "Home Decor", "Vehicles & Parts",
+  "Musical Instruments", "Coins & Currency", "Pottery & Glass",
+  "Textiles & Linens", "Militaria", "Other",
+];
 
 export default function EditItemForm({ initial, initialPhotos = [] }: { initial: Initial; initialPhotos?: PhotoData[] }) {
   const router = useRouter();
@@ -36,7 +60,7 @@ export default function EditItemForm({ initial, initialPhotos = [] }: { initial:
   const [photos, setPhotos] = useState<PhotoData[]>(initialPhotos);
   const [uploading, setUploading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const addPhotoInputRef = useRef<HTMLInputElement>(null);
+  const [newPhotos, setNewPhotos] = useState<PhotoFile[]>([]);
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -93,33 +117,7 @@ export default function EditItemForm({ initial, initialPhotos = [] }: { initial:
     } catch { /* ignore */ }
   };
 
-  const handleAddPhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    const remaining = MAX_PHOTOS - photos.length;
-    if (remaining <= 0) return;
-
-    setUploading(true);
-    const formData = new FormData();
-    const toUpload = Array.from(files).slice(0, remaining);
-    toUpload.forEach((f) => formData.append("photos[]", f));
-
-    try {
-      const res = await fetch(`/api/items/photos/${initial.id}`, {
-        method: "POST",
-        body: formData,
-      });
-      if (res.ok) {
-        window.location.reload();
-      } else {
-        setError("Failed to upload photos. Please try again.");
-      }
-    } catch {
-      setError("Failed to upload photos. Please try again.");
-    }
-    setUploading(false);
-    e.target.value = "";
-  };
+  // New photos are managed by UploadModal and uploaded on save
 
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -165,6 +163,25 @@ export default function EditItemForm({ initial, initialPhotos = [] }: { initial:
       shippingHeight: (() => { const r = String(form.get("shippingHeight") || "").trim(); return r ? Number(r) : null; })(),
       isFragile: form.get("isFragile") === "on",
       shippingPreference: String(form.get("shippingPreference") || "BUYER_PAYS"),
+      category: String(form.get("category") || "").trim() || null,
+      brand: String(form.get("brand") || "").trim() || null,
+      maker: String(form.get("maker") || "").trim() || null,
+      era: String(form.get("era") || "").trim() || null,
+      material: String(form.get("material") || "").trim() || null,
+      itemStyle: String(form.get("itemStyle") || "").trim() || null,
+      countryOfOrigin: String(form.get("countryOfOrigin") || "").trim() || null,
+      story: String(form.get("story") || "").trim() || null,
+      numberOfOwners: String(form.get("numberOfOwners") || "").trim() || null,
+      approximateAge: String(form.get("approximateAge") || "").trim() || null,
+      worksProperly: String(form.get("worksProperly") || "").trim() || null,
+      knownDamage: String(form.get("knownDamage") || "").trim() || null,
+      hasOriginalPackaging: String(form.get("hasOriginalPackaging") || "").trim() || null,
+      listingPrice: (() => {
+        const raw = String(form.get("listingPrice") || "").trim();
+        if (!raw) return null;
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : null;
+      })(),
     };
 
     const res = await fetch(`/api/items/update/${initial.id}`, {
@@ -177,6 +194,31 @@ export default function EditItemForm({ initial, initialPhotos = [] }: { initial:
       setBusy("idle");
       setError(await res.text());
       return;
+    }
+
+    // Upload any new photos added via UploadModal — MUST complete before re-analysis
+    if (newPhotos.length > 0) {
+      const photoFormData = new FormData();
+      for (const p of newPhotos) {
+        photoFormData.append("photos[]", p.file);
+      }
+      try {
+        const photoRes = await fetch(`/api/items/photos/${initial.id}`, {
+          method: "POST",
+          body: photoFormData,
+        });
+        if (!photoRes.ok) {
+          setBusy("idle");
+          setError("New photos failed to upload. Please try again before re-running analysis.");
+          return;
+        }
+        setNewPhotos([]);
+        console.log(`[Edit] ${newPhotos.length} new photos uploaded successfully`);
+      } catch {
+        setBusy("idle");
+        setError("Photo upload failed. Please check your connection and try again.");
+        return;
+      }
     }
 
     if (rerun) {
@@ -202,14 +244,14 @@ export default function EditItemForm({ initial, initialPhotos = [] }: { initial:
         </div>
 
         {photos.length === 0 ? (
-          <div style={{ padding: "2rem", textAlign: "center", borderRadius: "0.75rem", border: "1px dashed var(--border-default)", background: "rgba(255,255,255,0.02)" }}>
+          <div style={{ padding: "2rem", textAlign: "center", borderRadius: "0.75rem", border: "1px dashed var(--border-default)", background: "var(--bg-card)" }}>
             <div style={{ fontSize: "2rem", marginBottom: "0.5rem", opacity: 0.4 }}>📷</div>
             <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>No photos yet — add photos to get started</div>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "0.75rem" }}>
             {photos.map((p, i) => (
-              <div key={p.id} style={{ position: "relative", borderRadius: "0.6rem", overflow: "hidden", border: p.isPrimary ? "2px solid var(--accent)" : "1px solid var(--border-default)", background: "rgba(255,255,255,0.03)", cursor: "pointer" }} onClick={() => openLightbox(i)}>
+              <div key={p.id} style={{ position: "relative", borderRadius: "0.6rem", overflow: "hidden", border: p.isPrimary ? "2px solid var(--accent)" : "1px solid var(--border-default)", background: "var(--bg-card)", cursor: "pointer" }} onClick={() => openLightbox(i)}>
                 <img src={p.filePath} alt="" style={{ width: "100%", height: 120, objectFit: "cover", display: "block" }} />
                 {/* Order number */}
                 <span style={{ position: "absolute", bottom: "0.3rem", left: "0.3rem", fontSize: "0.6rem", fontWeight: 700, background: "rgba(0,0,0,0.6)", color: "#fff", padding: "0.1rem 0.35rem", borderRadius: "9999px" }}>
@@ -258,112 +300,200 @@ export default function EditItemForm({ initial, initialPhotos = [] }: { initial:
           )}
         </div>
 
-        {/* Add new photos */}
+        {/* Add new photos via UploadModal */}
         {photos.length < MAX_PHOTOS && (
-          <div style={{ marginTop: "0.75rem" }}>
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/heic"
-              multiple
-              style={{ display: "none" }}
-              ref={addPhotoInputRef}
-              onChange={handleAddPhotos}
+          <div style={{ marginTop: "1rem" }}>
+            <div style={{
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.1em",
+              color: "rgba(0,188,212,0.7)",
+              marginBottom: "0.5rem",
+            }}>
+              Add New Photos
+            </div>
+            <UploadModal
+              photos={newPhotos}
+              setPhotos={setNewPhotos}
+              maxPhotos={MAX_PHOTOS - photos.length}
             />
-            <button
-              type="button"
-              onClick={() => addPhotoInputRef.current?.click()}
-              disabled={uploading}
-              style={{
-                background: "rgba(0,188,212,0.1)",
-                border: "1px solid rgba(0,188,212,0.3)",
-                borderRadius: "10px",
-                padding: "12px 20px",
-                color: "#00bcd4",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: uploading ? "not-allowed" : "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                opacity: uploading ? 0.6 : 1,
-                transition: "all 0.2s ease",
-              }}
-            >
-              {uploading ? "Uploading…" : "📷 Add Photos"}
-            </button>
+            {newPhotos.length > 0 && (
+              <div style={{
+                marginTop: "0.5rem",
+                fontSize: "0.78rem",
+                color: "rgba(0,188,212,0.7)",
+                fontStyle: "italic",
+              }}>
+                {newPhotos.length} new photo{newPhotos.length > 1 ? "s" : ""} will be uploaded when you save
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      <form ref={formRef} className="space-y-6" onSubmit={(e) => onSubmit(e, false)}>
+      <form ref={formRef} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }} onSubmit={(e) => onSubmit(e, false)}>
+
+        {/* ── 📋 ITEM DETAILS ── */}
         <div>
-          <label className="label">Item name (optional)</label>
-          <input name="title" className="input" defaultValue={initial.title} />
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            📋 Item Details
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            <div>
+              <label className="label">Item name</label>
+              <input name="title" className="input" defaultValue={initial.title} placeholder="e.g., Antique Oak Rocking Chair" />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <div>
+                <label className="label">Category</label>
+                <select name="category" className="input" defaultValue={initial.category}>
+                  <option value="">Select category…</option>
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="label">Condition</label>
+                <select name="condition" className="input" defaultValue={initial.condition}>
+                  <option value="">Select…</option>
+                  {["New","Like New","Excellent","Very Good","Good","Fair","Below Average","Poor","For Parts"].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem" }}>
+              <div>
+                <label className="label">Brand / Maker</label>
+                <input name="brand" className="input" defaultValue={initial.brand} placeholder="e.g., Ethan Allen" />
+              </div>
+              <div>
+                <label className="label">Model / Series</label>
+                <input name="maker" className="input" defaultValue={initial.maker} placeholder="e.g., Country Craftsman" />
+              </div>
+              <div>
+                <label className="label">Year / Era</label>
+                <input name="era" className="input" defaultValue={initial.era} placeholder="e.g., 1920s" />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem" }}>
+              <div>
+                <label className="label">Material</label>
+                <input name="material" className="input" defaultValue={initial.material} placeholder="e.g., Oak, Brass" />
+              </div>
+              <div>
+                <label className="label">Style</label>
+                <input name="itemStyle" className="input" defaultValue={initial.itemStyle} placeholder="e.g., Victorian" />
+              </div>
+              <div>
+                <label className="label">Country of Origin</label>
+                <input name="countryOfOrigin" className="input" defaultValue={initial.countryOfOrigin} placeholder="e.g., USA" />
+              </div>
+            </div>
+          </div>
         </div>
 
+        {/* ── 📝 DESCRIPTION & STORY ── */}
         <div>
-          <label className="label">Condition (optional)</label>
-          <select name="condition" className="input" defaultValue={initial.condition}>
-            <option value="">Select…</option>
-            <option value="New">New</option>
-            <option value="Like New">Like New</option>
-            <option value="Good">Good</option>
-            <option value="Fair">Fair</option>
-            <option value="For Parts">For Parts</option>
-          </select>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="label">Selling method</label>
-            <select name="saleMethod" className="input" defaultValue={initial.saleMethod}>
-              <option value="BOTH">Local + Online</option>
-              <option value="LOCAL_PICKUP">Local pickup only</option>
-              <option value="ONLINE_SHIPPING">Online shipping only</option>
-            </select>
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            📝 Description & Story
           </div>
-
-          <div>
-            <label className="label">ZIP (optional)</label>
-            <input name="saleZip" className="input" defaultValue={initial.saleZip} placeholder="04901" />
-          </div>
-
-          <div>
-            <label className="label">Search radius (miles)</label>
-            <input
-              name="saleRadiusMi"
-              type="number"
-              className="input"
-              defaultValue={initial.saleRadiusMi}
-              min={1}
-              max={5000}
-            />
-            <div className="muted text-sm mt-1">Use 1000+ for nationwide.</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            <div>
+              <label className="label">Description / Notes</label>
+              <textarea name="description" className="textarea" rows={4} defaultValue={initial.description} placeholder="Any details that help pricing and accuracy…" />
+            </div>
+            <div>
+              <label className="label">Provenance / Story (optional)</label>
+              <textarea name="story" className="textarea" rows={3} defaultValue={initial.story} placeholder="Where did this item come from? Any history, family story, or context…" />
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="label">Purchase price (optional)</label>
-            <input
-              name="purchasePrice"
-              type="number"
-              step="0.01"
-              className="input"
-              defaultValue={initial.purchasePrice ?? ""}
-              placeholder="100.00"
-            />
-          </div>
-          <div>
-            <label className="label">Purchase date (optional)</label>
-            <input name="purchaseDate" type="date" className="input" defaultValue={initial.purchaseDate} />
-          </div>
-        </div>
-
-        {/* Shipping Details */}
+        {/* ── ⚙️ CONDITION & HISTORY ── */}
         <div>
-          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
-            Shipping Details
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            ⚙️ Condition & History
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <div>
+                <label className="label">Number of owners</label>
+                <select name="numberOfOwners" className="input" defaultValue={initial.numberOfOwners}>
+                  <option value="">Unknown</option>
+                  <option value="1">1 (original owner)</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4+">4+</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Approximate age</label>
+                <input name="approximateAge" className="input" defaultValue={initial.approximateAge} placeholder="e.g., 50+ years" />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <div>
+                <label className="label">Works properly?</label>
+                <select name="worksProperly" className="input" defaultValue={initial.worksProperly}>
+                  <option value="">Not sure</option>
+                  <option value="Yes">Yes — fully functional</option>
+                  <option value="No">No — needs repair</option>
+                  <option value="N/A">N/A — decorative only</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Original packaging?</label>
+                <select name="hasOriginalPackaging" className="input" defaultValue={initial.hasOriginalPackaging}>
+                  <option value="">Unknown</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                  <option value="Partial">Partial</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="label">Known damage or repairs</label>
+              <textarea name="knownDamage" className="textarea" rows={2} defaultValue={initial.knownDamage} placeholder="Describe any damage, repairs, or missing parts…" />
+            </div>
+          </div>
+        </div>
+
+        {/* ── 🏷️ LISTING & SALE ── */}
+        <div>
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            🏷️ Listing & Sale
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <div>
+                <label className="label">Selling method</label>
+                <select name="saleMethod" className="input" defaultValue={initial.saleMethod}>
+                  <option value="BOTH">Local + Online</option>
+                  <option value="LOCAL_PICKUP">Local pickup only</option>
+                  <option value="ONLINE_SHIPPING">Online shipping only</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Listing price ($)</label>
+                <input name="listingPrice" type="number" step="0.01" className="input" defaultValue={initial.listingPrice ?? ""} placeholder="0.00" />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <div>
+                <label className="label">ZIP code</label>
+                <input name="saleZip" className="input" defaultValue={initial.saleZip} placeholder="04901" />
+              </div>
+              <div>
+                <label className="label">Search radius (miles)</label>
+                <input name="saleRadiusMi" type="number" className="input" defaultValue={initial.saleRadiusMi} min={1} max={5000} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 📦 SHIPPING DETAILS ── */}
+        <div>
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            📦 Shipping Details
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
@@ -399,15 +529,21 @@ export default function EditItemForm({ initial, initialPhotos = [] }: { initial:
           </div>
         </div>
 
+        {/* ── 💰 PURCHASE HISTORY ── */}
         <div>
-          <label className="label">Notes (optional)</label>
-          <textarea
-            name="description"
-            className="textarea"
-            rows={4}
-            defaultValue={initial.description}
-            placeholder="Any details that help pricing and accuracy…"
-          />
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            💰 Purchase History
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+            <div>
+              <label className="label">Purchase price (optional)</label>
+              <input name="purchasePrice" type="number" step="0.01" className="input" defaultValue={initial.purchasePrice ?? ""} placeholder="100.00" />
+            </div>
+            <div>
+              <label className="label">Purchase date (optional)</label>
+              <input name="purchaseDate" type="date" className="input" defaultValue={initial.purchaseDate} />
+            </div>
+          </div>
         </div>
 
         {error && (
@@ -452,7 +588,7 @@ export default function EditItemForm({ initial, initialPhotos = [] }: { initial:
         >
           <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", maxWidth: "90vw", maxHeight: "90vh", display: "flex", alignItems: "center", gap: "1rem" }}>
             {/* Prev */}
-            <button onClick={prevPhoto} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(0,188,212,0.3)", borderRadius: "50%", width: 44, height: 44, color: "#00bcd4", fontSize: "1.2rem", cursor: "pointer", flexShrink: 0 }}>
+            <button onClick={prevPhoto} style={{ background: "var(--ghost-bg)", border: "1px solid rgba(0,188,212,0.3)", borderRadius: "50%", width: 44, height: 44, color: "#00bcd4", fontSize: "1.2rem", cursor: "pointer", flexShrink: 0 }}>
               ‹
             </button>
 
@@ -468,7 +604,7 @@ export default function EditItemForm({ initial, initialPhotos = [] }: { initial:
                 {lightboxIndex + 1} / {photos.length}
               </div>
               {/* Close */}
-              <button onClick={closeLightbox} style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "50%", width: 32, height: 32, color: "white", fontSize: "1rem", cursor: "pointer" }}>
+              <button onClick={closeLightbox} style={{ position: "absolute", top: 8, right: 8, background: "rgba(0,0,0,0.5)", border: "1px solid var(--border-default)", borderRadius: "50%", width: 32, height: 32, color: "white", fontSize: "1rem", cursor: "pointer" }}>
                 ✕
               </button>
               {/* Cover badge */}
@@ -489,7 +625,7 @@ export default function EditItemForm({ initial, initialPhotos = [] }: { initial:
             </div>
 
             {/* Next */}
-            <button onClick={nextPhoto} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(0,188,212,0.3)", borderRadius: "50%", width: 44, height: 44, color: "#00bcd4", fontSize: "1.2rem", cursor: "pointer", flexShrink: 0 }}>
+            <button onClick={nextPhoto} style={{ background: "var(--ghost-bg)", border: "1px solid rgba(0,188,212,0.3)", borderRadius: "50%", width: 44, height: 44, color: "#00bcd4", fontSize: "1.2rem", cursor: "pointer", flexShrink: 0 }}>
               ›
             </button>
           </div>

@@ -143,8 +143,8 @@ export default async function BotsPage() {
           <div
             key={s.label}
             style={{
-              background: "var(--bg-card, rgba(255,255,255,0.05))",
-              border: "1px solid var(--border-card, rgba(255,255,255,0.08))",
+              background: "var(--bg-card, var(--ghost-bg))",
+              border: "1px solid var(--border-card, var(--border-default))",
               borderRadius: "1rem",
               padding: "1.25rem",
               textAlign: "center",
@@ -166,8 +166,8 @@ export default async function BotsPage() {
               textDecoration: "none",
               color: "inherit",
               display: "block",
-              background: "var(--bg-card, rgba(255,255,255,0.05))",
-              border: "1px solid var(--border-card, rgba(255,255,255,0.08))",
+              background: "var(--bg-card, var(--ghost-bg))",
+              border: "1px solid var(--border-card, var(--border-default))",
               borderRadius: "1.25rem",
               padding: "2rem",
               transition: "transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease",
@@ -203,7 +203,7 @@ export default async function BotsPage() {
                       fontWeight: 600,
                       padding: "0.15rem 0.55rem",
                       borderRadius: "9999px",
-                      background: analyzedCount > 0 ? `${bot.color}22` : "rgba(255,255,255,0.06)",
+                      background: analyzedCount > 0 ? `${bot.color}22` : "var(--ghost-bg)",
                       color: analyzedCount > 0 ? bot.color : "var(--text-muted)",
                       letterSpacing: "0.06em",
                       textTransform: "uppercase",
@@ -230,7 +230,7 @@ export default async function BotsPage() {
               style={{
                 marginTop: "1.25rem",
                 paddingTop: "1rem",
-                borderTop: "1px solid var(--border-default, rgba(255,255,255,0.06))",
+                borderTop: "1px solid var(--border-default)",
                 display: "flex",
                 justifyContent: "flex-end",
               }}

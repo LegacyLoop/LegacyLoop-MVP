@@ -378,7 +378,7 @@ function ResultsContent() {
               <p
                 style={{
                   fontSize: "0.72rem",
-                  color: "rgba(255,255,255,0.6)",
+                  color: "var(--text-secondary)",
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
                   fontWeight: 700,
@@ -397,7 +397,7 @@ function ResultsContent() {
               <p
                 style={{
                   fontSize: "0.72rem",
-                  color: "rgba(255,255,255,0.6)",
+                  color: "var(--text-secondary)",
                   marginBottom: "0.15rem",
                 }}
               >
@@ -417,7 +417,7 @@ function ResultsContent() {
 
           <p
             style={{
-              color: "rgba(255,255,255,0.8)",
+              color: "var(--text-primary)",
               fontSize: "0.92rem",
               lineHeight: 1.6,
               marginBottom: "1.5rem",
@@ -429,12 +429,12 @@ function ResultsContent() {
           {/* Pre-launch callout */}
           <div
             style={{
-              background: "rgba(255,255,255,0.1)",
-              border: "1px solid rgba(255,255,255,0.2)",
+              background: "var(--bg-card-hover)",
+              border: "1px solid var(--border-default)",
               borderRadius: "0.75rem",
               padding: "0.6rem 1rem",
               fontSize: "0.8rem",
-              color: "rgba(255,255,255,0.85)",
+              color: "var(--text-primary)",
               marginBottom: "1.25rem",
             }}
           >

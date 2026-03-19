@@ -32,21 +32,21 @@ export default function TradeProposalsPanel({ itemId }: { itemId: string }) {
   if (loading || proposals.length === 0) return null;
 
   return (
-    <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderLeft: "3px solid #00bcd4", borderRadius: 12, padding: "20px 22px" }}>
+    <div style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderLeft: "3px solid #00bcd4", borderRadius: 12, padding: "20px 22px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>🔄 Trade Proposals</div>
         {pending.length > 0 && <span style={{ background: "rgba(0,188,212,0.15)", color: "#00bcd4", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 20 }}>{pending.length} pending</span>}
       </div>
 
       {proposals.map(p => (
-        <div key={p.id} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: 14, marginBottom: 10 }}>
+        <div key={p.id} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 10, padding: 14, marginBottom: 10 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: "#fff" }}>{p.proposerName || "Anonymous Buyer"}</div>
             <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 12, background: p.status === "PENDING" ? "rgba(245,158,11,0.12)" : p.status === "ACCEPTED" ? "rgba(76,175,80,0.12)" : "rgba(239,68,68,0.12)", color: p.status === "PENDING" ? "#f59e0b" : p.status === "ACCEPTED" ? "#4caf50" : "#ef4444" }}>{p.status}</span>
           </div>
 
           {p.proposedItems?.map((item: any, i: number) => (
-            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0", borderBottom: i < p.proposedItems.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0", borderBottom: i < p.proposedItems.length - 1 ? "1px solid var(--border-default)" : "none" }}>
               <div>
                 <span style={{ fontSize: 11, color: "rgba(207,216,220,0.8)" }}>{item.title}</span>
                 <span style={{ fontSize: 9, color: "rgba(207,216,220,0.4)", marginLeft: 6 }}>{item.condition}</span>
@@ -62,7 +62,7 @@ export default function TradeProposalsPanel({ itemId }: { itemId: string }) {
             </div>
           )}
 
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border-default)" }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: "#00bcd4" }}>Total: ${Math.round(p.totalValue || 0)}</span>
             {p.status === "PENDING" && (
               <div style={{ display: "flex", gap: 6 }}>

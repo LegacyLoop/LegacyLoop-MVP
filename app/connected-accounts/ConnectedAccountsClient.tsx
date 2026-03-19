@@ -158,7 +158,7 @@ export default function ConnectedAccountsClient({ connectedPlatforms }: Props) {
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <span style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary)" }}>{card.name}</span>
             {comingSoon && (
-              <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "0.12rem 0.4rem", borderRadius: "0.3rem", background: "rgba(255,255,255,0.06)", color: "var(--text-muted)", border: "1px solid var(--border-default)" }}>
+              <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "0.12rem 0.4rem", borderRadius: "0.3rem", background: "var(--ghost-bg)", color: "var(--text-muted)", border: "1px solid var(--border-default)" }}>
                 COMING SOON
               </span>
             )}
@@ -271,7 +271,7 @@ export default function ConnectedAccountsClient({ connectedPlatforms }: Props) {
         }} onClick={() => setModal(null)}>
           <div onClick={(e) => e.stopPropagation()} style={{
             width: "22rem", padding: "1.75rem",
-            background: "rgba(12,12,22,0.98)", border: "1px solid rgba(255,255,255,0.1)",
+            background: "rgba(12,12,22,0.98)", border: "1px solid var(--border-default)",
             borderRadius: "1rem", boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
           }}>
             <div style={{ fontSize: "1rem", fontWeight: 600, color: "var(--text-primary)" }}>Coming in Beta</div>

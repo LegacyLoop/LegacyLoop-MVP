@@ -27,7 +27,7 @@ function safeJson(s: string | null): any {
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={{
-      background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)",
+      background: "var(--bg-card)", backdropFilter: "blur(12px)",
       border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16,
       padding: "1.25rem", ...style,
     }}>
@@ -168,7 +168,7 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
         <div style={{ fontSize: "2rem", marginBottom: "0.5rem", animation: "pulse 1.5s ease infinite" }}>⚡</div>
         <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>MegaBot Pricing Running...</div>
         <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginBottom: "0.75rem" }}>{MEGA_STEPS[megaBotStep] || "Processing..."}</div>
-        <div style={{ height: 4, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden", maxWidth: 300, margin: "0 auto" }}>
+        <div style={{ height: 4, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden", maxWidth: 300, margin: "0 auto" }}>
           <div style={{ height: "100%", width: `${((megaBotStep + 1) / MEGA_STEPS.length) * 100}%`, borderRadius: 99, background: "linear-gradient(90deg, #a855f7, #00bcd4)", transition: "width 0.5s ease" }} />
         </div>
       </Card>
@@ -217,7 +217,7 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
             {agreement}% — {agreement >= 80 ? "Strong Consensus" : agreement >= 60 ? "Moderate" : "Varied Opinions"}
           </span>
         </div>
-        <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+        <div style={{ height: 5, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${agreement}%`, borderRadius: 99, background: agreement >= 80 ? "#4caf50" : agreement >= 60 ? "#ff9800" : "#ef4444" }} />
         </div>
       </div>
@@ -234,7 +234,7 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
           const platEntries = ph.platformPricing && typeof ph.platformPricing === "object" ? Object.entries(ph.platformPricing).filter(([k]) => k !== "best_platform") : [];
 
           return (
-            <div key={p.provider} style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", borderTop: isExp ? `3px solid ${meta.color}` : undefined, border: `1px solid ${isExp ? `${meta.color}40` : "var(--border-card, rgba(255,255,255,0.08))"}`, borderRadius: "1rem", overflow: "hidden" }}>
+            <div key={p.provider} style={{ background: "var(--bg-card, var(--ghost-bg))", borderTop: isExp ? `3px solid ${meta.color}` : undefined, border: `1px solid ${isExp ? `${meta.color}40` : "var(--border-card, var(--border-default))"}`, borderRadius: "1rem", overflow: "hidden" }}>
               {/* Header */}
               <button onClick={() => setExpandedAgent(isExp ? null : p.provider)} style={{ width: "100%", display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.75rem 1rem", background: "transparent", border: "none", cursor: "pointer", textAlign: "left" }}>
                 <span style={{ fontSize: "1rem" }}>{meta.icon}</span>
@@ -255,7 +255,7 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
               {isExp && (
                 <div style={{ padding: "0 1rem 1rem", borderTop: `1px solid ${meta.color}15` }}>
                   {/* Price Assessment */}
-                  <div style={{ marginTop: "0.5rem", marginBottom: "0.65rem", padding: "0.65rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.6rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div style={{ marginTop: "0.5rem", marginBottom: "0.65rem", padding: "0.65rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                     <SectionLabel>Price Assessment</SectionLabel>
                     <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", marginBottom: "0.3rem" }}>
                       <span style={{ fontSize: "1.8rem", fontWeight: 800, color: "var(--accent)" }}>${ph.priceLow != null ? Math.round(Number(ph.priceLow)) : "?"}</span>
@@ -269,12 +269,12 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
 
                   {/* Comparable Sales */}
                   {comps.length > 0 && (
-                    <div style={{ marginBottom: "0.65rem", padding: "0.65rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.6rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div style={{ marginBottom: "0.65rem", padding: "0.65rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                       <SectionLabel>Comparable Sales ({comps.length})</SectionLabel>
                       {comps.slice(0, 8).map((c: any, i: number) => {
                         const nc = _normalizeComparable(c);
                         return (
-                          <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.3rem 0", borderBottom: i < Math.min(comps.length, 8) - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.3rem 0", borderBottom: i < Math.min(comps.length, 8) - 1 ? "1px solid var(--border-default)" : "none" }}>
                             <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", minWidth: 65 }}>{nc.platform}</span>
                             <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{nc.item_description}</span>
                             <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--accent)" }}>${nc.sold_price}</span>
@@ -287,7 +287,7 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
 
                   {/* Platform Breakdown */}
                   {platEntries.length > 0 && (
-                    <div style={{ marginBottom: "0.65rem", padding: "0.65rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.6rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div style={{ marginBottom: "0.65rem", padding: "0.65rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                       <SectionLabel>Platform Breakdown</SectionLabel>
                       <div style={{ overflowX: "auto" }}>
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.72rem" }}>
@@ -306,7 +306,7 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
                               if (!plat || typeof plat !== "object") return null;
                               const name = key.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
                               return (
-                                <tr key={key} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                                <tr key={key} style={{ borderTop: "1px solid var(--border-default)" }}>
                                   <td style={{ padding: "0.3rem 0.4rem", color: "var(--text-primary)", fontWeight: 500 }}>{name}</td>
                                   <td style={{ padding: "0.3rem 0.4rem", textAlign: "right", color: "var(--text-secondary)" }}>{plat.list_price || plat.recommended_list_price ? `$${plat.list_price || plat.recommended_list_price}` : "—"}</td>
                                   <td style={{ padding: "0.3rem 0.4rem", textAlign: "right", color: "var(--text-secondary)" }}>{plat.expected_sell || plat.expected_sell_price ? `$${plat.expected_sell || plat.expected_sell_price}` : "—"}</td>
@@ -328,12 +328,12 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
                     <div style={{ marginBottom: "0.65rem", padding: "0.65rem", background: "linear-gradient(135deg, rgba(139,92,246,0.04), rgba(0,188,212,0.02))", borderRadius: "0.6rem", border: "1px solid rgba(139,92,246,0.15)" }}>
                       <SectionLabel>Deep Pricing Intelligence</SectionLabel>
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                        {ph.demandLevel && <div style={{ padding: "0.35rem 0.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>📊 Market</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>{ph.demandLevel} demand · {ph.demandTrend || "Stable"} · Supply: {ph.supplyLevel || "Moderate"}{ph.seasonal ? ` · ${typeof ph.seasonal === "string" && ph.seasonal.length > 60 ? ph.seasonal.slice(0, 60) + "..." : ph.seasonal}` : ""}</div></div>}
-                        {ph.listPrice && <div style={{ padding: "0.35rem 0.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>🤝 Negotiation</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>List ${ Math.round(Number(ph.listPrice))}{ph.sweetSpot ? ` · Sweet spot $${Math.round(Number(ph.sweetSpot))}` : ""}{ph.minAccept ? ` · Floor $${Math.round(Number(ph.minAccept))}` : ""}{ph.counterStrategy ? `. ${typeof ph.counterStrategy === "string" && ph.counterStrategy.length > 80 ? ph.counterStrategy.slice(0, 80) + "..." : ph.counterStrategy}` : ""}</div></div>}
-                        {ph.priceHistoryTrend && <div style={{ padding: "0.35rem 0.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>📈 Trend</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>{ph.priceHistoryTrend}{ph.trendEvidence ? ` — ${typeof ph.trendEvidence === "string" && ph.trendEvidence.length > 80 ? ph.trendEvidence.slice(0, 80) + "..." : ph.trendEvidence}` : ""}</div></div>}
-                        {ph.internationalPricing && <div style={{ padding: "0.35rem 0.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>🌍 International</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>{Object.entries(ph.internationalPricing).filter(([, v]) => v != null).map(([k, v]) => `${k.replace(/_/g, " ").replace(/\bestimate\b/, "")}: $${v}`).join(" · ")}</div></div>}
-                        {ph.liquidationTimeline && <div style={{ padding: "0.35rem 0.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>⏱️ Liquidation</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>Day 1: ${(ph.liquidationTimeline as any).day_1_price || "?"} → Day 7: ${(ph.liquidationTimeline as any).day_7_price || "?"} → Day 30: ${(ph.liquidationTimeline as any).day_30_price || "?"} → Day 90: ${(ph.liquidationTimeline as any).day_90_price || "?"}</div></div>}
-                        {ph.collectorPremium && typeof ph.collectorPremium === "string" && <div style={{ padding: "0.35rem 0.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>💎 Collector Premium</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>{ph.collectorPremium.length > 120 ? ph.collectorPremium.slice(0, 120) + "..." : ph.collectorPremium}</div></div>}
+                        {ph.demandLevel && <div style={{ padding: "0.35rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>📊 Market</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>{ph.demandLevel} demand · {ph.demandTrend || "Stable"} · Supply: {ph.supplyLevel || "Moderate"}{ph.seasonal ? ` · ${typeof ph.seasonal === "string" && ph.seasonal.length > 60 ? ph.seasonal.slice(0, 60) + "..." : ph.seasonal}` : ""}</div></div>}
+                        {ph.listPrice && <div style={{ padding: "0.35rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>🤝 Negotiation</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>List ${ Math.round(Number(ph.listPrice))}{ph.sweetSpot ? ` · Sweet spot $${Math.round(Number(ph.sweetSpot))}` : ""}{ph.minAccept ? ` · Floor $${Math.round(Number(ph.minAccept))}` : ""}{ph.counterStrategy ? `. ${typeof ph.counterStrategy === "string" && ph.counterStrategy.length > 80 ? ph.counterStrategy.slice(0, 80) + "..." : ph.counterStrategy}` : ""}</div></div>}
+                        {ph.priceHistoryTrend && <div style={{ padding: "0.35rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>📈 Trend</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>{ph.priceHistoryTrend}{ph.trendEvidence ? ` — ${typeof ph.trendEvidence === "string" && ph.trendEvidence.length > 80 ? ph.trendEvidence.slice(0, 80) + "..." : ph.trendEvidence}` : ""}</div></div>}
+                        {ph.internationalPricing && <div style={{ padding: "0.35rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>🌍 International</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>{Object.entries(ph.internationalPricing).filter(([, v]) => v != null).map(([k, v]) => `${k.replace(/_/g, " ").replace(/\bestimate\b/, "")}: $${v}`).join(" · ")}</div></div>}
+                        {ph.liquidationTimeline && <div style={{ padding: "0.35rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>⏱️ Liquidation</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>Day 1: ${(ph.liquidationTimeline as any).day_1_price || "?"} → Day 7: ${(ph.liquidationTimeline as any).day_7_price || "?"} → Day 30: ${(ph.liquidationTimeline as any).day_30_price || "?"} → Day 90: ${(ph.liquidationTimeline as any).day_90_price || "?"}</div></div>}
+                        {ph.collectorPremium && typeof ph.collectorPremium === "string" && <div style={{ padding: "0.35rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.35rem" }}><div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)" }}>💎 Collector Premium</div><div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>{ph.collectorPremium.length > 120 ? ph.collectorPremium.slice(0, 120) + "..." : ph.collectorPremium}</div></div>}
                       </div>
                     </div>
                   )}
@@ -361,7 +361,7 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
         {failed.map((p: any) => {
           const meta = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888", specialty: "" };
           return (
-            <div key={p.provider} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.65rem", opacity: 0.4, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "0.5rem", fontSize: "0.68rem" }}>
+            <div key={p.provider} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.65rem", opacity: 0.4, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", fontSize: "0.68rem" }}>
               <span style={{ opacity: 0.5 }}>{meta.icon}</span><span style={{ fontWeight: 600, color: "var(--text-muted)" }}>{meta.label}</span><span style={{ color: "var(--text-muted)", flex: 1, fontSize: "0.62rem" }}>Unavailable</span>
             </div>
           );
@@ -370,7 +370,7 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
 
       {/* Pricing comparison */}
       {successful.length > 1 && (
-        <div style={{ marginBottom: "0.65rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+        <div style={{ marginBottom: "0.65rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
           <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Pricing Comparison</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem 1.25rem", fontSize: "0.78rem" }}>
             {successful.map((p: any) => {
@@ -592,7 +592,7 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
               { icon: "💎", label: "Rarity Assessment", desc: "How rare & collector interest" },
               { icon: "⏰", label: "Timing Advice", desc: "Best time to sell" },
             ].map((t) => (
-              <div key={t.label} style={{ padding: "0.75rem", borderRadius: "0.6rem", border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.02)" }}>
+              <div key={t.label} style={{ padding: "0.75rem", borderRadius: "0.6rem", border: "1px solid var(--border-default)", background: "var(--bg-card)" }}>
                 <div style={{ fontSize: "1rem", marginBottom: "0.25rem" }}>{t.icon}</div>
                 <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{t.label}</div>
                 <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>{t.desc}</div>
@@ -628,7 +628,7 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
               <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", alignItems: "flex-end" }}>
                 {pb.confidence && (
                   <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <div style={{ width: 80, height: 6, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                    <div style={{ width: 80, height: 6, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${pb.confidence.overall_confidence}%`, borderRadius: 99, background: pb.confidence.overall_confidence >= 70 ? "#4caf50" : "#ff9800" }} />
                     </div>
                     <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)" }}>{pb.confidence.overall_confidence}%</span>
@@ -650,7 +650,7 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
                     return (order[a.relevance as keyof typeof order] ?? 2) - (order[b.relevance as keyof typeof order] ?? 2);
                   })
                   .map((comp: any, i: number) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", borderRadius: "0.5rem", border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.02)" }}>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", borderRadius: "0.5rem", border: "1px solid var(--border-default)", background: "var(--bg-card)" }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.15rem" }}>
                         <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-muted)" }}>{comp.platform}</span>
@@ -695,7 +695,7 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
                       <div key={key} style={{
                         padding: "0.75rem", borderRadius: "0.5rem",
                         border: isBest ? "1px solid var(--accent)" : "1px solid var(--border-default)",
-                        background: isBest ? "rgba(0,188,212,0.04)" : "rgba(255,255,255,0.02)",
+                        background: isBest ? "rgba(0,188,212,0.04)" : "var(--bg-card)",
                       }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginBottom: "0.35rem" }}>
                           <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>{name}</span>
@@ -938,7 +938,7 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
             <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", justifyContent: "center" }}>
               <button onClick={() => runPriceBot()} disabled={loading} style={{
                 padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, borderRadius: "0.5rem",
-                border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.04)",
+                border: "1px solid var(--border-default)", background: "var(--ghost-bg)",
                 color: "var(--text-secondary)", cursor: loading ? "wait" : "pointer",
               }}>
                 💰 Re-Run PriceBot — 1 cr

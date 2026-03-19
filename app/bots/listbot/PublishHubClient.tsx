@@ -21,7 +21,7 @@ const PLATFORMS = [
 
 const CATEGORY_LABELS: Record<string, string> = { marketplace: "Marketplaces", social: "Social", local: "Local", platform: "Platform" };
 const STATUS_COLORS: Record<string, { bg: string; color: string; label: string }> = {
-  READY: { bg: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)", label: "Ready" },
+  READY: { bg: "var(--ghost-bg)", color: "var(--text-muted)", label: "Ready" },
   COPIED: { bg: "rgba(0,188,212,0.12)", color: "#00bcd4", label: "Copied" },
   POSTED: { bg: "rgba(16,185,129,0.12)", color: "#10b981", label: "Posted" },
   LIVE: { bg: "rgba(245,158,11,0.12)", color: "#f59e0b", label: "Live" },
@@ -172,7 +172,7 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px 100px" }}>
       {/* ── HEADER ── */}
       <div style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.08), transparent)", borderBottom: "1px solid rgba(0,188,212,0.12)", padding: "24px 0 20px", marginBottom: "20px" }}>
-        <a href={`/items/${itemId}`} style={{ display: "inline-block", marginBottom: "12px", fontSize: "0.78rem", color: "var(--text-muted)", textDecoration: "none", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "0.4rem", padding: "0.35rem 0.75rem" }}>{"\u2190"} Back to Item</a>
+        <a href={`/items/${itemId}`} style={{ display: "inline-block", marginBottom: "12px", fontSize: "0.78rem", color: "var(--text-muted)", textDecoration: "none", border: "1px solid var(--border-default)", borderRadius: "0.4rem", padding: "0.35rem 0.75rem" }}>{"\u2190"} Back to Item</a>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
           {itemPhoto && <img src={itemPhoto} alt="" style={{ width: 64, height: 64, borderRadius: 10, objectFit: "cover", border: "2px solid rgba(0,188,212,0.3)" }} />}
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -189,7 +189,7 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
           { n: copiedCount, label: "copied" },
           { n: postedCount, label: "posted" },
         ].map((s, i) => (
-          <span key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 20, padding: "6px 14px", fontSize: 11, color: "rgba(207,216,220,0.7)", display: "flex", alignItems: "center", gap: 6 }}>
+          <span key={i} style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: 20, padding: "6px 14px", fontSize: 11, color: "rgba(207,216,220,0.7)", display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ color: "#fff", fontWeight: 700 }}>{s.n}</span> {s.label}
           </span>
         ))}
@@ -202,7 +202,7 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
         </button>
         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
           {["all", "marketplace", "social", "local", "platform"].map((cat) => (
-            <button key={cat} onClick={() => setFilter(cat)} style={{ fontSize: 10, padding: "6px 14px", borderRadius: 20, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: filter === cat ? 700 : 600, background: filter === cat ? "#00bcd4" : "transparent", color: filter === cat ? "#000" : "rgba(255,255,255,0.5)", border: filter === cat ? "none" : "1px solid rgba(255,255,255,0.15)" }}>
+            <button key={cat} onClick={() => setFilter(cat)} style={{ fontSize: 10, padding: "6px 14px", borderRadius: 20, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: filter === cat ? 700 : 600, background: filter === cat ? "#00bcd4" : "transparent", color: filter === cat ? "#000" : "var(--text-muted)", border: filter === cat ? "none" : "1px solid var(--border-default)" }}>
               {cat === "all" ? "All" : CATEGORY_LABELS[cat] || cat}
             </button>
           ))}
@@ -211,8 +211,8 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
 
       {/* ── AI STRATEGY ── */}
       {strategy && (
-        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 12, marginBottom: 20, overflow: "hidden" }}>
-          <button onClick={() => setShowStrategy(!showStrategy)} style={{ width: "100%", padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,0.06)", cursor: "pointer", color: "var(--text-primary)" }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 12, marginBottom: 20, overflow: "hidden" }}>
+          <button onClick={() => setShowStrategy(!showStrategy)} style={{ width: "100%", padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "none", borderBottom: "1px solid var(--border-default)", cursor: "pointer", color: "var(--text-primary)" }}>
             <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <span style={{ background: "rgba(0,188,212,0.12)", color: "#00bcd4", padding: "0.15rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.65rem", fontWeight: 700 }}>AI STRATEGY</span>
               <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>Cross-Platform Strategy</span>
@@ -229,8 +229,8 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
 
       {/* ── SEO KEYWORDS ── */}
       {(seoData || globalHashtags.length > 0) && (
-        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 12, marginBottom: 20, overflow: "hidden" }}>
-          <button onClick={() => setShowSeo(!showSeo)} style={{ width: "100%", padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "none", borderBottom: "1px solid rgba(255,255,255,0.06)", cursor: "pointer", color: "var(--text-primary)" }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 12, marginBottom: 20, overflow: "hidden" }}>
+          <button onClick={() => setShowSeo(!showSeo)} style={{ width: "100%", padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "none", borderBottom: "1px solid var(--border-default)", cursor: "pointer", color: "var(--text-primary)" }}>
             <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <span style={{ background: "rgba(0,188,212,0.12)", color: "#00bcd4", padding: "0.15rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.65rem", fontWeight: 700 }}>SEO</span>
               <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>Keywords & Hashtags</span>
@@ -269,7 +269,7 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
           const isExpanded = expanded[platform.key];
 
           return (
-            <div key={platform.key} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 14, borderLeft: `4px solid ${platform.color}`, borderTop: "1px solid rgba(255,255,255,0.07)", borderRight: "1px solid rgba(255,255,255,0.07)", borderBottom: "1px solid rgba(255,255,255,0.07)", padding: "18px 20px", transition: "border-color 0.2s" }}>
+            <div key={platform.key} style={{ background: "var(--bg-card)", borderRadius: 14, borderLeft: `4px solid ${platform.color}`, borderTop: "1px solid var(--border-default)", borderRight: "1px solid var(--border-default)", borderBottom: "1px solid var(--border-default)", padding: "18px 20px", transition: "border-color 0.2s" }}>
               {/* Card Header */}
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
                 <span style={{ fontSize: "1.5rem" }}>{platform.icon}</span>
@@ -332,7 +332,7 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
                 <div style={{ display: "flex", gap: "0.4rem" }}>
                   {(status === "COPIED" || isCopied) && status !== "POSTED" && (
                     <>
-                      <a href={platform.url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "0.4rem", fontSize: 10, fontWeight: 600, textAlign: "center", borderRadius: 6, border: "1px solid rgba(255,255,255,0.1)", color: "var(--text-secondary)", textDecoration: "none", cursor: "pointer" }}>
+                      <a href={platform.url} target="_blank" rel="noopener noreferrer" style={{ flex: 1, padding: "0.4rem", fontSize: 10, fontWeight: 600, textAlign: "center", borderRadius: 6, border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none", cursor: "pointer" }}>
                         Open {platform.name} {"\u2192"}
                       </a>
                       <button onClick={() => markPosted(platform.key)} style={{ flex: 1, height: 32, fontSize: 10, fontWeight: 600, borderRadius: 6, border: "1px solid rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.06)", color: "#10b981", cursor: "pointer" }}>
@@ -340,8 +340,8 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
                       </button>
                     </>
                   )}
-                  <button onClick={() => copyToClipboard(listing?.title || bestTitle, `title_${platform.key}`)} title="Copy title" style={{ height: 28, fontSize: 10, borderRadius: 6, padding: "0 10px", border: "1px solid rgba(255,255,255,0.08)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>{copiedPlatform === `title_${platform.key}` ? "\u2713" : "\ud83d\udccb"}</button>
-                  <button onClick={() => copyToClipboard((listing?.tags || []).join(" "), `tags_${platform.key}`)} title="Copy tags" style={{ height: 28, fontSize: 10, borderRadius: 6, padding: "0 10px", border: "1px solid rgba(255,255,255,0.08)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>{copiedPlatform === `tags_${platform.key}` ? "\u2713" : "\ud83c\udff7\ufe0f"}</button>
+                  <button onClick={() => copyToClipboard(listing?.title || bestTitle, `title_${platform.key}`)} title="Copy title" style={{ height: 28, fontSize: 10, borderRadius: 6, padding: "0 10px", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>{copiedPlatform === `title_${platform.key}` ? "\u2713" : "\ud83d\udccb"}</button>
+                  <button onClick={() => copyToClipboard((listing?.tags || []).join(" "), `tags_${platform.key}`)} title="Copy tags" style={{ height: 28, fontSize: 10, borderRadius: 6, padding: "0 10px", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>{copiedPlatform === `tags_${platform.key}` ? "\u2713" : "\ud83c\udff7\ufe0f"}</button>
                 </div>
               </div>
             </div>
@@ -366,11 +366,11 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
         if (providers.length < 2) return null;
         const [activeAI, setActiveAI] = [expanded["__ai_tab__"] as any || providers[0]?.provider, (v: string) => setExpanded((p) => ({ ...p, "__ai_tab__": v as any }))];
         return (
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 12, marginBottom: 20, overflow: "hidden" }}>
+          <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 12, marginBottom: 20, overflow: "hidden" }}>
             <div style={{ padding: "0.75rem 1.25rem 0", display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
               <span style={{ background: "rgba(0,188,212,0.12)", color: "#00bcd4", padding: "0.15rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.65rem", fontWeight: 700 }}>4 AI ENGINES</span>
               {providers.map((prov: any) => (
-                <button key={prov.provider} onClick={() => setActiveAI(prov.provider)} style={{ fontSize: 10, padding: "6px 16px", borderRadius: 20, cursor: "pointer", textTransform: "capitalize", fontWeight: activeAI === prov.provider ? 700 : 600, background: activeAI === prov.provider ? "#00bcd4" : "transparent", color: activeAI === prov.provider ? "#000" : "rgba(255,255,255,0.5)", border: activeAI === prov.provider ? "none" : "1px solid rgba(255,255,255,0.15)" }}>
+                <button key={prov.provider} onClick={() => setActiveAI(prov.provider)} style={{ fontSize: 10, padding: "6px 16px", borderRadius: 20, cursor: "pointer", textTransform: "capitalize", fontWeight: activeAI === prov.provider ? 700 : 600, background: activeAI === prov.provider ? "#00bcd4" : "transparent", color: activeAI === prov.provider ? "#000" : "var(--text-muted)", border: activeAI === prov.provider ? "none" : "1px solid var(--border-default)" }}>
                   {prov.provider}
                 </button>
               ))}
@@ -384,7 +384,7 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
                     {topKeys.map((pk) => {
                       const lst = provListings[pk] as any;
                       return (
-                        <div key={pk} style={{ padding: "0.5rem 0.7rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderLeft: "3px solid #00bcd4", borderRadius: 8, marginBottom: 8 }}>
+                        <div key={pk} style={{ padding: "0.5rem 0.7rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderLeft: "3px solid #00bcd4", borderRadius: 8, marginBottom: 8 }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.2rem" }}>
                             <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)" }}>{pk}</span>
                             {lst?.price && <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#00bcd4" }}>${lst.price}</span>}
@@ -407,7 +407,7 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
       {/* ── PROGRESS TRACKER (sticky bottom) ── */}
       <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(13,31,45,0.95)", backdropFilter: "blur(12px)", borderTop: "1px solid rgba(0,188,212,0.15)", padding: "12px 28px", zIndex: 100, display: "flex", alignItems: "center", gap: 16 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+          <div style={{ height: 4, borderRadius: 2, background: "var(--ghost-bg)", overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${Math.round((copiedCount / totalPlatforms) * 100)}%`, background: "linear-gradient(90deg, #00bcd4, #009688)", borderRadius: 2, transition: "width 0.4s ease" }} />
           </div>
         </div>

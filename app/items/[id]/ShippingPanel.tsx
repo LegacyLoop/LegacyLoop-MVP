@@ -599,7 +599,7 @@ function PackingChecklist({ label, isFragile, deliveryMethod }: { label: Shipmen
       {isDemo ? (
         <div style={{
           border: "2px dashed var(--border-default)", borderRadius: "0.75rem", padding: "1.25rem",
-          background: "rgba(255,255,255,0.02)", position: "relative",
+          background: "var(--bg-card)", position: "relative",
         }}>
           <div style={{ position: "absolute", top: "0.4rem", right: "0.6rem", fontSize: "0.6rem", fontWeight: 700, color: "#eab308", textTransform: "uppercase", letterSpacing: "0.1em" }}>DEMO</div>
           <div style={{ textAlign: "center", marginBottom: "0.75rem" }}>
@@ -617,7 +617,7 @@ function PackingChecklist({ label, isFragile, deliveryMethod }: { label: Shipmen
               <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem" }}>Destination</div>
             </div>
           </div>
-          <div style={{ marginTop: "0.75rem", textAlign: "center", padding: "0.4rem", background: "rgba(255,255,255,0.04)", borderRadius: "0.4rem", border: "1px solid var(--border-default)" }}>
+          <div style={{ marginTop: "0.75rem", textAlign: "center", padding: "0.4rem", background: "var(--ghost-bg)", borderRadius: "0.4rem", border: "1px solid var(--border-default)" }}>
             <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "0.2rem" }}>CARRIER / SERVICE</div>
             <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{label.carrier} — {label.service}</div>
           </div>
@@ -651,7 +651,7 @@ function PackingChecklist({ label, isFragile, deliveryMethod }: { label: Shipmen
       )}
 
       {/* Tracking number — prominent */}
-      <div style={{ padding: "0.6rem 0.75rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)" }}>
+      <div style={{ padding: "0.6rem 0.75rem", borderRadius: "0.5rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
         <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.25rem" }}>
           Tracking Number {isDemo && <span style={{ color: "#eab308", marginLeft: "0.3rem" }}>(Demo)</span>}
         </div>
@@ -726,7 +726,7 @@ function MeetupLocationCard({ locationType, sellerZip, isRevealed }: { locationT
   const mapUrl = showMap ? `https://www.google.com/maps/search/${loc.mapQuery}${sellerZip}` : null;
   return (
     <div style={{
-      background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+      background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
       borderRadius: "10px", padding: "0.85rem 1rem",
       display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem",
     }}>
@@ -784,7 +784,7 @@ function PaymentMethodBadge({ method, price }: { method: string; price: number |
     </div>
   );
   if (method === "decide_later") return (
-    <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.5rem 1rem" }}>
+    <div style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.5rem 1rem" }}>
       <span style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.82rem" }}>
         Payment to be discussed at meetup
       </span>
@@ -802,7 +802,7 @@ function ContactMethodCard({ method, isActive }: { method: string; isActive: boo
   const m = methods[method] ?? methods.in_app;
   return (
     <div style={{
-      background: isActive ? "rgba(0,188,212,0.06)" : "rgba(255,255,255,0.03)",
+      background: isActive ? "rgba(0,188,212,0.06)" : "var(--bg-card)",
       border: `1px solid ${isActive ? "rgba(0,188,212,0.2)" : "var(--border-default)"}`,
       borderRadius: "8px", padding: "0.5rem 0.85rem",
       display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem",
@@ -1028,20 +1028,20 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                   {/* my_location expand */}
                   {key === "my_location" && invLocation === "my_location" && (
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                      <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>Choose how to specify your location:</div>
+                      <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Choose how to specify your location:</div>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Enter address or intersection</label>
-                        <input type="text" placeholder="e.g. 123 Main St, Waterville ME" value={invPreciseAddress} onChange={e => setInvPreciseAddress(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
-                        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Exact address only shared with confirmed buyer</div>
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Enter address or intersection</label>
+                        <input type="text" placeholder="e.g. 123 Main St, Waterville ME" value={invPreciseAddress} onChange={e => setInvPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Exact address only shared with confirmed buyer</div>
                       </div>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🗺️ Or drop a pin on Google Maps</label>
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🗺️ Or drop a pin on Google Maps</label>
                         <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#00bcd4", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>📍 Open Google Maps &mdash; drop a pin and paste link below</a>
-                        <input type="text" placeholder="Paste Google Maps link here..." value={invPreciseMapLink} onChange={e => setInvPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="Paste Google Maps link here..." value={invPreciseMapLink} onChange={e => setInvPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📝 Precise meetup instructions</label>
-                        <input type="text" placeholder="e.g. I'll be parked in the blue truck near the entrance" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📝 Precise meetup instructions</label>
+                        <input type="text" placeholder="e.g. I'll be parked in the blue truck near the entrance" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1051,12 +1051,12 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                       <a href={`https://www.google.com/maps/search/police+station+near+${sellerZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#22c55e", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none", alignSelf: "flex-start" }}>🗺️ Find Police Stations near {sellerZip || "you"}</a>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🚔 Station name</label>
-                        <input type="text" placeholder="e.g. Waterville Police Department" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🚔 Station name</label>
+                        <input type="text" placeholder="e.g. Waterville Police Department" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Precise spot</label>
-                        <input type="text" placeholder="e.g. Front parking lot, visitor spaces" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Precise spot</label>
+                        <input type="text" placeholder="e.g. Front parking lot, visitor spaces" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1066,12 +1066,12 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                       <a href={`https://www.google.com/maps/search/bank+near+${sellerZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#22c55e", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none", alignSelf: "flex-start" }}>🗺️ Find Banks near {sellerZip || "you"}</a>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🏦 Bank name</label>
-                        <input type="text" placeholder="e.g. Camden National Bank, Main St" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🏦 Bank name</label>
+                        <input type="text" placeholder="e.g. Camden National Bank, Main St" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Where to meet</label>
-                        <input type="text" placeholder="e.g. Main entrance, ATM side" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Where to meet</label>
+                        <input type="text" placeholder="e.g. Main entrance, ATM side" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1081,12 +1081,12 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                       <a href={`https://www.google.com/maps/search/coffee+shop+near+${sellerZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#22c55e", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none", alignSelf: "flex-start" }}>🗺️ Find Coffee Shops near {sellerZip || "you"}</a>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>☕ Shop name</label>
-                        <input type="text" placeholder="e.g. Dunkin&apos; on College Ave" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>☕ Shop name</label>
+                        <input type="text" placeholder="e.g. Dunkin&apos; on College Ave" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Where to meet</label>
-                        <input type="text" placeholder="e.g. Table by the window, back patio" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Where to meet</label>
+                        <input type="text" placeholder="e.g. Table by the window, back patio" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1096,12 +1096,12 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                       <a href={`https://www.google.com/maps/search/post+office+near+${sellerZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#22c55e", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none", alignSelf: "flex-start" }}>🗺️ Find Post Offices near {sellerZip || "you"}</a>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📬 Location</label>
-                        <input type="text" placeholder="e.g. Waterville Post Office, Elm St" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📬 Location</label>
+                        <input type="text" placeholder="e.g. Waterville Post Office, Elm St" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Where to meet</label>
-                        <input type="text" placeholder="e.g. Front steps, parking lot" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Where to meet</label>
+                        <input type="text" placeholder="e.g. Front steps, parking lot" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1110,21 +1110,21 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                   {key === "other" && invLocation === "other" && (
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Location name</label>
-                        <input type="text" placeholder="e.g. Walmart parking lot, Town park" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Location name</label>
+                        <input type="text" placeholder="e.g. Walmart parking lot, Town park" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🏠 Address</label>
-                        <input type="text" placeholder="e.g. 123 Main St, Waterville ME" value={invPreciseAddress} onChange={e => setInvPreciseAddress(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🏠 Address</label>
+                        <input type="text" placeholder="e.g. 123 Main St, Waterville ME" value={invPreciseAddress} onChange={e => setInvPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🗺️ Or drop a pin on Google Maps</label>
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🗺️ Or drop a pin on Google Maps</label>
                         <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#00bcd4", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>📍 Open Google Maps &mdash; drop a pin and paste link below</a>
-                        <input type="text" placeholder="Paste Google Maps link here..." value={invPreciseMapLink} onChange={e => setInvPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="Paste Google Maps link here..." value={invPreciseMapLink} onChange={e => setInvPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📝 Meetup instructions</label>
-                        <input type="text" placeholder="e.g. I'll be near the main entrance in a red jacket" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📝 Meetup instructions</label>
+                        <input type="text" placeholder="e.g. I'll be near the main entrance in a red jacket" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1137,8 +1137,8 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
           {invLocation && (
             <div style={{ marginTop: "0.25rem", padding: "0.85rem", background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px" }}>
               <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.75rem", marginBottom: "0.4rem" }}>📌 Precision Meetup Point</div>
-              <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.7rem", marginBottom: "0.5rem" }}>Give the buyer a precise spot &mdash; &quot;north entrance&quot;, &quot;blue Honda&quot;, &quot;table by the window&quot;</div>
-              <input type="text" placeholder="e.g. I'll be in the blue truck at the north end" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+              <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.5rem" }}>Give the buyer a precise spot &mdash; &quot;north entrance&quot;, &quot;blue Honda&quot;, &quot;table by the window&quot;</div>
+              <input type="text" placeholder="e.g. I'll be in the blue truck at the north end" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
             </div>
           )}
 
@@ -1202,31 +1202,31 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                   {/* in_app expand */}
                   {key === "in_app" && invContact === "in_app" && (
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                      <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", marginBottom: "0.1rem" }}>Messages stay in LegacyLoop &mdash; no personal info shared.</div>
+                      <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", marginBottom: "0.1rem" }}>Messages stay in LegacyLoop &mdash; no personal info shared.</div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-                          <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.35)", minWidth: "1rem" }}>💬</span>
-                          <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>Real-time in-app chat</span>
+                          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", minWidth: "1rem" }}>💬</span>
+                          <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>Real-time in-app chat</span>
                         </div>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-                          <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.35)", minWidth: "1rem" }}>🔒</span>
-                          <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>Phone &amp; email stay private</span>
+                          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", minWidth: "1rem" }}>🔒</span>
+                          <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>Phone &amp; email stay private</span>
                         </div>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-                          <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.35)", minWidth: "1rem" }}>📎</span>
-                          <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>Photo sharing &amp; read receipts</span>
+                          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", minWidth: "1rem" }}>📎</span>
+                          <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>Photo sharing &amp; read receipts</span>
                         </div>
                       </div>
                       <div>
-                        <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Notification preference:</div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Notification preference:</div>
                         <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
                           {["Push only", "Push + Email", "Email only"].map(pref => (
                             <button type="button" key={pref} onClick={() => setInvContactNotifyPref(pref)} style={{
                               padding: "0.25rem 0.55rem", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer",
                               fontWeight: invContactNotifyPref === pref ? 600 : 400,
-                              border: invContactNotifyPref === pref ? "1.5px solid #00bcd4" : "1px solid rgba(255,255,255,0.12)",
+                              border: invContactNotifyPref === pref ? "1.5px solid #00bcd4" : "1px solid var(--border-default)",
                               background: invContactNotifyPref === pref ? "rgba(0,188,212,0.1)" : "transparent",
-                              color: invContactNotifyPref === pref ? "#00bcd4" : "rgba(255,255,255,0.5)",
+                              color: invContactNotifyPref === pref ? "#00bcd4" : "var(--text-muted)",
                             }}>{pref}</button>
                           ))}
                         </div>
@@ -1238,20 +1238,20 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                   {key === "text" && invContact === "text" && (
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📱 Your phone number</label>
-                        <input type="tel" placeholder="(207) 555-1234" value={invContactPhone} onChange={e => setInvContactPhone(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
-                        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Your number is masked &mdash; buyer texts a LegacyLoop relay number</div>
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📱 Your phone number</label>
+                        <input type="tel" placeholder="(207) 555-1234" value={invContactPhone} onChange={e => setInvContactPhone(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Your number is masked &mdash; buyer texts a LegacyLoop relay number</div>
                       </div>
                       <div>
-                        <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Best time for texts:</div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Best time for texts:</div>
                         <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
                           {["Anytime", "Mornings", "Afternoons", "Evenings"].map(t => (
                             <button type="button" key={t} onClick={() => setInvContactTimePref(t)} style={{
                               padding: "0.25rem 0.55rem", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer",
                               fontWeight: invContactTimePref === t ? 600 : 400,
-                              border: invContactTimePref === t ? "1.5px solid #22c55e" : "1px solid rgba(255,255,255,0.12)",
+                              border: invContactTimePref === t ? "1.5px solid #22c55e" : "1px solid var(--border-default)",
                               background: invContactTimePref === t ? "rgba(34,197,94,0.1)" : "transparent",
-                              color: invContactTimePref === t ? "#22c55e" : "rgba(255,255,255,0.5)",
+                              color: invContactTimePref === t ? "#22c55e" : "var(--text-muted)",
                             }}>{t}</button>
                           ))}
                         </div>
@@ -1262,27 +1262,27 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                   {/* email expand */}
                   {key === "email" && invContact === "email" && (
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                      <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.68rem" }}>🔒 Your email is masked &mdash; buyer emails a LegacyLoop relay address</div>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.68rem" }}>🔒 Your email is masked &mdash; buyer emails a LegacyLoop relay address</div>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         <input type="checkbox" checked={invUseDiffEmail} onChange={e => setInvUseDiffEmail(e.target.checked)} style={{ accentColor: "#8b5cf6" }} />
-                        <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem" }}>Use a different email than my account email</span>
+                        <span style={{ color: "var(--text-secondary)", fontSize: "0.72rem" }}>Use a different email than my account email</span>
                       </div>
                       {invUseDiffEmail && (
                         <div>
-                          <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📧 Preferred email</label>
-                          <input type="email" placeholder="alternate@email.com" value={invContactEmailAddr} onChange={e => setInvContactEmailAddr(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                          <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📧 Preferred email</label>
+                          <input type="email" placeholder="alternate@email.com" value={invContactEmailAddr} onChange={e => setInvContactEmailAddr(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                         </div>
                       )}
                       <div>
-                        <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Response time expectation:</div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Response time expectation:</div>
                         <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
                           {["Within 1 hour", "Within 4 hours", "Same day", "Within 24 hours"].map(rt => (
                             <button type="button" key={rt} onClick={() => setInvContactResponseTime(rt)} style={{
                               padding: "0.25rem 0.55rem", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer",
                               fontWeight: invContactResponseTime === rt ? 600 : 400,
-                              border: invContactResponseTime === rt ? "1.5px solid #8b5cf6" : "1px solid rgba(255,255,255,0.12)",
+                              border: invContactResponseTime === rt ? "1.5px solid #8b5cf6" : "1px solid var(--border-default)",
                               background: invContactResponseTime === rt ? "rgba(139,92,246,0.1)" : "transparent",
-                              color: invContactResponseTime === rt ? "#8b5cf6" : "rgba(255,255,255,0.5)",
+                              color: invContactResponseTime === rt ? "#8b5cf6" : "var(--text-muted)",
                             }}>{rt}</button>
                           ))}
                         </div>
@@ -1324,27 +1324,27 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                         ].map(([step, desc], i) => (
                           <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                             <span style={{ fontSize: "0.72rem" }}>{step}</span>
-                            <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.6)" }}>{desc}</span>
+                            <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>{desc}</span>
                           </div>
                         ))}
                       </div>
                       <div style={{ marginTop: "0.2rem", padding: "0.55rem 0.7rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "8px" }}>
-                        <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "rgba(255,255,255,0.7)", marginBottom: "0.3rem" }}>Processing Fee</div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "rgba(255,255,255,0.5)" }}><span>Charged to buyer</span><span style={{ color: "#00bcd4", fontWeight: 600 }}>{PROCESSING_FEE.display}</span></div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "rgba(255,255,255,0.5)" }}><span>Seller pays</span><span style={{ color: "rgba(16,185,129,0.8)", fontWeight: 600 }}>0%</span></div>
+                        <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.3rem" }}>Processing Fee</div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--text-muted)" }}><span>Charged to buyer</span><span style={{ color: "#00bcd4", fontWeight: 600 }}>{PROCESSING_FEE.display}</span></div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--text-muted)" }}><span>Seller pays</span><span style={{ color: "rgba(16,185,129,0.8)", fontWeight: 600 }}>0%</span></div>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", marginTop: "0.1rem" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          <span style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.3)" }}>✅</span>
-                          <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.5)" }}>Buyer protection &mdash; refund if item not as described</span>
+                          <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>✅</span>
+                          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>Buyer protection &mdash; refund if item not as described</span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          <span style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.3)" }}>✅</span>
-                          <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.5)" }}>Seller protection &mdash; guaranteed payment</span>
+                          <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>✅</span>
+                          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>Seller protection &mdash; guaranteed payment</span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          <span style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.3)" }}>✅</span>
-                          <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.5)" }}>Dispute resolution included</span>
+                          <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>✅</span>
+                          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>Dispute resolution included</span>
                         </div>
                       </div>
                     </div>
@@ -1355,36 +1355,36 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(245,158,11,0.04)", border: "1px solid rgba(245,158,11,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                       {price != null && price > 0 && (
                         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                          <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.5)" }}>Exact amount:</span>
+                          <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Exact amount:</span>
                           <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#f59e0b" }}>${price.toFixed(2)}</span>
                         </div>
                       )}
                       <div>
-                        <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Denomination preference:</div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Denomination preference:</div>
                         <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
                           {["Any", "Small bills", "Exact change", "No preference"].map(d => (
                             <button type="button" key={d} onClick={() => setInvDenomPref(d)} style={{
                               padding: "0.25rem 0.55rem", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer",
                               fontWeight: invDenomPref === d ? 600 : 400,
-                              border: invDenomPref === d ? "1.5px solid #f59e0b" : "1px solid rgba(255,255,255,0.12)",
+                              border: invDenomPref === d ? "1.5px solid #f59e0b" : "1px solid var(--border-default)",
                               background: invDenomPref === d ? "rgba(245,158,11,0.1)" : "transparent",
-                              color: invDenomPref === d ? "#f59e0b" : "rgba(255,255,255,0.5)",
+                              color: invDenomPref === d ? "#f59e0b" : "var(--text-muted)",
                             }}>{d}</button>
                           ))}
                         </div>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", marginTop: "0.1rem" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          <span style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.3)" }}>💡</span>
-                          <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)" }}>Count cash before handing over item</span>
+                          <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>💡</span>
+                          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>Count cash before handing over item</span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          <span style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.3)" }}>💡</span>
-                          <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)" }}>Use a counterfeit pen for large bills</span>
+                          <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>💡</span>
+                          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>Use a counterfeit pen for large bills</span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          <span style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.3)" }}>💡</span>
-                          <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)" }}>Meet in a public, well-lit area</span>
+                          <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>💡</span>
+                          <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>Meet in a public, well-lit area</span>
                         </div>
                       </div>
                     </div>
@@ -1394,34 +1394,34 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                   {key === "venmo" && invPayment === "venmo" && (
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                       <div>
-                        <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Service:</div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Service:</div>
                         <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
                           {["Venmo", "Zelle", "PayPal", "CashApp"].map(s => (
                             <button type="button" key={s} onClick={() => setInvVenmoService(s)} style={{
                               padding: "0.25rem 0.55rem", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer",
                               fontWeight: invVenmoService === s ? 600 : 400,
-                              border: invVenmoService === s ? "1.5px solid #8b5cf6" : "1px solid rgba(255,255,255,0.12)",
+                              border: invVenmoService === s ? "1.5px solid #8b5cf6" : "1px solid var(--border-default)",
                               background: invVenmoService === s ? "rgba(139,92,246,0.1)" : "transparent",
-                              color: invVenmoService === s ? "#8b5cf6" : "rgba(255,255,255,0.5)",
+                              color: invVenmoService === s ? "#8b5cf6" : "var(--text-muted)",
                             }}>{s}</button>
                           ))}
                         </div>
                       </div>
                       <div>
-                        <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📱 Your handle / username</label>
-                        <input type="text" placeholder={invVenmoService ? `@your-${invVenmoService.toLowerCase()}-handle` : "@your-handle"} value={invVenmoHandle} onChange={e => setInvVenmoHandle(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
-                        <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Only shared with confirmed buyer</div>
+                        <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📱 Your handle / username</label>
+                        <input type="text" placeholder={invVenmoService ? `@your-${invVenmoService.toLowerCase()}-handle` : "@your-handle"} value={invVenmoHandle} onChange={e => setInvVenmoHandle(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Only shared with confirmed buyer</div>
                       </div>
                       <div>
-                        <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Payment timing:</div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Payment timing:</div>
                         <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
                           {["Before meetup", "At meetup", "After inspection"].map(t => (
                             <button type="button" key={t} onClick={() => setInvVenmoTiming(t)} style={{
                               padding: "0.25rem 0.55rem", borderRadius: "6px", fontSize: "0.7rem", cursor: "pointer",
                               fontWeight: invVenmoTiming === t ? 600 : 400,
-                              border: invVenmoTiming === t ? "1.5px solid #8b5cf6" : "1px solid rgba(255,255,255,0.12)",
+                              border: invVenmoTiming === t ? "1.5px solid #8b5cf6" : "1px solid var(--border-default)",
                               background: invVenmoTiming === t ? "rgba(139,92,246,0.1)" : "transparent",
-                              color: invVenmoTiming === t ? "#8b5cf6" : "rgba(255,255,255,0.5)",
+                              color: invVenmoTiming === t ? "#8b5cf6" : "var(--text-muted)",
                             }}>{t}</button>
                           ))}
                         </div>
@@ -1431,8 +1431,8 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
 
                   {/* decide_later expand */}
                   {key === "decide_later" && invPayment === "decide_later" && (
-                    <div style={{ marginTop: "0.5rem", padding: "0.65rem 0.85rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px" }}>
-                      <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem" }}>💡 You can discuss payment with the buyer in chat and update this before the meetup.</div>
+                    <div style={{ marginTop: "0.5rem", padding: "0.65rem 0.85rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "10px" }}>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.7rem" }}>💡 You can discuss payment with the buyer in chat and update this before the meetup.</div>
                     </div>
                   )}
                 </div>
@@ -1465,7 +1465,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                 {invSlots.length > 0 && <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Times</span><span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{invSlots.join(", ")}</span></div>}
                 <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Contact</span><span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{invContact === "in_app" ? "In-app message" : invContact === "text" ? "Text message" : "Email"}</span></div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Payment</span><span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{invPayment === "legacyloop" ? "Through LegacyLoop" : invPayment === "cash" ? "Cash" : invPayment === "venmo" ? "Venmo/Zelle" : "Decide at meetup"}</span></div>
-                {invNotes && <div style={{ marginTop: "0.2rem", padding: "0.3rem 0.5rem", borderRadius: "6px", background: "rgba(255,255,255,0.03)", color: "var(--text-secondary)", fontSize: "0.75rem" }}>{invNotes}</div>}
+                {invNotes && <div style={{ marginTop: "0.2rem", padding: "0.3rem 0.5rem", borderRadius: "6px", background: "var(--bg-card)", color: "var(--text-secondary)", fontSize: "0.75rem" }}>{invNotes}</div>}
               </div>
               <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.6rem" }}>
                 <button
@@ -1549,7 +1549,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
 
           {/* Notes */}
           {notes && (
-            <div style={{ padding: "0.5rem 0.65rem", borderRadius: "8px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", fontSize: "0.78rem", color: "var(--text-secondary)" }}>
+            <div style={{ padding: "0.5rem 0.65rem", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-default)", fontSize: "0.78rem", color: "var(--text-secondary)" }}>
               <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Notes: </span>{notes}
             </div>
           )}
@@ -1607,7 +1607,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
           <PaymentMethodBadge method={paymentMethod} price={price} />
 
           {/* Safety checklist */}
-          <div style={{ padding: "0.65rem 0.75rem", borderRadius: "8px", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)" }}>
+          <div style={{ padding: "0.65rem 0.75rem", borderRadius: "8px", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
             <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.35rem" }}>Safety Checklist</div>
             {SAFETY_CHECKLIST.map((item) => (
               <div key={item} style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.75rem", color: "var(--text-secondary)", padding: "0.15rem 0" }}>
@@ -1666,7 +1666,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                     width: "6rem", padding: "0.5rem 0.75rem", fontSize: "1.3rem", fontWeight: 800,
                     letterSpacing: "0.3em", textAlign: "center", fontFamily: "monospace",
                     borderRadius: "10px", border: `2px solid ${codeInput === handoffCode ? "#10b981" : codeInput.length === 4 ? "#ef4444" : "var(--border-default)"}`,
-                    background: codeInput === handoffCode ? "rgba(16,185,129,0.08)" : "rgba(255,255,255,0.04)",
+                    background: codeInput === handoffCode ? "rgba(16,185,129,0.08)" : "var(--ghost-bg)",
                     color: "var(--text-primary)",
                   }}
                 />
@@ -2167,7 +2167,7 @@ function PostSaleRouter({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       {/* Tab bar */}
-      <div style={{ display: "flex", gap: "0.25rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", padding: "0.2rem", border: "1px solid var(--border-default)" }}>
+      <div style={{ display: "flex", gap: "0.25rem", background: "var(--bg-card)", borderRadius: "0.5rem", padding: "0.2rem", border: "1px solid var(--border-default)" }}>
         {tabs.map((t) => (
           <button
             key={t.key}
@@ -2255,7 +2255,7 @@ function LtlQuoteForm({ itemId, fromZip, weight, length, width, height, suggesti
   const [instructions, setInstructions] = useState("");
 
   return (
-    <div style={{ padding: "0.75rem", borderRadius: "0.6rem", border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.03)" }}>
+    <div style={{ padding: "0.75rem", borderRadius: "0.6rem", border: "1px solid var(--border-default)", background: "var(--bg-card)" }}>
       <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.5rem" }}>Freight Quote Request</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", fontSize: "0.78rem" }}>
         <div>
@@ -2600,7 +2600,7 @@ export default function ShippingPanel({
         <>
           {/* ── Tab Toggle: Ship It / Local Pickup ── */}
           {!isVehicle && (
-            <div style={{ display: "flex", gap: "0.25rem", marginTop: "0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", padding: "0.2rem", border: "1px solid var(--border-default)" }}>
+            <div style={{ display: "flex", gap: "0.25rem", marginTop: "0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", padding: "0.2rem", border: "1px solid var(--border-default)" }}>
               <button
                 onClick={() => setShippingTab("ship")}
                 style={{
@@ -2738,7 +2738,7 @@ export default function ShippingPanel({
                         borderRadius: "0.6rem",
                         fontSize: "0.78rem",
                         fontWeight: isSelected ? 600 : 400,
-                        background: isSelected ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.03)",
+                        background: isSelected ? "rgba(0,188,212,0.12)" : "var(--bg-card)",
                         border: `1px solid ${isAiPick ? "var(--accent)" : isSelected ? "var(--accent)" : "var(--border-default)"}`,
                         color: isSelected ? "var(--accent)" : "var(--text-secondary)",
                         cursor: "pointer",
@@ -2915,7 +2915,7 @@ export default function ShippingPanel({
                     onClick={() => setShippingTab("pickup")}
                     style={{
                       padding: "0.6rem 0.75rem", borderRadius: "0.5rem", cursor: "pointer",
-                      background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)",
+                      background: "var(--bg-card)", border: "1px solid var(--border-default)",
                       textAlign: "left",
                     }}
                   >
@@ -3153,7 +3153,7 @@ export default function ShippingPanel({
                         padding: "0.6rem 0.5rem",
                         borderRadius: "0.5rem",
                         border: "1px solid var(--border-default)",
-                        background: "rgba(255,255,255,0.02)",
+                        background: "var(--bg-card)",
                         textAlign: "center",
                       }}
                     >
@@ -3220,7 +3220,7 @@ function SaleClosedScreen({
 
   return (
     <div style={{
-      background: "rgba(255,255,255,0.03)",
+      background: "var(--bg-card)",
       backdropFilter: "blur(20px)",
       border: "1px solid rgba(16,185,129,0.2)",
       borderRadius: "18px",
@@ -3262,8 +3262,8 @@ function SaleClosedScreen({
         maxWidth: "22rem",
         padding: "1rem",
         borderRadius: "12px",
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.06)",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border-default)",
       }}>
         <div style={{
           fontSize: "0.65rem",
@@ -3404,7 +3404,7 @@ function SaleClosedScreen({
         width: "100%",
         maxWidth: "22rem",
         height: "1px",
-        background: "rgba(255,255,255,0.06)",
+        background: "var(--ghost-bg)",
       }} />
 
       {/* Rating section */}
@@ -3456,8 +3456,8 @@ function SaleClosedScreen({
                   fontSize: "0.78rem",
                   padding: "0.55rem 0.75rem",
                   borderRadius: "8px",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid var(--border-default)",
+                  background: "var(--ghost-bg)",
                   color: "var(--text-primary)",
                   outline: "none",
                 }}

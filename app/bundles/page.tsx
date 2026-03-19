@@ -13,9 +13,9 @@ import BundleSuggestions from "@/app/components/BundleSuggestions";
 
 const TEAL = "#00bcd4";
 const TEAL_DIM = "rgba(0,188,212,0.15)";
-const GLASS = "rgba(255,255,255,0.04)";
-const GLASS_BORDER = "rgba(255,255,255,0.08)";
-const GLASS_HOVER = "rgba(255,255,255,0.07)";
+const GLASS = "var(--ghost-bg)";
+const GLASS_BORDER = "var(--border-default)";
+const GLASS_HOVER = "var(--ghost-bg)";
 const TEXT_PRIMARY = "#fff";
 const TEXT_SECONDARY = "rgba(207,216,220,0.7)";
 const TEXT_MUTED = "rgba(207,216,220,0.45)";
@@ -52,7 +52,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }
   ACTIVE: { label: "Active", color: SUCCESS_GREEN, bg: `${SUCCESS_GREEN}18` },
   PAUSED: { label: "Paused", color: WARN_ORANGE, bg: `${WARN_ORANGE}18` },
   SOLD: { label: "Sold", color: "#a855f7", bg: "rgba(168,85,247,0.15)" },
-  DRAFT: { label: "Draft", color: TEXT_MUTED, bg: "rgba(255,255,255,0.06)" },
+  DRAFT: { label: "Draft", color: TEXT_MUTED, bg: "var(--ghost-bg)" },
 };
 
 export default function BundlesPage() {
@@ -296,7 +296,7 @@ export default function BundlesPage() {
                 <div
                   key={t.label}
                   style={{
-                    background: "rgba(255,255,255,0.03)",
+                    background: "var(--bg-card)",
                     borderRadius: 10,
                     padding: "14px 18px",
                     textAlign: "center",

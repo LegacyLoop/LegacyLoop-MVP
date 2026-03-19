@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
+import UploadModal, { type PhotoFile } from "@/app/components/UploadModal";
 
 type SaleOption = {
   id: string;
@@ -51,8 +52,8 @@ const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "12px 16px",
   borderRadius: "10px",
-  border: "1px solid rgba(255,255,255,0.1)",
-  background: "rgba(255,255,255,0.05)",
+  border: "1px solid var(--border-default)",
+  background: "var(--ghost-bg)",
   color: "#fff",
   fontSize: "15px",
   fontWeight: 500,
@@ -65,7 +66,7 @@ const labelStyle: React.CSSProperties = {
   display: "block",
   fontSize: "14px",
   fontWeight: 600,
-  color: "rgba(255,255,255,0.5)",
+  color: "var(--text-muted)",
   marginBottom: "6px",
   letterSpacing: "0.01em",
 };
@@ -74,7 +75,7 @@ const sectionHeadStyle: React.CSSProperties = {
   fontSize: "13px",
   textTransform: "uppercase",
   letterSpacing: "0.1em",
-  color: "rgba(255,255,255,0.35)",
+  color: "var(--text-muted)",
   fontWeight: 700,
   marginBottom: "16px",
   display: "flex",
@@ -83,8 +84,8 @@ const sectionHeadStyle: React.CSSProperties = {
 };
 
 const cardStyle: React.CSSProperties = {
-  background: "rgba(255,255,255,0.02)",
-  border: "1px solid rgba(255,255,255,0.06)",
+  background: "var(--bg-card)",
+  border: "1px solid var(--border-default)",
   borderRadius: "20px",
   padding: "24px",
   marginBottom: "16px",
@@ -95,7 +96,7 @@ function focusHandler(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement
   e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.08)";
 }
 function blurHandler(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-  e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+  e.currentTarget.style.borderColor = "var(--border-default)";
   e.currentTarget.style.boxShadow = "none";
 }
 
@@ -103,53 +104,12 @@ export default function NewItemPage() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [photos, setPhotos] = useState<File[]>([]);
+  const [photos, setPhotos] = useState<PhotoFile[]>([]);
 
   const titleRef = useRef<HTMLInputElement>(null);
-  const cameraRef = useRef<HTMLInputElement>(null);
-  const galleryRef = useRef<HTMLInputElement>(null);
-  const [dragOver, setDragOver] = useState(false);
-  const [previews, setPreviews] = useState<string[]>([]);
   const [uploadStatus, setUploadStatus] = useState<Record<string, "pending" | "uploading" | "done" | "error">>({});
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
-  const [sizeWarning, setSizeWarning] = useState("");
   const [createdItemId, setCreatedItemId] = useState<string | null>(null);
-  const [hoveredThumb, setHoveredThumb] = useState<number | null>(null);
-
-  // Sync object URL previews with photos array
-  useEffect(() => {
-    // Revoke old URLs
-    previews.forEach((url) => URL.revokeObjectURL(url));
-    const next = photos.map((f) => URL.createObjectURL(f));
-    setPreviews(next);
-    return () => { next.forEach((url) => URL.revokeObjectURL(url)); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photos]);
-
-  const handleFilesAdded = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-    const allValid = Array.from(files).filter((f) => f.type.startsWith("image/") || /\.(heic|heif)$/i.test(f.name));
-    const oversized = allValid.filter((f) => f.size > 15 * 1024 * 1024);
-    const validFiles = allValid.filter((f) => f.size <= 15 * 1024 * 1024);
-    if (oversized.length > 0) {
-      setSizeWarning(`${oversized.length} photo(s) over 15MB were skipped. Try a smaller size.`);
-    } else {
-      setSizeWarning("");
-    }
-    setPhotos((prev) => [...prev, ...validFiles].slice(0, 10));
-    e.target.value = "";
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    if (!e.dataTransfer.files.length) return;
-    const newFiles = Array.from(e.dataTransfer.files)
-      .filter((f) => f.type.startsWith("image/") || /\.(heic|heif)$/i.test(f.name))
-      .filter((f) => f.size <= 15 * 1024 * 1024);
-    setPhotos((prev) => [...prev, ...newFiles].slice(0, 10));
-  };
 
   // Sale assignment state
   const [sales, setSales] = useState<SaleOption[]>([]);
@@ -210,21 +170,7 @@ export default function NewItemPage() {
       .finally(() => setSalesLoading(false));
   }, []);
 
-  // Clipboard paste support (Cmd+V / Ctrl+V adds images)
-  useEffect(() => {
-    const handlePaste = (e: ClipboardEvent) => {
-      const items = Array.from(e.clipboardData?.items || []);
-      const imageFiles = items
-        .filter((i) => i.type.startsWith("image/"))
-        .map((i) => i.getAsFile())
-        .filter(Boolean) as File[];
-      if (imageFiles.length > 0) {
-        setPhotos((prev) => [...prev, ...imageFiles].slice(0, 10));
-      }
-    };
-    window.addEventListener("paste", handlePaste);
-    return () => window.removeEventListener("paste", handlePaste);
-  }, []);
+  // Clipboard paste handled by UploadModal component
 
   // SessionStorage backup/restore for form fields
   useEffect(() => {
@@ -254,9 +200,9 @@ export default function NewItemPage() {
   }, [title, category, condition, brand, model, yearEra, saleMethod, saleZip, saleRadius, description, story, startingPrice]);
 
 
-  const retryUpload = async (photo: File, itemId: string | null) => {
+  const retryUpload = async (photo: PhotoFile, itemId: string | null) => {
     if (!itemId) return;
-    const key = `${photo.name}-${photo.size}`;
+    const key = `${photo.file.name}-${photo.file.size}`;
     setUploadStatus((prev) => ({ ...prev, [key]: "uploading" }));
     setUploadProgress((prev) => ({ ...prev, [key]: 0 }));
     try {
@@ -264,7 +210,7 @@ export default function NewItemPage() {
         setUploadProgress((prev) => ({ ...prev, [key]: Math.min((prev[key] || 0) + 20, 80) }));
       }, 200);
       const fd = new FormData();
-      fd.append("photos[]", photo);
+      fd.append("photos[]", photo.file);
       const res = await fetch(`/api/items/photos/${itemId}`, { method: "POST", body: fd });
       clearInterval(progressInterval);
       if (res.ok) {
@@ -300,7 +246,7 @@ export default function NewItemPage() {
       const descString = descParts.length > 0 ? descParts.join(" | ") : "";
 
       const formData = new FormData();
-      for (const p of photos) formData.append("photos[]", p);
+      for (const p of photos) formData.append("photos[]", p.file);
       if (title) formData.append("title", title);
       if (condition) formData.append("condition", condition);
       if (descString) formData.append("description", descString);
@@ -319,7 +265,7 @@ export default function NewItemPage() {
       const statusInit: Record<string, "uploading"> = {};
       const progressInit: Record<string, number> = {};
       for (const p of photos) {
-        const key = `${p.name}-${p.size}`;
+        const key = `${p.file.name}-${p.file.size}`;
         statusInit[key] = "uploading";
         progressInit[key] = 0;
       }
@@ -448,7 +394,7 @@ export default function NewItemPage() {
       padding: "0 16px 80px",
     }}>
       {/* ── Breadcrumb ── */}
-      <div style={{ marginBottom: "8px", fontSize: "12px", color: "rgba(255,255,255,0.3)" }}>
+      <div style={{ marginBottom: "8px", fontSize: "12px", color: "var(--text-muted)" }}>
         <span style={{ cursor: "pointer" }} onClick={() => router.push("/dashboard")}>Dashboard</span>
         <span style={{ margin: "0 6px" }}>/</span>
         <span>New Item</span>
@@ -470,345 +416,31 @@ export default function NewItemPage() {
       {/* ── PHOTOS ── */}
       <div>
         <div style={{
-          background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(255,255,255,0.08)",
-          borderRadius: "16px",
-          padding: "22px",
+          background: "var(--bg-card)",
+          border: "1px solid var(--border-default)",
+          borderRadius: "20px",
+          padding: "24px",
           marginBottom: "16px",
         }}>
-          {/* Section label */}
-          <span style={{
-            fontSize: "11px",
-            fontWeight: 700,
-            letterSpacing: "0.12em",
-            color: "rgba(0,188,212,0.85)",
-            textTransform: "uppercase" as const,
-            marginBottom: "8px",
-            display: "block",
-          }}>
-            📸 Photos
-          </span>
-
-          {/* Counter */}
-          <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)", marginBottom: "14px", display: "block" }}>
-            {photos.length} of 10 photos used
-          </span>
-
-          {/* Hidden inputs */}
-          <input
-            ref={cameraRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/heic,image/gif"
-            capture="environment"
-            multiple
-            style={{ display: "none" }}
-            onChange={handleFilesAdded}
-          />
-          <input
-            ref={galleryRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/heic,image/gif"
-            multiple
-            style={{ display: "none" }}
-            onChange={handleFilesAdded}
-          />
-
-          {/* Drop zone */}
-          <div
-            onClick={() => galleryRef.current?.click()}
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={(e) => { e.preventDefault(); setDragOver(false); }}
-            onDrop={handleDrop}
-            style={{
-              background: dragOver ? "rgba(0,188,212,0.06)" : "rgba(255,255,255,0.02)",
-              border: dragOver ? "2px dashed rgba(0,188,212,0.65)" : "2px dashed rgba(0,188,212,0.25)",
-              borderRadius: "14px",
-              padding: "32px 20px",
-              textAlign: "center" as const,
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              minHeight: "140px",
-              display: "flex",
-              flexDirection: "column" as const,
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "12px",
-              boxShadow: dragOver ? "0 0 30px rgba(0,188,212,0.15)" : "none",
-              animation: dragOver ? "pulse-border 1s ease infinite" : "none",
-            }}
-          >
-            <span style={{ fontSize: "32px", opacity: dragOver ? 1 : 0.5, transition: "opacity 0.2s ease" }}>📷</span>
-            <span style={{ fontSize: "15px", fontWeight: 600, color: "white" }}>
-              Drop photos here or tap to choose
-            </span>
-            <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)" }}>
-              JPG, PNG, WEBP, HEIC &middot; Up to 10 photos &middot; Max 15MB each
-            </span>
-            <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", marginTop: "2px" }}>
-              or paste from clipboard (&#8984;V)
-            </span>
-          </div>
-
-          {/* Camera + Gallery buttons */}
           <div style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "12px",
-            marginTop: "14px",
+            fontSize: "13px",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+            color: "var(--text-muted)",
+            fontWeight: 700,
+            marginBottom: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
           }}>
-            <button
-              type="button"
-              onClick={() => cameraRef.current?.click()}
-              style={{
-                background: "linear-gradient(135deg, #00bcd4 0%, #0097a7 100%)",
-                border: "none",
-                borderRadius: "14px",
-                padding: "16px 20px",
-                color: "white",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                width: "100%",
-                minHeight: "52px",
-                boxShadow: "0 4px 16px rgba(0,188,212,0.2)",
-                transition: "all 0.2s ease",
-              }}
-            >
-              📷 Take a Photo
-            </button>
-            <button
-              type="button"
-              onClick={() => galleryRef.current?.click()}
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                borderRadius: "14px",
-                padding: "16px 20px",
-                color: "rgba(255,255,255,0.85)",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                width: "100%",
-                minHeight: "52px",
-                transition: "all 0.2s ease",
-              }}
-            >
-              🖼️ Choose from Library
-            </button>
+            <span style={{ fontSize: "15px" }}>📷</span> Item Photos
           </div>
 
-          {/* Size warning */}
-          {sizeWarning && (
-            <div style={{
-              marginTop: "10px",
-              padding: "10px 14px",
-              background: "rgba(239,68,68,0.08)",
-              border: "1px solid rgba(239,68,68,0.2)",
-              borderRadius: "10px",
-              fontSize: "13px",
-              color: "rgba(239,68,68,0.85)",
-            }}>
-              {sizeWarning}
-            </div>
-          )}
-
-          {/* Thumbnail grid */}
-          {photos.length > 0 && (
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "10px",
-              marginTop: "16px",
-            }}>
-              {photos.map((photo, i) => {
-                const photoKey = `${photo.name}-${photo.size}`;
-                const status = uploadStatus[photoKey];
-                const progress = uploadProgress[photoKey] || 0;
-                return (
-                <div
-                  key={`${photo.name}-${photo.size}-${i}`}
-                  onClick={(e) => {
-                    if ((e.target as HTMLElement).closest("[data-remove]")) return;
-                    if (i === 0) return;
-                    setPhotos((prev) => {
-                      const updated = [...prev];
-                      const [selected] = updated.splice(i, 1);
-                      updated.unshift(selected);
-                      return updated;
-                    });
-                  }}
-                  onMouseEnter={() => setHoveredThumb(i)}
-                  onMouseLeave={() => setHoveredThumb(null)}
-                  style={{
-                    position: "relative" as const,
-                    borderRadius: "10px",
-                    overflow: "hidden",
-                    aspectRatio: "1 / 1",
-                    background: "rgba(255,255,255,0.05)",
-                    border: i === 0 ? "2px solid #00bcd4" : "1px solid rgba(255,255,255,0.08)",
-                    cursor: i === 0 ? "default" : "pointer",
-                    animation: "thumb-in 0.25s ease forwards",
-                    animationDelay: `${i * 0.04}s`,
-                    opacity: 0,
-                  }}
-                >
-                  {previews[i] ? (
-                    <img
-                      src={previews[i]}
-                      alt=""
-                      style={{ width: "100%", height: "100%", objectFit: "cover" as const, display: "block" }}
-                    />
-                  ) : (
-                    <div style={{ width: "100%", height: "100%", background: "rgba(0,188,212,0.08)", borderRadius: "10px" }} />
-                  )}
-                  {/* COVER badge */}
-                  {i === 0 && (
-                    <span style={{
-                      position: "absolute" as const,
-                      top: "7px",
-                      left: "7px",
-                      background: "#00bcd4",
-                      color: "white",
-                      fontSize: "9px",
-                      fontWeight: 700,
-                      padding: "2px 7px",
-                      borderRadius: "5px",
-                      letterSpacing: "0.06em",
-                    }}>
-                      COVER
-                    </span>
-                  )}
-                  {/* Set Cover hover overlay */}
-                  {i !== 0 && hoveredThumb === i && (
-                    <div style={{
-                      position: "absolute" as const,
-                      inset: 0,
-                      background: "rgba(0,0,0,0.5)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "opacity 0.15s ease",
-                    }}>
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: "white" }}>
-                        ★ Set Cover
-                      </span>
-                    </div>
-                  )}
-                  {/* Upload progress bar */}
-                  {status && (
-                    <div style={{
-                      position: "absolute" as const,
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: "3px",
-                      background: "rgba(0,0,0,0.4)",
-                      borderRadius: "0 0 10px 10px",
-                      overflow: "hidden",
-                    }}>
-                      <div style={{
-                        height: "100%",
-                        width: `${progress}%`,
-                        background: status === "error" ? "#ef4444" : status === "done" ? "#22c55e" : "#00bcd4",
-                        transition: "width 0.3s ease",
-                        borderRadius: "0 0 10px 10px",
-                      }} />
-                    </div>
-                  )}
-                  {/* Success checkmark */}
-                  {status === "done" && (
-                    <div style={{
-                      position: "absolute" as const,
-                      top: "6px",
-                      right: i === 0 ? "32px" : "6px",
-                      width: "20px",
-                      height: "20px",
-                      borderRadius: "50%",
-                      background: "#22c55e",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "11px",
-                      color: "white",
-                      fontWeight: 700,
-                    }}>
-                      ✓
-                    </div>
-                  )}
-                  {/* Error + retry overlay */}
-                  {status === "error" && (
-                    <div style={{
-                      position: "absolute" as const,
-                      inset: 0,
-                      background: "rgba(239,68,68,0.7)",
-                      display: "flex",
-                      flexDirection: "column" as const,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderRadius: "10px",
-                      gap: "4px",
-                    }}>
-                      <span style={{ fontSize: "11px", color: "white", fontWeight: 600 }}>Upload failed</span>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); retryUpload(photo, createdItemId); }}
-                        style={{
-                          background: "white",
-                          border: "none",
-                          borderRadius: "6px",
-                          padding: "3px 10px",
-                          fontSize: "11px",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          color: "#ef4444",
-                        }}
-                      >
-                        Retry
-                      </button>
-                    </div>
-                  )}
-                  {/* Remove button */}
-                  <button
-                    type="button"
-                    data-remove="true"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setPhotos((prev) => prev.filter((_, idx) => idx !== i));
-                    }}
-                    style={{
-                      position: "absolute" as const,
-                      top: "5px",
-                      right: "5px",
-                      background: "rgba(0,0,0,0.7)",
-                      border: "none",
-                      color: "white",
-                      width: "22px",
-                      height: "22px",
-                      borderRadius: "50%",
-                      cursor: "pointer",
-                      fontSize: "13px",
-                      fontWeight: 700,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      lineHeight: 1,
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-                );
-              })}
-            </div>
-          )}
+          <UploadModal
+            photos={photos}
+            setPhotos={setPhotos}
+            maxPhotos={10}
+          />
 
           {/* Upload status counter */}
           {Object.keys(uploadStatus).length > 0 && (
@@ -823,8 +455,8 @@ export default function NewItemPage() {
             </div>
           )}
         </div>
-
       </div>
+
 
       {/* ── DETAILS FORM ── */}
       <form
@@ -938,7 +570,7 @@ export default function NewItemPage() {
                 onFocus={focusHandler}
                 onBlur={blurHandler}
               />
-              <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginTop: "4px" }}>
+              <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>
                 Items with a story sell for 20-30% more on average
               </div>
             </div>
@@ -968,7 +600,7 @@ export default function NewItemPage() {
                     left: "14px",
                     top: "50%",
                     transform: "translateY(-50%)",
-                    color: "rgba(255,255,255,0.35)",
+                    color: "var(--text-muted)",
                     fontSize: "15px",
                     fontWeight: 600,
                     pointerEvents: "none" as const,
@@ -997,7 +629,7 @@ export default function NewItemPage() {
               <div>
                 <label style={labelStyle}>Search radius (miles)</label>
                 <input value={saleRadius} onChange={(e) => setSaleRadius(e.target.value)} type="number" min={10} max={5000} style={inputStyle} onFocus={focusHandler} onBlur={blurHandler} />
-                <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginTop: "4px" }}>
+                <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>
                   Use 1000+ for nationwide
                 </div>
               </div>
@@ -1015,7 +647,7 @@ export default function NewItemPage() {
                     style={{
                       display: "flex", alignItems: "center", gap: "10px",
                       padding: "10px 14px", borderRadius: "12px",
-                      border: `2px solid ${!selectedSaleId ? "#00bcd4" : "rgba(255,255,255,0.08)"}`,
+                      border: `2px solid ${!selectedSaleId ? "#00bcd4" : "var(--border-default)"}`,
                       background: !selectedSaleId ? "rgba(0,188,212,0.06)" : "transparent",
                       cursor: "pointer", textAlign: "left" as const, width: "100%",
                       transition: "all 0.15s ease", minHeight: "46px",
@@ -1023,7 +655,7 @@ export default function NewItemPage() {
                   >
                     <span style={{ fontSize: "16px", opacity: 0.5 }}>{"\u2014"}</span>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: "14px", fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>No Sale — Individual Item</div>
+                      <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)" }}>No Sale — Individual Item</div>
                     </div>
                     {!selectedSaleId && <span style={{ color: "#00bcd4", fontWeight: 700, fontSize: "14px" }}>✓</span>}
                   </button>
@@ -1039,7 +671,7 @@ export default function NewItemPage() {
                         style={{
                           display: "flex", alignItems: "center", gap: "10px",
                           padding: "10px 14px", borderRadius: "12px",
-                          border: `2px solid ${selected ? meta.color : "rgba(255,255,255,0.08)"}`,
+                          border: `2px solid ${selected ? meta.color : "var(--border-default)"}`,
                           background: selected ? `${meta.color}10` : "transparent",
                           cursor: "pointer", textAlign: "left" as const, width: "100%",
                           transition: "all 0.15s ease", minHeight: "46px",
@@ -1047,8 +679,8 @@ export default function NewItemPage() {
                       >
                         <span style={{ fontSize: "18px" }}>{meta.emoji}</span>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: "14px", fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{sale.name}</div>
-                          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>
+                          <div style={{ fontSize: "14px", fontWeight: 600, color: "var(--text-primary)" }}>{sale.name}</div>
+                          <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
                             {meta.label} · {sale.itemCount} item{sale.itemCount !== 1 ? "s" : ""}
                             {sale.startDate && ` · ${new Date(sale.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
                           </div>
@@ -1073,7 +705,7 @@ export default function NewItemPage() {
               cursor: "pointer",
               fontSize: "14px",
               fontWeight: 600,
-              color: "rgba(255,255,255,0.6)",
+              color: "var(--text-secondary)",
               listStyle: "none",
               display: "flex",
               alignItems: "center",
@@ -1082,7 +714,7 @@ export default function NewItemPage() {
               <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span style={{ fontSize: "15px" }}>📦</span> Additional Details (optional — helps AI accuracy)
               </span>
-              <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)" }}>▼</span>
+              <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>▼</span>
             </summary>
 
             <div style={{ padding: "0 24px 24px" }}>
@@ -1154,7 +786,7 @@ export default function NewItemPage() {
 
               {/* Dimensions + Weight */}
               <div style={{
-                fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.35)",
+                fontSize: "12px", fontWeight: 600, color: "var(--text-muted)",
                 textTransform: "uppercase", letterSpacing: "0.08em",
                 marginBottom: "10px", marginTop: "6px",
               }}>Shipping dimensions</div>
@@ -1181,7 +813,7 @@ export default function NewItemPage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                 <label style={{
                   display: "flex", alignItems: "center", gap: "10px",
-                  fontSize: "15px", color: "rgba(255,255,255,0.7)",
+                  fontSize: "15px", color: "var(--text-secondary)",
                   cursor: "pointer", minHeight: "46px",
                 }}>
                   <input

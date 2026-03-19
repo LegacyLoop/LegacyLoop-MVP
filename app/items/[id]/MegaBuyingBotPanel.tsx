@@ -355,7 +355,7 @@ export default function MegaBuyingBotPanel({ itemId, itemTitle, initialBot, init
               <span style={{ background: "linear-gradient(90deg,#f59e0b,#fbbf24)", color: "#1c1917", fontSize: "0.65rem", fontWeight: 800, padding: "2px 8px", borderRadius: 9999 }}>PREMIUM</span>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "rgba(255,255,255,0.1)", borderRadius: 9999, padding: "4px 12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "var(--bg-card-hover)", borderRadius: 9999, padding: "4px 12px" }}>
             <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px #4ade80" }} />
             <span style={{ color: "#fff", fontSize: "0.78rem" }}>Active — scanning every 2h</span>
           </div>

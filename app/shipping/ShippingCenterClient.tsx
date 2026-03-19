@@ -31,8 +31,8 @@ function StatsBar({ data }: { data: ShipData }) {
     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem", marginBottom: "1.5rem" }}>
       {stats.map((s) => (
         <div key={s.label} style={{
-          background: "var(--bg-card, rgba(255,255,255,0.05))",
-          border: "1px solid var(--border-card, rgba(255,255,255,0.08))",
+          background: "var(--bg-card)",
+          border: "1px solid var(--border-card, var(--border-default))",
           borderRadius: "1rem",
           padding: "1rem",
           textAlign: "center",
@@ -70,14 +70,14 @@ function ItemRow({ item, children }: { item: any; children?: React.ReactNode }) 
       gap: "1rem",
       padding: "1rem",
       borderRadius: "0.75rem",
-      border: "1px solid var(--border-default, rgba(255,255,255,0.06))",
-      background: "rgba(255,255,255,0.02)",
+      border: "1px solid var(--border-default, var(--border-default))",
+      background: "var(--bg-card)",
       transition: "border-color 0.15s ease",
     }}>
       {item.photo ? (
         <img src={item.photo} alt="" style={{ width: 48, height: 48, borderRadius: "0.5rem", objectFit: "cover", flexShrink: 0 }} />
       ) : (
-        <div style={{ width: 48, height: 48, borderRadius: "0.5rem", background: "rgba(255,255,255,0.05)", flexShrink: 0 }} />
+        <div style={{ width: 48, height: 48, borderRadius: "0.5rem", background: "var(--ghost-bg)", flexShrink: 0 }} />
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <Link href={`/items/${item.id}`} style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text-primary)", textDecoration: "none" }}>
@@ -149,7 +149,7 @@ function PreSaleTab({ items }: { items: any[] }) {
             {est && (
               <div style={{ marginLeft: "4rem", marginTop: "0.5rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                 {est.carriers.filter((c: any) => c.price > 0).map((c: any) => (
-                  <div key={`${c.carrier}-${c.service}`} style={{ padding: "0.4rem 0.75rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", fontSize: "0.72rem" }}>
+                  <div key={`${c.carrier}-${c.service}`} style={{ padding: "0.4rem 0.75rem", borderRadius: "0.5rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", fontSize: "0.72rem" }}>
                     <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{c.carrier}</span>
                     <span style={{ color: "var(--text-muted)" }}> {c.service} · ${c.price.toFixed(2)} · {c.days}d</span>
                   </div>
@@ -288,7 +288,7 @@ function FreightTab() {
     setScheduling(false);
   }
 
-  const inputStyle = { padding: "0.5rem 0.75rem", borderRadius: "0.5rem", border: "1px solid var(--border-default, rgba(255,255,255,0.1))", background: "var(--bg-input, rgba(255,255,255,0.05))", color: "var(--text-primary, #e7e5e4)", fontSize: "0.85rem", width: "100%" };
+  const inputStyle = { padding: "0.5rem 0.75rem", borderRadius: "0.5rem", border: "1px solid var(--border-default, var(--border-default))", background: "var(--bg-input, var(--border-default))", color: "var(--text-primary, #e7e5e4)", fontSize: "0.85rem", width: "100%" };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
@@ -301,7 +301,7 @@ function FreightTab() {
       </div>
 
       {/* Dimensions form */}
-      <div style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
+      <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
         <div style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "1rem" }}>Item Details</div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem" }}>
           <div>
@@ -353,7 +353,7 @@ function FreightTab() {
 
       {/* Quote results */}
       {quote && (
-        <div style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
           <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
             <div>
               <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Freight Class</div>
@@ -372,7 +372,7 @@ function FreightTab() {
           <div style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem" }}>Carrier Options</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             {quote.carriers.map((c: any) => (
-              <div key={c.carrier} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.85rem 1rem", borderRadius: "0.75rem", border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.02)" }}>
+              <div key={c.carrier} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.85rem 1rem", borderRadius: "0.75rem", border: "1px solid var(--border-default)", background: "var(--bg-card)" }}>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text-primary)" }}>{c.carrier}</div>
                   <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{c.service} · {c.transit}{c.guaranteed ? " · Guaranteed" : ""}</div>
@@ -436,7 +436,7 @@ export default function ShippingCenterClient() {
             style={{
               padding: "0.55rem 1rem",
               borderRadius: "0.65rem",
-              border: tab === t.key ? "1.5px solid var(--accent)" : "1px solid var(--border-default, rgba(255,255,255,0.08))",
+              border: tab === t.key ? "1.5px solid var(--accent)" : "1px solid var(--border-default, var(--border-default))",
               background: tab === t.key ? "rgba(0,188,212,0.1)" : "transparent",
               color: tab === t.key ? "var(--accent)" : "var(--text-muted)",
               fontSize: "0.82rem",
@@ -466,11 +466,11 @@ export default function ShippingCenterClient() {
       {loading ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
           {[1, 2, 3].map((i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem", borderRadius: "0.75rem", border: "1px solid var(--border-default, rgba(255,255,255,0.06))", background: "rgba(255,255,255,0.02)" }}>
-              <div style={{ width: 48, height: 48, borderRadius: "0.5rem", background: "rgba(255,255,255,0.05)" }} className="skeleton" />
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1rem", borderRadius: "0.75rem", border: "1px solid var(--border-default, var(--border-default))", background: "var(--bg-card)" }}>
+              <div style={{ width: 48, height: 48, borderRadius: "0.5rem", background: "var(--ghost-bg)" }} className="skeleton" />
               <div style={{ flex: 1 }}>
-                <div style={{ height: 14, width: "60%", background: "rgba(255,255,255,0.06)", borderRadius: "0.25rem", marginBottom: "0.4rem" }} className="skeleton" />
-                <div style={{ height: 10, width: "35%", background: "rgba(255,255,255,0.04)", borderRadius: "0.25rem" }} className="skeleton" />
+                <div style={{ height: 14, width: "60%", background: "var(--ghost-bg)", borderRadius: "0.25rem", marginBottom: "0.4rem" }} className="skeleton" />
+                <div style={{ height: 10, width: "35%", background: "var(--ghost-bg)", borderRadius: "0.25rem" }} className="skeleton" />
               </div>
             </div>
           ))}

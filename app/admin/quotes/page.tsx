@@ -44,7 +44,7 @@ function statusColor(status: string): { bg: string; text: string; border: string
     case "QUOTE_SENT": return { bg: "rgba(99,102,241,0.08)", text: "#6366f1", border: "rgba(99,102,241,0.2)" };
     case "ACCEPTED": return { bg: "rgba(22,163,74,0.08)", text: "#22c55e", border: "rgba(22,163,74,0.2)" };
     case "DECLINED": return { bg: "rgba(239,68,68,0.08)", text: "#ef4444", border: "rgba(239,68,68,0.2)" };
-    default: return { bg: "rgba(255,255,255,0.05)", text: "var(--text-muted)", border: "var(--border-default)" };
+    default: return { bg: "var(--ghost-bg)", text: "var(--text-muted)", border: "var(--border-default)" };
   }
 }
 
@@ -217,7 +217,7 @@ export default async function AdminQuotesPage() {
 
                   {/* Notes */}
                   {(q.specialItems || q.accessConcerns || q.additionalNotes) && (
-                    <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: "0.5rem", padding: "0.5rem 0.65rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.4rem", border: "1px solid var(--border-default)" }}>
+                    <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: "0.5rem", padding: "0.5rem 0.65rem", background: "var(--bg-card)", borderRadius: "0.4rem", border: "1px solid var(--border-default)" }}>
                       {q.specialItems && <div><strong>Special items:</strong> {q.specialItems}</div>}
                       {q.accessConcerns && <div><strong>Access concerns:</strong> {q.accessConcerns}</div>}
                       {q.additionalNotes && <div><strong>Notes:</strong> {q.additionalNotes}</div>}

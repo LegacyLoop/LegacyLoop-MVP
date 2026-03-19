@@ -3,11 +3,13 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
+import { sendEmail } from "@/lib/email/send";
+import { ltlQuoteRequestEmail } from "@/lib/email/templates";
 
 /**
  * POST /api/shipping/ltl-quote-request
  * Captures LTL freight quote request data and logs it.
- * Sends email to legacyloopmaine@gmail.com (or logs to file as backup).
+ * Sends email to shipping@legacy-loop.com and logs to file as backup.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -83,7 +85,7 @@ export async function POST(req: NextRequest) {
     ].join("\n");
 
     // Log to console
-    console.log("\n📋 LTL FREIGHT QUOTE REQUEST → legacyloopmaine@gmail.com");
+    console.log("\n📋 LTL FREIGHT QUOTE REQUEST → shipping@legacy-loop.com");
     console.log(formatted);
 
     // Save to temp file as backup
@@ -100,8 +102,18 @@ export async function POST(req: NextRequest) {
       console.error("Failed to save quote file:", fileErr);
     }
 
-    // TODO: Send email to legacyloopmaine@gmail.com via nodemailer or SendGrid
-    // For now, the quote is logged and saved to /tmp/ltl-quote-requests/
+    // Send quote request email to shipping team
+    const quoteEmail = ltlQuoteRequestEmail(
+      quoteData.requestedBy, quoteData.itemId,
+      quoteData.originZip, quoteData.destinationZip,
+      String(quoteData.weight), formatted
+    );
+    sendEmail({
+      to: "shipping@legacy-loop.com",
+      from: "shipping@legacy-loop.com",
+      fromName: "LegacyLoop Shipping",
+      ...quoteEmail,
+    }).catch(() => {});
 
     return NextResponse.json({
       success: true,

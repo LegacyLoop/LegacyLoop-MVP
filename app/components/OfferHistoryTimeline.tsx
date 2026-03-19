@@ -54,8 +54,8 @@ export default function OfferHistoryTimeline({ events, originalPrice, currentPri
       <div style={{
         padding: "1.25rem",
         borderRadius: "0.75rem",
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border-default)",
         textAlign: "center",
         color: "#888",
         fontSize: "0.85rem",
@@ -69,8 +69,8 @@ export default function OfferHistoryTimeline({ events, originalPrice, currentPri
     <div style={{
       padding: "1.25rem",
       borderRadius: "0.75rem",
-      background: "rgba(255,255,255,0.03)",
-      border: "1px solid rgba(255,255,255,0.08)",
+      background: "var(--bg-card)",
+      border: "1px solid var(--border-default)",
     }}>
       <div style={{
         fontWeight: 700,
@@ -95,7 +95,7 @@ export default function OfferHistoryTimeline({ events, originalPrice, currentPri
           top: "8px",
           bottom: "8px",
           width: "2px",
-          background: "rgba(255,255,255,0.08)",
+          background: "var(--ghost-bg)",
         }} />
 
         {events.map((ev, i) => {
@@ -116,7 +116,7 @@ export default function OfferHistoryTimeline({ events, originalPrice, currentPri
                 width: "16px",
                 height: "16px",
                 borderRadius: "50%",
-                background: isLast ? color : "rgba(255,255,255,0.05)",
+                background: isLast ? color : "var(--text-muted)",
                 border: `2px solid ${color}`,
                 boxShadow: isLast ? `0 0 8px ${color}40` : "none",
               }} />
@@ -178,7 +178,7 @@ export default function OfferHistoryTimeline({ events, originalPrice, currentPri
         <div style={{
           marginTop: "1rem",
           paddingTop: "0.75rem",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderTop: "1px solid var(--border-default)",
           display: "flex",
           justifyContent: "space-between",
           fontSize: "0.78rem",

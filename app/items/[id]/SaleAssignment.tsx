@@ -93,11 +93,11 @@ export default function SaleAssignment({ itemId, initialProjectId }: { itemId: s
   if (loading) {
     return (
       <div style={{
-        background: "rgba(255,255,255,0.03)",
+        background: "var(--bg-card)",
         border: "1px solid var(--border-default)",
         borderRadius: "0.75rem",
         padding: "1rem 1.25rem",
-        marginTop: "0.75rem",
+        marginTop: 0,
       }}>
         <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
           🏷️ Sale Assignment
@@ -109,11 +109,11 @@ export default function SaleAssignment({ itemId, initialProjectId }: { itemId: s
 
   return (
     <div style={{
-      background: "rgba(255,255,255,0.03)",
+      background: "var(--bg-card)",
       border: "1px solid var(--border-default)",
       borderRadius: "0.75rem",
       padding: "1rem 1.25rem",
-      marginTop: "0.75rem",
+      marginTop: 0,
     }}>
       <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.6rem" }}>
         🏷️ Sale Assignment
@@ -161,7 +161,7 @@ export default function SaleAssignment({ itemId, initialProjectId }: { itemId: s
                 fontWeight: 600,
                 borderRadius: "0.5rem",
                 border: "1px solid var(--border-default)",
-                background: "rgba(255,255,255,0.04)",
+                background: "var(--ghost-bg)",
                 color: "var(--text-secondary)",
                 cursor: "pointer",
                 flex: 1,
@@ -244,7 +244,7 @@ export default function SaleAssignment({ itemId, initialProjectId }: { itemId: s
                     : "1px solid var(--border-default)",
                   background: sale.id === assignedSaleId
                     ? "rgba(0,188,212,0.08)"
-                    : "rgba(255,255,255,0.03)",
+                    : "var(--bg-card)",
                   color: sale.id === assignedSaleId
                     ? "var(--accent)"
                     : "var(--text-primary)",

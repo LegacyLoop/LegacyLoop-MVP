@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { sendEmail } from "@/lib/email/send";
+import { welcomeEmail } from "@/lib/email/templates";
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
@@ -38,6 +40,21 @@ export async function POST(req: NextRequest) {
     }
 
     await authAdapter.signup(trimmedEmail, String(password));
+
+    // Send welcome email (fire-and-forget — never block signup)
+    const name = trimmedEmail.split("@")[0];
+    const welcome = welcomeEmail(name);
+    sendEmail({ to: trimmedEmail, ...welcome });
+
+    // Notify n8n for welcome drip sequence (fire-and-forget)
+    if (process.env.N8N_WEBHOOK_URL) {
+      fetch(`${process.env.N8N_WEBHOOK_URL}/webhook/new-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmedEmail, firstName: name, signupDate: new Date().toISOString() }),
+      }).catch(() => {});
+    }
+
     return new Response("OK", { status: 200 });
   } catch (err: any) {
     const msg = err?.message || "";

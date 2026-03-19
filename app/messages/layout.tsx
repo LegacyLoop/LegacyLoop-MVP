@@ -16,7 +16,7 @@ export default function MessagesLayout({
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
-      background: '#0a1929'
+      background: 'var(--bg-primary)'
     }}>
       <div style={{
         width: '100%',

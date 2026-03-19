@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { squareClient, isConfigured, SQUARE_LOCATION_ID } from "@/lib/square";
 import { recordPayment } from "@/lib/services/payment-ledger";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { sendEmail } from "@/lib/email/send";
+import { creditPurchaseEmail, subscriptionUpgradeEmail, itemSoldEmail, orderConfirmationEmail } from "@/lib/email/templates";
 import {
   calculateProcessingFee,
   calculateTotalWithFee,
@@ -14,6 +16,7 @@ import {
   calculateCustomCredits,
   CUSTOM_CREDIT_MINIMUM,
   CUSTOM_CREDIT_MAXIMUM,
+  calculateCommission,
 } from "@/lib/constants/pricing";
 
 /**
@@ -114,6 +117,11 @@ export async function POST(req: NextRequest) {
         },
       });
 
+      // Send confirmation email (fire-and-forget)
+      const cpName = user.email.split("@")[0];
+      const cpEmail = creditPurchaseEmail(cpName, totalCredits, newBalance, chargeAmount);
+      sendEmail({ to: user.email, ...cpEmail });
+
       return NextResponse.json({
         ok: true,
         type: "credit_pack",
@@ -184,6 +192,11 @@ export async function POST(req: NextRequest) {
           paymentAmount: chargeAmount,
         },
       });
+
+      // Send confirmation email (fire-and-forget)
+      const ccName = user.email.split("@")[0];
+      const ccEmail = creditPurchaseEmail(ccName, totalCredits, newBalance, chargeAmount);
+      sendEmail({ to: user.email, ...ccEmail });
 
       return NextResponse.json({
         ok: true, type: "custom_credit",
@@ -278,6 +291,11 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      // Send confirmation email (fire-and-forget)
+      const subName = user.email.split("@")[0];
+      const subEmail = subscriptionUpgradeEmail(subName, tier.name, chargeAmount, billing);
+      sendEmail({ to: user.email, ...subEmail });
+
       return NextResponse.json({
         ok: true,
         type: "subscription",
@@ -366,6 +384,23 @@ export async function POST(req: NextRequest) {
           },
         });
       } catch (e) { /* notification is optional */ }
+
+      // Send confirmation emails (fire-and-forget)
+      const buyerName = body.buyerName || user.email.split("@")[0];
+      const buyerEmail = orderConfirmationEmail(buyerName, item.title || "Item", itemPrice, shippingCost, processingFee, total);
+      sendEmail({ to: user.email, ...buyerEmail });
+
+      // Email seller about sale
+      if (item.user?.email) {
+        const sellerName = (item.user as any).displayName || item.user.email.split("@")[0];
+        const sellerTier = ["free", "starter", "plus", "pro"][(item.user.tier ?? 1) - 1] || "free";
+        const isHero = item.user.heroVerified ?? false;
+        try {
+          const comm = calculateCommission(itemPrice, sellerTier, isHero);
+          const soldEmail = itemSoldEmail(sellerName, item.title || "Item", itemPrice, comm.commissionAmount, comm.netEarnings, item.id);
+          sendEmail({ to: item.user.email, ...soldEmail });
+        } catch { /* commission calc failed — skip email */ }
+      }
 
       return NextResponse.json({
         ok: true,

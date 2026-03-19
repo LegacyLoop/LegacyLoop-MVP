@@ -313,7 +313,7 @@ export default function SearchClient({ items }: Props) {
                 fontWeight: 700,
                 padding: "0 0.3rem",
                 borderRadius: "9999px",
-                background: category === cat ? "rgba(255,255,255,0.2)" : "var(--border-default)",
+                background: category === cat ? "var(--border-default)" : "var(--border-default)",
                 color: category === cat ? "#fff" : "var(--text-muted)",
               }}>
                 {count}

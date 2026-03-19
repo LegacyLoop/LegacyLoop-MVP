@@ -51,7 +51,7 @@ export default function SoldPriceWidget({ itemId, status, existingSoldPrice, exi
   }
 
   return (
-    <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderLeft: "3px solid #00bcd4", borderRadius: 12, padding: "20px 22px" }}>
+    <div style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderLeft: "3px solid #00bcd4", borderRadius: 12, padding: "20px 22px" }}>
       {showForm ? (
         <>
           <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 4 }}>What did this sell for?</div>
@@ -66,9 +66,9 @@ export default function SoldPriceWidget({ itemId, status, existingSoldPrice, exi
                 value={soldPrice}
                 onChange={(e) => setSoldPrice(e.target.value)}
                 placeholder="0.00"
-                style={{ width: "100%", padding: "12px 12px 12px 28px", fontSize: 16, fontWeight: 600, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#fff", outline: "none" }}
+                style={{ width: "100%", padding: "12px 12px 12px 28px", fontSize: 16, fontWeight: 600, background: "rgba(0,0,0,0.3)", border: "1px solid var(--border-default)", borderRadius: 8, color: "#fff", outline: "none" }}
                 onFocus={(e) => { e.currentTarget.style.borderColor = "#00bcd4"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-default)"; }}
               />
             </div>
           </div>
@@ -78,9 +78,9 @@ export default function SoldPriceWidget({ itemId, status, existingSoldPrice, exi
             <select
               value={soldVia}
               onChange={(e) => setSoldVia(e.target.value)}
-              style={{ width: "100%", padding: "10px 12px", fontSize: 14, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, color: "#fff", outline: "none", cursor: "pointer" }}
+              style={{ width: "100%", padding: "10px 12px", fontSize: 14, background: "rgba(0,0,0,0.3)", border: "1px solid var(--border-default)", borderRadius: 8, color: "#fff", outline: "none", cursor: "pointer" }}
               onFocus={(e) => { e.currentTarget.style.borderColor = "#00bcd4"; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-default)"; }}
             >
               <option value="offer">Accepted Offer</option>
               <option value="direct">Direct Sale</option>
@@ -102,18 +102,18 @@ export default function SoldPriceWidget({ itemId, status, existingSoldPrice, exi
         <>
           <div style={{ fontSize: 14, fontWeight: 700, color: "#4caf50", marginBottom: 12 }}>Sale recorded</div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-            <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: "8px 14px", flex: 1, minWidth: 80 }}>
+            <div style={{ background: "var(--ghost-bg)", borderRadius: 8, padding: "8px 14px", flex: 1, minWidth: 80 }}>
               <div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)", marginBottom: 2 }}>Sold for</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>${result!.soldPrice}</div>
             </div>
             {result!.estimatedValue != null && (
-              <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: "8px 14px", flex: 1, minWidth: 80 }}>
+              <div style={{ background: "var(--ghost-bg)", borderRadius: 8, padding: "8px 14px", flex: 1, minWidth: 80 }}>
                 <div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)", marginBottom: 2 }}>Estimated</div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: "rgba(207,216,220,0.6)" }}>${result!.estimatedValue}</div>
               </div>
             )}
             {result!.priceDelta != null && (
-              <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: "8px 14px", flex: 1, minWidth: 80 }}>
+              <div style={{ background: "var(--ghost-bg)", borderRadius: 8, padding: "8px 14px", flex: 1, minWidth: 80 }}>
                 <div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)", marginBottom: 2 }}>Difference</div>
                 <div style={{ fontSize: 16, fontWeight: 700, color: getDeltaColor(result!.priceDelta, result!.estimatedValue) }}>
                   {result!.priceDelta! >= 0 ? "+" : ""}{result!.priceDelta! > 0 ? `$${result!.priceDelta}` : result!.priceDelta === 0 ? "$0" : `-$${Math.abs(result!.priceDelta!)}`}

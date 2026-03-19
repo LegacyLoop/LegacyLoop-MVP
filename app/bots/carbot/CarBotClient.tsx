@@ -435,7 +435,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
 
       {/* Hero */}
       <div style={{
-        background: "rgba(255,255,255,0.03)",
+        background: "var(--bg-card)",
         backdropFilter: "blur(12px)",
         border: "1px solid rgba(0,188,212,0.15)",
         borderRadius: "16px",
@@ -468,8 +468,8 @@ export default function CarBotClient({ items }: { items: Item[] }) {
 
         {selected && isVehicle && result && ident && (
           <div style={{
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid var(--border-default, rgba(255,255,255,0.08))",
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-default)",
             borderRadius: "0.75rem",
             padding: "1rem",
             display: "grid",
@@ -549,7 +549,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                 style={{
                   display: "flex", alignItems: "center", gap: "0.5rem",
                   padding: "0.5rem 0.65rem", borderRadius: "0.5rem",
-                  background: selectedId === item.id ? `${AUTO_BLUE}15` : "rgba(255,255,255,0.03)",
+                  background: selectedId === item.id ? `${AUTO_BLUE}15` : "var(--bg-card)",
                   border: `1.5px solid ${selectedId === item.id ? AUTO_BLUE : "var(--border-default)"}`,
                   cursor: "pointer", textAlign: "left", color: "inherit", width: "100%",
                 }}
@@ -557,7 +557,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                 {item.photo ? (
                   <img src={item.photo} alt="" style={{ width: 32, height: 32, borderRadius: "0.35rem", objectFit: "cover" }} />
                 ) : (
-                  <div style={{ width: 32, height: 32, borderRadius: "0.35rem", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem" }}>📷</div>
+                  <div style={{ width: 32, height: 32, borderRadius: "0.35rem", background: "var(--ghost-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem" }}>📷</div>
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
@@ -605,7 +605,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
       {/* Run Action Bar */}
       {selected && isVehicle && (
         <div style={{
-          background: "rgba(255,255,255,0.04)",
+          background: "var(--ghost-bg)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           border: "1px solid rgba(0,188,212,0.2)",
@@ -627,7 +627,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
             onClick={runCarBot}
             disabled={loading || !selected.hasAnalysis}
             style={{
-              background: loading ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #00bcd4, #009688)",
+              background: loading ? "var(--ghost-bg)" : "linear-gradient(135deg, #00bcd4, #009688)",
               border: "none",
               borderRadius: "10px",
               padding: "0.55rem 1.1rem",
@@ -641,7 +641,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
           >
             {loading ? (
               <>
-                <span style={{ display: "inline-block", width: "0.85rem", height: "0.85rem", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.6s linear infinite" }} />
+                <span style={{ display: "inline-block", width: "0.85rem", height: "0.85rem", border: "2px solid var(--border-default)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.6s linear infinite" }} />
                 Analyzing...
               </>
             ) : result ? "🔄 Re-Evaluate — 1 cr" : "🚗 Run CarBot — 1 cr"}
@@ -652,7 +652,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
       {/* Photo Gallery */}
       {selected && isVehicle && (
         <div style={{
-          background: "rgba(255,255,255,0.03)",
+          background: "var(--bg-card)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           border: "1px solid rgba(0,188,212,0.15)",
@@ -691,7 +691,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                   borderRadius: "10px",
                   overflow: "hidden",
                   aspectRatio: "4/3",
-                  background: "rgba(255,255,255,0.05)",
+                  background: "var(--ghost-bg)",
                   border: "1px solid rgba(0,188,212,0.1)",
                 }}>
                   <img
@@ -776,7 +776,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                   </div>
                   <div style={{ textAlign: "center" }}>
                     <div style={{ fontSize: "2rem", fontWeight: 900, color: "#fff" }}>{ident.identification_confidence}%</div>
-                    <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase" }}>Confidence</div>
+                    <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Confidence</div>
                   </div>
                 </div>
 
@@ -823,7 +823,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                   style={{
                     flex: 1, padding: "0.55rem 0.75rem", fontSize: "0.85rem", fontFamily: "monospace",
                     letterSpacing: "0.1em", textTransform: "uppercase",
-                    background: "rgba(255,255,255,0.04)", border: `1px solid ${vin.length === 17 ? AUTO_BLUE : "var(--border-default)"}`,
+                    background: "var(--ghost-bg)", border: `1px solid ${vin.length === 17 ? AUTO_BLUE : "var(--border-default)"}`,
                     borderRadius: "0.5rem", color: "var(--text-primary)", outline: "none",
                   }}
                 />
@@ -833,7 +833,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                   style={{
                     padding: "0.55rem 1rem", fontSize: "0.78rem", fontWeight: 700,
                     borderRadius: "0.5rem", border: "none", cursor: vin.length === 17 && !vinLoading ? "pointer" : "not-allowed",
-                    background: vin.length === 17 ? `linear-gradient(135deg, ${AUTO_BLUE}, #00838f)` : "rgba(255,255,255,0.06)",
+                    background: vin.length === 17 ? `linear-gradient(135deg, ${AUTO_BLUE}, #00838f)` : "var(--ghost-bg)",
                     color: vin.length === 17 ? "#fff" : "var(--text-muted)",
                     opacity: vin.length !== 17 ? 0.5 : 1,
                   }}
@@ -913,7 +913,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                   placeholder="e.g. 87000"
                   style={{
                     width: "140px", padding: "0.55rem 0.75rem", fontSize: "0.85rem",
-                    background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-default)",
+                    background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                     borderRadius: "0.5rem", color: "var(--text-primary)", outline: "none",
                   }}
                 />
@@ -944,7 +944,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                     onChange={(e) => setSellerDetails((prev: any) => ({ ...prev, [field.key]: e.target.value }))}
                     style={{
                       width: "100%", padding: "0.45rem 0.6rem", fontSize: "0.78rem",
-                      background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-default)",
+                      background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                       borderRadius: "0.4rem", color: "var(--text-primary)", outline: "none",
                       appearance: "auto" as any,
                     }}
@@ -974,7 +974,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                     placeholder={field.placeholder}
                     style={{
                       width: "100%", padding: "0.45rem 0.6rem", fontSize: "0.78rem",
-                      background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-default)",
+                      background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                       borderRadius: "0.4rem", color: "var(--text-primary)", outline: "none",
                       boxSizing: "border-box",
                     }}
@@ -1021,7 +1021,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
 
           {/* Vehicle History Placeholder */}
           <div style={{
-            background: "var(--bg-card)", border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--bg-card)", border: "1px solid var(--border-default)",
             borderRadius: "1rem", padding: "1.25rem", marginBottom: "1.5rem",
           }}>
             <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem" }}>
@@ -1042,11 +1042,11 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                 </div>
               ))}
             </div>
-            <div style={{ padding: "0.65rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.03)", border: "1px dashed rgba(255,255,255,0.1)" }}>
+            <div style={{ padding: "0.65rem", borderRadius: "0.5rem", background: "var(--bg-card)", border: "1px dashed var(--border-default)" }}>
               <div style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "0.3rem" }}>Coming with future update:</div>
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.62rem", color: "var(--text-muted)" }}>
                 {["Full accident history", "Ownership chain", "Service records", "Odometer verification", "Title history", "Recall status"].map((f) => (
-                  <span key={f} style={{ padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <span key={f} style={{ padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
                     {f}
                   </span>
                 ))}
@@ -1071,7 +1071,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                 style={{
                   padding: "0.45rem 0.85rem", borderRadius: "0.5rem",
                   fontSize: "0.75rem", fontWeight: 600, border: "none", cursor: "pointer",
-                  background: activeTab === tab.key ? `${AUTO_BLUE}20` : "rgba(255,255,255,0.03)",
+                  background: activeTab === tab.key ? `${AUTO_BLUE}20` : "var(--bg-card)",
                   color: activeTab === tab.key ? AUTO_BLUE : "var(--text-muted)",
                   borderBottom: activeTab === tab.key ? `2px solid ${AUTO_BLUE}` : "2px solid transparent",
                 }}
@@ -1146,7 +1146,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                   <div key={section.id} style={{ marginBottom: "0.75rem", border: "1px solid var(--border-default)", borderRadius: "0.5rem" }}>
                     <button
                       onClick={() => toggleSection(section.id)}
-                      style={{ width: "100%", padding: "0.65rem 0.85rem", background: "rgba(255,255,255,0.02)", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", color: "inherit", borderRadius: "0.5rem" }}
+                      style={{ width: "100%", padding: "0.65rem 0.85rem", background: "var(--bg-card)", border: "none", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", color: "inherit", borderRadius: "0.5rem" }}
                     >
                       <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>{section.title}</span>
                       <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{expandedSections.has(section.id) ? "▼" : "▶"}</span>
@@ -1195,7 +1195,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                     { label: "🔨 Auction", data: val.auction_value },
                   ].map((v) => (
                     <div key={v.label} style={{
-                      background: v.highlight ? `${AUTO_BLUE}12` : "rgba(255,255,255,0.03)",
+                      background: v.highlight ? `${AUTO_BLUE}12` : "var(--bg-card)",
                       border: `1.5px solid ${v.highlight ? AUTO_BLUE : "var(--border-default)"}`,
                       borderRadius: "0.75rem", padding: "0.85rem", textAlign: "center",
                     }}>
@@ -1214,7 +1214,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                       { label: "KBB Est.", value: val.kbb_range_estimate },
                       { label: "NADA Est.", value: val.nada_range_estimate },
                     ].filter((v) => v.value).map((v) => (
-                      <div key={v.label} style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
+                      <div key={v.label} style={{ flex: 1, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
                         <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{v.label}</div>
                         <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{v.value}</div>
                       </div>
@@ -1260,7 +1260,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                     { label: "Fuel Economy", value: hist.fuel_economy },
                     { label: "Insurance Est.", value: hist.insurance_estimate },
                   ].filter((h) => h.value).map((h) => (
-                    <div key={h.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
+                    <div key={h.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
                       <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{h.label}</div>
                       <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{h.value}</div>
                     </div>
@@ -1317,7 +1317,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                     { label: "Trend", value: market.demand_trend },
                     { label: "Time to Sell", value: market.time_to_sell_estimate },
                   ].map((m) => (
-                    <div key={m.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem", textAlign: "center" }}>
+                    <div key={m.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem", textAlign: "center" }}>
                       <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{m.label}</div>
                       <div style={{ fontSize: "0.78rem", fontWeight: 700, color: m.value === "Hot" || m.value === "Rising" ? "#4ade80" : m.value === "Weak" || m.value === "Declining" ? "#ef4444" : "var(--text-primary)", marginTop: "0.1rem" }}>{m.value}</div>
                     </div>
@@ -1550,7 +1550,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
 
                 {/* Agreement bar */}
                 <div style={{ marginBottom: "0.75rem" }}>
-                  <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                  <div style={{ height: 5, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${agree}%`, borderRadius: 99, background: agree >= 80 ? "#4caf50" : agree >= 60 ? "#ff9800" : "#ef4444" }} />
                   </div>
                 </div>
@@ -1570,9 +1570,9 @@ export default function CarBotClient({ items }: { items: Item[] }) {
 
                     return (
                       <div key={p.provider} style={{
-                        background: isExp ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
+                        background: isExp ? "var(--ghost-bg)" : "var(--bg-card)",
                         borderTop: isExp ? `3px solid ${pm.color}` : undefined,
-                        border: `1px solid ${isExp ? `${pm.color}30` : "rgba(255,255,255,0.06)"}`,
+                        border: `1px solid ${isExp ? `${pm.color}30` : "var(--border-default)"}`,
                         borderRadius: "0.5rem", overflow: "hidden",
                       }}>
                         <button
@@ -1592,7 +1592,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                           <div style={{ padding: "0 0.75rem 0.75rem", borderTop: `1px solid ${pm.color}15` }}>
                             {/* Identification */}
                             {cd.identification && (
-                              <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Vehicle Identification</div>
                                 <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.3rem" }}>
                                   {cd.year} {cd.make} {cd.model} {cd.trim || ""}
@@ -1610,7 +1610,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
 
                             {/* Condition Assessment */}
                             {cd.conditionAssessment && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Condition Assessment</div>
                                 <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "0.3rem" }}>
                                   {cd.overallGrade && (
@@ -1641,12 +1641,12 @@ export default function CarBotClient({ items }: { items: Item[] }) {
 
                             {/* Valuation */}
                             {cd.valuation && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Valuation</div>
                                 <div style={{ overflowX: "auto" }}>
                                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.68rem" }}>
                                     <thead>
-                                      <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                                      <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
                                         <th style={{ textAlign: "left", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Type</th>
                                         <th style={{ textAlign: "right", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Low</th>
                                         <th style={{ textAlign: "right", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Mid</th>
@@ -1659,7 +1659,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                                         { label: "🏷️ Private Party", data: cd.privatePartyValue },
                                         { label: "🏪 Trade-In", data: cd.tradeInValue },
                                       ].filter((v) => v.data).map((v) => (
-                                        <tr key={v.label} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                                        <tr key={v.label} style={{ borderBottom: "1px solid var(--border-default)" }}>
                                           <td style={{ padding: "0.25rem 0.3rem", color: "var(--text-primary)", fontWeight: 600 }}>{v.label}</td>
                                           <td style={{ padding: "0.25rem 0.3rem", textAlign: "right", color: "var(--text-secondary)" }}>{v.data?.low != null ? `$${Number(v.data.low).toLocaleString()}` : "—"}</td>
                                           <td style={{ padding: "0.25rem 0.3rem", textAlign: "right", color: pm.color, fontWeight: 600 }}>{v.data?.mid != null ? `$${Number(v.data.mid).toLocaleString()}` : "—"}</td>
@@ -1679,10 +1679,10 @@ export default function CarBotClient({ items }: { items: Item[] }) {
 
                             {/* Common Issues */}
                             {cd.commonIssues.length > 0 && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#f59e0b", fontWeight: 700, marginBottom: "0.3rem" }}>⚠️ Common Issues</div>
                                 {cd.commonIssues.slice(0, 5).map((issue: any, i: number) => (
-                                  <div key={i} style={{ padding: "0.2rem 0", borderBottom: i < Math.min(cd.commonIssues.length, 5) - 1 ? "1px solid rgba(255,255,255,0.04)" : "none", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                                  <div key={i} style={{ padding: "0.2rem 0", borderBottom: i < Math.min(cd.commonIssues.length, 5) - 1 ? "1px solid var(--border-default)" : "none", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
                                     {typeof issue === "string" ? `• ${issue}` : `• ${issue.problem || issue.issue || issue.description || JSON.stringify(issue)}`}
                                   </div>
                                 ))}
@@ -1710,7 +1710,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
 
                             {/* Selling Strategy */}
                             {cd.sellingStrategy && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Selling Strategy</div>
                                 {cd.sellingStrategy.best_selling_venue && <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "0.15rem" }}>🏆 Best venue: <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{cd.sellingStrategy.best_selling_venue}</span></div>}
                                 {cd.sellingStrategy.listing_price && <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "0.15rem" }}>💰 List at: <span style={{ fontWeight: 700, color: "#4ade80" }}>${Number(cd.sellingStrategy.listing_price).toLocaleString()}</span>{cd.sellingStrategy.minimum_accept ? ` · Floor: $${Number(cd.sellingStrategy.minimum_accept).toLocaleString()}` : ""}</div>}
@@ -1751,7 +1751,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
 
                 {/* Comparison */}
                 {successful.length > 1 && (
-                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Vehicle Evaluation Comparison</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem", fontSize: "0.7rem" }}>
                       {successful.map((p: any, i: number) => {
@@ -1831,7 +1831,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
             </Link>
             <Link href={`/items/${selectedId}`} style={{
               padding: "0.55rem 1rem", fontSize: "0.78rem", fontWeight: 600, borderRadius: "0.5rem",
-              border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.03)", color: "var(--text-secondary)", textDecoration: "none",
+              border: "1px solid var(--border-default)", background: "var(--bg-card)", color: "var(--text-secondary)", textDecoration: "none",
             }}>
               🔙 Back to Item
             </Link>

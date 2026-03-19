@@ -90,7 +90,7 @@ export default function ShareDropdown({ url, title, description }: Props) {
             minWidth: 180,
             borderRadius: "0.75rem",
             background: "var(--bg-card, rgba(30,30,30,0.95))",
-            border: "1px solid var(--border-card, rgba(255,255,255,0.1))",
+            border: "1px solid var(--border-card, var(--border-default))",
             boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
             backdropFilter: "blur(16px)",
             padding: "0.4rem",

@@ -119,7 +119,7 @@ export default function SignupPage() {
         <p
           style={{
             fontSize: "0.88rem",
-            color: "rgba(255,255,255,0.42)",
+            color: "var(--text-muted)",
             marginTop: "0.5rem",
             marginBottom: "2rem",
           }}
@@ -181,7 +181,7 @@ export default function SignupPage() {
         >
           Create your account
         </h1>
-        <p style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.42)", marginTop: "0.35rem" }}>
+        <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.35rem" }}>
           Start your first item in minutes.
         </p>
       </div>
@@ -237,7 +237,7 @@ export default function SignupPage() {
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "rgba(255,255,255,0.35)",
+                color: "var(--text-muted)",
                 padding: 0,
                 lineHeight: 1,
                 fontSize: "0.75rem",
@@ -262,7 +262,7 @@ export default function SignupPage() {
                       borderRadius: 2,
                       background: i < strengthCfg.segments
                         ? strengthCfg.color
-                        : "rgba(255,255,255,0.08)",
+                        : "var(--text-muted)",
                       transition: "background 0.25s ease",
                     }}
                   />
@@ -276,7 +276,7 @@ export default function SignupPage() {
                   marginTop: "0.375rem",
                 }}
               >
-                <span style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.42)" }}>
+                <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
                   At least 8 characters with a mix of letters and numbers
                 </span>
                 <span
@@ -324,7 +324,7 @@ export default function SignupPage() {
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "rgba(255,255,255,0.35)",
+                color: "var(--text-muted)",
                 padding: 0,
                 lineHeight: 1,
                 fontSize: "0.75rem",
@@ -396,22 +396,22 @@ export default function SignupPage() {
           margin: "1.5rem 0 1.25rem",
         }}
       >
-        <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.08)" }} />
+        <div style={{ flex: 1, height: "1px", background: "var(--ghost-bg)" }} />
         <span
           style={{
             fontSize: "0.72rem",
-            color: "rgba(255,255,255,0.28)",
+            color: "var(--text-muted)",
             letterSpacing: "0.08em",
             textTransform: "uppercase",
           }}
         >
           or
         </span>
-        <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.08)" }} />
+        <div style={{ flex: 1, height: "1px", background: "var(--ghost-bg)" }} />
       </div>
 
       {/* Sign in link */}
-      <p style={{ textAlign: "center", fontSize: "0.82rem", color: "rgba(255,255,255,0.42)", margin: 0 }}>
+      <p style={{ textAlign: "center", fontSize: "0.82rem", color: "var(--text-muted)", margin: 0 }}>
         Already have an account?{" "}
         <Link
           href="/auth/login"

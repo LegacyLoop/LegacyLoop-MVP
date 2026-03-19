@@ -129,7 +129,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
 
   return (
     <div style={{
-      background: "rgba(255,255,255,0.03)",
+      background: "var(--bg-card)",
       border: "1px solid var(--border-default)",
       borderRadius: "0.85rem",
       padding: "1.25rem",
@@ -212,7 +212,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
                 : "1px solid var(--border-default)",
               background: selectedType === cat.key
                 ? "rgba(0,188,212,0.12)"
-                : "rgba(255,255,255,0.02)",
+                : "var(--bg-card)",
               color: selectedType === cat.key ? "var(--accent)" : "var(--text-secondary)",
               cursor: "pointer",
               display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
@@ -233,7 +233,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
         style={{
           width: "100%", padding: "10px 12px", fontSize: "0.8rem",
           borderRadius: "0.5rem", border: "1px solid var(--border-default)",
-          background: "rgba(255,255,255,0.03)", color: "var(--text-primary)",
+          background: "var(--bg-card)", color: "var(--text-primary)",
           marginBottom: "0.5rem", boxSizing: "border-box",
         }}
       />
@@ -247,7 +247,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
         style={{
           border: dragOver
             ? "2px solid var(--accent)"
-            : "2px dashed rgba(255,255,255,0.12)",
+            : "2px dashed var(--border-default)",
           borderRadius: "0.65rem",
           padding: "1.25rem",
           textAlign: "center" as const,
@@ -305,7 +305,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
             flex: 1, padding: "10px", minHeight: "48px",
             fontSize: "0.78rem", fontWeight: 600,
             borderRadius: "0.5rem",
-            background: "rgba(255,255,255,0.04)",
+            background: "var(--ghost-bg)",
             border: "1px solid var(--border-default)",
             color: "var(--text-secondary)", cursor: "pointer",
           }}
@@ -324,7 +324,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
 
       {/* ── COMPLETENESS SCORE ── */}
       <div style={{
-        background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem",
+        background: "var(--bg-card)", borderRadius: "0.5rem",
         padding: "0.6rem 0.75rem", border: "1px solid var(--border-default)",
         marginBottom: "0.75rem",
       }}>
@@ -338,7 +338,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
         </div>
         <div style={{
           height: "4px", borderRadius: "2px",
-          background: "rgba(255,255,255,0.06)",
+          background: "var(--ghost-bg)",
           overflow: "hidden",
         }}>
           <div style={{
@@ -358,7 +358,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
       ) : docs.length === 0 ? (
         <div style={{
           padding: "1.5rem", textAlign: "center" as const,
-          background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem",
+          background: "var(--bg-card)", borderRadius: "0.5rem",
           border: "1px solid var(--border-default)",
         }}>
           <div style={{ fontSize: "1.5rem", marginBottom: "0.4rem" }}>📂</div>
@@ -375,7 +375,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
                 <div style={{
                   display: "flex", alignItems: "center", gap: "10px",
                   padding: "10px 12px",
-                  background: "rgba(255,255,255,0.03)",
+                  background: "var(--bg-card)",
                   border: "1px solid var(--border-default)",
                   borderRadius: expandedSummary === doc.id ? "0.5rem 0.5rem 0 0" : "0.5rem",
                 }}>

@@ -48,7 +48,7 @@ export default function OgImage() {
         </div>
 
         {/* Subtext */}
-        <div style={{ color: "rgba(255,255,255,0.85)", fontSize: 28, maxWidth: "700px", lineHeight: 1.5, marginBottom: "40px" }}>
+        <div style={{ color: "var(--text-primary)", fontSize: 28, maxWidth: "700px", lineHeight: 1.5, marginBottom: "40px" }}>
           Turn your family's belongings into meaningful income — with expert AI pricing, buyer matching, and white-glove service.
         </div>
 
@@ -61,7 +61,7 @@ export default function OgImage() {
           ].map((s) => (
             <div key={s.label} style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ color: "#fbbf24", fontWeight: 900, fontSize: 32 }}>{s.value}</span>
-              <span style={{ color: "rgba(255,255,255,0.7)", fontSize: 18 }}>{s.label}</span>
+              <span style={{ color: "var(--text-secondary)", fontSize: 18 }}>{s.label}</span>
             </div>
           ))}
         </div>

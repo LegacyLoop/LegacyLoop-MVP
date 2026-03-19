@@ -86,8 +86,8 @@ function AgentShipCard({ agent }: { agent: AgentResult }) {
   const isPlaceholder = agent.status === "placeholder";
   return (
     <div style={{
-      background: "var(--bg-card, rgba(255,255,255,0.05))",
-      border: "1px solid var(--border-card, rgba(255,255,255,0.08))",
+      background: "var(--bg-card, var(--ghost-bg))",
+      border: "1px solid var(--border-card, var(--border-default))",
       borderRadius: "1.25rem",
       padding: "1.25rem",
       opacity: isPlaceholder ? 0.5 : 1,
@@ -98,7 +98,7 @@ function AgentShipCard({ agent }: { agent: AgentResult }) {
         <span style={{
           marginLeft: "auto", fontSize: "0.6rem", fontWeight: 600, padding: "0.15rem 0.45rem",
           borderRadius: "9999px",
-          background: isPlaceholder ? "rgba(255,255,255,0.06)" : "rgba(76,175,80,0.15)",
+          background: isPlaceholder ? "var(--ghost-bg)" : "rgba(76,175,80,0.15)",
           color: isPlaceholder ? "var(--text-muted)" : "#4caf50",
         }}>
           {isPlaceholder ? "Coming Soon" : `${Math.round(agent.confidence * 100)}%`}
@@ -401,7 +401,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
           {/* Mode header + MegaBot button */}
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            background: "var(--bg-card, rgba(255,255,255,0.05))",
+            background: "var(--bg-card, var(--ghost-bg))",
             border: "1px solid var(--border-card)", borderRadius: "1rem",
             padding: "0.75rem 1.25rem", flexWrap: "wrap", gap: "0.5rem",
           }}>
@@ -426,7 +426,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
 
           {/* MegaBot activation animation */}
           {megaAnimating && !megaMode && (
-            <div style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "1.25rem", padding: "1.5rem" }}>
+            <div style={{ background: "var(--bg-card, var(--ghost-bg))", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "1.25rem", padding: "1.5rem" }}>
               <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent)", marginBottom: "1rem", fontWeight: 600 }}>Activating MegaBot...</div>
               {[{ icon: "🟢", name: "OpenAI — Standard Rates", step: 1 }, { icon: "🟣", name: "Claude — Cost Optimizer", step: 2 }, { icon: "🔵", name: "Gemini — Logistics Analyzer", step: 3 }, { icon: "🌀", name: "Grok — Social Demand", step: 4 }].map((a) => (
                 <div key={a.name} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.5rem 0" }}>
@@ -449,7 +449,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                 ))}
               </div>
 
-              <div style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "1.25rem", padding: "2rem" }}>
+              <div style={{ background: "var(--bg-card, var(--ghost-bg))", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "1.25rem", padding: "2rem" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
                   <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent)", fontWeight: 600 }}>Shipping Master Summary</div>
                   <span style={{
@@ -491,7 +491,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
 
           {/* ─── Item Shipping Profile ─────────────────────────────────── */}
           <div style={{
-            background: "var(--bg-card, rgba(255,255,255,0.05))",
+            background: "var(--bg-card, var(--ghost-bg))",
             border: "1px solid var(--border-card)",
             borderRadius: "1.25rem",
             padding: "1.5rem",
@@ -524,7 +524,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                       fontSize: "0.95rem",
                       fontWeight: 700,
                       color: "var(--text-primary)",
-                      background: "rgba(255,255,255,0.04)",
+                      background: "var(--ghost-bg)",
                       border: "1px solid var(--border-card)",
                       borderRadius: "0.5rem",
                       outline: "none",
@@ -551,7 +551,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                         fontWeight: 600,
                         borderRadius: "0.5rem",
                         border: packaging === p.value ? "1.5px solid var(--accent)" : "1px solid var(--border-card)",
-                        background: packaging === p.value ? "rgba(0,188,212,0.1)" : "rgba(255,255,255,0.03)",
+                        background: packaging === p.value ? "rgba(0,188,212,0.1)" : "var(--bg-card)",
                         color: packaging === p.value ? "var(--accent)" : "var(--text-secondary)",
                         cursor: "pointer",
                         display: "flex",
@@ -575,7 +575,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                     fontWeight: 600,
                     borderRadius: "0.5rem",
                     border: fragile ? "1.5px solid #ef5350" : "1px solid var(--border-card)",
-                    background: fragile ? "rgba(239,83,80,0.12)" : "rgba(255,255,255,0.03)",
+                    background: fragile ? "rgba(239,83,80,0.12)" : "var(--bg-card)",
                     color: fragile ? "#ef5350" : "var(--text-muted)",
                     cursor: "pointer",
                   }}
@@ -588,7 +588,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
 
           {/* ─── Carrier Rate Comparison ───────────────────────────────── */}
           <div style={{
-            background: "var(--bg-card, rgba(255,255,255,0.05))",
+            background: "var(--bg-card, var(--ghost-bg))",
             border: "1px solid var(--border-card)",
             borderRadius: "1.25rem",
             padding: "1.5rem",
@@ -611,7 +611,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                     fontSize: "0.9rem",
                     fontWeight: 600,
                     color: "var(--text-primary)",
-                    background: "rgba(255,255,255,0.04)",
+                    background: "var(--ghost-bg)",
                     border: "1px solid var(--border-card)",
                     borderRadius: "0.5rem",
                     outline: "none",
@@ -640,7 +640,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                     fontSize: "0.9rem",
                     fontWeight: 600,
                     color: "var(--text-primary)",
-                    background: "rgba(255,255,255,0.04)",
+                    background: "var(--ghost-bg)",
                     border: "1px solid var(--border-card)",
                     borderRadius: "0.5rem",
                     outline: "none",
@@ -669,7 +669,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                           justifyContent: "space-between",
                           background: "transparent",
                           border: "none",
-                          borderBottom: "1px solid rgba(255,255,255,0.05)",
+                          borderBottom: "1px solid var(--border-default)",
                           color: "var(--text-primary)",
                           fontSize: "0.82rem",
                           cursor: "pointer",
@@ -739,7 +739,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                         padding: "1rem 1.25rem",
                         borderRadius: "1rem",
                         border: isBestValue ? "1.5px solid var(--accent)" : "1px solid var(--border-card)",
-                        background: isBestValue ? "rgba(0,188,212,0.06)" : "rgba(255,255,255,0.02)",
+                        background: isBestValue ? "rgba(0,188,212,0.06)" : "var(--bg-card)",
                       }}>
                         <div style={{ flex: 1 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.2rem" }}>
@@ -792,8 +792,8 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                       justifyContent: "space-between",
                       padding: "1rem 1.25rem",
                       borderRadius: "1rem",
-                      border: i === 0 ? "1.5px solid rgba(156,39,176,0.4)" : "1px solid rgba(255,255,255,0.06)",
-                      background: i === 0 ? "rgba(156,39,176,0.08)" : "rgba(255,255,255,0.02)",
+                      border: i === 0 ? "1.5px solid rgba(156,39,176,0.4)" : "1px solid var(--border-default)",
+                      background: i === 0 ? "rgba(156,39,176,0.08)" : "var(--bg-card)",
                       flexWrap: "wrap",
                       gap: "0.5rem",
                     }}>
@@ -855,7 +855,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
 
           {/* ─── Pickup Options ─────────────────────────────────────────── */}
           <div style={{
-            background: "var(--bg-card, rgba(255,255,255,0.05))",
+            background: "var(--bg-card, var(--ghost-bg))",
             border: "1px solid var(--border-card)",
             borderRadius: "1.25rem",
             padding: "1.5rem",
@@ -870,7 +870,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                   onChange={(e) => setPickupAddress(e.target.value)}
                   style={{
                     width: "100%", padding: "0.5rem 0.65rem", fontSize: "0.85rem",
-                    color: "var(--text-primary)", background: "rgba(255,255,255,0.04)",
+                    color: "var(--text-primary)", background: "var(--ghost-bg)",
                     border: "1px solid var(--border-card)", borderRadius: "0.5rem", outline: "none",
                   }}
                 />
@@ -883,7 +883,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                   onChange={(e) => setPickupAvailability(e.target.value)}
                   style={{
                     width: "100%", padding: "0.5rem 0.65rem", fontSize: "0.85rem",
-                    color: "var(--text-primary)", background: "rgba(255,255,255,0.04)",
+                    color: "var(--text-primary)", background: "var(--ghost-bg)",
                     border: "1px solid var(--border-card)", borderRadius: "0.5rem", outline: "none",
                   }}
                 />
@@ -898,7 +898,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                 rows={2}
                 style={{
                   width: "100%", padding: "0.5rem 0.65rem", fontSize: "0.85rem",
-                  color: "var(--text-primary)", background: "rgba(255,255,255,0.04)",
+                  color: "var(--text-primary)", background: "var(--ghost-bg)",
                   border: "1px solid var(--border-card)", borderRadius: "0.5rem", outline: "none",
                   resize: "vertical", fontFamily: "inherit",
                 }}

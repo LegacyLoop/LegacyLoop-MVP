@@ -109,7 +109,7 @@ function BuyerOutreachInner() {
           href="/marketplace"
           style={{
             fontSize: 12,
-            color: "rgba(255,255,255,0.5)",
+            color: "var(--text-muted)",
             textDecoration: "none",
             marginBottom: 12,
             display: "inline-block",
@@ -159,8 +159,8 @@ function BuyerOutreachInner() {
       {!selectedItemId && (
         <div
           style={{
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-default)",
             borderRadius: 14,
             padding: 24,
             marginBottom: 24,
@@ -181,8 +181,8 @@ function BuyerOutreachInner() {
                 key={item.id}
                 onClick={() => setSelectedItemId(item.id)}
                 style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-default)",
                   borderRadius: 10,
                   padding: 14,
                   cursor: "pointer",
@@ -192,7 +192,7 @@ function BuyerOutreachInner() {
                   (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,188,212,0.4)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
                 }}
               >
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
@@ -279,13 +279,13 @@ function BuyerOutreachInner() {
                 <div
                   key={e.key}
                   style={{
-                    background: "rgba(255,255,255,0.04)",
+                    background: "var(--ghost-bg)",
                     border: `1px solid ${
                       status === "complete"
                         ? "#4caf50"
                         : status === "failed"
                           ? "#f44336"
-                          : "rgba(255,255,255,0.08)"
+                          : "var(--text-muted)"
                     }`,
                     borderRadius: 12,
                     padding: 16,
@@ -314,7 +314,7 @@ function BuyerOutreachInner() {
             style={{
               height: 4,
               borderRadius: 2,
-              background: "rgba(255,255,255,0.08)",
+              background: "var(--ghost-bg)",
               overflow: "hidden",
             }}
           >
@@ -404,8 +404,8 @@ function BuyerOutreachInner() {
                 <div
                   key={agent.provider}
                   style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "var(--bg-card)",
+                    border: "1px solid var(--border-default)",
                     borderRadius: 10,
                     padding: 12,
                     textAlign: "center",
@@ -452,8 +452,8 @@ function BuyerOutreachInner() {
                 <div
                   key={personaKey}
                   style={{
-                    background: "rgba(255,255,255,0.03)",
-                    border: `1px solid ${engine?.color || "rgba(255,255,255,0.08)"}33`,
+                    background: "var(--bg-card)",
+                    border: `1px solid ${engine?.color || "var(--border-default)"}33`,
                     borderRadius: 14,
                     padding: 20,
                     position: "relative",
@@ -564,7 +564,7 @@ function BuyerOutreachInner() {
                       style={{
                         height: 6,
                         borderRadius: 3,
-                        background: "rgba(255,255,255,0.08)",
+                        background: "var(--ghost-bg)",
                         overflow: "hidden",
                       }}
                     >
@@ -603,8 +603,8 @@ function BuyerOutreachInner() {
                           fontSize: 9,
                           padding: "2px 8px",
                           borderRadius: 20,
-                          background: "rgba(255,255,255,0.06)",
-                          border: "1px solid rgba(255,255,255,0.1)",
+                          background: "var(--ghost-bg)",
+                          border: "1px solid var(--border-default)",
                           color: "rgba(207,216,220,0.7)",
                         }}
                       >
@@ -674,8 +674,8 @@ function BuyerOutreachInner() {
                           <div
                             key={mi}
                             style={{
-                              background: "rgba(255,255,255,0.02)",
-                              border: "1px solid rgba(255,255,255,0.06)",
+                              background: "var(--bg-card)",
+                              border: "1px solid var(--border-default)",
                               borderRadius: 10,
                               padding: 14,
                               marginBottom: 10,
@@ -761,7 +761,7 @@ function BuyerOutreachInner() {
                               style={{
                                 height: 3,
                                 borderRadius: 2,
-                                background: "rgba(255,255,255,0.06)",
+                                background: "var(--ghost-bg)",
                                 marginBottom: 10,
                                 overflow: "hidden",
                               }}
@@ -815,8 +815,8 @@ function BuyerOutreachInner() {
                                   fontSize: 10,
                                   fontWeight: 700,
                                   borderRadius: 6,
-                                  background: "rgba(255,255,255,0.04)",
-                                  border: "1px solid rgba(255,255,255,0.1)",
+                                  background: "var(--ghost-bg)",
+                                  border: "1px solid var(--border-default)",
                                   color: "rgba(207,216,220,0.6)",
                                   cursor: "pointer",
                                 }}

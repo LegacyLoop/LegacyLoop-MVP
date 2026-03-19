@@ -93,7 +93,7 @@ function AiPanel({ aiData, itemId, status }: { aiData: any; itemId: string; stat
           { label: "Brand", value: aiData.brand || "—" },
           { label: "Model", value: aiData.model || "—" },
         ].map((d) => (
-          <div key={d.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.75rem" }}>
+          <div key={d.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.75rem" }}>
             <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{d.label}</div>
             <div style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.2rem" }}>{d.value}</div>
           </div>
@@ -121,7 +121,7 @@ function AiPanel({ aiData, itemId, status }: { aiData: any; itemId: string; stat
           <span style={{ color: "var(--text-secondary)" }}>Confidence</span>
           <span style={{ fontWeight: 600, color: confPct >= 70 ? "#4caf50" : "#ff9800" }}>{confPct}%</span>
         </div>
-        <div style={{ height: 8, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+        <div style={{ height: 8, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${confPct}%`, borderRadius: 99, background: confPct >= 70 ? "#4caf50" : "#ff9800", transition: "width 0.5s ease" }} />
         </div>
       </div>
@@ -150,7 +150,7 @@ function AiPanel({ aiData, itemId, status }: { aiData: any; itemId: string; stat
       </div>
 
       {showJson && (
-        <pre style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem", padding: "1rem", overflow: "auto", fontSize: "0.72rem", color: "var(--text-muted)", maxHeight: 300, margin: 0 }}>
+        <pre style={{ background: "var(--bg-card)", borderRadius: "0.75rem", padding: "1rem", overflow: "auto", fontSize: "0.72rem", color: "var(--text-muted)", maxHeight: 300, margin: 0 }}>
           {JSON.stringify(aiData, null, 2)}
         </pre>
       )}
@@ -216,7 +216,7 @@ function PricingPanel({ valuation: v, antique, userTier, aiData }: { valuation: 
 
         {/* Low-value / worthless warnings */}
         {isWorthless && (
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "1rem" }}>
+          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "1rem" }}>
             <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>No Resale Value Detected</div>
             <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: "0.5rem" }}>
               We recommend donating this item. Here are some options:
@@ -240,7 +240,7 @@ function PricingPanel({ valuation: v, antique, userTier, aiData }: { valuation: 
 
         {/* 3 Price Cards with sellerNet */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.65rem" }}>
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.75rem" }}>
+          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.75rem" }}>
             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Local Pickup</div>
             <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--accent)", marginTop: "0.2rem" }}>
               ${pr.localPrice.low} – ${pr.localPrice.high}
@@ -249,7 +249,7 @@ function PricingPanel({ valuation: v, antique, userTier, aiData }: { valuation: 
             {pr.sellerNet && <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#4caf50", marginTop: "0.35rem" }}>You receive: ${pr.sellerNet.local.toFixed(2)}</div>}
             <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{pr.commissionPct}% commission</div>
           </div>
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.75rem" }}>
+          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.75rem" }}>
             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>National Avg</div>
             <div style={{ fontSize: "1rem", fontWeight: 700, color: "#4caf50", marginTop: "0.2rem" }}>
               ${pr.nationalPrice.low} – ${pr.nationalPrice.high}
@@ -258,7 +258,7 @@ function PricingPanel({ valuation: v, antique, userTier, aiData }: { valuation: 
             {pr.sellerNet && <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#4caf50", marginTop: "0.35rem" }}>You receive: ${pr.sellerNet.national.toFixed(2)}</div>}
             <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{pr.commissionPct}% comm + ~${pr.shippingEstimate ?? pr.bestMarket?.shippingCost ?? 0} ship</div>
           </div>
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: "0.75rem", padding: "0.75rem" }}>
+          <div style={{ background: "var(--bg-card)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: "0.75rem", padding: "0.75rem" }}>
             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#fbbf24" }}>Best Market</div>
             <div style={{ fontSize: "1rem", fontWeight: 700, color: "#fbbf24", marginTop: "0.2rem" }}>
               ${pr.bestMarket.low} – ${pr.bestMarket.high}
@@ -283,11 +283,11 @@ function PricingPanel({ valuation: v, antique, userTier, aiData }: { valuation: 
         {/* Margin Comparison */}
         {pr.marginComparison && (
           <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-            <div style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.75rem", textAlign: "center" }}>
+            <div style={{ flex: 1, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.75rem", textAlign: "center" }}>
               <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Local Margin</div>
               <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--accent)" }}>{pr.marginComparison.localMargin}%</div>
             </div>
-            <div style={{ flex: 1, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.75rem", textAlign: "center" }}>
+            <div style={{ flex: 1, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.75rem", textAlign: "center" }}>
               <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Shipped Margin</div>
               <div style={{ fontSize: "1rem", fontWeight: 700, color: "#fbbf24" }}>{pr.marginComparison.shippedMargin}%</div>
             </div>
@@ -305,7 +305,7 @@ function PricingPanel({ valuation: v, antique, userTier, aiData }: { valuation: 
           {showAdj ? "Hide calculation details" : "How We Calculated This"}
         </button>
         {showAdj && (
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.75rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.75rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             {/* Base price */}
             {pr.aiEstimate && (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "0.5rem", borderBottom: "1px solid var(--border-default)" }}>
@@ -400,7 +400,7 @@ function PricingPanel({ valuation: v, antique, userTier, aiData }: { valuation: 
 
         {/* Recommendations */}
         {pr.recommendations && pr.recommendations.length > 0 && (
-          <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.85rem" }}>
+          <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.85rem" }}>
             <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", fontWeight: 700, marginBottom: "0.5rem" }}>Recommendations</div>
             <ul style={{ fontSize: "0.78rem", color: "var(--text-secondary)", listStyle: "disc", paddingLeft: "1.25rem", lineHeight: 1.8, margin: 0 }}>
               {pr.recommendations.map((r: string, i: number) => <li key={i}>{r}</li>)}
@@ -458,7 +458,7 @@ function PricingPanel({ valuation: v, antique, userTier, aiData }: { valuation: 
       )}
 
       {isWorthless && (
-        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "1rem" }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "1rem" }}>
           <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>No Resale Value Detected</div>
           <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5, marginBottom: "0.5rem" }}>
             We recommend donating this item.
@@ -494,13 +494,13 @@ function PricingPanel({ valuation: v, antique, userTier, aiData }: { valuation: 
 
       {/* Local vs Online */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.85rem" }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.85rem" }}>
           <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Local Pickup</div>
           <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--accent)", marginTop: "0.2rem" }}>
             {v.localLow != null ? `$${Math.round(v.localLow)} – $${Math.round(v.localHigh)}` : "—"}
           </div>
         </div>
-        <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.85rem" }}>
+        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.85rem" }}>
           <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Online / National</div>
           <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#4caf50", marginTop: "0.2rem" }}>
             {v.onlineLow != null ? `$${Math.round(v.onlineLow)} – $${Math.round(v.onlineHigh)}` : "—"}
@@ -578,7 +578,7 @@ function ShippingPanel({ itemId, hasAnalysis }: { itemId: string; hasAnalysis: b
           placeholder="10001"
           value={destZip}
           onChange={(e) => setDestZip(e.target.value.replace(/\D/g, "").slice(0, 5))}
-          style={{ width: "5.5rem", padding: "0.3rem 0.6rem", fontSize: "0.82rem", borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.05)", color: "var(--text-primary)" }}
+          style={{ width: "5.5rem", padding: "0.3rem 0.6rem", fontSize: "0.82rem", borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-primary)" }}
         />
         <button
           onClick={() => destZip.length >= 3 && estimate(destZip)}
@@ -620,7 +620,7 @@ function ShippingPanel({ itemId, hasAnalysis }: { itemId: string; hasAnalysis: b
         .map((c: any, index: number) => (
         <div key={`${c.carrier}-${c.service}-${index}`} style={{
           display: "flex", justifyContent: "space-between", padding: "0.6rem 0.85rem", borderRadius: "0.65rem",
-          border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.02)",
+          border: "1px solid var(--border-default)", background: "var(--bg-card)",
         }}>
           <div>
             <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)" }}>{c.carrier}</span>
@@ -670,7 +670,7 @@ function ListingPanel({ itemId, hasAnalysis }: { itemId: string; hasAnalysis: bo
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
         <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>Readiness:</div>
-        <div style={{ flex: 1, height: 6, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+        <div style={{ flex: 1, height: 6, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${listing.readinessScore}%`, borderRadius: 99, background: listing.readinessScore >= 80 ? "#4caf50" : "#ff9800" }} />
         </div>
         <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{listing.readinessScore}%</span>
@@ -782,7 +782,7 @@ function PhotoPanel({ photos, itemId }: { photos: Props["photos"]; itemId: strin
                 <span style={{ fontSize: "0.65rem", color: "#fff", textAlign: "center", lineHeight: 1.3 }}>Remove this photo? This cannot be undone.</span>
                 <div style={{ display: "flex", gap: "0.35rem" }}>
                   <button onClick={() => deletePhoto(p.id)} style={{ padding: "0.2rem 0.6rem", borderRadius: "0.35rem", background: "#ef4444", color: "#fff", border: "none", fontSize: "0.6rem", fontWeight: 600, cursor: "pointer" }}>Remove</button>
-                  <button onClick={() => setConfirmDelete(null)} style={{ padding: "0.2rem 0.6rem", borderRadius: "0.35rem", background: "rgba(255,255,255,0.15)", color: "#fff", border: "none", fontSize: "0.6rem", fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                  <button onClick={() => setConfirmDelete(null)} style={{ padding: "0.2rem 0.6rem", borderRadius: "0.35rem", background: "var(--bg-card-hover)", color: "#fff", border: "none", fontSize: "0.6rem", fontWeight: 600, cursor: "pointer" }}>Cancel</button>
                 </div>
               </div>
             )}
@@ -855,7 +855,7 @@ function PotentialBuyersPanel({ aiData, itemId }: { aiData: any; itemId: string 
       {buyers.map((b) => (
         <div key={b.name} style={{
           display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.75rem 0.85rem",
-          borderRadius: "0.75rem", border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.02)",
+          borderRadius: "0.75rem", border: "1px solid var(--border-default)", background: "var(--bg-card)",
         }}>
           <div style={{
             width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
@@ -868,7 +868,7 @@ function PotentialBuyersPanel({ aiData, itemId }: { aiData: any; itemId: string 
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
               <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)" }}>{b.name}</span>
-              <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", padding: "0.1rem 0.35rem", borderRadius: "9999px", background: "rgba(255,255,255,0.05)" }}>{b.platform}</span>
+              <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", padding: "0.1rem 0.35rem", borderRadius: "9999px", background: "var(--ghost-bg)" }}>{b.platform}</span>
             </div>
             <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.interest}</div>
           </div>
@@ -936,7 +936,7 @@ function BotSummaryPanel({ aiData, valuation, antique, photos, megabotUsed, item
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.25rem" }}>
         <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>Item Readiness:</span>
-        <div style={{ flex: 1, height: 6, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+        <div style={{ flex: 1, height: 6, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${readiness}%`, borderRadius: 99, background: readiness >= 60 ? "#4caf50" : "#ff9800" }} />
         </div>
         <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{readiness}%</span>
@@ -946,7 +946,7 @@ function BotSummaryPanel({ aiData, valuation, antique, photos, megabotUsed, item
           display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.65rem 0.85rem",
           borderRadius: "0.65rem",
           border: b.highlight ? "1.5px solid rgba(251,191,36,0.4)" : "1px solid var(--border-default)",
-          background: b.highlight ? "rgba(251,191,36,0.06)" : "rgba(255,255,255,0.02)",
+          background: b.highlight ? "rgba(251,191,36,0.06)" : "var(--bg-card)",
           textDecoration: "none", color: "inherit", transition: "border-color 0.15s ease",
         }}>
           <span style={{ fontSize: "1.2rem" }}>{b.icon}</span>
@@ -956,7 +956,7 @@ function BotSummaryPanel({ aiData, valuation, antique, photos, megabotUsed, item
           </div>
           <span style={{
             padding: "0.15rem 0.5rem", borderRadius: "9999px", fontSize: "0.6rem", fontWeight: 600,
-            background: b.status === "Complete" || b.status === "Used" ? "rgba(76,175,80,0.15)" : b.status === "Active" ? "rgba(251,191,36,0.15)" : b.status === "Ready" || b.status === "Available" ? "rgba(0,188,212,0.1)" : "rgba(255,255,255,0.05)",
+            background: b.status === "Complete" || b.status === "Used" ? "rgba(76,175,80,0.15)" : b.status === "Active" ? "rgba(251,191,36,0.15)" : b.status === "Ready" || b.status === "Available" ? "rgba(0,188,212,0.1)" : "var(--ghost-bg)",
             color: b.status === "Complete" || b.status === "Used" ? "#4caf50" : b.status === "Active" ? "#fbbf24" : b.status === "Ready" || b.status === "Available" ? "var(--accent)" : "var(--text-muted)",
           }}>
             {b.status}

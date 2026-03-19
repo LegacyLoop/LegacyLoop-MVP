@@ -78,7 +78,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle: string })
 
 function FeatureTable({ headers, rows }: { headers: string[]; rows: { label: string; values: string[] }[] }) {
   return (
-    <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, overflow: "hidden" }}>
+    <div style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, overflow: "hidden" }}>
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
           <thead>
@@ -90,7 +90,7 @@ function FeatureTable({ headers, rows }: { headers: string[]; rows: { label: str
           </thead>
           <tbody>
             {rows.map((row, ri) => (
-              <tr key={row.label} style={{ background: ri % 2 === 0 ? "rgba(255,255,255,0.01)" : "transparent" }}>
+              <tr key={row.label} style={{ background: ri % 2 === 0 ? "var(--bg-card)" : "transparent" }}>
                 <td style={{ padding: "0.65rem 1rem", color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: 500 }}>{row.label}</td>
                 {row.values.map((v, vi) => (
                   <td key={vi} style={{ padding: "0.65rem 1rem", textAlign: "center", color: v === "\u2014" ? "var(--text-muted)" : v === "\u2713" ? "#00bcd4" : "var(--text-secondary)", fontWeight: v === "\u2713" ? 700 : 400, fontSize: "0.875rem" }}>{v}</td>
@@ -113,7 +113,7 @@ const WG_CARDS: { key: string; accent: string; borderColor: string; bg: string; 
     key: "essentials",
     accent: "#10b981",
     borderColor: "rgba(16,185,129,0.25)",
-    bg: "rgba(255,255,255,0.03)",
+    bg: "var(--bg-card)",
     cta: "Get Started",
     features: [
       "Item photography",
@@ -141,7 +141,7 @@ const WG_CARDS: { key: string; accent: string; borderColor: string; bg: string; 
     key: "legacy",
     accent: "#f59e0b",
     borderColor: "rgba(245,158,11,0.25)",
-    bg: "rgba(255,255,255,0.03)",
+    bg: "var(--bg-card)",
     cta: "Get Started",
     features: [
       "Everything in Professional",
@@ -219,7 +219,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
               style={{
                 padding: "0.4rem 1.25rem",
                 borderRadius: 20,
-                border: tab === t ? "1px solid rgba(0,188,212,0.3)" : "1px solid rgba(255,255,255,0.08)",
+                border: tab === t ? "1px solid rgba(0,188,212,0.3)" : "1px solid var(--border-default)",
                 background: tab === t ? "rgba(0,188,212,0.15)" : "transparent",
                 color: tab === t ? "#00bcd4" : "var(--text-muted)",
                 fontWeight: tab === t ? 600 : 500,
@@ -237,7 +237,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
           <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
 
             {/* ── Current plan card ── */}
-            <div style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: 20, padding: "2rem", position: "relative", overflow: "hidden" }}>
+            <div style={{ background: "var(--ghost-bg)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: 20, padding: "2rem", position: "relative", overflow: "hidden" }}>
               {/* Decorative glow */}
               <div style={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, background: "radial-gradient(circle, rgba(0,188,212,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
 
@@ -272,9 +272,9 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                   <div style={{ marginTop: "0.75rem" }}>
                     <span style={{
                       display: "inline-block",
-                      background: subscription?.status === "ACTIVE" ? "rgba(16,185,129,0.15)" : subscription ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.06)",
+                      background: subscription?.status === "ACTIVE" ? "rgba(16,185,129,0.15)" : subscription ? "rgba(239,68,68,0.15)" : "var(--text-muted)",
                       color: subscription?.status === "ACTIVE" ? "#10b981" : subscription ? "#ef4444" : "var(--text-muted)",
-                      border: subscription?.status === "ACTIVE" ? "1px solid rgba(16,185,129,0.3)" : subscription ? "1px solid rgba(239,68,68,0.3)" : "1px solid rgba(255,255,255,0.1)",
+                      border: subscription?.status === "ACTIVE" ? "1px solid rgba(16,185,129,0.3)" : subscription ? "1px solid rgba(239,68,68,0.3)" : "1px solid var(--border-default)",
                       borderRadius: 20,
                       padding: "0.25rem 0.75rem",
                       fontSize: "0.75rem",
@@ -315,7 +315,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
               </div>
 
               {/* Features */}
-              <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid rgba(255,255,255,0.06)", position: "relative" }}>
+              <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid var(--border-default)", position: "relative" }}>
                 <div style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.75rem" }}>{"What's included"}</div>
                 <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                   {getTierFeatures(tier).map((f) => (
@@ -344,7 +344,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                     return (
                       <div
                         key={t}
-                        style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}
+                        style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}
                       >
                         <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.1rem" }}>{TIER_NAMES[t]}</div>
                         <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem" }}>
@@ -406,7 +406,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                     return (
                       <div
                         key={t}
-                        style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}
+                        style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}
                       >
                         <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.1rem" }}>{TIER_NAMES[t]}</div>
                         <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem" }}>
@@ -450,7 +450,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                     return (
                       <div
                         key={t}
-                        style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}
+                        style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid var(--border-default)", borderRadius: 16, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}
                       >
                         <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.1rem" }}>{TIER_NAMES[t]}</div>
                         <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem" }}>
@@ -519,7 +519,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
         )}
 
         {tab === "history" && (
-          <div style={{ background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.5rem" }}>
+          <div style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.5rem" }}>
             <div style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "1rem" }}>Change History</div>
             {changes.length === 0 ? (
               <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No subscription changes yet.</p>
@@ -535,7 +535,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                   </thead>
                   <tbody>
                     {changes.map((c, ci) => (
-                      <tr key={c.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", background: ci % 2 === 0 ? "rgba(255,255,255,0.01)" : "transparent" }}>
+                      <tr key={c.id} style={{ borderBottom: "1px solid var(--border-default)", background: ci % 2 === 0 ? "var(--bg-card)" : "transparent" }}>
                         <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-primary)" }}>{new Date(c.changeDate).toLocaleDateString()}</td>
                         <td style={{ padding: "0.5rem 0.75rem" }}>
                           <span style={{
@@ -574,7 +574,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
 
         {/* Tab selector */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "2rem" }}>
-          <div style={{ display: "inline-flex", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 28, padding: "4px" }}>
+          <div style={{ display: "inline-flex", background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 28, padding: "4px" }}>
             {["Estate Sale Services", "Neighborhood Bundle"].map((label, i) => (
               <button
                 key={label}
@@ -683,7 +683,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                   </div>
 
                   {/* Additional family pricing */}
-                  <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 12, padding: "0.75rem 1rem", marginBottom: "1.5rem" }}>
+                  <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 12, padding: "0.75rem 1rem", marginBottom: "1.5rem" }}>
                     <div style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>
                       Additional families: <span style={{ color: "#00bcd4", fontWeight: 700 }}>${NEIGHBORHOOD_BUNDLE.preLaunchAdditional}/family</span>
                       <span style={{ color: "var(--text-muted)", fontSize: "0.78rem", textDecoration: "line-through", marginLeft: "0.4rem" }}>${NEIGHBORHOOD_BUNDLE.additionalFamily}</span>
@@ -709,7 +709,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                 width: activeSlide === i ? 24 : 8,
                 height: 8,
                 borderRadius: activeSlide === i ? 4 : 4,
-                background: activeSlide === i ? "#00bcd4" : "rgba(255,255,255,0.15)",
+                background: activeSlide === i ? "#00bcd4" : "var(--text-muted)",
                 border: "none",
                 cursor: "pointer",
                 transition: "all 0.3s ease",

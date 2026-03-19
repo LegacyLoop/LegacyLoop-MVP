@@ -185,7 +185,7 @@ export default function PhotoBotClient({ items }: { items: ItemData[] }) {
                   onClick={runClean}
                   disabled={!selectedPhotoId}
                   style={{
-                    background: selectedPhotoId ? "linear-gradient(135deg, #00bcd4, #009688)" : "rgba(255,255,255,0.06)",
+                    background: selectedPhotoId ? "linear-gradient(135deg, #00bcd4, #009688)" : "var(--ghost-bg)",
                     border: "none", borderRadius: "12px", padding: "0.75rem 2rem",
                     color: selectedPhotoId ? "white" : "var(--text-muted)",
                     fontWeight: 700, fontSize: "0.95rem",
@@ -210,12 +210,12 @@ export default function PhotoBotClient({ items }: { items: ItemData[] }) {
                   {/* Before / After */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
                     {/* Original */}
-                    <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", overflow: "hidden" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "10px", overflow: "hidden" }}>
                       <img src={editResult.originalPhotoPath} alt="Original" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
                       <div style={{ padding: "0.5rem 0.65rem", color: "var(--text-muted)", fontSize: "0.78rem", fontWeight: 600 }}>Original</div>
                     </div>
                     {/* Cleaned */}
-                    <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "10px", overflow: "hidden" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "10px", overflow: "hidden" }}>
                       <img src={editResult.editedPhotoUrl} alt="Cleaned" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
                       <div style={{ padding: "0.5rem 0.65rem", color: "#00bcd4", fontSize: "0.78rem", fontWeight: 600 }}>Cleaned</div>
                     </div>
@@ -247,7 +247,7 @@ export default function PhotoBotClient({ items }: { items: ItemData[] }) {
                     </button>
                     <button
                       onClick={() => { setEditResult(null); setSelectedPhotoId(null); }}
-                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "0.6rem 1.25rem", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer" }}
+                      style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "10px", padding: "0.6rem 1.25rem", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer" }}
                     >
                       Clean Another
                     </button>

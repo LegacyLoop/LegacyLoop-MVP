@@ -128,8 +128,8 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
       <div style={{
         padding: "1.5rem",
         borderRadius: "0.75rem",
-        background: "rgba(255,255,255,0.05)",
-        border: "1px solid rgba(255,255,255,0.1)",
+        background: "var(--ghost-bg)",
+        border: "1px solid var(--border-default)",
         textAlign: "center",
       }}>
         <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>
@@ -144,14 +144,14 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
   return (
     <div style={{
       borderRadius: "0.75rem",
-      background: "rgba(255,255,255,0.05)",
-      border: "1px solid rgba(255,255,255,0.1)",
+      background: "var(--ghost-bg)",
+      border: "1px solid var(--border-default)",
       overflow: "hidden",
     }}>
       {/* Header */}
       <div style={{
         padding: "1rem 1.25rem",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        borderBottom: "1px solid var(--border-default)",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
@@ -180,7 +180,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
       <div style={{
         padding: "1.25rem",
         textAlign: "center",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        borderBottom: "1px solid var(--border-default)",
       }}>
         <div style={{ fontSize: "0.78rem", color: "#888", marginBottom: "4px" }}>
           {offer.status === "COUNTERED" ? "Current Counter" : "Offer Amount"}
@@ -267,8 +267,8 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
               <div style={{
                 padding: "1rem",
                 borderRadius: "10px",
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: "var(--bg-card)",
+                border: "1px solid var(--border-default)",
               }}>
                 <div style={{ fontWeight: 700, fontSize: "0.82rem", color: "#aaa", marginBottom: "0.6rem" }}>
                   Your Counter Price
@@ -287,7 +287,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                     step="1"
                     style={{
                       width: "100%", padding: "12px 12px 12px 28px", fontSize: "1.1rem", fontWeight: 700,
-                      background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)",
+                      background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                       borderRadius: "8px", color: "#e5e5e5", outline: "none", boxSizing: "border-box",
                     }}
                   />
@@ -299,7 +299,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                   rows={2}
                   style={{
                     width: "100%", padding: "10px 12px", fontSize: "0.85rem",
-                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)",
+                    background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                     borderRadius: "8px", color: "#e5e5e5", outline: "none", resize: "vertical",
                     marginBottom: "0.5rem", boxSizing: "border-box",
                   }}
@@ -321,7 +321,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                   <button
                     onClick={() => setShowCounter(false)}
                     style={{
-                      padding: "12px 16px", fontSize: "0.85rem", border: "1px solid rgba(255,255,255,0.15)",
+                      padding: "12px 16px", fontSize: "0.85rem", border: "1px solid var(--border-default)",
                       borderRadius: "8px", background: "transparent", color: "#888", cursor: "pointer",
                       minHeight: "48px",
                     }}
@@ -341,7 +341,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                   padding: "12px",
                   fontSize: "0.88rem",
                   fontWeight: 600,
-                  border: "1px solid rgba(255,255,255,0.12)",
+                  border: "1px solid var(--border-default)",
                   borderRadius: "10px",
                   background: "transparent",
                   color: "#888",
@@ -378,7 +378,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                   <button
                     onClick={() => setConfirmDecline(false)}
                     style={{
-                      padding: "10px 20px", fontSize: "0.85rem", border: "1px solid rgba(255,255,255,0.15)",
+                      padding: "10px 20px", fontSize: "0.85rem", border: "1px solid var(--border-default)",
                       borderRadius: "8px", background: "transparent", color: "#888", cursor: "pointer",
                       minHeight: "44px",
                     }}

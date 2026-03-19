@@ -45,7 +45,7 @@ function ResetPasswordForm() {
       height="14"
       viewBox="0 0 24 24"
       fill="none"
-      stroke={met ? "#22c55e" : "rgba(255,255,255,0.25)"}
+      stroke={met ? "#22c55e" : "var(--text-muted)"}
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -153,7 +153,7 @@ function ResetPasswordForm() {
         <p
           style={{
             fontSize: "0.85rem",
-            color: "rgba(255,255,255,0.42)",
+            color: "var(--text-muted)",
             marginTop: "0.5rem",
             textAlign: "center",
             lineHeight: 1.5,
@@ -188,7 +188,7 @@ function ResetPasswordForm() {
             border: "none",
             cursor: "pointer",
             fontSize: "0.82rem",
-            color: "rgba(255,255,255,0.35)",
+            color: "var(--text-muted)",
             fontWeight: 400,
             padding: 0,
             transition: "color 0.15s",
@@ -249,7 +249,7 @@ function ResetPasswordForm() {
         <p
           style={{
             fontSize: "0.85rem",
-            color: "rgba(255,255,255,0.42)",
+            color: "var(--text-muted)",
             marginTop: "0.5rem",
             textAlign: "center",
             lineHeight: 1.5,
@@ -307,7 +307,7 @@ function ResetPasswordForm() {
         <p
           style={{
             fontSize: "0.85rem",
-            color: "rgba(255,255,255,0.42)",
+            color: "var(--text-muted)",
             marginTop: "0.35rem",
             lineHeight: 1.5,
           }}
@@ -348,7 +348,7 @@ function ResetPasswordForm() {
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "rgba(255,255,255,0.35)",
+                color: "var(--text-muted)",
                 padding: 0,
                 lineHeight: 1,
                 fontSize: "0.75rem",
@@ -374,7 +374,7 @@ function ResetPasswordForm() {
                       background:
                         strength >= seg
                           ? strengthColor
-                          : "rgba(255,255,255,0.1)",
+                          : "var(--text-muted)",
                       transition: "background 0.25s",
                     }}
                   />
@@ -421,7 +421,7 @@ function ResetPasswordForm() {
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "rgba(255,255,255,0.35)",
+                color: "var(--text-muted)",
                 padding: 0,
                 lineHeight: 1,
                 fontSize: "0.75rem",
@@ -469,7 +469,7 @@ function ResetPasswordForm() {
                 alignItems: "center",
                 gap: "0.5rem",
                 fontSize: "0.78rem",
-                color: met ? "#22c55e" : "rgba(255,255,255,0.25)",
+                color: met ? "#22c55e" : "var(--text-muted)",
                 transition: "color 0.2s",
               }}
             >
@@ -549,7 +549,7 @@ function ResetPasswordForm() {
             border: "none",
             cursor: "pointer",
             fontSize: "0.82rem",
-            color: "rgba(255,255,255,0.35)",
+            color: "var(--text-muted)",
             fontWeight: 400,
             padding: 0,
             transition: "color 0.15s",
@@ -575,7 +575,7 @@ export default function ResetPasswordPage() {
             alignItems: "center",
             justifyContent: "center",
             padding: "3rem 0",
-            color: "rgba(255,255,255,0.35)",
+            color: "var(--text-muted)",
             fontSize: "0.85rem",
           }}
         >

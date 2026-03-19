@@ -285,7 +285,7 @@ export default function LoginPage() {
         <p
           style={{
             fontSize: "0.85rem",
-            color: "rgba(255,255,255,0.42)",
+            color: "var(--text-muted)",
             marginTop: "0.35rem",
             margin: "0.35rem 0 0 0",
           }}
@@ -341,7 +341,7 @@ export default function LoginPage() {
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "rgba(255,255,255,0.4)",
+                color: "var(--text-muted)",
                 padding: "4px",
                 lineHeight: 1,
                 fontSize: "0.75rem",
@@ -353,7 +353,7 @@ export default function LoginPage() {
                 (e.currentTarget as HTMLElement).style.color = "#00bcd4";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.4)";
+                (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
               }}
               aria-label={showPass ? "Hide password" : "Show password"}
             >
@@ -440,7 +440,7 @@ export default function LoginPage() {
             gap: "0.5rem",
             cursor: "pointer",
             fontSize: "0.82rem",
-            color: "rgba(255,255,255,0.42)",
+            color: "var(--text-muted)",
             minHeight: "44px",
             userSelect: "none",
           }}
@@ -470,11 +470,11 @@ export default function LoginPage() {
           margin: "1.5rem 0 1.25rem",
         }}
       >
-        <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.08)" }} />
+        <div style={{ flex: 1, height: "1px", background: "var(--ghost-bg)" }} />
         <span
           style={{
             fontSize: "0.68rem",
-            color: "rgba(255,255,255,0.28)",
+            color: "var(--text-muted)",
             letterSpacing: "0.1em",
             textTransform: "uppercase",
             whiteSpace: "nowrap",
@@ -483,7 +483,7 @@ export default function LoginPage() {
         >
           or continue with
         </span>
-        <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.08)" }} />
+        <div style={{ flex: 1, height: "1px", background: "var(--ghost-bg)" }} />
       </div>
 
       {/* ────── Alternate sign-in buttons ────── */}
@@ -499,7 +499,7 @@ export default function LoginPage() {
             height: 48,
             width: "100%",
             borderRadius: 12,
-            border: "1px solid rgba(255,255,255,0.15)",
+            border: "1px solid var(--border-default)",
             background: "#fff",
             color: "#333",
             fontSize: "0.85rem",
@@ -531,9 +531,9 @@ export default function LoginPage() {
             height: 48,
             width: "100%",
             borderRadius: 12,
-            border: activePanel === "phone" ? "1px solid #00bcd4" : "1px solid rgba(255,255,255,0.12)",
+            border: activePanel === "phone" ? "1px solid #00bcd4" : "1px solid var(--border-default)",
             background: "transparent",
-            color: activePanel === "phone" ? "#00bcd4" : "rgba(255,255,255,0.7)",
+            color: activePanel === "phone" ? "#00bcd4" : "var(--text-secondary)",
             fontSize: "0.85rem",
             fontWeight: 500,
             cursor: "pointer",
@@ -541,14 +541,14 @@ export default function LoginPage() {
           }}
           onMouseEnter={(e) => {
             if (activePanel !== "phone") {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.25)";
-              (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.9)";
+              (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
+              (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
             }
           }}
           onMouseLeave={(e) => {
             if (activePanel !== "phone") {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.12)";
-              (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.7)";
+              (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
+              (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
             }
           }}
         >
@@ -568,9 +568,9 @@ export default function LoginPage() {
             height: 48,
             width: "100%",
             borderRadius: 12,
-            border: activePanel === "magic" ? "1px solid #00bcd4" : "1px solid rgba(255,255,255,0.12)",
+            border: activePanel === "magic" ? "1px solid #00bcd4" : "1px solid var(--border-default)",
             background: "transparent",
-            color: activePanel === "magic" ? "#00bcd4" : "rgba(255,255,255,0.7)",
+            color: activePanel === "magic" ? "#00bcd4" : "var(--text-secondary)",
             fontSize: "0.85rem",
             fontWeight: 500,
             cursor: "pointer",
@@ -578,14 +578,14 @@ export default function LoginPage() {
           }}
           onMouseEnter={(e) => {
             if (activePanel !== "magic") {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.25)";
-              (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.9)";
+              (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
+              (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
             }
           }}
           onMouseLeave={(e) => {
             if (activePanel !== "magic") {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.12)";
-              (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.7)";
+              (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
+              (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
             }
           }}
         >
@@ -600,8 +600,8 @@ export default function LoginPage() {
           style={{
             marginTop: "1rem",
             padding: "1.25rem",
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-default)",
             borderRadius: 16,
             transition: "all 0.15s ease",
           }}
@@ -621,7 +621,7 @@ export default function LoginPage() {
               <p
                 style={{
                   fontSize: "0.78rem",
-                  color: "rgba(255,255,255,0.42)",
+                  color: "var(--text-muted)",
                   margin: "0 0 1rem 0",
                   lineHeight: 1.5,
                 }}
@@ -682,18 +682,18 @@ export default function LoginPage() {
                     height: 44,
                     padding: "0 1rem",
                     borderRadius: 10,
-                    border: "1px solid rgba(255,255,255,0.12)",
+                    border: "1px solid var(--border-default)",
                     background: "transparent",
-                    color: "rgba(255,255,255,0.5)",
+                    color: "var(--text-muted)",
                     fontSize: "0.82rem",
                     cursor: "pointer",
                     transition: "color 0.15s ease",
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.8)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
                   }}
                 >
                   Back
@@ -715,7 +715,7 @@ export default function LoginPage() {
               <p
                 style={{
                   fontSize: "0.78rem",
-                  color: "rgba(255,255,255,0.42)",
+                  color: "var(--text-muted)",
                   margin: "0 0 1.25rem 0",
                   lineHeight: 1.5,
                 }}
@@ -750,10 +750,10 @@ export default function LoginPage() {
                       fontSize: "1.25rem",
                       fontWeight: 700,
                       color: "#f5f5f7",
-                      background: "rgba(255,255,255,0.06)",
+                      background: "var(--ghost-bg)",
                       border: digit
                         ? "1px solid #00bcd4"
-                        : "1px solid rgba(255,255,255,0.12)",
+                        : "1px solid var(--border-default)",
                       borderRadius: 10,
                       outline: "none",
                       caretColor: "#00bcd4",
@@ -764,7 +764,7 @@ export default function LoginPage() {
                     }}
                     onBlur={(e) => {
                       if (!e.currentTarget.value) {
-                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+                        e.currentTarget.style.borderColor = "var(--border-default)";
                       }
                     }}
                     autoComplete="one-time-code"
@@ -803,17 +803,17 @@ export default function LoginPage() {
                   style={{
                     background: "none",
                     border: "none",
-                    color: "rgba(255,255,255,0.5)",
+                    color: "var(--text-muted)",
                     fontSize: "0.82rem",
                     cursor: "pointer",
                     padding: "4px 0",
                     transition: "color 0.15s ease",
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.8)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
                   }}
                 >
                   Back
@@ -823,7 +823,7 @@ export default function LoginPage() {
                   <span
                     style={{
                       fontSize: "0.78rem",
-                      color: "rgba(255,255,255,0.3)",
+                      color: "var(--text-muted)",
                     }}
                   >
                     Resend code in {phoneResendCountdown}s
@@ -867,8 +867,8 @@ export default function LoginPage() {
           style={{
             marginTop: "1rem",
             padding: "1.25rem",
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-default)",
             borderRadius: 16,
             transition: "all 0.15s ease",
           }}
@@ -888,7 +888,7 @@ export default function LoginPage() {
               <p
                 style={{
                   fontSize: "0.78rem",
-                  color: "rgba(255,255,255,0.42)",
+                  color: "var(--text-muted)",
                   margin: "0 0 1rem 0",
                   lineHeight: 1.5,
                 }}
@@ -949,18 +949,18 @@ export default function LoginPage() {
                     height: 44,
                     padding: "0 1rem",
                     borderRadius: 10,
-                    border: "1px solid rgba(255,255,255,0.12)",
+                    border: "1px solid var(--border-default)",
                     background: "transparent",
-                    color: "rgba(255,255,255,0.5)",
+                    color: "var(--text-muted)",
                     fontSize: "0.82rem",
                     cursor: "pointer",
                     transition: "color 0.15s ease",
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.8)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
                   }}
                 >
                   Back
@@ -1005,7 +1005,7 @@ export default function LoginPage() {
                 <p
                   style={{
                     fontSize: "0.82rem",
-                    color: "rgba(255,255,255,0.42)",
+                    color: "var(--text-muted)",
                     margin: "0 0 1.25rem 0",
                     lineHeight: 1.6,
                   }}
@@ -1048,17 +1048,17 @@ export default function LoginPage() {
                     style={{
                       background: "none",
                       border: "none",
-                      color: "rgba(255,255,255,0.5)",
+                      color: "var(--text-muted)",
                       fontSize: "0.82rem",
                       cursor: "pointer",
                       padding: "4px 0",
                       transition: "color 0.15s ease",
                     }}
                     onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.8)";
+                      (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
                     }}
                     onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)";
+                      (e.currentTarget as HTMLElement).style.color = "var(--text-muted)";
                     }}
                   >
                     Back
@@ -1068,7 +1068,7 @@ export default function LoginPage() {
                     <span
                       style={{
                         fontSize: "0.78rem",
-                        color: "rgba(255,255,255,0.3)",
+                        color: "var(--text-muted)",
                       }}
                     >
                       Didn&apos;t get it? Resend in {magicResendCountdown}s
@@ -1109,7 +1109,7 @@ export default function LoginPage() {
         style={{
           textAlign: "center",
           fontSize: "0.82rem",
-          color: "rgba(255,255,255,0.42)",
+          color: "var(--text-muted)",
           margin: "1.75rem 0 0 0",
         }}
       >

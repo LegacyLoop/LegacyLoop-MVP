@@ -97,8 +97,7 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
       const scrollY = window.scrollY;
       router.refresh();
       requestAnimationFrame(() => window.scrollTo(0, scrollY));
-      // Auto-trigger Amazon enrichment — fire and forget, silent
-      fetch(`/api/enrichment/amazon/${itemId}`, { method: "POST", headers: { "Content-Type": "application/json" } }).catch(() => null);
+      // Amazon enrichment is handled by the analyze route — data already cached
     } catch (e: any) {
       setError(e.message ?? "MegaBot failed");
     } finally {
@@ -126,13 +125,13 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.375rem", position: "relative" }}>
         <span style={{ fontSize: "1.35rem" }}>⚡</span>
         <div>
-          <div style={{ fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)" }}>
+          <div style={{ fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--text-secondary)" }}>
             Premium Feature
           </div>
           <div style={{ fontSize: "1.2rem", fontWeight: 800, lineHeight: 1.2 }}>MegaBot — 4-AI Consensus</div>
         </div>
       </div>
-      <p style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.65)", marginBottom: "1.25rem" }}>
+      <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "1.25rem" }}>
         OpenAI + Claude + Gemini + Grok analyze simultaneously for maximum pricing accuracy.
       </p>
 
@@ -146,13 +145,13 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
               return (
                 <div key={p.key} style={{
                   flex: 1, padding: "0.75rem", borderRadius: "0.75rem",
-                  background: done ? `${p.color}18` : "rgba(255,255,255,0.05)",
-                  border: `1px solid ${done ? `${p.color}40` : "rgba(255,255,255,0.08)"}`,
+                  background: done ? `${p.color}18` : "var(--ghost-bg)",
+                  border: `1px solid ${done ? `${p.color}40` : "var(--border-default)"}`,
                   textAlign: "center", transition: "all 0.5s ease",
                 }}>
                   <div style={{
                     width: "2rem", height: "2rem", borderRadius: "50%", margin: "0 auto 0.5rem",
-                    background: done ? p.color : "rgba(255,255,255,0.08)",
+                    background: done ? p.color : "var(--ghost-bg)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: "0.75rem", fontWeight: 800, color: "#fff",
                     animation: !done ? "pulse 1.5s ease-in-out infinite" : "none",
@@ -160,10 +159,10 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
                   }}>
                     {done ? "✓" : p.icon}
                   </div>
-                  <div style={{ fontSize: "0.72rem", fontWeight: 600, color: done ? p.color : "rgba(255,255,255,0.5)" }}>
+                  <div style={{ fontSize: "0.72rem", fontWeight: 600, color: done ? p.color : "var(--text-muted)" }}>
                     {p.name}
                   </div>
-                  <div style={{ fontSize: "0.65rem", color: done ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.3)", marginTop: "0.15rem" }}>
+                  <div style={{ fontSize: "0.65rem", color: done ? "var(--text-secondary)" : "var(--text-muted)", marginTop: "0.15rem" }}>
                     {done ? "Complete" : "Analyzing..."}
                   </div>
                 </div>
@@ -172,7 +171,7 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
           </div>
 
           {/* Progress bar */}
-          <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: "0.5rem", height: "6px", overflow: "hidden", marginBottom: "0.75rem" }}>
+          <div style={{ background: "var(--ghost-bg)", borderRadius: "0.5rem", height: "6px", overflow: "hidden", marginBottom: "0.75rem" }}>
             <div style={{
               height: "100%", borderRadius: "0.5rem",
               background: "linear-gradient(90deg, #8b5cf6, #3b82f6, #10b981)",
@@ -180,7 +179,7 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
               transition: "width 0.8s ease",
             }} />
           </div>
-          <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.6)", textAlign: "center" }}>
+          <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", textAlign: "center" }}>
             {SCAN_STEPS[scanStep]}
           </div>
         </div>
@@ -208,28 +207,28 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
           {/* Re-run button */}
           <button onClick={runMegabot} style={{
             padding: "0.5rem 1rem", borderRadius: "0.6rem", fontSize: "0.78rem", fontWeight: 600,
-            background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)",
-            color: "rgba(255,255,255,0.7)", cursor: "pointer", marginBottom: "1.25rem",
+            background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+            color: "var(--text-secondary)", cursor: "pointer", marginBottom: "1.25rem",
             transition: "all 0.15s ease",
           }}>
             Re-run Analysis
           </button>
 
           {/* Agreement bar */}
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem", padding: "0.75rem 1rem", background: "rgba(255,255,255,0.07)", borderRadius: "0.75rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem", padding: "0.75rem 1rem", background: "var(--ghost-bg)", borderRadius: "0.75rem" }}>
             <div>
-              <div style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.55)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>AI Agreement</div>
+              <div style={{ fontSize: "0.6rem", color: "var(--text-secondary)", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}>AI Agreement</div>
               <div style={{ fontSize: "1.5rem", fontWeight: 800 }}>{result.agreementScore}%</div>
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ height: 7, background: "rgba(255,255,255,0.1)", borderRadius: 4, overflow: "hidden" }}>
+              <div style={{ height: 7, background: "var(--bg-card-hover)", borderRadius: 4, overflow: "hidden" }}>
                 <div style={{
                   height: "100%", width: `${result.agreementScore}%`, borderRadius: 4,
                   background: result.agreementScore >= 70 ? "linear-gradient(90deg, #10b981, #34d399)" : result.agreementScore >= 40 ? "linear-gradient(90deg, #f59e0b, #fbbf24)" : "linear-gradient(90deg, #ef4444, #f87171)",
                   transition: "width 0.8s ease",
                 }} />
               </div>
-              <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.45)", marginTop: "0.25rem" }}>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
                 {result.agreementScore >= 70 ? "Strong consensus" : result.agreementScore >= 40 ? "Moderate agreement" : "Low agreement — review carefully"}
               </div>
             </div>
@@ -240,13 +239,13 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem" }}>
               <thead>
                 <tr>
-                  <th style={{ textAlign: "left", padding: "0.5rem 0.6rem", color: "rgba(255,255,255,0.45)", fontWeight: 600, fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+                  <th style={{ textAlign: "left", padding: "0.5rem 0.6rem", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid var(--border-default)" }}>
                     Aspect
                   </th>
                   {result.providers.map((p) => {
                     const pCfg = PROVIDERS.find((pr) => pr.key === p.provider)!;
                     return (
-                      <th key={p.provider} style={{ textAlign: "center", padding: "0.5rem 0.6rem", borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+                      <th key={p.provider} style={{ textAlign: "center", padding: "0.5rem 0.6rem", borderBottom: "1px solid var(--border-default)" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.35rem" }}>
                           <span style={{ width: 8, height: 8, borderRadius: "50%", background: pCfg.color, display: "inline-block" }} />
                           <span style={{ color: pCfg.color, fontWeight: 700, fontSize: "0.7rem" }}>{pCfg.name}</span>
@@ -262,72 +261,72 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
               <tbody>
                 {/* Item ID */}
                 <tr>
-                  <td style={{ padding: "0.5rem 0.6rem", color: "rgba(255,255,255,0.55)", fontWeight: 500, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>Identification</td>
+                  <td style={{ padding: "0.5rem 0.6rem", color: "var(--text-secondary)", fontWeight: 500, borderBottom: "1px solid var(--border-default)" }}>Identification</td>
                   {result.providers.map((p) => (
-                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", fontWeight: 500, borderBottom: "1px solid rgba(255,255,255,0.05)", maxWidth: "120px" }}>
+                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", fontWeight: 500, borderBottom: "1px solid var(--border-default)", maxWidth: "120px" }}>
                       {p.error ? <span style={{ color: "#f87171" }}>Error</span> : (p.itemName ?? "—")}
                     </td>
                   ))}
-                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(0,188,212,0.05)" }}>
+                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 700, borderBottom: "1px solid var(--border-default)", background: "rgba(0,188,212,0.05)" }}>
                     {result.consensus.item_name}
                   </td>
                 </tr>
 
                 {/* Condition */}
                 <tr>
-                  <td style={{ padding: "0.5rem 0.6rem", color: "rgba(255,255,255,0.55)", fontWeight: 500, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>Condition</td>
+                  <td style={{ padding: "0.5rem 0.6rem", color: "var(--text-secondary)", fontWeight: 500, borderBottom: "1px solid var(--border-default)" }}>Condition</td>
                   {result.providers.map((p) => (
-                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", borderBottom: "1px solid var(--border-default)" }}>
                       {p.conditionScore != null ? `${p.conditionScore}/10` : "—"}
                     </td>
                   ))}
-                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(0,188,212,0.05)" }}>
+                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 700, borderBottom: "1px solid var(--border-default)", background: "rgba(0,188,212,0.05)" }}>
                     {result.consensus.condition_score != null ? `${result.consensus.condition_score}/10` : "—"}
                   </td>
                 </tr>
 
                 {/* Price Low */}
                 <tr>
-                  <td style={{ padding: "0.5rem 0.6rem", color: "rgba(255,255,255,0.55)", fontWeight: 500, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>Price Low</td>
+                  <td style={{ padding: "0.5rem 0.6rem", color: "var(--text-secondary)", fontWeight: 500, borderBottom: "1px solid var(--border-default)" }}>Price Low</td>
                   {result.providers.map((p) => (
-                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", borderBottom: "1px solid var(--border-default)" }}>
                       {p.priceLow != null ? `$${p.priceLow}` : "—"}
                     </td>
                   ))}
-                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(0,188,212,0.05)" }}>
+                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 700, borderBottom: "1px solid var(--border-default)", background: "rgba(0,188,212,0.05)" }}>
                     {result.consensus.price_low != null ? `$${result.consensus.price_low}` : "—"}
                   </td>
                 </tr>
 
                 {/* Price Fair */}
                 <tr>
-                  <td style={{ padding: "0.5rem 0.6rem", color: "rgba(255,255,255,0.55)", fontWeight: 500, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>Price Fair</td>
+                  <td style={{ padding: "0.5rem 0.6rem", color: "var(--text-secondary)", fontWeight: 500, borderBottom: "1px solid var(--border-default)" }}>Price Fair</td>
                   {result.providers.map((p) => (
-                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", fontWeight: 600, borderBottom: "1px solid var(--border-default)" }}>
                       {p.priceFair != null ? `$${p.priceFair}` : "—"}
                     </td>
                   ))}
-                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 800, fontSize: "0.88rem", borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(0,188,212,0.05)" }}>
+                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 800, fontSize: "0.88rem", borderBottom: "1px solid var(--border-default)", background: "rgba(0,188,212,0.05)" }}>
                     {result.consensus.price_fair != null ? `$${result.consensus.price_fair}` : "—"}
                   </td>
                 </tr>
 
                 {/* Price High */}
                 <tr>
-                  <td style={{ padding: "0.5rem 0.6rem", color: "rgba(255,255,255,0.55)", fontWeight: 500, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>Price High</td>
+                  <td style={{ padding: "0.5rem 0.6rem", color: "var(--text-secondary)", fontWeight: 500, borderBottom: "1px solid var(--border-default)" }}>Price High</td>
                   {result.providers.map((p) => (
-                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", borderBottom: "1px solid var(--border-default)" }}>
                       {p.priceHigh != null ? `$${p.priceHigh}` : "—"}
                     </td>
                   ))}
-                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.05)", background: "rgba(0,188,212,0.05)" }}>
+                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 700, borderBottom: "1px solid var(--border-default)", background: "rgba(0,188,212,0.05)" }}>
                     {result.consensus.price_high != null ? `$${result.consensus.price_high}` : "—"}
                   </td>
                 </tr>
 
                 {/* Confidence */}
                 <tr>
-                  <td style={{ padding: "0.5rem 0.6rem", color: "rgba(255,255,255,0.55)", fontWeight: 500 }}>Confidence</td>
+                  <td style={{ padding: "0.5rem 0.6rem", color: "var(--text-secondary)", fontWeight: 500 }}>Confidence</td>
                   {result.providers.map((p) => {
                     const pCfg = PROVIDERS.find((pr) => pr.key === p.provider)!;
                     return (
@@ -354,11 +353,11 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
           {deltaPercent !== null && (
             <div style={{
               padding: "0.875rem 1rem", borderRadius: "0.75rem",
-              background: deltaPercent > 0 ? "rgba(34,197,94,0.08)" : deltaPercent < 0 ? "rgba(239,68,68,0.08)" : "rgba(255,255,255,0.06)",
-              border: `1px solid ${deltaPercent > 0 ? "rgba(34,197,94,0.2)" : deltaPercent < 0 ? "rgba(239,68,68,0.2)" : "rgba(255,255,255,0.1)"}`,
+              background: deltaPercent > 0 ? "rgba(34,197,94,0.08)" : deltaPercent < 0 ? "rgba(239,68,68,0.08)" : "var(--ghost-bg)",
+              border: `1px solid ${deltaPercent > 0 ? "rgba(34,197,94,0.2)" : deltaPercent < 0 ? "rgba(239,68,68,0.2)" : "var(--border-default)"}`,
               marginBottom: "1rem",
             }}>
-              <div style={{ fontSize: "0.82rem", fontWeight: 600, color: deltaPercent > 0 ? "#4ade80" : deltaPercent < 0 ? "#f87171" : "rgba(255,255,255,0.7)" }}>
+              <div style={{ fontSize: "0.82rem", fontWeight: 600, color: deltaPercent > 0 ? "#4ade80" : deltaPercent < 0 ? "#f87171" : "var(--text-secondary)" }}>
                 {Math.abs(deltaPercent) <= 10
                   ? `MegaBot confirms the original estimate — all AIs agree within ${Math.abs(deltaPercent)}%.`
                   : deltaPercent > 0
@@ -388,7 +387,7 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
                       fontSize: "0.6rem", fontWeight: 800, color: "#fff",
                     }}>{isErr ? "✗" : pCfg.icon}</span>
                     <span style={{ fontSize: "0.78rem", fontWeight: 700, color: isErr ? "#f87171" : pCfg.color }}>{pCfg.name}</span>
-                    <span style={{ marginLeft: "auto", fontSize: "0.65rem", color: "rgba(255,255,255,0.4)" }}>{p.durationMs}ms</span>
+                    <span style={{ marginLeft: "auto", fontSize: "0.65rem", color: "var(--text-muted)" }}>{p.durationMs}ms</span>
                   </div>
                   {isErr ? (
                     <div style={{ fontSize: "0.75rem", color: "#fca5a5" }}>Error: {p.error}</div>
@@ -396,13 +395,13 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
                     <>
                       <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "#fff", marginBottom: "0.25rem" }}>{p.itemName}</div>
                       {p.priceFair != null && (
-                        <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.6)" }}>
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
                           Fair: <span style={{ color: pCfg.color, fontWeight: 700 }}>${p.priceFair}</span>
                           {p.priceLow != null && p.priceHigh != null && <span> ({`$${p.priceLow}–$${p.priceHigh}`})</span>}
                         </div>
                       )}
                       {p.conditionScore != null && (
-                        <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.5)", marginTop: "0.15rem" }}>
+                        <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
                           Condition: {p.conditionScore}/10 · Confidence: {p.confidence != null ? `${Math.round(p.confidence * 100)}%` : "—"}
                         </div>
                       )}
@@ -437,21 +436,21 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "1rem" }}>
               {result.consensus.price_fair != null && (
                 <div style={{ padding: "0.75rem", borderRadius: "0.75rem", background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.15)" }}>
-                  <div style={{ fontSize: "0.58rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "0.2rem" }}>
+                  <div style={{ fontSize: "0.58rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "0.2rem" }}>
                     Consensus Value
                   </div>
                   <div style={{ fontSize: "1.35rem", fontWeight: 800, color: "#22d3ee" }}>
                     ${result.consensus.price_fair}
                   </div>
                   {result.consensus.price_low != null && result.consensus.price_high != null && (
-                    <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.5)" }}>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
                       Range: ${result.consensus.price_low} – ${result.consensus.price_high}
                     </div>
                   )}
                 </div>
               )}
-              <div style={{ padding: "0.75rem", borderRadius: "0.75rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ fontSize: "0.58rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)", marginBottom: "0.2rem" }}>
+              <div style={{ padding: "0.75rem", borderRadius: "0.75rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                <div style={{ fontSize: "0.58rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "0.2rem" }}>
                   AI Agreement
                 </div>
                 <div style={{
@@ -460,14 +459,14 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
                 }}>
                   {result.agreementScore}%
                 </div>
-                <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.5)" }}>
+                <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
                   {result.providers.filter((p) => !p.error).length}/{result.providers.length} AIs responded
                 </div>
               </div>
             </div>
 
             {/* Plain-English analysis */}
-            <div style={{ fontSize: "0.88rem", color: "rgba(255,255,255,0.75)", lineHeight: 1.65, marginBottom: "0.75rem" }}>
+            <div style={{ fontSize: "0.88rem", color: "var(--text-primary)", lineHeight: 1.65, marginBottom: "0.75rem" }}>
               {(() => {
                 const successes = result.providers.filter((p) => !p.error).length;
                 const lines: string[] = [];
@@ -494,13 +493,13 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
               <div style={{
                 display: "flex", alignItems: "center", gap: "0.5rem",
                 padding: "0.6rem 0.875rem", borderRadius: "0.6rem",
-                background: deltaPercent > 0 ? "rgba(34,197,94,0.1)" : deltaPercent < 0 ? "rgba(239,68,68,0.08)" : "rgba(255,255,255,0.05)",
-                border: `1px solid ${deltaPercent > 0 ? "rgba(34,197,94,0.2)" : deltaPercent < 0 ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.08)"}`,
+                background: deltaPercent > 0 ? "rgba(34,197,94,0.1)" : deltaPercent < 0 ? "rgba(239,68,68,0.08)" : "var(--ghost-bg)",
+                border: `1px solid ${deltaPercent > 0 ? "rgba(34,197,94,0.2)" : deltaPercent < 0 ? "rgba(239,68,68,0.15)" : "var(--border-default)"}`,
               }}>
                 <span style={{ fontSize: "0.85rem" }}>{deltaPercent > 0 ? "📈" : deltaPercent < 0 ? "📉" : "✅"}</span>
                 <span style={{
                   fontSize: "0.82rem", fontWeight: 600,
-                  color: deltaPercent > 0 ? "#4ade80" : deltaPercent < 0 ? "#f87171" : "rgba(255,255,255,0.7)",
+                  color: deltaPercent > 0 ? "#4ade80" : deltaPercent < 0 ? "#f87171" : "var(--text-secondary)",
                 }}>
                   {Math.abs(deltaPercent) <= 10
                     ? `Confirms original estimate (within ${Math.abs(deltaPercent)}%)`

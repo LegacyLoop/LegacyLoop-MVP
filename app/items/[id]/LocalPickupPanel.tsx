@@ -147,67 +147,67 @@ export default function LocalPickupPanel({
               </label>
               {location === "my_location" && opt.key === "my_location" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>Choose how to specify your location:</div>
+                  <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Choose how to specify your location:</div>
                   <div>
-                    <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Enter address or intersection</label>
-                    <input type="text" placeholder="e.g. 123 Main St, Waterville ME or Main & Elm" value={preciseAddress} onChange={e => setPreciseAddress(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                    <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Exact address only shared with confirmed buyer</div>
+                    <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Enter address or intersection</label>
+                    <input type="text" placeholder="e.g. 123 Main St, Waterville ME or Main & Elm" value={preciseAddress} onChange={e => setPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Exact address only shared with confirmed buyer</div>
                   </div>
                   <div>
-                    <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🗺️ Or drop a pin on Google Maps</label>
+                    <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🗺️ Or drop a pin on Google Maps</label>
                     <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#00bcd4", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>📍 Open Google Maps — drop a pin and paste the link below</a>
-                    <input type="text" placeholder="Paste Google Maps link here..." value={preciseMapLink} onChange={e => setPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <input type="text" placeholder="Paste Google Maps link here..." value={preciseMapLink} onChange={e => setPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
                   </div>
                   <div>
-                    <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📝 Precise meetup instructions</label>
-                    <input type="text" placeholder="e.g. I'll be parked in the blue truck near the entrance" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📝 Precise meetup instructions</label>
+                    <input type="text" placeholder="e.g. I'll be parked in the blue truck near the entrance" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
                   </div>
                 </div>
               )}
               {location === "police_station" && opt.key === "police_station" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>🚔 Find a police station near you:</div>
+                  <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>🚔 Find a police station near you:</div>
                   <div style={{ display: "flex", gap: "0.5rem" }}>
                     <a href={`https://www.google.com/maps/search/police+station+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>🔍 Find Nearby →</a>
                   </div>
-                  <input type="text" placeholder="Station name or address (e.g. Waterville Police Dept, 9 Colby St)" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                  <input type="text" placeholder="Precise spot (e.g. visitor parking lot, front entrance)" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Station name or address (e.g. Waterville Police Dept, 9 Colby St)" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Precise spot (e.g. visitor parking lot, front entrance)" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
                   <div style={{ color: "rgba(16,185,129,0.7)", fontSize: "0.7rem" }}>✓ Safest option — many departments offer exchange programs</div>
                 </div>
               )}
               {location === "bank" && opt.key === "bank" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>🏦 Find a bank near you:</div>
+                  <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>🏦 Find a bank near you:</div>
                   <a href={`https://www.google.com/maps/search/bank+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ alignSelf: "flex-start", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none" }}>🔍 Find Nearby Banks →</a>
-                  <input type="text" placeholder="Bank name (e.g. TD Bank, 15 Elm St)" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                  <input type="text" placeholder="Which entrance or section of parking lot?" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Bank name (e.g. TD Bank, 15 Elm St)" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Which entrance or section of parking lot?" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
                 </div>
               )}
               {location === "coffee_shop" && opt.key === "coffee_shop" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>☕ Find a coffee shop or restaurant near you:</div>
+                  <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>☕ Find a coffee shop or restaurant near you:</div>
                   <a href={`https://www.google.com/maps/search/coffee+shop+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ alignSelf: "flex-start", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none" }}>🔍 Find Nearby →</a>
-                  <input type="text" placeholder="Name of coffee shop or restaurant" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                  <input type="text" placeholder="Where to meet — inside? outside? which table?" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Name of coffee shop or restaurant" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Where to meet — inside? outside? which table?" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
                 </div>
               )}
               {location === "post_office" && opt.key === "post_office" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>📬 Find a post office near you:</div>
+                  <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>📬 Find a post office near you:</div>
                   <a href={`https://www.google.com/maps/search/post+office+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ alignSelf: "flex-start", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none" }}>🔍 Find Nearby USPS →</a>
-                  <input type="text" placeholder="Post office address" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                  <input type="text" placeholder="Where to meet (e.g. parking lot, front entrance)" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Post office address" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Where to meet (e.g. parking lot, front entrance)" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
                 </div>
               )}
               {location === "other" && opt.key === "other" && (
-                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                  <input type="text" placeholder="Name of the meetup place" value={otherLocation} onChange={e => setOtherLocation(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                  <input type="text" placeholder="Address" value={preciseAddress} onChange={e => setPreciseAddress(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+                  <input type="text" placeholder="Name of the meetup place" value={otherLocation} onChange={e => setOtherLocation(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Address" value={preciseAddress} onChange={e => setPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
                   <div>
                     <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#00bcd4", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>📍 Open Google Maps — drop a pin and paste the link</a>
-                    <input type="text" placeholder="Paste Google Maps link here..." value={preciseMapLink} onChange={e => setPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <input type="text" placeholder="Paste Google Maps link here..." value={preciseMapLink} onChange={e => setPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
                   </div>
-                  <input type="text" placeholder="Precise meetup instructions" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Precise meetup instructions" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
                 </div>
               )}
             </div>
@@ -219,8 +219,8 @@ export default function LocalPickupPanel({
         {location && (
           <div style={{ marginTop: "0.75rem", padding: "0.85rem", background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px" }}>
             <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.78rem", marginBottom: "0.4rem" }}>📌 Precision Meetup Point</div>
-            <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.72rem", marginBottom: "0.55rem" }}>Give the buyer a precise spot so there&apos;s no confusion — &quot;north entrance&quot;, &quot;blue Honda&quot;, &quot;table by the window&quot;</div>
-            <input type="text" placeholder="e.g. I'll be in the blue truck at the north end of the parking lot" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+            <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: "0.55rem" }}>Give the buyer a precise spot so there&apos;s no confusion — &quot;north entrance&quot;, &quot;blue Honda&quot;, &quot;table by the window&quot;</div>
+            <input type="text" placeholder="e.g. I'll be in the blue truck at the north end of the parking lot" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
           </div>
         )}
       </div>
@@ -310,22 +310,22 @@ export default function LocalPickupPanel({
               {contactMethod === "in_app" && opt.key === "in_app" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.05)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
                   <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.78rem" }}>💬 In-App Messaging</div>
-                  <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", padding: "0.65rem" }}>
-                    <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.68rem", marginBottom: "0.4rem", textAlign: "center" }}>Message thread preview</div>
+                  <div style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "10px", padding: "0.65rem" }}>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginBottom: "0.4rem", textAlign: "center" }}>Message thread preview</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                       <div style={{ alignSelf: "flex-end", background: "rgba(0,188,212,0.15)", borderRadius: "10px 10px 2px 10px", padding: "0.35rem 0.65rem", maxWidth: "80%" }}>
-                        <span style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.72rem" }}>Hi! Ready to schedule pickup?</span>
+                        <span style={{ color: "var(--text-primary)", fontSize: "0.72rem" }}>Hi! Ready to schedule pickup?</span>
                       </div>
-                      <div style={{ alignSelf: "flex-start", background: "rgba(255,255,255,0.08)", borderRadius: "10px 10px 10px 2px", padding: "0.35rem 0.65rem", maxWidth: "80%" }}>
-                        <span style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.72rem" }}>Yes! How&apos;s Thursday afternoon?</span>
+                      <div style={{ alignSelf: "flex-start", background: "var(--ghost-bg)", borderRadius: "10px 10px 10px 2px", padding: "0.35rem 0.65rem", maxWidth: "80%" }}>
+                        <span style={{ color: "var(--text-primary)", fontSize: "0.72rem" }}>Yes! How&apos;s Thursday afternoon?</span>
                       </div>
                     </div>
                   </div>
                   {["✓ Identity verified — both parties are LegacyLoop users", "✓ Messages logged for dispute resolution", "✓ No personal info shared until both confirm", "✓ Notifications via app and email", "✓ Message history saved with your transaction"].map(f => (
-                    <div key={f} style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem" }}>{f}</div>
+                    <div key={f} style={{ color: "var(--text-secondary)", fontSize: "0.72rem" }}>{f}</div>
                   ))}
                   <div>
-                    <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Notify me when buyer messages via:</div>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Notify me when buyer messages via:</div>
                     <div style={{ display: "flex", gap: "0.35rem" }}>
                       {["App notification", "Email", "Both"].map(opt => (
                         <button key={opt} onClick={() => setContactNotifyPref(opt)} type="button" style={{ background: contactNotifyPref === opt ? "rgba(0,188,212,0.15)" : "rgba(0,188,212,0.06)", border: `1px solid ${contactNotifyPref === opt ? "rgba(0,188,212,0.4)" : "rgba(0,188,212,0.15)"}`, borderRadius: "20px", padding: "0.2rem 0.55rem", color: "#00bcd4", fontSize: "0.7rem", cursor: "pointer" }}>{opt}</button>
@@ -338,17 +338,17 @@ export default function LocalPickupPanel({
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
                   <div style={{ color: "#10b981", fontWeight: 700, fontSize: "0.78rem" }}>📱 Text Message Setup</div>
                   <div>
-                    <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Your phone number for this transaction</label>
-                    <input type="tel" placeholder="(207) 555-0000" value={contactPhone} onChange={e => setContactPhone(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <label style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Your phone number for this transaction</label>
+                    <input type="tel" placeholder="(207) 555-0000" value={contactPhone} onChange={e => setContactPhone(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
                   </div>
                   <div style={{ background: "rgba(16,185,129,0.08)", borderRadius: "8px", padding: "0.55rem" }}>
                     <div style={{ color: "#10b981", fontSize: "0.72rem", fontWeight: 700, marginBottom: "0.35rem" }}>🔒 How we protect your number</div>
                     {["Your number is masked until both parties confirm the meetup", "Buyer sees only the last 4 digits until confirmation", "Full number revealed only after mutual confirmation", "Number is never stored in buyer's LegacyLoop profile"].map(s => (
-                      <div key={s} style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.7rem", marginBottom: "0.15rem" }}>• {s}</div>
+                      <div key={s} style={{ color: "var(--text-secondary)", fontSize: "0.7rem", marginBottom: "0.15rem" }}>• {s}</div>
                     ))}
                   </div>
                   <div>
-                    <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.35rem" }}>Best time to text you</label>
+                    <label style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.35rem" }}>Best time to text you</label>
                     <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
                       {["Anytime", "Morning", "Afternoon", "Evening"].map(t => (
                         <button key={t} onClick={() => setContactTimePref(t)} type="button" style={{ background: contactTimePref === t ? "rgba(16,185,129,0.15)" : "rgba(16,185,129,0.06)", border: `1px solid ${contactTimePref === t ? "rgba(16,185,129,0.35)" : "rgba(16,185,129,0.15)"}`, borderRadius: "20px", padding: "0.2rem 0.55rem", color: "#10b981", fontSize: "0.7rem", cursor: "pointer" }}>{t}</button>
@@ -361,16 +361,16 @@ export default function LocalPickupPanel({
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(139,92,246,0.05)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
                   <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.78rem" }}>📧 Email Contact Setup</div>
                   <div>
-                    <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Email address to use for this transaction</label>
-                    <input type="email" placeholder="your@email.com" value={contactEmailAddr} onChange={e => setContactEmailAddr(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                    <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Shown as r****@****.com until both parties confirm</div>
+                    <label style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Email address to use for this transaction</label>
+                    <input type="email" placeholder="your@email.com" value={contactEmailAddr} onChange={e => setContactEmailAddr(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Shown as r****@****.com until both parties confirm</div>
                   </div>
                   <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}>
                     <input type="checkbox" checked={useDiffEmail} onChange={e => setUseDiffEmail(e.target.checked)} style={{ accentColor: "#8b5cf6" }} />
-                    <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>Use a different email than my account email</span>
+                    <span style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Use a different email than my account email</span>
                   </label>
                   <div>
-                    <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Typical response time:</div>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Typical response time:</div>
                     <div style={{ display: "flex", gap: "0.35rem" }}>
                       {["Within 1hr", "Same day", "Within 24hrs"].map(t => (
                         <button key={t} onClick={() => setContactResponseTime(t)} type="button" style={{ background: contactResponseTime === t ? "rgba(139,92,246,0.15)" : "rgba(139,92,246,0.06)", border: `1px solid ${contactResponseTime === t ? "rgba(139,92,246,0.35)" : "rgba(139,92,246,0.15)"}`, borderRadius: "20px", padding: "0.2rem 0.55rem", color: "#8b5cf6", fontSize: "0.7rem", cursor: "pointer" }}>{t}</button>
@@ -414,22 +414,22 @@ export default function LocalPickupPanel({
                   {[{ step: "1", text: "Buyer pays at checkout — funds held securely" }, { step: "2", text: "You meet and complete the handoff" }, { step: "3", text: "Both confirm handoff in app" }, { step: "4", text: "Funds released to your account within 24hrs" }].map(s => (
                     <div key={s.step} style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
                       <div style={{ width: "1.3rem", height: "1.3rem", background: "rgba(0,188,212,0.15)", border: "1px solid rgba(0,188,212,0.3)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#00bcd4", fontSize: "0.68rem", fontWeight: 800, flexShrink: 0 }}>{s.step}</div>
-                      <span style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.75rem" }}>{s.text}</span>
+                      <span style={{ color: "var(--text-primary)", fontSize: "0.75rem" }}>{s.text}</span>
                     </div>
                   ))}
-                  <div style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "0.65rem" }}>
-                    <div style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.7rem", marginBottom: "0.35rem", fontWeight: 700, letterSpacing: "0.04em" }}>PROCESSING FEE</div>
+                  <div style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.65rem" }}>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.35rem", fontWeight: 700, letterSpacing: "0.04em" }}>PROCESSING FEE</div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.35rem" }}>
-                      <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>Buyer pays</span>
+                      <span style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Buyer pays</span>
                       <span style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.75rem" }}>{PROCESSING_FEE.display}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.2rem" }}>
-                      <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>Seller pays</span>
+                      <span style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Seller pays</span>
                       <span style={{ color: "rgba(16,185,129,0.8)", fontWeight: 700, fontSize: "0.75rem" }}>0%</span>
                     </div>
-                    <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.3rem", display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem" }}>Total processing fee</span>
-                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem" }}>{PROCESSING_FEE.display}</span>
+                    <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "0.3rem", display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "var(--text-muted)", fontSize: "0.7rem" }}>Total processing fee</span>
+                      <span style={{ color: "var(--text-muted)", fontSize: "0.7rem" }}>{PROCESSING_FEE.display}</span>
                     </div>
                   </div>
                   <div style={{ color: "rgba(16,185,129,0.8)", fontSize: "0.7rem" }}>✓ Dispute resolution included · ✓ Buyer protection · ✓ Seller guarantee</div>
@@ -439,11 +439,11 @@ export default function LocalPickupPanel({
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
                   <div style={{ color: "#f59e0b", fontWeight: 700, fontSize: "0.78rem" }}>💵 Cash Payment Details</div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem" }}>Exact amount to request</span>
+                    <span style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Exact amount to request</span>
                     <span style={{ color: "#f59e0b", fontWeight: 800, fontSize: "0.95rem" }}>${listingPrice ?? "—"}</span>
                   </div>
                   <div>
-                    <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Preferred denominations:</div>
+                    <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Preferred denominations:</div>
                     <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
                       {["Any", "All $20s", "Larger bills OK", "Exact change only"].map(opt => (
                         <button key={opt} onClick={() => setDenomPref(opt)} type="button" style={{ background: denomPref === opt ? "rgba(245,158,11,0.18)" : "rgba(245,158,11,0.08)", border: `1px solid ${denomPref === opt ? "rgba(245,158,11,0.4)" : "rgba(245,158,11,0.2)"}`, borderRadius: "20px", padding: "0.2rem 0.55rem", color: "#f59e0b", fontSize: "0.7rem", fontWeight: 600, cursor: "pointer" }}>{opt}</button>
@@ -453,7 +453,7 @@ export default function LocalPickupPanel({
                   <div style={{ background: "rgba(245,158,11,0.08)", borderRadius: "8px", padding: "0.55rem" }}>
                     <div style={{ color: "#f59e0b", fontSize: "0.7rem", fontWeight: 700, marginBottom: "0.35rem" }}>⚠️ Cash Safety Tips</div>
                     {["Count bills before handing over the item", "Meet in a well-lit public location", "Bring a friend for large transactions", "No buyer protection with cash — trust your instincts"].map(tip => (
-                      <div key={tip} style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.7rem", marginBottom: "0.15rem" }}>• {tip}</div>
+                      <div key={tip} style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.15rem" }}>• {tip}</div>
                     ))}
                   </div>
                   <div style={{ color: "rgba(245,158,11,0.6)", fontSize: "0.7rem" }}>⚠️ Cash transactions have no buyer or seller protection</div>
@@ -463,7 +463,7 @@ export default function LocalPickupPanel({
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(139,92,246,0.05)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
                   <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.78rem" }}>📱 Venmo / Zelle Setup</div>
                   <div>
-                    <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Which service will you use?</div>
+                    <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Which service will you use?</div>
                     <div style={{ display: "flex", gap: "0.4rem" }}>
                       {["Venmo", "Zelle", "Either works"].map(opt => (
                         <button key={opt} onClick={() => setVenmoService(opt)} type="button" style={{ background: venmoService === opt ? "rgba(139,92,246,0.18)" : "rgba(139,92,246,0.08)", border: `1px solid ${venmoService === opt ? "rgba(139,92,246,0.4)" : "rgba(139,92,246,0.2)"}`, borderRadius: "20px", padding: "0.25rem 0.75rem", color: "#8b5cf6", fontSize: "0.72rem", fontWeight: 600, cursor: "pointer" }}>{opt}</button>
@@ -471,17 +471,17 @@ export default function LocalPickupPanel({
                     </div>
                   </div>
                   <div>
-                    <label style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Your Venmo/Zelle handle or phone number</label>
-                    <input type="text" placeholder="@yourhandle or phone number" value={venmoHandle} onChange={e => setVenmoHandle(e.target.value)} style={{ width: "100%", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                    <div style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Only shared with buyer after both parties confirm meetup</div>
+                    <label style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Your Venmo/Zelle handle or phone number</label>
+                    <input type="text" placeholder="@yourhandle or phone number" value={venmoHandle} onChange={e => setVenmoHandle(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Only shared with buyer after both parties confirm meetup</div>
                   </div>
                   <div>
-                    <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>When should buyer send payment?</div>
+                    <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>When should buyer send payment?</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                       {[{ value: "before", label: "Before handoff — item stays with me until confirmed" }, { value: "after", label: "After handoff — I trust the buyer" }, { value: "simultaneous", label: "Simultaneous — we confirm together on-site" }].map(opt => (
                         <label key={opt.value} style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}>
                           <input type="radio" name="venmoTiming" value={opt.value} checked={venmoTiming === opt.value} onChange={() => setVenmoTiming(opt.value)} style={{ accentColor: "#8b5cf6" }} />
-                          <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem" }}>{opt.label}</span>
+                          <span style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>{opt.label}</span>
                         </label>
                       ))}
                     </div>
@@ -490,9 +490,9 @@ export default function LocalPickupPanel({
                 </div>
               )}
               {paymentMethod === "decide_later" && opt.key === "decide_later" && (
-                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px" }}>
-                  <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem", marginBottom: "0.4rem" }}>💬 You&apos;ll discuss payment when you meet. The buyer knows payment hasn&apos;t been decided yet.</div>
-                  <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem" }}>Tip: Decide before you meet to avoid awkward conversations — LegacyLoop escrow is the easiest option.</div>
+                <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "10px" }}>
+                  <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem", marginBottom: "0.4rem" }}>💬 You&apos;ll discuss payment when you meet. The buyer knows payment hasn&apos;t been decided yet.</div>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.7rem" }}>Tip: Decide before you meet to avoid awkward conversations — LegacyLoop escrow is the easiest option.</div>
                 </div>
               )}
             </div>
@@ -590,7 +590,7 @@ export default function LocalPickupPanel({
                 </div>
               )}
               {instructions && (
-                <div style={{ marginTop: "0.25rem", padding: "0.35rem 0.5rem", borderRadius: "0.4rem", background: "var(--bg-card-hover, rgba(255,255,255,0.03))", color: "var(--text-secondary)", fontSize: "0.75rem" }}>
+                <div style={{ marginTop: "0.25rem", padding: "0.35rem 0.5rem", borderRadius: "0.4rem", background: "var(--bg-card-hover, var(--bg-card))", color: "var(--text-secondary)", fontSize: "0.75rem" }}>
                   {instructions}
                 </div>
               )}

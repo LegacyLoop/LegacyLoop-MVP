@@ -99,7 +99,7 @@ export default function MarketplaceClient({ initialBalance, lifetime, spent }: P
       </div>
 
       {/* STATS BAR */}
-      <div style={{ background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "12px 40px", display: "flex", gap: 32, fontSize: 11, color: "rgba(207,216,220,0.5)" }}>
+      <div style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border-default)", padding: "12px 40px", display: "flex", gap: 32, fontSize: 11, color: "rgba(207,216,220,0.5)" }}>
         <span><strong style={{ color: "#fff" }}>{addons.length}</strong> Add-Ons</span>
         <span><strong style={{ color: "#fff" }}>4</strong> AI Engines</span>
         <span><strong style={{ color: "#fff" }}>{featured.length}</strong> Working Now</span>
@@ -109,7 +109,7 @@ export default function MarketplaceClient({ initialBalance, lifetime, spent }: P
       {/* CATEGORY FILTER */}
       <div style={{ padding: "20px 40px 0", display: "flex", gap: 8, flexWrap: "wrap" }}>
         {["All", ...categories].map(cat => (
-          <button key={cat} onClick={() => setFilter(cat)} style={{ padding: "7px 16px", fontSize: 12, borderRadius: 20, border: filter === cat ? "1px solid #00bcd4" : "1px solid rgba(255,255,255,0.1)", background: filter === cat ? "#00bcd4" : "rgba(255,255,255,0.06)", color: filter === cat ? "#000" : "rgba(255,255,255,0.7)", fontWeight: filter === cat ? 700 : 400, cursor: "pointer", transition: "all 0.15s" }}>
+          <button key={cat} onClick={() => setFilter(cat)} style={{ padding: "7px 16px", fontSize: 12, borderRadius: 20, border: filter === cat ? "1px solid #00bcd4" : "1px solid var(--border-default)", background: filter === cat ? "#00bcd4" : "var(--border-default)", color: filter === cat ? "#000" : "var(--text-secondary)", fontWeight: filter === cat ? 700 : 400, cursor: "pointer", transition: "all 0.15s" }}>
             {CATEGORY_LABELS[cat] || cat}
           </button>
         ))}
@@ -131,7 +131,7 @@ export default function MarketplaceClient({ initialBalance, lifetime, spent }: P
                   <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginTop: 14, marginBottom: 8 }}>{addon.name}</div>
                   <div style={{ fontSize: 12, color: "rgba(207,216,220,0.7)", lineHeight: 1.7, marginBottom: 14 }}>{addon.description}</div>
                   <div style={{ marginBottom: 14 }}>
-                    <div style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", marginBottom: 6 }}>Powered by:</div>
+                    <div style={{ fontSize: 9, color: "var(--text-muted)", marginBottom: 6 }}>Powered by:</div>
                     <div style={{ display: "flex", gap: 4 }}>
                       {AI_ENGINES.map(e => <span key={e.name} style={{ fontSize: 8, padding: "2px 8px", borderRadius: 12, background: `${e.color}22`, border: `1px solid ${e.color}44`, color: e.color, fontWeight: 700 }}>{e.name}</span>)}
                     </div>
@@ -157,18 +157,18 @@ export default function MarketplaceClient({ initialBalance, lifetime, spent }: P
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 20 }}>✓</span>
             <span>{purchaseBanner.name} activated!</span>
-            <button onClick={() => setPurchaseBanner(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", fontSize: 16, padding: 0 }}>×</button>
+            <button onClick={() => setPurchaseBanner(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer", fontSize: 16, padding: 0 }}>×</button>
           </div>
-          <a href={TOOL_URLS[purchaseBanner.id]} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.2)", border: "1px solid rgba(255,255,255,0.3)", color: "#fff", fontWeight: 700, fontSize: 12, padding: "8px 16px", borderRadius: 8, textDecoration: "none", justifyContent: "center" }}>Launch Tool Now →</a>
+          <a href={TOOL_URLS[purchaseBanner.id]} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--bg-card-hover)", border: "1px solid var(--border-default)", color: "#fff", fontWeight: 700, fontSize: 12, padding: "8px 16px", borderRadius: 8, textDecoration: "none", justifyContent: "center" }}>Launch Tool Now →</a>
         </div>
       )}
 
       {/* ALL ADD-ONS GRID */}
       <div style={{ padding: "0 40px 40px" }}>
-        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)", letterSpacing: 2, marginBottom: 16 }}>ALL ADD-ONS</div>
+        <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: 2, marginBottom: 16 }}>ALL ADD-ONS</div>
         {loading ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
-            {[1,2,3,4,5,6].map(i => <div key={i} style={{ height: 200, background: "rgba(255,255,255,0.04)", borderRadius: 14 }} />)}
+            {[1,2,3,4,5,6].map(i => <div key={i} style={{ height: 200, background: "var(--ghost-bg)", borderRadius: 14 }} />)}
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
@@ -178,7 +178,7 @@ export default function MarketplaceClient({ initialBalance, lifetime, spent }: P
               const isFeatured = FEATURED_IDS.includes(addon.id);
               const toolUrl = TOOL_URLS[addon.id];
               return (
-                <div key={addon.id} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 14, padding: 20, transition: "all 0.2s" }}>
+                <div key={addon.id} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 14, padding: 20, transition: "all 0.2s" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{ADDON_ICONS[addon.id] || "🔧"}</div>
                     {isFeatured && <span style={{ fontSize: 8, padding: "3px 8px", borderRadius: 20, background: "#f5a623", color: "#000", fontWeight: 700 }}>WORKING NOW</span>}

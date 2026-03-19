@@ -124,12 +124,12 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
           onClick={(e) => { if (e.target === e.currentTarget) setShowCreate(false); }}
         >
           <div style={{
-            background: "rgba(18,18,28,0.97)", border: "1px solid rgba(255,255,255,0.08)",
+            background: "rgba(18,18,28,0.97)", border: "1px solid var(--border-default)",
             borderRadius: "1.25rem", padding: "2rem", width: "100%", maxWidth: "580px",
             boxShadow: "0 24px 80px rgba(0,0,0,0.5)", backdropFilter: "blur(24px)",
           }}>
             <h2 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#fff", marginBottom: "0.35rem" }}>Create New Sale</h2>
-            <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.5)", marginBottom: "1.25rem" }}>
+            <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "1.25rem" }}>
               Choose a sale type, give it a name, and start adding items.
             </p>
 
@@ -144,15 +144,15 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                     onClick={() => setForm((f) => ({ ...f, type: value }))}
                     style={{
                       padding: "0.75rem 0.6rem", textAlign: "center",
-                      border: `2px solid ${selected ? t.color : "rgba(255,255,255,0.08)"}`,
+                      border: `2px solid ${selected ? t.color : "var(--text-muted)"}`,
                       borderRadius: "0.75rem", cursor: "pointer",
-                      background: selected ? t.bg : "rgba(255,255,255,0.02)",
+                      background: selected ? t.bg : "var(--bg-card)",
                       transition: "all 0.2s ease",
                     }}
                   >
                     <div style={{ fontSize: "1.35rem", marginBottom: "0.3rem" }}>{t.emoji}</div>
-                    <div style={{ fontWeight: 700, fontSize: "0.72rem", color: selected ? t.color : "rgba(255,255,255,0.7)" }}>{t.label}</div>
-                    <div style={{ fontSize: "0.58rem", color: "rgba(255,255,255,0.35)", marginTop: "0.15rem", lineHeight: 1.3 }}>{t.sub}</div>
+                    <div style={{ fontWeight: 700, fontSize: "0.72rem", color: selected ? t.color : "var(--text-secondary)" }}>{t.label}</div>
+                    <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginTop: "0.15rem", lineHeight: 1.3 }}>{t.sub}</div>
                   </button>
                 );
               })}
@@ -165,9 +165,9 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 style={{
-                  padding: "0.65rem 0.9rem", border: "1px solid rgba(255,255,255,0.1)",
+                  padding: "0.65rem 0.9rem", border: "1px solid var(--border-default)",
                   borderRadius: "0.6rem", fontSize: "0.88rem",
-                  background: "rgba(255,255,255,0.04)", color: "#fff",
+                  background: "var(--ghost-bg)", color: "#fff",
                 }}
               />
               <textarea
@@ -176,37 +176,37 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                 value={form.description}
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 style={{
-                  padding: "0.65rem 0.9rem", border: "1px solid rgba(255,255,255,0.1)",
+                  padding: "0.65rem 0.9rem", border: "1px solid var(--border-default)",
                   borderRadius: "0.6rem", fontSize: "0.88rem", resize: "vertical",
-                  background: "rgba(255,255,255,0.04)", color: "#fff",
+                  background: "var(--ghost-bg)", color: "#fff",
                 }}
               />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
                 <div>
-                  <label style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)", fontWeight: 600, display: "block", marginBottom: "0.25rem" }}>Start date</label>
+                  <label style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 600, display: "block", marginBottom: "0.25rem" }}>Start date</label>
                   <input
                     type="date"
                     value={form.startDate}
                     onChange={(e) => setForm((f) => ({ ...f, startDate: e.target.value }))}
                     style={{
                       display: "block", width: "100%", padding: "0.5rem 0.75rem",
-                      border: "1px solid rgba(255,255,255,0.1)", borderRadius: "0.6rem",
+                      border: "1px solid var(--border-default)", borderRadius: "0.6rem",
                       fontSize: "0.82rem", boxSizing: "border-box",
-                      background: "rgba(255,255,255,0.04)", color: "#fff",
+                      background: "var(--ghost-bg)", color: "#fff",
                     }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)", fontWeight: 600, display: "block", marginBottom: "0.25rem" }}>End date</label>
+                  <label style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 600, display: "block", marginBottom: "0.25rem" }}>End date</label>
                   <input
                     type="date"
                     value={form.endDate}
                     onChange={(e) => setForm((f) => ({ ...f, endDate: e.target.value }))}
                     style={{
                       display: "block", width: "100%", padding: "0.5rem 0.75rem",
-                      border: "1px solid rgba(255,255,255,0.1)", borderRadius: "0.6rem",
+                      border: "1px solid var(--border-default)", borderRadius: "0.6rem",
                       fontSize: "0.82rem", boxSizing: "border-box",
-                      background: "rgba(255,255,255,0.04)", color: "#fff",
+                      background: "var(--ghost-bg)", color: "#fff",
                     }}
                   />
                 </div>
@@ -215,9 +215,9 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                   value={form.city}
                   onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
                   style={{
-                    padding: "0.5rem 0.75rem", border: "1px solid rgba(255,255,255,0.1)",
+                    padding: "0.5rem 0.75rem", border: "1px solid var(--border-default)",
                     borderRadius: "0.6rem", fontSize: "0.82rem",
-                    background: "rgba(255,255,255,0.04)", color: "#fff",
+                    background: "var(--ghost-bg)", color: "#fff",
                   }}
                 />
                 <input
@@ -225,9 +225,9 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                   value={form.state}
                   onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
                   style={{
-                    padding: "0.5rem 0.75rem", border: "1px solid rgba(255,255,255,0.1)",
+                    padding: "0.5rem 0.75rem", border: "1px solid var(--border-default)",
                     borderRadius: "0.6rem", fontSize: "0.82rem",
-                    background: "rgba(255,255,255,0.04)", color: "#fff",
+                    background: "var(--ghost-bg)", color: "#fff",
                   }}
                 />
               </div>
@@ -239,8 +239,8 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                 disabled={!form.name.trim() || creating}
                 style={{
                   flex: 1, padding: "0.75rem", borderRadius: "0.6rem", border: "none",
-                  background: !form.name.trim() ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #00bcd4, #009688)",
-                  color: !form.name.trim() ? "rgba(255,255,255,0.3)" : "#fff",
+                  background: !form.name.trim() ? "var(--border-default)" : "linear-gradient(135deg, #00bcd4, #009688)",
+                  color: !form.name.trim() ? "var(--text-muted)" : "#fff",
                   fontSize: "0.9rem", fontWeight: 700, cursor: !form.name.trim() ? "not-allowed" : "pointer",
                   transition: "all 0.2s ease",
                 }}
@@ -251,8 +251,8 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                 onClick={() => setShowCreate(false)}
                 style={{
                   padding: "0.75rem 1.25rem", borderRadius: "0.6rem",
-                  border: "1px solid rgba(255,255,255,0.1)", background: "transparent",
-                  color: "rgba(255,255,255,0.6)", fontSize: "0.9rem", fontWeight: 500,
+                  border: "1px solid var(--border-default)", background: "transparent",
+                  color: "var(--text-secondary)", fontSize: "0.9rem", fontWeight: 500,
                   cursor: "pointer",
                 }}
               >
@@ -267,7 +267,7 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
       {projects.length === 0 ? (
         <div style={{
           padding: "4rem 2rem", textAlign: "center",
-          background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)",
+          background: "var(--bg-card)", border: "1px solid var(--border-default)",
           borderRadius: "1.25rem", backdropFilter: "blur(20px)",
         }}>
           <div style={{ fontSize: "3rem", marginBottom: "0.75rem", opacity: 0.7 }}>{"\uD83C\uDFF7\uFE0F"}</div>
@@ -300,7 +300,7 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                 key={p.id}
                 style={{
                   display: "grid", gridTemplateColumns: "200px 1fr auto", gap: 0,
-                  background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+                  background: "var(--bg-card)", border: "1px solid var(--border-default)",
                   borderRadius: "1rem", overflow: "hidden", backdropFilter: "blur(20px)",
                   transition: "border-color 0.2s ease",
                 }}
@@ -385,7 +385,7 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                 <div style={{
                   padding: "1.25rem", display: "flex", flexDirection: "column",
                   gap: "0.5rem", justifyContent: "center",
-                  borderLeft: "1px solid rgba(255,255,255,0.06)",
+                  borderLeft: "1px solid var(--border-default)",
                 }}>
                   <Link
                     href={`/projects/${p.id}`}
@@ -406,7 +406,7 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                     style={{
                       display: "flex", alignItems: "center", justifyContent: "center",
                       padding: "0.45rem 1.1rem", borderRadius: "0.5rem",
-                      border: "1px solid rgba(255,255,255,0.1)", background: "transparent",
+                      border: "1px solid var(--border-default)", background: "transparent",
                       color: "var(--text-muted)", fontSize: "0.75rem", fontWeight: 600,
                       textDecoration: "none", whiteSpace: "nowrap", transition: "all 0.2s ease",
                     }}

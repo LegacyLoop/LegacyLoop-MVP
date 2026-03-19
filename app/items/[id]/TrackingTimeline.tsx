@@ -110,9 +110,9 @@ export default function TrackingTimeline({
 
   return (
     <div style={{
-      background: "rgba(255,255,255,0.03)",
+      background: "var(--bg-card)",
       backdropFilter: "blur(20px)",
-      border: "1px solid rgba(255,255,255,0.06)",
+      border: "1px solid var(--border-default)",
       borderRadius: "16px",
       padding: "1.5rem",
       position: "relative",
@@ -257,7 +257,7 @@ export default function TrackingTimeline({
                   ? "2px solid var(--accent)"
                   : isCompleted
                   ? "2px solid var(--accent)"
-                  : "2px solid rgba(255,255,255,0.08)",
+                  : "2px solid var(--border-default)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -380,7 +380,7 @@ export default function TrackingTimeline({
                   <span style={{
                     width: "0.85rem",
                     height: "0.85rem",
-                    border: "2px solid rgba(255,255,255,0.3)",
+                    border: "2px solid var(--border-default)",
                     borderTopColor: "#fff",
                     borderRadius: "50%",
                     animation: "ttl-spin 0.6s linear infinite",
@@ -400,8 +400,8 @@ export default function TrackingTimeline({
               style={{
                 fontSize: "0.75rem",
                 color: "var(--text-secondary)",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: "var(--ghost-bg)",
+                border: "1px solid var(--border-default)",
                 padding: "0.35rem 0.85rem",
                 borderRadius: "8px",
                 cursor: "pointer",

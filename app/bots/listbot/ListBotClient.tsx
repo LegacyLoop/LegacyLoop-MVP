@@ -118,7 +118,7 @@ function getListingPrice(listing: any, platform: string): number | null {
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={{
-      background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)",
+      background: "var(--bg-card)", backdropFilter: "blur(12px)",
       border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.25rem",
       ...style,
     }}>
@@ -380,14 +380,14 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
           <div style={{ fontSize: "0.82rem", marginTop: "0.3rem" }}>Choose an item above to generate optimized listings.</div>
         </div>
       ) : !ai ? (
-        <div style={{ marginTop: "1.5rem", background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "3rem", textAlign: "center" }}>
+        <div style={{ marginTop: "1.5rem", background: "var(--bg-card, var(--ghost-bg))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "3rem", textAlign: "center" }}>
           <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>📝</div>
           <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>Analyze First</h3>
           <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Run AI analysis on this item before generating listings.</p>
         </div>
       ) : !hasResult && !listBotLoading ? (
         /* ── NOT RUN YET ── */
-        <div style={{ marginTop: "1.5rem", background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "2.5rem", textAlign: "center" }}>
+        <div style={{ marginTop: "1.5rem", background: "var(--bg-card, var(--ghost-bg))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "2.5rem", textAlign: "center" }}>
           <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>✍️</div>
           <h3 style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>ListBot — The Listing Machine</h3>
           <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", maxWidth: 500, margin: "0 auto 0.75rem", lineHeight: 1.6 }}>
@@ -413,7 +413,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
         </div>
       ) : listBotLoading ? (
         /* ── LOADING ── */
-        <div style={{ marginTop: "1.5rem", background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "1.25rem" }}>
+        <div style={{ marginTop: "1.5rem", background: "var(--bg-card, var(--ghost-bg))", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "1.25rem" }}>
           <BotLoadingState botName="ListBot" />
         </div>
       ) : (
@@ -441,7 +441,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
                   {confirmedCount > 0 ? `Posted ${confirmedCount} of ${platformCount}` : `${copiedCount} copied · ${platformCount - copiedCount} pending`}
                 </div>
                 {/* Progress bar */}
-                <div style={{ width: 200, height: 6, borderRadius: 3, background: "rgba(255,255,255,0.06)", marginTop: "0.5rem" }}>
+                <div style={{ width: 200, height: 6, borderRadius: 3, background: "var(--ghost-bg)", marginTop: "0.5rem" }}>
                   <div style={{ width: `${(confirmedCount / Math.max(platformCount, 1)) * 100}%`, height: "100%", borderRadius: 3, background: "var(--accent)", transition: "width 0.3s" }} />
                 </div>
               </div>
@@ -522,7 +522,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
           {/* ═══ SECTION B: AI HERO IMAGE ═══ */}
           <div style={{
-            background: "var(--bg-card, rgba(255,255,255,0.05))",
+            background: "var(--bg-card, var(--ghost-bg))",
             border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.25rem",
           }}>
             <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.75rem" }}>
@@ -545,7 +545,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
                 </div>
                 <button onClick={generateHeroImage} disabled={heroImageLoading} style={{
                   padding: "0.5rem 1.25rem", fontSize: "0.78rem", fontWeight: 600, borderRadius: "0.5rem",
-                  background: heroImageLoading ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, rgba(0,188,212,0.15), rgba(0,150,136,0.1))",
+                  background: heroImageLoading ? "var(--ghost-bg)" : "linear-gradient(135deg, rgba(0,188,212,0.15), rgba(0,150,136,0.1))",
                   border: "1px solid rgba(0,188,212,0.3)", color: heroImageLoading ? "var(--text-muted)" : "var(--accent)",
                   cursor: heroImageLoading ? "not-allowed" : "pointer",
                 }}>
@@ -556,7 +556,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
           </div>
 
           {/* Tab navigation */}
-          <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid var(--border-default, rgba(255,255,255,0.06))", paddingBottom: "0.5rem" }}>
+          <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.5rem" }}>
             {([
               { key: "listings", label: "Platform Listings" },
               { key: "strategy", label: "Strategy" },
@@ -596,8 +596,8 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
                 return (
                   <div key={p} style={{
-                    background: "var(--bg-card, rgba(255,255,255,0.05))",
-                    border: `1px solid ${isExpanded ? `${meta.color}33` : "var(--border-card, rgba(255,255,255,0.08))"}`,
+                    background: "var(--bg-card, var(--ghost-bg))",
+                    border: `1px solid ${isExpanded ? `${meta.color}33` : "var(--border-card, var(--border-default))"}`,
                     borderRadius: "1rem", overflow: "hidden", transition: "border-color 0.2s",
                   }}>
                     {/* Platform header */}
@@ -630,11 +630,11 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
                     {/* Expanded listing content */}
                     {isExpanded && (
-                      <div style={{ padding: "0 1.25rem 1.25rem", borderTop: "1px solid var(--border-default, rgba(255,255,255,0.06))" }}>
+                      <div style={{ padding: "0 1.25rem 1.25rem", borderTop: "1px solid var(--border-default)" }}>
                         {/* Full listing preview */}
                         <div style={{
                           marginTop: "1rem", padding: "1rem", borderRadius: "0.6rem",
-                          background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)",
+                          background: "var(--bg-card)", border: "1px solid var(--border-default)",
                           fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.6,
                           whiteSpace: "pre-wrap", maxHeight: 400, overflowY: "auto",
                         }}>
@@ -643,27 +643,27 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
                         {/* Platform-specific extras */}
                         {p === "ebay" && listing.scheduling_tip && (
-                          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)" }}>
+                          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "var(--bg-card)" }}>
                             ⏰ {listing.scheduling_tip}
                           </div>
                         )}
                         {p === "instagram" && listing.posting_tip && (
-                          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)" }}>
+                          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "var(--bg-card)" }}>
                             📸 {listing.posting_tip}
                           </div>
                         )}
                         {p === "tiktok" && listing.trend_tie_in && (
-                          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)" }}>
+                          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "var(--bg-card)" }}>
                             🎵 Trend: {listing.trend_tie_in}
                           </div>
                         )}
                         {p === "etsy" && listing.renewal_tip && (
-                          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)" }}>
+                          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "var(--bg-card)" }}>
                             🔄 {listing.renewal_tip}
                           </div>
                         )}
                         {p === "poshmark" && listing.cover_shot_tip && (
-                          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)" }}>
+                          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.5rem", padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "var(--bg-card)" }}>
                             📷 {listing.cover_shot_tip}
                           </div>
                         )}
@@ -716,7 +716,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               {/* Cross-Platform Strategy */}
               {strategy && (
-                <div style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
+                <div style={{ background: "var(--bg-card, var(--ghost-bg))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
                   <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>
                     Cross-Platform Strategy
                   </div>
@@ -746,7 +746,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
               {/* Photo Strategy */}
               {photoStrat && (
-                <div style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
+                <div style={{ background: "var(--bg-card, var(--ghost-bg))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
                   <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>
                     📷 Photo Strategy
                   </div>
@@ -775,7 +775,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
               {/* Pricing Strategy */}
               {pricingStrat && (
-                <div style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
+                <div style={{ background: "var(--bg-card, var(--ghost-bg))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
                   <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>
                     💰 Pricing Strategy Per Platform
                   </div>
@@ -785,7 +785,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
                       const price = getListingPrice(listings[p], p);
                       const meta = PLATFORM_META[p];
                       return price ? (
-                        <div key={p} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)" }}>
+                        <div key={p} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", borderRadius: "0.5rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                           <span>{meta.icon}</span>
                           <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", flex: 1 }}>{meta.name}</span>
                           <span style={{ fontSize: "0.82rem", fontWeight: 800, color: meta.color }}>${price}</span>
@@ -812,7 +812,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
           {/* ═══ SECTION E: SEO & KEYWORDS ═══ */}
           {activeTab === "seo" && seoMaster && (
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
+              <div style={{ background: "var(--bg-card, var(--ghost-bg))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
                 <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>
                   🔍 SEO Master Keywords
                 </div>
@@ -882,7 +882,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
               {/* Auto-Post Readiness */}
               {autoReady && (
-                <div style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
+                <div style={{ background: "var(--bg-card, var(--ghost-bg))", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
                   <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.75rem" }}>
                     🚀 Auto-Post Readiness
                   </div>
@@ -919,7 +919,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               {/* Progress bar */}
               <div style={{
-                background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid var(--border-card)",
+                background: "var(--bg-card, var(--ghost-bg))", border: "1px solid var(--border-card)",
                 borderRadius: "1.25rem", padding: "1.25rem",
               }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
@@ -930,7 +930,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
                     {platformCount > 0 ? Math.round((confirmedCount / platformCount) * 100) : 0}%
                   </span>
                 </div>
-                <div style={{ width: "100%", height: 8, borderRadius: 4, background: "rgba(255,255,255,0.06)" }}>
+                <div style={{ width: "100%", height: 8, borderRadius: 4, background: "var(--ghost-bg)" }}>
                   <div style={{ width: `${(confirmedCount / Math.max(platformCount, 1)) * 100}%`, height: "100%", borderRadius: 4, background: "linear-gradient(135deg, #00bcd4, #009688)", transition: "width 0.3s" }} />
                 </div>
               </div>
@@ -951,8 +951,8 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
                     <div key={p} style={{
                       display: "flex", alignItems: "center", gap: "0.75rem",
                       padding: "0.75rem 1rem", borderRadius: "0.75rem",
-                      background: "var(--bg-card, rgba(255,255,255,0.05))",
-                      border: `1px solid ${t.confirmed ? "rgba(76,175,80,0.2)" : "var(--border-card, rgba(255,255,255,0.08))"}`,
+                      background: "var(--bg-card, var(--ghost-bg))",
+                      border: `1px solid ${t.confirmed ? "rgba(76,175,80,0.2)" : "var(--border-card, var(--border-default))"}`,
                     }}>
                       <span style={{ fontSize: "1.1rem" }}>{meta.icon}</span>
                       <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", flex: 1, minWidth: 0 }}>{meta.name}</span>
@@ -1051,7 +1051,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
                 {/* Agreement bar */}
                 <div style={{ marginBottom: "0.75rem" }}>
-                  <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                  <div style={{ height: 5, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${agree}%`, borderRadius: 99, background: agree >= 80 ? "#4caf50" : agree >= 60 ? "#ff9800" : "#ef4444" }} />
                   </div>
                 </div>
@@ -1066,9 +1066,9 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
                     return (
                       <div key={p.provider} style={{
-                        background: isExp ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
+                        background: isExp ? "var(--ghost-bg)" : "var(--bg-card)",
                         borderTop: isExp ? `3px solid ${pm.color}` : undefined,
-                        border: `1px solid ${isExp ? `${pm.color}30` : "rgba(255,255,255,0.06)"}`,
+                        border: `1px solid ${isExp ? `${pm.color}30` : "var(--border-default)"}`,
                         borderRadius: "0.5rem", overflow: "hidden",
                       }}>
                         <button
@@ -1088,10 +1088,10 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
                           <div style={{ padding: "0 0.75rem 0.75rem", borderTop: `1px solid ${pm.color}15` }}>
                             {/* Platform Listings */}
                             {lb.platformCount > 0 && (
-                              <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Platform Listings ({lb.platformCount})</div>
                                 {Object.entries(lb.listings).slice(0, 4).map(([platform, lst]: [string, any]) => (
-                                  <div key={platform} style={{ padding: "0.4rem 0.5rem", marginBottom: "0.25rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                                  <div key={platform} style={{ padding: "0.4rem 0.5rem", marginBottom: "0.25rem", borderRadius: "0.4rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
                                       <span style={{ fontSize: "0.6rem", padding: "0.05rem 0.3rem", borderRadius: 99, background: "rgba(0,188,212,0.12)", color: "var(--accent)", fontWeight: 600, textTransform: "capitalize" }}>{platform.replace(/_/g, " ")}</span>
                                       <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-primary)", flex: 1 }}>{lst?.title || "\u2014"}</span>
@@ -1113,7 +1113,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
                             {/* SEO Keywords */}
                             {lb.allKwCount > 0 && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>SEO Keywords ({lb.allKwCount})</div>
                                 <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem" }}>
                                   {lb.primaryKw.slice(0, 8).map((kw: any, i: number) => (
@@ -1197,7 +1197,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
                 {/* Comparison */}
                 {successful.length > 1 && (
-                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Listing Intelligence Comparison</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem", fontSize: "0.7rem" }}>
                       {successful.map((p: any, i: number) => {
@@ -1253,7 +1253,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
           {/* ═══ SECTION J: ACTIONS ═══ */}
           <div style={{
-            background: "var(--bg-card, rgba(255,255,255,0.05))",
+            background: "var(--bg-card, var(--ghost-bg))",
             border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.25rem",
           }}>
             <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.75rem" }}>

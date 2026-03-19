@@ -40,8 +40,8 @@ export default function CollapsiblePanel({
   return (
     <div
       style={{
-        background: "var(--bg-card, rgba(255,255,255,0.05))",
-        border: "1px solid var(--border-card, rgba(255,255,255,0.08))",
+        background: "var(--bg-card, var(--ghost-bg))",
+        border: "1px solid var(--border-card, var(--border-default))",
         borderRadius: "1.25rem",
         overflow: "hidden",
         transition: "box-shadow 0.2s ease",

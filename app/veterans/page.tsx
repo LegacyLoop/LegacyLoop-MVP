@@ -96,7 +96,7 @@ export default function VeteransPage() {
         <h1 style={{ fontSize: "2.5rem", fontWeight: 900, lineHeight: 1.2, marginBottom: "1rem" }}>
           Honoring Those Who Served
         </h1>
-        <p style={{ color: "rgba(255,255,255,0.75)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
+        <p style={{ color: "var(--text-primary)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
           Military service creates a lifetime of meaningful items — uniforms, medals, equipment, letters, photos.
           LegacyLoop helps veteran families preserve, document, and responsibly transition these treasures
           with special pricing and dedicated support.
@@ -126,14 +126,14 @@ export default function VeteransPage() {
               display: "inline-flex",
               alignItems: "center",
               gap: "0.5rem",
-              background: "rgba(255,255,255,0.1)",
+              background: "var(--bg-card-hover)",
               color: "#fff",
               padding: "0.85rem 2rem",
               borderRadius: "9999px",
               fontWeight: 700,
               textDecoration: "none",
               fontSize: "0.95rem",
-              border: "1px solid rgba(255,255,255,0.2)",
+              border: "1px solid var(--border-default)",
             }}
           >
             View All Plans
@@ -141,7 +141,7 @@ export default function VeteransPage() {
         </div>
 
         {/* Stats strip */}
-        <div style={{ display: "flex", gap: "2.5rem", marginTop: "2.5rem", paddingTop: "2rem", borderTop: "1px solid rgba(255,255,255,0.15)", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "2.5rem", marginTop: "2.5rem", paddingTop: "2rem", borderTop: "1px solid var(--border-default)", flexWrap: "wrap" }}>
           {[
             { value: "25%", label: "Discount on all tiers" },
             { value: "Free", label: "Legacy storytelling" },
@@ -150,7 +150,7 @@ export default function VeteransPage() {
           ].map((s) => (
             <div key={s.label}>
               <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "#fff" }}>{s.value}</div>
-              <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.6)", marginTop: "0.1rem" }}>{s.label}</div>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "0.1rem" }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -264,7 +264,7 @@ export default function VeteransPage() {
           <h2 style={{ fontSize: "1.75rem", fontWeight: 800, marginBottom: "0.75rem" }}>
             Apply for Veteran Pricing
           </h2>
-          <p style={{ color: "rgba(255,255,255,0.7)", marginBottom: "2rem", lineHeight: 1.6 }}>
+          <p style={{ color: "var(--text-secondary)", marginBottom: "2rem", lineHeight: 1.6 }}>
             Takes 2 minutes. We verify within 24 hours and apply your 25% discount immediately.
             No pressure, no sales calls.
           </p>
@@ -273,15 +273,15 @@ export default function VeteransPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.5rem" }}>
             <input
               placeholder="Your name"
-              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "rgba(255,255,255,0.1)", color: "#fff", outline: "1px solid rgba(255,255,255,0.2)" }}
+              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "var(--bg-card-hover)", color: "#fff", outline: "1px solid var(--border-default)" }}
             />
             <input
               placeholder="Email address"
               type="email"
-              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "rgba(255,255,255,0.1)", color: "#fff", outline: "1px solid rgba(255,255,255,0.2)" }}
+              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "var(--bg-card-hover)", color: "#fff", outline: "1px solid var(--border-default)" }}
             />
             <select
-              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "rgba(255,255,255,0.1)", color: "#fff", outline: "1px solid rgba(255,255,255,0.2)" }}
+              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "var(--bg-card-hover)", color: "#fff", outline: "1px solid var(--border-default)" }}
             >
               <option value="" style={{ color: "#1c1917" }}>Status / Branch</option>
               <option style={{ color: "#1c1917" }}>Army Veteran</option>
@@ -312,7 +312,7 @@ export default function VeteransPage() {
             Submit Application →
           </button>
 
-          <p style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.5)", marginTop: "1rem" }}>
+          <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "1rem" }}>
             We will never share your service information. Verification documents are deleted after review.
           </p>
         </div>

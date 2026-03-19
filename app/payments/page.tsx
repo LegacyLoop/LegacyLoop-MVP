@@ -834,7 +834,7 @@ export default async function PaymentsPage() {
               style={{
                 padding: "0.75rem",
                 borderRadius: "0.625rem",
-                background: "rgba(255,255,255,0.03)",
+                background: "var(--bg-card)",
                 border: "1px solid var(--border-default)",
                 marginBottom: "0.625rem",
               }}
@@ -899,7 +899,7 @@ export default async function PaymentsPage() {
               style={{
                 padding: "0.75rem",
                 borderRadius: "0.625rem",
-                background: "rgba(255,255,255,0.03)",
+                background: "var(--bg-card)",
                 border: "1px solid var(--border-default)",
                 marginBottom: "0.625rem",
               }}
@@ -966,7 +966,7 @@ export default async function PaymentsPage() {
               style={{
                 padding: "0.75rem",
                 borderRadius: "0.625rem",
-                background: "rgba(255,255,255,0.03)",
+                background: "var(--bg-card)",
                 border: "1px solid var(--border-default)",
                 marginBottom: "0.625rem",
               }}
@@ -1021,7 +1021,7 @@ export default async function PaymentsPage() {
               style={{
                 padding: "0.75rem",
                 borderRadius: "0.625rem",
-                background: "rgba(255,255,255,0.03)",
+                background: "var(--bg-card)",
                 border: "1px solid var(--border-default)",
               }}
             >

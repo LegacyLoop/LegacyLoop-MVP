@@ -120,8 +120,8 @@ function KnowledgeSection({ icon, title, text }: { icon: string; title: string; 
   const display = text.length > 400 ? text.slice(0, 400) + "..." : text;
   return (
     <div style={{
-      padding: "0.5rem 0.65rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem",
-      border: "1px solid rgba(255,255,255,0.04)",
+      padding: "0.5rem 0.65rem", background: "var(--bg-card)", borderRadius: "0.5rem",
+      border: "1px solid var(--border-default)",
     }}>
       <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.2rem" }}>{icon} {title}</div>
       <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.55 }}>{display}</p>
@@ -287,7 +287,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
       ) : !ai ? (
         <div style={{
           marginTop: "1.5rem",
-          background: "var(--bg-card, rgba(255,255,255,0.05))",
+          background: "var(--bg-card, var(--ghost-bg))",
           border: "1px solid var(--border-card)",
           borderRadius: "1.25rem",
           padding: "3rem",
@@ -308,7 +308,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
           {/* Identification */}
           {d && (
             <div style={{
-              background: "var(--bg-card, rgba(255,255,255,0.05))",
+              background: "var(--bg-card, var(--ghost-bg))",
               border: "1px solid var(--border-card)",
               borderRadius: "1.25rem",
               padding: "1.5rem",
@@ -323,7 +323,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                   { label: "Material", value: ai.material || "Not identified" },
                   { label: "Era", value: ai.era || "Unknown" },
                 ].map((f) => (
-                  <div key={f.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default, rgba(255,255,255,0.06))", borderRadius: "0.75rem", padding: "0.75rem" }}>
+                  <div key={f.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.75rem" }}>
                     <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>{f.label}</div>
                     <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary)" }}>{f.value}</div>
                   </div>
@@ -335,7 +335,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
           {/* Condition */}
           {d && (
             <div style={{
-              background: "var(--bg-card, rgba(255,255,255,0.05))",
+              background: "var(--bg-card, var(--ghost-bg))",
               border: "1px solid var(--border-card)",
               borderRadius: "1.25rem",
               padding: "1.5rem",
@@ -347,7 +347,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                   { label: "Cosmetic", value: `${ai.condition_cosmetic || d.conditionScore}/10`, color: "var(--text-primary)" },
                   { label: "Functional", value: `${ai.condition_functional || d.conditionScore}/10`, color: "var(--text-primary)" },
                 ].map((f) => (
-                  <div key={f.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default, rgba(255,255,255,0.06))", borderRadius: "0.75rem", padding: "0.75rem", textAlign: "center" }}>
+                  <div key={f.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "0.75rem", textAlign: "center" }}>
                     <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>{f.label}</div>
                     <div style={{ fontSize: "1.3rem", fontWeight: 800, color: f.color }}>{f.value}</div>
                   </div>
@@ -380,7 +380,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
           {/* Pricing */}
           {d && (
             <div style={{
-              background: "var(--bg-card, rgba(255,255,255,0.05))",
+              background: "var(--bg-card, var(--ghost-bg))",
               border: "1px solid var(--border-card)",
               borderRadius: "1.25rem",
               padding: "1.5rem",
@@ -391,7 +391,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                 <span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>{"\u2014"}</span>
                 <span style={{ fontSize: "2rem", fontWeight: 800, color: "var(--accent)" }}>${d.priceHigh}</span>
               </div>
-              <div style={{ height: 8, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden", marginTop: "0.5rem" }}>
+              <div style={{ height: 8, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden", marginTop: "0.5rem" }}>
                 <div style={{ height: "100%", width: `${Math.round(standardResult!.confidence * 100)}%`, borderRadius: 99, background: standardResult!.confidence >= 0.75 ? "#4caf50" : "#ff9800" }} />
               </div>
               <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.35rem" }}>
@@ -409,7 +409,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
           {/* Listing Suggestions */}
           {d && (
             <div style={{
-              background: "var(--bg-card, rgba(255,255,255,0.05))",
+              background: "var(--bg-card, var(--ghost-bg))",
               border: "1px solid var(--border-card)",
               borderRadius: "1.25rem",
               padding: "1.5rem",
@@ -432,7 +432,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
           {/* Keywords */}
           {d && (
             <div style={{
-              background: "var(--bg-card, rgba(255,255,255,0.05))",
+              background: "var(--bg-card, var(--ghost-bg))",
               border: "1px solid var(--border-card)",
               borderRadius: "1.25rem",
               padding: "1.5rem",
@@ -511,7 +511,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "1.25rem" }}>
                 {Object.entries(PROVIDER_META).map(([key, meta]) => (
-                  <div key={key} style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start", padding: "0.5rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div key={key} style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start", padding: "0.5rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                     <span style={{ fontSize: "1rem", flexShrink: 0 }}>{meta.icon}</span>
                     <div>
                       <div style={{ fontSize: "0.75rem", fontWeight: 600, color: meta.color }}>{meta.label}</div>
@@ -555,7 +555,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                     {megaAgreement}% Agreement
                   </div>
                 </div>
-                <div style={{ height: 6, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                <div style={{ height: 6, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                   <div style={{
                     height: "100%", width: `${megaAgreement}%`, borderRadius: 99,
                     background: megaAgreement >= 80 ? "#4caf50" : megaAgreement >= 60 ? "#ff9800" : "#ef4444",
@@ -582,9 +582,9 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
 
                 return (
                   <div key={p.provider} style={{
-                    background: "var(--bg-card, rgba(255,255,255,0.05))",
+                    background: "var(--bg-card, var(--ghost-bg))",
                     borderTop: isExp ? `3px solid ${meta.color}` : undefined,
-                    border: `1px solid ${isExp ? `${meta.color}40` : "var(--border-card, rgba(255,255,255,0.08))"}`,
+                    border: `1px solid ${isExp ? `${meta.color}40` : "var(--border-card, var(--border-default))"}`,
                     borderRadius: "1.25rem",
                     overflow: "hidden",
                     transition: "border-color 0.2s, box-shadow 0.2s",
@@ -617,7 +617,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                       <div style={{ padding: "0 1.25rem 1.25rem", borderTop: `1px solid ${meta.color}15` }}>
 
                         {/* Identification Grid */}
-                        <div style={{ marginTop: "0.75rem", marginBottom: "0.75rem", padding: "0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div style={{ marginTop: "0.75rem", marginBottom: "0.75rem", padding: "0.75rem", background: "var(--bg-card)", borderRadius: "0.75rem", border: "1px solid var(--border-default)" }}>
                           <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.5rem" }}>Identification</div>
                           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.2rem 1.25rem" }}>
                             {h.itemName && <GridRow label="ITEM" value={h.itemName} bold />}
@@ -636,7 +636,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
 
                         {/* Condition */}
                         {condNum != null && (
-                          <div style={{ marginBottom: "0.75rem", padding: "0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                          <div style={{ marginBottom: "0.75rem", padding: "0.75rem", background: "var(--bg-card)", borderRadius: "0.75rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.5rem" }}>Condition Assessment</div>
                             <div style={{ display: "flex", gap: "1.5rem", justifyContent: "center", marginBottom: "0.5rem" }}>
                               {[
@@ -755,7 +755,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                   <div key={p.provider} style={{
                     display: "flex", alignItems: "center", gap: "0.5rem",
                     padding: "0.6rem 1rem", opacity: 0.4,
-                    background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)",
+                    background: "var(--bg-card)", border: "1px solid var(--border-default)",
                     borderRadius: "0.75rem", fontSize: "0.75rem",
                   }}>
                     <span style={{ opacity: 0.5 }}>{meta.icon}</span>
@@ -780,37 +780,37 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                   return (
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
                       {ch.itemName && (
-                        <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div style={{ background: "var(--bg-card)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid var(--border-default)" }}>
                           <div style={{ fontSize: "0.6rem", textTransform: "uppercase", color: "var(--text-muted)" }}>Item</div>
                           <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)" }}>{ch.itemName}</div>
                         </div>
                       )}
                       {ch.category && (
-                        <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div style={{ background: "var(--bg-card)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid var(--border-default)" }}>
                           <div style={{ fontSize: "0.6rem", textTransform: "uppercase", color: "var(--text-muted)" }}>Category</div>
                           <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)" }}>{ch.category}</div>
                         </div>
                       )}
                       {ch.condOverall != null && (
-                        <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div style={{ background: "var(--bg-card)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid var(--border-default)" }}>
                           <div style={{ fontSize: "0.6rem", textTransform: "uppercase", color: "var(--text-muted)" }}>Condition</div>
                           <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)" }}>{ch.condOverall}/10 ({condWord(Number(ch.condOverall))})</div>
                         </div>
                       )}
                       {(ch.brand || ch.maker) && (
-                        <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div style={{ background: "var(--bg-card)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid var(--border-default)" }}>
                           <div style={{ fontSize: "0.6rem", textTransform: "uppercase", color: "var(--text-muted)" }}>Brand/Maker</div>
                           <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)" }}>{[ch.brand, ch.maker].filter(Boolean).join(" \u2014 ")}</div>
                         </div>
                       )}
                       {ch.era && (
-                        <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div style={{ background: "var(--bg-card)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid var(--border-default)" }}>
                           <div style={{ fontSize: "0.6rem", textTransform: "uppercase", color: "var(--text-muted)" }}>Era</div>
                           <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)" }}>{ch.era}</div>
                         </div>
                       )}
                       {ch.material && (
-                        <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div style={{ background: "var(--bg-card)", borderRadius: "0.65rem", padding: "0.6rem", border: "1px solid var(--border-default)" }}>
                           <div style={{ fontSize: "0.6rem", textTransform: "uppercase", color: "var(--text-muted)" }}>Material</div>
                           <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)" }}>{String(ch.material)}</div>
                         </div>
@@ -822,7 +822,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
 
               {/* E) Detailed Summary */}
               <div style={{
-                background: "var(--bg-card, rgba(255,255,255,0.05))",
+                background: "var(--bg-card, var(--ghost-bg))",
                 borderLeft: "4px solid #a855f7",
                 borderRadius: "0 1.25rem 1.25rem 0",
                 padding: "1.25rem 1.5rem",
@@ -878,7 +878,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
             </button>
           </div>
           {showJson && (
-            <pre style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem", padding: "1rem", overflow: "auto", fontSize: "0.72rem", color: "var(--text-muted)", maxHeight: 400, margin: 0 }}>
+            <pre style={{ background: "var(--bg-card)", borderRadius: "0.75rem", padding: "1rem", overflow: "auto", fontSize: "0.72rem", color: "var(--text-muted)", maxHeight: 400, margin: 0 }}>
               {JSON.stringify({ aiAnalysis: ai, standardResult, megaBotData }, null, 2)}
             </pre>
           )}

@@ -14,6 +14,7 @@ export default function AnalyzeActions({ itemId, hasPhotos, isAnalyzed }: Props)
   const router = useRouter();
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [analysisDone, setAnalysisDone] = useState(false);
 
   function refreshKeepScroll() {
     const scrollY = window.scrollY;
@@ -24,6 +25,7 @@ export default function AnalyzeActions({ itemId, hasPhotos, isAnalyzed }: Props)
   async function handleAnalyze() {
     setAnalyzing(true);
     setError(null);
+    setAnalysisDone(false);
     try {
       const res = await fetch(`/api/analyze/${itemId}${isAnalyzed ? "?force=1" : ""}`, { method: "POST" });
       if (!res.ok) {
@@ -31,9 +33,10 @@ export default function AnalyzeActions({ itemId, hasPhotos, isAnalyzed }: Props)
         setAnalyzing(false);
         return;
       }
+      setAnalysisDone(true);
       refreshKeepScroll();
-      // Auto-trigger Amazon enrichment — fire and forget, silent
-      fetch(`/api/enrichment/amazon/${itemId}`, { method: "POST", headers: { "Content-Type": "application/json" } }).catch(() => null);
+      // Amazon enrichment is now handled inside the analyze route —
+      // no client-side fire-and-forget POST needed
     } catch (err: any) {
       setError(err?.message || "Network error");
     } finally {
@@ -107,6 +110,18 @@ export default function AnalyzeActions({ itemId, hasPhotos, isAnalyzed }: Props)
           </button>
         )}
       </div>
+
+      {analysisDone && !analyzing && (
+        <p style={{
+          textAlign: "center",
+          fontSize: "0.75rem",
+          color: "rgba(0,188,212,0.8)",
+          marginTop: "0.5rem",
+          margin: "0.5rem 0 0 0",
+        }}>
+          ✓ Analysis complete — Amazon market data included
+        </p>
+      )}
 
       {/* Disabled hint */}
       {disabled && (

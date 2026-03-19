@@ -124,7 +124,7 @@ export default function ActiveOffersWidget({ itemId, compact }: Props) {
             onClick={() => setSelectedOffer(offer)}
             style={{
               padding: compact ? "0.6rem 0.75rem" : "0.75rem 1rem",
-              borderBottom: "1px solid rgba(255,255,255,0.04)",
+              borderBottom: "1px solid var(--border-default)",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -216,7 +216,7 @@ export default function ActiveOffersWidget({ itemId, compact }: Props) {
               overflowY: "auto",
               borderRadius: "1rem",
               background: "#141414",
-              border: "1px solid rgba(255,255,255,0.1)",
+              border: "1px solid var(--border-default)",
               boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
             }}
           >

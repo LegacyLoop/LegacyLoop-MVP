@@ -44,7 +44,7 @@ export default function DemoBanner() {
         </span>
       </span>
 
-      <span style={{ color: "rgba(255,255,255,0.6)", display: "flex", gap: "0.75rem" }}>
+      <span style={{ color: "var(--text-secondary)", display: "flex", gap: "0.75rem" }}>
         <Link
           href="/auth/signup"
           style={{
@@ -56,11 +56,11 @@ export default function DemoBanner() {
         >
           Try with your own data →
         </Link>
-        <span style={{ color: "rgba(255,255,255,0.3)" }}>·</span>
+        <span style={{ color: "var(--text-muted)" }}>·</span>
         <Link
           href="/onboarding/quiz"
           style={{
-            color: "rgba(255,255,255,0.8)",
+            color: "var(--text-primary)",
             textDecoration: "none",
             fontSize: "0.75rem",
           }}
@@ -78,7 +78,7 @@ export default function DemoBanner() {
           transform: "translateY(-50%)",
           background: "none",
           border: "none",
-          color: "rgba(255,255,255,0.5)",
+          color: "var(--text-muted)",
           cursor: "pointer",
           fontSize: "0.9rem",
           padding: "0.25rem 0.5rem",

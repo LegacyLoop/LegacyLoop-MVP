@@ -15,6 +15,7 @@ import { canUseBotOnTier, isDemoMode, TIER_NAMES, BOT_ACCESS, type BotName } fro
 import AmazonPriceBadge from "./AmazonPriceBadge";
 import DocumentVault from "./DocumentVault";
 import SaleAssignment from "./SaleAssignment";
+import TradeToggle from "./TradeToggle";
 import ActiveOffersWidget from "@/app/components/ActiveOffersWidget";
 
 type Props = {
@@ -100,7 +101,7 @@ function GlassCard({ children, premium, fullWidth }: {
       style={{
         background: premium
           ? "linear-gradient(135deg, rgba(0,188,212,0.06), rgba(255,215,0,0.03))"
-          : "rgba(255,255,255,0.03)",
+          : "var(--bg-card)",
         backdropFilter: "blur(12px)",
         border: premium
           ? "1px solid rgba(0,188,212,0.3)"
@@ -168,7 +169,7 @@ function PanelHeader({ icon, title, hasData, badge, collapsed, onToggle, preview
       onClick={onToggle}
       style={{
         padding: "0.85rem 1.25rem",
-        borderBottom: collapsed ? "none" : "1px solid rgba(255,255,255,0.06)",
+        borderBottom: collapsed ? "none" : "1px solid var(--border-default)",
         display: "flex",
         alignItems: "center",
         gap: "0.65rem",
@@ -177,7 +178,7 @@ function PanelHeader({ icon, title, hasData, badge, collapsed, onToggle, preview
         transition: "background 0.15s",
         flexWrap: collapsed && preview ? "wrap" : undefined,
       }}
-      onMouseEnter={isCollapsible ? (e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; } : undefined}
+      onMouseEnter={isCollapsible ? (e) => { e.currentTarget.style.background = "var(--bg-card)"; } : undefined}
       onMouseLeave={isCollapsible ? (e) => { e.currentTarget.style.background = "transparent"; } : undefined}
     >
       <span style={{ fontSize: "1.15rem" }}>{icon}</span>
@@ -276,7 +277,7 @@ function PanelFooter({ botName, botLink, itemId, botIcon, botCost, onSuperBoost,
       )}
     <div style={{
       padding: "0.65rem 1.25rem",
-      borderTop: "1px solid rgba(255,255,255,0.06)",
+      borderTop: "1px solid var(--border-default)",
       display: "flex",
       gap: "0.5rem",
       flexWrap: "wrap",
@@ -292,7 +293,7 @@ function PanelFooter({ botName, botLink, itemId, botIcon, botCost, onSuperBoost,
             fontWeight: 600,
             borderRadius: "0.5rem",
             border: "1px solid var(--border-default)",
-            background: "rgba(255,255,255,0.04)",
+            background: "var(--ghost-bg)",
             color: "var(--text-secondary)",
             cursor: "pointer",
           }}
@@ -1226,7 +1227,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
             {agreement}% — {agreement >= 80 ? "Strong Consensus" : agreement >= 60 ? "Moderate Agreement" : "Agents Disagree — review details"}
           </span>
         </div>
-        <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+        <div style={{ height: 5, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${agreement}%`, borderRadius: 99, background: agreement >= 80 ? "#4caf50" : agreement >= 60 ? "#ff9800" : "#ef4444" }} />
         </div>
       </div>
@@ -1250,7 +1251,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
             return (
               <div key={p.provider} style={{
-                background: isExpanded ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.03)",
+                background: isExpanded ? "var(--ghost-bg)" : "var(--bg-card)",
                 borderTop: isExpanded ? `3px solid ${meta.color}` : undefined,
                 border: `1px solid ${isExpanded ? `${meta.color}30` : "var(--border-default)"}`,
                 borderRadius: "0.5rem", overflow: "hidden",
@@ -1303,7 +1304,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                       const reducers = Array.isArray(ph.valueReducers) ? ph.valueReducers : [];
                       return (<>
                         {/* PRICE ASSESSMENT */}
-                        <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                        <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                           <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>Price Assessment</div>
                           <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", marginBottom: "0.3rem" }}>
                             <span style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--accent)" }}>${ph.priceLow != null ? Math.round(Number(ph.priceLow)) : "?"}</span>
@@ -1317,10 +1318,10 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* COMPARABLE SALES */}
                         {comps.length > 0 && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.3rem" }}>Comparable Sales ({comps.length})</div>
                             {comps.slice(0, 5).map((c: any, i: number) => (
-                              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", borderBottom: i < Math.min(comps.length, 5) - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", borderBottom: i < Math.min(comps.length, 5) - 1 ? "1px solid var(--border-default)" : "none" }}>
                                 <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", minWidth: 60 }}>{c.platform}</span>
                                 <span style={{ fontSize: "0.68rem", color: "var(--text-secondary)", flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{c.item_description}</span>
                                 <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)", flexShrink: 0 }}>${c.sold_price}</span>
@@ -1332,7 +1333,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* PLATFORM BREAKDOWN */}
                         {platEntries.length > 0 && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.3rem" }}>Platform Breakdown</div>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "0.35rem" }}>
                               {platEntries.slice(0, 6).map(([key, plat]: [string, any]) => {
@@ -1342,7 +1343,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                                 const netP = plat.seller_net || plat.seller_net_after_fees;
                                 const days = plat.days_to_sell || plat.avg_days_to_sell;
                                 return (
-                                  <div key={key} style={{ padding: "0.35rem", borderRadius: "0.35rem", border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.02)" }}>
+                                  <div key={key} style={{ padding: "0.35rem", borderRadius: "0.35rem", border: "1px solid var(--border-default)", background: "var(--bg-card)" }}>
                                     <div style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--text-primary)" }}>{name}</div>
                                     {listP != null && <div style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>List ${listP}{netP != null && <> → <strong style={{ color: "#4caf50" }}>${netP}</strong></>}</div>}
                                     {days != null && <div style={{ fontSize: "0.58rem", color: "var(--text-muted)" }}>~{days}d</div>}
@@ -1356,7 +1357,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* MARKET INTELLIGENCE */}
                         {(ph.demandLevel || ph.demandTrend || ph.seasonal) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.3rem" }}>Market Intelligence</div>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.2rem 0.75rem" }}>
                               {ph.demandLevel && <GridRow label="DEMAND" value={`${ph.demandLevel}`} />}
@@ -1387,12 +1388,12 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                       return (<>
                         {/* BUYER PROFILES */}
                         {bh.profiles.length > 0 && (
-                          <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>
                               Buyer Profiles ({bh.profiles.length})
                             </div>
                             {bh.profiles.slice(0, 4).map((bp: any, i: number) => (
-                              <div key={i} style={{ padding: "0.4rem 0.5rem", marginBottom: i < Math.min(bh.profiles.length, 4) - 1 ? "0.3rem" : 0, borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                              <div key={i} style={{ padding: "0.4rem 0.5rem", marginBottom: i < Math.min(bh.profiles.length, 4) - 1 ? "0.3rem" : 0, borderRadius: "0.4rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
                                   <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>🎯 {bp.profile_name || bp.name || "Buyer"}</span>
                                   <span style={{ fontSize: "0.55rem", padding: "0.08rem 0.35rem", borderRadius: 99, background: (bp.likelihood_to_buy || "").toLowerCase().includes("very") ? "rgba(76,175,80,0.15)" : (bp.likelihood_to_buy || "").toLowerCase().includes("high") ? "rgba(76,175,80,0.1)" : "rgba(255,152,0,0.1)", color: (bp.likelihood_to_buy || "").toLowerCase().includes("high") || (bp.likelihood_to_buy || "").toLowerCase().includes("very") ? "#4caf50" : "#ff9800" }}>{bp.likelihood_to_buy || bp.likelihood || "Medium"}</span>
@@ -1408,12 +1409,12 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* PLATFORM OPPORTUNITIES */}
                         {bh.platforms.length > 0 && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.3rem" }}>Platform Opportunities ({bh.platforms.length})</div>
                             <div style={{ overflowX: "auto" }}>
                               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.68rem" }}>
                                 <thead>
-                                  <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                                  <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
                                     <th style={{ textAlign: "left", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Platform</th>
                                     <th style={{ textAlign: "center", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Level</th>
                                     <th style={{ textAlign: "right", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Buyers</th>
@@ -1423,7 +1424,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                                 </thead>
                                 <tbody>
                                   {bh.platforms.slice(0, 5).map((pl: any, i: number) => (
-                                    <tr key={i} style={{ borderBottom: i < Math.min(bh.platforms.length, 5) - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                                    <tr key={i} style={{ borderBottom: i < Math.min(bh.platforms.length, 5) - 1 ? "1px solid var(--border-default)" : "none" }}>
                                       <td style={{ padding: "0.25rem 0.3rem", color: "var(--text-primary)", fontWeight: 600 }}>{pl.platform || "Unknown"}</td>
                                       <td style={{ padding: "0.25rem 0.3rem", textAlign: "center" }}>
                                         <span style={{ fontSize: "0.55rem", padding: "0.05rem 0.3rem", borderRadius: 99, background: (pl.opportunity_level || "").toLowerCase().includes("excel") ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: (pl.opportunity_level || "").toLowerCase().includes("excel") ? "#4caf50" : "#ff9800" }}>{pl.opportunity_level || "—"}</span>
@@ -1442,10 +1443,10 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* HOT LEADS */}
                         {bh.hotLeads.length > 0 && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.3rem" }}>Hot Leads ({bh.hotLeads.length})</div>
                             {bh.hotLeads.slice(0, 4).map((lead: any, i: number) => (
-                              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", borderBottom: i < Math.min(bh.hotLeads.length, 4) - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", borderBottom: i < Math.min(bh.hotLeads.length, 4) - 1 ? "1px solid var(--border-default)" : "none" }}>
                                 <span style={{ fontSize: "0.55rem", padding: "0.05rem 0.3rem", borderRadius: 99, background: (lead.urgency || "").toLowerCase().includes("now") ? "rgba(239,68,68,0.15)" : "rgba(255,152,0,0.12)", color: (lead.urgency || "").toLowerCase().includes("now") ? "#ef4444" : "#ff9800", fontWeight: 600 }}>{lead.urgency || "Soon"}</span>
                                 <span style={{ fontSize: "0.68rem", color: "var(--text-secondary)", flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{lead.lead_description || lead.description || "Active buyer"}</span>
                                 {(lead.estimated_price_theyd_pay || lead.estimated_price) && <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#4ade80" }}>~${lead.estimated_price_theyd_pay || lead.estimated_price}</span>}
@@ -1476,12 +1477,12 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                       return (<>
                         {/* PLATFORM LISTINGS */}
                         {lh.platformCount > 0 && (
-                          <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>
                               Platform Listings ({lh.platformCount})
                             </div>
                             {Object.entries(lh.listings).slice(0, 4).map(([platform, lst]: [string, any]) => (
-                              <div key={platform} style={{ padding: "0.4rem 0.5rem", marginBottom: "0.3rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                              <div key={platform} style={{ padding: "0.4rem 0.5rem", marginBottom: "0.3rem", borderRadius: "0.4rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
                                   <span style={{ fontSize: "0.62rem", padding: "0.05rem 0.35rem", borderRadius: 99, background: "rgba(0,188,212,0.12)", color: "var(--accent)", fontWeight: 600, textTransform: "capitalize" }}>{platform.replace(/_/g, " ")}</span>
                                   <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", flex: 1 }}>{lst?.title || "—"}</span>
@@ -1503,7 +1504,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* SEO KEYWORDS */}
                         {lh.allKwCount > 0 && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.3rem" }}>SEO Keywords ({lh.allKwCount})</div>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem" }}>
                               {lh.primaryKw.slice(0, 8).map((kw: any, i: number) => (
@@ -1535,12 +1536,12 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                       return (<>
                         {/* COMPETITOR LISTINGS */}
                         {rh.competitors.length > 0 && (
-                          <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>
                               Competitor Listings ({rh.competitorCount})
                             </div>
                             {rh.competitors.slice(0, 5).map((c: any, i: number) => (
-                              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.3rem 0", borderBottom: i < Math.min(rh.competitors.length, 5) - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.3rem 0", borderBottom: i < Math.min(rh.competitors.length, 5) - 1 ? "1px solid var(--border-default)" : "none" }}>
                                 <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", minWidth: 60 }}>{c.platform || "—"}</span>
                                 <span style={{ fontSize: "0.68rem", color: "var(--text-secondary)", flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{c.title || c.listing_title || c.description || "Listing"}</span>
                                 {(c.price || c.listing_price) && <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#ef4444", flexShrink: 0 }}>${c.price || c.listing_price}</span>}
@@ -1552,7 +1553,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* MARKET POSITION */}
                         {(rh.demandLevel || rh.pricePosition) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.3rem" }}>Market Position</div>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.15rem 1rem" }}>
                               {rh.demandLevel && <GridRow label="DEMAND" value={String(rh.demandLevel)} />}
@@ -1589,7 +1590,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                       const vName = [vh.year, vh.make, vh.model].filter(Boolean).join(" ");
                       return (<>
                         {/* VEHICLE IDENTIFICATION */}
-                        <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                        <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                           <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>Vehicle Identification</div>
                           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.15rem 1rem" }}>
                             {vName && <GridRow label="VEHICLE" value={vName} bold />}
@@ -1600,7 +1601,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* CONDITION BREAKDOWN */}
                         {(vh.exterior || vh.interior || vh.mechanical) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.3rem" }}>Condition Breakdown</div>
                             <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
                               {vh.exterior && <ScoreCircle label="Exterior" score={Number(vh.exterior) || 0} />}
@@ -1612,7 +1613,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* VALUATION */}
                         {(vh.retailValue || vh.privateParty || vh.tradeIn) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>Valuation</div>
                             <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
                               {vh.retailValue != null && (
@@ -1649,7 +1650,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                       const ah = extractAH(p);
                       return (<>
                         {/* AUTHENTICATION */}
-                        <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: ah.verdict && String(ah.verdict).toLowerCase().includes("authentic") ? "rgba(76,175,80,0.04)" : "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: `1px solid ${ah.verdict && String(ah.verdict).toLowerCase().includes("authentic") ? "rgba(76,175,80,0.15)" : "rgba(255,255,255,0.05)"}` }}>
+                        <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: ah.verdict && String(ah.verdict).toLowerCase().includes("authentic") ? "rgba(76,175,80,0.04)" : "var(--bg-card)", borderRadius: "0.5rem", border: `1px solid ${ah.verdict && String(ah.verdict).toLowerCase().includes("authentic") ? "rgba(76,175,80,0.15)" : "var(--border-default)"}` }}>
                           <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>Authentication</div>
                           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.15rem 1rem" }}>
                             {ah.verdict && <GridRow label="VERDICT" value={String(ah.verdict)} bold />}
@@ -1661,7 +1662,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* VALUATION */}
                         {(ah.fairMarket || ah.auctionEst || ah.insurance) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>Antique Valuation</div>
                             <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
                               {ah.fairMarket != null && (
@@ -1699,7 +1700,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                       return (<>
                         {/* QUALITY SCORE */}
                         {phd.qualityScore != null && (
-                          <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>Photo Quality</div>
                             <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
                               <ScoreCircle label="Quality" score={Number(phd.qualityScore) || 0} />
@@ -1709,7 +1710,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* IMPROVEMENT TIPS */}
                         {phd.tips.length > 0 && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.3rem" }}>Improvement Tips ({phd.tipCount})</div>
                             {phd.tips.slice(0, 5).map((tip: any, i: number) => (
                               <div key={i} style={{ fontSize: "0.68rem", color: "var(--text-secondary)", padding: "0.15rem 0", lineHeight: 1.35 }}>
@@ -1749,9 +1750,9 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                         <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(139,92,246,0.06)", borderRadius: "0.5rem", border: "1px solid rgba(139,92,246,0.15)" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
                             {ch.category && <span style={{ fontSize: "0.62rem", padding: "0.1rem 0.4rem", borderRadius: 99, background: "rgba(139,92,246,0.15)", color: "#8b5cf6", fontWeight: 700 }}>{ch.category}</span>}
-                            {ch.rarity && <span style={{ fontSize: "0.6rem", padding: "0.1rem 0.35rem", borderRadius: 99, background: ch.rarity === "Ultra Rare" || ch.rarity === "Rare" ? "rgba(239,68,68,0.12)" : "rgba(255,255,255,0.06)", color: ch.rarity === "Ultra Rare" || ch.rarity === "Rare" ? "#ef4444" : "var(--text-muted)", fontWeight: 600 }}>{ch.rarity}</span>}
+                            {ch.rarity && <span style={{ fontSize: "0.6rem", padding: "0.1rem 0.35rem", borderRadius: 99, background: ch.rarity === "Ultra Rare" || ch.rarity === "Rare" ? "rgba(239,68,68,0.12)" : "var(--ghost-bg)", color: ch.rarity === "Ultra Rare" || ch.rarity === "Rare" ? "#ef4444" : "var(--text-muted)", fontWeight: 600 }}>{ch.rarity}</span>}
                             {ch.investmentVerdict && <span style={{ fontSize: "0.58rem", padding: "0.1rem 0.35rem", borderRadius: 99, background: ch.investmentVerdict.toLowerCase().includes("hold") ? "rgba(76,175,80,0.12)" : "rgba(251,191,36,0.12)", color: ch.investmentVerdict.toLowerCase().includes("hold") ? "#4caf50" : "#fbbf24", fontWeight: 700 }}>{ch.investmentVerdict}</span>}
-                            {ch.demandLevel && <span style={{ fontSize: "0.58rem", padding: "0.1rem 0.35rem", borderRadius: 99, background: ch.demandLevel === "Rising" ? "rgba(76,175,80,0.12)" : ch.demandLevel === "Declining" ? "rgba(239,68,68,0.1)" : "rgba(255,255,255,0.06)", color: ch.demandLevel === "Rising" ? "#4caf50" : ch.demandLevel === "Declining" ? "#ef4444" : "var(--text-muted)", fontWeight: 600 }}>{ch.demandLevel}</span>}
+                            {ch.demandLevel && <span style={{ fontSize: "0.58rem", padding: "0.1rem 0.35rem", borderRadius: 99, background: ch.demandLevel === "Rising" ? "rgba(76,175,80,0.12)" : ch.demandLevel === "Declining" ? "rgba(239,68,68,0.1)" : "var(--ghost-bg)", color: ch.demandLevel === "Rising" ? "#4caf50" : ch.demandLevel === "Declining" ? "#ef4444" : "var(--text-muted)", fontWeight: 600 }}>{ch.demandLevel}</span>}
                           </div>
                           {ch.itemName && <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)", marginTop: "0.25rem" }}>{ch.itemName}</div>}
                           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.1rem" }}>
@@ -1763,7 +1764,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* 2 — VISUAL GRADING */}
                         {(ch.psaGrade || ch.corners || ch.centering) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#8b5cf6", fontWeight: 700, marginBottom: "0.35rem" }}>Visual Grade Assessment</div>
                             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center", marginBottom: "0.3rem" }}>
                               {ch.psaGrade && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" }}>PSA Est.</div><div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#8b5cf6" }}>{ch.psaGrade}</div></div>}
@@ -1783,7 +1784,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* 3 — VALUATION with PSA ladder */}
                         {(ch.rawLow || ch.psa6 || ch.gradedValue) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#8b5cf6", fontWeight: 700, marginBottom: "0.35rem" }}>Valuation Deep Dive</div>
                             {(ch.rawLow || ch.rawHigh) && (
                               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center", marginBottom: "0.35rem" }}>
@@ -1798,7 +1799,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                                 <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "0.2rem" }}>PSA Grade Ladder</div>
                                 <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
                                   {[{ g: "6", v: ch.psa6 }, { g: "7", v: ch.psa7 }, { g: "8", v: ch.psa8 }, { g: "9", v: ch.psa9 }, { g: "10", v: ch.psa10 }].filter(x => x.v).map(x => (
-                                    <div key={x.g} style={{ textAlign: "center", padding: "0.2rem 0.4rem", borderRadius: "0.35rem", background: x.g === "10" ? "rgba(139,92,246,0.12)" : "rgba(255,255,255,0.04)", border: `1px solid ${x.g === "10" ? "rgba(139,92,246,0.3)" : "rgba(255,255,255,0.06)"}`, minWidth: "3rem" }}>
+                                    <div key={x.g} style={{ textAlign: "center", padding: "0.2rem 0.4rem", borderRadius: "0.35rem", background: x.g === "10" ? "rgba(139,92,246,0.12)" : "var(--ghost-bg)", border: `1px solid ${x.g === "10" ? "rgba(139,92,246,0.3)" : "var(--border-default)"}`, minWidth: "3rem" }}>
                                       <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>PSA {x.g}</div>
                                       <div style={{ fontSize: "0.72rem", fontWeight: 700, color: x.g === "10" ? "#8b5cf6" : "var(--text-primary)" }}>{_fp(x.v)}</div>
                                     </div>
@@ -1814,12 +1815,12 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* 4 — GRADING ROI */}
                         {(ch.gradingRec || ch.gradingReasoning) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#8b5cf6", fontWeight: 700, marginBottom: "0.3rem" }}>Grading ROI</div>
                             <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginBottom: "0.2rem" }}>
                               {ch.gradingRec && <span style={{ fontSize: "0.62rem", padding: "0.15rem 0.45rem", borderRadius: 99, background: ch.gradingRec.toLowerCase().includes("strong") ? "rgba(76,175,80,0.15)" : ch.gradingRec.toLowerCase().includes("skip") ? "rgba(239,68,68,0.12)" : "rgba(251,191,36,0.12)", color: ch.gradingRec.toLowerCase().includes("strong") ? "#4caf50" : ch.gradingRec.toLowerCase().includes("skip") ? "#ef4444" : "#fbbf24", fontWeight: 700 }}>{ch.gradingRec}</span>}
-                              {ch.breakEvenGrade && <span style={{ fontSize: "0.58rem", padding: "0.1rem 0.35rem", borderRadius: 99, background: "rgba(255,255,255,0.06)", color: "var(--text-secondary)", fontWeight: 600 }}>Break-even: PSA {ch.breakEvenGrade}</span>}
-                              {ch.bestGradingService && <span style={{ fontSize: "0.58rem", padding: "0.1rem 0.35rem", borderRadius: 99, background: "rgba(255,255,255,0.06)", color: "var(--text-muted)" }}>{ch.bestGradingService}{ch.psaStandardCost ? ` ($${ch.psaStandardCost})` : ""}</span>}
+                              {ch.breakEvenGrade && <span style={{ fontSize: "0.58rem", padding: "0.1rem 0.35rem", borderRadius: 99, background: "var(--ghost-bg)", color: "var(--text-secondary)", fontWeight: 600 }}>Break-even: PSA {ch.breakEvenGrade}</span>}
+                              {ch.bestGradingService && <span style={{ fontSize: "0.58rem", padding: "0.1rem 0.35rem", borderRadius: 99, background: "var(--ghost-bg)", color: "var(--text-muted)" }}>{ch.bestGradingService}{ch.psaStandardCost ? ` ($${ch.psaStandardCost})` : ""}</span>}
                             </div>
                             {ch.gradingReasoning && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>{ch.gradingReasoning}</div>}
                           </div>
@@ -1830,7 +1831,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                           <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "linear-gradient(135deg, rgba(139,92,246,0.04), rgba(0,188,212,0.02))", borderRadius: "0.5rem", border: "1px solid rgba(139,92,246,0.12)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#8b5cf6", fontWeight: 700, marginBottom: "0.3rem" }}>Market Intelligence</div>
                             {ch.listingTitle && (
-                              <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.2rem", padding: "0.2rem 0.4rem", background: "rgba(255,255,255,0.04)", borderRadius: "0.35rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                              <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.2rem", padding: "0.2rem 0.4rem", background: "var(--ghost-bg)", borderRadius: "0.35rem", border: "1px solid var(--border-default)" }}>
                                 {ch.listingTitle}
                               </div>
                             )}
@@ -1845,7 +1846,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
 
                         {/* 6 — INVESTMENT OUTLOOK */}
                         {(ch.price1yr || ch.price5yr || ch.catalysts || ch.risks) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#8b5cf6", fontWeight: 700, marginBottom: "0.3rem" }}>Investment Outlook</div>
                             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.2rem" }}>
                               {ch.price1yr && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>1yr target: <strong style={{ color: "#4caf50" }}>{typeof ch.price1yr === "number" ? _fp(ch.price1yr) : ch.price1yr}</strong></div>}
@@ -1883,8 +1884,8 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                     {/* SECTION 1: Identification Card */}
                     <div style={{
                       marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem",
-                      background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem",
-                      border: "1px solid rgba(255,255,255,0.05)",
+                      background: "var(--bg-card)", borderRadius: "0.5rem",
+                      border: "1px solid var(--border-default)",
                     }}>
                       <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>
                         Identification
@@ -1908,8 +1909,8 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
                     {condNum != null && (
                       <div style={{
                         marginBottom: "0.5rem", padding: "0.5rem 0.6rem",
-                        background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem",
-                        border: "1px solid rgba(255,255,255,0.05)",
+                        background: "var(--bg-card)", borderRadius: "0.5rem",
+                        border: "1px solid var(--border-default)",
                       }}>
                         <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>
                           Condition Assessment
@@ -2030,7 +2031,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
               <div key={p.provider} style={{
                 display: "flex", alignItems: "center", gap: "0.5rem",
                 padding: "0.4rem 0.65rem", opacity: 0.4,
-                background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)",
+                background: "var(--bg-card)", border: "1px solid var(--border-default)",
                 borderRadius: "0.5rem", fontSize: "0.68rem",
               }}>
                 <span style={{ opacity: 0.5 }}>{meta.icon}</span>
@@ -2049,7 +2050,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
       {isPricing && successfulProviders.length > 1 && (() => {
         const allPH = successfulProviders.map(p => ({ ...extractPH(p), provider: p.provider }));
         return (
-          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Pricing Comparison</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem 1rem", fontSize: "0.72rem" }}>
               {allPH.map(ph => {
@@ -2070,7 +2071,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
         const allBH = successfulProviders.map(p => ({ ...extractBH(p), provider: p.provider }));
         const totalUnique = new Set(allBH.flatMap(b => b.profiles.map((p: any) => (p.buyer_type || p.profile_name || "").toLowerCase()))).size;
         return (
-          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Buyer Intelligence Comparison</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
               {allBH.map(bh => {
@@ -2093,7 +2094,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
       {isListing && successfulProviders.length > 1 && (() => {
         const allLH = successfulProviders.map(p => ({ ...extractLH(p), provider: p.provider }));
         return (
-          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Listing Comparison</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
               {allLH.map(lh => {
@@ -2113,7 +2114,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
       {isRecon && successfulProviders.length > 1 && (() => {
         const allRH = successfulProviders.map(p => ({ ...extractRH(p), provider: p.provider }));
         return (
-          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Competitive Intel Comparison</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
               {allRH.map(rh => {
@@ -2133,7 +2134,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
       {isCarbot && successfulProviders.length > 1 && (() => {
         const allVH = successfulProviders.map(p => ({ ...extractVH(p), provider: p.provider }));
         return (
-          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Vehicle Valuation Comparison</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
               {allVH.map(vh => {
@@ -2153,7 +2154,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
       {isAntique && successfulProviders.length > 1 && (() => {
         const allAH = successfulProviders.map(p => ({ ...extractAH(p), provider: p.provider }));
         return (
-          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Antique Assessment Comparison</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
               {allAH.map(ah => {
@@ -2173,7 +2174,7 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
       {isPhotos && successfulProviders.length > 1 && (() => {
         const allPhH = successfulProviders.map(p => ({ ...extractPhH(p), provider: p.provider }));
         return (
-          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Photo Analysis Comparison</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
               {allPhH.map(ph => {
@@ -2193,13 +2194,13 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
       {isCollectibles && successfulProviders.length > 1 && (() => {
         const allCH = successfulProviders.map(p => ({ ...extractCollH(p), provider: p.provider }));
         return (
-          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.4rem" }}>Collectibles Expert Comparison</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {allCH.map(ch => {
                 const meta2 = PROVIDER_META[ch.provider];
                 return (
-                  <div key={ch.provider} style={{ padding: "0.3rem 0.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.4rem", border: "1px solid rgba(255,255,255,0.04)" }}>
+                  <div key={ch.provider} style={{ padding: "0.3rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.4rem", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.65rem", fontWeight: 700, color: meta2?.color || "var(--text-secondary)", marginBottom: "0.15rem" }}>
                       {meta2?.icon} {meta2?.label}
                     </div>
@@ -2243,8 +2244,8 @@ function KnowledgeSection({ icon, title, text }: { icon: string; title: string; 
   return (
     <div style={{
       padding: "0.35rem 0.5rem",
-      background: "rgba(255,255,255,0.02)", borderRadius: "0.4rem",
-      border: "1px solid rgba(255,255,255,0.04)",
+      background: "var(--bg-card)", borderRadius: "0.4rem",
+      border: "1px solid var(--border-default)",
     }}>
       <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.15rem" }}>
         {icon} {title}
@@ -2261,7 +2262,7 @@ function AgentTag({ children, color }: { children: React.ReactNode; color: strin
   return (
     <span style={{
       fontSize: "0.58rem", padding: "0.1rem 0.4rem", borderRadius: "9999px",
-      background: "rgba(255,255,255,0.04)", border: `1px solid ${color}30`,
+      background: "var(--ghost-bg)", border: `1px solid ${color}30`,
       color, fontWeight: 500,
     }}>
       {children}
@@ -2423,7 +2424,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
                 ...(aiData.completeness ? [{ label: "Completeness", value: aiData.completeness }] : []),
               ].filter(d => d.value).map((d) => (
                 <div key={d.label} style={{
-                  background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)",
+                  background: "var(--bg-card)", border: "1px solid var(--border-default)",
                   borderRadius: "0.6rem", padding: "0.6rem 0.75rem",
                 }}>
                   <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{d.label}</div>
@@ -2490,7 +2491,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
                     <span style={{ color: "var(--text-secondary)" }}>Confidence</span>
                     <span style={{ fontWeight: 600, color: confPct >= 70 ? "#4caf50" : "#ff9800" }}>{confPct}%</span>
                   </div>
-                  <div style={{ height: 6, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                  <div style={{ height: 6, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${confPct}%`, borderRadius: 99, background: confPct >= 70 ? "#4caf50" : "#ff9800", transition: "width 0.5s ease" }} />
                   </div>
                 </div>
@@ -2560,7 +2561,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
                 </div>
                 {aiData.recommended_title && (
                   <div style={{
-                    background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)",
+                    background: "var(--bg-card)", border: "1px solid var(--border-default)",
                     borderRadius: "0.5rem", padding: "0.5rem 0.65rem", marginBottom: "0.35rem",
                   }}>
                     <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", lineHeight: 1.35 }}>
@@ -2582,7 +2583,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
                     {aiData.keywords.slice(0, 10).map((kw: string, i: number) => (
                       <span key={i} style={{
                         padding: "0.12rem 0.45rem", borderRadius: "9999px", fontSize: "0.6rem", fontWeight: 500,
-                        background: "rgba(255,255,255,0.05)", border: "1px solid var(--border-default)", color: "var(--text-muted)",
+                        background: "var(--ghost-bg)", border: "1px solid var(--border-default)", color: "var(--text-muted)",
                       }}>
                         {kw}
                       </span>
@@ -2642,7 +2643,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
               {showJson ? "Hide raw AI JSON" : "View raw AI JSON"}
             </button>
             {showJson && (
-              <pre style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", padding: "0.75rem", overflow: "auto", fontSize: "0.65rem", color: "var(--text-muted)", maxHeight: 240, margin: 0 }}>
+              <pre style={{ background: "var(--bg-card)", borderRadius: "0.5rem", padding: "0.75rem", overflow: "auto", fontSize: "0.65rem", color: "var(--text-muted)", maxHeight: 240, margin: 0 }}>
                 {JSON.stringify(aiData, null, 2)}
               </pre>
             )}
@@ -2760,7 +2761,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {/* 3 price cards */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                 <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Local</div>
                 <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--accent)", marginTop: "0.15rem" }}>${Math.round((pr.localPrice.low + pr.localPrice.high) / 2)}</div>
                 <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{pr.localPrice.label || "Your area"}</div>
@@ -2772,13 +2773,13 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 )}
                 {pr.sellerNet && <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4caf50", marginTop: "0.25rem" }}>You get: ${pr.sellerNet.local.toFixed(0)}</div>}
               </div>
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                 <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>National</div>
                 <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "#4caf50", marginTop: "0.15rem" }}>${Math.round((pr.nationalPrice.low + pr.nationalPrice.high) / 2)}</div>
                 <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{pr.nationalPrice.label || "Nationwide"}</div>
                 {pr.sellerNet && <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4caf50", marginTop: "0.25rem" }}>You get: ${pr.sellerNet.national.toFixed(0)}</div>}
               </div>
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                 <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#fbbf24" }}>Best Market</div>
                 <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "#fbbf24", marginTop: "0.15rem" }}>${Math.round((pr.bestMarket.low + pr.bestMarket.high) / 2)}</div>
                 <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{pr.bestMarket.label || "Top market"}</div>
@@ -2813,7 +2814,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   {showCalc ? "Hide calculation" : "How We Calculated This"}
                 </button>
                 {showCalc && (
-                  <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.65rem", fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.65rem", fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
                     {pr.regionalIntel?.localReasoning && (
                       <div style={{ marginBottom: "0.4rem", padding: "0.35rem 0.5rem", borderRadius: "0.35rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.1)" }}>
                         <span style={{ fontWeight: 700, color: "var(--accent)", fontSize: "0.65rem" }}>Local Market: </span>
@@ -2878,7 +2879,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   {comps.length > 0 && (
                     <div style={{ display: "flex", gap: "0.35rem", marginBottom: "0.45rem", flexWrap: "wrap" }}>
                       {comps.map((c: any, i: number) => (
-                        <div key={i} style={{ flex: "1 1 0", minWidth: 0, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.45rem", padding: "0.3rem 0.4rem", fontSize: "0.62rem" }}>
+                        <div key={i} style={{ flex: "1 1 0", minWidth: 0, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.45rem", padding: "0.3rem 0.4rem", fontSize: "0.62rem" }}>
                           <div style={{ fontWeight: 700, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>${c.sold_price ?? c.price ?? "?"}</div>
                           <div style={{ color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.platform || c.source || "—"}</div>
                         </div>
@@ -2966,7 +2967,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
 
               {/* ═══ ADDITION 1 — Seller Net Breakdown ═══ */}
               {salePrice > 0 && (
-                <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.6rem", padding: "0.75rem" }}>
+                <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.6rem", padding: "0.75rem" }}>
                   <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.45rem" }}>💵 Your Best Net Payout</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
@@ -2996,21 +2997,21 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               {/* ═══ ADDITION 2 — Quick Market Snapshot ═══ */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem" }}>
                 {conf != null && (
-                  <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.45rem 0.5rem", textAlign: "center" }}>
+                  <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.45rem 0.5rem", textAlign: "center" }}>
                     <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>📊 Confidence</div>
                     <div style={{ fontSize: "0.9rem", fontWeight: 700, color: conf >= 80 ? "#4ade80" : conf >= 60 ? "#f59e0b" : "#ef4444" }}>{conf}%</div>
-                    <div style={{ marginTop: "0.2rem", height: "3px", borderRadius: "2px", background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                    <div style={{ marginTop: "0.2rem", height: "3px", borderRadius: "2px", background: "var(--ghost-bg)", overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${Math.min(conf, 100)}%`, borderRadius: "2px", background: conf >= 80 ? "#4ade80" : conf >= 60 ? "#f59e0b" : "#ef4444" }} />
                     </div>
                   </div>
                 )}
                 {demand && (
-                  <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.45rem 0.5rem", textAlign: "center" }}>
+                  <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.45rem 0.5rem", textAlign: "center" }}>
                     <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>📈 Demand</div>
                     <div style={{ fontSize: "0.9rem", fontWeight: 700, color: dColor, textTransform: "capitalize" }}>{demand}</div>
                   </div>
                 )}
-                <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.45rem 0.5rem", textAlign: "center" }}>
+                <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.45rem 0.5rem", textAlign: "center" }}>
                   <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>⏱️ Sells in</div>
                   <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--accent)" }}>{sellsIn}</div>
                 </div>
@@ -3021,11 +3022,11 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.3rem" }}>🏪 Best Places to Sell</div>
                 <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
                   {pbPlats ? pbPlats.map((p: any, i: number) => (
-                    <span key={i} style={{ padding: "0.2rem 0.55rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 600, background: i === 0 ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.05)", border: `1px solid ${i === 0 ? "rgba(0,188,212,0.25)" : "var(--border-default)"}`, color: i === 0 ? "var(--accent)" : "var(--text-secondary)" }}>
+                    <span key={i} style={{ padding: "0.2rem 0.55rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 600, background: i === 0 ? "rgba(0,188,212,0.12)" : "var(--ghost-bg)", border: `1px solid ${i === 0 ? "rgba(0,188,212,0.25)" : "var(--border-default)"}`, color: i === 0 ? "var(--accent)" : "var(--text-secondary)" }}>
                       {p.platform || p.name}{p.seller_net != null ? ` ~$${Math.round(p.seller_net)}` : p.expected_price != null ? ` ~$${Math.round(p.expected_price)}` : ""}
                     </span>
                   )) : aiPlats ? aiPlats.map((name: string, i: number) => (
-                    <span key={i} style={{ padding: "0.2rem 0.55rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 600, background: i === 0 ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.05)", border: `1px solid ${i === 0 ? "rgba(0,188,212,0.25)" : "var(--border-default)"}`, color: i === 0 ? "var(--accent)" : "var(--text-secondary)" }}>
+                    <span key={i} style={{ padding: "0.2rem 0.55rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 600, background: i === 0 ? "rgba(0,188,212,0.12)" : "var(--ghost-bg)", border: `1px solid ${i === 0 ? "rgba(0,188,212,0.25)" : "var(--border-default)"}`, color: i === 0 ? "var(--accent)" : "var(--text-secondary)" }}>
                       {name}
                     </span>
                   )) : (
@@ -3470,7 +3471,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
 
             {/* ── ENHANCEMENT STUDIO SUB-CARD ── */}
             {photos.length > 0 && (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(0,188,212,0.1)", borderRadius: "0.75rem", padding: "1rem", marginTop: "0.75rem" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.1)", borderRadius: "0.75rem", padding: "1rem", marginTop: "0.75rem" }}>
                 {/* Header */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
                   <span style={{ color: "var(--text-secondary)", fontWeight: 700, fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>
@@ -3561,7 +3562,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "0.75rem" }}>
                         {/* Edited photo card */}
                         {enhanceResult.editedPhotoUrl && (
-                          <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "10px", overflow: "hidden" }}>
+                          <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "10px", overflow: "hidden" }}>
                             <img src={enhanceResult.editedPhotoUrl} alt="Edited original" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
                             <div style={{ padding: "0.6rem" }}>
                               <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "0.78rem" }}>📸 Edited Original</div>
@@ -3578,7 +3579,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
                         )}
                         {/* AI Generated card */}
                         {enhanceResult.generatedPhotoUrl && (
-                          <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "10px", overflow: "hidden" }}>
+                          <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "10px", overflow: "hidden" }}>
                             <img src={enhanceResult.generatedPhotoUrl} alt="AI generated" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
                             <div style={{ padding: "0.6rem" }}>
                               <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "0.78rem" }}>🎨 AI Generated</div>
@@ -3619,7 +3620,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
                     {/* Re-Enhance button after first full run */}
                     {(enhanceResult.editedPhotoUrl || enhanceResult.generatedPhotoUrl) && (
                       <button onClick={runEnhance} style={{
-                        background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+                        background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                         borderRadius: "8px", padding: "0.35rem 0.75rem", color: "var(--text-secondary)",
                         fontWeight: 600, fontSize: "0.75rem", cursor: "pointer", marginTop: "0.5rem",
                       }}>
@@ -3633,7 +3634,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
 
             {/* ── PHOTO EDITOR SUB-CARD ── */}
             {photos.length > 0 && (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(0,188,212,0.1)", borderRadius: "0.75rem", padding: "1rem", marginTop: "0.75rem" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.1)", borderRadius: "0.75rem", padding: "1rem", marginTop: "0.75rem" }}>
                 {/* Header */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
                   <span style={{ color: "var(--text-secondary)", fontWeight: 700, fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>
@@ -3676,7 +3677,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
                       onClick={runPhotoEdit}
                       disabled={!editSelectedPhoto}
                       style={{
-                        background: editSelectedPhoto ? "linear-gradient(135deg, #00bcd4, #009688)" : "rgba(255,255,255,0.06)",
+                        background: editSelectedPhoto ? "linear-gradient(135deg, #00bcd4, #009688)" : "var(--ghost-bg)",
                         border: "none", borderRadius: "8px", padding: "0.45rem 1rem",
                         color: editSelectedPhoto ? "white" : "var(--text-muted)",
                         fontWeight: 700, fontSize: "0.78rem", cursor: editSelectedPhoto ? "pointer" : "default",
@@ -3707,12 +3708,12 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
                     {/* Before / After comparison */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem", marginBottom: "0.75rem" }}>
                       {/* Original */}
-                      <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", overflow: "hidden" }}>
+                      <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "8px", overflow: "hidden" }}>
                         <img src={editResult.originalPhotoPath} alt="Original" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
                         <div style={{ padding: "0.4rem 0.5rem", color: "var(--text-muted)", fontSize: "0.72rem", fontWeight: 600 }}>Original</div>
                       </div>
                       {/* Cleaned */}
-                      <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "8px", overflow: "hidden" }}>
+                      <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "8px", overflow: "hidden" }}>
                         <img src={editResult.editedPhotoUrl} alt="Cleaned" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ padding: "0.4rem 0.5rem", color: "#00bcd4", fontSize: "0.72rem", fontWeight: 600 }}>Cleaned</span>
@@ -3733,7 +3734,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
                     {/* Clean Another */}
                     <button
                       onClick={() => { setEditResult(null); setEditSelectedPhoto(null); }}
-                      style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", padding: "0.35rem 0.75rem", color: "var(--text-muted)", fontSize: "0.75rem", cursor: "pointer" }}
+                      style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.35rem 0.75rem", color: "var(--text-muted)", fontSize: "0.75rem", cursor: "pointer" }}
                     >
                       Clean Another Photo
                     </button>
@@ -3785,7 +3786,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
                       const isGenerating = variationLoading === vName;
 
                       return (
-                        <div key={i} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px", overflow: "hidden", marginBottom: "0.75rem" }}>
+                        <div key={i} style={{ background: "var(--bg-card)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px", overflow: "hidden", marginBottom: "0.75rem" }}>
                           {/* Generated image or loading placeholder */}
                           {vImgUrl ? (
                             <img src={vImgUrl} alt={vName} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
@@ -3826,7 +3827,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
                               ) : null}
                               {vImgUrl && (
                                 <button onClick={() => generateVariation(v)} disabled={!!variationLoading} style={{
-                                  background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                                  background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                                   borderRadius: "6px", padding: "0.35rem 0.6rem", color: "var(--text-muted)", fontSize: "0.72rem",
                                   cursor: variationLoading ? "wait" : "pointer",
                                 }}>
@@ -3892,7 +3893,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
       {/* Custom PhotoBot footer */}
       <div style={{
         padding: "0.65rem 1.25rem",
-        borderTop: "1px solid rgba(255,255,255,0.06)",
+        borderTop: "1px solid var(--border-default)",
         display: "flex",
         gap: "0.5rem",
         flexWrap: "wrap",
@@ -3908,7 +3909,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
             fontWeight: 600,
             borderRadius: "0.5rem",
             border: "1px solid var(--border-default)",
-            background: "rgba(255,255,255,0.04)",
+            background: "var(--ghost-bg)",
             color: "var(--text-secondary)",
             cursor: enhanceLoading || !hasAnalysis ? "not-allowed" : "pointer",
             opacity: enhanceLoading || !hasAnalysis ? 0.5 : 1,
@@ -4107,7 +4108,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
           rows={4}
           style={{
             width: "100%", padding: "0.5rem", borderRadius: "0.4rem", fontSize: "0.7rem",
-            background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)",
+            background: "var(--bg-card)", border: "1px solid var(--border-default)",
             color: "var(--text-primary)", resize: "vertical", lineHeight: 1.45, fontFamily: "inherit",
           }}
         />
@@ -4184,7 +4185,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
                   <div style={{
                     display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.6rem",
                     borderRadius: "0.45rem", border: `1px solid ${i === 0 ? "rgba(239,68,68,0.2)" : "var(--border-default)"}`,
-                    background: i === 0 ? "rgba(239,68,68,0.03)" : "rgba(255,255,255,0.02)",
+                    background: i === 0 ? "rgba(239,68,68,0.03)" : "var(--bg-card)",
                   }}>
                     <span style={{ padding: "0.1rem 0.4rem", borderRadius: "9999px", fontSize: "0.5rem", fontWeight: 700, background: `${urgColor}15`, color: urgColor, whiteSpace: "nowrap" }}>
                       {lead.urgency}
@@ -4222,7 +4223,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
                 <div key={key}>
                   <div style={{
                     display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.6rem",
-                    borderRadius: "0.45rem", border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.02)",
+                    borderRadius: "0.45rem", border: "1px solid var(--border-default)", background: "var(--bg-card)",
                   }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.profile_name}</div>
@@ -4367,14 +4368,14 @@ function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, ge
           <span style={{ background: "rgba(0,188,212,0.15)", color: "#00bcd4", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 700 }}>⚡ MegaBot</span>
           <span style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>{agentCount > 0 ? `${agentCount} AI Engines` : "AI Analysis"}</span>
         </div>
-        <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.1)", margin: "0 12px" }} />
+        <div style={{ width: 1, height: 20, background: "var(--bg-card-hover)", margin: "0 12px" }} />
         {bestPlatform && (
           <>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>🏆 Best Platform</div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{String(bestPlatform).slice(0, 20)}</div>
             </div>
-            <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.1)", margin: "0 12px" }} />
+            <div style={{ width: 1, height: 20, background: "var(--bg-card-hover)", margin: "0 12px" }} />
           </>
         )}
         <div style={{ textAlign: "center" }}>
@@ -4406,7 +4407,7 @@ function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, ge
         const isCopied = copiedPlatform === plat.key;
 
         return (
-          <div key={plat.key} style={{ background: "rgba(255,255,255,0.03)", borderLeft: `4px solid ${plat.color}`, borderTop: "1px solid rgba(255,255,255,0.06)", borderRight: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: "14px 16px", marginBottom: 10 }}>
+          <div key={plat.key} style={{ background: "var(--bg-card)", borderLeft: `4px solid ${plat.color}`, borderTop: "1px solid var(--border-default)", borderRight: "1px solid var(--border-default)", borderBottom: "1px solid var(--border-default)", borderRadius: 10, padding: "14px 16px", marginBottom: 10 }}>
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{plat.icon} {plat.name}</span>
@@ -4427,7 +4428,7 @@ function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, ge
               <button onClick={() => { const lst = findListing(plat.key); if (lst) { navigator.clipboard.writeText(getFullText(lst, plat.key)); setCopiedPlatform(plat.key); setTimeout(() => setCopiedPlatform(null), 2000); fetch("/api/listings/save", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ itemId, platform: plat.key, status: "COPIED" }) }).catch(() => {}); } }} style={{ flex: 65, height: 38, background: isCopied ? plat.color : `rgba(${plat.color === "#e53238" ? "229,50,56" : plat.color === "#1877f2" ? "24,119,242" : plat.color === "#e1306c" ? "225,48,108" : plat.color === "#f1641e" ? "241,100,30" : "0,188,212"},0.15)`, border: `1px solid ${plat.color}`, color: isCopied ? "#000" : plat.color, fontSize: 11, fontWeight: 700, borderRadius: 7, cursor: "pointer", transition: "all 0.2s" }}>
                 {isCopied ? "✓ Copied!" : `📋 Copy ${plat.name}`}
               </button>
-              <a href={plat.url} target="_blank" rel="noopener noreferrer" style={{ flex: 33, height: 38, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.6)", fontSize: 11, borderRadius: 7, textDecoration: "none", cursor: "pointer" }}>Open \u2192</a>
+              <a href={plat.url} target="_blank" rel="noopener noreferrer" style={{ flex: 33, height: 38, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", fontSize: 11, borderRadius: 7, textDecoration: "none", cursor: "pointer" }}>Open \u2192</a>
             </div>
           </div>
         );
@@ -4438,14 +4439,14 @@ function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, ge
         <button onClick={() => { const lines: string[] = []; for (const plat of LISTING_PLATFORMS) { const lst = findListing(plat.key); if (!lst?.title) continue; lines.push(`--- ${plat.name} ---\nTitle: ${lst.title}\nPrice: $${lst.price || 0}\n${lst.description || ""}\n${lst.tags?.length ? `Tags: ${lst.tags.join(", ")}` : ""}\n`); } navigator.clipboard.writeText(lines.join("\n")); setCopiedPlatform("__all__"); setTimeout(() => setCopiedPlatform(null), 2500); }} style={{ flex: 58, height: 40, background: copiedPlatform === "__all__" ? "rgba(76,175,80,0.15)" : "linear-gradient(135deg, rgba(0,188,212,0.2), rgba(0,229,255,0.1))", border: "1px solid #00bcd4", color: copiedPlatform === "__all__" ? "#4caf50" : "#00bcd4", fontSize: 11, fontWeight: 700, borderRadius: 8, cursor: "pointer" }}>
           {copiedPlatform === "__all__" ? "✓ All Copied!" : "📋 Copy All 13 Platforms"}
         </button>
-        <button onClick={() => { window.location.href = `/bots/listbot?item=${itemId}`; }} style={{ flex: 40, height: 40, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)", fontSize: 11, borderRadius: 8, cursor: "pointer" }}>
+        <button onClick={() => { window.location.href = `/bots/listbot?item=${itemId}`; }} style={{ flex: 40, height: 40, background: "var(--ghost-bg)", border: "1px solid var(--border-default)", color: "var(--text-secondary)", fontSize: 11, borderRadius: 8, cursor: "pointer" }}>
           📊 All 13 Platforms \u2192
         </button>
       </div>
 
       {/* ── BLOCK 5: Progress Bar ── */}
       <div style={{ marginTop: 14, marginBottom: 6 }}>
-        <div style={{ height: 3, borderRadius: 2, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+        <div style={{ height: 3, borderRadius: 2, background: "var(--ghost-bg)", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${Math.round((copiedCount / 13) * 100)}%`, background: "linear-gradient(90deg, #00bcd4, #00e5ff)", borderRadius: 2, transition: "width 0.4s ease" }} />
         </div>
         <div style={{ fontSize: 9, color: "rgba(207,216,220,0.6)", marginTop: 4 }}>{copiedCount} of 13 platforms reached</div>
@@ -4565,7 +4566,7 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
                 <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "#00bcd4", display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.25rem" }}>
                   ✍️ {platformCount} platform listings ready
                 </div>
-                <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 2, overflow: "hidden", marginBottom: "0.4rem" }}>
+                <div style={{ height: 4, background: "var(--ghost-bg)", borderRadius: 2, overflow: "hidden", marginBottom: "0.4rem" }}>
                   <div style={{ height: "100%", width: "100%", background: "linear-gradient(90deg, #00bcd4, #00e5ff)", borderRadius: 2 }} />
                 </div>
                 {topPlatforms.map((key) => {
@@ -4576,7 +4577,7 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
                   const price = getPrice(listing, key);
                   const isCopied = copiedPlatform === key;
                   return (
-                    <div key={key} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.45rem 0.6rem", background: "rgba(255,255,255,0.04)", borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.15)" }}>
+                    <div key={key} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.45rem 0.6rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.15)" }}>
                       <span style={{ fontSize: "1rem" }}>{meta.icon}</span>
                       <span style={{ flex: 1, fontSize: "0.72rem", color: "#cfd8dc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title.slice(0, 50)}</span>
                       {price != null && <span style={{ fontSize: "0.72rem", color: "#00bcd4", fontWeight: 600, marginRight: "0.35rem" }}>${price}</span>}
@@ -4850,7 +4851,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
           </button>
 
           {vinSectionOpen && (
-            <div style={{ marginTop: "0.5rem", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid var(--border-default, rgba(255,255,255,0.08))", background: "rgba(255,255,255,0.02)" }}>
+            <div style={{ marginTop: "0.5rem", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid var(--border-default, var(--border-default))", background: "var(--bg-card)" }}>
               {/* VIN Input */}
               <div style={{ marginBottom: "0.65rem" }}>
                 <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.25rem" }}>VIN</div>
@@ -4864,7 +4865,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
                     style={{
                       flex: 1, padding: "0.45rem 0.6rem", fontSize: "0.78rem", fontFamily: "monospace",
                       letterSpacing: "0.08em", textTransform: "uppercase",
-                      background: "rgba(255,255,255,0.04)", border: `1px solid ${vin.length === 17 ? CB : "var(--border-default)"}`,
+                      background: "var(--ghost-bg)", border: `1px solid ${vin.length === 17 ? CB : "var(--border-default)"}`,
                       borderRadius: "0.4rem", color: "var(--text-primary)", outline: "none",
                     }}
                   />
@@ -4875,7 +4876,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
                       padding: "0.45rem 0.75rem", fontSize: "0.68rem", fontWeight: 700,
                       borderRadius: "0.4rem", border: "none",
                       cursor: vin.length === 17 && !vinLoading ? "pointer" : "not-allowed",
-                      background: vin.length === 17 ? `linear-gradient(135deg, ${CB}, #1976d2)` : "rgba(255,255,255,0.06)",
+                      background: vin.length === 17 ? `linear-gradient(135deg, ${CB}, #1976d2)` : "var(--ghost-bg)",
                       color: vin.length === 17 ? "#fff" : "var(--text-muted)",
                       opacity: vin.length !== 17 ? 0.5 : 1, whiteSpace: "nowrap",
                     }}
@@ -4940,7 +4941,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
                     placeholder="e.g. 87000"
                     style={{
                       width: "110px", padding: "0.45rem 0.6rem", fontSize: "0.78rem",
-                      background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-default)",
+                      background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                       borderRadius: "0.4rem", color: "var(--text-primary)", outline: "none",
                     }}
                   />
@@ -4970,7 +4971,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
                       onChange={(e) => setSellerDetails((prev: any) => ({ ...prev, [f.key]: e.target.value }))}
                       style={{
                         width: "100%", padding: "0.35rem 0.45rem", fontSize: "0.72rem",
-                        background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-default)",
+                        background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                         borderRadius: "0.35rem", color: "var(--text-primary)", outline: "none",
                       }}
                     >
@@ -4988,7 +4989,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
                     placeholder="Any problems?"
                     style={{
                       width: "100%", padding: "0.35rem 0.45rem", fontSize: "0.72rem",
-                      background: "rgba(255,255,255,0.04)", border: "1px solid var(--border-default)",
+                      background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                       borderRadius: "0.35rem", color: "var(--text-primary)", outline: "none",
                     }}
                   />
@@ -5076,7 +5077,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
                   { label: "Trade", data: val.trade_in_value, color: "#f59e0b" },
                   { label: "Auction", data: val.auction_value, color: "var(--text-muted)" },
                 ].map((v) => (
-                  <div key={v.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default, rgba(255,255,255,0.08))", borderRadius: "0.4rem", padding: "0.35rem 0.4rem", textAlign: "center" }}>
+                  <div key={v.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default, var(--border-default))", borderRadius: "0.4rem", padding: "0.35rem 0.4rem", textAlign: "center" }}>
                     <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.1rem" }}>{v.label}</div>
                     <div style={{ fontSize: "0.72rem", fontWeight: 700, color: v.color }}>
                       {v.data?.mid ? `$${Math.round(v.data.mid).toLocaleString()}` : v.data?.low ? `$${Math.round(v.data.low).toLocaleString()}` : "—"}
@@ -5094,7 +5095,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
                 { label: "List Price", value: strat?.listing_price ? `$${Math.round(strat.listing_price).toLocaleString()}` : null, icon: "💰" },
                 { label: "Time to Sell", value: market?.time_to_sell_estimate, icon: "⏱️" },
               ].filter((d) => d.value).map((d) => (
-                <div key={d.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default, rgba(255,255,255,0.08))", borderRadius: "0.4rem", padding: "0.4rem 0.5rem" }}>
+                <div key={d.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default, var(--border-default))", borderRadius: "0.4rem", padding: "0.4rem 0.5rem" }}>
                   <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>{d.icon} {d.label}</div>
                   <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{d.value}</div>
                   {d.sub && <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{d.sub}</div>}
@@ -5113,7 +5114,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
             )}
 
             {/* Vehicle History Placeholder */}
-            <div style={{ padding: "0.5rem 0.6rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,255,255,0.08)" }}>
+            <div style={{ padding: "0.5rem 0.6rem", borderRadius: "0.4rem", background: "var(--bg-card)", border: "1px dashed var(--border-default)" }}>
               <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.2rem" }}>Vehicle History</div>
               <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap", fontSize: "0.55rem" }}>
                 {[
@@ -5124,9 +5125,9 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
                 ].map((f) => (
                   <span key={f.label} style={{
                     padding: "0.08rem 0.3rem", borderRadius: "9999px", fontWeight: 600,
-                    background: f.done ? "rgba(74,222,128,0.08)" : "rgba(255,255,255,0.03)",
+                    background: f.done ? "rgba(74,222,128,0.08)" : "var(--bg-card)",
                     color: f.done ? "#4ade80" : "var(--text-muted)",
-                    border: `1px solid ${f.done ? "rgba(74,222,128,0.2)" : "rgba(255,255,255,0.06)"}`,
+                    border: `1px solid ${f.done ? "rgba(74,222,128,0.2)" : "var(--border-default)"}`,
                   }}>
                     {f.done ? "✅" : "🔜"} {f.label}
                   </span>
@@ -5399,7 +5400,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
                   { label: "Grade Est.", value: ident.grade_estimate },
                   { label: "Status", value: ident.grading_status },
                 ].filter((d) => d.value).map((d) => (
-                  <div key={d.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
+                  <div key={d.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
                     <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{d.label}</div>
                     <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{d.value}</div>
                   </div>
@@ -5426,7 +5427,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 
             {/* Value Reasoning + Recent Comps */}
             {(valueReasoning || recentComps) && (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.25rem" }}>Value Reasoning</div>
                 {valueReasoning && <div style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>{valueReasoning}</div>}
                 {recentComps && (
@@ -5445,7 +5446,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.35rem" }}>Graded Value Tiers</div>
                 <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(gradedValues.length, 5)}, 1fr)`, gap: "0.35rem" }}>
                   {gradedValues.slice(0, 5).map((gv: any, i: number) => (
-                    <div key={i} style={{ textAlign: "center", padding: "0.3rem 0.15rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.35rem" }}>
+                    <div key={i} style={{ textAlign: "center", padding: "0.3rem 0.15rem", background: "var(--bg-card)", borderRadius: "0.35rem" }}>
                       <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>{gv.grade}</div>
                       <div style={{ fontSize: "0.72rem", fontWeight: 800, color: PURPLE }}>{safeFmtPrice(gv.value)}</div>
                       {gv.population && <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>Pop: {gv.population}</div>}
@@ -5458,7 +5459,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 
             {/* Visual Grade Assessment */}
             {visualGrade && (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.35rem" }}>Visual Grade Assessment</div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.35rem" }}>
                   {[
@@ -5499,7 +5500,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 
             {/* Grading ROI Analysis */}
             {(gradingRec || gradingReasoning || breakEvenGrade) && (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.25rem" }}>Grading ROI Analysis</div>
                 {gradingRec && (
                   <div style={{ fontSize: "0.75rem", fontWeight: 700, color: gradingRec.includes("Strongly") ? "#16a34a" : gradingRec.includes("Skip") ? "#d97706" : PURPLE }}>
@@ -5531,7 +5532,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 
             {/* Market Intelligence */}
             {bestPlatform && (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.25rem" }}>Market Intelligence</div>
                 <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-primary)" }}>Best Platform: {bestPlatform}</div>
                 {platformReasoning && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", marginTop: "0.1rem", lineHeight: 1.4 }}>{platformReasoning}</div>}
@@ -5541,7 +5542,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 
             {/* Selling Strategy */}
             {sellingStrategy && (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.25rem" }}>Selling Strategy</div>
                 <div style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>{sellingStrategy}</div>
               </div>
@@ -5564,7 +5565,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 
             {/* Investment Outlook */}
             {investment && (investment.price_1yr || investment.price_5yr || investment.catalysts || investment.price_target_1yr || investment.investment_thesis) && (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.25rem" }}>Investment Outlook</div>
                 {(investment.price_1yr || investment.price_target_1yr || investment.price_5yr || investment.price_target_5yr) && (
                   <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.2rem", flexWrap: "wrap" }}>
@@ -5580,7 +5581,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 
             {/* Rarity & Population */}
             {(populationNote || notableVariations) && (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.25rem" }}>Rarity & Population</div>
                 {populationNote && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>{populationNote}</div>}
                 {notableVariations && <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Variations: {notableVariations}</div>}
@@ -5589,7 +5590,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 
             {/* Authentication Notes */}
             {authenticationNotes && (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.25rem" }}>Authentication</div>
                 <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>{authenticationNotes}</div>
               </div>
@@ -5597,7 +5598,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 
             {/* Insider Knowledge */}
             {insiderKnowledge && (
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginBottom: "0.25rem" }}>
                   <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700 }}>Insider Knowledge</div>
                   {communitySentiment && (
@@ -5831,7 +5832,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
                 </div>
                 <div style={{
                   width: "80px", height: "3px", borderRadius: "2px",
-                  background: "rgba(255,255,255,0.08)", marginTop: "0.25rem", overflow: "hidden",
+                  background: "var(--ghost-bg)", marginTop: "0.25rem", overflow: "hidden",
                 }}>
                   <div style={{
                     width: `${authenticityScore.score}%`, height: "100%", borderRadius: "2px",
@@ -5888,7 +5889,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
                 { label: "Material", value: aiData?.material || "Unknown" },
                 { label: "Style", value: aiData?.style || "Unknown" },
               ].map((d) => (
-                <div key={d.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
+                <div key={d.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
                   <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{d.label}</div>
                   <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{d.value}</div>
                 </div>
@@ -5939,7 +5940,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
                   { label: "Rarity", value: ident.rarity },
                   { label: "Style", value: ident.style_movement },
                 ].filter((d) => d.value).map((d) => (
-                  <div key={d.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
+                  <div key={d.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
                     <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{d.label}</div>
                     <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{d.value}</div>
                   </div>
@@ -6090,7 +6091,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
               ].map((s) => (
                 <div key={s.label} style={{
                   textAlign: "center", padding: "0.6rem", borderRadius: "0.65rem",
-                  background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)",
+                  background: "var(--bg-card)", border: "1px solid var(--border-default)",
                 }}>
                   <div style={{ fontSize: "1.2rem", fontWeight: 800, color: s.color }}>{s.value}</div>
                   <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: "0.15rem" }}>{s.label}</div>
@@ -6112,7 +6113,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
                   borderRadius: "0.5rem",
                   fontSize: "0.65rem",
                   fontWeight: 600,
-                  background: isBoosted ? `${b.color}12` : "rgba(255,255,255,0.03)",
+                  background: isBoosted ? `${b.color}12` : "var(--bg-card)",
                   color: isBoosted ? b.color : "var(--text-muted)",
                   border: `1px solid ${isBoosted ? `${b.color}40` : "var(--border-default)"}`,
                   textAlign: "center",
@@ -6138,7 +6139,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
                 {agentStats.map((a) => (
                   <div key={a.key} style={{
                     padding: "0.5rem", borderRadius: "0.5rem",
-                    background: "rgba(255,255,255,0.03)", border: `1px solid ${a.color}30`,
+                    background: "var(--bg-card)", border: `1px solid ${a.color}30`,
                     textAlign: "center",
                   }}>
                     <div style={{ fontSize: "1rem" }}>{a.icon}</div>
@@ -6186,7 +6187,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
         </div>
       </div>
 
-      <div style={{ padding: "0.65rem 1.25rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      <div style={{ padding: "0.65rem 1.25rem", borderTop: "1px solid var(--border-default)" }}>
         <a href={`/bots/megabot?item=${itemId}`} style={{
           padding: "0.3rem 0.75rem", fontSize: "0.72rem", fontWeight: 600, borderRadius: "0.5rem",
           border: "1px solid var(--accent)", background: "transparent", color: "var(--accent)", textDecoration: "none",
@@ -6233,7 +6234,7 @@ function BotSummaryContent({ aiData, valuation, antique, photos, megabotUsed, it
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.25rem" }}>
         <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>Readiness:</span>
-        <div style={{ flex: 1, height: 6, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+        <div style={{ flex: 1, height: 6, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${readiness}%`, borderRadius: 99, background: readiness >= 60 ? "#4caf50" : "#ff9800" }} />
         </div>
         <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{readiness}%</span>
@@ -6242,7 +6243,7 @@ function BotSummaryContent({ aiData, valuation, antique, photos, megabotUsed, it
         <a key={b.name} href={b.link} style={{
           display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.65rem 0.85rem",
           borderRadius: "0.65rem", border: "1px solid var(--border-default)",
-          background: "rgba(255,255,255,0.02)", textDecoration: "none", color: "inherit",
+          background: "var(--bg-card)", textDecoration: "none", color: "inherit",
         }}>
           <span style={{ fontSize: "1.2rem" }}>{b.icon}</span>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -6251,7 +6252,7 @@ function BotSummaryContent({ aiData, valuation, antique, photos, megabotUsed, it
           </div>
           <span style={{
             padding: "0.15rem 0.5rem", borderRadius: "9999px", fontSize: "0.6rem", fontWeight: 600,
-            background: b.status === "Complete" || b.status === "Used" ? "rgba(76,175,80,0.15)" : b.status === "Active" ? "rgba(251,191,36,0.15)" : b.status === "Ready" || b.status === "Available" ? "rgba(0,188,212,0.1)" : "rgba(255,255,255,0.05)",
+            background: b.status === "Complete" || b.status === "Used" ? "rgba(76,175,80,0.15)" : b.status === "Active" ? "rgba(251,191,36,0.15)" : b.status === "Ready" || b.status === "Available" ? "rgba(0,188,212,0.1)" : "var(--ghost-bg)",
             color: b.status === "Complete" || b.status === "Used" ? "#4caf50" : b.status === "Active" ? "#fbbf24" : b.status === "Ready" || b.status === "Available" ? "var(--accent)" : "var(--text-muted)",
           }}>
             {b.status}
@@ -6277,7 +6278,7 @@ const STATUS_FLOW = [
   { key: "COMPLETED", label: "Done", icon: "🎉" },
 ];
 
-function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: initialListingPrice, collapsed, onToggle }: {
+function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: initialListingPrice, collapsed, onToggle, photos, category }: {
   itemId: string;
   status: string;
   valuation: any;
@@ -6285,6 +6286,8 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   listingPrice?: number | null;
   collapsed?: boolean;
   onToggle?: () => void;
+  photos?: any[];
+  category?: string | null;
 }) {
   const router = useRouter();
   const [updating, setUpdating] = useState(false);
@@ -6342,9 +6345,9 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
     <GlassCard fullWidth>
       <PanelHeader icon="🎛️" title="Item Control Center" hasData={true} badge="STATUS" collapsed={collapsed} onToggle={onToggle} />
       <div style={{ display: collapsed ? "none" : undefined }}>
-      <div style={{ padding: "1rem 1.25rem" }}>
+      <div style={{ padding: "0.75rem 1rem" }}>
         {/* Status Progress Bar */}
-        <div style={{ marginBottom: "1rem" }}>
+        <div style={{ marginBottom: "0.6rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 0, position: "relative" }}>
             {STATUS_FLOW.map((s, i) => {
               const isPast = i < currentIdx;
@@ -6356,7 +6359,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
                   {i > 0 && (
                     <div style={{
                       position: "absolute", top: "0.65rem", right: "50%", width: "100%", height: "2px",
-                      background: isPast || isCurrent ? "var(--accent)" : "rgba(255,255,255,0.08)",
+                      background: isPast || isCurrent ? "var(--accent)" : "var(--ghost-bg)",
                       zIndex: 0,
                     }} />
                   )}
@@ -6367,8 +6370,8 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
                     borderRadius: "50%",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: isCurrent ? "0.75rem" : "0.65rem",
-                    background: isPast ? "var(--accent)" : isCurrent ? "var(--accent)" : "rgba(255,255,255,0.06)",
-                    border: isCurrent ? "2px solid var(--accent)" : "1px solid " + (isPast ? "var(--accent)" : "rgba(255,255,255,0.1)"),
+                    background: isPast ? "var(--accent)" : isCurrent ? "var(--accent)" : "var(--ghost-bg)",
+                    border: isCurrent ? "2px solid var(--accent)" : "1px solid " + (isPast ? "var(--accent)" : "var(--border-default)"),
                     boxShadow: isCurrent ? "0 0 8px rgba(0,188,212,0.4)" : "none",
                     color: isPast || isCurrent ? "#fff" : "var(--text-muted)",
                     zIndex: 1, position: "relative",
@@ -6390,9 +6393,33 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           </div>
         </div>
 
+        {/* Item Info Strip */}
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", margin: "0 0 0.6rem 0" }}>
+          {(photos?.length ?? 0) > 0 && (
+            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)", border: "1px solid var(--border-default)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "var(--ghost-bg)" }}>
+              📷 {photos!.length} photo{photos!.length !== 1 ? "s" : ""}
+            </span>
+          )}
+          {(category || aiData?.category) && (
+            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)", border: "1px solid var(--border-default)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "var(--ghost-bg)" }}>
+              🏷️ {category || aiData.category}
+            </span>
+          )}
+          {(valuation?.confidence != null || aiData?.confidence != null) && (
+            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)", border: "1px solid var(--border-default)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "var(--ghost-bg)" }}>
+              🎯 AI: {Math.round(((valuation?.confidence ?? aiData?.confidence ?? 0) > 1 ? (valuation?.confidence ?? aiData?.confidence ?? 0) : (valuation?.confidence ?? aiData?.confidence ?? 0) * 100))}%
+            </span>
+          )}
+          {valuation?.low != null && valuation?.high != null && (
+            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)", border: "1px solid var(--border-default)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "var(--ghost-bg)" }}>
+              ${Math.round(valuation.low)}–${Math.round(valuation.high)} est
+            </span>
+          )}
+        </div>
+
         {/* Quick Actions */}
         {actions.length > 0 && (
-          <div style={{ marginBottom: "0.75rem" }}>
+          <div style={{ marginBottom: "0.5rem" }}>
             <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>Quick Actions</div>
             <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
               {actions.map((a) => (
@@ -6401,8 +6428,8 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
                   onClick={a.onClick}
                   disabled={updating}
                   style={{
-                    padding: "0.4rem 0.85rem", borderRadius: "0.5rem", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
-                    background: a.primary ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "rgba(255,255,255,0.04)",
+                    padding: "0.35rem 0.75rem", borderRadius: "0.5rem", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
+                    background: a.primary ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "var(--ghost-bg)",
                     border: a.primary ? "none" : "1px solid var(--border-default)",
                     color: a.primary ? "#fff" : "var(--text-secondary)",
                     opacity: updating ? 0.5 : 1,
@@ -6417,16 +6444,16 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
 
         {/* Set Listing Price */}
         <div style={{
-          background: "rgba(255,255,255,0.03)",
+          background: "var(--bg-card)",
           backdropFilter: "blur(12px)",
           border: "1px solid rgba(0,188,212,0.15)",
           borderRadius: "12px",
-          padding: "1rem 1.25rem",
+          padding: "0.65rem 1rem",
           display: "flex",
           alignItems: "center",
           gap: "1rem",
           flexWrap: "wrap",
-          marginBottom: "0.75rem",
+          marginBottom: "0.5rem",
         }}>
           <span style={{
             color: "var(--text-secondary)",
@@ -6445,7 +6472,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               value={priceInput}
               onChange={(e) => setPriceInput(e.target.value)}
               style={{
-                background: "rgba(255,255,255,0.05)",
+                background: "var(--ghost-bg)",
                 border: "1px solid rgba(0,188,212,0.3)",
                 borderRadius: "8px",
                 padding: "0.5rem 0.75rem",
@@ -6503,6 +6530,16 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           </button>
         </div>
 
+        {/* ── Accept Trades ── */}
+        <div style={{ marginBottom: "0.5rem" }}>
+          <TradeToggle itemId={itemId} />
+        </div>
+
+        {/* ── Sale Assignment ── */}
+        <div style={{ marginBottom: "0.5rem" }}>
+          <SaleAssignment itemId={itemId} initialProjectId={null} />
+        </div>
+
         {/* Sale Details (when sold/shipped/completed) */}
         {(status === "SOLD" || status === "SHIPPED" || status === "COMPLETED") && price && (
           <div style={{
@@ -6527,7 +6564,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
         )}
 
         {/* Quick Links */}
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", fontSize: "0.72rem" }}>
+        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", fontSize: "0.7rem", borderTop: "1px solid var(--border-default)", paddingTop: "0.5rem", marginTop: "0.5rem" }}>
           <a href={`/items/${itemId}/edit`} style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500, display: "flex", alignItems: "center", gap: "0.2rem" }}>
             ✏️ Edit Item
           </a>
@@ -6599,7 +6636,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
             </div>
             <button onClick={onReconBotRun} disabled={!aiData} style={{
               padding: "0.5rem 1.2rem", borderRadius: "0.5rem", fontSize: "0.78rem", fontWeight: 700,
-              background: aiData ? "linear-gradient(135deg, #8b5cf6, #7c3aed)" : "rgba(255,255,255,0.06)",
+              background: aiData ? "linear-gradient(135deg, #8b5cf6, #7c3aed)" : "var(--ghost-bg)",
               border: "none", color: aiData ? "#fff" : "var(--text-muted)", cursor: aiData ? "pointer" : "not-allowed",
             }}>
               🔍 Run Competitive Scan
@@ -6613,17 +6650,17 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
             {/* Overview stats */}
             {scan && (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.4rem", marginBottom: "0.75rem" }}>
-                <div style={{ textAlign: "center", padding: "0.5rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)" }}>
+                <div style={{ textAlign: "center", padding: "0.5rem", borderRadius: "0.4rem", background: "var(--bg-card)" }}>
                   <div style={{ fontSize: "1rem", fontWeight: 800, color: "#00bcd4" }}>{scan.total_competitors_found}</div>
                   <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>Competitors</div>
                 </div>
-                <div style={{ textAlign: "center", padding: "0.5rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)" }}>
+                <div style={{ textAlign: "center", padding: "0.5rem", borderRadius: "0.4rem", background: "var(--bg-card)" }}>
                   <div style={{ fontSize: "1rem", fontWeight: 800, color: scan.market_heat === "Hot" ? "#ef4444" : scan.market_heat === "Warm" ? "#f59e0b" : "#00bcd4" }}>
                     {scan.market_heat === "Hot" ? "🔥" : scan.market_heat === "Warm" ? "🌤️" : "❄️"} {scan.market_heat}
                   </div>
                   <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>Market Heat</div>
                 </div>
-                <div style={{ textAlign: "center", padding: "0.5rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)" }}>
+                <div style={{ textAlign: "center", padding: "0.5rem", borderRadius: "0.4rem", background: "var(--bg-card)" }}>
                   <div style={{
                     fontSize: "0.78rem", fontWeight: 700,
                     color: scan.price_position === "Well-Priced" ? "#4ade80" : scan.price_position === "Overpriced" ? "#ef4444" : scan.price_position === "Underpriced" ? "#f59e0b" : "#94a3b8",
@@ -7132,12 +7169,7 @@ export default function ItemDashboardPanels({
 
       {/* ── ITEM CONTROL CENTER (full width, above panel grid) ── */}
       <div style={{ marginBottom: "1rem" }}>
-        <ItemControlCenter itemId={itemId} status={status} valuation={valuation} aiData={aiData} listingPrice={listingPrice} collapsed={collapsed.control} onToggle={() => togglePanel("control")} />
-      </div>
-
-      {/* ── SALE ASSIGNMENT (below Item Control Center) ── */}
-      <div style={{ marginBottom: "1rem" }}>
-        <SaleAssignment itemId={itemId} initialProjectId={null} />
+        <ItemControlCenter itemId={itemId} status={status} valuation={valuation} aiData={aiData} listingPrice={listingPrice} collapsed={collapsed.control} onToggle={() => togglePanel("control")} photos={photos} category={category} />
       </div>
 
       {/* ── ACTIVE OFFERS (below Sale Assignment) ── */}
@@ -7202,7 +7234,7 @@ export default function ItemDashboardPanels({
                     flex: 1,
                     height: "4px",
                     borderRadius: "2px",
-                    background: "rgba(255,255,255,0.08)",
+                    background: "var(--ghost-bg)",
                     overflow: "hidden",
                     maxWidth: "180px",
                   }}>
@@ -7383,7 +7415,7 @@ export default function ItemDashboardPanels({
                     flex: 1,
                     height: "4px",
                     borderRadius: "2px",
-                    background: "rgba(255,255,255,0.08)",
+                    background: "var(--ghost-bg)",
                     overflow: "hidden",
                     maxWidth: "180px",
                   }}>

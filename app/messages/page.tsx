@@ -73,8 +73,8 @@ export default async function MessagesPage() {
         {itemsForForm.length === 0 ? (
           <div style={{ padding: 40, textAlign: "center" }}>
             <div style={{ fontSize: "3rem", marginBottom: 12 }}>📦</div>
-            <div style={{ fontSize: 18, fontWeight: 600, color: "#fff" }}>No items yet</div>
-            <p style={{ color: "rgba(207,216,220,0.6)", marginTop: 8 }}>Add an item before logging buyer messages.</p>
+            <div style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>No items yet</div>
+            <p style={{ color: "var(--text-muted)", marginTop: 8 }}>Add an item before logging buyer messages.</p>
             <Link href="/items/new" style={{ display: "inline-flex", alignItems: "center", padding: "10px 20px", marginTop: 16, background: "#00bcd4", color: "#000", fontWeight: 700, borderRadius: 8, textDecoration: "none" }}>Add Item</Link>
           </div>
         ) : (

@@ -177,8 +177,8 @@ function AgentStyleCard({ agent }: { agent: AgentResult }) {
   const isPlaceholder = agent.status === "placeholder";
   return (
     <div style={{
-      background: "var(--bg-card, rgba(255,255,255,0.05))",
-      border: "1px solid var(--border-card, rgba(255,255,255,0.08))",
+      background: "var(--bg-card, var(--ghost-bg))",
+      border: "1px solid var(--border-card, var(--border-default))",
       borderRadius: "1.25rem",
       padding: "1.25rem",
       opacity: isPlaceholder ? 0.5 : 1,
@@ -189,7 +189,7 @@ function AgentStyleCard({ agent }: { agent: AgentResult }) {
         <span style={{
           marginLeft: "auto", fontSize: "0.6rem", fontWeight: 600, padding: "0.15rem 0.45rem",
           borderRadius: "9999px",
-          background: isPlaceholder ? "rgba(255,255,255,0.06)" : "rgba(76,175,80,0.15)",
+          background: isPlaceholder ? "var(--ghost-bg)" : "rgba(76,175,80,0.15)",
           color: isPlaceholder ? "var(--text-muted)" : "#4caf50",
         }}>
           {isPlaceholder ? "Coming Soon" : `${Math.round(agent.confidence * 100)}%`}
@@ -325,7 +325,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
       ) : item.photoCount === 0 ? (
         <div style={{
           marginTop: "1.5rem",
-          background: "var(--bg-card, rgba(255,255,255,0.05))",
+          background: "var(--bg-card, var(--ghost-bg))",
           border: "1px solid var(--border-card)",
           borderRadius: "1.25rem",
           padding: "3rem",
@@ -340,7 +340,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
           {/* Mode header + MegaBot button */}
           <div style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            background: "var(--bg-card, rgba(255,255,255,0.05))",
+            background: "var(--bg-card, var(--ghost-bg))",
             border: "1px solid var(--border-card)", borderRadius: "1rem",
             padding: "0.75rem 1.25rem", flexWrap: "wrap", gap: "0.5rem",
           }}>
@@ -365,7 +365,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
 
           {/* MegaBot activation animation */}
           {megaAnimating && !megaMode && (
-            <div style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "1.25rem", padding: "1.5rem" }}>
+            <div style={{ background: "var(--bg-card, var(--ghost-bg))", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "1.25rem", padding: "1.5rem" }}>
               <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent)", marginBottom: "1rem", fontWeight: 600 }}>Activating MegaBot...</div>
               {[{ icon: "🟢", name: "OpenAI Agent", step: 1 }, { icon: "🟣", name: "Claude Agent", step: 2 }, { icon: "🔵", name: "Gemini Agent", step: 3 }, { icon: "🌀", name: "Grok Agent", step: 4 }].map((a) => (
                 <div key={a.name} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.5rem 0" }}>
@@ -389,7 +389,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
               </div>
 
               {/* Style Master Summary */}
-              <div style={{ background: "var(--bg-card, rgba(255,255,255,0.05))", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "1.25rem", padding: "2rem" }}>
+              <div style={{ background: "var(--bg-card, var(--ghost-bg))", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "1.25rem", padding: "2rem" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
                   <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent)", fontWeight: 600 }}>Style Master Summary</div>
                   <span style={{
@@ -462,7 +462,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
 
           {/* STANDARD: Appeal score */}
           <div style={{
-            background: "var(--bg-card, rgba(255,255,255,0.05))",
+            background: "var(--bg-card, var(--ghost-bg))",
             border: "1px solid var(--border-card)",
             borderRadius: "1.25rem",
             padding: "1.5rem",
@@ -472,7 +472,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
 
           {/* Photo grid */}
           <div style={{
-            background: "var(--bg-card, rgba(255,255,255,0.05))",
+            background: "var(--bg-card, var(--ghost-bg))",
             border: "1px solid var(--border-card)",
             borderRadius: "1.25rem",
             padding: "1.5rem",
@@ -512,7 +512,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
           {/* Before/After improvements */}
           {assessment.improvements.length > 0 && (
             <div style={{
-              background: "var(--bg-card, rgba(255,255,255,0.05))",
+              background: "var(--bg-card, var(--ghost-bg))",
               border: "1px solid var(--border-card)",
               borderRadius: "1.25rem",
               padding: "1.5rem",
@@ -631,7 +631,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
 
                 {/* Agreement bar */}
                 <div style={{ marginBottom: "0.75rem" }}>
-                  <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                  <div style={{ height: 5, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${agree}%`, borderRadius: 99, background: agree >= 80 ? "#4caf50" : agree >= 60 ? "#ff9800" : "#ef4444" }} />
                   </div>
                 </div>
@@ -646,9 +646,9 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
 
                     return (
                       <div key={p.provider} style={{
-                        background: isExp ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
+                        background: isExp ? "var(--ghost-bg)" : "var(--bg-card)",
                         borderTop: isExp ? `3px solid ${pm.color}` : undefined,
-                        border: `1px solid ${isExp ? `${pm.color}30` : "rgba(255,255,255,0.06)"}`,
+                        border: `1px solid ${isExp ? `${pm.color}30` : "var(--border-default)"}`,
                         borderRadius: "0.5rem", overflow: "hidden",
                       }}>
                         {/* Collapsed row */}
@@ -670,7 +670,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
                           <div style={{ padding: "0 0.75rem 0.75rem", borderTop: `1px solid ${pm.color}15` }}>
 
                             {/* Overall quality score */}
-                            <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                            <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                               <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Overall Quality Score</div>
                               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                                 <div style={{
@@ -688,12 +688,12 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
 
                             {/* Per-photo analysis */}
                             {pb.perPhoto.length > 0 && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Per-Photo Analysis ({pb.perPhoto.length})</div>
                                 {pb.perPhoto.slice(0, 8).map((photo: any, i: number) => {
                                   const pScore = photo.score || photo.quality_score || photo.rating || 0;
                                   return (
-                                    <div key={i} style={{ padding: "0.3rem 0.4rem", marginBottom: "0.25rem", borderRadius: "0.35rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                                    <div key={i} style={{ padding: "0.3rem 0.4rem", marginBottom: "0.25rem", borderRadius: "0.35rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                                         <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-primary)" }}>Photo #{photo.photo_number || photo.index || i + 1}</span>
                                         <span style={{
@@ -716,7 +716,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
 
                             {/* Missing angles */}
                             {pb.missingAngles.length > 0 && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Missing Angles ({pb.missingAngles.length})</div>
                                 <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
                                   {pb.missingAngles.slice(0, 8).map((angle: any, i: number) => {
@@ -736,7 +736,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
 
                             {/* Improvement tips */}
                             {pb.improvementTips.length > 0 && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Improvement Tips</div>
                                 <ul style={{ margin: 0, paddingLeft: "1rem" }}>
                                   {pb.improvementTips.slice(0, 6).map((tip: any, i: number) => {
@@ -753,12 +753,12 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
 
                             {/* Platform recommendations */}
                             {pb.platformRecs.length > 0 && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Platform Recommendations</div>
                                 <div style={{ overflowX: "auto" }}>
                                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.68rem" }}>
                                     <thead>
-                                      <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                                      <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
                                         <th style={{ textAlign: "left", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Platform</th>
                                         <th style={{ textAlign: "left", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Recommendation</th>
                                       </tr>
@@ -768,7 +768,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
                                         const platform = typeof rec === "string" ? "" : rec.platform || rec.marketplace || rec.name || "";
                                         const tip = typeof rec === "string" ? rec : rec.recommendation || rec.tip || rec.advice || rec.notes || "";
                                         return (
-                                          <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                                          <tr key={i} style={{ borderBottom: "1px solid var(--border-default)" }}>
                                             <td style={{ padding: "0.25rem 0.3rem", color: "var(--text-primary)", fontWeight: 600, whiteSpace: "nowrap" }}>{platform || `Platform ${i + 1}`}</td>
                                             <td style={{ padding: "0.25rem 0.3rem", color: "var(--text-secondary)" }}>{tip.length > 120 ? tip.slice(0, 120) + "..." : tip}</td>
                                           </tr>
@@ -788,7 +788,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
                                   {pb.stagingConcepts.slice(0, 4).map((concept: any, i: number) => {
                                     const text = typeof concept === "string" ? concept : concept.concept || concept.idea || concept.description || "";
                                     return (
-                                      <div key={i} style={{ padding: "0.3rem", borderRadius: "0.3rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                                      <div key={i} style={{ padding: "0.3rem", borderRadius: "0.3rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                                         <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.3 }}>
                                           {"\u{1F3A8}"} {text.length > 150 ? text.slice(0, 150) + "..." : text}
                                         </div>
@@ -801,7 +801,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
 
                             {/* Mobile tips + Video storyboard */}
                             {(pb.mobileTips.length > 0 || pb.videoStoryboard.length > 0) && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 {pb.mobileTips.length > 0 && (
                                   <div style={{ marginBottom: pb.videoStoryboard.length > 0 ? "0.4rem" : 0 }}>
                                     <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.2rem" }}>Mobile Photography Tips</div>
@@ -857,7 +857,7 @@ export default function StyleBotClient({ items }: { items: ItemData[] }) {
 
                 {/* Comparison table */}
                 {successful.length > 1 && (
-                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Photo Quality Comparison</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem", fontSize: "0.7rem" }}>
                       {successful.map((p: any, i: number) => {

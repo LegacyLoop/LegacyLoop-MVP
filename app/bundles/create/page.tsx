@@ -15,9 +15,9 @@ import Link from "next/link";
 const TEAL = "#00bcd4";
 const TEAL_DIM = "rgba(0,188,212,0.15)";
 const TEAL_GLOW = "rgba(0,188,212,0.35)";
-const GLASS = "rgba(255,255,255,0.04)";
-const GLASS_BORDER = "rgba(255,255,255,0.08)";
-const GLASS_HOVER = "rgba(255,255,255,0.07)";
+const GLASS = "var(--ghost-bg)";
+const GLASS_BORDER = "var(--border-default)";
+const GLASS_HOVER = "var(--ghost-bg)";
 const TEXT_PRIMARY = "#fff";
 const TEXT_SECONDARY = "rgba(207,216,220,0.7)";
 const TEXT_MUTED = "rgba(207,216,220,0.45)";
@@ -918,7 +918,7 @@ export default function BundleCreatePage() {
                       background:
                         selectedIds.length >= 2
                           ? `linear-gradient(135deg, ${TEAL}, #0097a7)`
-                          : "rgba(255,255,255,0.06)",
+                          : "var(--ghost-bg)",
                       color: selectedIds.length >= 2 ? "#fff" : TEXT_MUTED,
                       border: "none",
                       borderRadius: 10,
@@ -1077,7 +1077,7 @@ export default function BundleCreatePage() {
                       width: 44,
                       height: 24,
                       borderRadius: 12,
-                      background: allowOffers ? TEAL : "rgba(255,255,255,0.1)",
+                      background: allowOffers ? TEAL : "var(--bg-card-hover)",
                       border: "none",
                       cursor: "pointer",
                       position: "relative",
@@ -1475,7 +1475,7 @@ export default function BundleCreatePage() {
                 style={{
                   background:
                     creating || !title.trim()
-                      ? "rgba(255,255,255,0.06)"
+                      ? "var(--ghost-bg)"
                       : `linear-gradient(135deg, ${TEAL}, #0097a7)`,
                   color: creating || !title.trim() ? TEXT_MUTED : "#fff",
                   border: "none",

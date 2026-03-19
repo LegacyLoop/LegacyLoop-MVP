@@ -24,14 +24,14 @@ function ratingColor(score: number | undefined): string {
 }
 
 function ratingBg(score: number | undefined): string {
-  if (score == null) return "rgba(255,255,255,0.03)";
+  if (score == null) return "var(--bg-card)";
   if (score >= 7) return "rgba(74,222,128,0.08)";
   if (score >= 4) return "rgba(245,158,11,0.08)";
   return "rgba(239,68,68,0.08)";
 }
 
 function ratingBorder(score: number | undefined): string {
-  if (score == null) return "var(--border-default, rgba(255,255,255,0.08))";
+  if (score == null) return "var(--border-default)";
   if (score >= 7) return "rgba(74,222,128,0.25)";
   if (score >= 4) return "rgba(245,158,11,0.25)";
   return "rgba(239,68,68,0.25)";
@@ -55,7 +55,7 @@ export default function VehicleSpecsCard({
   return (
     <div
       style={{
-        background: "rgba(255,255,255,0.03)",
+        background: "var(--bg-card)",
         backdropFilter: "blur(12px)",
         border: "1px solid rgba(0,188,212,0.15)",
         borderRadius: "1rem",
@@ -66,7 +66,7 @@ export default function VehicleSpecsCard({
       <div
         style={{
           padding: "0.875rem 1.25rem",
-          borderBottom: "1px solid var(--border-default, rgba(255,255,255,0.08))",
+          borderBottom: "1px solid var(--border-default, var(--border-default))",
           display: "flex",
           alignItems: "center",
           gap: "0.5rem",

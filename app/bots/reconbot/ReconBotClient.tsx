@@ -40,7 +40,7 @@ function safeJson(s: string | null): any {
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={{
-      background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)",
+      background: "var(--bg-card)", backdropFilter: "blur(12px)",
       border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.25rem",
       ...style,
     }}>
@@ -340,7 +340,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                   { label: "Recently Sold", value: data.scan_summary.recently_sold, color: "#f59e0b" },
                   { label: "Scan Type", value: data.scan_summary.scan_type === "update" ? "Update" : "Initial", color: "#a78bfa" },
                 ].map((s) => (
-                  <div key={s.label} style={{ textAlign: "center", padding: "0.6rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div key={s.label} style={{ textAlign: "center", padding: "0.6rem", borderRadius: "0.5rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "1.2rem", fontWeight: 800, color: s.color }}>{s.value}</div>
                     <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>{s.label}</div>
                   </div>
@@ -357,8 +357,8 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                 {data.alerts.map((alert: any, i: number) => (
                   <div key={i} style={{
                     padding: "0.75rem", borderRadius: "0.5rem",
-                    background: alert.severity === "URGENT" || alert.severity === "HIGH" ? "rgba(239,68,68,0.06)" : "rgba(255,255,255,0.02)",
-                    border: `1px solid ${alert.severity === "URGENT" || alert.severity === "HIGH" ? "rgba(239,68,68,0.2)" : "rgba(255,255,255,0.06)"}`,
+                    background: alert.severity === "URGENT" || alert.severity === "HIGH" ? "rgba(239,68,68,0.06)" : "var(--bg-card)",
+                    border: `1px solid ${alert.severity === "URGENT" || alert.severity === "HIGH" ? "rgba(239,68,68,0.2)" : "var(--border-default)"}`,
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
                       <SeverityBadge level={alert.severity} />
@@ -390,7 +390,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                     { label: "Optimal Price", value: `$${pi.optimal_price}`, color: "#4ade80" },
                     { label: "Trend", value: `${pi.price_trend} (${pi.price_trend_pct})`, color: pi.price_trend === "Rising" ? "#4ade80" : pi.price_trend === "Falling" ? "#ef4444" : "#f59e0b" },
                   ].map((s) => (
-                    <div key={s.label} style={{ textAlign: "center", padding: "0.6rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div key={s.label} style={{ textAlign: "center", padding: "0.6rem", borderRadius: "0.5rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                       <div style={{ fontSize: "1rem", fontWeight: 800, color: s.color }}>{s.value}</div>
                       <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>{s.label}</div>
                     </div>
@@ -404,7 +404,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                     <span>Market Range</span>
                     <span>${pi.highest_active}</span>
                   </div>
-                  <div style={{ position: "relative", height: "8px", borderRadius: "4px", background: "rgba(255,255,255,0.06)" }}>
+                  <div style={{ position: "relative", height: "8px", borderRadius: "4px", background: "var(--ghost-bg)" }}>
                     <div style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0, borderRadius: "4px", background: "linear-gradient(90deg, #4ade80, #00bcd4, #f59e0b, #ef4444)" }} />
                     {/* Optimal marker */}
                     {pi.lowest_active < pi.highest_active && (() => {
@@ -437,7 +437,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                 </div>
 
                 {pi.price_position_detail && (
-                  <div style={{ marginTop: "0.75rem", fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5, padding: "0.5rem 0.75rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)", borderLeft: "3px solid var(--accent)" }}>
+                  <div style={{ marginTop: "0.75rem", fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5, padding: "0.5rem 0.75rem", borderRadius: "0.4rem", background: "var(--bg-card)", borderLeft: "3px solid var(--accent)" }}>
                     {pi.price_position_detail}
                   </div>
                 )}
@@ -455,8 +455,8 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                     display: "grid", gridTemplateColumns: "1fr auto auto",
                     gap: "0.75rem", alignItems: "center",
                     padding: "0.6rem 0.75rem", borderRadius: "0.5rem",
-                    background: comp.status === "Sold" ? "rgba(74,222,128,0.04)" : "rgba(255,255,255,0.02)",
-                    border: `1px solid ${comp.threat_level === "High" ? "rgba(239,68,68,0.15)" : "rgba(255,255,255,0.05)"}`,
+                    background: comp.status === "Sold" ? "rgba(74,222,128,0.04)" : "var(--bg-card)",
+                    border: `1px solid ${comp.threat_level === "High" ? "rgba(239,68,68,0.15)" : "var(--border-default)"}`,
                   }}>
                     <div>
                       <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.15rem" }}>
@@ -490,7 +490,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                   style={{
                     display: "block", width: "100%", marginTop: "0.5rem",
                     padding: "0.4rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 600,
-                    background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+                    background: "var(--bg-card)", border: "1px solid var(--border-default)",
                     color: "var(--accent)", cursor: "pointer", textAlign: "center",
                   }}
                 >
@@ -510,7 +510,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                   { label: "Avg Days to Sell", value: data.market_dynamics.avg_days_to_sell, color: "#f59e0b" },
                   { label: "Velocity", value: data.market_dynamics.market_velocity, color: "#a78bfa" },
                 ].map((s) => (
-                  <div key={s.label} style={{ textAlign: "center", padding: "0.6rem", borderRadius: "0.5rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div key={s.label} style={{ textAlign: "center", padding: "0.6rem", borderRadius: "0.5rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "1rem", fontWeight: 700, color: s.color }}>{s.value}</div>
                     <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>{s.label}</div>
                   </div>
@@ -542,7 +542,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                 {data.platform_breakdown.map((p: any, i: number) => (
                   <div key={i} style={{
                     padding: "0.65rem 0.75rem", borderRadius: "0.5rem",
-                    background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)",
+                    background: "var(--bg-card)", border: "1px solid var(--border-default)",
                   }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
                       <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)" }}>{p.platform}</span>
@@ -601,7 +601,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                   style={{
                     display: "block", width: "100%", marginTop: "0.5rem",
                     padding: "0.4rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 600,
-                    background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+                    background: "var(--bg-card)", border: "1px solid var(--border-default)",
                     color: "var(--accent)", cursor: "pointer", textAlign: "center",
                   }}
                 >
@@ -654,7 +654,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                 {data.strategic_recommendations.map((r: any, i: number) => (
                   <div key={i} style={{
                     padding: "0.65rem 0.75rem", borderRadius: "0.5rem",
-                    background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)",
+                    background: "var(--bg-card)", border: "1px solid var(--border-default)",
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
                       <PriorityBadge level={r.priority} />
@@ -777,7 +777,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
 
                 {/* Agreement bar */}
                 <div style={{ marginBottom: "0.75rem" }}>
-                  <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                  <div style={{ height: 5, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${agree}%`, borderRadius: 99, background: agree >= 80 ? "#4caf50" : agree >= 60 ? "#ff9800" : "#ef4444" }} />
                   </div>
                 </div>
@@ -792,9 +792,9 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
 
                     return (
                       <div key={p.provider} style={{
-                        background: isExp ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
+                        background: isExp ? "var(--ghost-bg)" : "var(--bg-card)",
                         borderTop: isExp ? `3px solid ${pm.color}` : undefined,
-                        border: `1px solid ${isExp ? `${pm.color}30` : "rgba(255,255,255,0.06)"}`,
+                        border: `1px solid ${isExp ? `${pm.color}30` : "var(--border-default)"}`,
                         borderRadius: "0.5rem", overflow: "hidden",
                       }}>
                         <button
@@ -814,13 +814,13 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                           <div style={{ padding: "0 0.75rem 0.75rem", borderTop: `1px solid ${pm.color}15` }}>
                             {/* Competitors */}
                             {rc.competitors.length > 0 && (
-                              <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Competitor Listings ({rc.competitors.length})</div>
                                 {rc.competitors.slice(0, 6).map((comp: any, i: number) => (
-                                  <div key={i} style={{ padding: "0.35rem 0.4rem", marginBottom: "0.25rem", borderRadius: "0.35rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                                  <div key={i} style={{ padding: "0.35rem 0.4rem", marginBottom: "0.25rem", borderRadius: "0.35rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexWrap: "wrap" }}>
                                       <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)" }}>{comp.title || comp.name || "Competitor"}</span>
-                                      {comp.platform && <span style={{ padding: "0.1rem 0.35rem", borderRadius: "0.25rem", fontSize: "0.55rem", background: "rgba(255,255,255,0.05)", color: "var(--text-muted)", border: "1px solid rgba(255,255,255,0.06)" }}>{comp.platform}</span>}
+                                      {comp.platform && <span style={{ padding: "0.1rem 0.35rem", borderRadius: "0.25rem", fontSize: "0.55rem", background: "var(--ghost-bg)", color: "var(--text-muted)", border: "1px solid var(--border-default)" }}>{comp.platform}</span>}
                                       {comp.threat_level && <ThreatBadge level={comp.threat_level} />}
                                     </div>
                                     <div style={{ display: "flex", gap: "0.5rem", fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "0.15rem", flexWrap: "wrap" }}>
@@ -837,7 +837,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
 
                             {/* Price Intelligence */}
                             {rc.priceIntel && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Price Intelligence</div>
                                 <div style={{ display: "flex", gap: "0.75rem", fontSize: "0.68rem", flexWrap: "wrap" }}>
                                   {rc.priceIntel.market_average != null && <div><span style={{ color: "var(--text-muted)" }}>Avg: </span><span style={{ fontWeight: 700, color: "var(--accent)" }}>${rc.priceIntel.market_average}</span></div>}
@@ -852,7 +852,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
 
                             {/* Market Analysis */}
                             {rc.marketAnalysis && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Market Analysis</div>
                                 <div style={{ display: "flex", gap: "0.75rem", fontSize: "0.68rem", flexWrap: "wrap" }}>
                                   {rc.marketAnalysis.supply_level && <div><span style={{ color: "var(--text-muted)" }}>Supply: </span><span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{rc.marketAnalysis.supply_level}</span></div>}
@@ -867,10 +867,10 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
 
                             {/* Alerts */}
                             {rc.alerts.length > 0 && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Alerts ({rc.alerts.length})</div>
                                 {rc.alerts.slice(0, 5).map((alert: any, i: number) => (
-                                  <div key={i} style={{ padding: "0.3rem 0", borderBottom: i < Math.min(rc.alerts.length, 5) - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                                  <div key={i} style={{ padding: "0.3rem 0", borderBottom: i < Math.min(rc.alerts.length, 5) - 1 ? "1px solid var(--border-default)" : "none" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                                       <SeverityBadge level={alert.severity || alert.level || "MEDIUM"} />
                                       <span style={{ fontSize: "0.7rem", color: "var(--text-primary)", flex: 1 }}>{alert.title || alert.message || "Alert"}</span>
@@ -883,12 +883,12 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
 
                             {/* Platform Performance */}
                             {rc.platformPerf.length > 0 && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Platform Performance</div>
                                 <div style={{ overflowX: "auto" }}>
                                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.68rem" }}>
                                     <thead>
-                                      <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                                      <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
                                         <th style={{ textAlign: "left", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Platform</th>
                                         <th style={{ textAlign: "center", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Active</th>
                                         <th style={{ textAlign: "right", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Avg $</th>
@@ -898,7 +898,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                                     </thead>
                                     <tbody>
                                       {rc.platformPerf.slice(0, 8).map((pl: any, i: number) => (
-                                        <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                                        <tr key={i} style={{ borderBottom: "1px solid var(--border-default)" }}>
                                           <td style={{ padding: "0.25rem 0.3rem", color: "var(--text-primary)", fontWeight: 600 }}>{pl.platform || "Unknown"}</td>
                                           <td style={{ padding: "0.25rem 0.3rem", textAlign: "center", color: "var(--text-secondary)" }}>{pl.active_count != null ? pl.active_count : "—"}</td>
                                           <td style={{ padding: "0.25rem 0.3rem", textAlign: "right", color: "var(--accent)", fontWeight: 600 }}>{pl.avg_price != null || pl.recommended_price != null ? `$${pl.avg_price || pl.recommended_price}` : "—"}</td>
@@ -922,7 +922,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.35rem" }}>Competitor Strategies Observed</div>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                                   {rc.strategies.slice(0, 4).map((s: any, i: number) => (
-                                    <div key={i} style={{ padding: "0.3rem", borderRadius: "0.3rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                                    <div key={i} style={{ padding: "0.3rem", borderRadius: "0.3rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                                       <div style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--text-primary)" }}>⚔️ {s.strategy_name || s.strategy || s.tactic || "Strategy"}</div>
                                       {(s.description || s.detail) && <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{typeof (s.description || s.detail) === "string" && (s.description || s.detail).length > 120 ? (s.description || s.detail).slice(0, 120) + "..." : (s.description || s.detail)}</div>}
                                     </div>
@@ -964,7 +964,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
 
                 {/* Comparison */}
                 {successful.length > 1 && (
-                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Competitive Intelligence Comparison</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem", fontSize: "0.7rem" }}>
                       {successful.map((p: any, i: number) => {
@@ -1046,7 +1046,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
                   style={{
                     display: "inline-flex", alignItems: "center",
                     padding: "0.55rem 1.2rem", borderRadius: "0.5rem", fontSize: "0.82rem", fontWeight: 600,
-                    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
+                    background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                     color: "var(--text-secondary)", textDecoration: "none", cursor: "pointer",
                   }}
                 >

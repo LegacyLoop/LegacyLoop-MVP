@@ -475,7 +475,7 @@ export default function PricingClient() {
 
       {/* Tab switcher */}
       <div style={{ display: "flex", justifyContent: "center", marginBottom: "2.5rem" }}>
-        <div style={{ display: "inline-flex", background: "var(--bg-secondary, rgba(255,255,255,0.05))", borderRadius: "1rem", padding: "0.35rem", gap: "0.25rem", border: "1px solid var(--border-default)" }}>
+        <div style={{ display: "inline-flex", background: "var(--bg-card)", borderRadius: "1rem", padding: "0.35rem", gap: "0.25rem", border: "1px solid var(--border-default)" }}>
           {([
             { key: "digital" as const, icon: "💻", label: "Digital Platform", sub: "Self-service with AI" },
             { key: "white-glove" as const, icon: "🏠", label: "White-Glove Service", sub: "We handle everything on-site" },
@@ -512,17 +512,17 @@ export default function PricingClient() {
             <div style={{ flex: 1, minWidth: "200px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.2rem", flexWrap: "wrap" }}>
                 <span style={{ background: "#fbbf24", color: "#78350f", fontSize: "0.6rem", fontWeight: 900, padding: "0.15rem 0.5rem", borderRadius: "9999px", letterSpacing: "0.1em" }}>FOUNDING MEMBER OFFER</span>
-                <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.72rem" }}>
+                <span style={{ color: "var(--text-muted)", fontSize: "0.72rem" }}>
                   Limited — {DISCOUNTS.preLaunch.spotsRemaining} of {DISCOUNTS.preLaunch.totalSpots} spots remaining
                 </span>
               </div>
               <div style={{ fontWeight: 800, fontSize: "1rem", color: "#fff", marginBottom: "0.1rem" }}>
                 Lock in pre-launch pricing — save up to 24%, forever.
               </div>
-              <div style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.5 }}>
+              <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
                 Sign up today and pay founding member rates as long as you're subscribed. Prices increase at launch.
               </div>
-              <Link href="/onboarding/quiz" style={{ display: "inline-block", marginTop: "0.6rem", background: "rgba(255,255,255,0.15)", color: "#fff", padding: "0.3rem 0.8rem", borderRadius: "9999px", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>
+              <Link href="/onboarding/quiz" style={{ display: "inline-block", marginTop: "0.6rem", background: "var(--bg-card-hover)", color: "#fff", padding: "0.3rem 0.8rem", borderRadius: "9999px", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none", border: "1px solid var(--border-default)" }}>
                 Not sure which plan? Take our 2-min quiz →
               </Link>
             </div>
@@ -535,8 +535,8 @@ export default function PricingClient() {
                 ].map((t) => (
                   <div key={t.plan} style={{ textAlign: "center" }}>
                     <div style={{ color: "#fbbf24", fontWeight: 900, fontSize: "1.1rem" }}>${t.pre}<span style={{ fontSize: "0.65rem" }}>/mo</span></div>
-                    <div style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.62rem", textDecoration: "line-through" }}>${t.reg}/mo</div>
-                    <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.62rem", marginTop: "0.1rem" }}>{t.plan}</div>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.62rem", textDecoration: "line-through" }}>${t.reg}/mo</div>
+                    <div style={{ color: "var(--text-secondary)", fontSize: "0.62rem", marginTop: "0.1rem" }}>{t.plan}</div>
                   </div>
                 ))}
               </div>
@@ -664,7 +664,7 @@ export default function PricingClient() {
                     { label: "Support", values: ["Email", "Email", "Email", "Priority", "Phone", "Phone + Video"] },
                     { label: "Remove branding", values: ["—", "—", "✓", "✓", "✓", "✓"] },
                   ].map((row, i) => (
-                    <tr key={row.label} style={{ borderBottom: "1px solid var(--border-default)", background: i % 2 === 0 ? "var(--bg-secondary, rgba(255,255,255,0.02))" : "transparent" }}>
+                    <tr key={row.label} style={{ borderBottom: "1px solid var(--border-default)", background: i % 2 === 0 ? "var(--bg-secondary, var(--border-default))" : "transparent" }}>
                       <td style={{ padding: "0.5rem 0.75rem", fontWeight: 500, color: "var(--text-secondary)" }}>{row.label}</td>
                       {row.values.map((v, vi) => (
                         <td key={vi} style={{ padding: "0.5rem", textAlign: "center", color: v === "—" ? "var(--text-muted)" : v === "✓" ? "var(--success-text)" : "var(--text-primary)", fontWeight: v === "✓" ? 700 : 500 }}>
@@ -688,7 +688,7 @@ export default function PricingClient() {
             <span style={{ fontSize: "2.5rem" }}>🏠</span>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 800, fontSize: "1.1rem", marginBottom: "0.25rem" }}>White-Glove Estate Services — Maine Only</div>
-              <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.88rem", lineHeight: 1.6, margin: 0 }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: "0.88rem", lineHeight: 1.6, margin: 0 }}>
                 Our team comes to you. We catalogue, photograph, price, list, and sell every item — then handle all buyer communication, shipping, and final coordination. You just say yes.
               </p>
             </div>
@@ -750,9 +750,9 @@ export default function PricingClient() {
                     <Link href="/quote"
                       style={{
                         display: "block", textAlign: "center", padding: "0.75rem 1rem", borderRadius: "0.75rem",
-                        background: tier.featured ? tier.color : isDark ? "rgba(255,255,255,0.1)" : "transparent",
+                        background: tier.featured ? tier.color : isDark ? "var(--border-default)" : "transparent",
                         color: tier.featured ? "#fff" : isDark ? "#fff" : tier.color,
-                        border: `2px solid ${isDark ? "rgba(255,255,255,0.2)" : tier.color}`,
+                        border: `2px solid ${isDark ? "var(--border-default)" : tier.color}`,
                         fontWeight: 700, fontSize: "0.9rem", textDecoration: "none",
                       }}>
                       Request Quote →
@@ -783,7 +783,7 @@ export default function PricingClient() {
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
               {/* Pricing */}
-              <div style={{ background: "var(--bg-secondary, rgba(255,255,255,0.05))", borderRadius: "1rem", padding: "1.25rem", border: "1px solid var(--border-default)" }}>
+              <div style={{ background: "var(--bg-card)", borderRadius: "1rem", padding: "1.25rem", border: "1px solid var(--border-default)" }}>
                 <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>PRICING</div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", marginBottom: "0.25rem" }}>
                   <span style={{ fontSize: "2rem", fontWeight: 900, color: "var(--text-primary)" }}>${NEIGHBORHOOD_BUNDLE.preLaunchPrice}</span>
@@ -804,7 +804,7 @@ export default function PricingClient() {
               </div>
 
               {/* Features */}
-              <div style={{ background: "var(--bg-secondary, rgba(255,255,255,0.05))", borderRadius: "1rem", padding: "1.25rem", border: "1px solid var(--border-default)" }}>
+              <div style={{ background: "var(--bg-card)", borderRadius: "1rem", padding: "1.25rem", border: "1px solid var(--border-default)" }}>
                 <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>WHAT'S INCLUDED</div>
                 <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                   {NEIGHBORHOOD_BUNDLE.features.map((f) => (
@@ -892,7 +892,7 @@ export default function PricingClient() {
             </thead>
             <tbody>
               {COMPARISON_ROWS.map((row, i) => (
-                <tr key={row.label} style={{ borderBottom: "1px solid var(--border-default)", background: i % 2 === 0 ? "var(--bg-secondary, rgba(255,255,255,0.02))" : "transparent" }}>
+                <tr key={row.label} style={{ borderBottom: "1px solid var(--border-default)", background: i % 2 === 0 ? "var(--bg-secondary, var(--border-default))" : "transparent" }}>
                   <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-secondary)" }}>{row.label}</td>
                   <td style={{ padding: "0.5rem", textAlign: "center", color: row.digital.startsWith("✅") ? "var(--success-text)" : "var(--text-muted)", fontWeight: row.digital.startsWith("✅") ? 700 : 400 }}>{row.digital}</td>
                   <td style={{ padding: "0.5rem", textAlign: "center", color: row.wg.startsWith("✅") ? "var(--success-text)" : "var(--text-muted)", fontWeight: row.wg.startsWith("✅") ? 700 : 400 }}>{row.wg}</td>
@@ -1012,7 +1012,7 @@ export default function PricingClient() {
         <h2 style={{ fontSize: "1.75rem", fontWeight: 800, marginBottom: "0.75rem" }}>
           Ready to get started?
         </h2>
-        <p style={{ color: "rgba(255,255,255,0.8)", marginBottom: "1.5rem", maxWidth: "500px", margin: "0 auto 1.5rem" }}>
+        <p style={{ color: "var(--text-primary)", marginBottom: "1.5rem", maxWidth: "500px", margin: "0 auto 1.5rem" }}>
           Start with the digital platform free, or request a quote for white-glove service. No commitment required.
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
@@ -1021,7 +1021,7 @@ export default function PricingClient() {
             Start Free Today
           </Link>
           <Link href="/quote"
-            style={{ background: "rgba(255,255,255,0.15)", color: "#fff", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem", border: "1px solid rgba(255,255,255,0.3)" }}>
+            style={{ background: "var(--bg-card-hover)", color: "#fff", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem", border: "1px solid var(--border-default)" }}>
             Request White-Glove Quote
           </Link>
         </div>

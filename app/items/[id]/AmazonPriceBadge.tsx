@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 type AmazonData = {
   searchTerm: string;
@@ -9,16 +9,41 @@ type AmazonData = {
   topResult: { title: string; price: number | null; rating: number | null; ratingsTotal: number | null; link: string } | null;
 };
 
+const MAX_RETRIES = 3;
+const RETRY_INTERVAL_MS = 5000;
+
 export default function AmazonPriceBadge({ itemId }: { itemId: string }) {
   const [data, setData] = useState<AmazonData | null>(null);
+  const retriesRef = useRef(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    fetch(`/api/enrichment/amazon/${itemId}`)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.success && d.data) setData(d.data);
-      })
-      .catch(() => {});
+    let cancelled = false;
+
+    async function fetchData() {
+      try {
+        const res = await fetch(`/api/enrichment/amazon/${itemId}`);
+        const d = await res.json();
+        if (!cancelled && d.success && d.data) {
+          setData(d.data);
+          if (timerRef.current) clearTimeout(timerRef.current);
+          return;
+        }
+      } catch {
+        // Non-critical — fail silently
+      }
+      if (!cancelled && retriesRef.current < MAX_RETRIES) {
+        retriesRef.current += 1;
+        timerRef.current = setTimeout(fetchData, RETRY_INTERVAL_MS);
+      }
+    }
+
+    fetchData();
+
+    return () => {
+      cancelled = true;
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, [itemId]);
 
   // No data yet — render nothing (enrichment happens automatically)

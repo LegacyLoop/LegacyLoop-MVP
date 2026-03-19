@@ -172,7 +172,7 @@ export default function BuyerOfferPage() {
 
         {/* Item card */}
         <div style={{
-          background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+          background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
           borderRadius: "12px", padding: "1.25rem", marginBottom: "1.25rem",
           display: "flex", gap: "1rem", alignItems: "center",
         }}>
@@ -224,14 +224,14 @@ export default function BuyerOfferPage() {
         {/* Offer history */}
         {events.length > 0 && (
           <div style={{
-            background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--bg-card)", border: "1px solid var(--border-default)",
             borderRadius: "12px", padding: "1rem", marginBottom: "1.25rem",
           }}>
             <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#aaa", marginBottom: "0.75rem" }}>Offer History</div>
             {events.map((ev) => (
               <div key={ev.id} style={{
                 display: "flex", justifyContent: "space-between", alignItems: "center",
-                padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.05)",
+                padding: "8px 0", borderBottom: "1px solid var(--border-default)",
               }}>
                 <div>
                   <span style={{
@@ -289,7 +289,7 @@ export default function BuyerOfferPage() {
               </button>
             ) : (
               <div style={{
-                background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)",
+                background: "var(--bg-card)", border: "1px solid var(--border-default)",
                 borderRadius: "10px", padding: "1rem",
               }}>
                 <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#aaa", marginBottom: "0.75rem" }}>Your Counter Offer</div>
@@ -307,7 +307,7 @@ export default function BuyerOfferPage() {
                     step="1"
                     style={{
                       width: "100%", padding: "12px 12px 12px 28px", fontSize: "1.1rem", fontWeight: 700,
-                      background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)",
+                      background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                       borderRadius: "8px", color: "#e5e5e5", outline: "none", boxSizing: "border-box",
                     }}
                   />
@@ -319,7 +319,7 @@ export default function BuyerOfferPage() {
                   rows={2}
                   style={{
                     width: "100%", padding: "10px 12px", fontSize: "0.85rem",
-                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.15)",
+                    background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                     borderRadius: "8px", color: "#e5e5e5", outline: "none", resize: "vertical",
                     marginBottom: "0.6rem", boxSizing: "border-box",
                   }}
@@ -341,7 +341,7 @@ export default function BuyerOfferPage() {
                   <button
                     onClick={() => setShowCounter(false)}
                     style={{
-                      padding: "12px 16px", fontSize: "0.85rem", border: "1px solid rgba(255,255,255,0.15)",
+                      padding: "12px 16px", fontSize: "0.85rem", border: "1px solid var(--border-default)",
                       borderRadius: "8px", background: "transparent", color: "#888", cursor: "pointer",
                       minHeight: "48px",
                     }}
@@ -357,7 +357,7 @@ export default function BuyerOfferPage() {
               onClick={() => handleAction("DECLINE")}
               disabled={submitting}
               style={{
-                padding: "14px", fontSize: "0.9rem", fontWeight: 600, border: "1px solid rgba(255,255,255,0.15)",
+                padding: "14px", fontSize: "0.9rem", fontWeight: 600, border: "1px solid var(--border-default)",
                 borderRadius: "10px", background: "transparent", color: "#888",
                 cursor: submitting ? "not-allowed" : "pointer", minHeight: "52px",
               }}

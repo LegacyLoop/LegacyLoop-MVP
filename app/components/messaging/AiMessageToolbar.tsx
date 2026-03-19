@@ -38,7 +38,7 @@ export default function AiMessageToolbar({ conversationId, onResult, userDraft }
     <div>
       <div style={{ background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: 10, padding: "8px 12px", marginBottom: 6, display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 6 }}>
         {MODES.map(m => (
-          <button key={m.key} onClick={() => m.key === "tone_adjust" ? setShowTones(!showTones) : callAgent(m.key)} disabled={loading} style={{ padding: "4px 12px", fontSize: 10, borderRadius: 20, border: activeMode === m.key ? "1px solid #00bcd4" : "1px solid rgba(255,255,255,0.1)", background: activeMode === m.key ? "rgba(0,188,212,0.15)" : "transparent", color: activeMode === m.key ? "#00bcd4" : "rgba(255,255,255,0.4)", cursor: loading ? "wait" : "pointer", transition: "all 0.15s" }}>
+          <button key={m.key} onClick={() => m.key === "tone_adjust" ? setShowTones(!showTones) : callAgent(m.key)} disabled={loading} style={{ padding: "4px 12px", fontSize: 10, borderRadius: 20, border: activeMode === m.key ? "1px solid #00bcd4" : "1px solid var(--border-default)", background: activeMode === m.key ? "rgba(0,188,212,0.15)" : "transparent", color: activeMode === m.key ? "#00bcd4" : "var(--text-muted)", cursor: loading ? "wait" : "pointer", transition: "all 0.15s" }}>
             {loading && activeMode === m.key ? "Thinking..." : m.label}
           </button>
         ))}

@@ -156,8 +156,8 @@ function condWord(score: number) { return score >= 8 ? "Excellent" : score >= 6 
 function KnowledgeBlock({ icon, title, entries }: { icon: string; title: string; entries: { label: string; color: string; text: string }[] }) {
   return (
     <div style={{
-      background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem",
-      border: "1px solid rgba(255,255,255,0.06)", padding: "0.85rem 1rem", marginBottom: "0.65rem",
+      background: "var(--bg-card)", borderRadius: "0.75rem",
+      border: "1px solid var(--border-default)", padding: "0.85rem 1rem", marginBottom: "0.65rem",
     }}>
       <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>{icon} {title}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
@@ -383,14 +383,14 @@ function BuyersTabContent({ result, providers, agreement }: {
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       {/* Section B: Buyer Comparison Table */}
       <div style={{
-        background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem",
-        border: "1px solid rgba(255,255,255,0.06)", padding: "0.85rem 1rem",
+        background: "var(--bg-card)", borderRadius: "0.75rem",
+        border: "1px solid var(--border-default)", padding: "0.85rem 1rem",
       }}>
         <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>🎯 Buyer Intelligence Comparison</div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.72rem" }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid rgba(255,255,255,0.08)" }}>
+              <tr style={{ borderBottom: "2px solid var(--border-default)" }}>
                 <th style={{ textAlign: "left", padding: "0.35rem 0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>Metric</th>
                 {successful.map((p: any) => {
                   const pm = PROVIDER_META[p.provider];
@@ -408,7 +408,7 @@ function BuyersTabContent({ result, providers, agreement }: {
                 { label: "Demand Level", get: (bh: any) => bh.demandLevel || "—", combined: allBH.find(h => h.demandLevel)?.demandLevel || "—" },
                 { label: "Outreach", get: (bh: any) => bh.outreach.length || "—", combined: allBH.reduce((s, h) => s + h.outreach.length, 0) + " strategies" },
               ].map((row, ri) => (
-                <tr key={ri} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <tr key={ri} style={{ borderBottom: "1px solid var(--border-default)" }}>
                   <td style={{ padding: "0.3rem 0.5rem", fontWeight: 600, color: "var(--text-secondary)" }}>{row.label}</td>
                   {successful.map((p: any, i: number) => (
                     <td key={p.provider} style={{ padding: "0.3rem 0.5rem", textAlign: "center", color: "var(--text-primary)" }}>{row.get(allBH[i])}</td>
@@ -437,14 +437,14 @@ function BuyersTabContent({ result, providers, agreement }: {
       {/* Combined Platform Opportunities */}
       {platformMap.size > 0 && (
         <div style={{
-          background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem",
-          border: "1px solid rgba(255,255,255,0.06)", padding: "0.85rem 1rem",
+          background: "var(--bg-card)", borderRadius: "0.75rem",
+          border: "1px solid var(--border-default)", padding: "0.85rem 1rem",
         }}>
           <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>📱 Platform Opportunities ({platformMap.size} platforms)</div>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.72rem" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
                   <th style={{ textAlign: "left", padding: "0.25rem 0.4rem", color: "var(--text-muted)", fontWeight: 600 }}>Platform</th>
                   <th style={{ textAlign: "center", padding: "0.25rem 0.4rem", color: "var(--text-muted)", fontWeight: 600 }}>Agents</th>
                   <th style={{ textAlign: "center", padding: "0.25rem 0.4rem", color: "var(--text-muted)", fontWeight: 600 }}>Level</th>
@@ -456,7 +456,7 @@ function BuyersTabContent({ result, providers, agreement }: {
                 {Array.from(platformMap.entries()).slice(0, 10).map(([key, entries]) => {
                   const best = entries[0].data;
                   return (
-                    <tr key={key} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                    <tr key={key} style={{ borderBottom: "1px solid var(--border-default)" }}>
                       <td style={{ padding: "0.25rem 0.4rem", fontWeight: 600, color: "var(--text-primary)", textTransform: "capitalize" }}>{key}</td>
                       <td style={{ padding: "0.25rem 0.4rem", textAlign: "center", fontSize: "0.62rem", color: "var(--text-muted)" }}>{entries.map(e => e.agent).join(", ")}</td>
                       <td style={{ padding: "0.25rem 0.4rem", textAlign: "center" }}>
@@ -599,8 +599,8 @@ function BuyersTabContent({ result, providers, agreement }: {
 
       {/* Section D: Full Agent Cards */}
       <div style={{
-        background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem",
-        border: "1px solid rgba(255,255,255,0.06)", padding: "0.85rem 1rem",
+        background: "var(--bg-card)", borderRadius: "0.75rem",
+        border: "1px solid var(--border-default)", padding: "0.85rem 1rem",
       }}>
         <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
           Individual Buyer Reports
@@ -614,9 +614,9 @@ function BuyersTabContent({ result, providers, agreement }: {
 
             return (
               <div key={p.provider} style={{
-                background: "var(--bg-card, rgba(255,255,255,0.05))",
+                background: "var(--bg-card, var(--ghost-bg))",
                 borderTop: isExp ? `3px solid ${pm.color}` : undefined,
-                border: `1px solid ${isExp ? `${pm.color}40` : "var(--border-card, rgba(255,255,255,0.08))"}`,
+                border: `1px solid ${isExp ? `${pm.color}40` : "var(--border-card, var(--border-default))"}`,
                 borderRadius: "0.85rem", overflow: "hidden",
               }}>
                 <button
@@ -636,10 +636,10 @@ function BuyersTabContent({ result, providers, agreement }: {
                   <div style={{ padding: "0 1rem 1rem", borderTop: `1px solid ${pm.color}15` }}>
                     {/* Profiles */}
                     {bh.profiles.length > 0 && (
-                      <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                         <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.35rem" }}>Buyer Profiles ({bh.profiles.length})</div>
                         {bh.profiles.map((bp: any, i: number) => (
-                          <div key={i} style={{ padding: "0.35rem", marginBottom: "0.2rem", borderRadius: "0.35rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                          <div key={i} style={{ padding: "0.35rem", marginBottom: "0.2rem", borderRadius: "0.35rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)" }}>🎯 {bp.profile_name || "Buyer"} {bp.buyer_type ? `— ${bp.buyer_type}` : ""}</div>
                             {bp.estimated_offer_range && <div style={{ fontSize: "0.68rem", color: "var(--accent)" }}>{bp.estimated_offer_range}{bp.likelihood_to_buy ? ` · ${bp.likelihood_to_buy}` : ""}{bp.price_sensitivity ? ` · ${bp.price_sensitivity}` : ""}</div>}
                             {bp.motivation && <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.3 }}>{bp.motivation}</div>}
@@ -652,10 +652,10 @@ function BuyersTabContent({ result, providers, agreement }: {
 
                     {/* Platforms */}
                     {bh.platforms.length > 0 && (
-                      <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                         <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.35rem" }}>Platforms ({bh.platforms.length})</div>
                         {bh.platforms.map((pl: any, i: number) => (
-                          <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", borderBottom: i < bh.platforms.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", borderBottom: i < bh.platforms.length - 1 ? "1px solid var(--border-default)" : "none" }}>
                             <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", minWidth: 80 }}>{pl.platform}</span>
                             <span style={{ fontSize: "0.55rem", padding: "0.05rem 0.3rem", borderRadius: 99, background: (pl.opportunity_level || "").toLowerCase().includes("excel") ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: (pl.opportunity_level || "").toLowerCase().includes("excel") ? "#4caf50" : "#ff9800" }}>{pl.opportunity_level || "—"}</span>
                             <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", flex: 1 }}>{pl.estimated_buyers != null ? `~${pl.estimated_buyers} buyers` : ""}{pl.avg_sale_price_here || pl.avg_sale_price ? ` · avg $${pl.avg_sale_price_here || pl.avg_sale_price}` : ""}</span>
@@ -666,10 +666,10 @@ function BuyersTabContent({ result, providers, agreement }: {
 
                     {/* Hot Leads */}
                     {bh.hotLeads.length > 0 && (
-                      <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                         <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.35rem" }}>Hot Leads ({bh.hotLeads.length})</div>
                         {bh.hotLeads.map((l: any, i: number) => (
-                          <div key={i} style={{ padding: "0.2rem 0", borderBottom: i < bh.hotLeads.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                          <div key={i} style={{ padding: "0.2rem 0", borderBottom: i < bh.hotLeads.length - 1 ? "1px solid var(--border-default)" : "none" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
                               <span style={{ fontSize: "0.55rem", padding: "0.05rem 0.25rem", borderRadius: 99, background: (l.urgency || "").toLowerCase().includes("now") ? "rgba(239,68,68,0.15)" : "rgba(255,152,0,0.12)", color: (l.urgency || "").toLowerCase().includes("now") ? "#ef4444" : "#ff9800", fontWeight: 600 }}>{l.urgency || "Soon"}</span>
                               <span style={{ fontSize: "0.68rem", color: "var(--text-primary)", flex: 1 }}>{l.lead_description || "Buyer"}</span>
@@ -716,7 +716,7 @@ function BuyersTabContent({ result, providers, agreement }: {
           {failed.map((p: any) => {
             const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888", specialty: "" };
             return (
-              <div key={p.provider} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.65rem", opacity: 0.4, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "0.5rem", fontSize: "0.68rem" }}>
+              <div key={p.provider} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.65rem", opacity: 0.4, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", fontSize: "0.68rem" }}>
                 <span style={{ opacity: 0.5 }}>{pm.icon}</span>
                 <span style={{ fontWeight: 600, color: "var(--text-muted)" }}>{pm.label}</span>
                 <span style={{ color: "var(--text-muted)", flex: 1, fontSize: "0.62rem" }}>Unavailable</span>
@@ -835,11 +835,11 @@ function PricingTabContent({ result, providers, agreement }: {
 
       {/* Section B: 4-Agent Pricing Comparison Table */}
       <div style={{
-        background: "var(--bg-card, rgba(255,255,255,0.05))",
+        background: "var(--bg-card, var(--ghost-bg))",
         border: "1px solid rgba(76,175,80,0.2)",
         borderRadius: "1.25rem", overflow: "hidden",
       }}>
-        <div style={{ padding: "0.85rem 1.25rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ padding: "0.85rem 1.25rem", borderBottom: "1px solid var(--border-default)" }}>
           <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#4caf50", fontWeight: 700 }}>
             4-Agent Pricing Comparison
           </div>
@@ -847,7 +847,7 @@ function PricingTabContent({ result, providers, agreement }: {
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem" }}>
             <thead>
-              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
                 <th style={{ padding: "0.5rem 0.75rem", textAlign: "left", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.62rem", textTransform: "uppercase" }}>Metric</th>
                 {successful.map((p: any) => {
                   const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888" };
@@ -866,7 +866,7 @@ function PricingTabContent({ result, providers, agreement }: {
                 const nonNull = values.filter(Boolean);
                 const allSame = nonNull.length >= 2 && new Set(nonNull.map(v => String(v).toLowerCase())).size === 1;
                 return (
-                  <tr key={field.label} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <tr key={field.label} style={{ borderBottom: "1px solid var(--border-default)" }}>
                     <td style={{ padding: "0.4rem 0.75rem", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.65rem" }}>{field.label}</td>
                     {values.map((val, i) => (
                       <td key={i} style={{
@@ -902,8 +902,8 @@ function PricingTabContent({ result, providers, agreement }: {
       {/* Combined Platform Breakdown */}
       {allPlatforms.size > 0 && (
         <div style={{
-          background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem",
-          border: "1px solid rgba(255,255,255,0.06)", padding: "0.85rem 1rem", marginBottom: "0",
+          background: "var(--bg-card)", borderRadius: "0.75rem",
+          border: "1px solid var(--border-default)", padding: "0.85rem 1rem", marginBottom: "0",
         }}>
           <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>📱 Platform Strategies</div>
           <div style={{ overflowX: "auto" }}>
@@ -925,7 +925,7 @@ function PricingTabContent({ result, providers, agreement }: {
                   const best = entries[0];
                   const plat = best.data;
                   return (
-                    <tr key={key} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                    <tr key={key} style={{ borderTop: "1px solid var(--border-default)" }}>
                       <td style={{ padding: "0.3rem 0.4rem", color: "var(--text-primary)", fontWeight: 500 }}>{name}</td>
                       <td style={{ padding: "0.3rem 0.4rem", textAlign: "right", color: "var(--text-secondary)" }}>{plat.list_price || plat.recommended_list_price ? `$${plat.list_price || plat.recommended_list_price}` : "\u2014"}</td>
                       <td style={{ padding: "0.3rem 0.4rem", textAlign: "right", color: "var(--text-secondary)" }}>{plat.expected_sell || plat.expected_sell_price ? `$${plat.expected_sell || plat.expected_sell_price}` : "\u2014"}</td>
@@ -1048,9 +1048,9 @@ function PricingTabContent({ result, providers, agreement }: {
 
             return (
               <div key={p.provider} style={{
-                background: "var(--bg-card, rgba(255,255,255,0.05))",
+                background: "var(--bg-card, var(--ghost-bg))",
                 borderTop: isExp ? `3px solid ${pm.color}` : undefined,
-                border: `1px solid ${isExp ? `${pm.color}40` : "var(--border-card, rgba(255,255,255,0.08))"}`,
+                border: `1px solid ${isExp ? `${pm.color}40` : "var(--border-card, var(--border-default))"}`,
                 borderRadius: "0.85rem", overflow: "hidden",
               }}>
                 <button
@@ -1074,7 +1074,7 @@ function PricingTabContent({ result, providers, agreement }: {
                 {isExp && (
                   <div style={{ padding: "0 1rem 1rem", borderTop: `1px solid ${pm.color}15` }}>
                     {/* Price Assessment */}
-                    <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                       <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.4rem" }}>Price Assessment</div>
                       <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", marginBottom: "0.3rem" }}>
                         <span style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--accent)" }}>${ph.priceLow != null ? Math.round(Number(ph.priceLow)) : "?"}</span>
@@ -1088,12 +1088,12 @@ function PricingTabContent({ result, providers, agreement }: {
 
                     {/* Comparable Sales */}
                     {comps.length > 0 && (
-                      <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                         <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.35rem" }}>Comparable Sales ({comps.length})</div>
                         {comps.slice(0, 6).map((c: any, i: number) => {
                           const nc = normalizeComparable(c);
                           return (
-                            <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", borderBottom: i < Math.min(comps.length, 6) - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                            <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", borderBottom: i < Math.min(comps.length, 6) - 1 ? "1px solid var(--border-default)" : "none" }}>
                               <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", minWidth: 60 }}>{nc.platform}</span>
                               <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)", flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{nc.item_description}</span>
                               <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--accent)" }}>${nc.sold_price}</span>
@@ -1105,7 +1105,7 @@ function PricingTabContent({ result, providers, agreement }: {
 
                     {/* Platform Breakdown */}
                     {platEntries.length > 0 && (
-                      <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                         <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.35rem" }}>Platform Breakdown</div>
                         <div style={{ overflowX: "auto" }}>
                           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.7rem" }}>
@@ -1122,7 +1122,7 @@ function PricingTabContent({ result, providers, agreement }: {
                                 if (!plat || typeof plat !== "object") return null;
                                 const name = key.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
                                 return (
-                                  <tr key={key} style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                                  <tr key={key} style={{ borderTop: "1px solid var(--border-default)" }}>
                                     <td style={{ padding: "0.25rem 0.3rem", color: "var(--text-primary)", fontWeight: 500 }}>{name}</td>
                                     <td style={{ padding: "0.25rem 0.3rem", textAlign: "right", color: "var(--text-secondary)" }}>{plat.list_price || plat.recommended_list_price ? `$${plat.list_price || plat.recommended_list_price}` : "\u2014"}</td>
                                     <td style={{ padding: "0.25rem 0.3rem", textAlign: "right", color: "#4caf50", fontWeight: 600 }}>{plat.seller_net || plat.seller_net_after_fees ? `$${plat.seller_net || plat.seller_net_after_fees}` : "\u2014"}</td>
@@ -1178,7 +1178,7 @@ function PricingTabContent({ result, providers, agreement }: {
           {failed.map((p: any) => {
             const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888" };
             return (
-              <div key={p.provider} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.85rem", opacity: 0.4, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "0.65rem", fontSize: "0.72rem" }}>
+              <div key={p.provider} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.85rem", opacity: 0.4, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", fontSize: "0.72rem" }}>
                 <span style={{ opacity: 0.5 }}>{pm.icon}</span><span style={{ fontWeight: 600, color: "var(--text-muted)" }}>{pm.label}</span>
                 <span style={{ color: "var(--text-muted)", fontSize: "0.65rem" }}>Unavailable</span>
               </div>
@@ -1217,7 +1217,7 @@ function PricingTabContent({ result, providers, agreement }: {
                     <span style={{ fontSize: "0.72rem", color: pm.color, fontWeight: 600, minWidth: 70 }}>{pm.icon} {pm.label}</span>
                     <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>${low} — ${high}</span>
                   </div>
-                  <div style={{ height: 8, borderRadius: 99, background: "rgba(255,255,255,0.06)", position: "relative" as const, overflow: "hidden" }}>
+                  <div style={{ height: 8, borderRadius: 99, background: "var(--ghost-bg)", position: "relative" as const, overflow: "hidden" }}>
                     <div style={{
                       position: "absolute" as const, left: `${leftPct}%`, width: `${widthPct}%`, height: "100%",
                       borderRadius: 99, background: pm.color, opacity: 0.6,
@@ -1351,11 +1351,11 @@ function AnalysisTabContent({ result, consensus, providers, agreement }: {
 
       {/* Section B: Comparison Table */}
       <div style={{
-        background: "var(--bg-card, rgba(255,255,255,0.05))",
+        background: "var(--bg-card, var(--ghost-bg))",
         border: "1px solid rgba(139,92,246,0.2)",
         borderRadius: "1.25rem", overflow: "hidden",
       }}>
-        <div style={{ padding: "0.85rem 1.25rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ padding: "0.85rem 1.25rem", borderBottom: "1px solid var(--border-default)" }}>
           <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700 }}>
             4-Agent Comparison
           </div>
@@ -1363,7 +1363,7 @@ function AnalysisTabContent({ result, consensus, providers, agreement }: {
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem" }}>
             <thead>
-              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
                 <th style={{ padding: "0.5rem 0.75rem", textAlign: "left", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.62rem", textTransform: "uppercase" }}>Field</th>
                 {successful.map((p: any) => {
                   const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888" };
@@ -1391,7 +1391,7 @@ function AnalysisTabContent({ result, consensus, providers, agreement }: {
                 const nonNull = values.filter(Boolean);
                 const allSame = nonNull.length >= 2 && new Set(nonNull.map(v => String(v).toLowerCase().slice(0, 20))).size === 1;
                 return (
-                  <tr key={field.key} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <tr key={field.key} style={{ borderBottom: "1px solid var(--border-default)" }}>
                     <td style={{ padding: "0.4rem 0.75rem", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.65rem" }}>{field.label}</td>
                     {values.map((val, i) => (
                       <td key={i} style={{
@@ -1447,9 +1447,9 @@ function AnalysisTabContent({ result, consensus, providers, agreement }: {
 
             return (
               <div key={p.provider} style={{
-                background: "var(--bg-card, rgba(255,255,255,0.05))",
+                background: "var(--bg-card, var(--ghost-bg))",
                 borderTop: isExp ? `3px solid ${pm.color}` : undefined,
-                border: `1px solid ${isExp ? `${pm.color}40` : "var(--border-card, rgba(255,255,255,0.08))"}`,
+                border: `1px solid ${isExp ? `${pm.color}40` : "var(--border-card, var(--border-default))"}`,
                 borderRadius: "0.85rem", overflow: "hidden",
               }}>
                 <button
@@ -1473,7 +1473,7 @@ function AnalysisTabContent({ result, consensus, providers, agreement }: {
                 {isExp && (
                   <div style={{ padding: "0 1rem 1rem", borderTop: `1px solid ${pm.color}15` }}>
                     {/* Identification */}
-                    <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                       <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.4rem" }}>Identification</div>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.2rem 1rem", fontSize: "0.75rem" }}>
                         {h.itemName && <div><span style={{ color: "var(--text-muted)", fontSize: "0.6rem" }}>ITEM: </span><span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{h.itemName}</span></div>}
@@ -1486,7 +1486,7 @@ function AnalysisTabContent({ result, consensus, providers, agreement }: {
                     </div>
                     {/* Condition */}
                     {condNum != null && (
-                      <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.6rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                         <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.35rem" }}>Condition</div>
                         <div style={{ display: "flex", gap: "1rem", fontSize: "0.82rem", marginBottom: "0.3rem" }}>
                           <span><strong style={{ color: condNum >= 7 ? "#4caf50" : condNum >= 4 ? "#ff9800" : "#ef4444" }}>{condNum}/10</strong> Overall</span>
@@ -1539,7 +1539,7 @@ function AnalysisTabContent({ result, consensus, providers, agreement }: {
           {failed.map((p: any) => {
             const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888" };
             return (
-              <div key={p.provider} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.85rem", opacity: 0.4, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "0.65rem", fontSize: "0.72rem" }}>
+              <div key={p.provider} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.85rem", opacity: 0.4, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", fontSize: "0.72rem" }}>
                 <span style={{ opacity: 0.5 }}>{pm.icon}</span><span style={{ fontWeight: 600, color: "var(--text-muted)" }}>{pm.label}</span>
                 <span style={{ color: "var(--text-muted)", fontSize: "0.65rem" }}>Unavailable</span>
               </div>
@@ -1723,12 +1723,12 @@ function CollectiblesTabContent({ result, providers, agreement }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       {/* Comparison table */}
-      <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem", border: "1px solid rgba(255,255,255,0.06)", padding: "0.85rem 1rem" }}>
+      <div style={{ background: "var(--bg-card)", borderRadius: "0.75rem", border: "1px solid var(--border-default)", padding: "0.85rem 1rem" }}>
         <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>🎴 Collectibles Assessment Comparison</div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.72rem" }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid rgba(255,255,255,0.08)" }}>
+              <tr style={{ borderBottom: "2px solid var(--border-default)" }}>
                 <th style={{ textAlign: "left", padding: "0.35rem 0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>Metric</th>
                 {successful.map((p: any) => {
                   const pm = PROVIDER_META[p.provider];
@@ -1746,7 +1746,7 @@ function CollectiblesTabContent({ result, providers, agreement }: {
                 { label: "Est. Value", get: (ch: any) => ch.estMid ? `$${Math.round(Number(ch.estMid)).toLocaleString()}` : "—" },
                 { label: "Price Trend", get: (ch: any) => ch.priceTrend || "—" },
               ].map((row, ri) => (
-                <tr key={ri} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <tr key={ri} style={{ borderBottom: "1px solid var(--border-default)" }}>
                   <td style={{ padding: "0.3rem 0.5rem", fontWeight: 600, color: "var(--text-secondary)" }}>{row.label}</td>
                   {successful.map((_: any, i: number) => (
                     <td key={i} style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "var(--text-primary)" }}>{row.get(allCH[i])}</td>
@@ -1764,7 +1764,7 @@ function CollectiblesTabContent({ result, providers, agreement }: {
           const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888", specialty: "" };
           const ch = allCH[i];
           return (
-            <div key={p.provider} style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
+            <div key={p.provider} style={{ background: "var(--bg-card)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
                 <span style={{ fontSize: "0.95rem" }}>{pm.icon}</span>
                 <span style={{ fontWeight: 700, fontSize: "0.82rem", color: pm.color }}>{pm.label}</span>
@@ -1813,12 +1813,12 @@ function ListingTabContent({ result, providers, agreement }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       {/* Comparison table */}
-      <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem", border: "1px solid rgba(255,255,255,0.06)", padding: "0.85rem 1rem" }}>
+      <div style={{ background: "var(--bg-card)", borderRadius: "0.75rem", border: "1px solid var(--border-default)", padding: "0.85rem 1rem" }}>
         <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>📝 Listing Comparison</div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.72rem" }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid rgba(255,255,255,0.08)" }}>
+              <tr style={{ borderBottom: "2px solid var(--border-default)" }}>
                 <th style={{ textAlign: "left", padding: "0.35rem 0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>Metric</th>
                 {successful.map((p: any) => {
                   const pm = PROVIDER_META[p.provider];
@@ -1833,7 +1833,7 @@ function ListingTabContent({ result, providers, agreement }: {
                 { label: "SEO Keywords", get: (lh: any) => lh.allKwCount || 0, combined: new Set(allLH.flatMap((h: any) => [...h.primaryKw, ...h.longTailKw].map((k: any) => (typeof k === "string" ? k : "").toLowerCase()))).size },
                 { label: "Best Title", get: (lh: any) => lh.bestTitle ? `"${(lh.bestTitle as string).slice(0, 25)}..."` : "—", combined: allLH.find((h: any) => h.bestTitle)?.bestTitle ? `"${(allLH.find((h: any) => h.bestTitle)!.bestTitle as string).slice(0, 30)}..."` : "—" },
               ].map((row, ri) => (
-                <tr key={ri} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <tr key={ri} style={{ borderBottom: "1px solid var(--border-default)" }}>
                   <td style={{ padding: "0.3rem 0.5rem", fontWeight: 600, color: "var(--text-secondary)" }}>{row.label}</td>
                   {successful.map((_, i: number) => (
                     <td key={i} style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "var(--text-primary)" }}>{row.get(allLH[i])}</td>
@@ -1852,14 +1852,14 @@ function ListingTabContent({ result, providers, agreement }: {
           const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888", specialty: "" };
           const lh = allLH[i];
           return (
-            <div key={p.provider} style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
+            <div key={p.provider} style={{ background: "var(--bg-card)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
                 <span style={{ fontSize: "0.95rem" }}>{pm.icon}</span>
                 <span style={{ fontWeight: 700, fontSize: "0.82rem", color: pm.color }}>{pm.label}</span>
                 <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", flex: 1 }}>{lh.platformCount} listings · {lh.allKwCount} keywords{lh.bestTitle ? ` · "${(lh.bestTitle as string).slice(0, 30)}..."` : ""}</span>
               </div>
               {Object.entries(lh.listings).slice(0, 4).map(([platform, lst]: [string, any]) => (
-                <div key={platform} style={{ padding: "0.35rem 0.5rem", marginBottom: "0.25rem", borderRadius: "0.4rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                <div key={platform} style={{ padding: "0.35rem 0.5rem", marginBottom: "0.25rem", borderRadius: "0.4rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                     <span style={{ fontSize: "0.6rem", padding: "0.05rem 0.3rem", borderRadius: 99, background: "rgba(0,188,212,0.12)", color: "var(--accent)", fontWeight: 600, textTransform: "capitalize" }}>{platform.replace(/_/g, " ")}</span>
                     <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-primary)", flex: 1 }}>{lst?.title || "—"}</span>
@@ -1910,12 +1910,12 @@ function ReconTabContent({ result, providers, agreement }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       {/* Comparison table */}
-      <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem", border: "1px solid rgba(255,255,255,0.06)", padding: "0.85rem 1rem" }}>
+      <div style={{ background: "var(--bg-card)", borderRadius: "0.75rem", border: "1px solid var(--border-default)", padding: "0.85rem 1rem" }}>
         <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>🔍 Competitive Intel Comparison</div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.72rem" }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid rgba(255,255,255,0.08)" }}>
+              <tr style={{ borderBottom: "2px solid var(--border-default)" }}>
                 <th style={{ textAlign: "left", padding: "0.35rem 0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>Metric</th>
                 {successful.map((p: any) => {
                   const pm = PROVIDER_META[p.provider];
@@ -1931,7 +1931,7 @@ function ReconTabContent({ result, providers, agreement }: {
                 { label: "Demand", get: (rh: any) => rh.demandLevel || "—", combined: allRH.find(h => h.demandLevel)?.demandLevel || "—" },
                 { label: "Position", get: (rh: any) => rh.pricePosition || "—", combined: allRH.find(h => h.pricePosition)?.pricePosition || "—" },
               ].map((row, ri) => (
-                <tr key={ri} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <tr key={ri} style={{ borderBottom: "1px solid var(--border-default)" }}>
                   <td style={{ padding: "0.3rem 0.5rem", fontWeight: 600, color: "var(--text-secondary)" }}>{row.label}</td>
                   {successful.map((_, i: number) => (
                     <td key={i} style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "var(--text-primary)" }}>{row.get(allRH[i])}</td>
@@ -1950,7 +1950,7 @@ function ReconTabContent({ result, providers, agreement }: {
           const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888", specialty: "" };
           const rh = allRH[i];
           return (
-            <div key={p.provider} style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
+            <div key={p.provider} style={{ background: "var(--bg-card)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
                 <span style={{ fontSize: "0.95rem" }}>{pm.icon}</span>
                 <span style={{ fontWeight: 700, fontSize: "0.82rem", color: pm.color }}>{pm.label}</span>
@@ -1997,12 +1997,12 @@ function VehicleTabContent({ result, providers, agreement }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       {/* Comparison table */}
-      <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem", border: "1px solid rgba(255,255,255,0.06)", padding: "0.85rem 1rem" }}>
+      <div style={{ background: "var(--bg-card)", borderRadius: "0.75rem", border: "1px solid var(--border-default)", padding: "0.85rem 1rem" }}>
         <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>🚗 Vehicle Valuation Comparison</div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.72rem" }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid rgba(255,255,255,0.08)" }}>
+              <tr style={{ borderBottom: "2px solid var(--border-default)" }}>
                 <th style={{ textAlign: "left", padding: "0.35rem 0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>Metric</th>
                 {successful.map((p: any) => {
                   const pm = PROVIDER_META[p.provider];
@@ -2020,7 +2020,7 @@ function VehicleTabContent({ result, providers, agreement }: {
                 { label: "Interior", get: (vh: any) => vh.interior || "—" },
                 { label: "Mechanical", get: (vh: any) => vh.mechanical || "—" },
               ].map((row, ri) => (
-                <tr key={ri} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <tr key={ri} style={{ borderBottom: "1px solid var(--border-default)" }}>
                   <td style={{ padding: "0.3rem 0.5rem", fontWeight: 600, color: "var(--text-secondary)" }}>{row.label}</td>
                   {successful.map((_, i: number) => (
                     <td key={i} style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "var(--text-primary)" }}>{row.get(allVH[i])}</td>
@@ -2038,7 +2038,7 @@ function VehicleTabContent({ result, providers, agreement }: {
           const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888", specialty: "" };
           const vh = allVH[i];
           return (
-            <div key={p.provider} style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
+            <div key={p.provider} style={{ background: "var(--bg-card)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
                 <span style={{ fontSize: "0.95rem" }}>{pm.icon}</span>
                 <span style={{ fontWeight: 700, fontSize: "0.82rem", color: pm.color }}>{pm.label}</span>
@@ -2077,12 +2077,12 @@ function AntiqueTabContent({ result, providers, agreement }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       {/* Comparison table */}
-      <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem", border: "1px solid rgba(255,255,255,0.06)", padding: "0.85rem 1rem" }}>
+      <div style={{ background: "var(--bg-card)", borderRadius: "0.75rem", border: "1px solid var(--border-default)", padding: "0.85rem 1rem" }}>
         <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>🏺 Antique Assessment Comparison</div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.72rem" }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid rgba(255,255,255,0.08)" }}>
+              <tr style={{ borderBottom: "2px solid var(--border-default)" }}>
                 <th style={{ textAlign: "left", padding: "0.35rem 0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>Metric</th>
                 {successful.map((p: any) => {
                   const pm = PROVIDER_META[p.provider];
@@ -2100,7 +2100,7 @@ function AntiqueTabContent({ result, providers, agreement }: {
                 { label: "Auction Est.", get: (ah: any) => _fmtPrice(ah.auctionEst) },
                 { label: "Insurance", get: (ah: any) => _fmtPrice(ah.insurance) },
               ].map((row, ri) => (
-                <tr key={ri} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <tr key={ri} style={{ borderBottom: "1px solid var(--border-default)" }}>
                   <td style={{ padding: "0.3rem 0.5rem", fontWeight: 600, color: "var(--text-secondary)" }}>{row.label}</td>
                   {successful.map((_, i: number) => (
                     <td key={i} style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "var(--text-primary)" }}>{row.get(allAH[i])}</td>
@@ -2118,7 +2118,7 @@ function AntiqueTabContent({ result, providers, agreement }: {
           const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888", specialty: "" };
           const ah = allAH[i];
           return (
-            <div key={p.provider} style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
+            <div key={p.provider} style={{ background: "var(--bg-card)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
                 <span style={{ fontSize: "0.95rem" }}>{pm.icon}</span>
                 <span style={{ fontWeight: 700, fontSize: "0.82rem", color: pm.color }}>{pm.label}</span>
@@ -2160,12 +2160,12 @@ function PhotosTabContent({ result, providers, agreement }: {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
       {/* Comparison table */}
-      <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem", border: "1px solid rgba(255,255,255,0.06)", padding: "0.85rem 1rem" }}>
+      <div style={{ background: "var(--bg-card)", borderRadius: "0.75rem", border: "1px solid var(--border-default)", padding: "0.85rem 1rem" }}>
         <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.5rem" }}>📷 Photo Analysis Comparison</div>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.72rem" }}>
             <thead>
-              <tr style={{ borderBottom: "2px solid rgba(255,255,255,0.08)" }}>
+              <tr style={{ borderBottom: "2px solid var(--border-default)" }}>
                 <th style={{ textAlign: "left", padding: "0.35rem 0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>Metric</th>
                 {successful.map((p: any) => {
                   const pm = PROVIDER_META[p.provider];
@@ -2181,7 +2181,7 @@ function PhotosTabContent({ result, providers, agreement }: {
                 { label: "Missing Angles", get: (ph: any) => ph.missingCount, combined: new Set(allPhH.flatMap(h => h.missing.map((m: any) => (typeof m === "string" ? m : m.angle || "").toLowerCase()))).size },
                 { label: "Staging Ideas", get: (ph: any) => ph.staging.length, combined: allPhH.reduce((s, h) => s + h.staging.length, 0) },
               ].map((row, ri) => (
-                <tr key={ri} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <tr key={ri} style={{ borderBottom: "1px solid var(--border-default)" }}>
                   <td style={{ padding: "0.3rem 0.5rem", fontWeight: 600, color: "var(--text-secondary)" }}>{row.label}</td>
                   {successful.map((_, i: number) => (
                     <td key={i} style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "var(--text-primary)" }}>{row.get(allPhH[i])}</td>
@@ -2200,7 +2200,7 @@ function PhotosTabContent({ result, providers, agreement }: {
           const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888", specialty: "" };
           const ph = allPhH[i];
           return (
-            <div key={p.provider} style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
+            <div key={p.provider} style={{ background: "var(--bg-card)", border: `1px solid ${pm.color}25`, borderRadius: "0.65rem", padding: "0.75rem 0.85rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
                 <span style={{ fontSize: "0.95rem" }}>{pm.icon}</span>
                 <span style={{ fontWeight: 700, fontSize: "0.82rem", color: pm.color }}>{pm.label}</span>
@@ -2313,7 +2313,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
       ) : !megaResults || totalBots === 0 ? (
         <div style={{
           marginTop: "1.5rem",
-          background: "var(--bg-card, rgba(255,255,255,0.05))",
+          background: "var(--bg-card, var(--ghost-bg))",
           border: "1px solid var(--border-card)",
           borderRadius: "1.25rem",
           padding: "3rem",
@@ -2364,7 +2364,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                   style={{
                     padding: "0.45rem 0.85rem", borderRadius: "0.5rem",
                     border: `1px solid ${isActive ? meta.color : "var(--border-default)"}`,
-                    background: isActive ? `${meta.color}18` : "rgba(255,255,255,0.03)",
+                    background: isActive ? `${meta.color}18` : "var(--bg-card)",
                     color: isActive ? meta.color : "var(--text-muted)",
                     fontSize: "0.75rem", fontWeight: isActive ? 700 : 500, cursor: "pointer",
                     display: "flex", alignItems: "center", gap: "0.3rem",
@@ -2392,7 +2392,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
 
             return (
               <div style={{
-                background: "var(--bg-card, rgba(255,255,255,0.05))",
+                background: "var(--bg-card, var(--ghost-bg))",
                 border: `1px solid ${meta.color}30`,
                 borderRadius: "1.25rem",
                 overflow: "hidden",
@@ -2400,7 +2400,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                 {/* Result header */}
                 <div style={{
                   padding: "1rem 1.25rem",
-                  borderBottom: "1px solid rgba(255,255,255,0.06)",
+                  borderBottom: "1px solid var(--border-default)",
                   display: "flex", alignItems: "center", gap: "0.75rem",
                 }}>
                   <span style={{ fontSize: "1.3rem" }}>{meta.icon}</span>
@@ -2424,7 +2424,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
 
                 {/* Agreement bar */}
                 <div style={{ padding: "0 1.25rem", marginTop: "0.75rem" }}>
-                  <div style={{ height: 6, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                  <div style={{ height: 6, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                     <div style={{
                       height: "100%", width: `${agree}%`, borderRadius: 99,
                       background: agree >= 80 ? "#4caf50" : agree >= 60 ? "#ff9800" : "#ef4444",
@@ -2519,7 +2519,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                         const pm = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888", specialty: "" };
                         return (
                           <div key={p.provider} style={{
-                            background: "rgba(255,255,255,0.03)", border: `1px solid ${pm.color}25`,
+                            background: "var(--bg-card)", border: `1px solid ${pm.color}25`,
                             borderRadius: "0.65rem", padding: "0.75rem 0.85rem",
                           }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
@@ -2618,7 +2618,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
             </button>
           </div>
           {showJson && (
-            <pre style={{ background: "rgba(255,255,255,0.03)", borderRadius: "0.75rem", padding: "1rem", overflow: "auto", fontSize: "0.72rem", color: "var(--text-muted)", maxHeight: 400, margin: 0 }}>
+            <pre style={{ background: "var(--bg-card)", borderRadius: "0.75rem", padding: "1rem", overflow: "auto", fontSize: "0.72rem", color: "var(--text-muted)", maxHeight: 400, margin: 0 }}>
               {JSON.stringify(megaResults, null, 2)}
             </pre>
           )}

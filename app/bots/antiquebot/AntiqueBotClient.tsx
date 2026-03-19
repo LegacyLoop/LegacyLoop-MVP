@@ -298,7 +298,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
               style={{
                 display: "flex", alignItems: "center", gap: "0.5rem",
                 padding: "0.5rem 0.65rem", borderRadius: "0.5rem",
-                background: selectedId === item.id ? `${GOLD}15` : "rgba(255,255,255,0.03)",
+                background: selectedId === item.id ? `${GOLD}15` : "var(--bg-card)",
                 border: `1.5px solid ${selectedId === item.id ? GOLD : "var(--border-default)"}`,
                 cursor: "pointer", textAlign: "left", color: "inherit", width: "100%",
                 transition: "border-color 0.15s ease",
@@ -307,7 +307,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
               {item.photo ? (
                 <img src={item.photo} alt="" style={{ width: 32, height: 32, borderRadius: "0.35rem", objectFit: "cover" }} />
               ) : (
-                <div style={{ width: 32, height: 32, borderRadius: "0.35rem", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem" }}>📷</div>
+                <div style={{ width: 32, height: 32, borderRadius: "0.35rem", background: "var(--ghost-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem" }}>📷</div>
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
@@ -355,7 +355,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
           >
             {loading ? (
               <>
-                <span style={{ display: "inline-block", width: "1rem", height: "1rem", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.6s linear infinite" }} />
+                <span style={{ display: "inline-block", width: "1rem", height: "1rem", border: "2px solid var(--border-default)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.6s linear infinite" }} />
                 Analyzing...
               </>
             ) : result ? (
@@ -437,7 +437,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
                 style={{
                   padding: "0.45rem 0.85rem", borderRadius: "0.5rem",
                   fontSize: "0.75rem", fontWeight: 600, border: "none", cursor: "pointer",
-                  background: activeTab === tab.key ? `${GOLD}20` : "rgba(255,255,255,0.03)",
+                  background: activeTab === tab.key ? `${GOLD}20` : "var(--bg-card)",
                   color: activeTab === tab.key ? GOLD : "var(--text-muted)",
                   borderBottom: activeTab === tab.key ? `2px solid ${GOLD}` : "2px solid transparent",
                 }}
@@ -506,7 +506,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
                         { label: "Style", value: ident.style_movement },
                         { label: "Maker", value: ident.maker_info?.name },
                       ].filter((d) => d.value).map((d) => (
-                        <div key={d.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
+                        <div key={d.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
                           <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{d.label}</div>
                           <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{d.value}</div>
                         </div>
@@ -541,7 +541,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
                         { label: "Age Wear", value: cond.age_appropriate_wear ? "Normal" : "Unusual" },
                         { label: "Restoration", value: cond.restoration_detected ? "Detected" : "None" },
                       ].map((c) => (
-                        <div key={c.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem", textAlign: "center" }}>
+                        <div key={c.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem", textAlign: "center" }}>
                           <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{c.label}</div>
                           <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{c.value}</div>
                         </div>
@@ -566,7 +566,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
                     { label: "Fair Market High", value: val.fair_market_value?.high },
                   ].map((v) => (
                     <div key={v.label} style={{
-                      background: v.highlight ? `${GOLD}12` : "rgba(255,255,255,0.03)",
+                      background: v.highlight ? `${GOLD}12` : "var(--bg-card)",
                       border: `1.5px solid ${v.highlight ? GOLD : "var(--border-default)"}`,
                       borderRadius: "0.75rem", padding: "0.75rem", textAlign: "center",
                     }}>
@@ -614,7 +614,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
 
                 {/* Trend */}
                 {val.value_trend && (
-                  <div style={{ padding: "0.65rem", borderLeft: `3px solid ${val.value_trend === "Appreciating" ? "#16a34a" : val.value_trend === "Declining" ? "#dc2626" : GOLD}`, background: "rgba(255,255,255,0.02)", borderRadius: "0 0.5rem 0.5rem 0" }}>
+                  <div style={{ padding: "0.65rem", borderLeft: `3px solid ${val.value_trend === "Appreciating" ? "#16a34a" : val.value_trend === "Declining" ? "#dc2626" : GOLD}`, background: "var(--bg-card)", borderRadius: "0 0.5rem 0.5rem 0" }}>
                     <div style={{ fontSize: "0.72rem", fontWeight: 700, color: val.value_trend === "Appreciating" ? "#16a34a" : val.value_trend === "Declining" ? "#dc2626" : GOLD }}>
                       {val.value_trend === "Appreciating" ? "📈" : val.value_trend === "Declining" ? "📉" : "➡️"} {val.value_trend}
                     </div>
@@ -634,7 +634,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
                     { label: "Demand", value: market.collector_demand },
                     { label: "Collector Base", value: market.collector_base?.slice(0, 80) },
                   ].map((m) => (
-                    <div key={m.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
+                    <div key={m.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
                       <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{m.label}</div>
                       <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{m.value}</div>
                     </div>
@@ -856,7 +856,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
 
                 {/* Agreement bar */}
                 <div style={{ marginBottom: "0.75rem" }}>
-                  <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                  <div style={{ height: 5, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${agree}%`, borderRadius: 99, background: agree >= 80 ? "#4caf50" : agree >= 60 ? "#ff9800" : "#ef4444" }} />
                   </div>
                 </div>
@@ -871,9 +871,9 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
 
                     return (
                       <div key={p.provider} style={{
-                        background: isExp ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
+                        background: isExp ? "var(--ghost-bg)" : "var(--bg-card)",
                         borderTop: isExp ? `3px solid ${pm.color}` : undefined,
-                        border: `1px solid ${isExp ? `${pm.color}30` : "rgba(255,255,255,0.06)"}`,
+                        border: `1px solid ${isExp ? `${pm.color}30` : "var(--border-default)"}`,
                         borderRadius: "0.5rem", overflow: "hidden",
                       }}>
                         {/* Collapsed one-liner */}
@@ -898,7 +898,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
                           <div style={{ padding: "0 0.75rem 0.75rem", borderTop: `1px solid ${pm.color}15` }}>
                             {/* Authentication */}
                             {ma.auth && (
-                              <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Authentication</div>
                                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.3rem" }}>
                                   <span style={{ fontSize: "1rem" }}>
@@ -933,7 +933,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
 
                             {/* Era / Period & Maker */}
                             {ma.hist && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Historical Research</div>
                                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.35rem", marginBottom: "0.3rem" }}>
                                   {[
@@ -942,7 +942,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
                                     { label: "Origin", value: ma.hist.origin || ma.hist.country_of_origin },
                                     { label: "Style", value: ma.hist.style || ma.hist.style_movement },
                                   ].filter((d) => d.value).map((d) => (
-                                    <div key={d.label} style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.04)", borderRadius: "0.35rem", padding: "0.3rem 0.4rem" }}>
+                                    <div key={d.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.35rem", padding: "0.3rem 0.4rem" }}>
                                       <div style={{ fontSize: "0.48rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{d.label}</div>
                                       <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.05rem" }}>{d.value}</div>
                                     </div>
@@ -958,7 +958,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
 
                             {/* Condition: original vs restored */}
                             {ma.cond && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Condition Deep Dive</div>
                                 <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.3rem" }}>
                                   {ma.condGrade && (
@@ -977,7 +977,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
                                     </div>
                                   )}
                                   {ma.cond.restoration_detected != null && (
-                                    <div style={{ padding: "0.2rem 0.5rem", borderRadius: "0.35rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", fontSize: "0.65rem", color: "var(--text-muted)" }}>
+                                    <div style={{ padding: "0.2rem 0.5rem", borderRadius: "0.35rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", fontSize: "0.65rem", color: "var(--text-muted)" }}>
                                       Restoration: {ma.cond.restoration_detected ? "Detected" : "None found"}
                                     </div>
                                   )}
@@ -990,7 +990,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
 
                             {/* Valuation */}
                             {ma.val && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Valuation</div>
                                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.35rem", marginBottom: "0.3rem" }}>
                                   {[
@@ -999,8 +999,8 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
                                     { label: "Insurance", value: ma.insuranceVal },
                                   ].filter((v) => v.value != null).map((v) => (
                                     <div key={v.label} style={{
-                                      background: v.highlight ? `${GOLD}12` : "rgba(255,255,255,0.03)",
-                                      border: `1px solid ${v.highlight ? `${GOLD}30` : "rgba(255,255,255,0.04)"}`,
+                                      background: v.highlight ? `${GOLD}12` : "var(--bg-card)",
+                                      border: `1px solid ${v.highlight ? `${GOLD}30` : "var(--border-default)"}`,
                                       borderRadius: "0.35rem", padding: "0.3rem 0.4rem", textAlign: "center",
                                     }}>
                                       <div style={{ fontSize: "0.48rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{v.label}</div>
@@ -1023,10 +1023,10 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
 
                             {/* Comparable auction results */}
                             {ma.comparables.length > 0 && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Comparable Auction Results</div>
                                 {ma.comparables.slice(0, 5).map((c: any, i: number) => (
-                                  <div key={i} style={{ padding: "0.3rem 0", borderBottom: i < Math.min(ma.comparables.length, 5) - 1 ? "1px solid rgba(255,255,255,0.04)" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                  <div key={i} style={{ padding: "0.3rem 0", borderBottom: i < Math.min(ma.comparables.length, 5) - 1 ? "1px solid var(--border-default)" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                     <div>
                                       <div style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-primary)" }}>{c.house || c.auction_house || "Auction"}</div>
                                       <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{c.item || c.description || ""} · {c.date || ""}</div>
@@ -1099,7 +1099,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
 
                 {/* Comparison */}
                 {successful.length > 1 && (
-                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: GOLD, fontWeight: 700, marginBottom: "0.3rem" }}>Antique Intelligence Comparison</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem", fontSize: "0.7rem" }}>
                       {successful.map((p: any, i: number) => {

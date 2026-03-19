@@ -1,28 +1,40 @@
 /**
- * Email Templates — HTML strings for transactional emails
- * Light theme for email clients (white bg, dark text, teal accent buttons)
+ * Email Templates — Unified Dark Premium Theme
+ * Matches the LegacyLoop app design system exactly.
  */
 
-const LOGO_URL = "https://legacyloop.com/images/logos/logo-horizontal.png";
 const ACCENT = "#00bcd4";
-const BTN_STYLE = `display:inline-block;padding:12px 32px;background:${ACCENT};color:#fff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px`;
+const BG_DARK = "#0d1117";
+const BG_CARD = "#161b22";
+const TEXT_PRIMARY = "#f0f6fc";
+const TEXT_SECONDARY = "#8b949e";
+const TEXT_MUTED = "#484f58";
+const BORDER = "rgba(0,188,212,0.15)";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://legacy-loop.com";
+
+function ctaButton(text: string, url: string): string {
+  return `<a href="${url}" style="display:inline-block;padding:14px 32px;background:${ACCENT};color:#fff;text-decoration:none;font-weight:700;border-radius:8px;font-size:16px">${text}</a>`;
+}
 
 function wrapper(content: string): string {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;margin-top:20px;margin-bottom:20px">
-  <tr><td style="padding:32px 32px 16px;text-align:center;border-bottom:1px solid #e5e5e5">
-    <div style="font-size:24px;font-weight:800;color:${ACCENT}">LegacyLoop</div>
+<body style="margin:0;padding:0;background:${BG_DARK};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:20px auto;background:${BG_CARD};border-radius:12px;overflow:hidden;border:1px solid ${BORDER}">
+  <tr><td style="padding:28px 32px 16px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06)">
+    <div style="display:inline-flex;align-items:center;gap:10px">
+      <div style="width:36px;height:36px;background:${ACCENT};border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:16px">LL</div>
+      <span style="font-size:22px;font-weight:800;color:${TEXT_PRIMARY};letter-spacing:-0.5px">LegacyLoop</span>
+    </div>
   </td></tr>
   <tr><td style="padding:32px">${content}</td></tr>
-  <tr><td style="padding:24px 32px;background:#f9fafb;text-align:center;border-top:1px solid #e5e5e5">
-    <div style="font-size:12px;color:#6b7280;line-height:1.6">
-      <a href="https://legacyloop.com/privacy" style="color:${ACCENT};text-decoration:none">Privacy Policy</a> ·
-      <a href="https://legacyloop.com/terms" style="color:${ACCENT};text-decoration:none">Terms of Service</a><br>
-      LegacyLoop · (512) 758-0518 · legacyloopmaine@gmail.com<br>
-      <a href="https://legacyloop.com/settings" style="color:${ACCENT};text-decoration:none">Manage Preferences</a>
+  <tr><td style="padding:20px 32px;background:rgba(255,255,255,0.02);text-align:center;border-top:1px solid rgba(255,255,255,0.06)">
+    <div style="font-size:12px;color:${TEXT_MUTED};line-height:1.8">
+      <a href="${APP_URL}/privacy" style="color:${ACCENT};text-decoration:none">Privacy Policy</a> &middot;
+      <a href="${APP_URL}/terms" style="color:${ACCENT};text-decoration:none">Terms of Service</a><br>
+      LegacyLoop &middot; support@legacy-loop.com<br>
+      <a href="${APP_URL}/settings" style="color:${ACCENT};text-decoration:none">Manage Preferences</a>
     </div>
   </td></tr>
 </table>
@@ -30,30 +42,32 @@ function wrapper(content: string): string {
 </html>`;
 }
 
+// ─── Existing templates (same signatures) ─────────────────────────────────
+
 export function welcomeEmail(name: string): { subject: string; html: string } {
   return {
     subject: "Welcome to LegacyLoop! Let's get started",
     html: wrapper(`
-      <h1 style="font-size:24px;font-weight:800;color:#1a1a1a;margin:0 0 16px">Welcome, ${name}!</h1>
-      <p style="font-size:16px;color:#374151;line-height:1.6;margin:0 0 24px">
+      <h1 style="font-size:24px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 16px">Welcome, ${name}!</h1>
+      <p style="font-size:16px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
         You've just joined the smartest way to sell your belongings. Here's how to get started:
       </p>
       <table width="100%" cellpadding="0" cellspacing="0">
-        <tr><td style="padding:12px 0;border-bottom:1px solid #f3f4f6">
-          <strong style="color:${ACCENT}">Step 1:</strong> <span style="color:#374151">Upload a photo of any item</span>
+        <tr><td style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+          <strong style="color:${ACCENT}">Step 1:</strong> <span style="color:${TEXT_SECONDARY}">Upload a photo of any item</span>
         </td></tr>
-        <tr><td style="padding:12px 0;border-bottom:1px solid #f3f4f6">
-          <strong style="color:${ACCENT}">Step 2:</strong> <span style="color:#374151">Our AI instantly prices it for you</span>
+        <tr><td style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+          <strong style="color:${ACCENT}">Step 2:</strong> <span style="color:${TEXT_SECONDARY}">Our AI instantly prices it for you</span>
         </td></tr>
         <tr><td style="padding:12px 0">
-          <strong style="color:${ACCENT}">Step 3:</strong> <span style="color:#374151">List it and sell to real buyers</span>
+          <strong style="color:${ACCENT}">Step 3:</strong> <span style="color:${TEXT_SECONDARY}">List it and sell to real buyers</span>
         </td></tr>
       </table>
       <div style="text-align:center;margin:32px 0 16px">
-        <a href="https://legacyloop.com/items/new" style="${BTN_STYLE}">Upload Your First Item</a>
+        ${ctaButton("Upload Your First Item", `${APP_URL}/items/new`)}
       </div>
-      <p style="font-size:14px;color:#6b7280;text-align:center">
-        Questions? Reply to this email or call (512) 758-0518.
+      <p style="font-size:14px;color:${TEXT_MUTED};text-align:center">
+        Questions? Email <a href="mailto:support@legacy-loop.com" style="color:${ACCENT};text-decoration:none">support@legacy-loop.com</a>
       </p>
     `),
   };
@@ -70,24 +84,24 @@ export function itemSoldEmail(
   return {
     subject: `Your ${itemTitle} just sold for $${saleAmount.toFixed(2)}!`,
     html: wrapper(`
-      <h1 style="font-size:24px;font-weight:800;color:#1a1a1a;margin:0 0 8px">Congratulations, ${sellerName}!</h1>
-      <p style="font-size:16px;color:#374151;line-height:1.6;margin:0 0 24px">
+      <h1 style="font-size:24px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 8px">Congratulations, ${sellerName}!</h1>
+      <p style="font-size:16px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
         Your item has been purchased. Here's the breakdown:
       </p>
-      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;padding:16px">
-        <tr><td style="padding:8px 16px;font-size:14px;color:#6b7280">Item</td>
-            <td style="padding:8px 16px;font-size:14px;color:#1a1a1a;font-weight:600;text-align:right">${itemTitle}</td></tr>
-        <tr><td style="padding:8px 16px;font-size:14px;color:#6b7280">Sale Amount</td>
-            <td style="padding:8px 16px;font-size:14px;color:#1a1a1a;font-weight:600;text-align:right">$${saleAmount.toFixed(2)}</td></tr>
-        <tr><td style="padding:8px 16px;font-size:14px;color:#6b7280">Commission</td>
-            <td style="padding:8px 16px;font-size:14px;color:#ef4444;font-weight:600;text-align:right">-$${commission.toFixed(2)}</td></tr>
-        <tr style="border-top:2px solid #e5e5e5"><td style="padding:12px 16px;font-size:16px;color:#1a1a1a;font-weight:800">Your Earnings</td>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid ${BORDER}">
+        <tr><td style="padding:10px 16px;font-size:14px;color:${TEXT_SECONDARY}">Item</td>
+            <td style="padding:10px 16px;font-size:14px;color:${TEXT_PRIMARY};font-weight:600;text-align:right">${itemTitle}</td></tr>
+        <tr><td style="padding:10px 16px;font-size:14px;color:${TEXT_SECONDARY}">Sale Amount</td>
+            <td style="padding:10px 16px;font-size:14px;color:${TEXT_PRIMARY};font-weight:600;text-align:right">$${saleAmount.toFixed(2)}</td></tr>
+        <tr><td style="padding:10px 16px;font-size:14px;color:${TEXT_SECONDARY}">Commission</td>
+            <td style="padding:10px 16px;font-size:14px;color:#ef4444;font-weight:600;text-align:right">-$${commission.toFixed(2)}</td></tr>
+        <tr style="border-top:2px solid rgba(255,255,255,0.08)"><td style="padding:12px 16px;font-size:16px;color:${TEXT_PRIMARY};font-weight:800">Your Earnings</td>
             <td style="padding:12px 16px;font-size:16px;color:${ACCENT};font-weight:800;text-align:right">$${netEarnings.toFixed(2)}</td></tr>
       </table>
       <div style="text-align:center;margin:32px 0 16px">
-        <a href="https://legacyloop.com/items/${itemId}" style="${BTN_STYLE}">Ship Your Item</a>
+        ${ctaButton("Ship Your Item", `${APP_URL}/items/${itemId}`)}
       </div>
-      <p style="font-size:13px;color:#6b7280;text-align:center">
+      <p style="font-size:13px;color:${TEXT_MUTED};text-align:center">
         Earnings are available for payout after a 3-day hold period.
       </p>
     `),
@@ -105,29 +119,112 @@ export function orderConfirmationEmail(
   return {
     subject: `Order confirmed — ${itemTitle}`,
     html: wrapper(`
-      <h1 style="font-size:24px;font-weight:800;color:#1a1a1a;margin:0 0 8px">Order Confirmed!</h1>
-      <p style="font-size:16px;color:#374151;line-height:1.6;margin:0 0 24px">
+      <h1 style="font-size:24px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 8px">Order Confirmed!</h1>
+      <p style="font-size:16px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
         Hi ${buyerName}, your purchase is confirmed. The seller has been notified.
       </p>
-      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px">
-        <tr><td style="padding:8px 16px;font-size:14px;color:#6b7280">Item</td>
-            <td style="padding:8px 16px;font-size:14px;color:#1a1a1a;font-weight:600;text-align:right">${itemTitle}</td></tr>
-        <tr><td style="padding:8px 16px;font-size:14px;color:#6b7280">Price</td>
-            <td style="padding:8px 16px;font-size:14px;color:#1a1a1a;text-align:right">$${itemPrice.toFixed(2)}</td></tr>
-        ${shippingCost > 0 ? `<tr><td style="padding:8px 16px;font-size:14px;color:#6b7280">Shipping</td>
-            <td style="padding:8px 16px;font-size:14px;color:#1a1a1a;text-align:right">$${shippingCost.toFixed(2)}</td></tr>` : ""}
-        <tr><td style="padding:8px 16px;font-size:14px;color:#6b7280">Processing Fee (3.5%)</td>
-            <td style="padding:8px 16px;font-size:14px;color:#6b7280;text-align:right">$${processingFee.toFixed(2)}</td></tr>
-        <tr style="border-top:2px solid #e5e5e5"><td style="padding:12px 16px;font-size:16px;font-weight:800;color:#1a1a1a">Total</td>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid ${BORDER}">
+        <tr><td style="padding:10px 16px;font-size:14px;color:${TEXT_SECONDARY}">Item</td>
+            <td style="padding:10px 16px;font-size:14px;color:${TEXT_PRIMARY};font-weight:600;text-align:right">${itemTitle}</td></tr>
+        <tr><td style="padding:10px 16px;font-size:14px;color:${TEXT_SECONDARY}">Price</td>
+            <td style="padding:10px 16px;font-size:14px;color:${TEXT_PRIMARY};text-align:right">$${itemPrice.toFixed(2)}</td></tr>
+        ${shippingCost > 0 ? `<tr><td style="padding:10px 16px;font-size:14px;color:${TEXT_SECONDARY}">Shipping</td>
+            <td style="padding:10px 16px;font-size:14px;color:${TEXT_PRIMARY};text-align:right">$${shippingCost.toFixed(2)}</td></tr>` : ""}
+        <tr><td style="padding:10px 16px;font-size:14px;color:${TEXT_SECONDARY}">Processing Fee</td>
+            <td style="padding:10px 16px;font-size:14px;color:${TEXT_MUTED};text-align:right">$${processingFee.toFixed(2)}</td></tr>
+        <tr style="border-top:2px solid rgba(255,255,255,0.08)"><td style="padding:12px 16px;font-size:16px;font-weight:800;color:${TEXT_PRIMARY}">Total</td>
             <td style="padding:12px 16px;font-size:16px;font-weight:800;color:${ACCENT};text-align:right">$${total.toFixed(2)}</td></tr>
       </table>
-      <p style="font-size:14px;color:#374151;margin:24px 0 16px;line-height:1.6">
-        Estimated delivery: <strong>3-7 business days</strong> after the seller ships.
+      <p style="font-size:14px;color:${TEXT_SECONDARY};margin:24px 0 16px;line-height:1.6">
+        Estimated delivery: <strong style="color:${TEXT_PRIMARY}">3-7 business days</strong> after the seller ships.
         You'll receive tracking information once your item ships.
       </p>
       <div style="text-align:center;margin:24px 0 16px">
-        <a href="https://legacyloop.com/dashboard" style="${BTN_STYLE}">View Dashboard</a>
+        ${ctaButton("View Dashboard", `${APP_URL}/dashboard`)}
       </div>
     `),
   };
 }
+
+// ─── New templates ────────────────────────────────────────────────────────
+
+export function creditPurchaseEmail(
+  name: string,
+  creditAmount: number,
+  newBalance: number,
+  amountPaid: number
+): { subject: string; html: string } {
+  return {
+    subject: `${creditAmount} credits added to your account!`,
+    html: wrapper(`
+      <h1 style="font-size:24px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 16px">Credits Added!</h1>
+      <p style="font-size:16px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
+        Hi ${name}, your credit purchase is confirmed.
+      </p>
+      <div style="background:rgba(0,188,212,0.08);border:1px solid rgba(0,188,212,0.25);border-radius:12px;padding:24px;text-align:center;margin:0 0 24px">
+        <div style="font-size:14px;color:${TEXT_MUTED};margin-bottom:4px">Credits Added</div>
+        <div style="font-size:36px;font-weight:800;color:${ACCENT}">+${creditAmount}</div>
+        <div style="font-size:14px;color:${TEXT_SECONDARY};margin-top:8px">New Balance: <strong style="color:${TEXT_PRIMARY}">${newBalance} credits</strong></div>
+        <div style="font-size:13px;color:${TEXT_MUTED};margin-top:4px">Amount Paid: $${amountPaid.toFixed(2)}</div>
+      </div>
+      <div style="text-align:center;margin:24px 0 16px">
+        ${ctaButton("Explore Add-Ons", `${APP_URL}/credits`)}
+      </div>
+    `),
+  };
+}
+
+export function subscriptionUpgradeEmail(
+  name: string,
+  planName: string,
+  amountPaid: number,
+  billing: string
+): { subject: string; html: string } {
+  return {
+    subject: `Welcome to ${planName}! Your upgrade is confirmed`,
+    html: wrapper(`
+      <h1 style="font-size:24px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 16px">Upgrade Confirmed!</h1>
+      <p style="font-size:16px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
+        Hi ${name}, welcome to the <strong style="color:${TEXT_PRIMARY}">${planName}</strong> plan.
+      </p>
+      <div style="background:rgba(0,188,212,0.08);border:1px solid rgba(0,188,212,0.25);border-radius:12px;padding:24px;text-align:center;margin:0 0 24px">
+        <div style="font-size:14px;color:${TEXT_MUTED};margin-bottom:4px">Your Plan</div>
+        <div style="font-size:28px;font-weight:800;color:${ACCENT}">${planName}</div>
+        <div style="font-size:14px;color:${TEXT_SECONDARY};margin-top:8px">$${amountPaid.toFixed(2)}/${billing === "annual" ? "year" : "month"}</div>
+      </div>
+      <p style="font-size:14px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
+        All features are unlocked immediately. Your subscription renews automatically.
+      </p>
+      <div style="text-align:center;margin:24px 0 16px">
+        ${ctaButton("View Dashboard", `${APP_URL}/dashboard`)}
+      </div>
+    `),
+  };
+}
+
+export function ltlQuoteRequestEmail(
+  requesterEmail: string,
+  itemId: string,
+  originZip: string,
+  destZip: string,
+  weight: string,
+  formatted: string
+): { subject: string; html: string } {
+  return {
+    subject: `LTL Freight Quote Request — Item ${itemId}`,
+    html: wrapper(`
+      <h1 style="font-size:22px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 16px">LTL Freight Quote Request</h1>
+      <p style="font-size:14px;color:${TEXT_SECONDARY};margin:0 0 24px">
+        From: <strong style="color:${TEXT_PRIMARY}">${requesterEmail}</strong>
+      </p>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid ${BORDER};border-radius:8px;padding:20px;margin:0 0 24px;font-family:monospace;font-size:13px;color:${TEXT_SECONDARY};white-space:pre-wrap;line-height:1.6">${formatted}</div>
+      <div style="text-align:center;margin:24px 0 16px">
+        ${ctaButton("View Item", `${APP_URL}/items/${itemId}`)}
+      </div>
+    `),
+  };
+}
+
+// ─── Exports ──────────────────────────────────────────────────────────────
+
+export { wrapper as emailWrapper, ctaButton, ACCENT, APP_URL, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, BG_DARK, BG_CARD, BORDER };

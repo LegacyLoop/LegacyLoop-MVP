@@ -19,12 +19,12 @@ export default function CronStatusWidget() {
   const statusStyles: Record<string, { border: string; color: string; label: string }> = {
     healthy: { border: "#4caf50", color: "#4caf50", label: "● Running" },
     error: { border: "#f44336", color: "#f44336", label: "● Error" },
-    unknown: { border: "rgba(255,255,255,0.3)", color: "rgba(255,255,255,0.3)", label: "● Unknown" },
+    unknown: { border: "var(--border-default)", color: "var(--text-muted)", label: "● Unknown" },
   };
   const ss = statusStyles[status];
 
   return (
-    <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12, padding: 16 }}>
+    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 12, padding: 16 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>⏱️ Offer Expiry Cron</span>
         <span style={{ fontSize: 9, padding: "3px 10px", borderRadius: 20, border: `1px solid ${ss.border}`, color: ss.color }}>

@@ -157,7 +157,7 @@ export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl
                   borderRadius: "1.25rem",
                   overflow: "hidden",
                   background: "var(--bg-card-solid)",
-                  border: item.isAntique ? "1px solid rgba(255,107,53,0.4)" : "1px solid var(--border-card, rgba(255,255,255,0.08))",
+                  border: item.isAntique ? "1px solid rgba(255,107,53,0.4)" : "1px solid var(--border-card)",
                   boxShadow: item.isAntique
                     ? "0 4px 24px rgba(255,107,53,0.15), 0 0 0 1px rgba(255,182,39,0.1)"
                     : "0 4px 20px rgba(0,0,0,0.15)",

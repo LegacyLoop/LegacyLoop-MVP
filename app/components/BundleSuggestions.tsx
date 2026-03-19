@@ -11,8 +11,8 @@ import Link from "next/link";
    ────────────────────────────────────────────────────────────────────────────── */
 
 const TEAL = "#00bcd4";
-const GLASS = "rgba(255,255,255,0.03)";
-const GLASS_BORDER = "rgba(255,255,255,0.08)";
+const GLASS = "var(--bg-card)";
+const GLASS_BORDER = "var(--border-default)";
 const TEXT_PRIMARY = "#fff";
 const TEXT_SECONDARY = "rgba(207,216,220,0.7)";
 const TEXT_MUTED = "rgba(207,216,220,0.45)";
@@ -116,7 +116,7 @@ export default function BundleSuggestions() {
               key={n}
               style={{
                 height: 52,
-                background: "rgba(255,255,255,0.04)",
+                background: "var(--ghost-bg)",
                 borderRadius: 10,
               }}
             />
@@ -143,7 +143,7 @@ export default function BundleSuggestions() {
                 padding: "10px 12px",
                 marginBottom: i < visible.length - 1 ? 6 : 0,
                 borderRadius: 10,
-                background: isHover ? "rgba(255,255,255,0.04)" : "transparent",
+                background: isHover ? "var(--border-default)" : "transparent",
                 transition: "background 0.15s",
               }}
             >

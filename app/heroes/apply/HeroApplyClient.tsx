@@ -114,7 +114,7 @@ export default function HeroApplyClient() {
               style={{
                 height: "4px",
                 borderRadius: "2px",
-                background: s <= step ? "var(--accent, #00bcd4)" : "var(--border-default, rgba(255,255,255,0.1))",
+                background: s <= step ? "var(--accent, #00bcd4)" : "var(--border-default)",
                 transition: "background 0.3s ease",
               }}
             />
@@ -161,7 +161,7 @@ export default function HeroApplyClient() {
                   borderRadius: "1rem",
                   border: category === c.key
                     ? "2px solid var(--accent, #00bcd4)"
-                    : "1.5px solid var(--border-default, rgba(255,255,255,0.1))",
+                    : "1.5px solid var(--border-default)",
                   background: category === c.key
                     ? "rgba(0, 188, 212, 0.06)"
                     : "var(--bg-card-solid, #fff)",
@@ -197,7 +197,7 @@ export default function HeroApplyClient() {
                   width: "100%",
                   padding: "0.75rem 1rem",
                   borderRadius: "0.75rem",
-                  border: "1.5px solid var(--border-default, rgba(255,255,255,0.1))",
+                  border: "1.5px solid var(--border-default, var(--border-default))",
                   background: "var(--bg-card-solid, #fff)",
                   color: "var(--text-primary)",
                   fontSize: "0.9rem",
@@ -227,7 +227,7 @@ export default function HeroApplyClient() {
                 width: "100%",
                 padding: "0.75rem 1rem",
                 borderRadius: "0.75rem",
-                border: "1.5px solid var(--border-default, rgba(255,255,255,0.1))",
+                border: "1.5px solid var(--border-default, var(--border-default))",
                 background: "var(--bg-card-solid, #fff)",
                 color: "var(--text-primary)",
                 fontSize: "0.9rem",
@@ -250,7 +250,7 @@ export default function HeroApplyClient() {
                 width: "100%",
                 padding: "0.75rem 1rem",
                 borderRadius: "0.75rem",
-                border: "1.5px solid var(--border-default, rgba(255,255,255,0.1))",
+                border: "1.5px solid var(--border-default, var(--border-default))",
                 background: "var(--bg-card-solid, #fff)",
                 color: "var(--text-primary)",
                 fontSize: "0.9rem",
@@ -273,7 +273,7 @@ export default function HeroApplyClient() {
                 width: "100%",
                 padding: "0.75rem 1rem",
                 borderRadius: "0.75rem",
-                border: "1.5px solid var(--border-default, rgba(255,255,255,0.1))",
+                border: "1.5px solid var(--border-default, var(--border-default))",
                 background: "var(--bg-card-solid, #fff)",
                 color: "var(--text-primary)",
                 fontSize: "0.9rem",
@@ -325,7 +325,7 @@ export default function HeroApplyClient() {
                 ? "2px dashed var(--accent, #00bcd4)"
                 : file
                   ? "2px solid var(--accent, #00bcd4)"
-                  : "2px dashed var(--border-default, rgba(255,255,255,0.15))",
+                  : "2px dashed var(--border-default)",
               background: dragOver
                 ? "rgba(0, 188, 212, 0.06)"
                 : file
@@ -443,7 +443,7 @@ export default function HeroApplyClient() {
                 fontSize: "0.95rem",
                 fontWeight: 600,
                 borderRadius: "0.75rem",
-                border: "1.5px solid var(--border-default, rgba(255,255,255,0.1))",
+                border: "1.5px solid var(--border-default, var(--border-default))",
                 background: "transparent",
                 color: "var(--text-primary)",
                 cursor: "pointer",

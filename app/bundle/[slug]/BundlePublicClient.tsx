@@ -11,8 +11,8 @@ import Link from "next/link";
 
 const TEAL = "#00bcd4";
 const TEAL_DIM = "rgba(0,188,212,0.15)";
-const GLASS = "rgba(255,255,255,0.04)";
-const GLASS_BORDER = "rgba(255,255,255,0.08)";
+const GLASS = "var(--ghost-bg)";
+const GLASS_BORDER = "var(--border-default)";
 const TEXT_PRIMARY = "#fff";
 const TEXT_SECONDARY = "rgba(207,216,220,0.7)";
 const TEXT_MUTED = "rgba(207,216,220,0.45)";
@@ -198,7 +198,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                     padding: "20px 12px 8px",
                   }}
                 >
-                  <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-primary)" }}>
                     {item.title}
                   </div>
                 </div>
@@ -462,7 +462,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }}>
                         <span
                           style={{
-                            background: "rgba(255,255,255,0.06)",
+                            background: "var(--ghost-bg)",
                             color: TEXT_MUTED,
                             borderRadius: 4,
                             padding: "2px 7px",
@@ -474,7 +474,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                         {item.condition && (
                           <span
                             style={{
-                              background: "rgba(255,255,255,0.06)",
+                              background: "var(--ghost-bg)",
                               color: TEXT_MUTED,
                               borderRadius: 4,
                               padding: "2px 7px",
@@ -487,7 +487,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                         {item.era && (
                           <span
                             style={{
-                              background: "rgba(255,255,255,0.06)",
+                              background: "var(--ghost-bg)",
                               color: TEXT_MUTED,
                               borderRadius: 4,
                               padding: "2px 7px",
@@ -1098,7 +1098,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                   disabled={offerAmount <= 0}
                   style={{
                     flex: 1,
-                    background: offerAmount > 0 ? `linear-gradient(135deg, ${TEAL}, #0097a7)` : "rgba(255,255,255,0.06)",
+                    background: offerAmount > 0 ? `linear-gradient(135deg, ${TEAL}, #0097a7)` : "var(--ghost-bg)",
                     color: offerAmount > 0 ? "#fff" : TEXT_MUTED,
                     border: "none",
                     borderRadius: 10,

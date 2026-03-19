@@ -64,6 +64,22 @@ export async function POST(
     5000
   );
 
+  // New detail fields
+  const category = asNullableString(body.category);
+  const brand = asNullableString(body.brand);
+  const maker = asNullableString(body.maker);
+  const era = asNullableString(body.era);
+  const material = asNullableString(body.material);
+  const itemStyle = asNullableString(body.itemStyle);
+  const countryOfOrigin = asNullableString(body.countryOfOrigin);
+  const story = asNullableString(body.story);
+  const numberOfOwners = asNullableString(body.numberOfOwners);
+  const approximateAge = asNullableString(body.approximateAge);
+  const worksProperly = asNullableString(body.worksProperly);
+  const knownDamage = asNullableString(body.knownDamage);
+  const hasOriginalPackaging = asNullableString(body.hasOriginalPackaging);
+  const listingPriceVal = asNullableNumber(body.listingPrice);
+
   // Shipping fields (optional)
   const shippingWeight = asNullableNumber(body.shippingWeight);
   const shippingLength = asNullableNumber(body.shippingLength);
@@ -91,6 +107,20 @@ export async function POST(
       ...(shippingHeight !== undefined && { shippingHeight }),
       ...(isFragile !== undefined && { isFragile }),
       ...(shippingPreference !== undefined && { shippingPreference }),
+      ...(category !== undefined && { category }),
+      ...(brand !== undefined && { brand }),
+      ...(maker !== undefined && { maker }),
+      ...(era !== undefined && { era }),
+      ...(material !== undefined && { material }),
+      ...(itemStyle !== undefined && { itemStyle }),
+      ...(countryOfOrigin !== undefined && { countryOfOrigin }),
+      ...(story !== undefined && { story }),
+      ...(numberOfOwners !== undefined && { numberOfOwners }),
+      ...(approximateAge !== undefined && { approximateAge }),
+      ...(worksProperly !== undefined && { worksProperly }),
+      ...(knownDamage !== undefined && { knownDamage }),
+      ...(hasOriginalPackaging !== undefined && { hasOriginalPackaging }),
+      ...(listingPriceVal !== undefined && { listingPrice: listingPriceVal }),
     },
   });
 
@@ -98,7 +128,10 @@ export async function POST(
     data: {
       itemId,
       eventType: "ITEM_UPDATED",
-      payload: JSON.stringify({ saleMethod, saleZip, saleRadiusMi }),
+      payload: JSON.stringify({
+        saleMethod, saleZip, saleRadiusMi,
+        fieldsUpdated: Object.keys(body).filter(k => body[k] != null && body[k] !== ""),
+      }),
     },
   });
 

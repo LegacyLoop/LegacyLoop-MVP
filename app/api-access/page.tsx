@@ -201,7 +201,7 @@ export default function ApiAccessPage() {
         <h1 style={{ fontSize: "2.5rem", fontWeight: 900, lineHeight: 1.2, marginBottom: "1rem" }}>
           LegacyLoop Intelligence<br />in Your Platform
         </h1>
-        <p style={{ color: "rgba(255,255,255,0.75)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
+        <p style={{ color: "var(--text-primary)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
           Integrate our AI estate analysis, antique detection, MegaBot pricing, and buyer matching
           directly into your application via REST API. Built for resale platforms, real estate software,
           auction houses, and senior service apps.
@@ -231,21 +231,21 @@ export default function ApiAccessPage() {
               display: "inline-flex",
               alignItems: "center",
               gap: "0.5rem",
-              background: "rgba(255,255,255,0.1)",
+              background: "var(--bg-card-hover)",
               color: "#fff",
               padding: "0.85rem 2rem",
               borderRadius: "9999px",
               fontWeight: 700,
               textDecoration: "none",
               fontSize: "0.95rem",
-              border: "1px solid rgba(255,255,255,0.2)",
+              border: "1px solid var(--border-default)",
             }}
           >
             Talk to Sales
           </a>
         </div>
 
-        <div style={{ display: "flex", gap: "2.5rem", marginTop: "2.5rem", paddingTop: "2rem", borderTop: "1px solid rgba(255,255,255,0.15)", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "2.5rem", marginTop: "2.5rem", paddingTop: "2rem", borderTop: "1px solid var(--border-default)", flexWrap: "wrap" }}>
           {[
             { value: "REST", label: "API standard" },
             { value: "<800ms", label: "Avg response time" },
@@ -254,7 +254,7 @@ export default function ApiAccessPage() {
           ].map((s) => (
             <div key={s.label}>
               <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "#5eead4" }}>{s.value}</div>
-              <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.6)", marginTop: "0.1rem" }}>{s.label}</div>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "0.1rem" }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -356,9 +356,9 @@ export default function ApiAccessPage() {
                       textAlign: "center",
                       padding: "0.75rem 1rem",
                       borderRadius: "0.75rem",
-                      background: isDark ? "rgba(255,255,255,0.1)" : plan.color,
+                      background: isDark ? "var(--bg-card-hover)" : plan.color,
                       color: "#fff",
-                      border: `2px solid ${isDark ? "rgba(255,255,255,0.2)" : plan.color}`,
+                      border: `2px solid ${isDark ? "var(--border-default)" : plan.color}`,
                       fontWeight: 700,
                       fontSize: "0.9rem",
                       textDecoration: "none",
@@ -403,7 +403,7 @@ export default function ApiAccessPage() {
         <h2 style={{ fontSize: "1.75rem", fontWeight: 800, marginBottom: "0.75rem" }}>
           Ready to integrate?
         </h2>
-        <p style={{ color: "rgba(255,255,255,0.7)", marginBottom: "1.5rem", maxWidth: "480px", margin: "0 auto 1.5rem" }}>
+        <p style={{ color: "var(--text-secondary)", marginBottom: "1.5rem", maxWidth: "480px", margin: "0 auto 1.5rem" }}>
           Contact our API team for sandbox credentials, documentation, and a technical walkthrough.
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
@@ -415,7 +415,7 @@ export default function ApiAccessPage() {
           </a>
           <Link
             href="/pricing"
-            style={{ background: "rgba(255,255,255,0.1)", color: "#fff", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem", border: "1px solid rgba(255,255,255,0.2)" }}
+            style={{ background: "var(--bg-card-hover)", color: "#fff", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem", border: "1px solid var(--border-default)" }}
           >
             View Platform Pricing
           </Link>

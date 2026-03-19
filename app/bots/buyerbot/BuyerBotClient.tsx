@@ -29,7 +29,7 @@ function safeJson(s: string | null): any {
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={{
-      background: "rgba(255,255,255,0.03)", backdropFilter: "blur(12px)",
+      background: "var(--bg-card)", backdropFilter: "blur(12px)",
       border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.25rem",
       ...style,
     }}>
@@ -252,7 +252,7 @@ function OutreachCenter({ item, ai, result }: { item: ItemData; ai: any; result:
           rows={5}
           style={{
             width: "100%", padding: "0.65rem", borderRadius: "0.5rem", fontSize: "0.75rem",
-            background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-default)",
+            background: "var(--bg-card)", border: "1px solid var(--border-default)",
             color: "var(--text-primary)", resize: "vertical", lineHeight: 1.5,
             fontFamily: "inherit",
           }}
@@ -280,7 +280,7 @@ function OutreachCenter({ item, ai, result }: { item: ItemData; ai: any; result:
         {CHANNELS.map((ch) => (
           <div key={ch.id} style={{
             display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.6rem",
-            borderRadius: "0.45rem", border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.02)",
+            borderRadius: "0.45rem", border: "1px solid var(--border-default)", background: "var(--bg-card)",
           }}>
             <span style={{ fontSize: "0.85rem" }}>{ch.icon}</span>
             <span style={{ flex: 1, fontSize: "0.7rem", fontWeight: 600, color: "var(--text-primary)" }}>{ch.name}</span>
@@ -545,7 +545,7 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
                   <div key={i} style={{
                     padding: "0.75rem", borderRadius: "0.6rem",
                     border: "1px solid " + (i === 0 ? "rgba(239,68,68,0.25)" : "var(--border-default)"),
-                    background: i === 0 ? "rgba(239,68,68,0.04)" : "rgba(255,255,255,0.02)",
+                    background: i === 0 ? "rgba(239,68,68,0.04)" : "var(--bg-card)",
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.35rem", flexWrap: "wrap" }}>
                       <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)", flex: 1 }}>{lead.lead_description}</span>
@@ -578,7 +578,7 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
                 {profiles.map((p: any, i: number) => (
                   <div key={i} style={{
                     padding: "0.75rem", borderRadius: "0.6rem",
-                    border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.02)",
+                    border: "1px solid var(--border-default)", background: "var(--bg-card)",
                   }}>
                     <div style={{ fontWeight: 700, fontSize: "0.8rem", color: "var(--text-primary)", marginBottom: "0.3rem" }}>{p.profile_name}</div>
                     <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap", marginBottom: "0.35rem" }}>
@@ -599,7 +599,7 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
                     {p.platforms_active_on?.length > 0 && (
                       <div style={{ display: "flex", gap: "0.2rem", flexWrap: "wrap", marginTop: "0.3rem" }}>
                         {p.platforms_active_on.slice(0, 4).map((pl: string, j: number) => (
-                          <span key={j} style={{ padding: "0.1rem 0.35rem", borderRadius: "0.25rem", fontSize: "0.55rem", background: "rgba(255,255,255,0.05)", color: "var(--text-muted)", border: "1px solid var(--border-default)" }}>
+                          <span key={j} style={{ padding: "0.1rem 0.35rem", borderRadius: "0.25rem", fontSize: "0.55rem", background: "var(--ghost-bg)", color: "var(--text-muted)", border: "1px solid var(--border-default)" }}>
                             {pl}
                           </span>
                         ))}
@@ -622,7 +622,7 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
                 {platforms.map((plat: any, i: number) => (
                   <div key={i} style={{
                     padding: "0.75rem", borderRadius: "0.6rem",
-                    border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.02)",
+                    border: "1px solid var(--border-default)", background: "var(--bg-card)",
                   }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.35rem", flexWrap: "wrap" }}>
                       <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)" }}>{plat.platform}</span>
@@ -678,31 +678,31 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
               <SectionLabel icon="📍" label="Local Opportunities" />
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {local.antique_shops_nearby && (
-                  <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.45rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-default)" }}>
+                  <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.45rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "0.15rem" }}>🏪 Shops & Dealers</div>
                     <p style={{ fontSize: "0.7rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.4 }}>{local.antique_shops_nearby}</p>
                   </div>
                 )}
                 {local.flea_markets && (
-                  <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.45rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-default)" }}>
+                  <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.45rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "0.15rem" }}>🎪 Flea Markets & Events</div>
                     <p style={{ fontSize: "0.7rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.4 }}>{local.flea_markets}</p>
                   </div>
                 )}
                 {local.consignment_options && (
-                  <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.45rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-default)" }}>
+                  <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.45rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "0.15rem" }}>🏷️ Consignment</div>
                     <p style={{ fontSize: "0.7rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.4 }}>{local.consignment_options}</p>
                   </div>
                 )}
                 {local.local_collector_clubs && (
-                  <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.45rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-default)" }}>
+                  <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.45rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "0.15rem" }}>🤝 Clubs & Groups</div>
                     <p style={{ fontSize: "0.7rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.4 }}>{local.local_collector_clubs}</p>
                   </div>
                 )}
                 {local.word_of_mouth && (
-                  <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.45rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-default)" }}>
+                  <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.45rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", marginBottom: "0.15rem" }}>📢 Word of Mouth</div>
                     <p style={{ fontSize: "0.7rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.4 }}>{local.word_of_mouth}</p>
                   </div>
@@ -716,11 +716,11 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
             <Card>
               <SectionLabel icon="⚔️" label="Competitive Landscape" />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-default)", textAlign: "center" }}>
+                <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", textAlign: "center" }}>
                   <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--accent)" }}>{competition.similar_items_listed || "?"}</div>
                   <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>Similar Items Listed</div>
                 </div>
-                <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-default)", textAlign: "center" }}>
+                <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", textAlign: "center" }}>
                   <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)" }}>{competition.price_range_of_competitors || "N/A"}</div>
                   <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>Competitor Price Range</div>
                 </div>
@@ -752,25 +752,25 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
               <SectionLabel icon="⏱️" label="Timing Advice" />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
                 {timing.best_day_to_list && (
-                  <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-default)" }}>
+                  <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: "0.1rem" }}>📅 Best Day</div>
                     <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>{timing.best_day_to_list}</div>
                   </div>
                 )}
                 {timing.best_time_to_list && (
-                  <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-default)" }}>
+                  <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: "0.1rem" }}>🕐 Best Time</div>
                     <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>{timing.best_time_to_list}</div>
                   </div>
                 )}
                 {timing.seasonal_peak && (
-                  <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-default)" }}>
+                  <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: "0.1rem" }}>🌸 Peak Season</div>
                     <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)" }}>{timing.seasonal_peak}</div>
                   </div>
                 )}
                 {timing.avoid_listing && (
-                  <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-default)" }}>
+                  <div style={{ padding: "0.5rem", borderRadius: "0.45rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: "0.1rem" }}>🚫 Avoid</div>
                     <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)" }}>{timing.avoid_listing}</div>
                   </div>
@@ -844,7 +844,7 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
 
                 {/* Agreement bar */}
                 <div style={{ marginBottom: "0.75rem" }}>
-                  <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                  <div style={{ height: 5, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${agree}%`, borderRadius: 99, background: agree >= 80 ? "#4caf50" : agree >= 60 ? "#ff9800" : "#ef4444" }} />
                   </div>
                 </div>
@@ -859,9 +859,9 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
 
                     return (
                       <div key={p.provider} style={{
-                        background: isExp ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
+                        background: isExp ? "var(--ghost-bg)" : "var(--bg-card)",
                         borderTop: isExp ? `3px solid ${pm.color}` : undefined,
-                        border: `1px solid ${isExp ? `${pm.color}30` : "rgba(255,255,255,0.06)"}`,
+                        border: `1px solid ${isExp ? `${pm.color}30` : "var(--border-default)"}`,
                         borderRadius: "0.5rem", overflow: "hidden",
                       }}>
                         <button
@@ -882,10 +882,10 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
                           <div style={{ padding: "0 0.75rem 0.75rem", borderTop: `1px solid ${pm.color}15` }}>
                             {/* Profiles */}
                             {bh.profiles.length > 0 && (
-                              <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Buyer Profiles ({bh.profiles.length})</div>
                                 {bh.profiles.slice(0, 6).map((bp: any, i: number) => (
-                                  <div key={i} style={{ padding: "0.35rem 0.4rem", marginBottom: "0.25rem", borderRadius: "0.35rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                                  <div key={i} style={{ padding: "0.35rem 0.4rem", marginBottom: "0.25rem", borderRadius: "0.35rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexWrap: "wrap" }}>
                                       <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)" }}>🎯 {bp.profile_name || bp.name || "Buyer"}</span>
                                       {bp.buyer_type && <BuyerTypeBadge type={bp.buyer_type} />}
@@ -902,12 +902,12 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
 
                             {/* Platforms */}
                             {bh.platforms.length > 0 && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Platform Opportunities</div>
                                 <div style={{ overflowX: "auto" }}>
                                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.68rem" }}>
                                     <thead>
-                                      <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                                      <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
                                         <th style={{ textAlign: "left", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Platform</th>
                                         <th style={{ textAlign: "center", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Level</th>
                                         <th style={{ textAlign: "right", padding: "0.2rem 0.3rem", color: "var(--text-muted)", fontWeight: 600 }}>Buyers</th>
@@ -917,7 +917,7 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
                                     </thead>
                                     <tbody>
                                       {bh.platforms.slice(0, 8).map((pl: any, i: number) => (
-                                        <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                                        <tr key={i} style={{ borderBottom: "1px solid var(--border-default)" }}>
                                           <td style={{ padding: "0.25rem 0.3rem", color: "var(--text-primary)", fontWeight: 600 }}>{pl.platform || "Unknown"}</td>
                                           <td style={{ padding: "0.25rem 0.3rem", textAlign: "center" }}>
                                             <OpportunityBadge level={pl.opportunity_level || "Moderate"} />
@@ -935,10 +935,10 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
 
                             {/* Hot Leads */}
                             {bh.hotLeads.length > 0 && (
-                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.05)" }}>
+                              <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Hot Leads</div>
                                 {bh.hotLeads.slice(0, 6).map((lead: any, i: number) => (
-                                  <div key={i} style={{ padding: "0.3rem 0", borderBottom: i < Math.min(bh.hotLeads.length, 6) - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                                  <div key={i} style={{ padding: "0.3rem 0", borderBottom: i < Math.min(bh.hotLeads.length, 6) - 1 ? "1px solid var(--border-default)" : "none" }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                                       <UrgencyBadge level={lead.urgency || "This week"} />
                                       <span style={{ fontSize: "0.7rem", color: "var(--text-primary)", flex: 1 }}>{lead.lead_description || lead.description || "Active buyer"}</span>
@@ -956,7 +956,7 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
                                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.35rem" }}>Deep Buyer Intelligence</div>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                                   {bh.outreach.length > 0 && bh.outreach.slice(0, 3).map((s: any, i: number) => (
-                                    <div key={i} style={{ padding: "0.3rem", borderRadius: "0.3rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)" }}>
+                                    <div key={i} style={{ padding: "0.3rem", borderRadius: "0.3rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
                                       <div style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--text-primary)" }}>🎯 {s.strategy_name || s.channel || "Strategy"}</div>
                                       {s.message_template && <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.1rem", fontStyle: "italic" }}>&ldquo;{typeof s.message_template === "string" && s.message_template.length > 100 ? s.message_template.slice(0, 100) + "..." : s.message_template}&rdquo;</div>}
                                     </div>
@@ -1004,7 +1004,7 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
 
                 {/* Comparison */}
                 {successful.length > 1 && (
-                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                     <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Buyer Intelligence Comparison</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem", fontSize: "0.7rem" }}>
                       {successful.map((p: any, i: number) => {

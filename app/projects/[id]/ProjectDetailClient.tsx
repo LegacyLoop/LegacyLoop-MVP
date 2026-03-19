@@ -105,7 +105,7 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
       {/* Header card */}
       <div style={{
         padding: "1.5rem", borderRadius: "1rem", marginBottom: "1.25rem",
-        background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+        background: "var(--bg-card)", border: "1px solid var(--border-default)",
         backdropFilter: "blur(20px)",
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
@@ -148,7 +148,7 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
               style={{
                 display: "inline-flex", alignItems: "center", gap: "0.3rem",
                 padding: "0.45rem 0.85rem", borderRadius: "0.5rem",
-                border: "1px solid rgba(255,255,255,0.1)", background: "transparent",
+                border: "1px solid var(--border-default)", background: "transparent",
                 color: "var(--text-muted)", fontSize: "0.78rem", fontWeight: 600,
                 textDecoration: "none", transition: "all 0.15s ease",
               }}
@@ -192,7 +192,7 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
         ].map((s) => (
           <div key={s.label} style={{
             padding: "1rem", borderRadius: "0.75rem",
-            background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+            background: "var(--bg-card)", border: "1px solid var(--border-default)",
             textAlign: "center",
           }}>
             <div style={{ fontSize: "0.58rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.label}</div>
@@ -204,7 +204,7 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
       {/* Items section */}
       <div style={{
         padding: "1.5rem", borderRadius: "1rem",
-        background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)",
+        background: "var(--bg-card)", border: "1px solid var(--border-default)",
         backdropFilter: "blur(20px)",
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
@@ -249,15 +249,15 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
                   style={{
                     display: "flex", alignItems: "center", gap: "0.6rem",
                     padding: "0.45rem 0.65rem",
-                    background: "rgba(255,255,255,0.03)", borderRadius: "0.5rem",
-                    border: "1px solid rgba(255,255,255,0.05)",
+                    background: "var(--bg-card)", borderRadius: "0.5rem",
+                    border: "1px solid var(--border-default)",
                   }}
                 >
                   {item.photoUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.photoUrl} alt="" style={{ width: "36px", height: "36px", objectFit: "cover", borderRadius: "0.35rem", flexShrink: 0 }} />
                   ) : (
-                    <div style={{ width: "36px", height: "36px", background: "rgba(255,255,255,0.06)", borderRadius: "0.35rem", flexShrink: 0 }} />
+                    <div style={{ width: "36px", height: "36px", background: "var(--ghost-bg)", borderRadius: "0.35rem", flexShrink: 0 }} />
                   )}
                   <div style={{ flex: 1, fontSize: "0.8rem", fontWeight: 500, color: "var(--text-primary)" }}>{item.title}</div>
                   <button
@@ -280,7 +280,7 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
 
         {showAddItems && availableItems.length === 0 && (
           <div style={{
-            background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)",
+            background: "var(--bg-card)", border: "1px solid var(--border-default)",
             borderRadius: "0.75rem", padding: "1rem", marginBottom: "1rem",
             textAlign: "center", fontSize: "0.78rem", color: "var(--text-muted)",
           }}>
@@ -341,8 +341,8 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
                   style={{
                     display: "flex", alignItems: "center", gap: "0.75rem",
                     padding: "0.6rem 0.75rem",
-                    background: "rgba(255,255,255,0.02)", borderRadius: "0.6rem",
-                    border: "1px solid rgba(255,255,255,0.05)",
+                    background: "var(--bg-card)", borderRadius: "0.6rem",
+                    border: "1px solid var(--border-default)",
                     transition: "background 0.15s ease",
                   }}
                 >
@@ -352,7 +352,7 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
                   ) : (
                     <div style={{
                       width: "44px", height: "44px", borderRadius: "0.45rem", flexShrink: 0,
-                      background: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center",
+                      background: "var(--ghost-bg)", display: "flex", alignItems: "center", justifyContent: "center",
                     }}>
                       <span style={{ fontSize: "0.9rem" }}>{"\uD83D\uDCF7"}</span>
                     </div>
@@ -378,7 +378,7 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
                       href={`/items/${item.id}`}
                       style={{
                         fontSize: "0.68rem", padding: "0.25rem 0.55rem", borderRadius: "0.35rem",
-                        border: "1px solid rgba(255,255,255,0.1)", background: "transparent",
+                        border: "1px solid var(--border-default)", background: "transparent",
                         color: "var(--text-muted)", textDecoration: "none", fontWeight: 500,
                       }}
                     >

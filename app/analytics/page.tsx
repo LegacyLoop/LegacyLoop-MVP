@@ -26,8 +26,8 @@ const SPECIALIST_BOT_TYPES = [
 
 // ─── Style constants ──────────────────────────────────────────────────────
 const CARD: React.CSSProperties = {
-  background: "rgba(255,255,255,0.04)",
-  border: "1px solid rgba(255,255,255,0.08)",
+  background: "var(--ghost-bg)",
+  border: "1px solid var(--border-default)",
   borderRadius: "16px",
   padding: "1.5rem",
 };
@@ -74,7 +74,7 @@ function pctBar(value: number, max: number, color = "#00bcd4") {
   const pct = max === 0 ? 0 : Math.round(Math.min(100, (value / max) * 100));
   return (
     <div style={{ marginTop: "0.4rem" }}>
-      <div style={{ height: "6px", background: "rgba(255,255,255,0.06)", borderRadius: "9999px", overflow: "hidden" }}>
+      <div style={{ height: "6px", background: "var(--ghost-bg)", borderRadius: "9999px", overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: "9999px", transition: "width 0.6s ease" }} />
       </div>
     </div>
@@ -539,7 +539,7 @@ export default async function AnalyticsPage({
               Admin Portal
             </Link>
           )}
-          <Link href="/dashboard" style={{ padding: "0.5rem 1rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px", color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.8rem", textDecoration: "none" }}>
+          <Link href="/dashboard" style={{ padding: "0.5rem 1rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.8rem", textDecoration: "none" }}>
             ← Dashboard
           </Link>
         </div>
@@ -551,8 +551,8 @@ export default async function AnalyticsPage({
         gap: "0.25rem",
         marginBottom: "2rem",
         padding: "0.3rem",
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.06)",
+        background: "var(--bg-card)",
+        border: "1px solid var(--border-default)",
         borderRadius: "12px",
         width: "fit-content",
       }}>
@@ -722,7 +722,7 @@ export default async function AnalyticsPage({
                     <span style={{ color: "var(--text-secondary)", fontWeight: 600 }}>{step.label}</span>
                     <span style={{ color: step.color, fontWeight: 700 }}>{step.count} ({pct}%)</span>
                   </div>
-                  <div style={{ height: "8px", background: "rgba(255,255,255,0.06)", borderRadius: "9999px", overflow: "hidden" }}>
+                  <div style={{ height: "8px", background: "var(--ghost-bg)", borderRadius: "9999px", overflow: "hidden" }}>
                     <div style={{
                       height: "100%",
                       width: `${pct}%`,
@@ -747,7 +747,7 @@ export default async function AnalyticsPage({
           <div style={SECTION_TITLE}>Buyer Platforms</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0.75rem" }}>
             {platforms.map(([platform, count]) => (
-              <div key={platform} style={{ padding: "0.6rem 0.75rem", background: "rgba(255,255,255,0.03)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div key={platform} style={{ padding: "0.6rem 0.75rem", background: "var(--bg-card)", borderRadius: "10px", border: "1px solid var(--border-default)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", marginBottom: "0.3rem" }}>
                   <span style={{ fontWeight: 600, color: "var(--text-secondary)", textTransform: "capitalize" }}>
                     {platform === "direct" ? "🔗 Direct" :
@@ -818,7 +818,7 @@ export default async function AnalyticsPage({
                 <thead>
                   <tr>
                     {["Category", "Items", "Sold", "Est. Value", "Conv."].map((h) => (
-                      <th key={h} style={{ textAlign: "left", padding: "0.4rem 0.5rem", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                      <th key={h} style={{ textAlign: "left", padding: "0.4rem 0.5rem", color: "var(--text-muted)", fontWeight: 600, fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid var(--border-default)" }}>
                         {h}
                       </th>
                     ))}
@@ -863,7 +863,7 @@ export default async function AnalyticsPage({
               <Link
                 key={item.id}
                 href={`/items/${item.id}`}
-                style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.6rem", background: "rgba(255,255,255,0.03)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.06)" }}
+                style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "10px", border: "1px solid var(--border-default)" }}
               >
                 <div style={{ fontSize: "0.72rem", fontWeight: 800, color: "var(--text-muted)", width: "1.2rem", textAlign: "center", flexShrink: 0 }}>
                   #{i + 1}
@@ -871,7 +871,7 @@ export default async function AnalyticsPage({
                 {item.photoUrl ? (
                   <img src={item.photoUrl} alt="" style={{ width: "36px", height: "36px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }} />
                 ) : (
-                  <div style={{ width: "36px", height: "36px", background: "rgba(255,255,255,0.06)", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ width: "36px", height: "36px", background: "var(--ghost-bg)", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <span style={{ fontSize: "1rem" }}>📷</span>
                   </div>
                 )}
@@ -945,8 +945,8 @@ export default async function AnalyticsPage({
                 key={key}
                 style={{
                   padding: "1rem",
-                  background: count > 0 ? `${meta.color}10` : "rgba(255,255,255,0.02)",
-                  border: `1px solid ${count > 0 ? `${meta.color}30` : "rgba(255,255,255,0.06)"}`,
+                  background: count > 0 ? `${meta.color}10` : "var(--bg-card)",
+                  border: `1px solid ${count > 0 ? `${meta.color}30` : "var(--border-default)"}`,
                   borderRadius: "12px",
                   textAlign: "center",
                   transition: "all 0.2s",
@@ -1219,7 +1219,7 @@ export default async function AnalyticsPage({
                   {b.count} item{b.count !== 1 ? "s" : ""}
                 </span>
               </div>
-              <div style={{ height: "24px", background: "rgba(255,255,255,0.04)", borderRadius: "8px", overflow: "hidden", position: "relative" }}>
+              <div style={{ height: "24px", background: "var(--ghost-bg)", borderRadius: "8px", overflow: "hidden", position: "relative" }}>
                 <div style={{
                   height: "100%",
                   width: `${Math.max(2, (b.count / maxBucketCount) * 100)}%`,

@@ -1,28 +1,9 @@
 import { sendEmail } from "@/lib/email/send";
 import { prisma } from "@/lib/db";
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+import { emailWrapper, ctaButton, APP_URL } from "@/lib/email/templates";
 
 function dollars(cents: number): string {
   return (cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function emailWrapper(body: string): string {
-  return `
-<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #111; color: #e5e5e5; padding: 32px; border-radius: 12px;">
-  <div style="text-align: center; margin-bottom: 24px;">
-    <span style="font-size: 24px; font-weight: 700; color: #00bcd4;">LegacyLoop</span>
-  </div>
-  ${body}
-  <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 12px; color: #888;">
-    LegacyLoop — AI-Powered Estate Resale<br/>
-    You received this email because of activity on LegacyLoop. If you believe this was sent in error, please ignore it.
-  </div>
-</div>`;
-}
-
-function ctaButton(text: string, url: string): string {
-  return `<a href="${url}" style="display: inline-block; padding: 14px 28px; background: #00bcd4; color: #000; font-weight: 700; font-size: 16px; text-decoration: none; border-radius: 8px; margin: 16px 0;">${text}</a>`;
 }
 
 // ─── 1. Notify seller when buyer submits an offer ────────────────────────────

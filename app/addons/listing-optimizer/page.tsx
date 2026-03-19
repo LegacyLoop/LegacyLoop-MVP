@@ -106,7 +106,7 @@ function ListingOptimizerInner() {
           href="/marketplace"
           style={{
             fontSize: 12,
-            color: "rgba(255,255,255,0.5)",
+            color: "var(--text-muted)",
             textDecoration: "none",
             marginBottom: 12,
             display: "inline-block",
@@ -170,8 +170,8 @@ function ListingOptimizerInner() {
       {!selectedItemId && (
         <div
           style={{
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-default)",
             borderRadius: 14,
             padding: 24,
             marginBottom: 24,
@@ -199,8 +199,8 @@ function ListingOptimizerInner() {
                 key={item.id}
                 onClick={() => setSelectedItemId(item.id)}
                 style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-default)",
                   borderRadius: 10,
                   padding: 14,
                   cursor: "pointer",
@@ -211,8 +211,7 @@ function ListingOptimizerInner() {
                     "rgba(0,188,212,0.4)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor =
-                    "rgba(255,255,255,0.08)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
                 }}
               >
                 <div
@@ -300,13 +299,13 @@ function ListingOptimizerInner() {
                 <div
                   key={e.key}
                   style={{
-                    background: "rgba(255,255,255,0.04)",
+                    background: "var(--ghost-bg)",
                     border: `1px solid ${
                       status === "complete"
                         ? "#4caf50"
                         : status === "failed"
                           ? "#f44336"
-                          : "rgba(255,255,255,0.08)"
+                          : "var(--text-muted)"
                     }`,
                     borderRadius: 12,
                     padding: 16,
@@ -347,7 +346,7 @@ function ListingOptimizerInner() {
             style={{
               height: 4,
               borderRadius: 2,
-              background: "rgba(255,255,255,0.08)",
+              background: "var(--ghost-bg)",
               overflow: "hidden",
             }}
           >
@@ -383,7 +382,7 @@ function ListingOptimizerInner() {
                   width: 100,
                   height: 100,
                   borderRadius: "50%",
-                  border: "3px solid rgba(255,255,255,0.15)",
+                  border: "3px solid var(--border-default)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -394,7 +393,7 @@ function ListingOptimizerInner() {
                   style={{
                     fontSize: 32,
                     fontWeight: 800,
-                    color: "rgba(255,255,255,0.5)",
+                    color: "var(--text-muted)",
                   }}
                 >
                   {result.originalScore}
@@ -461,8 +460,8 @@ function ListingOptimizerInner() {
               <div
                 key={agent.provider}
                 style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-default)",
                   borderRadius: 10,
                   padding: 12,
                   textAlign: "center",
@@ -523,8 +522,8 @@ function ListingOptimizerInner() {
               <div
                 key={plat.key}
                 style={{
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.07)",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border-default)",
                   borderLeft: `4px solid ${plat.color}`,
                   borderRadius: 10,
                   padding: "14px 18px",
@@ -596,8 +595,8 @@ function ListingOptimizerInner() {
                     >
                       <div
                         style={{
-                          background: "rgba(255,255,255,0.02)",
-                          border: "1px solid rgba(255,255,255,0.06)",
+                          background: "var(--bg-card)",
+                          border: "1px solid var(--border-default)",
                           borderRadius: 8,
                           padding: 12,
                         }}

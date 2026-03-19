@@ -42,6 +42,20 @@ export default async function EditItemPage({
     shippingHeight: (item as any).shippingHeight ?? null,
     isFragile: (item as any).isFragile ?? false,
     shippingPreference: (item as any).shippingPreference ?? "BUYER_PAYS",
+    category: (item as any).category ?? "",
+    brand: (item as any).brand ?? "",
+    maker: (item as any).maker ?? "",
+    era: (item as any).era ?? "",
+    material: (item as any).material ?? "",
+    itemStyle: (item as any).itemStyle ?? "",
+    countryOfOrigin: (item as any).countryOfOrigin ?? "",
+    story: (item as any).story ?? "",
+    numberOfOwners: (item as any).numberOfOwners ?? "",
+    approximateAge: (item as any).approximateAge ?? "",
+    worksProperly: (item as any).worksProperly ?? "",
+    knownDamage: (item as any).knownDamage ?? "",
+    hasOriginalPackaging: (item as any).hasOriginalPackaging ?? "",
+    listingPrice: (item as any).listingPrice ?? null,
   };
 
   return (

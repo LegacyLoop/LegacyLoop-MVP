@@ -112,7 +112,7 @@ export default async function CertificatePage({ params }: { params: Params }) {
 
         {/* Item details */}
         <div style={{
-          background: "rgba(255,255,255,0.03)",
+          background: "var(--bg-card)",
           border: "1px solid var(--border-default)",
           borderRadius: "12px",
           padding: "1.25rem",
@@ -145,7 +145,7 @@ export default async function CertificatePage({ params }: { params: Params }) {
 
         {/* Score breakdown */}
         <div style={{
-          background: "rgba(255,255,255,0.03)",
+          background: "var(--bg-card)",
           border: "1px solid var(--border-default)",
           borderRadius: "12px",
           padding: "1.25rem",

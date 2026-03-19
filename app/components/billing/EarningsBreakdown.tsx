@@ -66,7 +66,7 @@ export default function EarningsBreakdown() {
       <div
         style={{
           background: "rgba(13,31,45,0.98)",
-          border: "1px solid rgba(255,255,255,0.1)",
+          border: "1px solid var(--border-default)",
           borderRadius: 16,
           padding: 28,
         }}
@@ -83,7 +83,7 @@ export default function EarningsBreakdown() {
       <div
         style={{
           background: "rgba(13,31,45,0.98)",
-          border: "1px solid rgba(255,255,255,0.1)",
+          border: "1px solid var(--border-default)",
           borderRadius: 16,
           padding: 28,
         }}
@@ -99,7 +99,7 @@ export default function EarningsBreakdown() {
     <div
       style={{
         background: "rgba(13,31,45,0.98)",
-        border: "1px solid rgba(255,255,255,0.1)",
+        border: "1px solid var(--border-default)",
         borderRadius: 16,
         padding: 28,
       }}
@@ -121,9 +121,9 @@ export default function EarningsBreakdown() {
           disabled={summary.entries.length === 0}
           style={{
             padding: "6px 14px",
-            background: summary.entries.length === 0 ? "rgba(255,255,255,0.05)" : "rgba(0,188,212,0.1)",
-            border: `1px solid ${summary.entries.length === 0 ? "rgba(255,255,255,0.08)" : "rgba(0,188,212,0.3)"}`,
-            color: summary.entries.length === 0 ? "rgba(255,255,255,0.3)" : "#00bcd4",
+            background: summary.entries.length === 0 ? "var(--bg-card)" : "rgba(0,188,212,0.1)",
+            border: `1px solid ${summary.entries.length === 0 ? "var(--border-default)" : "rgba(0,188,212,0.3)"}`,
+            color: summary.entries.length === 0 ? "var(--text-muted)" : "#00bcd4",
             fontSize: 12,
             fontWeight: 600,
             borderRadius: 8,
@@ -171,8 +171,8 @@ export default function EarningsBreakdown() {
 
         <div
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--ghost-bg)",
+            border: "1px solid var(--border-default)",
             borderRadius: 12,
             padding: 16,
             textAlign: "center",
@@ -197,8 +197,8 @@ export default function EarningsBreakdown() {
 
         <div
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "var(--ghost-bg)",
+            border: "1px solid var(--border-default)",
             borderRadius: 12,
             padding: 16,
             textAlign: "center",
@@ -225,8 +225,8 @@ export default function EarningsBreakdown() {
       {/* Commission rate callout */}
       <div
         style={{
-          background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(255,255,255,0.06)",
+          background: "var(--bg-card)",
+          border: "1px solid var(--border-default)",
           borderRadius: 10,
           padding: "12px 16px",
           marginBottom: 24,
@@ -297,7 +297,7 @@ export default function EarningsBreakdown() {
                       fontSize: 11,
                       textTransform: "uppercase",
                       letterSpacing: 0.5,
-                      borderBottom: "1px solid rgba(255,255,255,0.06)",
+                      borderBottom: "1px solid var(--border-default)",
                     }}
                   >
                     {h}
@@ -313,7 +313,7 @@ export default function EarningsBreakdown() {
                       padding: "10px 10px",
                       color: "#fff",
                       fontWeight: 500,
-                      borderBottom: "1px solid rgba(255,255,255,0.04)",
+                      borderBottom: "1px solid var(--border-default)",
                       maxWidth: 180,
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -336,7 +336,7 @@ export default function EarningsBreakdown() {
                       padding: "10px 10px",
                       color: "rgba(207,216,220,0.6)",
                       textAlign: "right",
-                      borderBottom: "1px solid rgba(255,255,255,0.04)",
+                      borderBottom: "1px solid var(--border-default)",
                     }}
                   >
                     {new Date(entry.soldAt).toLocaleDateString()}
@@ -346,7 +346,7 @@ export default function EarningsBreakdown() {
                       padding: "10px 10px",
                       color: "rgba(207,216,220,0.5)",
                       textAlign: "right",
-                      borderBottom: "1px solid rgba(255,255,255,0.04)",
+                      borderBottom: "1px solid var(--border-default)",
                     }}
                   >
                     <div>${entry.commissionAmount.toFixed(2)}</div>
@@ -366,7 +366,7 @@ export default function EarningsBreakdown() {
                       color: "#00bcd4",
                       fontWeight: 700,
                       textAlign: "right",
-                      borderBottom: "1px solid rgba(255,255,255,0.04)",
+                      borderBottom: "1px solid var(--border-default)",
                     }}
                   >
                     ${entry.netEarnings.toFixed(2)}

@@ -509,8 +509,8 @@ export default function ItemCard({ item }: ItemCardProps) {
                 borderRadius: "9999px",
                 fontSize: "0.68rem",
                 fontWeight: 700,
-                background: item.hasBotConv ? "rgba(239,68,68,0.15)" : item.unreadMsgs > 0 ? "#dc2626" : "rgba(255,255,255,0.1)",
-                color: item.hasBotConv ? "#f87171" : item.unreadMsgs > 0 ? "#fff" : "#cbd5e1",
+                background: item.hasBotConv ? "rgba(239,68,68,0.15)" : item.unreadMsgs > 0 ? "#dc2626" : "var(--ghost-bg)",
+                color: item.hasBotConv ? "#f87171" : item.unreadMsgs > 0 ? "#fff" : "var(--text-secondary)",
                 border: item.hasBotConv ? "1px solid rgba(239,68,68,0.3)" : "none",
               }}
             >
@@ -600,7 +600,7 @@ export default function ItemCard({ item }: ItemCardProps) {
         display: 'flex',
         gap: '10px',
         padding: '14px 16px 16px',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
+        borderTop: '1px solid var(--border-default)',
       }}>
         {/* View Item — always present, every status */}
         <button
@@ -609,9 +609,9 @@ export default function ItemCard({ item }: ItemCardProps) {
             flex: 1,
             padding: '12px 16px',
             background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.12)',
+            border: '1px solid var(--border-default)',
             borderRadius: '12px',
-            color: 'rgba(255,255,255,0.85)',
+            color: 'var(--text-primary)',
             fontSize: '14px',
             fontWeight: 500,
             cursor: 'pointer',
@@ -628,8 +628,8 @@ export default function ItemCard({ item }: ItemCardProps) {
             (e.currentTarget as HTMLElement).style.color = '#00bcd4';
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.12)';
-            (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.85)';
+            (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)';
+            (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
           }}
         >
           View Item →

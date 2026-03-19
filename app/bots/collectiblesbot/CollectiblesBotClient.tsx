@@ -329,16 +329,16 @@ function Badge({ children, bg, color, border }: { children: React.ReactNode; bg:
 
 function GridRow({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "0.2rem 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-      <span style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
-      <span style={{ fontSize: "0.72rem", fontWeight: bold ? 700 : 600, color: "rgba(255,255,255,0.85)" }}>{value}</span>
+    <div style={{ display: "flex", justifyContent: "space-between", padding: "0.2rem 0", borderBottom: "1px solid var(--border-default)" }}>
+      <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
+      <span style={{ fontSize: "0.72rem", fontWeight: bold ? 700 : 600, color: "var(--text-primary)" }}>{value}</span>
     </div>
   );
 }
 
 // ─── Grading rec color helper ──────────────────────────────────────────────
 function gradingRecStyle(rec: string | null) {
-  if (!rec) return { bg: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" };
+  if (!rec) return { bg: "var(--ghost-bg)", color: "var(--text-muted)" };
   const l = rec.toLowerCase();
   if (l.includes("strong")) return { bg: "rgba(0,188,212,0.15)", color: TEAL };
   if (l.includes("skip")) return { bg: "rgba(16,185,129,0.12)", color: GREEN };
@@ -346,7 +346,7 @@ function gradingRecStyle(rec: string | null) {
 }
 
 function demandColor(trend: string | null) {
-  if (!trend) return "rgba(255,255,255,0.5)";
+  if (!trend) return "var(--text-muted)";
   const l = trend.toLowerCase();
   if (l.includes("rising") || l.includes("strong") || l.includes("high")) return GREEN;
   if (l.includes("declining") || l.includes("weak")) return RED;
@@ -532,7 +532,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
             <h1 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text-primary)", margin: 0, lineHeight: 1.2 }}>
               CollectiblesBot
             </h1>
-            <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.5)", margin: "0.15rem 0 0 0" }}>
+            <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: "0.15rem 0 0 0" }}>
               AI-Powered Collectibles Authentication & Valuation
             </p>
           </div>
@@ -566,7 +566,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
           }}>
             <div style={{ fontSize: "1.1rem", marginBottom: "0.15rem" }}>{s.icon}</div>
             <div style={{ fontSize: "1.25rem", fontWeight: 800, color: PURPLE }}>{s.value}</div>
-            <div style={{ fontSize: "0.58rem", color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.label}</div>
+            <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -601,20 +601,20 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               {detection.isCollectible ? "Collectible Detected" : "Not Flagged"}
             </Badge>
             <div style={{ display: "flex", gap: "0.75rem", fontSize: "0.75rem" }}>
-              <span style={{ color: "rgba(255,255,255,0.5)" }}>Score: <span style={{ fontWeight: 700, color: PURPLE }}>{detection.score}</span></span>
-              <span style={{ color: "rgba(255,255,255,0.5)" }}>Confidence: <span style={{ fontWeight: 700, color: PURPLE }}>{detection.confidence}%</span></span>
-              <span style={{ color: "rgba(255,255,255,0.5)" }}>Potential: <span style={{ fontWeight: 700, color: detection.potentialValue === "Very High" || detection.potentialValue === "High" ? GREEN : "rgba(255,255,255,0.85)" }}>{detection.potentialValue}</span></span>
+              <span style={{ color: "var(--text-muted)" }}>Score: <span style={{ fontWeight: 700, color: PURPLE }}>{detection.score}</span></span>
+              <span style={{ color: "var(--text-muted)" }}>Confidence: <span style={{ fontWeight: 700, color: PURPLE }}>{detection.confidence}%</span></span>
+              <span style={{ color: "var(--text-muted)" }}>Potential: <span style={{ fontWeight: 700, color: detection.potentialValue === "Very High" || detection.potentialValue === "High" ? GREEN : "var(--text-primary)" }}>{detection.potentialValue}</span></span>
             </div>
           </div>
           {/* Confidence bar */}
-          <div style={{ height: 4, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden", marginBottom: "0.65rem" }}>
+          <div style={{ height: 4, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden", marginBottom: "0.65rem" }}>
             <div style={{ height: "100%", width: `${Math.min(100, detection.confidence)}%`, borderRadius: 99, background: `linear-gradient(90deg, ${PURPLE}, ${TEAL})`, transition: "width 0.5s ease" }} />
           </div>
           {detection.category && (
             <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
               <Badge bg="rgba(139,92,246,0.12)" color={PURPLE} border="1px solid rgba(139,92,246,0.3)">{detection.category}</Badge>
               {detection.subcategory && (
-                <Badge bg="rgba(255,255,255,0.05)" color="rgba(255,255,255,0.65)" border="1px solid rgba(255,255,255,0.1)">{detection.subcategory}</Badge>
+                <Badge bg="var(--ghost-bg)" color="var(--text-secondary)" border="1px solid var(--border-default)">{detection.subcategory}</Badge>
               )}
               {detection.signals.filter(s => !s.startsWith("Negative")).slice(0, 3).map((sig, i) => (
                 <span key={i} style={{ padding: "0.12rem 0.45rem", borderRadius: 99, fontSize: "0.6rem", fontWeight: 600, background: "rgba(139,92,246,0.06)", color: PURPLE_LIGHT, border: "1px solid rgba(139,92,246,0.15)" }}>
@@ -671,7 +671,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                     borderRadius: "10px",
                     overflow: "hidden",
                     aspectRatio: "4/3",
-                    background: "rgba(255,255,255,0.05)",
+                    background: "var(--ghost-bg)",
                     border: "1px solid rgba(139,92,246,0.1)",
                     cursor: "pointer",
                     transition: "border-color 0.2s, transform 0.2s",
@@ -791,7 +791,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
             style={{
               position: "absolute", top: "1rem", right: "1rem",
               width: 36, height: 36, borderRadius: "50%",
-              background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)",
+              background: "var(--bg-card-hover)", border: "1px solid var(--border-default)",
               color: "#fff", fontSize: "1.1rem", cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
@@ -802,7 +802,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
           {/* Counter */}
           <div style={{
             position: "absolute", bottom: "1.5rem",
-            fontSize: "0.82rem", color: "rgba(255,255,255,0.6)", fontWeight: 600,
+            fontSize: "0.82rem", color: "var(--text-secondary)", fontWeight: 600,
           }}>
             {lightboxIdx + 1} / {itemPhotos.length}
           </div>
@@ -819,24 +819,24 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               {sr.category && <Badge bg="rgba(139,92,246,0.15)" color={PURPLE}>{sr.category}</Badge>}
               {sr.rarity && (
                 <Badge
-                  bg={sr.rarity === "Ultra Rare" || sr.rarity === "Very Rare" ? "rgba(239,68,68,0.12)" : sr.rarity === "Rare" ? "rgba(245,158,11,0.12)" : "rgba(255,255,255,0.06)"}
-                  color={sr.rarity === "Ultra Rare" || sr.rarity === "Very Rare" ? RED : sr.rarity === "Rare" ? AMBER : "rgba(255,255,255,0.65)"}
+                  bg={sr.rarity === "Ultra Rare" || sr.rarity === "Very Rare" ? "rgba(239,68,68,0.12)" : sr.rarity === "Rare" ? "rgba(245,158,11,0.12)" : "var(--ghost-bg)"}
+                  color={sr.rarity === "Ultra Rare" || sr.rarity === "Very Rare" ? RED : sr.rarity === "Rare" ? AMBER : "var(--text-secondary)"}
                 >
                   {sr.rarity}
                 </Badge>
               )}
               {sr.psaGrade && <Badge bg="rgba(139,92,246,0.12)" color={PURPLE_LIGHT}>Est. Grade: {sr.psaGrade}</Badge>}
-              {!sr.psaGrade && <Badge bg="rgba(255,255,255,0.05)" color="rgba(255,255,255,0.5)">Ungraded</Badge>}
+              {!sr.psaGrade && <Badge bg="var(--ghost-bg)" color="var(--text-muted)">Ungraded</Badge>}
             </div>
             {sr.itemName && (
               <div style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.25rem", lineHeight: 1.3 }}>
                 {sr.itemName}
               </div>
             )}
-            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", fontSize: "0.78rem", color: "rgba(255,255,255,0.6)" }}>
+            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", fontSize: "0.78rem", color: "var(--text-secondary)" }}>
               {sr.year && <span>{sr.year}</span>}
               {sr.brandSeries && <span>{sr.brandSeries}</span>}
-              {sr.editionVariation && <span style={{ fontStyle: "italic", color: "rgba(255,255,255,0.45)" }}>{sr.editionVariation}</span>}
+              {sr.editionVariation && <span style={{ fontStyle: "italic", color: "var(--text-muted)" }}>{sr.editionVariation}</span>}
               {sr.subcategory && <span style={{ color: PURPLE_LIGHT }}>{sr.subcategory}</span>}
             </div>
           </GlassCard>
@@ -849,17 +849,17 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               {(sr.rawLow || sr.rawHigh) && (
                 <div style={{ display: "flex", gap: "1.25rem", justifyContent: "center", marginBottom: "1rem", flexWrap: "wrap" }}>
                   {[
-                    { label: "Low", value: sr.rawLow, color: "rgba(255,255,255,0.65)" },
+                    { label: "Low", value: sr.rawLow, color: "var(--text-secondary)" },
                     { label: "Mid", value: sr.rawMid, color: AMBER, highlight: true },
                     { label: "High", value: sr.rawHigh, color: GREEN },
                   ].filter(v => v.value != null).map(v => (
                     <div key={v.label} style={{
                       textAlign: "center", padding: "0.65rem 1.25rem", borderRadius: "12px",
-                      background: v.highlight ? "rgba(245,158,11,0.08)" : "rgba(255,255,255,0.03)",
-                      border: `1.5px solid ${v.highlight ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.06)"}`,
+                      background: v.highlight ? "rgba(245,158,11,0.08)" : "var(--bg-card)",
+                      border: `1.5px solid ${v.highlight ? "rgba(245,158,11,0.25)" : "var(--border-default)"}`,
                       minWidth: "5.5rem",
                     }}>
-                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.45)" }}>{v.label}</div>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{v.label}</div>
                       <div style={{ fontSize: "1.3rem", fontWeight: 800, color: v.color, marginTop: "0.1rem" }}>{_fp(v.value)}</div>
                     </div>
                   ))}
@@ -868,16 +868,16 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               {/* PSA Grade Ladder */}
               {(sr.psa6 || sr.psa7 || sr.psa8 || sr.psa9 || sr.psa10) && (
                 <div style={{ marginBottom: "0.85rem" }}>
-                  <div style={{ fontSize: "0.55rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>PSA Grade Ladder</div>
+                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>PSA Grade Ladder</div>
                   <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
                     {[{ g: "6", v: sr.psa6 }, { g: "7", v: sr.psa7 }, { g: "8", v: sr.psa8 }, { g: "9", v: sr.psa9 }, { g: "10", v: sr.psa10 }].filter(x => x.v != null).map(x => (
                       <div key={x.g} style={{
                         textAlign: "center", padding: "0.4rem 0.65rem", borderRadius: "10px", minWidth: "4rem",
-                        background: x.g === "10" ? "rgba(139,92,246,0.12)" : "rgba(255,255,255,0.03)",
-                        border: `1px solid ${x.g === "10" ? "rgba(139,92,246,0.35)" : "rgba(255,255,255,0.06)"}`,
+                        background: x.g === "10" ? "rgba(139,92,246,0.12)" : "var(--bg-card)",
+                        border: `1px solid ${x.g === "10" ? "rgba(139,92,246,0.35)" : "var(--border-default)"}`,
                       }}>
-                        <div style={{ fontSize: "0.5rem", color: "rgba(255,255,255,0.4)" }}>PSA {x.g}</div>
-                        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: x.g === "10" ? PURPLE : "rgba(255,255,255,0.85)" }}>{_fp(x.v)}</div>
+                        <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>PSA {x.g}</div>
+                        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: x.g === "10" ? PURPLE : "var(--text-primary)" }}>{_fp(x.v)}</div>
                       </div>
                     ))}
                   </div>
@@ -886,14 +886,14 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               {/* Old graded values fallback */}
               {!sr.psa6 && sr.gradedValues && (sr.gradedLow || sr.gradedHigh) && (
                 <div style={{ display: "flex", gap: "1rem", marginBottom: "0.75rem" }}>
-                  {sr.gradedValues.grade_label && <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.5)" }}>{sr.gradedValues.grade_label}:</span>}
-                  {sr.gradedLow && <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "rgba(255,255,255,0.65)" }}>{_fp(sr.gradedLow)}</span>}
+                  {sr.gradedValues.grade_label && <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{sr.gradedValues.grade_label}:</span>}
+                  {sr.gradedLow && <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-secondary)" }}>{_fp(sr.gradedLow)}</span>}
                   {sr.gradedMid && <span style={{ fontSize: "0.78rem", fontWeight: 700, color: AMBER }}>{_fp(sr.gradedMid)}</span>}
                   {sr.gradedHigh && <span style={{ fontSize: "0.78rem", fontWeight: 700, color: GREEN }}>{_fp(sr.gradedHigh)}</span>}
                 </div>
               )}
               {sr.valueReasoning && (
-                <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.65)", lineHeight: 1.55, margin: "0 0 0.5rem 0" }}>
+                <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55, margin: "0 0 0.5rem 0" }}>
                   {sr.valueReasoning}
                 </p>
               )}
@@ -905,7 +905,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                   marginBottom: "0.5rem",
                 }}>
                   <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.08em", color: AMBER, fontWeight: 700, marginBottom: "0.2rem" }}>Recent Comparables</div>
-                  <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.65)", lineHeight: 1.4 }}>
+                  <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>
                     {typeof sr.recentComps === "string" ? sr.recentComps : Array.isArray(sr.recentComps) ? sr.recentComps.map((c: any, i: number) => (
                       <div key={i} style={{ padding: "0.15rem 0" }}>
                         {typeof c === "string" ? c : `${c.description || c.item || "Comp"} — ${c.platform || ""} — ${typeof c.price === "number" ? `$${c.price.toLocaleString()}` : c.price || ""}`}
@@ -915,7 +915,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                 </div>
               )}
               {sr.populationNote && (
-                <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.5)", fontStyle: "italic" }}>Population: {sr.populationNote}</div>
+                <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontStyle: "italic" }}>Population: {sr.populationNote}</div>
               )}
             </GlassCard>
           )}
@@ -938,8 +938,8 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                 <div style={{ flex: 1 }}>
                   {sr.gradeConfidence != null && (
                     <div style={{ marginBottom: "0.35rem" }}>
-                      <div style={{ fontSize: "0.55rem", color: "rgba(255,255,255,0.4)", marginBottom: "0.15rem" }}>Grade Confidence</div>
-                      <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>Grade Confidence</div>
+                      <div style={{ height: 5, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                         <div style={{
                           height: "100%", borderRadius: 99,
                           width: `${Math.round(Number(sr.gradeConfidence) * (Number(sr.gradeConfidence) <= 1 ? 100 : 1))}%`,
@@ -949,7 +949,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                     </div>
                   )}
                   {sr.conditionAssessment && (
-                    <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.65)", lineHeight: 1.4 }}>{sr.conditionAssessment}</div>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>{sr.conditionAssessment}</div>
                   )}
                 </div>
               </div>
@@ -959,15 +959,15 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                   const gs = gradingRecStyle(sr.gradingRec);
                   return <Badge bg={gs.bg} color={gs.color} border={`1px solid ${gs.color}40`}>{sr.gradingRec}</Badge>;
                 })()}
-                {sr.breakEvenGrade && <Badge bg="rgba(255,255,255,0.05)" color="rgba(255,255,255,0.6)">Break-even: PSA {sr.breakEvenGrade}</Badge>}
+                {sr.breakEvenGrade && <Badge bg="var(--ghost-bg)" color="var(--text-secondary)">Break-even: PSA {sr.breakEvenGrade}</Badge>}
                 {sr.bestGradingService && (
-                  <Badge bg="rgba(255,255,255,0.05)" color="rgba(255,255,255,0.5)">
+                  <Badge bg="var(--ghost-bg)" color="var(--text-muted)">
                     {sr.bestGradingService}{sr.psaStandardCost ? ` ($${sr.psaStandardCost})` : ""}
                   </Badge>
                 )}
               </div>
               {sr.gradingReasoning && (
-                <p style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.5, margin: "0.65rem 0 0 0" }}>
+                <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: "0.65rem 0 0 0" }}>
                   {sr.gradingReasoning}
                 </p>
               )}
@@ -982,36 +982,36 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                 <div>
                   {sr.bestPlatform && (
                     <div style={{ marginBottom: "0.65rem" }}>
-                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.4)", marginBottom: "0.2rem" }}>Best Platform</div>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Best Platform</div>
                       <Badge bg="rgba(0,188,212,0.12)" color={TEAL} border="1px solid rgba(0,188,212,0.25)">{sr.bestPlatform}</Badge>
                     </div>
                   )}
                   {sr.demandTrend && (
                     <div style={{ marginBottom: "0.65rem" }}>
-                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.4)", marginBottom: "0.2rem" }}>Demand Trend</div>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Demand Trend</div>
                       <Badge bg={`${demandColor(sr.demandTrend)}20`} color={demandColor(sr.demandTrend)} border={`1px solid ${demandColor(sr.demandTrend)}40`}>
                         {sr.demandTrend.toLowerCase().includes("rising") ? "↑" : sr.demandTrend.toLowerCase().includes("declining") ? "↓" : "→"} {sr.demandTrend}
                       </Badge>
                     </div>
                   )}
                   {sr.demandReasoning && (
-                    <p style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.45, margin: 0 }}>{sr.demandReasoning}</p>
+                    <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.45, margin: 0 }}>{sr.demandReasoning}</p>
                   )}
                 </div>
                 <div>
                   {sr.platformReasoning && (
-                    <p style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.45, margin: "0 0 0.5rem 0" }}>{sr.platformReasoning}</p>
+                    <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.45, margin: "0 0 0.5rem 0" }}>{sr.platformReasoning}</p>
                   )}
                   {/* Fallback: old market data */}
                   {sr.market && (
                     <>
                       {sr.market.collector_community && (
-                        <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.5)", marginBottom: "0.3rem" }}>Community: {sr.market.collector_community}</div>
+                        <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Community: {sr.market.collector_community}</div>
                       )}
                       {Array.isArray(sr.market.buyer_types) && sr.market.buyer_types.length > 0 && (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem" }}>
                           {sr.market.buyer_types.slice(0, 4).map((bt: string, i: number) => (
-                            <span key={i} style={{ padding: "0.1rem 0.35rem", borderRadius: 99, fontSize: "0.58rem", fontWeight: 600, background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.06)" }}>{bt}</span>
+                            <span key={i} style={{ padding: "0.1rem 0.35rem", borderRadius: 99, fontSize: "0.58rem", fontWeight: 600, background: "var(--ghost-bg)", color: "var(--text-muted)", border: "1px solid var(--border-default)" }}>{bt}</span>
                           ))}
                         </div>
                       )}
@@ -1033,32 +1033,32 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                   background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.15)",
                   marginBottom: "0.75rem",
                 }}>
-                  <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>{sr.listingTitle}</div>
+                  <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>{sr.listingTitle}</div>
                   <CopyButton text={sr.listingTitle} />
                 </div>
               )}
               {typeof sr.sellingStrategy === "string" && sr.sellingStrategy && (
-                <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.65)", lineHeight: 1.55, margin: "0 0 0.5rem 0" }}>{sr.sellingStrategy}</p>
+                <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55, margin: "0 0 0.5rem 0" }}>{sr.sellingStrategy}</p>
               )}
               {sr.buyItNowPrice && (
-                <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.65)" }}>Suggested BIN: <span style={{ fontWeight: 700, color: GREEN }}>{_fp(sr.buyItNowPrice)}</span></div>
+                <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>Suggested BIN: <span style={{ fontWeight: 700, color: GREEN }}>{_fp(sr.buyItNowPrice)}</span></div>
               )}
               {/* Old strategy section data */}
               {sr.strategy && typeof sr.strategy === "object" && (
                 <div style={{ marginTop: "0.5rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                   {sr.strategy.best_venue && !sr.bestPlatform && (
-                    <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>Best venue: <strong style={{ color: TEAL }}>{sr.strategy.best_venue}</strong></div>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>Best venue: <strong style={{ color: TEAL }}>{sr.strategy.best_venue}</strong></div>
                   )}
                   {sr.strategy.auction_vs_fixed && (
-                    <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>{sr.strategy.auction_vs_fixed}</div>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>{sr.strategy.auction_vs_fixed}</div>
                   )}
                   {sr.strategy.timing && (
-                    <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>Timing: {sr.strategy.timing}</div>
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>Timing: {sr.strategy.timing}</div>
                   )}
                   {Array.isArray(sr.strategy.listing_tips) && sr.strategy.listing_tips.length > 0 && (
                     <div style={{ marginTop: "0.25rem" }}>
                       {sr.strategy.listing_tips.slice(0, 4).map((tip: string, i: number) => (
-                        <div key={i} style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.5)", padding: "0.15rem 0" }}>{i + 1}. {tip}</div>
+                        <div key={i} style={{ fontSize: "0.68rem", color: "var(--text-muted)", padding: "0.15rem 0" }}>{i + 1}. {tip}</div>
                       ))}
                     </div>
                   )}
@@ -1080,20 +1080,20 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                     {sr.rarity}
                   </Badge>
                 )}
-                {sr.printRun && <Badge bg="rgba(255,255,255,0.05)" color="rgba(255,255,255,0.6)">Print Run: {sr.printRun}</Badge>}
+                {sr.printRun && <Badge bg="var(--ghost-bg)" color="var(--text-secondary)">Print Run: {sr.printRun}</Badge>}
               </div>
               {sr.populationNote && (
-                <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.6)", marginBottom: "0.5rem" }}>
-                  <span style={{ fontWeight: 600, color: "rgba(255,255,255,0.75)" }}>Population:</span> {sr.populationNote}
+                <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
+                  <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>Population:</span> {sr.populationNote}
                 </div>
               )}
               {sr.notableVariations && (
-                <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)", marginBottom: "0.4rem" }}>
+                <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "0.4rem" }}>
                   <span style={{ fontWeight: 600, color: PURPLE_LIGHT }}>Notable Variations:</span> {sr.notableVariations}
                 </div>
               )}
               {sr.authenticationNotes && (
-                <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>
+                <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
                   <span style={{ fontWeight: 600, color: TEAL }}>Authentication:</span> {sr.authenticationNotes}
                 </div>
               )}
@@ -1121,19 +1121,19 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                 )}
               </div>
               {sr.insiderKnowledge && (
-                <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.6, margin: "0 0 0.65rem 0" }}>
+                <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.6, margin: "0 0 0.65rem 0" }}>
                   {sr.insiderKnowledge}
                 </p>
               )}
               {/* Investment targets */}
               {(sr.price1yr || sr.price5yr) && (
                 <div style={{ display: "flex", gap: "1rem", marginBottom: "0.5rem", flexWrap: "wrap" }}>
-                  {sr.price1yr && <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>1yr target: <strong style={{ color: GREEN }}>{typeof sr.price1yr === "number" ? _fp(sr.price1yr) : sr.price1yr}</strong></span>}
-                  {sr.price5yr && <span style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.55)" }}>5yr target: <strong style={{ color: PURPLE }}>{typeof sr.price5yr === "number" ? _fp(sr.price5yr) : sr.price5yr}</strong></span>}
+                  {sr.price1yr && <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>1yr target: <strong style={{ color: GREEN }}>{typeof sr.price1yr === "number" ? _fp(sr.price1yr) : sr.price1yr}</strong></span>}
+                  {sr.price5yr && <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>5yr target: <strong style={{ color: PURPLE }}>{typeof sr.price5yr === "number" ? _fp(sr.price5yr) : sr.price5yr}</strong></span>}
                 </div>
               )}
-              {sr.catalysts && <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.5)", marginBottom: "0.3rem" }}>Catalysts: {typeof sr.catalysts === "string" ? sr.catalysts : Array.isArray(sr.catalysts) ? sr.catalysts.join(", ") : JSON.stringify(sr.catalysts)}</div>}
-              {sr.risks && <div style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.45)" }}>Risks: {typeof sr.risks === "string" ? sr.risks : Array.isArray(sr.risks) ? sr.risks.join(", ") : JSON.stringify(sr.risks)}</div>}
+              {sr.catalysts && <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Catalysts: {typeof sr.catalysts === "string" ? sr.catalysts : Array.isArray(sr.catalysts) ? sr.catalysts.join(", ") : JSON.stringify(sr.catalysts)}</div>}
+              {sr.risks && <div style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>Risks: {typeof sr.risks === "string" ? sr.risks : Array.isArray(sr.risks) ? sr.risks.join(", ") : JSON.stringify(sr.risks)}</div>}
               {/* Summary */}
               {sr.summary && (
                 <div style={{
@@ -1142,7 +1142,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                   borderRadius: "0 10px 10px 0",
                 }}>
                   <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.25rem" }}>Expert Summary</div>
-                  <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.7)", lineHeight: 1.65, margin: 0 }}>{sr.summary}</p>
+                  <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.65, margin: 0 }}>{sr.summary}</p>
                 </div>
               )}
             </GlassCard>
@@ -1160,7 +1160,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               ].filter(h => h.value).map(h => (
                 <div key={h.label} style={{ marginBottom: "0.65rem" }}>
                   <div style={{ fontSize: "0.55rem", fontWeight: 700, color: PURPLE, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.15rem" }}>{h.label}</div>
-                  <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.65)", lineHeight: 1.55, margin: 0 }}>{h.value}</p>
+                  <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55, margin: 0 }}>{h.value}</p>
                 </div>
               ))}
             </GlassCard>
@@ -1170,7 +1170,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
             <GlassCard>
               <SectionLabel>Condition Deep Dive</SectionLabel>
               {sr.cond.overall_assessment && (
-                <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.65)", lineHeight: 1.55, margin: "0 0 0.65rem 0" }}>{sr.cond.overall_assessment}</p>
+                <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55, margin: "0 0 0.65rem 0" }}>{sr.cond.overall_assessment}</p>
               )}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem" }}>
                 {[
@@ -1181,9 +1181,9 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                   { label: "Completeness", value: sr.cond.completeness },
                   { label: "Storage", value: sr.cond.storage_history },
                 ].filter(d => d.value).map(d => (
-                  <div key={d.label} style={{ background: "rgba(255,255,255,0.03)", borderRadius: "8px", padding: "0.45rem 0.6rem", border: "1px solid rgba(255,255,255,0.04)" }}>
-                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.4)" }}>{d.label}</div>
-                    <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "rgba(255,255,255,0.75)", marginTop: "0.1rem" }}>{typeof d.value === "string" && d.value.length > 60 ? d.value.slice(0, 60) + "..." : d.value}</div>
+                  <div key={d.label} style={{ background: "var(--bg-card)", borderRadius: "8px", padding: "0.45rem 0.6rem", border: "1px solid var(--border-default)" }}>
+                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>{d.label}</div>
+                    <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{typeof d.value === "string" && d.value.length > 60 ? d.value.slice(0, 60) + "..." : d.value}</div>
                   </div>
                 ))}
               </div>
@@ -1200,7 +1200,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               ].filter(d => d.value).map(d => (
                 <div key={d.label} style={{ marginBottom: "0.6rem" }}>
                   <div style={{ fontSize: "0.55rem", fontWeight: 700, color: PURPLE, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.15rem" }}>{d.label}</div>
-                  <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.65)", lineHeight: 1.55, margin: 0 }}>{d.value}</p>
+                  <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55, margin: 0 }}>{d.value}</p>
                 </div>
               ))}
               {Array.isArray(sr.collection.related_items) && sr.collection.related_items.length > 0 && (
@@ -1226,7 +1226,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
         }}>
           <div style={{ width: "2rem", height: "2rem", border: `3px solid rgba(139,92,246,0.2)`, borderTopColor: PURPLE, borderRadius: "50%", animation: "spin 0.7s linear infinite", margin: "0 auto 0.75rem" }} />
           <p style={{ fontSize: "0.88rem", color: PURPLE, fontWeight: 600, margin: "0 0 0.25rem 0" }}>Running CollectiblesBot MegaBot analysis...</p>
-          <p style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.45)", margin: 0 }}>4 AI experts analyzing in parallel — OpenAI, Claude, Gemini, Grok</p>
+          <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0 }}>4 AI experts analyzing in parallel — OpenAI, Claude, Gemini, Grok</p>
         </div>
       )}
 
@@ -1239,7 +1239,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
             <span style={{ fontSize: "1.1rem" }}>⚡</span>
             <span style={{ fontSize: "0.78rem", fontWeight: 700, color: PURPLE, textTransform: "uppercase", letterSpacing: "0.06em" }}>MegaBot Collectibles Deep Dive</span>
           </div>
-          <p style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.55, marginBottom: "1rem", maxWidth: 500, margin: "0 auto 1rem" }}>
+          <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55, marginBottom: "1rem", maxWidth: 500, margin: "0 auto 1rem" }}>
             Run 4 AI collectibles experts in parallel — OpenAI grades condition, Claude researches history, Gemini tracks market trends, Grok surfaces community demand.
           </p>
           <button onClick={runMegaBot} style={{
@@ -1295,7 +1295,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
             </div>
 
             {/* Agreement bar */}
-            <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden", marginBottom: "0.75rem" }}>
+            <div style={{ height: 5, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden", marginBottom: "0.75rem" }}>
               <div style={{ height: "100%", width: `${agree}%`, borderRadius: 99, background: agree >= 80 ? GREEN : agree >= 60 ? AMBER : RED, transition: "width 0.5s ease" }} />
             </div>
 
@@ -1307,25 +1307,25 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
             }}>
               {consensusGrade && (
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.4)" }}>Grade</div>
+                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Grade</div>
                   <div style={{ fontSize: "1rem", fontWeight: 800, color: PURPLE }}>{consensusGrade}</div>
                 </div>
               )}
               {avgRawMid && (
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.4)" }}>Avg Value</div>
+                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Avg Value</div>
                   <div style={{ fontSize: "1rem", fontWeight: 800, color: AMBER }}>{_fp(avgRawMid)}</div>
                 </div>
               )}
               {consensusPlatform && (
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.4)" }}>Platform</div>
+                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Platform</div>
                   <div style={{ fontSize: "0.82rem", fontWeight: 700, color: TEAL }}>{consensusPlatform}</div>
                 </div>
               )}
               {consensusVerdict && (
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(255,255,255,0.4)" }}>Verdict</div>
+                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Verdict</div>
                   <div style={{ fontSize: "0.82rem", fontWeight: 700, color: GREEN }}>{consensusVerdict}</div>
                 </div>
               )}
@@ -1340,9 +1340,9 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
 
                 return (
                   <div key={agent.provider} style={{
-                    background: isExp ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
+                    background: isExp ? "var(--ghost-bg)" : "var(--bg-card)",
                     borderTop: isExp ? `3px solid ${pm.color}` : undefined,
-                    border: `1px solid ${isExp ? `${pm.color}40` : "rgba(255,255,255,0.06)"}`,
+                    border: `1px solid ${isExp ? `${pm.color}40` : "var(--border-default)"}`,
                     borderRadius: "10px", overflow: "hidden",
                   }}>
                     {/* Collapsed header */}
@@ -1352,14 +1352,14 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                     >
                       <span style={{ fontSize: "0.9rem" }}>{pm.icon}</span>
                       <span style={{ fontWeight: 700, fontSize: "0.75rem", color: pm.color, minWidth: 55 }}>{pm.label}</span>
-                      <span style={{ fontSize: "0.68rem", color: "rgba(255,255,255,0.6)", flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                      <span style={{ fontSize: "0.68rem", color: "var(--text-secondary)", flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
                         {agent.category || "Analyzed"}
                         {agent.rarity ? ` · ${agent.rarity}` : ""}
                         {agent.rawLow && agent.rawHigh ? ` · ${_fp(agent.rawLow)}-${_fp(agent.rawHigh)}` : ""}
                         {agent.psaGrade ? ` · PSA ${agent.psaGrade}` : ""}
                       </span>
                       <span style={{ fontSize: "0.58rem", color: GREEN }}>✅ {timeStr}</span>
-                      <span style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.4)", transform: isExp ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▾</span>
+                      <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", transform: isExp ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▾</span>
                     </button>
 
                     {/* Expanded — 8 rich sections */}
@@ -1368,12 +1368,12 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
 
                         {/* S1 — Visual Grading */}
                         {(agent.psaGrade || agent.corners || agent.centering) && (
-                          <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "10px", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.4rem" }}>Visual Grade Assessment</div>
                             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center", marginBottom: "0.35rem" }}>
-                              {agent.psaGrade && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>PSA Est.</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: PURPLE }}>{agent.psaGrade}</div></div>}
-                              {agent.bgsGrade && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>BGS</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: TEAL }}>{agent.bgsGrade}</div></div>}
-                              {agent.gradeConfidence != null && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Confidence</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: "rgba(255,255,255,0.85)" }}>{Math.round(Number(agent.gradeConfidence) * (Number(agent.gradeConfidence) <= 1 ? 100 : 1))}%</div></div>}
+                              {agent.psaGrade && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>PSA Est.</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: PURPLE }}>{agent.psaGrade}</div></div>}
+                              {agent.bgsGrade && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>BGS</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: TEAL }}>{agent.bgsGrade}</div></div>}
+                              {agent.gradeConfidence != null && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Confidence</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--text-primary)" }}>{Math.round(Number(agent.gradeConfidence) * (Number(agent.gradeConfidence) <= 1 ? 100 : 1))}%</div></div>}
                             </div>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.2rem 0.75rem" }}>
                               {agent.corners && <GridRow label="Corners" value={agent.corners} />}
@@ -1381,51 +1381,51 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                               {agent.surface && <GridRow label="Surface" value={agent.surface} />}
                               {agent.centering && <GridRow label="Centering" value={agent.centering} />}
                             </div>
-                            {agent.gradeReasoning && <div style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.55)", marginTop: "0.3rem", lineHeight: 1.4 }}>{agent.gradeReasoning}</div>}
-                            {agent.gradeSensitivity && <div style={{ fontSize: "0.58rem", color: "rgba(255,255,255,0.4)", marginTop: "0.1rem", fontStyle: "italic" }}>{agent.gradeSensitivity}</div>}
+                            {agent.gradeReasoning && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", marginTop: "0.3rem", lineHeight: 1.4 }}>{agent.gradeReasoning}</div>}
+                            {agent.gradeSensitivity && <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginTop: "0.1rem", fontStyle: "italic" }}>{agent.gradeSensitivity}</div>}
                           </div>
                         )}
 
                         {/* S2 — Valuation Deep Dive with PSA Ladder */}
                         {(agent.rawLow || agent.psa6) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "10px", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.4rem" }}>Valuation Deep Dive</div>
                             {(agent.rawLow || agent.rawHigh) && (
                               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center", marginBottom: "0.35rem" }}>
-                                <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Raw Low</div><div style={{ fontSize: "1rem", fontWeight: 800, color: "rgba(255,255,255,0.65)" }}>{_fp(agent.rawLow)}</div></div>
-                                {agent.rawMid && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Raw Mid</div><div style={{ fontSize: "1rem", fontWeight: 800, color: AMBER }}>{_fp(agent.rawMid)}</div></div>}
-                                <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase" }}>Raw High</div><div style={{ fontSize: "1rem", fontWeight: 800, color: GREEN }}>{_fp(agent.rawHigh)}</div></div>
+                                <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Raw Low</div><div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-secondary)" }}>{_fp(agent.rawLow)}</div></div>
+                                {agent.rawMid && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Raw Mid</div><div style={{ fontSize: "1rem", fontWeight: 800, color: AMBER }}>{_fp(agent.rawMid)}</div></div>}
+                                <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Raw High</div><div style={{ fontSize: "1rem", fontWeight: 800, color: GREEN }}>{_fp(agent.rawHigh)}</div></div>
                               </div>
                             )}
                             {(agent.psa6 || agent.psa7 || agent.psa8 || agent.psa9 || agent.psa10) && (
                               <div style={{ marginTop: "0.25rem" }}>
-                                <div style={{ fontSize: "0.45rem", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", marginBottom: "0.2rem" }}>PSA Grade Ladder</div>
+                                <div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "0.2rem" }}>PSA Grade Ladder</div>
                                 <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
                                   {[{ g: "6", v: agent.psa6 }, { g: "7", v: agent.psa7 }, { g: "8", v: agent.psa8 }, { g: "9", v: agent.psa9 }, { g: "10", v: agent.psa10 }].filter(x => x.v).map(x => (
-                                    <div key={x.g} style={{ textAlign: "center", padding: "0.2rem 0.4rem", borderRadius: "8px", background: x.g === "10" ? "rgba(139,92,246,0.12)" : "rgba(255,255,255,0.03)", border: `1px solid ${x.g === "10" ? "rgba(139,92,246,0.3)" : "rgba(255,255,255,0.05)"}`, minWidth: "3rem" }}>
-                                      <div style={{ fontSize: "0.45rem", color: "rgba(255,255,255,0.4)" }}>PSA {x.g}</div>
-                                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: x.g === "10" ? PURPLE : "rgba(255,255,255,0.8)" }}>{_fp(x.v)}</div>
+                                    <div key={x.g} style={{ textAlign: "center", padding: "0.2rem 0.4rem", borderRadius: "8px", background: x.g === "10" ? "rgba(139,92,246,0.12)" : "var(--bg-card)", border: `1px solid ${x.g === "10" ? "rgba(139,92,246,0.3)" : "var(--border-default)"}`, minWidth: "3rem" }}>
+                                      <div style={{ fontSize: "0.45rem", color: "var(--text-muted)" }}>PSA {x.g}</div>
+                                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: x.g === "10" ? PURPLE : "var(--text-primary)" }}>{_fp(x.v)}</div>
                                     </div>
                                   ))}
                                 </div>
                               </div>
                             )}
-                            {agent.valueReasoning && <div style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.55)", marginTop: "0.3rem", lineHeight: 1.4 }}>{agent.valueReasoning}</div>}
-                            {agent.recentComps && <div style={{ fontSize: "0.58rem", color: "rgba(255,255,255,0.4)", marginTop: "0.15rem" }}>Comps: {typeof agent.recentComps === "string" ? agent.recentComps : JSON.stringify(agent.recentComps)}</div>}
-                            {agent.populationNote && <div style={{ fontSize: "0.58rem", color: "rgba(255,255,255,0.4)", marginTop: "0.1rem" }}>Pop: {agent.populationNote}</div>}
+                            {agent.valueReasoning && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", marginTop: "0.3rem", lineHeight: 1.4 }}>{agent.valueReasoning}</div>}
+                            {agent.recentComps && <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>Comps: {typeof agent.recentComps === "string" ? agent.recentComps : JSON.stringify(agent.recentComps)}</div>}
+                            {agent.populationNote && <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Pop: {agent.populationNote}</div>}
                           </div>
                         )}
 
                         {/* S3 — Grading ROI */}
                         {(agent.gradingRec || agent.gradingReasoning) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "10px", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Grading ROI</div>
                             <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginBottom: "0.25rem" }}>
                               {agent.gradingRec && (() => { const gs = gradingRecStyle(agent.gradingRec); return <Badge bg={gs.bg} color={gs.color} border={`1px solid ${gs.color}40`}>{agent.gradingRec}</Badge>; })()}
-                              {agent.breakEvenGrade && <Badge bg="rgba(255,255,255,0.05)" color="rgba(255,255,255,0.6)">Break-even: PSA {agent.breakEvenGrade}</Badge>}
-                              {agent.bestGradingService && <Badge bg="rgba(255,255,255,0.05)" color="rgba(255,255,255,0.5)">{agent.bestGradingService}{agent.psaStandardCost ? ` ($${agent.psaStandardCost})` : ""}</Badge>}
+                              {agent.breakEvenGrade && <Badge bg="var(--ghost-bg)" color="var(--text-secondary)">Break-even: PSA {agent.breakEvenGrade}</Badge>}
+                              {agent.bestGradingService && <Badge bg="var(--ghost-bg)" color="var(--text-muted)">{agent.bestGradingService}{agent.psaStandardCost ? ` ($${agent.psaStandardCost})` : ""}</Badge>}
                             </div>
-                            {agent.gradingReasoning && <div style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.55)", lineHeight: 1.4 }}>{agent.gradingReasoning}</div>}
+                            {agent.gradingReasoning && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>{agent.gradingReasoning}</div>}
                           </div>
                         )}
 
@@ -1435,30 +1435,30 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Market Intelligence</div>
                             {agent.listingTitle && (
                               <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.3rem 0.5rem", background: "rgba(0,188,212,0.06)", borderRadius: "8px", border: "1px solid rgba(0,188,212,0.12)", marginBottom: "0.25rem" }}>
-                                <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "rgba(255,255,255,0.8)", flex: 1 }}>{agent.listingTitle}</span>
+                                <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-primary)", flex: 1 }}>{agent.listingTitle}</span>
                                 <CopyButton text={agent.listingTitle} />
                               </div>
                             )}
                             <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
-                              {agent.bestPlatform && <div style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.6)" }}>Platform: <strong style={{ color: TEAL }}>{agent.bestPlatform}</strong>{agent.platformReasoning ? ` — ${agent.platformReasoning}` : ""}</div>}
-                              {agent.buyItNowPrice && <div style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.6)" }}>BIN: <strong style={{ color: GREEN }}>{_fp(agent.buyItNowPrice)}</strong></div>}
-                              {agent.demandReasoning && <div style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.55)" }}>{agent.demandReasoning}</div>}
-                              {agent.sellingStrategy && <div style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.5)", fontStyle: "italic" }}>{agent.sellingStrategy}</div>}
+                              {agent.bestPlatform && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>Platform: <strong style={{ color: TEAL }}>{agent.bestPlatform}</strong>{agent.platformReasoning ? ` — ${agent.platformReasoning}` : ""}</div>}
+                              {agent.buyItNowPrice && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>BIN: <strong style={{ color: GREEN }}>{_fp(agent.buyItNowPrice)}</strong></div>}
+                              {agent.demandReasoning && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>{agent.demandReasoning}</div>}
+                              {agent.sellingStrategy && <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontStyle: "italic" }}>{agent.sellingStrategy}</div>}
                             </div>
                           </div>
                         )}
 
                         {/* S5 — Investment Outlook */}
                         {(agent.price1yr || agent.price5yr || agent.catalysts || agent.risks) && (
-                          <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "rgba(255,255,255,0.02)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "10px", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.3rem" }}>Investment Outlook</div>
                             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.2rem" }}>
-                              {agent.price1yr && <span style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.6)" }}>1yr: <strong style={{ color: GREEN }}>{typeof agent.price1yr === "number" ? _fp(agent.price1yr) : agent.price1yr}</strong></span>}
-                              {agent.price5yr && <span style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.6)" }}>5yr: <strong style={{ color: PURPLE }}>{typeof agent.price5yr === "number" ? _fp(agent.price5yr) : agent.price5yr}</strong></span>}
+                              {agent.price1yr && <span style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>1yr: <strong style={{ color: GREEN }}>{typeof agent.price1yr === "number" ? _fp(agent.price1yr) : agent.price1yr}</strong></span>}
+                              {agent.price5yr && <span style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>5yr: <strong style={{ color: PURPLE }}>{typeof agent.price5yr === "number" ? _fp(agent.price5yr) : agent.price5yr}</strong></span>}
                               {agent.investmentVerdict && <Badge bg="rgba(16,185,129,0.1)" color={GREEN}>{agent.investmentVerdict}</Badge>}
                             </div>
-                            {agent.catalysts && <div style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.55)", marginBottom: "0.1rem" }}>Catalysts: {typeof agent.catalysts === "string" ? agent.catalysts : Array.isArray(agent.catalysts) ? agent.catalysts.join(", ") : JSON.stringify(agent.catalysts)}</div>}
-                            {agent.risks && <div style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.45)" }}>Risks: {typeof agent.risks === "string" ? agent.risks : Array.isArray(agent.risks) ? agent.risks.join(", ") : JSON.stringify(agent.risks)}</div>}
+                            {agent.catalysts && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", marginBottom: "0.1rem" }}>Catalysts: {typeof agent.catalysts === "string" ? agent.catalysts : Array.isArray(agent.catalysts) ? agent.catalysts.join(", ") : JSON.stringify(agent.catalysts)}</div>}
+                            {agent.risks && <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>Risks: {typeof agent.risks === "string" ? agent.risks : Array.isArray(agent.risks) ? agent.risks.join(", ") : JSON.stringify(agent.risks)}</div>}
                           </div>
                         )}
 
@@ -1469,9 +1469,9 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                               <span style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700 }}>Insider Intelligence</span>
                               {agent.communitySentiment && <Badge bg="rgba(139,92,246,0.1)" color={PURPLE_LIGHT}>{agent.communitySentiment}</Badge>}
                             </div>
-                            {agent.insiderKnowledge && <div style={{ fontSize: "0.62rem", color: "rgba(255,255,255,0.6)", lineHeight: 1.4, marginBottom: "0.15rem" }}>{agent.insiderKnowledge}</div>}
-                            {agent.notableVariations && <div style={{ fontSize: "0.58rem", color: "rgba(255,255,255,0.45)" }}>Variations: {agent.notableVariations}</div>}
-                            {agent.authenticationNotes && <div style={{ fontSize: "0.58rem", color: "rgba(255,255,255,0.45)", marginTop: "0.1rem" }}>Auth: {agent.authenticationNotes}</div>}
+                            {agent.insiderKnowledge && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", lineHeight: 1.4, marginBottom: "0.15rem" }}>{agent.insiderKnowledge}</div>}
+                            {agent.notableVariations && <div style={{ fontSize: "0.58rem", color: "var(--text-muted)" }}>Variations: {agent.notableVariations}</div>}
+                            {agent.authenticationNotes && <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Auth: {agent.authenticationNotes}</div>}
                           </div>
                         )}
 
@@ -1479,13 +1479,13 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                         {agent.summary && (
                           <div style={{ padding: "0.5rem 0.6rem", background: `${pm.color}10`, borderRadius: "0 10px 10px 0", borderLeft: `3px solid ${pm.color}60` }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.15rem" }}>{pm.icon} {pm.label} Summary</div>
-                            <p style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.65)", margin: 0, lineHeight: 1.45, fontStyle: "italic" }}>
+                            <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.45, fontStyle: "italic" }}>
                               &ldquo;{typeof agent.summary === "string" && agent.summary.length > 400 ? agent.summary.slice(0, 400) + "..." : agent.summary}&rdquo;
                             </p>
                           </div>
                         )}
 
-                        <div style={{ fontSize: "0.52rem", color: "rgba(255,255,255,0.35)", fontStyle: "italic", marginTop: "0.4rem" }}>
+                        <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", fontStyle: "italic", marginTop: "0.4rem" }}>
                           {pm.icon} {pm.label}: {pm.specialty}
                         </div>
                       </div>
@@ -1512,15 +1512,15 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
 
             {/* Expert Comparison */}
             {successful.length > 1 && (
-              <div style={{ marginBottom: "0.75rem", padding: "0.65rem 0.85rem", background: "rgba(255,255,255,0.03)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ marginBottom: "0.75rem", padding: "0.65rem 0.85rem", background: "var(--bg-card)", borderRadius: "10px", border: "1px solid var(--border-default)" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.4rem" }}>Expert Comparison</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                   {allAgents.map(agent => {
                     const pm = PROVIDER_META[agent.provider] || { icon: "🤖", label: agent.provider, color: "#888" };
                     return (
-                      <div key={agent.provider} style={{ padding: "0.3rem 0.5rem", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.04)" }}>
+                      <div key={agent.provider} style={{ padding: "0.3rem 0.5rem", background: "var(--bg-card)", borderRadius: "8px", border: "1px solid var(--border-default)" }}>
                         <div style={{ fontSize: "0.62rem", fontWeight: 700, color: pm.color, marginBottom: "0.15rem" }}>{pm.icon} {pm.label}</div>
-                        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.6rem", color: "rgba(255,255,255,0.6)" }}>
+                        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.6rem", color: "var(--text-secondary)" }}>
                           {agent.rawLow ? <span>Raw: <strong style={{ color: AMBER }}>{_fp(agent.rawLow)}-{_fp(agent.rawHigh)}</strong></span> : null}
                           {agent.psaGrade && <span>PSA: <strong>{agent.psaGrade}</strong></span>}
                           {agent.gradingRec && (() => { const gs = gradingRecStyle(agent.gradingRec); return <span style={{ color: gs.color }}>{agent.gradingRec}</span>; })()}
@@ -1541,7 +1541,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               borderRadius: "0 10px 10px 0", padding: "0.75rem 1rem", marginBottom: "0.75rem",
             }}>
               <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.3rem" }}>MegaBot Collectibles Summary</div>
-              <p style={{ fontSize: "0.82rem", lineHeight: 1.6, color: "rgba(255,255,255,0.65)", margin: 0 }}>
+              <p style={{ fontSize: "0.82rem", lineHeight: 1.6, color: "var(--text-secondary)", margin: 0 }}>
                 {(() => {
                   const parts: string[] = [];
                   parts.push(`${successful.length} AI collectibles specialists evaluated this item.`);
@@ -1589,7 +1589,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
         <GlassCard style={{ textAlign: "center", padding: "3rem 1.5rem" }}>
           <div style={{ fontSize: "3rem", marginBottom: "0.75rem", opacity: 0.6 }}>🎴</div>
           <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>Ready for Collectibles Analysis</div>
-          <p style={{ fontSize: "0.82rem", color: "rgba(255,255,255,0.5)", maxWidth: 450, margin: "0 auto", lineHeight: 1.55 }}>
+          <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", maxWidth: 450, margin: "0 auto", lineHeight: 1.55 }}>
             Run CollectiblesBot to get grading assessment, rarity analysis, valuation with PSA grade ladder, market intelligence, and expert selling strategy.
           </p>
         </GlassCard>
@@ -1625,7 +1625,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               style={{
                 padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
                 borderRadius: "10px", cursor: loading ? "not-allowed" : "pointer",
-                background: loading ? "rgba(255,255,255,0.05)" : `linear-gradient(135deg, ${PURPLE}, #6d28d9)`,
+                background: loading ? "var(--ghost-bg)" : `linear-gradient(135deg, ${PURPLE}, #6d28d9)`,
                 border: "none", color: "#fff",
                 boxShadow: loading ? "none" : `0 2px 10px rgba(139,92,246,0.3)`,
               }}
@@ -1638,7 +1638,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               style={{
                 padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
                 borderRadius: "10px", cursor: megaBotLoading ? "not-allowed" : "pointer",
-                background: megaBotLoading ? "rgba(255,255,255,0.05)" : "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(109,40,217,0.15))",
+                background: megaBotLoading ? "var(--ghost-bg)" : "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(109,40,217,0.15))",
                 border: "1px solid rgba(139,92,246,0.4)", color: PURPLE,
               }}
             >
@@ -1649,8 +1649,8 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               style={{
                 padding: "0.45rem 0.85rem", fontSize: "0.72rem", fontWeight: 600,
                 borderRadius: "10px", textDecoration: "none",
-                background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-                color: "rgba(255,255,255,0.6)", display: "flex", alignItems: "center",
+                background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                color: "var(--text-secondary)", display: "flex", alignItems: "center",
               }}
             >
               View Item →
