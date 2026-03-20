@@ -1,0 +1,686 @@
+LEGACYLOOP — SHIPPING CENTER TMS CONSOLE UPGRADE
+Full Templated Command for Claude Code
+March 19, 2026 | Ryan Hallee, Founder
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ENGINEERING DIRECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUILD REAL. ALWAYS.
+Patch only what requires third-party access
+we don't have yet (Shippo production keys).
+
+This is a UI UPGRADE to the existing
+ShippingCenterClient.tsx (1,839 lines).
+The API layer is already correct and LOCKED.
+DO NOT REWRITE. ADD TO AND ENHANCE ONLY.
+Keep every existing component. Upgrade them.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+READ BEFORE MAKING ANY CHANGES:
+This app has an established design system:
+sleek, elegant, high-tech — Tesla/SpaceX/Grok.
+Dark theme, teal (#00bcd4) accents, glass morphism,
+premium typography. Senior-friendly.
+
+All styles inline style={{}} — NO Tailwind.
+NO external CSS. NO className for styling.
+ONLY inline style={{}}.
+
+LIGHT MODE RULE: All colors on theme-aware
+surfaces MUST use CSS variables. NEVER
+hardcoded rgba(255,255,255,...) or #fff
+on theme surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that
+are always dark MUST use hardcoded colors
+(#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables — they invert in light mode.
+The ShippingLabel component correctly uses
+white bg for printability — keep that.
+
+ELON MUSK STANDARD: This must feel like a
+$1B product. Every interaction responsive and
+purposeful. Think Tesla center console — dense,
+smart, fast. FedEx Ship Manager meets Tesla UI.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — VERIFICATION CHECKPOINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Run BEFORE starting. If it fails — STOP.
+Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3 — PERMANENTLY LOCKED FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ALWAYS LOCKED — Never touch without
+explicit surgical unlock:
+
+— Core Adapters —
+lib/adapters/ai.ts — LOCKED
+lib/adapters/rainforest.ts — LOCKED
+lib/adapters/auth.ts — EXTEND ONLY
+lib/adapters/storage.ts — LOCKED
+lib/adapters/multi-ai.ts — LOCKED
+
+— AI Detection + Scoring —
+lib/antique-detect.ts — LOCKED
+lib/collectible-detect.ts — LOCKED
+
+— MegaBot Engine —
+lib/megabot/run-specialized.ts — LOCKED
+lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping —
+lib/shipping/package-suggestions.ts — LOCKED
+
+— Data Pipelines —
+lib/data/** — LOCKED
+
+— Enrichment —
+lib/enrichment/** — LOCKED
+lib/addons/enrich-item-context.ts — LOCKED
+
+— Credits + Billing —
+lib/credits.ts — LOCKED
+lib/tier-enforcement.ts — READ ONLY
+lib/billing/** — LOCKED
+
+— Offers —
+lib/offers/** — LOCKED
+
+— Email System —
+lib/email/** — LOCKED
+
+— Pricing Constants —
+lib/constants/pricing.ts — LOCKED
+lib/pricing/** — LOCKED
+
+— API Routes —
+app/api/** — ALL LOCKED
+  (shipping APIs already enriched — LOCKED)
+
+— Item + Dashboard + Bots —
+app/items/[id]/ShippingPanel.tsx — READ ONLY
+  (3,508 lines — REFERENCE for features)
+app/bots/shipbot/ShipBotClient.tsx — READ ONLY
+  (949 lines — REFERENCE for features)
+app/items/** — ALL LOCKED
+app/dashboard/** — LOCKED
+app/bots/** — ALL LOCKED
+
+— Core UI —
+app/components/AppNav.tsx — LOCKED
+app/components/UploadModal.tsx — LOCKED
+app/page.tsx — LOCKED
+globals.css — LOCKED
+
+— Always-Dark Overlays —
+app/components/ItemActionPanel.tsx — LOCKED
+app/components/billing/CancelFlowModal.tsx — LOCKED
+app/components/billing/UpgradeFlowModal.tsx — LOCKED
+app/components/TradeProposalModal.tsx — LOCKED
+
+— Commerce + Pages —
+app/subscription/** — LOCKED
+app/credits/** — LOCKED
+app/marketplace/** — LOCKED
+app/bundles/** — LOCKED
+app/pricing/** — LOCKED
+app/projects/** — LOCKED
+app/offers/** — ALL LOCKED
+
+— Messaging System —
+app/messages/** — ALL LOCKED
+app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools —
+app/addons/** — ALL LOCKED
+
+— Onboarding —
+app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+vercel.json — LOCKED
+prisma/schema.prisma — READ ONLY
+
+SURGICAL UNLOCK — THESE FILES ONLY:
+
+1. app/shipping/ShippingCenterClient.tsx
+   — UPGRADE existing 1,839-line file
+   — ADD features. Do NOT rewrite or delete
+     existing components.
+
+2. app/shipping/page.tsx
+   — MINOR header text update only (30 lines)
+
+All unlocked files return to LOCKED
+after approval.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Never touch, modify, or rebuild any of these.
+
+ALL PASS 1-5 FEATURES: LOCKED
+(See Command Template v10 for full list)
+
+Specifically locked and working:
+— Shipping Center API enrichment (center/route.ts)
+  Returns: aiBox, aiBoxLabel, aiBoxDims,
+  aiEstWeight, aiPackingTips, shippingStage,
+  urgencyLevel, lastQuote, hasSavedDims,
+  hasAiProfile, hasQuote — ALL WORKING
+— Shipping estimate API quote persistence
+  (estimate/route.ts saves to EventLog)
+— Item Dashboard shipping bridge
+  (Go to Shipping Center CTA)
+— ShippingLabel component with CSS barcode
+— Tracking number generator (carrier formats)
+— TMSDashboard pipeline + financial cards
+— ShippedTab with 5-step progress bars
+— FreightTab with BOL generation
+— LocalPickupTab
+— URL param handling (?itemId)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5 — DATA COLLECTION STANDARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Every shipping action is valuable data.
+Every quote, every carrier selection, every
+label generated tells us about item categories,
+packaging patterns, and logistics intelligence.
+Flag any missed data collection opportunities.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 6 — BUILD PATTERN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Database → Storage → API → AI →
+Enrichment → UI → Dashboard → Database update
+
+For this command: UI upgrades only.
+The API and database layers are already done.
+Build order: B → C → D → E → F
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 7 — PLATFORM CONTEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHASE 1 (NOW): Copy hub — no OAuth needed.
+13 platforms. Demo-ready.
+DEMO_MODE=true — admin accounts bypass all
+gates and credit deductions. Both test accounts
+are Tier 4 Estate Manager with full access.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 8 — CREATIVE LATITUDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+You MAY:
+— Build the most impressive TMS shipping
+  interface ever seen in a resale platform
+— Pull every piece of data the API returns
+  and display it richly in the UI
+— Add box size selectors, editable fields,
+  packaging controls, save buttons
+— Show carrier comparisons, AI insights,
+  packing tips, quote history, metro estimates
+— Make it feel like FedEx/UPS enterprise
+  tools but beautiful
+— Hardcode colors on always-dark panels
+— Add polish that serves the Elon standard
+
+You MAY NOT:
+— Touch any locked files
+— Rewrite or delete existing components
+— Deviate from inline style={{}}
+— Add unapproved npm packages
+— Change schema without approval
+— Use Tailwind or className for styling
+— Change bot AI/prompt logic
+
+Flag everything outside scope.
+Read FULL files before writing.
+Never assume. Never guess.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks
+isDemoMode() || isAdminUser(role).
+Admin: never locked out, no credits deducted.
+
+Test accounts: both Tier 4 Estate Manager.
+annalyse07@gmail.com / LegacyLoop123!
+ryanroger11@gmail.com / Freedom26$
+SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+TO GO LIVE: Set DEMO_MODE=false,
+switch Square sandbox to production keys.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — SHIPPING CENTER TMS CONSOLE UPGRADE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THE PROBLEM:
+The API layer is correct and returning rich
+data (aiBox, aiPackingTips, lastQuote,
+shippingStage, urgencyLevel). But the
+Shipping Center UI is not using this data
+to its full potential.
+
+The ShipBot page (/bots/shipbot, 949 lines)
+and the ShippingPanel (3,508 lines in the
+item dashboard) have beautiful, interactive
+shipping tools: box size selector grids,
+editable dims, packaging type buttons,
+carrier rate tables with Cheapest/Fastest
+badges, packing tips, metro estimates,
+save functionality.
+
+The Shipping Center console needs ALL of
+these features. It must be THE master hub
+for all shipping operations — not a summary.
+
+REFERENCE STANDARD:
+Read ShipBotClient.tsx and ShippingPanel.tsx.
+Match or exceed their quality.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DO NOT BUILD UNTIL ALL READS COMPLETE.
+
+1. Read app/shipping/ShippingCenterClient.tsx
+   — All 1,839 lines. Current component map:
+   — simpleHash (line 48)
+   — generateTrackingNumber (line 56)
+   — CSSBarcode (line 85)
+   — ShippingLabel (line 119) — KEEP AS-IS
+   — TMSDashboard (line 268) — UPGRADE
+   — StatusBadge (line 320) — KEEP AS-IS
+   — ShipProfile (line 350) — UPGRADE
+   — ItemRow (line 427) — KEEP AS-IS
+   — PreSaleTab (line 459) — UPGRADE
+   — ReadyToShipTab (line 635) — UPGRADE
+   — ShippedTab (line 1145) — KEEP AS-IS
+   — FreightTab (line 1289) — KEEP AS-IS
+   — LocalPickupTab (line 1596) — KEEP AS-IS
+   — Main ShippingCenterClient (line 1657) — UPGRADE
+
+2. Read app/bots/shipbot/ShipBotClient.tsx
+   — Full 949 lines. Note these features
+     to BRING INTO the Shipping Center:
+   — CATEGORY_DEFAULTS (line 56-70)
+   — PACKAGING_TYPES selector (line 48-54):
+     Box, Envelope, Tube, Crate, Pallet
+   — Editable dims with live state (line 150)
+   — City/ZIP autocomplete search (line 154-158)
+   — Pickup options section (line 172-176)
+   — Live Shippo carrier rate table
+   — AI Agent tips display
+   — MegaBot 4-AI button
+
+3. Read app/items/[id]/ShippingPanel.tsx
+   — Focus on lines 79-88: BOX_PRESETS:
+     tiny (6x4x3), small (10x8x4),
+     medium (14x12x8), large (18x14x12),
+     xl (24x18x16), oversized (36x24x24),
+     furniture (48x30x30), custom
+   — Focus on lines 2714-2876: Package Details
+     with box size grid, AI Suggested badge,
+     weight/dims inputs, fragile checkbox,
+     shipping preference radios, packing tips
+   — Focus on lines 2929-3138: Carrier Comparison
+   — Focus on lines 3140-3195: Metro Estimates
+     (New York, LA, Chicago, Houston cards)
+
+4. Verify API returns rich data:
+   Read app/api/shipping/center/route.ts
+   — Confirm it returns per item:
+     aiBox, aiBoxLabel, aiBoxDims,
+     aiEstWeight, aiPackingTips,
+     shippingStage, urgencyLevel,
+     lastQuote, hasSavedDims, hasAiProfile,
+     hasQuote
+
+Print all findings. Then proceed.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — ADD BOX_PRESETS + CONSTANTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+Location: After the existing helper functions
+(after line 44, before simpleHash at line 48)
+
+Add these constants LOCALLY (do NOT import
+from ShippingPanel — it's locked):
+
+const BOX_PRESETS: Record<string, {
+  l: number; w: number; h: number;
+  label: string; desc: string
+}> = {
+  tiny:      { l: 6,  w: 4,  h: 3,
+    label: "Tiny (6×4×3)",
+    desc: "Jewelry, small accessories" },
+  small:     { l: 10, w: 8,  h: 4,
+    label: "Small (10×8×4)",
+    desc: "Pedals, small electronics, books" },
+  medium:    { l: 14, w: 12, h: 8,
+    label: "Medium (14×12×8)",
+    desc: "Appliances, boots, kitchenware" },
+  large:     { l: 18, w: 14, h: 12,
+    label: "Large (18×14×12)",
+    desc: "Electronics, tools, multiple items" },
+  xl:        { l: 24, w: 18, h: 16,
+    label: "XL (24×18×16)",
+    desc: "Small furniture, monitors" },
+  oversized: { l: 36, w: 24, h: 24,
+    label: "Oversized (36×24×24)",
+    desc: "Large decor, equipment, chairs" },
+  furniture: { l: 48, w: 30, h: 30,
+    label: "Furniture (48×30×30)",
+    desc: "Furniture, large frames, shelving" },
+  custom:    { l: 0,  w: 0,  h: 0,
+    label: "Custom",
+    desc: "Any size — enter your dimensions" },
+};
+
+const PACKAGING_TYPES = [
+  { value: "box", label: "Box", icon: "📦" },
+  { value: "envelope", label: "Envelope", icon: "✉️" },
+  { value: "tube", label: "Tube", icon: "🧻" },
+  { value: "crate", label: "Crate", icon: "🪵" },
+  { value: "pallet", label: "Pallet", icon: "🏗️" },
+];
+
+const METRO_CITIES = [
+  { city: "New York", zip: "10001" },
+  { city: "Los Angeles", zip: "90001" },
+  { city: "Chicago", zip: "60601" },
+  { city: "Houston", zip: "77001" },
+];
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — UPGRADE ShipProfile COMPONENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Target: ShipProfile function (line 350-422)
+
+Currently shows: text with AI box name, dims,
+fragile badge, expandable packing tips.
+
+KEEP everything. ADD when expanded:
+
+1. AI RECOMMENDATION BANNER:
+   If item.aiBox: teal-tinted card:
+   "🤖 AI Recommended: [aiBox] — [aiBoxLabel]"
+   If item.aiBoxDims: show dims + est weight
+   If no AI data: amber banner with
+   "⚠️ No AI analysis" + link to analyze
+
+2. SAVED vs AI INDICATOR:
+   If item.hasSavedDims: "✅ Saved" (green)
+   Else if item.hasAiProfile: "⚡ AI est." (amber)
+
+3. LAST QUOTE INLINE:
+   If item.lastQuote:
+   "📋 Quoted [date]: [carrier] — $[price]"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — UPGRADE PreSaleTab
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Target: PreSaleTab function (line 459-631)
+
+KEEP existing carrier table with BEST/FASTEST.
+ADD inside the quote expansion section:
+
+1. BOX SIZE SELECTOR GRID:
+   Grid of 8 box preset cards (2x4 on desktop)
+   Each: name, dims, description
+   AI Suggested badge on item.aiBox match
+   Clicking highlights + updates quote dims
+   Match ShippingPanel line 2728-2769 visual
+
+2. EDITABLE WEIGHT + DIMS FIELDS:
+   4 inputs: Weight, Length, Width, Height
+   Pre-fill: saved → AI → selected preset
+   Stale rates notice when changed
+
+3. PACKAGING TYPE SELECTOR:
+   5 toggle buttons from PACKAGING_TYPES
+   Pre-select from AI suggestion
+
+4. FRAGILE + SHIPPING PREFERENCE:
+   □ Fragile item
+   ◉ Buyer pays ○ Free shipping ○ Local only
+
+5. SAVE SHIPPING DETAILS BUTTON:
+   POST /api/items/update/{item.id}
+   Body: { shippingWeight, shippingLength,
+   shippingWidth, shippingHeight, isFragile,
+   shippingPreference }
+   Success: "✅ Saved!" for 2 seconds
+
+6. METRO ESTIMATES SECTION:
+   "ESTIMATED SHIPPING TO MAJOR CITIES"
+   4 cards: NYC, LA, Chicago, Houston
+   Cost = cheapest rate × distance factor
+   Match ShippingPanel line 3140-3195
+
+7. PACKING TIPS SECTION:
+   Teal card: "PACKING TIPS"
+   "📦 Recommended box: [preset] based on
+    your [category]"
+   List item.aiPackingTips
+   Match ShippingPanel line 2834-2868
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — UPGRADE ReadyToShipTab
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Target: ReadyToShipTab function (line 635-1141)
+
+KEEP existing wizard, auto-fetch, labels.
+ADD:
+
+1. PRE-LOADED QUOTE DISPLAY:
+   If item.lastQuote from API: show immediately
+   "📋 Saved quote: [carrier] — $[price]"
+   [Ship Now →] [🔄 Fresh Quote]
+
+2. URGENCY ESCALATION:
+   >2 days: amber pulsing border on card
+   >5 days: red border + warning banner:
+   "🚨 URGENT: Sold [X] days ago — ship now"
+
+3. ONE-CLICK SHIP:
+   If hasQuote AND hasSavedDims:
+   Big button: "Ship via [carrier] — $[price]"
+   Opens wizard at step 3 with quote pre-loaded
+
+4. WIZARD STEP 1 BOX GRID:
+   Add BOX_PRESETS grid above existing
+   dim inputs in step 1 (line 891-929)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — UPGRADE MAIN COMPONENT + PAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Target: Main component (line 1657)
+
+1. INTELLIGENCE STRIP (above TMSDashboard):
+   Row of clickable status pills:
+   🚨 [count] Urgent — red (sold >5d, no label)
+   ⚠️ [count] Needs Label — amber (sold 2-5d)
+   📦 [count] Quoted — teal (has quote)
+   🚚 [count] In Transit — blue
+   ✅ [count] Delivered — green
+   💰 $[total] Costs — muted
+   Each pill switches to relevant tab.
+
+2. REDIRECT BREADCRUMB:
+   If ?itemId: show "← From Item Dashboard"
+   link back to /items/[itemId]
+
+Target: app/shipping/page.tsx
+
+3. UPDATE SUBTITLE:
+   Change "Manage shipping estimates..."
+   To: "Shipping intelligence — carrier
+   comparisons, AI-suggested packaging,
+   and LTL freight detection"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 10 — FLAGS TO WATCH FOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. DO NOT REWRITE. ADD AND ENHANCE ONLY.
+2. BOX_PRESETS: Define locally. Do NOT import.
+3. Save Shipping Details: POST to
+   /api/items/update/{itemId}. Already exists.
+4. Metro estimates: Hardcode 4 cities with
+   cost multipliers. Flag as future API.
+5. API returns all data. If null, item not
+   yet analyzed — show "run analysis" prompt.
+6. No new npm packages.
+7. All new elements: inline style={{}} only.
+8. page.tsx uses className for section-title,
+   h1, muted — these are global utility classes.
+   Keep them. Add inline for new elements.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 11 — PENDING SCHEMA MIGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DO ALL AT ONCE — Never piecemeal:
+User.role — 'admin' | 'user'
+soldPrice Int → Float
+soldVia String? on Item
+estimatedValue Float? on Item
+priceDelta Float? on Item
+TradeProposal model
+AgentSettings model
+Bundle + BundleItem models
+quizCompletedAt DateTime? on User
+feeModel field on PaymentLedger
+RETURN_REQUESTED, RETURNED, REFUNDED statuses
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 12 — VERIFICATION CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1.  CHECKPOINT baseline: pass
+2.  Part A reads complete and printed
+3.  BOX_PRESETS constant added locally: yes/no
+4.  PACKAGING_TYPES constant added: yes/no
+5.  ShipProfile AI recommendation banner: yes/no
+6.  ShipProfile saved vs AI indicator: yes/no
+7.  ShipProfile last quote inline: yes/no
+8.  PreSale box size selector grid: yes/no
+9.  PreSale editable weight/dims fields: yes/no
+10. PreSale packaging type selector: yes/no
+11. PreSale fragile + preference controls: yes/no
+12. PreSale Save Shipping Details works: yes/no
+13. PreSale metro estimates section: yes/no
+14. PreSale packing tips section: yes/no
+15. ReadyToShip pre-loaded quote display: yes/no
+16. ReadyToShip urgency escalation borders: yes/no
+17. ReadyToShip one-click ship button: yes/no
+18. ReadyToShip wizard box preset grid: yes/no
+19. Intelligence strip with clickable pills: yes/no
+20. Page subtitle updated: yes/no
+21. ?itemId breadcrumb shows: yes/no
+22. Existing carrier BEST/FASTEST badges: yes/no
+23. Existing ShippingLabel unchanged: yes/no
+24. Existing ShippedTab unchanged: yes/no
+25. Existing FreightTab + BOL unchanged: yes/no
+26. Existing LocalPickupTab unchanged: yes/no
+27. Light mode clean: yes/no
+28. Dark mode clean: yes/no
+29. Always-dark panels correct: yes/no
+30. All locked files untouched: yes/no
+31. inline style={{}} for all new code: yes/no
+32. NO components deleted or rewritten: yes/no
+33. npx tsc --noEmit: 0 errors
+34. npm run build: pass
+35. CHECKPOINT after: pass
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 13 — REQUIRED REPORT FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHECKPOINT before: [pass/issue]
+Part A printed: [yes/no]
+
+PART B — Constants:
+— BOX_PRESETS added: [yes/no]
+— PACKAGING_TYPES added: [yes/no]
+— METRO_CITIES added: [yes/no]
+
+PART C — ShipProfile Upgrade:
+— AI recommendation banner: [yes/no]
+— Saved vs AI indicator: [yes/no]
+— Last quote inline: [yes/no]
+
+PART D — PreSale Tab Upgrade:
+— Box size selector grid: [yes/no]
+— Editable weight/dims: [yes/no]
+— Packaging type selector: [yes/no]
+— Fragile + preference: [yes/no]
+— Save Shipping Details: [yes/no]
+— Metro estimates: [yes/no]
+— Packing tips section: [yes/no]
+
+PART E — ReadyToShip Upgrade:
+— Pre-loaded quote display: [yes/no]
+— Urgency escalation borders: [yes/no]
+— One-click ship: [yes/no]
+— Wizard box preset grid: [yes/no]
+
+PART F — Header + Main:
+— Intelligence strip pills: [yes/no]
+— Redirect breadcrumb: [yes/no]
+— Page subtitle updated: [yes/no]
+
+EXISTING COMPONENTS PRESERVED:
+— ShippingLabel: [untouched]
+— CSSBarcode: [untouched]
+— generateTrackingNumber: [untouched]
+— TMSDashboard: [enhanced/untouched]
+— StatusBadge: [untouched]
+— ShippedTab: [untouched]
+— FreightTab + BOL: [untouched]
+— LocalPickupTab: [untouched]
+
+LIGHT MODE: [clean/issues]
+DARK MODE: [clean/issues]
+ALWAYS-DARK PANELS: [correct/issues]
+EXISTING LOGIC UNTOUCHED:
+— [List every locked file verified untouched]
+
+FLAGS FROM CLAUDE CODE:
+[All gaps, risks, missed data, out-of-scope]
+
+Files modified: [list exact paths]
+New files: [list or none]
+Lines added (approx): [count]
+Schema changes needed: [list or none]
+Build: [pass/fail]
+TypeScript: [0 errors/list]
+CHECKPOINT after: [pass/issue]
+Dev server: [localhost:3000]
+
+IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+conversation-selected: Messages → InboxCmd
+conversation-counts-updated: Messages → InboxCmd
+agent-fill-message: InboxCmd → Messages
+agent-settings-toggle: InboxCmd → AgentSettings
+inbox-filter-change: InboxCmd → Messages
+inbox-filter-reset: Messages → InboxCmd
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CRITICAL CARRY-FORWARD ITEMS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Bot Page Data Sync: All bot pages must load
+   cached results on mount without re-running.
+2. Fee Model: 3.5% total. Buyer 1.75%.
+   Seller 1.75%. Platform purchases: 3.5%.
+   Monthly subscriptions: no fee.
+3. Shipping Center API + Quote Persistence:
+   DONE and LOCKED. Do not modify.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Command: Shipping Center TMS Console Upgrade
+LegacyLoop | March 19, 2026 | Ryan Hallee
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SURGICAL UNLOCK SUMMARY:
+app/shipping/ShippingCenterClient.tsx — UPGRADE
+app/shipping/page.tsx — MINOR UPDATE
+(2 files only. Everything else stays locked.)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

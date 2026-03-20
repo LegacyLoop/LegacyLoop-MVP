@@ -1,0 +1,351 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/shipping/ShippingCenterClient.tsx
+     — VISUAL POLISH: Premium TMS professional feel
+     — FIX: Any UI issues found during testing
+     — ADD: Clear step-by-step guidance text for every shipping phase
+     — ADD: Progress indicators showing where user is in the flow
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping commands LOCKED. Command 1 of this pair just landed — carrier selection, quote memory, freight buttons, delivery methods, metro live rates, Item Dashboard selection all working.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently.
+
+SECTION 6 — BUILD PATTERN
+
+  Database -> Storage -> API -> AI -> Enrichment -> UI -> Dashboard -> Database update.
+  Build order: A -> B -> C -> D -> E
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo THIS WEEK. THIS IS THE ABSOLUTE LAST SHIPPING CENTER COMMAND.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Polish every visual element, add guidance text, fix any remaining UI issues, make the TMS feel like ShipStation/Shippo/EasyPost built inside LegacyLoop. Add smooth transitions, premium card designs, clear user guidance at every step. Make this investor-demo perfect.
+
+You MAY NOT: Touch locked files, rewrite components, add npm packages, change schema, deviate from inline style={{}}.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed for this command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — SHIPPING CENTER FINAL VISUAL POLISH + USER GUIDANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+*** THIS IS THE LAST SHIPPING CENTER COMMAND ***
+*** AFTER THIS: LOCK SHIPPING AND MOVE ON ***
+
+The Shipping Center has all the functionality. The flows
+work. The data syncs. Now it needs to FEEL professional.
+Every screen, every state, every phase of every flow needs
+clear user guidance. The user should NEVER be confused
+about what to do next.
+
+Professional TMS systems (ShipStation, Shippo, EasyPost)
+guide the user through every step with clear messaging,
+progress indicators, and contextual help. LegacyLoop's
+Shipping Center must match that level of polish.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Read app/shipping/ShippingCenterClient.tsx — focus on:
+1. Every empty state (when tabs have no items)
+2. Every button label and call-to-action
+3. Every state transition (what happens AFTER each action)
+4. Every place where the user might be confused about what to do next
+
+Note any place that needs:
+— Clearer guidance text
+— Better button labels
+— Progress indicators
+— Contextual help
+— Visual improvement
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — PRESALE TAB: STEP-BY-STEP GUIDANCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+For every item in PreSale, show a SHIPPING READINESS STATUS
+that tells the user exactly where they are and what to do next:
+
+STATUS 1 — NO PROFILE:
+  "⚠️ Step 1: Run AI analysis on this item to get shipping recommendations"
+  [Analyze Item →] link to /items/{id}
+
+STATUS 2 — HAS AI PROFILE, NO QUOTE:
+  "📦 Step 1 ✓ AI profile ready"
+  "📋 Step 2: Enter a buyer ZIP and get carrier rates"
+  Arrow pointing to the CitySearch / Get Quote area
+
+STATUS 3 — HAS QUOTE, NOT SAVED:
+  "📦 Step 1 ✓ AI profile ready"
+  "📋 Step 2 ✓ Rates available — [X] carriers"
+  "💾 Step 3: Click a carrier to select, then Save Quote"
+  Clear guidance pointing to the carrier table
+
+STATUS 4 — QUOTE SAVED:
+  "📦 Step 1 ✓ AI profile"
+  "📋 Step 2 ✓ Rates obtained"
+  "💾 Step 3 ✓ Quote saved — [Carrier] $[rate]"
+  "✅ Shipping-ready! When this item sells, your quote carries over automatically."
+
+This progress indicator should be a small, elegant horizontal
+stepper component at the top of each item's expanded section.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — READY TO SHIP TAB: CLEAR ACTION FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+For every item in ReadyToShip:
+
+IF HAS SAVED QUOTE (from PreSale or Item Dashboard):
+  Show prominently at top of item card:
+  "✅ Quote ready — [Carrier] [Service] $[rate]"
+  BIG GREEN BUTTON: [Ship Now →]
+  Smaller link: [Get fresh rates] [Change carrier]
+
+  The Ship Now flow should feel SEAMLESS:
+  Click → Summary → Confirm → Label → Done
+
+IF NO SAVED QUOTE:
+  Show: "📋 No quote saved. Get rates to start shipping."
+  [Get Rates →] button opens the CitySearch + quote flow
+  After getting rates: same Save + Ship flow as PreSale
+
+AFTER LABEL GENERATED:
+  Show a SUCCESS celebration card:
+  "🎉 Label Created!"
+  "Carrier: [Carrier] [Service]"
+  "Tracking: [number]"
+  "Rate: $[amount]"
+  Three action buttons in a row:
+  [📱 QR Code] [🖨️ Print Label] [📦 Schedule Pickup]
+  Below: [✅ Mark as Shipped] — prominent teal button
+  Below that: [View in Tracking Board →] link
+
+  The user should feel accomplished. The sale is almost done.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — TRACKING TAB: PROFESSIONAL STATUS DISPLAY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The Tracking tab should feel like a professional shipment
+tracking dashboard. For each shipment:
+
+PARCEL SHIPMENTS:
+  Premium card with carrier branding color bar at top
+  (USPS blue, UPS brown, FedEx purple)
+  Tracking number in monospace with copy button
+  5-step progress bar (large, clear labels)
+  Estimated delivery date prominent
+  "Shipped [X] days ago" counter
+  IF DELIVERED: green celebration card with confetti icon
+    [✅ Close Sale — Complete Transaction] — big button
+    "Closing the sale updates your analytics and earnings"
+
+FREIGHT SHIPMENTS:
+  Purple accent card
+  BOL # + PRO # displayed
+  6-step freight progress bar
+  Carrier name + service
+  [Advance Status →] button
+
+PICKUP ITEMS:
+  Violet accent card
+  5-step pickup progress
+  Handoff code prominent (if applicable)
+  [Advance Status →] button
+
+SECTION HEADERS for each group:
+  "🚚 In Transit ([count])" — blue section
+  "📬 Out for Delivery ([count])" — amber section
+  "✅ Delivered ([count])" — green section
+  "🤝 Pickups ([count])" — violet section
+  "⚠️ Issues ([count])" — red section (if any)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — OVERALL VISUAL REFINEMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+1. TMSDashboard — ensure the stats cards are visually
+   premium with hover effects and clear icons. Each stat
+   should be immediately scannable.
+
+2. Tab bar — the active tab should be OBVIOUS. Gradient
+   underline, slightly larger text, teal glow. Inactive
+   tabs should be clearly muted.
+
+3. Item cards — consistent spacing, shadows, border radius.
+   Every card should feel like the same design system.
+   Photo size consistent (56x56), title truncation consistent.
+
+4. Empty states — every tab that could be empty should have
+   an attractive, helpful empty state:
+   PreSale: "Upload and analyze items to start getting shipping estimates"
+   ReadyToShip: "When you sell an item, it appears here for shipping"
+   Tracking: "Your shipped and delivered items will be tracked here"
+   Freight: "Large or heavy items? Get LTL freight quotes here"
+   Pickup: "Local pickup items and vehicle meetups managed here"
+
+5. Buttons — consistent styling:
+   Primary actions: teal gradient, white text, rounded
+   Secondary actions: outlined, teal text
+   Destructive: red tint
+   All with hover effects and cursor pointer
+
+6. Loading states — smooth skeleton loading for all tabs
+
+7. Error states — if any API call fails, show a friendly
+   error with retry button, not a blank screen
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  PreSale shipping readiness stepper: yes/no
+4.  ReadyToShip saved quote prominent display: yes/no
+5.  ReadyToShip Ship Now flow seamless: yes/no
+6.  Label success celebration card: yes/no
+7.  Delivery method buttons (QR/Print/Pickup): yes/no
+8.  Mark as Shipped prominent: yes/no
+9.  Tracking tab section headers: yes/no
+10. Tracking carrier branding colors: yes/no
+11. Delivered celebration + Close Sale: yes/no
+12. TMSDashboard visual polish: yes/no
+13. Tab bar active state clear: yes/no
+14. Empty states for all tabs: yes/no
+15. Button styling consistent: yes/no
+16. Loading skeletons smooth: yes/no
+17. All existing features preserved: yes/no
+18. All locked files untouched: yes/no
+19. inline style={{}} throughout: yes/no
+20. Light mode clean: yes/no
+21. Dark mode clean: yes/no
+22. npx tsc --noEmit: 0 errors
+23. npm run build: pass
+24. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — PreSale Guidance:
+  — Shipping readiness stepper: [yes/no]
+  — Status progression clear: [yes/no]
+
+  PART C — ReadyToShip Flow:
+  — Saved quote display: [yes/no]
+  — Ship Now button: [yes/no]
+  — Label success card: [yes/no]
+  — Delivery methods: [yes/no]
+  — Mark as Shipped: [yes/no]
+
+  PART D — Tracking Polish:
+  — Section headers: [yes/no]
+  — Carrier branding: [yes/no]
+  — Close Sale: [yes/no]
+
+  PART E — Visual:
+  — TMSDashboard: [polished/issues]
+  — Tab bar: [polished/issues]
+  — Empty states: [yes/no]
+  — Button consistency: [yes/no]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  FLAGS: [list any]
+  Files modified: [paths]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD ITEMS:
+
+1. AFTER THIS COMMAND: LOCK the Shipping Center PERMANENTLY. It is DONE.
+2. Next priority: Bot Page Data Sync (Phase 3 item 19).
+3. Then: Phase 4 Admin Dashboard, Phase 6 Demo Walkthrough.
+4. Pre-demo: Seed pickup data, Dr. Clark demo preparation.
+5. Fee Model: 3.5% (1.75% buyer + 1.75% seller). Split cost: 50/50.
+
+Command 2 of 2: Visual Polish + User Guidance — FINAL
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

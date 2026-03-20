@@ -135,6 +135,7 @@ export default function ItemActionPanel({
   const [actionLoading, setActionLoading] = useState(false);
   const [priceInput, setPriceInput] = useState("");
   const [showPriceInput, setShowPriceInput] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   // Sale assignment state
   const [salesList, setSalesList] = useState<{ id: string; name: string; type: string }[]>([]);
@@ -300,18 +301,19 @@ export default function ItemActionPanel({
     : show ? "translateX(0)" : "translateX(100%)";
 
   /* ── Bot grid data — ALL 10 always shown ── */
-  const bots: { emoji: string; name: string; run: boolean }[] = [
-    { emoji: "🔍", name: "AnalyzeBot", run: botStatus.analyzeBotRun || item.status !== "DRAFT" },
-    { emoji: "💰", name: "PriceBot", run: botStatus.analyzeBotRun || item.status !== "DRAFT" },
-    { emoji: "📋", name: "ListBot", run: botStatus.listBotRun },
-    { emoji: "👥", name: "BuyerBot", run: botStatus.buyerBotRun },
-    { emoji: "🔭", name: "ReconBot", run: botStatus.reconBotRun },
-    { emoji: "📸", name: "PhotoBot", run: false },
-    { emoji: "🏺", name: "AntiqueBot", run: item.isAntique && item.authenticityScore != null && item.authenticityScore > 0 },
-    { emoji: "🃏", name: "Collectibles", run: item.isCollectible && item.collectiblesScore > 0 },
-    { emoji: "🚗", name: "CarBot", run: false },
-    { emoji: "⚡", name: "MegaBot", run: botStatus.megaBotRun || item.megabotUsed },
+  const bots: { emoji: string; name: string; run: boolean; route: string }[] = [
+    { emoji: "\u{1F50D}", name: "AnalyzeBot", run: botStatus.analyzeBotRun || item.status !== "DRAFT", route: "analyzebot" },
+    { emoji: "\u{1F4B0}", name: "PriceBot", run: botStatus.analyzeBotRun || item.status !== "DRAFT", route: "pricebot" },
+    { emoji: "\u{1F4CB}", name: "ListBot", run: botStatus.listBotRun, route: "listbot" },
+    { emoji: "\u{1F465}", name: "BuyerBot", run: botStatus.buyerBotRun, route: "buyerbot" },
+    { emoji: "\u{1F52D}", name: "ReconBot", run: botStatus.reconBotRun, route: "reconbot" },
+    { emoji: "\u{1F4F8}", name: "PhotoBot", run: false, route: "stylebot" },
+    { emoji: "\u{1F3FA}", name: "AntiqueBot", run: item.isAntique && item.authenticityScore != null && item.authenticityScore > 0, route: "antiquebot" },
+    { emoji: "\u{1F0CF}", name: "Collectibles", run: item.isCollectible && item.collectiblesScore > 0, route: "collectiblesbot" },
+    { emoji: "\u{1F697}", name: "CarBot", run: false, route: "carbot" },
+    { emoji: "\u26A1", name: "MegaBot", run: botStatus.megaBotRun || item.megabotUsed, route: "megabot" },
   ];
+  const botsComplete = bots.filter(b => b.run).length;
 
   /* ── Helpers ── */
   const sectionLabel = (text: string) => (
@@ -478,6 +480,17 @@ export default function ItemActionPanel({
                   onKeyDown={(e) => { if (e.key === "Enter") doListWithPrice(); }}
                 />
               </div>
+              {priceInput && parseFloat(priceInput) > 0 && (() => {
+                const pn = parseFloat(priceInput);
+                const ec = Math.round(pn * 0.05 * 100) / 100;
+                const ef = Math.round(pn * 0.0175 * 100) / 100;
+                const en = Math.round((pn - ec - ef) * 100) / 100;
+                return (
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '6px', lineHeight: 1.4 }}>
+                    You{"\u2019"}ll keep ~<span style={{ color: '#4ade80', fontWeight: 600 }}>${en.toFixed(2)}</span> after ~5% commission + 1.75% fee
+                  </div>
+                );
+              })()}
               <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
                 <button
                   onClick={doListWithPrice}
@@ -523,7 +536,7 @@ export default function ItemActionPanel({
       case "LISTED":
         return (
           <>
-            {ctaPrimary("View Conversations →", () => router.push("/messages"))}
+            {ctaPrimary("View Conversations \u2192", () => router.push(`/messages?itemId=${item.id}`))}
             {ctaSecondary("Mark as Interested", () => doStatusChange("INTERESTED"))}
           </>
         );
@@ -539,21 +552,40 @@ export default function ItemActionPanel({
       case "SOLD":
         return (
           <>
-            {ctaPrimary("Arrange Shipping →", () => router.push(`/items/${item.id}`))}
+            {ctaPrimary("Arrange Shipping \u2192", () => router.push(`/items/${item.id}`))}
             {ctaSecondary("Mark as Shipped", () => doStatusChange("SHIPPED"))}
+            {ctaSecondary("\u{1F504} Relist Item", async () => {
+              if (confirm("Relist this item? It will move back to LISTED.")) {
+                await onStatusChange("LISTED");
+              }
+            })}
           </>
         );
 
       case "SHIPPED":
         return (
           <>
-            {ctaPrimary("Track Shipment →", () => router.push(`/items/${item.id}`))}
-            {ctaSecondary("Mark Delivered ✓", () => doStatusChange("COMPLETED"))}
+            {ctaPrimary("Track Shipment \u2192", () => router.push(`/items/${item.id}`))}
+            {ctaSecondary("Mark Delivered \u2713", () => doStatusChange("COMPLETED"))}
+            {ctaSecondary("\u{1F504} Relist Item", async () => {
+              if (confirm("Relist this item? It will move back to LISTED.")) {
+                await onStatusChange("LISTED");
+              }
+            })}
           </>
         );
 
       case "COMPLETED":
-        return ctaPrimary("View Full Item →", () => router.push(`/items/${item.id}`));
+        return (
+          <>
+            {ctaPrimary("View Full Item \u2192", () => router.push(`/items/${item.id}`))}
+            {ctaSecondary("\u{1F504} Relist Item", async () => {
+              if (confirm("Relist this item? It will move back to LISTED.")) {
+                await onStatusChange("LISTED");
+              }
+            })}
+          </>
+        );
 
       default:
         return ctaPrimary("View Item →", () => router.push(`/items/${item.id}`));
@@ -924,7 +956,7 @@ export default function ItemActionPanel({
               {bots.map((bot) => (
                 <button
                   key={bot.name}
-                  onClick={() => router.push(`/items/${item.id}`)}
+                  onClick={() => { onClose(); router.push(bot.run ? `/items/${item.id}` : `/bots/${bot.route}?itemId=${item.id}`); }}
                   style={{
                     background: bot.run ? 'rgba(0,188,212,0.06)' : 'rgba(255,255,255,0.04)',
                     border: bot.run ? '1px solid rgba(0,188,212,0.2)' : '1px solid rgba(255,255,255,0.08)',
@@ -959,7 +991,7 @@ export default function ItemActionPanel({
                     color: bot.run ? '#00bcd4' : 'rgba(255,255,255,0.35)',
                     letterSpacing: '0.02em',
                   }}>
-                    {bot.run ? "✓ Complete" : "Tap to run →"}
+                    {bot.run ? "\u2713 View Results" : "Tap to run \u2192"}
                   </div>
                 </button>
               ))}
@@ -972,7 +1004,7 @@ export default function ItemActionPanel({
               marginTop: '12px',
               lineHeight: '1.5',
             }}>
-              All bots run from your item dashboard for the most complete analysis
+              {botsComplete}/10 bots complete {"\u00B7"} Run from item dashboard for full analysis
             </div>
           </div>
 
@@ -1024,8 +1056,37 @@ export default function ItemActionPanel({
           <div style={{ padding: '20px 20px 0' }}>
             {sectionLabel("⚙️ Manage")}
 
-            {ghostBtn("📁", "View Full Item Dashboard", () => router.push(`/items/${item.id}`))}
-            {ghostBtn("✏️", "Edit Item Details", () => router.push(`/items/${item.id}/edit`))}
+            {ghostBtn("\u{1F4C1}", "View Full Item Dashboard", () => router.push(`/items/${item.id}`))}
+            {ghostBtn("\u270F\u{FE0F}", "Edit Item Details", () => router.push(`/items/${item.id}/edit`))}
+
+            {/* Share Item */}
+            <button
+              onClick={() => {
+                const url = `${window.location.origin}/items/${item.id}`;
+                navigator.clipboard.writeText(url).then(() => {
+                  setShareCopied(true);
+                  setTimeout(() => setShareCopied(false), 2000);
+                }).catch(() => {});
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                width: '100%', padding: '12px 14px', minHeight: '46px',
+                background: shareCopied ? 'rgba(0,188,212,0.08)' : 'transparent',
+                border: shareCopied ? '1px solid rgba(0,188,212,0.25)' : '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '12px', cursor: 'pointer', fontSize: '14px',
+                fontWeight: 500,
+                color: shareCopied ? '#00bcd4' : 'rgba(255,255,255,0.8)',
+                textAlign: 'left' as const, transition: 'all 0.2s ease', marginBottom: '6px',
+              }}
+            >
+              <span style={{ fontSize: '16px', width: '22px', textAlign: 'center' as const, flexShrink: 0 }}>
+                {shareCopied ? '\u2713' : '\u{1F4E4}'}
+              </span>
+              <span style={{ flex: 1 }}>{shareCopied ? 'Link Copied!' : 'Share Item'}</span>
+              {!shareCopied && <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '13px', flexShrink: 0 }}>{"\u2192"}</span>}
+            </button>
+
+            {ghostBtn("\u{1F4F7}", "Add New Item", () => { onClose(); router.push("/items/new"); })}
 
             {/* Danger zone */}
             <div style={{

@@ -1,0 +1,343 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/shipping/ShippingCenterClient.tsx (4,750 lines)
+     — FIX: Dashboard stat cards clickable to filter/sort items
+     — FIX: Saved quotes from Item Dashboard visible and actionable in Shipping Center
+     — FIX: Quote expiration tracking with notifications
+     — FIX: Click on a quote to isolate and continue to label
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping commands LOCKED.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently.
+
+SECTION 6 — BUILD PATTERN
+
+  Build order: A -> B -> C -> D -> E
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo THIS WEEK. Last command of the day.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Fix all identified issues, make dashboard stats clickable, improve quote visibility and continuity, add quote expiration tracking. Make every flow seamless.
+
+You MAY NOT: Touch locked files, rewrite components, add npm packages, change schema, deviate from inline style={{}}.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed for this command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — FINAL FIX FOR TODAY: STATS SORTING + QUOTE CONTINUITY + EXPIRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3 targeted fixes. Then we're done for the day.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read the TMSDashboard component — find the pipeline
+   stat cards (Needs Quote, Ready to Ship, In Transit,
+   Delivered, Pickups). These are DISPLAY ONLY — they
+   need onClick handlers to switch tabs and filter.
+
+2. Read the intelligence strip pills (the ones at the
+   very top — "3 Quoted", "2 In Transit", "$22 Costs").
+   These DO switch tabs when clicked. The stat cards
+   below need to do the same thing.
+
+3. Read how saved quotes from localStorage flow from
+   the Item Dashboard ShippingPanel into the Shipping
+   Center. Check if ll_quote_${itemId} keys saved in
+   ShippingPanel are being read in ShippingCenterClient.
+   Note: ShippingPanel saves with key ll_quote_${itemId}
+   and ShippingCenterClient reads the same key.
+
+4. Read how quote expiration works:
+   — savedAt timestamp in the quote object
+   — isFresh check: savedAt < 24 hours ago
+   — isExpired check: savedAt > 24 hours ago
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — MAKE DASHBOARD STAT CARDS CLICKABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The TMSDashboard (line ~492) shows pipeline stat cards:
+  Needs Quote | Ready to Ship | In Transit | Delivered | Pickups
+
+And financial stat cards:
+  Total Ship Cost | Avg Cost/Item | Awaiting Ship | Oldest Unsent
+
+The pipeline cards need onClick handlers that:
+1. "Needs Quote" → switches to PreSale tab
+2. "Ready to Ship" → switches to ReadyToShip tab
+3. "In Transit" → switches to Tracking tab
+4. "Delivered" → switches to Tracking tab
+5. "Pickups" → switches to Pickup tab
+
+The TMSDashboard component currently receives only
+{ data } as props. It needs an additional prop:
+  onTabSwitch: (tab: Tab) => void
+
+Pass this from the main component where setTab exists.
+
+For each pipeline stat card, add:
+  onClick={() => onTabSwitch(correspondingTab)}
+  cursor: "pointer"
+  Hover effect: slight scale + shadow increase
+  Active state: teal border flash
+
+The financial cards can stay non-clickable (they're
+info-only). But "Awaiting Ship" could click to
+ReadyToShip tab — add that one too.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — FIX QUOTE CONTINUITY: ITEM DASHBOARD → SHIPPING CENTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+THE PROBLEM: User saves a quote on the Item Dashboard
+ShippingPanel (clicks carrier, saves to localStorage as
+ll_quote_${itemId}). Goes to Shipping Center. The quote
+should be there — visible, actionable, continuable.
+
+WHAT SHOULD HAPPEN:
+1. In the PreSale tab, for each item, check localStorage
+   for ll_quote_${itemId}. If a saved quote exists:
+   — Show prominently at the TOP of the item card:
+     "📋 Saved Quote: [Carrier] [Service] — $[rate]"
+     "[X hours ago] [Fresh ✓ / Expired ⚠️]"
+   — Below that: the full carrier table from the saved
+     quote (the allCarriers array if it was saved)
+   — The selected carrier should be highlighted
+   — Buttons:
+     [Use This Quote →] — opens the wizard with this
+       carrier pre-selected (for ReadyToShip items)
+     [Get Fresh Rates] — refreshes rates from API
+     [View Details ▼] — expands QuoteDetailPanel
+
+2. In the ReadyToShip tab, for each item, check BOTH:
+   — localStorage ll_quote_${itemId}
+   — item.lastQuote from API (EventLog)
+   — item.selectedQuote from API
+   Use the MOST RECENT of these three sources.
+   Show the saved quote with Ship Now button.
+
+3. When user clicks a quote in the Shipping Center and
+   wants to continue to a label:
+   — If item is LISTED (PreSale): show "Mark as Sold
+     first to generate a label" with Mark Sold button
+   — If item is SOLD (ReadyToShip): open wizard at
+     step 2 or 3 with carrier pre-selected from quote
+   — One smooth flow: click quote → confirm → label
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — QUOTE EXPIRATION TRACKING + NOTIFICATIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+Carrier rate quotes expire. Typical carrier rate
+validity is 24 hours. The Shipping Center needs
+to track this and alert users.
+
+1. EXPIRATION STATUS on every saved quote:
+   Based on savedAt timestamp:
+   — FRESH (< 12 hours): green badge "✓ Fresh"
+   — EXPIRING SOON (12-24 hours): amber badge
+     "⚠️ Expiring soon — refresh before shipping"
+   — EXPIRED (> 24 hours): red badge
+     "❌ Expired — rates may have changed"
+     [🔄 Refresh Rates] button prominent
+
+2. EXPIRATION ALERT BANNER:
+   At the top of the Shipping Center (above tabs or
+   in the intelligence strip area), if ANY items have
+   expiring or expired quotes, show:
+
+   IF expiring (12-24hrs):
+   "⚠️ [X] quote(s) expiring soon — refresh before
+    rates change"
+   Amber tinted banner. Clickable — highlights the
+   items with expiring quotes.
+
+   IF expired (>24hrs):
+   "❌ [X] quote(s) expired — click to refresh rates"
+   Red tinted banner. Clickable.
+
+3. AUTOMATIC EXPIRATION CHECK:
+   On component mount AND on each auto-refresh (30s),
+   scan all items with saved quotes. Check the savedAt
+   timestamp. Update the Fresh/Expiring/Expired status.
+
+   This is a CLIENT-SIDE calculation — just compare
+   savedAt to Date.now(). No API call needed.
+
+4. QUOTE COUNTDOWN on expanded quote details:
+   When viewing a quote's details, show:
+   "Quote valid for approximately [X] hours"
+   Or "Quote expired [X] hours ago"
+   Use a subtle countdown style — not alarming,
+   just informational.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — VERIFY ALL PREVIOUS FIXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Quick verification:
+1. FedEx LTL library exists: yes/no
+2. ShipEngine library exists: yes/no
+3. Carrier rows clickable in PreSale: yes/no
+4. Save Quote button prominent: yes/no
+5. Unicode clean (no bare \uXXXX): yes/no
+6. Delivery method options (QR/Print/Pickup): yes/no
+7. Auto-refresh polling: yes/no
+8. Quick freight estimate cards clickable: yes/no
+9. Mark as Sold in PreSale: yes/no
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  "Needs Quote" card clicks → PreSale tab: yes/no
+4.  "Ready to Ship" card clicks → ReadyToShip tab: yes/no
+5.  "In Transit" card clicks → Tracking tab: yes/no
+6.  "Delivered" card clicks → Tracking tab: yes/no
+7.  "Pickups" card clicks → Pickup tab: yes/no
+8.  Stat cards have hover effect: yes/no
+9.  Saved quote from Item Dashboard shows in Shipping Center: yes/no
+10. Saved quote shows carrier + rate + freshness: yes/no
+11. "Use This Quote" button opens wizard: yes/no
+12. Quote expiration: Fresh/Expiring/Expired badges: yes/no
+13. Expiration alert banner at top: yes/no
+14. Auto-expiration check on mount + refresh: yes/no
+15. Quote countdown in detail view: yes/no
+16. All previous fixes verified: yes/no
+17. All locked files untouched: yes/no
+18. inline style={{}} throughout: yes/no
+19. Light mode clean: yes/no
+20. Dark mode clean: yes/no
+21. npx tsc --noEmit: 0 errors
+22. npm run build: pass
+23. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — Stat Cards Clickable:
+  — Pipeline cards switch tabs: [yes/no]
+  — onTabSwitch prop added: [yes/no]
+  — Hover effects: [yes/no]
+
+  PART C — Quote Continuity:
+  — Item Dashboard quotes visible in Shipping Center: [yes/no]
+  — Saved quote shows carrier/rate/freshness: [yes/no]
+  — Use This Quote → wizard: [yes/no]
+  — Mark Sold prompt for PreSale items: [yes/no]
+
+  PART D — Quote Expiration:
+  — Fresh/Expiring/Expired badges: [yes/no]
+  — Expiration alert banner: [yes/no]
+  — Auto-check on mount + refresh: [yes/no]
+  — Countdown in detail view: [yes/no]
+
+  PART E — Previous Fixes:
+  — All verified: [yes/no]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  FLAGS: [list any]
+  Files modified: [paths]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD FOR NEXT SESSION:
+
+1. Shipping Center is LOCKED after this command.
+2. Next: Bot Page Data Sync (Phase 3 item 19).
+3. Then: Phase 4 Admin Dashboard, Phase 6 Demo Walkthrough.
+4. Pre-demo: Seed pickup data, Dr. Clark demo prep.
+5. Fee: 3.5% (1.75%/1.75%). Split cost: 50/50.
+6. FedEx production: Switch URL when ready.
+7. SurePost/FreightQuote API: Wire in when available.
+
+Command: Final Fix Today — Stats Sorting + Quote Continuity + Expiration
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

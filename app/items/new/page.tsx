@@ -1,7 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, useRef, Suspense } from "react";
+import Link from "next/link";
 import UploadModal, { type PhotoFile } from "@/app/components/UploadModal";
 
 type SaleOption = {
@@ -54,7 +55,7 @@ const inputStyle: React.CSSProperties = {
   borderRadius: "10px",
   border: "1px solid var(--border-default)",
   background: "var(--ghost-bg)",
-  color: "#fff",
+  color: "var(--text-primary, #f1f5f9)",
   fontSize: "15px",
   fontWeight: 500,
   outline: "none",
@@ -101,7 +102,19 @@ function blurHandler(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement 
 }
 
 export default function NewItemPage() {
+  return (
+    <Suspense fallback={<div style={{ display: "flex", justifyContent: "center", padding: "4rem", color: "var(--text-muted)" }}>Loading...</div>}>
+      <NewItemPageContent />
+    </Suspense>
+  );
+}
+
+function NewItemPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const preSelectedSaleId = searchParams.get("saleId") || "";
+  const preSelectedSaleName = searchParams.get("saleName") || "";
+
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [photos, setPhotos] = useState<PhotoFile[]>([]);
@@ -114,7 +127,7 @@ export default function NewItemPage() {
   // Sale assignment state
   const [sales, setSales] = useState<SaleOption[]>([]);
   const [salesLoading, setSalesLoading] = useState(true);
-  const [selectedSaleId, setSelectedSaleId] = useState("");
+  const [selectedSaleId, setSelectedSaleId] = useState(preSelectedSaleId);
 
   // ── Section 1: Item Details ──
   const [title, setTitle] = useState("");
@@ -377,7 +390,11 @@ export default function NewItemPage() {
       // Clear session storage on success
       try { sessionStorage.removeItem("newItemForm"); } catch {}
 
-      router.push(`/items/${id}`);
+      if (preSelectedSaleId) {
+        router.push(`/projects/${preSelectedSaleId}`);
+      } else {
+        router.push(`/items/${id}`);
+      }
       router.refresh();
     } catch (err: any) {
       console.error("Item save error:", err);
@@ -393,6 +410,40 @@ export default function NewItemPage() {
       margin: "0 auto",
       padding: "0 16px 80px",
     }}>
+      {/* ── Sale context banner ── */}
+      {preSelectedSaleName && (
+        <div style={{
+          background: "var(--accent-dim, rgba(0,188,212,0.06))",
+          border: "1px solid var(--accent-border, rgba(0,188,212,0.25))",
+          borderRadius: "0.75rem",
+          padding: "0.75rem 1rem",
+          marginBottom: "0.75rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.75rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{ fontSize: "1rem" }}>{"\u{1F3F7}\u{FE0F}"}</span>
+            <span style={{ fontSize: "0.85rem", color: "var(--text-primary, #f1f5f9)" }}>
+              Creating item for: <strong>{decodeURIComponent(preSelectedSaleName)}</strong>
+            </span>
+          </div>
+          <Link
+            href={`/projects/${preSelectedSaleId}`}
+            style={{
+              fontSize: "0.78rem",
+              color: "var(--accent, #00bcd4)",
+              textDecoration: "none",
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {"\u2190"} Back to Sale
+          </Link>
+        </div>
+      )}
+
       {/* ── Breadcrumb ── */}
       <div style={{ marginBottom: "8px", fontSize: "12px", color: "var(--text-muted)" }}>
         <span style={{ cursor: "pointer" }} onClick={() => router.push("/dashboard")}>Dashboard</span>
@@ -404,7 +455,7 @@ export default function NewItemPage() {
       <h1 style={{
         fontSize: "28px",
         fontWeight: 800,
-        color: "#fff",
+        color: "var(--text-primary)",
         letterSpacing: "-0.02em",
         marginBottom: "6px",
       }}>

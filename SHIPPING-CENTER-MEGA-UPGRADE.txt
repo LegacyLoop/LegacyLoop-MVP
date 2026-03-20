@@ -1,0 +1,1027 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 19, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock:
+
+— Core Adapters —
+  lib/adapters/ai.ts
+  lib/adapters/rainforest.ts
+  lib/adapters/auth.ts — EXTEND ONLY
+  lib/adapters/storage.ts
+  lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+  lib/antique-detect.ts
+  lib/collectible-detect.ts
+
+— MegaBot Engine —
+  lib/megabot/run-specialized.ts
+  lib/megabot/prompts.ts — ADD-ONLY
+
+— Agents —
+  lib/agents/runner.ts (import allowed)
+
+— Shipping Libraries —
+  lib/shipping/package-suggestions.ts (import allowed)
+  lib/shipping/metro-estimates.ts (import allowed)
+  lib/shipping/freight-estimates.ts (import allowed)
+  lib/shipping/city-lookup.ts (import allowed)
+  lib/shipping/shippo.ts
+
+— Data Pipelines —
+  lib/data/backfill.ts
+  lib/data/populate-intelligence.ts
+  lib/data/project-rollup.ts
+  lib/data/user-events.ts
+
+— Enrichment —
+  lib/enrichment/item-context.ts
+  lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+  lib/credits.ts
+  lib/tier-enforcement.ts — READ ONLY
+  lib/billing/pro-rate.ts
+  lib/billing/commission.ts
+
+— Offers —
+  lib/offers/expiry.ts
+  lib/offers/notify.ts
+  lib/offers/cron.ts
+
+— Email System —
+  lib/email/send.ts
+  lib/email/templates.ts
+
+— Pricing Constants —
+  lib/constants/pricing.ts
+  lib/pricing/constants.ts
+  lib/adapters/pricing.ts
+  lib/pricing/calculate.ts
+
+— API Routes —
+  app/api/** — ALL LOCKED
+
+— Core UI —
+  app/components/AppNav.tsx
+  app/components/UploadModal.tsx
+  app/page.tsx
+  globals.css
+
+— Commerce + Pages —
+  app/subscription/**
+  app/credits/**
+  app/marketplace/**
+  app/bundles/**
+  app/pricing/**
+  app/projects/**
+  app/offers/**
+
+— Always-Dark Overlays —
+  app/components/ItemActionPanel.tsx
+  app/components/billing/CancelFlowModal.tsx
+  app/components/billing/UpgradeFlowModal.tsx
+  app/components/TradeProposalModal.tsx
+
+— Messaging System —
+  app/messages/** — ALL LOCKED
+  app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools —
+  app/addons/** — ALL LOCKED
+
+— Onboarding —
+  app/onboarding/** — ALL LOCKED
+
+— Dashboard —
+  app/dashboard/** — LOCKED
+
+— Infrastructure —
+  vercel.json
+  prisma/schema.prisma — READ ONLY
+
+SURGICAL UNLOCK — These files ONLY for this command:
+
+  1. app/shipping/ShippingCenterClient.tsx (2,497 lines)
+     — MASSIVE UPGRADE — merge ShipBot features in
+     — Make this THE one and only Shipping Center
+     — Premium visual overhaul
+     — All deferred features
+
+  2. app/shipping/page.tsx (32 lines)
+     — Premium header upgrade
+
+  3. app/bots/shipbot/page.tsx (50 lines)
+     — Rename title from "Shipping Center" to "ShipBot"
+     — Add redirect banner to real Shipping Center
+
+  4. app/bots/page.tsx
+     — Rename "Shipping Center" to "ShipBot" in bot list
+     — Keep route as /bots/shipbot
+
+  5. app/items/[id]/ItemDashboardPanels.tsx
+     — SURGICAL: Fix TWO links only:
+       Line 3183: change botLink="/bots/shipbot" to "/shipping"
+       Line 6226: change link to /shipping?itemId=${itemId}
+     — SURGICAL: Fix dimension bug at line 3115:
+       Change aiData.dimensions_estimate to proper dim string
+       (same fix pattern as center API line 70-76)
+     — NOTHING ELSE in this 6,000+ line file
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any of these:
+
+Pass 1-3 Locked:
+  All bot AI logic and prompt systems
+  All bot output formats
+  MegaBot 4-agent consensus (OpenAI, Claude, Gemini, Grok)
+  Antique detection + Antique Alert (78 signals)
+  Collectible detection + scoring
+  Amazon/Rainforest enrichment adapter
+  Shipping calculator + package suggestions
+  Offer negotiation (3-round, magic link)
+  Credit system (packs, custom, deductions, balance)
+  Subscription tiers (Free/DIY/Power/Estate Manager)
+  Pro-rate billing, Commission calculator
+  ListBot Publish Hub (13 platforms)
+  Marketplace, bundles, trade proposals
+  Data pipelines and enrichment
+
+Pass 3 Final Locked (March 16-17):
+  Custom credit purchase ($25-$10K, 5 tiers)
+  Subscription page (5 fixes + RECOMMENDED badge)
+  Email system (env var, per-email overrides, shared templates)
+  Gemini MegaBot reliability (safety, fallback, retry)
+
+Pass 4 Locked (March 18):
+  Amazon enrichment — first-pull-only
+  Upload system — UploadModal 6 methods
+  Edit Item Form — 14 new fields
+  Item Control Center V1+V2
+  Light Mode — 1,554 replacements/88 files
+  Message Center — light mode, Weekly Report, AI inbox, star buyers
+
+Pass 5 Locked (March 19 — 24 commands, 65+ files):
+  Quiz upgrade (4 parts: theme 60 colors, tone, results, auto-trigger)
+  Bot Hub (11 live + 3 Coming Soon: StoryBot, InsuranceBot, DonationBot)
+  Fee split (3.5% to 1.75% buyer/1.75% seller across 13 files)
+  Edit Sale (8 fields) + Sell All (discount/fixed) + Item Assignment
+  Create New Item from Sale + Item Page contrast fix
+  Bot Loading light mode fix + Item Control Center polish
+  Trade Center (expandable, example card, status dashboard, How it Works)
+  Offer/Haggling upgrade (7 files, fee fix, light mode)
+  Return + Buyback Bridge (relist, refund management)
+  Action Panel (share, add item, net earnings, smart bot routing)
+  Messages item filter via URL params
+  PriceBot page (net earnings, freshness indicator)
+  Shipping Center TMS base build
+  SoldPriceWidget light mode fix + net earnings
+  Shipping estimate API — real dimensions + quote persistence
+  Shipping data flow — auto-fetch, shared estimates
+
+Pass 6 Locked (March 19-20 — Shipping upgrades):
+  Center API enrichment (suggestPackage fixed dim string, EventLog quotes, shippingStage, urgencyLevel, metro estimates, selectedQuote)
+  ShippingCenterClient 2,497 lines with: BOX_PRESETS, editable dims, packaging type, Save Details, carrier BEST/FASTEST, ShipProfile, intelligence strip, ShippingLabel + CSS barcode, FreightTab + BOL, LocalPickupTab, URL params, ShippingAIPanel, CitySearch, metro estimates, profit analysis
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged. Every feature must answer: Does this collect signal we learn from? Does it make the next AI prediction better? Does it create data nobody else has? Does it compound in value over time? Flag all missed data collection opportunities.
+
+SECTION 6 — BUILD PATTERN
+
+  Always follow: Database -> Storage -> API -> AI -> Enrichment -> UI -> Dashboard -> Database update.
+  Never skip steps. Close the loop every time.
+
+  Build order: A -> B -> C -> D -> E -> F -> G -> H -> I
+
+SECTION 7 — PLATFORM CONTEXT
+
+PHASE 1 (NOW): Copy hub — no OAuth needed. 13 platforms. Demo-ready. PHASE 2: Direct publish as OAuth is approved per platform. DEMO_MODE=true — admin accounts bypass all gates and credit deductions. Both test accounts are Tier 4 Estate Manager with full access.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Improve beyond spec, flag gaps, choose cleanest path, add error handling, make UI impressive for demo, wire logical connections, flag missed data collection, add Elon-standard polish, make it feel like $1B product, hardcode colors on always-dark panels. Merge the best features from ShipBotClient into the Shipping Center. Make the Shipping Center the AIR TRAFFIC CONTROLLER of shipping — the most impressive TMS in any resale platform. Premium glass morphism, smooth animations, rich data density. This must blow away investors.
+
+You MAY NOT: Touch locked files (except surgical unlocks listed), change bot AI/prompt logic, change bot output format, deviate from inline style={{}}, add unapproved npm packages, add routes beyond scope, change schema without approval, change business/pricing logic, use Tailwind/external CSS, use className for styling.
+
+Flag everything outside scope. Read FULL code before building. Never assume. Never guess.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true in .env. shouldBypassGates(user.role) checks isDemoMode() ||
+  isAdminUser(role). Admin: never locked out, no credits deducted.
+  TEST ACCOUNTS: annalyse07@gmail.com / LegacyLoop123! — Tier 4. ryanroger11@gmail.com /
+  Freedom26$ — Tier 4. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+  TO GO LIVE: Set DEMO_MODE=false, switch Square sandbox to production keys.
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+  OPENAI_API_KEY: SET GPT-4o
+  ANTHROPIC_API_KEY: SET Claude
+  GEMINI_API_KEY: SET Gemini
+  XAI_API_KEY: SET Grok
+  XAI_BASE_URL: SET
+  XAI_MODEL_TEXT: SET
+  XAI_MODEL_VISION: SET
+  SQUARE_*: SET Sandbox (4 vars)
+  SENDGRID_API_KEY: SET (new) ryan@legacy-loop.com
+  CRON_SECRET: SET
+  SYSTEM_USER_ID: SET
+  DEMO_MODE: true
+  DATABASE_URL: SET PostgreSQL
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+DO ALL AT ONCE — Never piecemeal:
+  User.role — 'admin' | 'user'
+  soldPrice Int -> Float
+  soldVia String? on Item
+  estimatedValue Float? on Item
+  priceDelta Float? on Item
+  TradeProposal model
+  AgentSettings model
+  Bundle + BundleItem models
+  quizCompletedAt DateTime? on User
+  feeModel field on PaymentLedger
+  RETURN_REQUESTED, RETURNED, REFUNDED statuses
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — SHIPPING CENTER MEGA UPGRADE: MERGE + FIX + UPGRADE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+*** READ THIS ENTIRE OBJECTIVE CAREFULLY ***
+
+THE CURRENT MESS (3 separate shipping UIs):
+1. ShippingPanel (3,508 lines) — inside each item dashboard, per-item shipping tool
+2. ShipBotClient (949 lines) — at /bots/shipbot, ALSO called "Shipping Center" in the title
+3. ShippingCenterClient (2,497 lines) — at /shipping, the actual TMS console
+
+The ShipBot page and the Shipping Center page BOTH say "Shipping Center" in their titles. Links from the item dashboard go to BOTH pages depending on which link you click. This is confusing users.
+
+THE FIX:
+— /shipping is THE Shipping Center. Period. One URL. One name. One system.
+— /bots/shipbot becomes "ShipBot" — it's a specialist bot, not the Shipping Center
+— ALL links that say "Shipping Center" or "Open Shipping Center" go to /shipping
+— The ShipBot page gets a banner: "Looking for the full Shipping Center? Go to /shipping"
+— The Shipping Center at /shipping absorbs the BEST features from ShipBot that it doesn't already have
+
+THE DIMENSION BUG:
+The ShippingPanel at line 3115 of ItemDashboardPanels.tsx passes aiData.dimensions_estimate to suggestPackage(). The AI identifies item dimensions (like "14 x 9.5 x 0.7" for a laptop) but may store them in aiData.dimensions NOT aiData.dimensions_estimate. When dimensions_estimate is null, suggestPackage falls back to category template — giving "laptop" -> Medium box instead of using the actual 14x9.5x0.7 dimensions.
+
+FIX: Same pattern as center API — build a dimension string from whichever field has the data:
+  const dimString = aiData.dimensions_estimate
+    || aiData.dimensions
+    || (aiData.shipping_profile ? `${aiData.shipping_profile.length} x ${aiData.shipping_profile.width} x ${aiData.shipping_profile.height}` : null);
+
+THE VISION:
+The Shipping Center must be THE AIR TRAFFIC CONTROLLER of shipping:
+— Knows everything about every item's shipping needs (AI-powered)
+— Handles ALL shipping avenues: Parcel (USPS/UPS/FedEx), LTL Freight (XPO/OD/R+L), Local Pickup
+— Full quote lifecycle: get rates -> select -> save -> come back -> ship -> track -> deliver -> close sale
+— Beautiful tracking board with live status updates
+— When a package is delivered: auto-update item status to COMPLETED, close the sale in analytics
+— Premium Tesla/SpaceX visual quality throughout
+— Every piece of AI intelligence visible and useful
+— Smooth, slick, easy to use for seniors and power sellers alike
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. Read app/shipping/ShippingCenterClient.tsx — ALL 2,497 lines
+   Map every component, note line numbers.
+
+2. Read app/bots/shipbot/ShipBotClient.tsx — ALL 949 lines
+   Note features that ShippingCenter does NOT have:
+   — Per-item item selector with photos (line 140-145)
+   — CATEGORY_DEFAULTS with auto-populate (line 56-70, 192-211)
+   — City/ZIP search with autocomplete dropdown (line 154-239)
+   — Shippo live carrier rate table from /api/shipping/rates (line 262-292)
+   — LTL freight quote section with /api/shipping/freight (line 295-350)
+   — Pickup options (address, availability, instructions) (line 172-176)
+   — MegaBot 4-AI activation (line 254-258)
+   — AI Agent cards with shipping notes per AI (line 84-135)
+   — Standard + Mega mode toggle
+
+3. Read app/items/[id]/ItemDashboardPanels.tsx — SURGICAL targets only:
+   — Line 3113-3120: suggestPackage call with dimensions_estimate
+   — Line 3183: botLink="/bots/shipbot" (WRONG — should be /shipping)
+   — Line 6226: link to /bots/shipbot?item= (WRONG — should be /shipping?itemId=)
+   — Line 6675: link to /shipping?itemId= (CORRECT)
+
+4. Read app/bots/shipbot/page.tsx — 50 lines. Note title "Shipping Center" at line 42.
+
+5. Read app/bots/page.tsx — Note "Shipping Center" name at line 71, route at line 76.
+
+6. Read lib/shipping/freight-estimates.ts — getFreightEstimates signature + carriers
+7. Read lib/shipping/city-lookup.ts — searchCities signature
+8. Read lib/agents/runner.ts — shipping agent data shape
+
+Print ALL findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — FIX DIMENSION BUG IN ITEM DASHBOARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ItemDashboardPanels.tsx
+SURGICAL — lines 3111-3119 ONLY.
+
+Current code (line 3113-3119):
+  return suggestPackage(
+    aiData.category || category || null,
+    aiData.dimensions_estimate || null,    // <-- THIS MAY BE NULL
+    aiData.material || null,
+    aiData.weight_estimate_lbs || null,
+    aiData.shipping_notes || null,
+  );
+
+FIX — Replace lines 3111-3119 with:
+  const suggestion = useMemo(() => {
+    if (!aiData) return null;
+    // Build dimension string from whichever AI field has the data
+    const dimString = aiData.dimensions_estimate
+      || aiData.dimensions
+      || (aiData.shipping_profile
+        ? `${aiData.shipping_profile.length} x ${aiData.shipping_profile.width} x ${aiData.shipping_profile.height}`
+        : null);
+    return suggestPackage(
+      aiData.category || category || null,
+      dimString,
+      aiData.material || null,
+      aiData.weight_estimate_lbs || null,
+      aiData.shipping_notes || null,
+    );
+  }, [aiData, category]);
+
+This ensures the ShippingPanel box suggestion uses ACTUAL item dimensions:
+  HP Envy 15 (14x9.5x0.7) -> "14 x 9.5 x 0.7" -> parseDimensions matches ->
+  adds 2" padding -> 16x11.5x2.7 -> fits Small (10x8x4)? No (16>12).
+  Fits Medium (14x12x8)? Yes (16<=16, 11.5<=14, 2.7<=10). -> Medium WITH correct dims.
+
+Actually wait — re-check: with 2" added, item becomes 16x11.5x2.7. That does NOT fit
+Small (l:10, w:8, h:4) because 16 > 10. It fits Medium (l:14, w:12, h:8) because 16 > 14?
+No — 16 > 14. With tolerance +2: 16 <= 14+2 = 16. YES, exactly fits Medium with tolerance.
+
+But the REAL question: should a laptop that's only 0.7" tall go in a box that's 8" tall?
+That's wasted space. The custom box recommendation should kick in:
+Custom: 18x13.5x4.7 (14+4, 9.5+4, 0.7+4) — much more appropriate.
+
+The fix is correct in suggestPackage — if no preset fits well, it returns "custom" with auto dims.
+But the laptop DOES fit Medium with tolerance. The issue is the tolerance is too generous for thin items.
+
+FLAG THIS: After the fix, the laptop may still get Medium. The custom auto-fill should trigger
+when the box height is more than 3x the item height + padding. Add this logic to the
+ShippingCenterClient box grid (Part E) but do NOT modify suggestPackage (locked).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — FIX ALL BROKEN LINKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ItemDashboardPanels.tsx
+SURGICAL — 2 line changes only:
+
+Line 3183: Change:
+  <PanelFooter botName="Shipping Center" botLink="/bots/shipbot" itemId={itemId} />
+To:
+  <PanelFooter botName="Shipping Center" botLink="/shipping" itemId={itemId} />
+
+Line 6226: Change:
+  link: `/bots/shipbot?item=${itemId}`
+To:
+  link: `/shipping?itemId=${itemId}`
+
+File: app/bots/shipbot/page.tsx
+Line 42: Change:
+  <h1 className="h2">Shipping Center</h1>
+To:
+  <h1 className="h2">ShipBot</h1>
+
+Line 43: Change subtitle to:
+  "Per-item shipping analysis — for the full Shipping Center, go to /shipping"
+
+Add a banner at the top (after Breadcrumbs, before the title):
+  <div style={{ padding: "0.6rem 1rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.15)", marginBottom: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <span style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>Looking for the full TMS? </span>
+    <a href="/shipping" style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4", textDecoration: "none" }}>Open Shipping Center →</a>
+  </div>
+
+File: app/bots/page.tsx
+Line 71: Change:
+  name: "Shipping Center",
+To:
+  name: "ShipBot",
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — MERGE SHIPBOT BEST FEATURES INTO SHIPPING CENTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+Read ShipBotClient.tsx and identify features the Shipping Center does NOT have. Merge them in.
+
+Features to bring over:
+
+1. CATEGORY_DEFAULTS auto-populate (ShipBot line 56-70):
+   When an item is expanded and has a category but no saved dims, auto-populate the dim fields from category defaults. The Shipping Center has BOX_PRESETS but not category-based auto-fill for the input fields.
+
+2. PICKUP OPTIONS section (ShipBot line 172-176):
+   The LocalPickupTab exists but is basic. Bring in the pickup preferences:
+   — Pickup address field (pre-filled from seller profile)
+   — Availability field (e.g., "Weekdays 9 AM – 5 PM")
+   — Special instructions textarea
+   — Save Pickup Preferences button
+   Add this to the LocalPickupTab.
+
+3. LIVE SHIPPO RATES integration (ShipBot line 262-292):
+   The ShipBot uses /api/shipping/rates which returns live Shippo data.
+   The ShippingCenter uses /api/shipping/estimate which returns estimate data.
+   BOTH should be available. When the user gets a quote in the Shipping Center:
+   — Try /api/shipping/rates first (live Shippo rates)
+   — Fall back to /api/shipping/estimate (calculated estimates)
+   — Show "Live Rates" badge when using Shippo, "Estimated" when using fallback
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — SMART BOX RECOMMENDATION + CUSTOM AUTO-SIZE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+In the BOX_PRESETS grid, when item has known dimensions (from aiBoxDims):
+
+1. FIT INDICATOR per box preset:
+   Calculate: does item fit with 2" padding per side?
+   (itemL + 4) <= boxL AND (itemW + 4) <= boxW AND (itemH + 4) <= boxH
+   — "Fits" (green badge) — item fits
+   — "Too small" (red badge) — won't fit
+   — "Loose" (amber badge) — all box dims > (item dims + 4) * 2
+
+2. WASTED SPACE INDICATOR:
+   If a preset fits but box height > item height * 4:
+   Show "Excessive void space" warning
+   Recommend custom instead
+
+3. CUSTOM AUTO-RECOMMEND:
+   If the AI recommended preset has excessive void OR no preset is ideal:
+   Auto-suggest Custom box with dims: itemL+4, itemW+4, itemH+4
+   Show: "Custom: [dims] — Perfectly sized for this item"
+   Pre-fill the custom dim inputs with these values
+
+4. AI RECOMMENDATION REASON:
+   Below the AI PICK badge:
+   "Based on [itemL]x[itemW]x[itemH] + 2" padding"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — CLICKABLE QUOTE SELECTION + FULL LIFECYCLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+In BOTH PreSaleTab AND ReadyToShipTab carrier tables:
+
+1. CLICKABLE ROWS: Each carrier row is clickable.
+   Selected row: teal border, checkmark, background tint.
+   One selected at a time per item.
+
+2. SAVE QUOTE BAR: Below table when a carrier is selected:
+   [Save Quote — [Carrier] [Service] $X.XX] — teal gradient button
+   Saves to localStorage: ll_quote_${itemId}
+   Also triggers estimate API (persists SHIPPING_QUOTED to EventLog)
+   Shows "Quote saved!" for 2 seconds.
+
+3. SAVED QUOTE ON ITEM CARDS:
+   When localStorage has a saved quote for this item:
+   "Saved: [Carrier] — $[rate] · [time ago]"
+   Fresh (<24hrs) = green badge
+   Expired (>24hrs) = amber badge + "Refresh" link
+
+4. SHIP WITH SAVED QUOTE:
+   On ReadyToShip items with fresh saved quote:
+   Big button: [Ship Now — [Carrier] $X.XX]
+   Opens wizard at step 2 (skip package confirm)
+   Carrier pre-selected.
+
+5. QUOTE HISTORY (expandable):
+   Last 3 quotes per item from EventLog.
+   Date | Carrier | Service | Rate | Status (Fresh/Expired/Used)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART G — TRACKING BOARD + AUTO-STATUS UPDATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+UPGRADE the ShippedTab (line 1432) to be a FULL TRACKING BOARD:
+
+1. VISUAL UPGRADE:
+   — Group shipments: "In Transit", "Out for Delivery", "Delivered Today", "Delivered", "Issues"
+   — Each group has a header with count and color-coded icon
+   — In Transit: blue cards with pulse animation on status dot
+   — Delivered: green-tinted cards with checkmark overlay
+   — Issues: amber cards with alert icon
+
+2. TRACKING DETAIL PER SHIPMENT:
+   — Large carrier logo area (USPS blue, UPS brown, FedEx purple)
+   — Tracking number in monospace with Copy button
+   — 5-step progress bar: Label → Picked Up → In Transit → Out for Delivery → Delivered
+   — Progress bar: teal for current step, green for completed, gray for pending
+   — Each step has a date label (if available)
+   — Estimated delivery date prominently displayed
+
+3. AUTO-STATUS UPDATE (on page load):
+   When ShippedTab loads, check each shipment:
+   If deliveryStatus === "DELIVERED":
+   — Show green card with "Delivered!" celebration
+   — Show a "Close Sale" button:
+     [Close Sale — Mark as Completed]
+     Calls /api/items/status/${itemId} PATCH { status: "COMPLETED" }
+     On success: confetti animation or checkmark, removes from tracking board
+   — This closes the loop: sold → shipped → delivered → completed
+
+4. SHIPPING ALERTS SECTION (top of ShippedTab):
+   — "X packages in transit"
+   — "X delivered this week"
+   — If any shipment is overdue (past estimated delivery): amber alert
+   — If any shipment has issues: red alert with details
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART H — PREMIUM VISUAL OVERHAUL (ALL COMPONENTS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+File: app/shipping/page.tsx
+
+EVERY component gets the premium treatment:
+
+1. PAGE HEADER (page.tsx):
+   — "LOGISTICS COMMAND CENTER" section title, letter-spacing 0.15em
+   — "Shipping Center" h1 with truck icon, large + bold
+   — Rich subtitle: "AI-powered TMS — carrier intelligence, smart packaging, LTL freight, and pickup management"
+   — Teal gradient accent line
+
+2. GLASS MORPHISM CARDS:
+   All cards: rgba(0,188,212,0.02) tint, subtle borders, 0.75rem radius, shadow on hover, translateY(-1px) on hover
+
+3. ITEM CARDS: 56x56 photos, 0.9rem/700 titles, hover lift effect
+
+4. CARRIER TABLES: proper header row, alternating backgrounds, larger BEST/FASTEST badges
+
+5. TAB BAR: gradient underline on active tab, larger size, icon + text
+
+6. INTELLIGENCE STRIP: emoji icons in pills, hover effects, filled background on active
+
+7. WIZARD STEPS: numbered dots with gradient fill, connecting line between steps, step labels below
+
+8. FREIGHT SECTION: professional form styling, real carrier comparison from getFreightEstimates library, 5 accessorial toggles with live total updates
+
+9. PICKUP SECTION: card-based display, prominent pickup badge, address + availability + instructions
+
+10. EMPTY STATES: attractive icons, clear messaging, call-to-action buttons
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART I — PROFIT ANALYSIS + METRO ESTIMATES UPGRADE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+1. NET PROFIT COLUMN in carrier tables:
+   net = valuationMid - shippingCost - (valuationMid * 0.05) - (valuationMid * 0.0175)
+   Green if positive, red if shipping > 30% value.
+   Summary: "Best profit: [carrier] — $[net] after shipping + 6.75% fees"
+
+2. METRO ESTIMATES using real API data (from Part C of previous command — already in API):
+   5 city cards with CHEAPEST/FASTEST badges.
+   Use item.metroEstimates from the API response.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PART J — FULL PICKUP MANAGEMENT CONSOLE + VEHICLE AUTO-ROUTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The LocalPickupTab (line 2413) is basic — preferences + item list.
+But a FULL pickup API already exists at /api/shipping/pickup/[itemId]
+with a 5-step flow, handoff codes, buyer communication, notifications,
+and sale completion chain. NONE of this is wired into the Shipping Center.
+
+*** VEHICLE AUTO-ROUTING ***
+
+The AI identifies vehicles/boats with category "Vehicles" and
+suggestPackage returns boxSize: "freight", label: "Vehicle (Local Only)".
+suggestShippingMethod returns "local_only" for these items.
+
+In the PreSaleTab: When an item has aiBox === "freight" AND
+category includes "vehicle" or "boat":
+— Do NOT show "Get Quote" button for parcel shipping
+— Instead show a prominent card:
+  "🚗 LOCAL PICKUP ONLY"
+  "Vehicles cannot be shipped via parcel or freight carriers.
+   Set up local pickup for this item."
+  [Set Up Pickup →] button that switches to the Local Pickup tab
+  OR links to the item dashboard pickup flow
+
+In the TMSDashboard stats: Add a pickup count to the pipeline:
+  🤝 [count] Pickups (items with saleMethod LOCAL_PICKUP or aiBox freight+vehicle)
+
+*** FULL 5-STEP PICKUP MANAGEMENT ***
+
+Replace the basic LocalPickupTab with a full pickup management console:
+
+SECTION 1 — PICKUP PREFERENCES (keep existing):
+  Pickup address, availability, special instructions.
+  Save to localStorage. Keep as-is.
+
+SECTION 2 — ACTIVE PICKUPS:
+  For each item with saleMethod === "LOCAL_PICKUP" or "BOTH",
+  OR items with aiBox === "freight" and vehicle category:
+
+  Show an item card with:
+  — Item photo, title, price
+  — Current pickup status badge
+  — 5-STEP PROGRESS TRACKER:
+    ① Invite Sent → ② Confirmed → ③ En Route → ④ Handed Off → ⑤ Complete
+    Visual: numbered circles with connecting line.
+    Current step: teal filled. Done: green filled. Pending: gray outline.
+    Each step has a label below it.
+
+  — STATUS-SPECIFIC CONTENT:
+
+    IF no status yet (not started):
+    [📩 Send Pickup Invite] button
+    — Opens an inline form:
+      Location (pre-filled from preferences)
+      Available time slots (checkboxes or text)
+      Contact method: Phone / Text / Email / In-App
+      Payment method: Cash / Venmo / Square / In-App
+      Pickup radius (miles, default from prefs)
+      Notes for buyer
+    — [Send Invite] calls POST /api/shipping/pickup/{itemId}
+      { action: "advance" } with all the config fields
+    — Shows success: "✅ Invite sent! Waiting for buyer response."
+
+    IF INVITE_SENT:
+    Show: "Waiting for buyer to confirm a time slot"
+    Show invite details (location, time slots, contact)
+    [Simulate Buyer Confirm] button (for demo mode):
+      Calls POST with action: "advance" to move to CONFIRMED
+
+    IF CONFIRMED:
+    Show: "✅ Meetup confirmed!"
+    Show: scheduled date/time
+    Show: HANDOFF CODE prominently:
+      Large 4-digit code in a styled box
+      "Both parties must verify this code at handoff"
+    Show: buyer time slot, buyer message (if any)
+    [Mark En Route] button → advances to EN_ROUTE
+
+    IF EN_ROUTE:
+    Show: "🚗 Buyer is on their way!"
+    Show: handoff code (still prominent)
+    [Confirm Handoff] button → advances to HANDED_OFF
+    — Optionally: ask for handoff code verification
+
+    IF HANDED_OFF:
+    Show: "📦 Item handed off — waiting for buyer confirmation"
+    [Complete Pickup] button → advances to COMPLETED
+    — This triggers sale completion chain in the API
+    — Item status changes to COMPLETED
+    — Notification sent
+    — Analytics updated
+
+    IF COMPLETED:
+    Show: "✅ Pickup complete! Sale closed."
+    Green card with completion date
+    — Item should now appear in the tracking board
+      as a completed sale (not in active pickups)
+
+SECTION 3 — COMPLETED PICKUPS:
+  Show recently completed pickups (last 30 days):
+  — Item photo, title, completion date, sale price
+  — "Sale Complete" green badge
+  — Link to item for details
+
+SECTION 4 — PICKUP SAFETY TIPS:
+  Collapsible section at bottom:
+  — Meet in public places (police station parking lots recommended)
+  — Bring a friend for high-value items
+  — Accept payment BEFORE handing off item
+  — Use the handoff code to verify both parties
+  — Never share personal address if meetup is at a neutral location
+  — For vehicles: meet at DMV for title transfer
+
+*** SYNC WITH TRACKING BOARD (Part G) ***
+
+The ShippedTab tracking board should ALSO show pickup items:
+  — Items with pickupStatus === "EN_ROUTE" or "HANDED_OFF" → "In Transit" equivalent
+  — Items with pickupStatus === "COMPLETED" → "Delivered" equivalent
+  — Use purple/violet color coding for pickup items vs blue for shipped items
+  — Show "🤝 Local Pickup" badge instead of carrier name
+
+*** SYNC WITH TMSDashboard ***
+
+The TMSDashboard pipeline stats should include pickup counts:
+  Add after "Delivered" stat:
+  🤝 [count] Active Pickups (items in INVITE_SENT through HANDED_OFF)
+
+*** LTL FREIGHT AS AN AIR TRAFFIC CONTROLLER ***
+
+The FreightTab should also be aware of:
+  — Items that are too heavy for parcel (>70 lbs) — auto-suggest freight
+  — Items that are too large (any dim >48") — auto-suggest freight
+  — Items marked as "furniture" box size — show freight option
+  — The AI Shipping Advisor (ShippingAIPanel) should flag these:
+    "This item exceeds standard carrier limits. Consider LTL freight or local pickup."
+
+The Shipping Center is the AIR TRAFFIC CONTROLLER. It needs to know:
+  — Every item's current shipping stage (NO_PROFILE → HAS_AI → HAS_DIMS → QUOTED → LABEL_GENERATED → SHIPPED → DELIVERED)
+  — Every item's pickup stage (null → INVITE_SENT → CONFIRMED → EN_ROUTE → HANDED_OFF → COMPLETED)
+  — Every item's freight stage (quote requested → BOL generated → pickup scheduled → in transit → delivered)
+  — ALL of this visible from the TMSDashboard and intelligence strip
+  — Updates from ANYWHERE in the app (item dashboard, ShipBot, messages) reflect here immediately on refresh
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PART K — SHIPPING CENTER AS DATA CONTRIBUTOR + ENRICHMENT CONSUMER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Shipping Center must be a TWO-WAY system:
+— CONSUMER: Reads ALL bot enrichment data (AI analysis, pricing, antique detection, collectible scoring, buyer intelligence) to make smart shipping decisions
+— CONTRIBUTOR: Writes shipping intelligence back to EventLog so other systems can use it
+
+*** CONSUMING FROM THE ENRICHED ENVIRONMENT ***
+
+The center API already reads aiResult.rawJson (line 63). But it should USE more of that data intelligently in the UI:
+
+1. ANTIQUE/COLLECTIBLE DETECTION:
+   If aiData.isAntique === true OR aiData.antiqueScore > 50:
+   — Show "ANTIQUE ITEM" badge on the shipping card
+   — Auto-recommend: insurance, signature required delivery
+   — Packaging tip: "Double-box with acid-free tissue"
+   — Carrier recommendation: avoid ground services, prefer air
+   — Flag: "High-value antique — consider specialty shipping"
+
+2. CONDITION-AWARE SHIPPING:
+   If aiData.conditionScore <= 4 (Fair/Poor):
+   — Show: "Fragile condition — extra packaging recommended"
+   If aiData.conditionScore >= 8 (Excellent):
+   — Show: "Mint condition — package to preserve"
+
+3. VALUE-BASED INTELLIGENCE:
+   If valuationMid > $500:
+   — Auto-recommend: signature required delivery
+   — Auto-recommend: insurance (show cost estimate)
+   — Show: "High-value item — insure and track carefully"
+   If valuationMid > $2000:
+   — Show: "Premium item — consider white glove shipping"
+   — Flag in tracking board with gold badge
+
+4. BUYER INTELLIGENCE (from BuyerBot data if available):
+   If item has buyer leads from BuyerBot analysis:
+   — Show buyer's location/ZIP in the destination field
+   — Pre-fill shipping destination from buyer data
+   — Show: "Active buyer in [City] — [X] miles away"
+
+*** CONTRIBUTING TO THE ENRICHED ENVIRONMENT ***
+
+Every significant shipping action should be logged to EventLog
+so other parts of the app can reference it:
+
+1. SHIPPING_QUOTED (already exists) — carrier rates fetched
+2. SHIPPING_QUOTE_SELECTED (already exists) — user picked a carrier
+3. ADD: SHIPPING_LABEL_GENERATED — when a label is created:
+   Log: { carrier, service, rate, trackingNumber, weight, dims, fromZip, toZip, generatedAt }
+4. ADD: SHIPPING_STATUS_CHANGED — when tracking status updates:
+   Log: { carrier, trackingNumber, fromStatus, toStatus, changedAt }
+5. ADD: SHIPPING_DELIVERED — when package delivered:
+   Log: { carrier, trackingNumber, deliveredAt, transitDays }
+6. ADD: PICKUP_STATUS_CHANGE (already exists in pickup API)
+7. ADD: SHIPPING_COST_ACTUAL — after delivery, log actual cost vs quoted cost:
+   Log: { carrier, quotedRate, actualRate, delta, itemId }
+   This data compounds — over time we learn which carriers are most accurate
+
+The AI Shipping Advisor (ShippingAIPanel) should also display:
+— "Items like this typically ship for $X.XX via [carrier]"
+  (aggregated from historical SHIPPING_QUOTED events for same category)
+— "Average transit time for this carrier: X days"
+  (aggregated from SHIPPING_DELIVERED events)
+
+This makes the Shipping Center SMARTER over time — the data flywheel that LegacyLoop's competitors don't have.
+
+*** CENTER API EXTENSION ***
+
+In app/api/shipping/center/route.ts, add to the base object:
+  isAntique: ai?.is_antique ?? ai?.antiqueScore > 50 ?? false,
+  conditionScore: ai?.conditionScore ?? ai?.condition_score ?? null,
+  isHighValue: (item.valuation ? Math.round((item.valuation.low + item.valuation.high) / 2) : 0) > 500,
+  isPremium: (item.valuation ? Math.round((item.valuation.low + item.valuation.high) / 2) : 0) > 2000,
+
+This enrichment data flows to the UI for intelligent shipping recommendations.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  *** DIMENSION BUG fixed in ItemDashboardPanels line 3113: yes/no ***
+4.  ShippingPanel bot link -> /shipping: yes/no
+5.  Bot routing link -> /shipping?itemId: yes/no
+6.  ShipBot page renamed to "ShipBot": yes/no
+7.  ShipBot page has redirect banner: yes/no
+8.  Bot Hub renamed to "ShipBot": yes/no
+9.  Category defaults auto-populate dims: yes/no
+10. Pickup options (address, availability, instructions): yes/no
+11. Live Shippo rates attempted before fallback: yes/no
+12. Box fit indicators per preset: yes/no
+13. Wasted space warning: yes/no
+14. Custom auto-recommend with perfect dims: yes/no
+15. AI recommendation reason line: yes/no
+16. Carrier rows clickable: yes/no
+17. Save Quote button on selection: yes/no
+18. localStorage quote persistence: yes/no
+19. Saved quote fresh/expired display: yes/no
+20. Ship with Saved Quote flow: yes/no
+21. Quote History panel: yes/no
+22. Tracking board grouped by status: yes/no
+23. Delivered items have Close Sale button: yes/no
+24. Shipping alerts section: yes/no
+25. Premium glass morphism on all cards: yes/no
+26. 56x56 photos with hover lift: yes/no
+27. Gradient underline on active tab: yes/no
+28. Freight section with real library: yes/no
+29. 5 accessorial toggles: yes/no
+30. Net profit column: yes/no
+31. Metro estimates from API (5 cities): yes/no
+32. Page header premium upgrade: yes/no
+33. Vehicle auto-routing to pickup (no Get Quote): yes/no
+34. 5-step pickup progress tracker: yes/no
+35. Send Pickup Invite form: yes/no
+36. Handoff code displayed prominently: yes/no
+37. Pickup status advancement buttons: yes/no
+38. Completed pickups section: yes/no
+39. Pickup safety tips section: yes/no
+40. Pickup items show in tracking board: yes/no
+41. TMSDashboard includes pickup count: yes/no
+42. Freight auto-suggest for heavy/large items: yes/no
+43. Antique items show special shipping badge: yes/no
+44. High-value items show insurance recommendation: yes/no
+45. Condition-aware packaging tips: yes/no
+46. API returns isAntique, conditionScore, isHighValue, isPremium: yes/no
+47. SHIPPING_LABEL_GENERATED logged to EventLog: yes/no
+48. Historical shipping data referenced in AI Advisor: yes/no
+49. All locked files untouched: yes/no
+34. inline style={{}} throughout: yes/no
+35. Always-dark panels use hardcoded colors: yes/no
+36. Theme-aware surfaces use CSS variables: yes/no
+37. Light mode clean: yes/no
+38. Dark mode clean: yes/no
+39. npx tsc --noEmit: 0 errors
+40. npm run build: pass
+41. CHECKPOINT post-change: pass
+42. Dev server: localhost:3000
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — Dimension Bug Fix:
+  — Dimension string builds from all AI fields: [yes/no]
+  — ShippingPanel now uses actual item dims: [yes/no]
+
+  PART C — Link Fixes:
+  — ShippingPanel footer -> /shipping: [yes/no]
+  — Bot routing -> /shipping?itemId: [yes/no]
+  — ShipBot page renamed: [yes/no]
+  — ShipBot redirect banner: [yes/no]
+  — Bot Hub renamed: [yes/no]
+
+  PART D — ShipBot Feature Merge:
+  — Category auto-populate: [yes/no]
+  — Pickup options in LocalPickupTab: [yes/no]
+  — Live Shippo rates with fallback: [yes/no]
+
+  PART E — Smart Box:
+  — Fit indicators: [yes/no]
+  — Wasted space warning: [yes/no]
+  — Custom auto-recommend: [yes/no]
+  — Reason line: [yes/no]
+
+  PART F — Quote Selection:
+  — Clickable rows: [yes/no]
+  — Save button: [yes/no]
+  — localStorage persistence: [yes/no]
+  — Fresh/expired display: [yes/no]
+  — Ship with saved quote: [yes/no]
+  — Quote history: [yes/no]
+
+  PART G — Tracking Board:
+  — Grouped by status: [yes/no]
+  — Carrier branding colors: [yes/no]
+  — Close Sale button on delivered: [yes/no]
+  — Shipping alerts: [yes/no]
+  — Pickup items in tracking board: [yes/no]
+
+  PART H — Visual Overhaul:
+
+  PART J — Pickup Management:
+  — Vehicle auto-routing (no parcel quote): [yes/no]
+  — 5-step progress tracker per item: [yes/no]
+  — Send Pickup Invite form: [yes/no]
+  — Handoff code display: [yes/no]
+  — Status advancement buttons: [yes/no]
+  — Completed pickups list: [yes/no]
+  — Safety tips section: [yes/no]
+  — TMSDashboard pickup count: [yes/no]
+  — Freight auto-suggest for oversized: [yes/no]
+  — Glass morphism cards: [yes/no]
+  — Premium photos + hover: [yes/no]
+  — Gradient tab underline: [yes/no]
+  — Freight with real library + toggles: [yes/no]
+  — Premium pickup section: [yes/no]
+
+  PART K — Enrichment Consumer + Contributor:
+  — Antique badge on shipping cards: [yes/no]
+  — High-value insurance recommendation: [yes/no]
+  — Condition-aware packaging tips: [yes/no]
+  — API returns isAntique/conditionScore/isHighValue/isPremium: [yes/no]
+  — SHIPPING_LABEL_GENERATED logged: [yes/no]
+  — Historical data in AI Advisor: [yes/no]
+
+  PART I — Profit + Metro:
+  — Net profit column: [yes/no]
+  — Metro estimates from API: [yes/no]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  ALWAYS-DARK PANELS: [hardcoded colors/issues]
+  EXISTING LOGIC UNTOUCHED: [list verified files]
+  FLAGS FROM CLAUDE CODE: [gaps, risks, out-of-scope]
+  Files modified: [list exact paths]
+  New files: [list or none]
+  Schema changes needed: [list or none]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  Dev server: [localhost:3000]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd — Conversation clicked
+  conversation-counts-updated: Messages -> InboxCmd — Update count badges
+  agent-fill-message: InboxCmd -> Messages — AI fills reply box
+  agent-settings-toggle: InboxCmd -> AgentSettings — Open settings panel
+  inbox-filter-change: InboxCmd -> Messages — Sidebar category clicked
+  inbox-filter-reset: Messages -> InboxCmd — Tab bar clicked — reset sidebar
+
+CRITICAL CARRY-FORWARD ITEMS FOR NEXT SESSION:
+
+1. Bot Page Data Sync: PriceBot page (and likely all bot pages) do not load cached analysis results on mount. Users must re-run the bot even when data exists from the Item Dashboard. All bot pages need to check for existing results first.
+
+2. Fee Model: Total 3.5% processing fee. Buyer pays 1.75%. Seller pays 1.75%. Platform purchases (credits, add-ons, White Glove): customer pays 3.5%. Monthly subscriptions: no processing fee.
+
+3. After this command: Shipping Center should be COMPLETE for demo. Lock it and move to Phase 3 remaining items (Bot Page Data Sync, AI Analysis Bot Refinement).
+
+Command: Shipping Center Mega Upgrade | LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

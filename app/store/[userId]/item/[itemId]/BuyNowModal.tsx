@@ -21,7 +21,7 @@ export default function BuyNowModal({ itemId, itemTitle, price, shippingEstimate
   const [buyerEmail, setBuyerEmail] = useState("");
 
   const subtotal = price + shippingEstimate;
-  const fee = Math.round(subtotal * PROCESSING_FEE.rate * 100) / 100;
+  const fee = Math.round(subtotal * PROCESSING_FEE.buyerRate * 100) / 100;
   const total = Math.round((subtotal + fee) * 100) / 100;
 
   async function handlePurchase() {
@@ -133,7 +133,7 @@ export default function BuyNowModal({ itemId, itemTitle, price, shippingEstimate
             )}
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.4rem", fontSize: "0.85rem" }}>
               <span style={{ color: "var(--text-muted)" }}>
-                Processing fee ({PROCESSING_FEE.display} charged to buyer)
+                Processing fee ({PROCESSING_FEE.buyerDisplay} — your share)
               </span>
               <span style={{ color: "var(--text-muted)" }}>${fee.toFixed(2)}</span>
             </div>

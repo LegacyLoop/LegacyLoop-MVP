@@ -1,0 +1,700 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 19, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock:
+
+— Core Adapters —
+  lib/adapters/ai.ts
+  lib/adapters/rainforest.ts
+  lib/adapters/auth.ts — EXTEND ONLY
+  lib/adapters/storage.ts
+  lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+  lib/antique-detect.ts
+  lib/collectible-detect.ts
+
+— MegaBot Engine —
+  lib/megabot/run-specialized.ts
+  lib/megabot/prompts.ts — ADD-ONLY
+
+— Agents —
+  lib/agents/runner.ts (already imported in Shipping Center)
+
+— Shipping —
+  lib/shipping/package-suggestions.ts (already imported in center API)
+  lib/shipping/metro-estimates.ts (already imported in center API)
+  lib/shipping/freight-estimates.ts
+    IMPORT ALLOWED: getFreightEstimates, FreightEstimate, FreightInput
+  lib/shipping/city-lookup.ts (already imported in Shipping Center)
+  lib/shipping/shippo.ts
+
+— Data Pipelines —
+  lib/data/backfill.ts
+  lib/data/populate-intelligence.ts
+  lib/data/project-rollup.ts
+  lib/data/user-events.ts
+
+— Enrichment —
+  lib/enrichment/item-context.ts
+  lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+  lib/credits.ts
+  lib/tier-enforcement.ts — READ ONLY
+  lib/billing/pro-rate.ts
+  lib/billing/commission.ts
+
+— Offers —
+  lib/offers/expiry.ts
+  lib/offers/notify.ts
+  lib/offers/cron.ts
+
+— Email System —
+  lib/email/send.ts
+  lib/email/templates.ts
+
+— Pricing Constants —
+  lib/constants/pricing.ts
+  lib/pricing/constants.ts
+  lib/adapters/pricing.ts
+  lib/pricing/calculate.ts
+
+— API Routes —
+  app/api/** — ALL LOCKED (including app/api/shipping/**)
+
+— Item + Dashboard + Bots —
+  app/items/** — ALL LOCKED
+  app/dashboard/** — ALL LOCKED
+  app/bots/** — ALL LOCKED
+
+— Core UI —
+  app/components/AppNav.tsx
+  app/components/UploadModal.tsx
+  app/page.tsx
+  globals.css
+
+— Commerce + Pages —
+  app/subscription/**
+  app/credits/**
+  app/marketplace/**
+  app/bundles/**
+  app/pricing/**
+  app/projects/**
+  app/offers/**
+
+— Always-Dark Overlays —
+  app/components/ItemActionPanel.tsx
+  app/components/billing/CancelFlowModal.tsx
+  app/components/billing/UpgradeFlowModal.tsx
+  app/components/TradeProposalModal.tsx
+
+— Messaging System —
+  app/messages/** — ALL LOCKED
+  app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools —
+  app/addons/** — ALL LOCKED
+
+— Onboarding —
+  app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+  vercel.json
+  prisma/schema.prisma — READ ONLY
+
+SURGICAL UNLOCK — List files explicitly unlocked for THIS command ONLY. All unlocked files return to LOCKED after approval.
+
+  1. app/shipping/ShippingCenterClient.tsx (2,164 lines)
+     — UPGRADE existing components for premium visual quality
+     — ADD deferred features: CitySearch in PreSale, clickable quote rows, box fit indicators, freight library
+     — DO NOT rewrite or delete existing components
+
+  2. app/shipping/page.tsx (30 lines)
+     — UPGRADE page header to premium TMS visual standard
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any of these:
+
+Pass 1-3 Locked:
+  All bot AI logic and prompt systems
+  All bot output formats
+  MegaBot 4-agent consensus (OpenAI, Claude, Gemini, Grok)
+  Antique detection + Antique Alert (78 signals)
+  Collectible detection + scoring
+  Amazon/Rainforest enrichment adapter
+  Shipping calculator + package suggestions
+  Offer negotiation (3-round, magic link)
+  Credit system (packs, custom, deductions, balance)
+  Subscription tiers (Free/DIY/Power/Estate Manager)
+  Pro-rate billing, Commission calculator
+  ListBot Publish Hub (13 platforms)
+  Marketplace, bundles, trade proposals
+  Data pipelines and enrichment
+
+Pass 3 Final Locked (March 16-17):
+  Custom credit purchase ($25-$10K, 5 tiers)
+  Subscription page (5 fixes + RECOMMENDED badge)
+  Email system (env var, per-email overrides, shared templates)
+  Gemini MegaBot reliability (safety, fallback, retry)
+
+Pass 4 Locked (March 18):
+  Amazon enrichment — first-pull-only
+  Upload system — UploadModal 6 methods
+  Edit Item Form — 14 new fields
+  Item Control Center V1+V2
+  Light Mode — 1,554 replacements/88 files
+  Message Center — light mode, Weekly Report, AI inbox, star buyers
+
+Pass 5 Locked (March 19 — 24 commands, 65+ files):
+  Quiz upgrade (4 parts: theme 60 colors, tone, results, auto-trigger)
+  Bot Hub (11 live + 3 Coming Soon: StoryBot, InsuranceBot, DonationBot)
+  Fee split (3.5% to 1.75% buyer/1.75% seller across 13 files)
+  Edit Sale (8 fields) + Sell All (discount/fixed) + Item Assignment
+  Create New Item from Sale + Item Page contrast fix
+  Bot Loading light mode fix + Item Control Center polish
+  Trade Center (expandable, example card, status dashboard, How it Works)
+  Offer/Haggling upgrade (7 files, fee fix, light mode)
+  Return + Buyback Bridge (relist, refund management)
+  Action Panel (share, add item, net earnings, smart bot routing)
+  Messages item filter via URL params
+  PriceBot page (net earnings, freshness indicator)
+  Shipping Center TMS (pipeline dashboard, 3-step wizard, carrier tables, tracking bars, freight pre-fill, local pickup tab)
+  SoldPriceWidget light mode fix + net earnings
+  Shipping estimate API — uses real item dimensions (AI fallback)
+  Shipping data flow — auto-fetch, shared estimates, carrier selection
+
+Pass 6 Locked (March 19 — Shipping TMS upgrades):
+  Shipping Center API enrichment (suggestPackage with FIXED dimension string, EventLog quotes, shippingStage, urgencyLevel, metro estimates, selectedQuote lookup)
+  Shipping estimate quote persistence (EventLog SHIPPING_QUOTED)
+  Item Dashboard shipping bridge (Go to Shipping Center CTA)
+  ShippingCenterClient 2,164 lines with:
+    BOX_PRESETS grid, editable dims, packaging type selector,
+    Save Shipping Details, carrier BEST/FASTEST badges,
+    ShipProfile with AI box + saved/AI indicator + last quote,
+    Intelligence strip with clickable pills,
+    ShippingLabel with CSS barcode + carrier tracking numbers,
+    FreightTab with BOL, LocalPickupTab, URL param handling,
+    ShippingAIPanel (4-AI background intelligence, useMemo),
+    CitySearch component (wizard step 2),
+    Real metro estimates from API (5 cities, CHEAPEST/FASTEST badges),
+    Inline profit analysis on carrier rows,
+    Demo shipping labels with carrier branding
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged. Every feature must answer: Does this collect signal we learn from? Does it make the next AI prediction better? Does it create data nobody else has? Does it compound in value over time? Flag all missed data collection opportunities.
+
+SECTION 6 — BUILD PATTERN
+
+  Always follow: Database -> Storage -> API -> AI -> Enrichment -> UI -> Dashboard -> Database update.
+  Never skip steps. Close the loop every time.
+
+  For this command: A (reads) -> B (visual upgrade) -> C (CitySearch PreSale) -> D (clickable quotes) -> E (box fit indicators) -> F (freight library) -> G (page header)
+
+SECTION 7 — PLATFORM CONTEXT
+
+PHASE 1 (NOW): Copy hub — no OAuth needed. 13 platforms. Demo-ready. PHASE 2: Direct publish as OAuth is approved per platform. DEMO_MODE=true — admin accounts bypass all gates and credit deductions. Both test accounts are Tier 4 Estate Manager with full access.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Improve beyond spec, flag gaps, choose cleanest path, add error handling, make UI impressive for demo, wire logical connections, flag missed data collection, add Elon-standard polish, make it feel like $1B product, hardcode colors on always-dark panels. Rebuild the visual presentation of existing components for premium quality. Add glass morphism effects, smooth animations, premium card designs, better spacing, richer data displays. Make the Shipping Center look like the command bridge of a starship — not a basic dashboard.
+
+You MAY NOT: Touch locked files, change bot AI/prompt logic, change bot output format, deviate from inline style={{}}, add unapproved npm packages, add routes beyond scope, change schema without approval, change business/pricing logic, use Tailwind/external CSS, use className for styling. Do not DELETE functional logic — only enhance how it LOOKS and add the deferred features listed in the Parts below.
+
+Flag everything outside scope. Read FULL code before building. Never assume. Never guess.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true in .env. shouldBypassGates(user.role) checks isDemoMode() ||
+  isAdminUser(role). Admin: never locked out, no credits deducted.
+  TEST ACCOUNTS: annalyse07@gmail.com / LegacyLoop123! — Tier 4. ryanroger11@gmail.com /
+  Freedom26$ — Tier 4. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+  TO GO LIVE: Set DEMO_MODE=false, switch Square sandbox to production keys.
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+  OPENAI_API_KEY: SET GPT-4o
+  ANTHROPIC_API_KEY: SET Claude
+  GEMINI_API_KEY: SET Gemini
+  XAI_API_KEY: SET Grok
+  XAI_BASE_URL: SET
+  XAI_MODEL_TEXT: SET
+  XAI_MODEL_VISION: SET
+  SQUARE_*: SET Sandbox (4 vars)
+  SENDGRID_API_KEY: SET (new) ryan@legacy-loop.com
+  CRON_SECRET: SET
+  SYSTEM_USER_ID: SET
+  DEMO_MODE: true
+  DATABASE_URL: SET PostgreSQL
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+DO ALL AT ONCE — Never piecemeal:
+  User.role — 'admin' | 'user'
+  soldPrice Int -> Float
+  soldVia String? on Item
+  estimatedValue Float? on Item
+  priceDelta Float? on Item
+  TradeProposal model
+  AgentSettings model
+  Bundle + BundleItem models
+  quizCompletedAt DateTime? on User
+  feeModel field on PaymentLedger
+  RETURN_REQUESTED, RETURNED, REFUNDED statuses
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — SHIPPING CENTER TMS VISUAL + FEATURE POLISH v7
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This command does TWO things:
+1. MAJOR VISUAL UPGRADE — The Shipping Center must look like a premium, sleek, state-of-the-art TMS console. Tesla/SpaceX/Grok quality. Dark premium theme with teal accents, glass morphism cards, smooth transitions, generous spacing, premium typography. It must represent LegacyLoop's brand and blow away investors at the demo. Right now the components are functional but visually basic. Every card, every table, every panel, every tab needs the premium treatment. Think: command bridge of a logistics starship.
+
+2. CLOSE ALL DEFERRED FLAGS from the v6 report:
+   — CitySearch not in PreSale tab (only in wizard) — WIRE IT IN
+   — Clickable quote row selection with Save button — BUILD IT
+   — Box fit indicators per preset — ADD THEM
+   — Freight tab upgrade with real library — INTEGRATE IT
+
+The Shipping Center must cover ALL shipping avenues beautifully:
+   — PARCEL shipping (PreSale + ReadyToShip tabs)
+   — LTL FREIGHT shipping (FreightTab)
+   — LOCAL PICK-UPS (LocalPickupTab)
+
+Every avenue must feel complete, polished, and professional.
+
+Files touched: 2 files only
+  app/shipping/ShippingCenterClient.tsx — VISUAL UPGRADE + ADD DEFERRED FEATURES
+  app/shipping/page.tsx — PREMIUM HEADER UPGRADE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. Read app/shipping/ShippingCenterClient.tsx — ALL 2,164 lines
+   Current component map:
+   — CitySearch (line 72) — WORKING, needs integration in PreSale
+   — ShippingAIPanel (line 116) — WORKING, enhance visually
+   — ShippingLabel (line 246) — KEEP AS-IS
+   — TMSDashboard (line 395) — VISUAL UPGRADE
+   — StatusBadge (line 447) — VISUAL UPGRADE
+   — ShipProfile (line 477) — VISUAL UPGRADE
+   — ItemRow (line 552) — VISUAL UPGRADE
+   — PreSaleTab (line 584) — VISUAL UPGRADE + ADD CitySearch + clickable quotes + box fit
+   — ReadyToShipTab (line 915) — VISUAL UPGRADE
+   — ShippedTab (line 1432) — VISUAL UPGRADE
+   — FreightTab (line 1576) — VISUAL UPGRADE + real freight library
+   — LocalPickupTab (line 1883) — VISUAL UPGRADE
+   — Main component (line 1944) — VISUAL UPGRADE
+
+2. Read app/shipping/page.tsx — 30 lines
+   — Current header is basic section-title + h1 + muted subtitle
+   — Needs premium TMS console header treatment
+
+3. Read lib/shipping/freight-estimates.ts
+   — getFreightEstimates(input) returns FreightEstimate[]
+   — XPO, Old Dominion, R+L with surcharges
+
+4. Read the ShipBot page for visual reference:
+   app/bots/shipbot/ShipBotClient.tsx — 949 lines
+   — Note the visual quality of the item shipping profile section
+   — Note the carrier rate comparison table layout
+   — Note the pickup options visual treatment
+   — The Shipping Center should MATCH OR EXCEED this visual quality
+
+Print ALL findings with exact line numbers.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — MAJOR VISUAL UPGRADE (ALL COMPONENTS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+Every component listed below must receive the premium visual treatment. Keep ALL existing functionality — only upgrade how it LOOKS.
+
+GLOBAL VISUAL STANDARDS FOR THIS UPGRADE:
+  — Card backgrounds: glass morphism with subtle rgba(0,188,212,0.02) tint
+  — Borders: subtle 1px borders with rgba(0,188,212,0.08) when inactive, rgba(0,188,212,0.25) when active/selected
+  — Border radius: 0.75rem on cards, 0.5rem on inner elements
+  — Shadows: 0 2px 12px rgba(0,0,0,0.06) on cards, more on hover
+  — Spacing: generous padding (1rem+), breathing room between sections
+  — Typography: clear hierarchy — section labels 0.6rem uppercase tracked, values 0.85rem+ bold
+  — Transitions: all 0.2s ease on hover states, border colors, backgrounds
+  — Hover effects: subtle background shift + border highlight on interactive elements
+  — Icons: consistent emoji sizing, proper spacing
+  — Teal accent (#00bcd4) used for active states, highlights, AI indicators
+  — Premium feel: everything should feel touchable, responsive, alive
+
+B1 — TMSDashboard (line 395):
+  Currently: basic grid of stat cards.
+  UPGRADE TO: Premium glass morphism stat cards with:
+  — Subtle glow effect on the value number
+  — Icon above each stat (larger, more prominent)
+  — Hover effect: slight scale + shadow increase
+  — Better spacing between pipeline and financial rows
+  — A subtle divider or section label between rows
+
+B2 — StatusBadge (line 447):
+  Currently: basic pill badge.
+  UPGRADE TO: Premium pill with subtle glow matching status color. Slightly larger font. Better letter-spacing.
+
+B3 — ShipProfile (line 477):
+  Currently: compact text lines.
+  UPGRADE TO: Structured mini-card within the item row:
+  — AI recommendation in a teal-tinted sub-card with box icon
+  — Dimensions displayed in a monospace-style badge
+  — Fragile badge more prominent (pulsing amber dot + text)
+  — Last quote shown with timestamp and carrier icon
+  — Expandable packing tips with smooth animation
+
+B4 — ItemRow (line 552):
+  Currently: basic flex row with photo + title + actions.
+  UPGRADE TO: Premium card with:
+  — Larger photo (56x56 instead of 44x44)
+  — Photo with subtle border-radius shadow
+  — Better title typography (0.9rem, 700 weight)
+  — Status badge positioned top-right of card
+  — Hover: entire card lifts slightly (translateY -1px + shadow increase)
+
+B5 — PreSaleTab (line 584):
+  UPGRADE the quote expansion section:
+  — Box size grid: bigger cards with better descriptions, clearer AI PICK highlight (teal glow border, not just text)
+  — Editable dims: cleaner input styling with labels above, proper grid alignment
+  — Packaging type: larger toggle buttons with icons, selected state more obvious
+  — Carrier table: table header row with proper styling, alternating row backgrounds, BEST/FASTEST badges larger and more prominent
+  — Metro estimates: city cards with gradient backgrounds, larger text, map-pin icons
+  — Packing tips: collapsible teal section with box icon header
+  — Save button: prominent teal gradient, full-width on mobile
+
+B6 — ReadyToShipTab (line 915):
+  UPGRADE the visual urgency system:
+  — Urgency badges: pulsing animation for >5 days items
+  — Sold price: displayed prominently with green accent
+  — Days since sold: amber/red color coding with clock icon
+  — Wizard steps: larger step indicators, progress bar between steps with gradient fill
+  — Carrier selection in wizard: radio-style cards (not just rows) with carrier branding colors
+
+B7 — ShippedTab (line 1432):
+  UPGRADE the tracking display:
+  — 5-step progress bar: taller, with step labels below each dot, connecting line between dots
+  — Delivered items: green-tinted card background with checkmark overlay
+  — Tracking number: displayed in premium monospace box with copy button
+  — Carrier info: displayed with carrier-specific accent color (USPS blue, UPS brown, FedEx purple)
+
+B8 — FreightTab (line 1576):
+  UPGRADE to premium freight console:
+  — Form inputs: cleaner styling matching PreSale
+  — Section labels: uppercase, tracked, with icons
+  — Better visual separation between form and results
+
+B9 — LocalPickupTab (line 1883):
+  UPGRADE to premium pickup section:
+  — Pickup items displayed as cards (not basic rows)
+  — PICKUP badge more prominent
+  — If empty: show attractive empty state with illustration-style icon
+
+B10 — Intelligence Strip (line 1944, ~line 2013):
+  UPGRADE the clickable pills:
+  — Larger pills with icons inside (not just colored text)
+  — Active pill (matching current tab) has filled background
+  — Hover effect on each pill
+  — Count badges inside pills with contrasting background
+
+B11 — Main Container (line 1944):
+  — Better overall spacing and section breaks
+  — Tab bar: larger tabs with better active state (gradient underline instead of just border)
+  — Loading skeleton: smoother pulse animation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — WIRE CitySearch INTO PreSaleTab
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+DEFERRED FLAG: CitySearch exists (line 72) and works in the ReadyToShip wizard, but is NOT integrated in the PreSale tab's "Buyer ZIP" field.
+
+In PreSaleTab, wherever there is a plain ZIP input for destination (the inline quote panel), REPLACE it with the CitySearch component. Pass the onChange to update the destination ZIP used for rate fetching.
+
+The CitySearch component is already built and working. Just wire it in.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — CLICKABLE QUOTE ROWS + SAVE BUTTON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+DEFERRED FLAG: Carrier rate table rows are display-only. Users cannot select a quote and save it.
+
+In BOTH PreSaleTab and ReadyToShipTab carrier tables:
+
+1. Make each carrier row CLICKABLE:
+   — Add onClick handler
+   — Selected row: teal border (2px), checkmark icon on left, slight background tint
+   — Only ONE row selected at a time
+   — Track selection in component state: selectedCarrierId
+
+2. ADD Save Quote action bar below the carrier table:
+   When a carrier is selected, show:
+   [Save Quote — [Carrier] [Service] — $X.XX]
+   Teal gradient button. Prominent.
+
+   On click:
+   — Call /api/shipping/estimate with the item's dims (this auto-saves SHIPPING_QUOTED to EventLog)
+   — Save the selected carrier to localStorage: key = `ll_selected_quote_${itemId}`, value = JSON.stringify({ carrier, service, rate, days, selectedAt })
+   — Show "Quote saved!" confirmation for 2 seconds
+   — The ShipProfile area should show the saved quote inline
+
+3. On page load, check localStorage for saved selections:
+   — If found and <24 hours old: show as "Fresh" (green)
+   — If found and >24 hours old: show as "Expired" (amber) with refresh prompt
+   — If found: pre-select that carrier row
+
+4. ADD "Ship with This Quote" flow:
+   When a saved fresh quote exists on a ReadyToShip item:
+   — Show prominent button: [Ship Now — [Carrier] $X.XX]
+   — Clicking opens wizard at step 2 or 3 (skipping package since we have dims)
+   — Carrier pre-selected from saved quote
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — BOX FIT INDICATORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+DEFERRED FLAG: BOX_PRESETS grid shows AI PICK badge but no fit indicator per box.
+
+In the BOX_PRESETS grid (PreSaleTab line ~738 and ReadyToShipTab wizard step 1), for each box preset card:
+
+If the item has known dimensions (from aiBoxDims or saved dims):
+  Calculate: does the item fit with 2" padding per side?
+  itemL + 4 <= boxL AND itemW + 4 <= boxW AND itemH + 4 <= boxH
+
+  Show on each box card:
+  — "Fits" (green, small badge) — item fits with padding
+  — "Too small" (red, small badge) — item won't fit
+  — "Loose" (amber, small badge) — all box dims > item dims * 2
+
+  On the AI PICK box, ALSO show:
+  "Based on [L]x[W]x[H] + 2" padding"
+
+  On the Custom box, if no standard box fits perfectly:
+  Auto-fill custom dims as itemL+4, itemW+4, itemH+4
+  Show: "Perfectly sized for this item"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — FREIGHT TAB WITH REAL LIBRARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+DEFERRED FLAG: FreightTab uses basic API form. The existing freight library (getFreightEstimates) has XPO, Old Dominion, R+L with surcharges.
+
+ADD import at top (if not already present):
+  import { getFreightEstimates } from "@/lib/shipping/freight-estimates";
+  import type { FreightEstimate } from "@/lib/shipping/freight-estimates";
+
+UPGRADE FreightTab:
+When user enters dims + weight + ZIP and clicks Get Quote:
+  Call getFreightEstimates({ weight, lengthIn, widthIn, heightIn, fromZip, toZip, residential, liftgate })
+
+Display results as professional freight comparison table:
+  Carrier | Service | Transit | Base Cost | Extras | Total
+  With carrier rows styled to match the premium parcel table.
+
+ADD 5 accessorial toggles that update totals in real time:
+  [ ] Residential delivery (+$75-95)
+  [ ] Liftgate required (+$85-95)
+  [ ] Delivery notification (+$15)
+  [ ] Blanket wrap (+$75)
+  [ ] Inside delivery (+$150)
+
+Each toggle: styled as a premium switch with label and surcharge amount.
+Totals recalculate instantly when toggled.
+
+Keep the existing freight form and BOL generation. ADD the real carrier comparison ON TOP of what exists.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART G — PREMIUM PAGE HEADER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/page.tsx
+
+UPGRADE the page header from basic to premium TMS console feel:
+
+Current:
+  section-title "Logistics"
+  h1 "Shipping Center"
+  muted subtitle
+
+Upgrade to (inline styles, keep existing className for base):
+  — "LOGISTICS COMMAND CENTER" as section-title with letter-spacing: 0.15em
+  — "Shipping Center" h1 with truck icon (emoji), larger, bolder
+  — Subtitle: "AI-powered shipping intelligence — carrier comparisons, smart packaging, LTL freight, and local pickup management"
+  — Add a subtle teal accent line below the subtitle (2px height, teal gradient, 60% width, centered)
+
+Keep Breadcrumbs and auth check as-is.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed and printed: yes/no
+3.  TMSDashboard visual upgrade (glass cards, glow, hover): yes/no
+4.  StatusBadge visual upgrade (glow, sizing): yes/no
+5.  ShipProfile visual upgrade (structured mini-card): yes/no
+6.  ItemRow visual upgrade (larger photo, hover lift, shadow): yes/no
+7.  PreSaleTab visual upgrade (cards, table, spacing): yes/no
+8.  ReadyToShipTab visual upgrade (urgency, wizard steps): yes/no
+9.  ShippedTab visual upgrade (progress bar, tracking display): yes/no
+10. FreightTab visual upgrade: yes/no
+11. LocalPickupTab visual upgrade: yes/no
+12. Intelligence strip upgrade (larger pills, icons): yes/no
+13. Tab bar upgrade (gradient underline): yes/no
+14. CitySearch wired into PreSale tab: yes/no
+15. Carrier rows clickable with selection highlight: yes/no
+16. Save Quote button appears on selection: yes/no
+17. Saved quote persists (localStorage): yes/no
+18. Saved quote shows fresh/expired: yes/no
+19. Ship with saved quote flow works: yes/no
+20. Box fit indicators per preset: yes/no
+21. AI recommendation reason line: yes/no
+22. Custom box auto-recommend from dims: yes/no
+23. FreightTab uses real getFreightEstimates: yes/no
+24. Freight 5 accessorial toggles: yes/no
+25. Freight toggles update totals in real time: yes/no
+26. Freight shows 3 carriers (XPO/OD/R+L): yes/no
+27. Page header premium upgrade: yes/no
+28. Teal accent line below subtitle: yes/no
+29. All existing functionality preserved: yes/no
+30. ShippingLabel untouched: yes/no
+31. ShippingAIPanel untouched: yes/no
+32. All locked files untouched: yes/no
+33. inline style={{}} throughout: yes/no
+34. Always-dark panels use hardcoded colors: yes/no
+35. Theme-aware surfaces use CSS variables: yes/no
+36. Light mode tested: yes/no
+37. Dark mode tested: yes/no
+38. npx tsc --noEmit: 0 errors
+39. npm run build: pass
+40. CHECKPOINT post-change: pass
+41. Dev server: localhost:3000
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — Visual Upgrade:
+  — TMSDashboard: [upgraded/issues]
+  — StatusBadge: [upgraded/issues]
+  — ShipProfile: [upgraded/issues]
+  — ItemRow: [upgraded/issues]
+  — PreSaleTab: [upgraded/issues]
+  — ReadyToShipTab: [upgraded/issues]
+  — ShippedTab: [upgraded/issues]
+  — FreightTab: [upgraded/issues]
+  — LocalPickupTab: [upgraded/issues]
+  — Intelligence strip: [upgraded/issues]
+  — Tab bar: [upgraded/issues]
+  — Loading skeleton: [upgraded/issues]
+
+  PART C — CitySearch in PreSale:
+  — Wired in: [yes/no]
+  — Dropdown works: [yes/no]
+
+  PART D — Clickable Quote Rows:
+  — Rows clickable: [yes/no]
+  — Save Quote button: [yes/no]
+  — localStorage persistence: [yes/no]
+  — Fresh/expired display: [yes/no]
+  — Ship with saved quote: [yes/no]
+
+  PART E — Box Fit Indicators:
+  — Fit/Too small/Loose badges: [yes/no]
+  — Recommendation reason: [yes/no]
+  — Custom auto-recommend: [yes/no]
+
+  PART F — Freight Library:
+  — getFreightEstimates imported: [yes/no]
+  — 3 carriers displayed: [yes/no]
+  — 5 toggles: [yes/no]
+  — Real-time totals: [yes/no]
+
+  PART G — Page Header:
+  — Premium header: [yes/no]
+  — Teal accent line: [yes/no]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  ALWAYS-DARK PANELS: [hardcoded colors/issues]
+  EXISTING LOGIC UNTOUCHED: [list verified files]
+  FLAGS FROM CLAUDE CODE: [gaps, risks, out-of-scope]
+  Files modified: [list exact paths]
+  New files: [list or none]
+  Schema changes needed: [list or none]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  Dev server: [localhost:3000]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd — Conversation clicked
+  conversation-counts-updated: Messages -> InboxCmd — Update count badges
+  agent-fill-message: InboxCmd -> Messages — AI fills reply box
+  agent-settings-toggle: InboxCmd -> AgentSettings — Open settings panel
+  inbox-filter-change: InboxCmd -> Messages — Sidebar category clicked
+  inbox-filter-reset: Messages -> InboxCmd — Tab bar clicked — reset sidebar
+
+CRITICAL CARRY-FORWARD ITEMS FOR NEXT SESSION:
+
+1. Bot Page Data Sync: PriceBot page (and likely all bot pages) do not load cached analysis results on mount. Users must re-run the bot even when data exists from the Item Dashboard. All bot pages need to check for existing results first.
+
+2. Fee Model: Total 3.5% processing fee. Buyer pays 1.75%. Seller pays 1.75%. Platform purchases (credits, add-ons, White Glove): customer pays 3.5%. Monthly subscriptions: no processing fee.
+
+3. Shipping Center: After this command, the Shipping Center TMS should be COMPLETE for demo. Lock it and move on to Bot Page Data Sync (Phase 3 item 19).
+
+Command: Shipping Center TMS Visual + Feature Polish v7 | LegacyLoop | March 19, 2026 | Ryan Hallee, Founder

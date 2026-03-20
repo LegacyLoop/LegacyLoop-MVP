@@ -39,37 +39,37 @@ interface QuizQuestion {
 const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: "situation",
-    question: "What brings you to LegacyLoop?",
+    question: "What\u2019s happening in your life right now?",
     type: "single",
     options: [
       {
         id: "downsizing",
         text: "Downsizing or moving to a smaller home",
-        icon: "🏠",
+        icon: "\u{1F3E0}",
         points: { estate: 10, garage: 2 },
       },
       {
         id: "inheritance",
         text: "Managing an inherited estate",
-        icon: "👴",
+        icon: "\u{1F474}",
         points: { estate: 10, whiteGlove: 3 },
       },
       {
         id: "decluttering",
         text: "Spring cleaning or general decluttering",
-        icon: "🧹",
+        icon: "\u{1F9F9}",
         points: { garage: 10, neighborhood: 3, diy: 5 },
       },
       {
         id: "moving",
         text: "Moving and need to sell items",
-        icon: "📦",
+        icon: "\u{1F4E6}",
         points: { estate: 3, garage: 8, diy: 4 },
       },
       {
         id: "community",
         text: "Organizing a neighborhood or group sale",
-        icon: "🏘️",
+        icon: "\u{1F3D8}\u{FE0F}",
         points: { neighborhood: 10, diy: 3 },
       },
     ],
@@ -78,30 +78,31 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: "itemCount",
     question: "How many items do you need to sell?",
+    subtitle: "Takes 5 seconds to tell us",
     type: "single",
     options: [
       {
         id: "few",
-        text: "Just a few (1–10 items)",
-        icon: "📦",
+        text: "Just a few (1\u201310 items)",
+        icon: "\u{1F4E6}",
         points: { garage: 10, diy: 8 },
       },
       {
         id: "some",
-        text: "A decent amount (10–50 items)",
-        icon: "📦",
+        text: "A decent amount (10\u201350 items)",
+        icon: "\u{1F4E6}",
         points: { estate: 2, garage: 10, neighborhood: 5, diy: 5 },
       },
       {
         id: "many",
-        text: "Quite a lot (50–200 items)",
-        icon: "🏠",
+        text: "Quite a lot (50\u2013200 items)",
+        icon: "\u{1F3E0}",
         points: { estate: 8, garage: 3, diy: 3, whiteGlove: 3 },
       },
       {
         id: "entire",
         text: "An entire household (200+ items)",
-        icon: "🏰",
+        icon: "\u{1F3F0}",
         points: { estate: 10, whiteGlove: 8 },
       },
     ],
@@ -109,31 +110,32 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
 
   {
     id: "timeline",
-    question: "What's your timeline?",
+    question: "What\u2019s your timeline?",
+    subtitle: "Keep it simple, we\u2019ll dig in later",
     type: "single",
     options: [
       {
         id: "asap",
-        text: "ASAP — need it done quickly",
-        icon: "⚡",
+        text: "ASAP \u2014 need it done quickly",
+        icon: "\u26A1",
         points: { whiteGlove: 6, estate: 5 },
       },
       {
         id: "weeks",
         text: "A few weeks is fine",
-        icon: "📅",
+        icon: "\u{1F4C5}",
         points: { estate: 5, garage: 6, neighborhood: 6, diy: 5 },
       },
       {
         id: "months",
         text: "No rush, within a few months",
-        icon: "🗓️",
+        icon: "\u{1F5D3}\u{FE0F}",
         points: { garage: 8, diy: 8 },
       },
       {
         id: "flexible",
-        text: "Very flexible — whatever works best",
-        icon: "⏰",
+        text: "Very flexible \u2014 whatever works best",
+        icon: "\u23F0",
         points: { garage: 7, neighborhood: 8, diy: 7 },
       },
     ],
@@ -141,31 +143,31 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
 
   {
     id: "helpLevel",
-    question: "How much help do you want?",
+    question: "How would you like us to help?",
     type: "single",
     options: [
       {
         id: "fullService",
-        text: "Do it all for me — I'm overwhelmed",
-        icon: "🙏",
+        text: "Do it all for me \u2014 I\u2019m overwhelmed",
+        icon: "\u{1F64F}",
         points: { whiteGlove: 10 },
       },
       {
         id: "someHelp",
         text: "Help with the complicated parts",
-        icon: "🤝",
+        icon: "\u{1F91D}",
         points: { whiteGlove: 4, diy: 4 },
       },
       {
         id: "diy",
-        text: "I'll do it myself with AI tools",
-        icon: "💪",
+        text: "I\u2019ll do it myself with AI tools",
+        icon: "\u{1F4AA}",
         points: { diy: 10 },
       },
       {
         id: "learning",
         text: "I want to learn while doing it",
-        icon: "📚",
+        icon: "\u{1F4DA}",
         points: { diy: 9, garage: 2 },
       },
     ],
@@ -173,34 +175,34 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
 
   {
     id: "budget",
-    question: "What's your budget for getting started?",
+    question: "What level of investment feels right?",
     type: "single",
     options: [
       {
         id: "free",
         text: "Free or very low cost",
-        icon: "🆓",
+        icon: "\u{1F193}",
         recommendedTier: "FREE",
         points: { diy: 8 },
       },
       {
         id: "affordable",
-        text: "$10–$25/month subscription",
-        icon: "💵",
+        text: "$10\u2013$25/month subscription",
+        icon: "\u{1F4B5}",
         recommendedTier: "STARTER",
         points: { diy: 7 },
       },
       {
         id: "invest",
-        text: "$25–$75/month for full features",
-        icon: "💳",
+        text: "$25\u2013$75/month for full features",
+        icon: "\u{1F4B3}",
         recommendedTier: "PLUS",
         points: { diy: 6, estate: 3 },
       },
       {
         id: "premium",
         text: "$1,500+ for professional on-site help",
-        icon: "💎",
+        icon: "\u{1F48E}",
         recommendedTier: "ESSENTIALS",
         points: { whiteGlove: 10 },
       },
@@ -210,43 +212,43 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
     id: "specialItems",
     question: "Do you have any of these?",
-    subtitle: "Select all that apply — we'll tailor our recommendation",
+    subtitle: "Select all that apply \u2014 we\u2019ll tailor our recommendation",
     type: "multiple",
     options: [
       {
         id: "antiques",
         text: "Antiques or collectibles",
-        icon: "🏺",
+        icon: "\u{1F3FA}",
         needsAppraisal: true,
       },
       {
         id: "jewelry",
         text: "Jewelry or precious metals",
-        icon: "💍",
+        icon: "\u{1F48D}",
         needsAppraisal: true,
       },
       {
         id: "art",
         text: "Art or sculptures",
-        icon: "🖼️",
+        icon: "\u{1F5BC}\u{FE0F}",
         needsAppraisal: true,
       },
       {
         id: "furniture",
         text: "Large furniture (sofas, dressers, etc.)",
-        icon: "🛋️",
+        icon: "\u{1F6CB}\u{FE0F}",
         needsShipping: true,
       },
       {
         id: "vehicles",
         text: "Vehicles (car, boat, RV)",
-        icon: "🚗",
+        icon: "\u{1F697}",
         specialCategory: true,
       },
       {
         id: "normal",
         text: "Mostly regular household items",
-        icon: "📦",
+        icon: "\u{1F4E6}",
       },
     ],
   },
@@ -356,11 +358,16 @@ export default function OnboardingQuiz() {
     diy: 0,
   });
   const [fading, setFading] = useState(false);
+  const [showWhiteGlovePreview, setShowWhiteGlovePreview] = useState(false);
+  const [showNotesStep, setShowNotesStep] = useState(false);
+  const [userNotes, setUserNotes] = useState("");
 
   const question = QUIZ_QUESTIONS[currentQuestion];
-  const progressPct = Math.round(
-    ((currentQuestion) / QUIZ_QUESTIONS.length) * 100
-  );
+  const progressPct = showWhiteGlovePreview
+    ? Math.round(((currentQuestion + 1) / QUIZ_QUESTIONS.length) * 100)
+    : showNotesStep
+    ? 95
+    : Math.round((currentQuestion) / QUIZ_QUESTIONS.length * 100);
 
   const selectedIds = (() => {
     const a = answers[question.id];
@@ -368,11 +375,29 @@ export default function OnboardingQuiz() {
     return Array.isArray(a) ? a : [a];
   })();
 
-  const navigateToResults = (finalScores: Scores, finalAnswers: Record<string, string | string[]>) => {
-    const rec = calculateRecommendation(finalScores, finalAnswers);
-    router.push(
-      `/onboarding/results?r=${encodeURIComponent(JSON.stringify(rec))}`
-    );
+  const finalizeQuiz = (notes: string) => {
+    const rec = calculateRecommendation(scores, answers);
+    const helpLevel = answers.helpLevel as string | undefined;
+    const budget = answers.budget as string | undefined;
+    const wantsHelp = helpLevel === "fullService" || helpLevel === "someHelp";
+    const budgetBlocksWhiteGlove = budget === "free" || budget === "affordable";
+
+    // Budget guard: route fullService + sufficient budget to /white-glove
+    if (helpLevel === "fullService" && !budgetBlocksWhiteGlove) {
+      const params = new URLSearchParams();
+      params.set("wantsHelp", "true");
+      params.set("r", JSON.stringify(rec));
+      if (notes) params.set("userNotes", notes);
+      router.push(`/white-glove?${params.toString()}`);
+      return;
+    }
+
+    // Standard results route
+    const params = new URLSearchParams();
+    params.set("r", JSON.stringify(rec));
+    if (wantsHelp) params.set("wantsHelp", "true");
+    if (notes) params.set("userNotes", notes);
+    router.push(`/onboarding/results?${params.toString()}`);
   };
 
   const advanceTo = (
@@ -383,7 +408,9 @@ export default function OnboardingQuiz() {
     setFading(true);
     setTimeout(() => {
       if (nextIndex >= QUIZ_QUESTIONS.length) {
-        navigateToResults(finalScores, finalAnswers);
+        // Show optional notes step instead of navigating directly
+        setShowNotesStep(true);
+        setFading(false);
       } else {
         setCurrentQuestion(nextIndex);
         setFading(false);
@@ -404,7 +431,29 @@ export default function OnboardingQuiz() {
     }
     setAnswers(newAnswers);
     setScores(newScores);
+
+    // White Glove preview intercept after Q4 (helpLevel)
+    if (question.id === "helpLevel" && (option.id === "fullService" || option.id === "someHelp")) {
+      setTimeout(() => {
+        setFading(true);
+        setTimeout(() => {
+          setShowWhiteGlovePreview(true);
+          setFading(false);
+        }, 220);
+      }, 300);
+      return;
+    }
+
     setTimeout(() => advanceTo(currentQuestion + 1, newScores, newAnswers), 300);
+  };
+
+  const handleWhiteGloveContinue = () => {
+    setFading(true);
+    setTimeout(() => {
+      setShowWhiteGlovePreview(false);
+      setCurrentQuestion(currentQuestion + 1);
+      setFading(false);
+    }, 220);
   };
 
   const handleMultipleToggle = (optionId: string) => {
@@ -422,6 +471,22 @@ export default function OnboardingQuiz() {
   };
 
   const goBack = () => {
+    if (showWhiteGlovePreview) {
+      setFading(true);
+      setTimeout(() => {
+        setShowWhiteGlovePreview(false);
+        setFading(false);
+      }, 220);
+      return;
+    }
+    if (showNotesStep) {
+      setFading(true);
+      setTimeout(() => {
+        setShowNotesStep(false);
+        setFading(false);
+      }, 220);
+      return;
+    }
     if (currentQuestion === 0) return;
     setFading(true);
     setTimeout(() => {
@@ -434,7 +499,7 @@ export default function OnboardingQuiz() {
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #f0fdfa 0%, #eff6ff 100%)",
+        background: "linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -457,7 +522,7 @@ export default function OnboardingQuiz() {
             width: "44px",
             height: "44px",
             borderRadius: "12px",
-            background: "#0f766e",
+            background: "var(--accent-theme)",
             color: "#fff",
             fontWeight: 800,
             display: "flex",
@@ -468,7 +533,7 @@ export default function OnboardingQuiz() {
         >
           LL
         </div>
-        <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "#1c1917" }}>
+        <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--text-primary)" }}>
           LegacyLoop
         </span>
       </Link>
@@ -481,22 +546,26 @@ export default function OnboardingQuiz() {
               display: "flex",
               justifyContent: "space-between",
               fontSize: "0.8rem",
-              color: "#78716c",
+              color: "var(--text-muted)",
               marginBottom: "0.5rem",
             }}
           >
             <span>
-              Question {currentQuestion + 1} of {QUIZ_QUESTIONS.length}
+              {showNotesStep
+                ? "One last thing"
+                : showWhiteGlovePreview
+                ? "Personalized for you"
+                : `Question ${currentQuestion + 1} of ${QUIZ_QUESTIONS.length}`}
             </span>
-            <span style={{ color: "#0f766e", fontWeight: 700 }}>
-              {progressPct}% complete
+            <span style={{ color: "var(--accent-theme)", fontWeight: 700 }}>
+              {showNotesStep ? "Optional" : `${progressPct}% complete`}
             </span>
           </div>
           <div
             style={{
               width: "100%",
-              height: "6px",
-              background: "#e7e5e4",
+              height: "8px",
+              background: "var(--ghost-bg)",
               borderRadius: "999px",
               overflow: "hidden",
             }}
@@ -505,204 +574,447 @@ export default function OnboardingQuiz() {
               style={{
                 width: `${progressPct}%`,
                 height: "100%",
-                background: "linear-gradient(90deg, #0f766e, #0d9488)",
+                background: "linear-gradient(90deg, var(--accent-theme), var(--accent))",
                 borderRadius: "999px",
                 transition: "width 0.4s ease",
+                boxShadow: progressPct > 0 ? "0 0 8px var(--accent-glow)" : "none",
               }}
             />
           </div>
         </div>
 
-        {/* Question card */}
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: "1.5rem",
-            padding: "2.5rem",
-            boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-            opacity: fading ? 0 : 1,
-            transform: fading ? "translateX(12px)" : "translateX(0)",
-            transition: "opacity 0.2s ease, transform 0.2s ease",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: 800,
-              color: "#1c1917",
-              marginBottom: "0.25rem",
-              lineHeight: 1.3,
-            }}
-          >
-            {question.question}
-          </h2>
-
-          {question.subtitle && (
-            <p style={{ fontSize: "0.88rem", color: "#78716c", marginBottom: "1.5rem" }}>
-              {question.subtitle}
-            </p>
-          )}
-
+        {/* ── White Glove Preview ── */}
+        {showWhiteGlovePreview ? (
           <div
             style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.6rem",
-              marginTop: question.subtitle ? 0 : "1.5rem",
+              opacity: fading ? 0 : 1,
+              transform: fading ? "translateX(12px)" : "translateX(0)",
+              transition: "opacity 0.2s ease, transform 0.2s ease",
             }}
           >
-            {question.options.map((option) => {
-              const isSelected = selectedIds.includes(option.id);
-              return (
-                <button
-                  key={option.id}
-                  onClick={() => {
-                    if (question.type === "single") {
-                      handleSingleAnswer(option);
-                    } else {
-                      handleMultipleToggle(option.id);
-                    }
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "1rem",
-                    padding: "1rem 1.25rem",
-                    borderRadius: "0.875rem",
-                    border: `2px solid ${isSelected ? "#0f766e" : "#e7e5e4"}`,
-                    background: isSelected ? "#f0fdfa" : "#fff",
-                    cursor: "pointer",
-                    textAlign: "left",
-                    transition: "border-color 0.15s, background 0.15s",
-                  }}
-                >
-                  <span style={{ fontSize: "1.75rem", flexShrink: 0 }}>
-                    {option.icon}
-                  </span>
-                  <span
-                    style={{
-                      flex: 1,
-                      fontSize: "0.95rem",
-                      fontWeight: isSelected ? 700 : 500,
-                      color: isSelected ? "#0f766e" : "#1c1917",
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {option.text}
-                  </span>
-                  {question.type === "multiple" && (
-                    <div
-                      style={{
-                        width: "20px",
-                        height: "20px",
-                        borderRadius: "4px",
-                        border: `2px solid ${isSelected ? "#0f766e" : "#d6d3d1"}`,
-                        background: isSelected ? "#0f766e" : "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                        transition: "all 0.15s",
-                      }}
-                    >
-                      {isSelected && (
-                        <span
-                          style={{
-                            color: "#fff",
-                            fontSize: "0.7rem",
-                            fontWeight: 800,
-                          }}
-                        >
-                          ✓
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  {question.type === "single" && isSelected && (
-                    <div
-                      style={{
-                        width: "20px",
-                        height: "20px",
-                        borderRadius: "50%",
-                        background: "#0f766e",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <span style={{ color: "#fff", fontSize: "0.65rem", fontWeight: 800 }}>
-                        ✓
-                      </span>
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Navigation */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginTop: "1.75rem",
-            }}
-          >
-            <button
-              onClick={goBack}
-              disabled={currentQuestion === 0}
+            <div
               style={{
-                padding: "0.6rem 1.25rem",
-                background: "none",
-                border: "none",
-                color: currentQuestion === 0 ? "#d6d3d1" : "#78716c",
-                cursor: currentQuestion === 0 ? "not-allowed" : "pointer",
-                fontSize: "0.88rem",
-                fontWeight: 600,
+                background: "var(--accent-dim)",
+                border: "1px solid var(--accent-theme)",
+                borderRadius: "1.5rem",
+                padding: "2rem",
+                marginBottom: "1rem",
               }}
             >
-              ← Back
-            </button>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                <span style={{ fontSize: "1.4rem" }}>{"\u2728"}</span>
+                <h3
+                  style={{
+                    fontSize: "1.25rem",
+                    fontWeight: 800,
+                    color: "var(--text-primary)",
+                    margin: 0,
+                  }}
+                >
+                  White Glove Preview
+                </h3>
+              </div>
+              <p
+                style={{
+                  fontSize: "0.9rem",
+                  color: "var(--text-muted)",
+                  marginBottom: "1.25rem",
+                  marginTop: "0.25rem",
+                }}
+              >
+                Premium hands-on support for your collection
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.25rem" }}>
+                {[
+                  "Expert consultation on value and care",
+                  "Market research and insurance guidance",
+                  "Direct access to trusted buyers (if selling)",
+                  "Personalized recommendations for growth",
+                ].map((item) => (
+                  <div key={item} style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                    <span
+                      style={{
+                        color: "var(--accent-theme)",
+                        fontSize: "0.85rem",
+                        flexShrink: 0,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {"\u2713"}
+                    </span>
+                    <span style={{ fontSize: "0.9rem", color: "var(--text-primary)" }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+              <Link
+                href="/white-glove"
+                style={{
+                  fontSize: "0.85rem",
+                  color: "var(--accent-theme)",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                Learn more {"\u2192"}
+              </Link>
+            </div>
 
-            {question.type === "multiple" && (
+            {/* Navigation */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: "0.5rem",
+              }}
+            >
               <button
-                onClick={handleMultipleAdvance}
+                onClick={goBack}
+                style={{
+                  padding: "0.6rem 1.25rem",
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-muted)",
+                  cursor: "pointer",
+                  fontSize: "0.88rem",
+                  fontWeight: 600,
+                }}
+              >
+                {"\u2190"} Back
+              </button>
+              <button
+                onClick={handleWhiteGloveContinue}
                 style={{
                   padding: "0.7rem 1.75rem",
-                  background: "#0f766e",
+                  background: "var(--accent-theme)",
                   color: "#fff",
                   border: "none",
-                  borderRadius: "0.75rem",
+                  borderRadius: "0.875rem",
                   fontWeight: 700,
                   fontSize: "0.9rem",
                   cursor: "pointer",
                 }}
               >
-                {currentQuestion === QUIZ_QUESTIONS.length - 1
-                  ? "See My Results →"
-                  : "Next →"}
+                Continue to budget {"\u2192"}
               </button>
+            </div>
+          </div>
+
+        ) : showNotesStep ? (
+          /* ── Optional Notes Step ── */
+          <div
+            style={{
+              opacity: fading ? 0 : 1,
+              transform: fading ? "translateX(12px)" : "translateX(0)",
+              transition: "opacity 0.2s ease, transform 0.2s ease",
+            }}
+          >
+            <div
+              style={{
+                background: "var(--bg-card-solid)",
+                borderRadius: "1.5rem",
+                padding: "2.5rem",
+                boxShadow: "var(--card-shadow)",
+                border: "1px solid var(--border-default)",
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: "1.5rem",
+                  fontWeight: 800,
+                  color: "var(--text-primary)",
+                  marginBottom: "0.25rem",
+                  lineHeight: 1.3,
+                }}
+              >
+                Anything else we should know?
+              </h2>
+              <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
+                Tell us anything that might help us serve you better (optional)
+              </p>
+              <textarea
+                value={userNotes}
+                onChange={(e) => setUserNotes(e.target.value.slice(0, 500))}
+                maxLength={500}
+                placeholder="For example: items in several categories, planning to sell soon, interested in insurance..."
+                style={{
+                  width: "100%",
+                  height: "120px",
+                  background: "var(--ghost-bg)",
+                  border: "1px solid var(--border-default)",
+                  borderRadius: "0.75rem",
+                  padding: "0.875rem",
+                  fontSize: "0.9rem",
+                  color: "var(--text-primary)",
+                  resize: "vertical",
+                  outline: "none",
+                  fontFamily: "inherit",
+                  boxSizing: "border-box",
+                }}
+              />
+              <div
+                style={{
+                  textAlign: "right",
+                  fontSize: "0.75rem",
+                  color: "var(--text-muted)",
+                  marginTop: "0.375rem",
+                }}
+              >
+                {userNotes.length}/500
+              </div>
+
+              {/* Navigation */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginTop: "1.25rem",
+                }}
+              >
+                <button
+                  onClick={goBack}
+                  style={{
+                    padding: "0.6rem 1.25rem",
+                    background: "none",
+                    border: "none",
+                    color: "var(--text-muted)",
+                    cursor: "pointer",
+                    fontSize: "0.88rem",
+                    fontWeight: 600,
+                  }}
+                >
+                  {"\u2190"} Back
+                </button>
+                <div style={{ display: "flex", gap: "0.75rem" }}>
+                  <button
+                    onClick={() => finalizeQuiz("")}
+                    style={{
+                      padding: "0.7rem 1.25rem",
+                      background: "none",
+                      border: "none",
+                      color: "var(--text-muted)",
+                      cursor: "pointer",
+                      fontSize: "0.88rem",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Skip {"\u2192"}
+                  </button>
+                  <button
+                    onClick={() => finalizeQuiz(userNotes)}
+                    style={{
+                      padding: "0.7rem 1.75rem",
+                      background: "var(--accent-theme)",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "0.875rem",
+                      fontWeight: 700,
+                      fontSize: "0.9rem",
+                      cursor: "pointer",
+                    }}
+                  >
+                    See My Results {"\u2192"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        ) : (
+          /* ── Question Card (standard quiz flow) ── */
+          <div
+            style={{
+              background: "var(--bg-card-solid)",
+              borderRadius: "1.5rem",
+              padding: "2.5rem",
+              boxShadow: "var(--card-shadow)",
+              border: "1px solid var(--border-default)",
+              opacity: fading ? 0 : 1,
+              transform: fading ? "translateX(12px)" : "translateX(0)",
+              transition: "opacity 0.2s ease, transform 0.2s ease",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: 800,
+                color: "var(--text-primary)",
+                marginBottom: "0.25rem",
+                lineHeight: 1.3,
+              }}
+            >
+              {question.question}
+            </h2>
+
+            {question.subtitle && (
+              <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
+                {question.subtitle}
+              </p>
             )}
 
-            {question.type === "single" && (
-              <span style={{ fontSize: "0.78rem", color: "#a8a29e" }}>
-                Select an option to continue
-              </span>
-            )}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "0.6rem",
+                marginTop: question.subtitle ? 0 : "1.5rem",
+              }}
+            >
+              {question.options.map((option) => {
+                const isSelected = selectedIds.includes(option.id);
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => {
+                      if (question.type === "single") {
+                        handleSingleAnswer(option);
+                      } else {
+                        handleMultipleToggle(option.id);
+                      }
+                    }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "1rem",
+                      padding: "1rem 1.25rem",
+                      borderRadius: "0.875rem",
+                      border: `2px solid ${isSelected ? "var(--accent-theme)" : "var(--ghost-bg)"}`,
+                      background: isSelected ? "var(--accent-dim)" : "var(--bg-card-solid)",
+                      boxShadow: isSelected ? "0 0 0 3px var(--accent-glow)" : "none",
+                      cursor: "pointer",
+                      textAlign: "left",
+                      transition: "border-color 0.15s, background 0.15s, box-shadow 0.15s",
+                    }}
+                  >
+                    <span style={{ fontSize: "1.75rem", flexShrink: 0 }}>
+                      {option.icon}
+                    </span>
+                    <span
+                      style={{
+                        flex: 1,
+                        fontSize: "0.95rem",
+                        fontWeight: isSelected ? 700 : 500,
+                        color: isSelected ? "var(--accent-theme)" : "var(--text-primary)",
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {option.text}
+                    </span>
+                    {question.type === "multiple" && (
+                      <div
+                        style={{
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "4px",
+                          border: `2px solid ${isSelected ? "var(--accent-theme)" : "var(--border-default)"}`,
+                          background: isSelected ? "var(--accent-theme)" : "var(--bg-card-solid)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        {isSelected && (
+                          <span
+                            style={{
+                              color: "#fff",
+                              fontSize: "0.7rem",
+                              fontWeight: 800,
+                            }}
+                          >
+                            {"\u2713"}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {question.type === "single" && isSelected && (
+                      <div
+                        style={{
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "50%",
+                          background: "var(--accent-theme)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <span style={{ color: "#fff", fontSize: "0.65rem", fontWeight: 800 }}>
+                          {"\u2713"}
+                        </span>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Navigation */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginTop: "1.75rem",
+              }}
+            >
+              <button
+                onClick={goBack}
+                disabled={currentQuestion === 0}
+                style={{
+                  padding: "0.6rem 1.25rem",
+                  background: "none",
+                  border: "none",
+                  color: currentQuestion === 0 ? "var(--border-default)" : "var(--text-muted)",
+                  cursor: currentQuestion === 0 ? "not-allowed" : "pointer",
+                  fontSize: "0.88rem",
+                  fontWeight: 600,
+                }}
+              >
+                {"\u2190"} Back
+              </button>
+
+              {question.type === "multiple" && (
+                <button
+                  onClick={handleMultipleAdvance}
+                  style={{
+                    padding: "0.7rem 1.75rem",
+                    background: "var(--accent-theme)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "0.875rem",
+                    fontWeight: 700,
+                    fontSize: "0.9rem",
+                    cursor: "pointer",
+                  }}
+                >
+                  {currentQuestion === QUIZ_QUESTIONS.length - 1
+                    ? "See My Results \u2192"
+                    : "Next \u2192"}
+                </button>
+              )}
+
+              {question.type === "single" && (
+                <span style={{ fontSize: "0.78rem", color: "var(--muted-color)" }}>
+                  Select an option to continue
+                </span>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         <p
           style={{
             textAlign: "center",
             fontSize: "0.78rem",
-            color: "#a8a29e",
+            color: "var(--muted-color)",
             marginTop: "1.25rem",
           }}
         >
-          No account needed · Takes about 2 minutes
+          No account needed {"\u00B7"} Takes about 2 minutes
         </p>
       </div>
     </div>

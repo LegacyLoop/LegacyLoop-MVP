@@ -1,0 +1,550 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/shipping/ShippingCenterClient.tsx (4,438 lines)
+     — FIX: Make carrier selection MORE visible and obvious
+     — FIX: Show Save Quote button prominently ABOVE the table
+     — FIX: Freight tab — render the Upload Quote and BOL buttons
+     — FIX: When item moves to SOLD, carry over saved quote data
+     — ADD: Delivery method options (QR Code, Print PDF, Schedule Pickup)
+     — ADD: Saved quote badge on item cards in ALL tabs
+     — UPGRADE: Metro estimates to use Shippo rates per city
+
+  2. app/items/[id]/ShippingPanel.tsx (3,645 lines)
+     — SURGICAL: Make carrier rate table rows MORE visually clickable
+     — SURGICAL: Add prominent Save Quote button below rates
+     — SURGICAL: When a quote is saved, save ALL carrier data + buyer info to EventLog
+     — MINIMAL changes only
+
+  3. app/api/shipping/center/route.ts (205 lines)
+     — EXTEND: When item is SOLD, look up saved quote from EventLog AND localStorage key pattern
+     — EXTEND: Metro estimates should call Shippo per city for real rates
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping commands LOCKED.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently.
+
+SECTION 6 — BUILD PATTERN
+
+  Database -> Storage -> API -> AI -> Enrichment -> UI -> Dashboard -> Database update.
+  Build order: A -> B -> C -> D -> E -> F -> G
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo THIS WEEK. We have a Shippo test API token. This is the LAST pass.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Fix all flow gaps, make carrier selection obvious, add delivery methods, fix freight flow buttons, improve quote persistence across item status changes. Research professional TMS systems (FedEx Ship Manager, ShipStation, Shippo dashboard, EasyPost) and replicate the best UX patterns. Make this feel like ShipStation built inside LegacyLoop.
+
+You MAY NOT: Touch locked files (except surgical unlocks), rewrite components from scratch, add npm packages, change schema, deviate from inline style={{}}.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10. SHIPPO_API_KEY: SET (test token).
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed for this command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — SHIPPING CENTER: CLOSE ALL FLOW GAPS (COMMAND 1 OF 2)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+*** THE USER'S EXPERIENCE RIGHT NOW ***
+
+Ryan has tested every flow and found these problems:
+
+1. "I can't click on the rates I'm interested in" — The carrier
+   rows in the PreSale tab ARE clickable (line 1364 onClick exists)
+   BUT the visual affordance is poor. The rows don't LOOK clickable.
+   No hover effect. No cursor change visible enough. The user
+   doesn't know they can click. FIX: Add obvious hover state,
+   make the entire row look like a button, add "Click to select"
+   hint text above the table.
+
+2. "I can't save a quote from the Item Dashboard" — The ShippingPanel
+   has carrier rates but the clickable rows from Command 1 may not
+   be visually obvious. The Save Quote button may be too subtle.
+   FIX: Make the Item Dashboard ShippingPanel carrier rows OBVIOUSLY
+   clickable with hover effects, and the Save Quote button BIG and
+   prominent.
+
+3. "When I go to the Shipping Center, I can't pull up my quotes" —
+   The QuoteDetailPanel exists (line 773) but may not be rendering.
+   The "Hide Quote Details" / "Show Quote Details" toggle exists but
+   might be missed. FIX: Auto-expand quote details for items that
+   have saved quotes. Don't make the user hunt for the toggle.
+
+4. "When the item is sold, the Shipping Center has no memory" —
+   When an item transitions from PreSale (LISTED) to ReadyToShip (SOLD),
+   the saved quote from PreSale should carry over. Currently the
+   ReadyToShip tab starts fresh. FIX: Read localStorage saved quotes
+   AND EventLog quote history for ALL items regardless of status.
+   If a SOLD item has a previous quote from when it was LISTED,
+   show it.
+
+5. "Estimated Shipping to Major Cities is still unrealistic" —
+   Metro estimates use a formula, not actual Shippo API calls.
+   FIX: For each metro city, call the Shippo rates API with the
+   item's actual weight/dims to get real carrier pricing.
+   Show the cheapest rate per city, not a formula.
+   If this is too slow (5 API calls), use a batch approach or
+   cache the results.
+
+6. "No way of editing shipping details easily" — When an item is
+   SOLD and shows in ReadyToShip, the user should be able to edit
+   the package details (weight, dims, box) directly without going
+   back to the Item Dashboard. The wizard step 1 has basic inputs
+   but it should also have the BOX_PRESETS grid and packaging type
+   selector for quick selection.
+
+7. "The Shipping Center doesn't feel like a real TMS" — Professional
+   TMS systems (ShipStation, Shippo, EasyPost) show a DASHBOARD view
+   with action items: "5 items need labels", "2 quotes expiring today",
+   "1 shipment overdue". The Shipping Center should feel like that.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read app/shipping/ShippingCenterClient.tsx — key sections:
+   — PreSaleTab carrier table (line 1299-1432): verify onClick works
+   — SaveQuote bar (line 1414-1425): verify it renders
+   — selectedCarrierMap state (line 898): verify it updates
+   — ReadyToShipTab saved quote loading (line 1462-1475)
+   — QuoteDetailPanel (line 773): check when it renders
+   — ShipProfile (line 619): check saved quote display
+   — Freight tab confirmation flow (line 3160-3170): check buttons
+
+2. Read app/items/[id]/ShippingPanel.tsx — pre-sale carrier table:
+   — Search for "selectedPreSaleRate" — does it exist?
+   — Search for "Save Quote" — is there a visible button?
+   — The pre-sale rate table (line ~2935-2990)
+
+3. Read app/api/shipping/center/route.ts:
+   — How does it handle quotes for SOLD items (line 177)?
+   — Does it include quoteHistory for readyToShip items?
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — FIX CARRIER TABLE VISIBILITY + INTERACTIVITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The carrier table rows at line 1362-1430 ARE clickable
+(onClick at line 1364) but they don't LOOK clickable.
+
+UPGRADE the carrier rows to be OBVIOUSLY interactive:
+
+1. Add "CLICK A CARRIER TO SELECT AND SAVE" header text
+   above the carrier table (before line 1342). Style: small,
+   uppercase, muted, with a pointing hand emoji.
+
+2. Add cursor: "pointer" hover indicator on each row.
+   (This may already exist at line 1374 — verify and ensure
+   it's prominent)
+
+3. Add a hover background color change:
+   onMouseEnter/onMouseLeave or CSS-like hover effect
+   via state. When user hovers a row, show a subtle
+   teal background tint even when not selected.
+
+4. The Save Quote bar (line 1414) should be MORE prominent:
+   Make it FULL WIDTH of the carrier table area.
+   Bigger text. Teal gradient background.
+   Show the selected carrier name, service, and price.
+   Add: "Click to lock in this rate for your shipment"
+
+5. AFTER saving a quote, show a SUCCESS state:
+   The entire carrier table section should show a
+   green-tinted header: "✅ Quote Saved — [Carrier] [Service] $X.XX"
+   With buttons: [Use this quote →] and [Change carrier]
+
+6. The Save Quote bar should also be visible on the
+   Item Dashboard ShippingPanel's pre-sale carrier table.
+   Check if Command 1 added it properly. If not, add it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — FIX QUOTE MEMORY ACROSS STATUS CHANGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+File: app/api/shipping/center/route.ts
+
+THE PROBLEM: When an item goes from LISTED (PreSale tab)
+to SOLD (ReadyToShip tab), the saved quote disappears.
+The ReadyToShip tab shows the item starting fresh with
+no quote memory.
+
+ROOT CAUSE: The center API returns different data for
+preSale vs readyToShip items. Both include lastQuote
+and quoteHistory from EventLog. But the ReadyToShipTab
+component may not be USING that data to pre-fill.
+
+FIX 1 — API: Ensure readyToShip items get quoteHistory:
+In center/route.ts line 177-178, the readyToShip push
+should include quoteHistory (currently it does via base object).
+Verify this is working by checking the API response.
+
+FIX 2 — UI: ReadyToShipTab should show saved quote PROMINENTLY:
+When an item enters ReadyToShip and has a lastQuote or
+quoteHistory entry:
+— Show: "📋 Previous Quote Available"
+   "[Carrier] [Service] — $[rate] · Quoted [date]"
+   [Ship with this quote →] — BIG GREEN BUTTON
+   [Get fresh quote] — smaller link
+
+Currently (line 1640): there IS a "Ship Now" button
+for items with savedQuotes. But it reads from
+localStorage (ll_quote_${item.id}). The quote was
+saved when the item was in PreSale. When it moves
+to SOLD, the localStorage quote should still be
+there. Verify this works.
+
+If localStorage is the issue (data lost on status change):
+— ALSO read lastQuote from the API response
+— If localStorage has no quote but API has lastQuote,
+  use the API data as the saved quote
+
+FIX 3 — Auto-expand QuoteDetailPanel:
+For ReadyToShip items that have a lastQuote:
+Auto-expand the QuoteDetailPanel (line 773) so the
+user sees the full quote details without clicking
+"Show Quote Details."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — FIX FREIGHT TAB FLOW BUTTONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+THE PROBLEM: The Freight tab has Official Quote Upload
+form (showQuoteUpload state, line 2693) and BOL form
+(showBOL state, line 2704), but the BUTTONS to open
+them aren't rendering in the UI.
+
+The "Upload Official Quote" button IS at line 3169 —
+but it only shows when `confirmation && !showQuoteUpload
+&& !showBOL && !bolGenerated`. The `confirmation` state
+requires the user to complete the pickup scheduling step
+first.
+
+FIX: The freight flow should be clearer:
+1. After carrier selection + schedule pickup → show confirmation
+2. Confirmation should PROMINENTLY show:
+   [Upload Official Quote →] — teal button
+   This button IS at line 3169 — verify it renders.
+3. After uploading official quote → show:
+   [Complete BOL →] — this IS at line 3133-3160
+4. After BOL → tracking
+
+If the buttons exist but aren't visible because of
+conditional rendering issues, trace the state flow:
+— confirmation state: set at line ~2985 after schedulePickup
+— showQuoteUpload: toggled by button at line 3169
+— officialQuote: set at line 3111 after form submit
+— showBOL: toggled by button in officialQuote display
+— bolGenerated: set at line 3411 after BOL generation
+
+Walk through this flow step by step. If any conditional
+is preventing buttons from rendering, fix it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — ADD DELIVERY METHOD OPTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The Item Dashboard ShippingPanel's post-sale wizard has
+delivery method options: QR Code, Print PDF, Schedule Pickup.
+The Shipping Center's ReadyToShip wizard does NOT have these.
+
+In the ReadyToShip wizard step 4 (confirmation/label),
+ADD delivery method selection BEFORE the Generate Label button:
+
+LABEL DELIVERY:
+[QR Code (recommended)] [Print PDF] [Schedule Pickup]
+
+— QR Code: generates a QR code that links to the label
+— Print PDF: opens print dialog
+— Schedule Pickup: shows carrier pickup scheduling form
+
+These are the same options from ShippingPanel line 204:
+  const [deliveryMethod, setDeliveryMethod] = useState<"qr" | "print" | "pickup">("qr");
+
+Add this state and UI to the ReadyToShipTab wizard.
+Include the selection in the generateLabel API call body.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — METRO ESTIMATES WITH REAL SHIPPO RATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/api/shipping/center/route.ts
+
+Currently metro estimates use getMetroEstimates() + a
+weight/distance adjustment. The results are better than
+before (~$21-$24 instead of flat $14) but still not
+real carrier rates.
+
+UPGRADE: For each item in the preSale array, call the
+Shippo rates API for 4 major cities to get REAL cheapest
+rates per city.
+
+This means calling /api/shipping/rates internally (or
+calling getShippingRates from lib/shipping/shippo.ts
+directly) for each metro city:
+
+  const metroZips = [
+    { city: "New York, NY", zip: "10001" },
+    { city: "Los Angeles, CA", zip: "90001" },
+    { city: "Chicago, IL", zip: "60601" },
+    { city: "Houston, TX", zip: "77001" },
+  ];
+
+  const metroEstimates = await Promise.all(
+    metroZips.map(async (metro) => {
+      try {
+        const result = await getShippingRates(
+          { zip: item.saleZip || "04101" },
+          { zip: metro.zip },
+          { length: pkgL, width: pkgW, height: pkgH, weight: actualWeight }
+        );
+        const cheapest = result.rates.sort((a, b) => a.rate - b.rate)[0];
+        const fastest = result.rates.sort((a, b) => a.estimatedDays - b.estimatedDays)[0];
+        return {
+          city: metro.city,
+          zip: metro.zip,
+          estimatedCost: cheapest?.rate ?? 15,
+          estimatedDays: cheapest?.estimatedDays ?? 5,
+          isCheapest: false,
+          isFastest: false,
+          carrier: cheapest?.carrier ?? "USPS",
+          service: cheapest?.service ?? "Ground",
+        };
+      } catch {
+        return null;
+      }
+    })
+  );
+  const validMetros = metroEstimates.filter(Boolean);
+  // Mark cheapest/fastest
+  if (validMetros.length > 0) {
+    const minCost = Math.min(...validMetros.map(m => m.estimatedCost));
+    const minDays = Math.min(...validMetros.map(m => m.estimatedDays));
+    validMetros.forEach(m => {
+      m.isCheapest = m.estimatedCost === minCost;
+      m.isFastest = m.estimatedDays === minDays;
+    });
+  }
+
+NOTE: This adds 4 Shippo API calls per item. For 15 items
+that's 60 API calls. To avoid rate limiting:
+— Only compute metro estimates for the FIRST 5 items
+— Cache results for 5 minutes (use a Map keyed by
+  itemId + weight, check if already computed recently)
+— Or: compute metro only when the item card is expanded
+  (client-side call, not in the API)
+
+SIMPLEST APPROACH: Keep the API formula-based metros
+but ADD a "Get Live Metro Rates" button on each item
+card in the PreSale tab. When clicked, it calls Shippo
+for the 4 cities and displays REAL rates. This avoids
+bulk API calls and gives the user control.
+
+Import at top of center/route.ts (if not already):
+  import { getShippingRates } from "@/lib/shipping/shippo";
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART G — ITEM DASHBOARD SHIPPINGPANEL CARRIER SELECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+*** SURGICAL — verify and enhance ***
+
+Command 1 added clickable carrier rows and Save Quote.
+VERIFY these are working:
+
+  grep -n "selectedPreSaleRate\|Save Quote\|ll_quote_" \
+  app/items/[id]/ShippingPanel.tsx
+
+If they exist, ENHANCE visibility:
+— Add cursor: pointer to each rate row
+— Add hover background: rgba(0,188,212,0.04)
+— Make the Save Quote button BIGGER and FULL WIDTH
+— Add text: "Click a carrier to select, then Save"
+— After saving: show green success banner with carrier info
+
+If they DON'T exist (Command 1 didn't land):
+Implement the full carrier selection per Command 1 Part B spec.
+
+ALSO: When a quote is saved in the ShippingPanel, the
+save must include the FULL buyer address (buyerZip at
+minimum) and ALL carrier options — not just the selected
+one. This way the Shipping Center can show the full
+quote details when the user navigates there.
+
+Save to localStorage AND trigger EventLog:
+  // On Save Quote:
+  localStorage.setItem(`ll_quote_${itemId}`, JSON.stringify({
+    carrier: selectedRate.provider,
+    service: selectedRate.servicelevel_name,
+    rate: selectedRate.amount,
+    days: selectedRate.estimated_days,
+    allCarriers: rates.map(r => ({
+      carrier: r.provider,
+      service: r.servicelevel_name,
+      rate: r.amount,
+      days: r.estimated_days,
+    })),
+    toZip: buyerZip,
+    fromZip: fromZip,
+    savedAt: new Date().toISOString(),
+  }));
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  "Click to select" hint above carrier table: yes/no
+4.  Carrier rows have obvious hover effect: yes/no
+5.  Save Quote bar is prominent and full width: yes/no
+6.  Success state shows after saving: yes/no
+7.  SOLD items carry previous quote from LISTED: yes/no
+8.  ReadyToShip shows "Previous Quote Available": yes/no
+9.  QuoteDetailPanel auto-expands for quoted items: yes/no
+10. Freight Upload Quote button visible after scheduling: yes/no
+11. Freight Complete BOL button visible after upload: yes/no
+12. Delivery method options (QR/Print/Pickup) in wizard: yes/no
+13. Metro "Get Live Rates" button works: yes/no
+14. Live metro rates show real Shippo pricing: yes/no
+15. Item Dashboard carrier rows clickable with hover: yes/no
+16. Item Dashboard Save Quote prominent: yes/no
+17. Saved quote includes allCarriers + toZip: yes/no
+18. All existing features preserved: yes/no
+19. All locked files untouched (except surgical): yes/no
+20. inline style={{}} throughout: yes/no
+21. Light mode clean: yes/no
+22. Dark mode clean: yes/no
+23. npx tsc --noEmit: 0 errors
+24. npm run build: pass
+25. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — Carrier Table Visibility:
+  — Hint text added: [yes/no]
+  — Hover effect: [yes/no]
+  — Prominent Save Quote: [yes/no]
+  — Success state: [yes/no]
+
+  PART C — Quote Memory:
+  — SOLD items show previous quote: [yes/no]
+  — ReadyToShip pre-loads quote: [yes/no]
+  — QuoteDetailPanel auto-expands: [yes/no]
+
+  PART D — Freight Flow:
+  — Upload Quote button visible: [yes/no]
+  — Complete BOL button visible: [yes/no]
+  — Full flow works: [yes/no]
+
+  PART E — Delivery Methods:
+  — QR Code option: [yes/no]
+  — Print PDF option: [yes/no]
+  — Schedule Pickup option: [yes/no]
+
+  PART F — Metro Estimates:
+  — Get Live Rates button: [yes/no]
+  — Real Shippo rates per city: [yes/no]
+
+  PART G — Item Dashboard Carrier Selection:
+  — Carrier rows clickable: [yes/no]
+  — Save Quote visible: [yes/no]
+  — Full data saved (allCarriers + toZip): [yes/no]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  FLAGS: [list any]
+  Files modified: [paths]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD:
+
+1. Command 2 (next): Visual polish + final TMS professional feel.
+2. After both commands: LOCK Shipping Center completely.
+3. Next priority: Bot Page Data Sync (Phase 3).
+4. Pre-demo: Seed pickup data, Dr. Clark demo prep.
+5. Fee Model: 3.5% (1.75% buyer + 1.75% seller). Split cost: 50/50.
+
+Command 1 of 2: Close All Flow Gaps
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

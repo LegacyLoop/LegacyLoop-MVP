@@ -110,8 +110,8 @@ export default function BuyerOfferPage() {
   // ── Loading state ──
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#888", fontSize: "1.1rem" }}>Loading offer...</div>
+      <div style={{ minHeight: "100vh", background: "var(--bg-primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ color: "var(--text-muted)", fontSize: "1.1rem" }}>Loading offer...</div>
       </div>
     );
   }
@@ -119,11 +119,11 @@ export default function BuyerOfferPage() {
   // ── Error state ──
   if (error && !data) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-primary)", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
         <div style={{ maxWidth: 480, textAlign: "center" }}>
           <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>&#128683;</div>
-          <div style={{ fontSize: "1.2rem", color: "#e5e5e5", fontWeight: 700, marginBottom: "0.5rem" }}>Offer Not Found</div>
-          <div style={{ fontSize: "0.9rem", color: "#888" }}>This offer link may have expired or is invalid.</div>
+          <div style={{ fontSize: "1.2rem", color: "var(--text-primary)", fontWeight: 700, marginBottom: "0.5rem" }}>Offer Not Found</div>
+          <div style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>This offer link may have expired or is invalid.</div>
         </div>
       </div>
     );
@@ -139,17 +139,17 @@ export default function BuyerOfferPage() {
   if (actionDone) {
     const msgs: Record<string, { title: string; desc: string; color: string }> = {
       ACCEPT: { title: "Offer Accepted!", desc: "The seller has been notified. Complete your purchase to secure the item.", color: "#22c55e" },
-      DECLINE: { title: "Offer Declined", desc: "The seller has been notified. You can still view the item and make a new offer.", color: "#888" },
+      DECLINE: { title: "Offer Declined", desc: "The seller has been notified. You can still view the item and make a new offer.", color: "var(--text-muted)" },
       COUNTER: { title: "Counter Offer Sent!", desc: "Your counter offer has been sent to the seller. You'll receive an email when they respond.", color: "#00bcd4" },
     };
     const m = msgs[actionDone] || msgs.DECLINE;
 
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
+      <div style={{ minHeight: "100vh", background: "var(--bg-primary)", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}>
         <div style={{ maxWidth: 480, textAlign: "center" }}>
           <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>{actionDone === "ACCEPT" ? "\u2705" : actionDone === "COUNTER" ? "\u21A9\uFE0F" : "\u2716\uFE0F"}</div>
           <div style={{ fontSize: "1.4rem", color: m.color, fontWeight: 700, marginBottom: "0.75rem" }}>{m.title}</div>
-          <div style={{ fontSize: "0.95rem", color: "#aaa", lineHeight: 1.6, marginBottom: "1.5rem" }}>{m.desc}</div>
+          <div style={{ fontSize: "0.95rem", color: "var(--text-muted)", lineHeight: 1.6, marginBottom: "1.5rem" }}>{m.desc}</div>
           {checkoutUrl && (
             <a href={checkoutUrl} style={{
               display: "inline-block", padding: "14px 28px", background: "#22c55e", color: "#000",
@@ -162,7 +162,7 @@ export default function BuyerOfferPage() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", color: "#e5e5e5", padding: "1.5rem" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-primary)", color: "var(--text-primary)", padding: "1.5rem" }}>
       <div style={{ maxWidth: 540, margin: "0 auto" }}>
 
         {/* Brand */}
@@ -184,9 +184,9 @@ export default function BuyerOfferPage() {
             />
           )}
           <div>
-            <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "#e5e5e5" }}>{item.title || "Item"}</div>
+            <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--text-primary)" }}>{item.title || "Item"}</div>
             {item.listingPrice && (
-              <div style={{ fontSize: "0.85rem", color: "#888", marginTop: "4px" }}>Listed at ${Number(item.listingPrice).toLocaleString()}</div>
+              <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "4px" }}>Listed at ${Number(item.listingPrice).toLocaleString()}</div>
             )}
           </div>
         </div>
@@ -196,12 +196,12 @@ export default function BuyerOfferPage() {
           background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)",
           borderRadius: "12px", padding: "1.5rem", textAlign: "center", marginBottom: "1.25rem",
         }}>
-          <div style={{ fontSize: "0.85rem", color: "#888", marginBottom: "4px" }}>
+          <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "4px" }}>
             {offer.status === "COUNTERED" ? "Counter Offer on the Table" : "Current Offer"}
           </div>
           <div style={{ fontSize: "2.5rem", fontWeight: 700, color: "#00bcd4" }}>${dollars(offer.currentPrice)}</div>
           {offer.round > 1 && (
-            <div style={{ fontSize: "0.8rem", color: "#888", marginTop: "4px" }}>Round {offer.round} of negotiation</div>
+            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "4px" }}>Round {offer.round} of negotiation</div>
           )}
           {!expired && !isTerminal && (
             <div style={{ fontSize: "0.82rem", color: "#f59e0b", marginTop: "8px" }}>
@@ -214,7 +214,7 @@ export default function BuyerOfferPage() {
           {isTerminal && !expired && (
             <div style={{
               fontSize: "0.82rem", marginTop: "8px",
-              color: offer.status === "ACCEPTED" ? "#22c55e" : offer.status === "DECLINED" ? "#ef4444" : "#888",
+              color: offer.status === "ACCEPTED" ? "#22c55e" : offer.status === "DECLINED" ? "#ef4444" : "var(--text-muted)",
             }}>
               Status: {offer.status}
             </div>
@@ -227,7 +227,7 @@ export default function BuyerOfferPage() {
             background: "var(--bg-card)", border: "1px solid var(--border-default)",
             borderRadius: "12px", padding: "1rem", marginBottom: "1.25rem",
           }}>
-            <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#aaa", marginBottom: "0.75rem" }}>Offer History</div>
+            <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>Offer History</div>
             {events.map((ev) => (
               <div key={ev.id} style={{
                 display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -242,14 +242,14 @@ export default function BuyerOfferPage() {
                   }}>
                     {ev.actorType}
                   </span>
-                  <span style={{ fontSize: "0.85rem", color: "#ccc" }}>{ev.action}</span>
+                  <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>{ev.action}</span>
                   {ev.message && (
-                    <div style={{ fontSize: "0.75rem", color: "#888", marginTop: "2px", marginLeft: "4px" }}>{ev.message}</div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "2px", marginLeft: "4px" }}>{ev.message}</div>
                   )}
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "#e5e5e5" }}>${dollars(ev.price)}</div>
-                  <div style={{ fontSize: "0.7rem", color: "#666" }}>
+                  <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)" }}>${dollars(ev.price)}</div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
                     {new Date(ev.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                   </div>
                 </div>
@@ -292,11 +292,11 @@ export default function BuyerOfferPage() {
                 background: "var(--bg-card)", border: "1px solid var(--border-default)",
                 borderRadius: "10px", padding: "1rem",
               }}>
-                <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#aaa", marginBottom: "0.75rem" }}>Your Counter Offer</div>
+                <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>Your Counter Offer</div>
                 <div style={{ position: "relative", marginBottom: "0.6rem" }}>
                   <span style={{
                     position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)",
-                    fontSize: "1.1rem", fontWeight: 700, color: "#888",
+                    fontSize: "1.1rem", fontWeight: 700, color: "var(--text-muted)",
                   }}>$</span>
                   <input
                     type="number"
@@ -308,7 +308,7 @@ export default function BuyerOfferPage() {
                     style={{
                       width: "100%", padding: "12px 12px 12px 28px", fontSize: "1.1rem", fontWeight: 700,
                       background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
-                      borderRadius: "8px", color: "#e5e5e5", outline: "none", boxSizing: "border-box",
+                      borderRadius: "8px", color: "var(--text-primary)", outline: "none", boxSizing: "border-box",
                     }}
                   />
                 </div>
@@ -320,7 +320,7 @@ export default function BuyerOfferPage() {
                   style={{
                     width: "100%", padding: "10px 12px", fontSize: "0.85rem",
                     background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
-                    borderRadius: "8px", color: "#e5e5e5", outline: "none", resize: "vertical",
+                    borderRadius: "8px", color: "var(--text-primary)", outline: "none", resize: "vertical",
                     marginBottom: "0.6rem", boxSizing: "border-box",
                   }}
                 />
@@ -342,7 +342,7 @@ export default function BuyerOfferPage() {
                     onClick={() => setShowCounter(false)}
                     style={{
                       padding: "12px 16px", fontSize: "0.85rem", border: "1px solid var(--border-default)",
-                      borderRadius: "8px", background: "transparent", color: "#888", cursor: "pointer",
+                      borderRadius: "8px", background: "transparent", color: "var(--text-muted)", cursor: "pointer",
                       minHeight: "48px",
                     }}
                   >
@@ -358,7 +358,7 @@ export default function BuyerOfferPage() {
               disabled={submitting}
               style={{
                 padding: "14px", fontSize: "0.9rem", fontWeight: 600, border: "1px solid var(--border-default)",
-                borderRadius: "10px", background: "transparent", color: "#888",
+                borderRadius: "10px", background: "transparent", color: "var(--text-muted)",
                 cursor: submitting ? "not-allowed" : "pointer", minHeight: "52px",
               }}
             >
@@ -368,7 +368,7 @@ export default function BuyerOfferPage() {
         )}
 
         {/* Footer */}
-        <div style={{ textAlign: "center", marginTop: "2rem", fontSize: "0.75rem", color: "#555" }}>
+        <div style={{ textAlign: "center", marginTop: "2rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
           Powered by LegacyLoop — AI Estate Resale
         </div>
       </div>

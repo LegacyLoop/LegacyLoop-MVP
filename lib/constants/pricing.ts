@@ -350,12 +350,15 @@ export function calculateCustomCredits(amount: number): {
 
 export const PROCESSING_FEE = {
   rate: 0.035,
+  buyerRate: 0.0175,
+  sellerRate: 0.0175,
   /** Always use this for UI display — never calculate inline */
   display: "3.5%",
+  buyerDisplay: "1.75%",
+  sellerDisplay: "1.75%",
   label: "Processing Fee",
-  description: "Included in price",
-  paidBy: "included" as const,
-  model: "absorbed" as const,
+  description: "Split evenly between buyer and seller",
+  model: "split" as const,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -512,15 +515,18 @@ export function getPlanByTier(tier: number): (typeof PLANS)[keyof typeof PLANS] 
 }
 
 /** Calculate processing fee for any amount (rounds to 2 decimal places) */
-export const calculateProcessingFee = (subtotal: number): number => {
-  return Math.round(subtotal * PROCESSING_FEE.rate * 100) / 100;
+export const calculateProcessingFee = (subtotal: number, half?: "buyer" | "seller"): number => {
+  const rate = half === "buyer" ? PROCESSING_FEE.buyerRate
+    : half === "seller" ? PROCESSING_FEE.sellerRate
+    : PROCESSING_FEE.rate;
+  return Math.round(subtotal * rate * 100) / 100;
 };
 
-/** Calculate total with processing fee (buyer pays) */
+/** Calculate total with processing fee (buyer pays their half) */
 export const calculateTotalWithFee = (
   subtotal: number
 ): { subtotal: number; processingFee: number; total: number } => {
-  const fee = calculateProcessingFee(subtotal);
+  const fee = calculateProcessingFee(subtotal, "buyer");
   return {
     subtotal,
     processingFee: fee,
@@ -870,6 +876,7 @@ export const calculateCommission = (
   saleAmount: number;
   commissionRate: number;
   commissionAmount: number;
+  sellerFee: number;
   netEarnings: number;
 } => {
   const tierKey = userTier.toLowerCase();
@@ -881,9 +888,10 @@ export const calculateCommission = (
     ? baseRate * (1 - DISCOUNTS.heroes.commissionDiscount)
     : baseRate;
   const commission = Math.round(saleAmount * effectiveRate * 100) / 100;
-  const netEarnings = Math.round((saleAmount - commission) * 100) / 100;
+  const sellerFee = Math.round(saleAmount * PROCESSING_FEE.sellerRate * 100) / 100;
+  const netEarnings = Math.round((saleAmount - commission - sellerFee) * 100) / 100;
 
-  return { saleAmount, commissionRate: effectiveRate, commissionAmount: commission, netEarnings };
+  return { saleAmount, commissionRate: effectiveRate, commissionAmount: commission, sellerFee, netEarnings };
 };
 
 export const calculateTierPrice = (

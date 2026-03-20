@@ -115,7 +115,9 @@ function getDemoRates(
   parcel: Parcel
 ): ShippingRate[] {
   const dist = zipDistance(from.zip, to.zip);
-  const w = parcel.weight;
+  // Dimensional weight: L×W×H / 139 (UPS/FedEx standard)
+  const dimWeight = (parcel.length * parcel.width * parcel.height) / 139;
+  const w = Math.max(parcel.weight, dimWeight); // Billable weight
   const vol = parcel.length * parcel.width * parcel.height;
   const isLarge = vol > 5000 || w > 30;
   const isSmall = vol < 1500 && w < 5;
@@ -235,12 +237,14 @@ export async function getShippingRates(
   if (SHIPPO_TOKEN && SHIPPO_TOKEN !== "your_shippo_api_token_here") {
     try {
       const rates = await fetchShippoRates(from, to, parcel);
+      console.log(`[shippo] Got ${rates.length} rates from Shippo API (${from.zip} → ${to.zip}, ${parcel.weight}lbs)`);
       return { rates, isDemo: false };
     } catch (err) {
-      console.error("Shippo API failed, falling back to demo rates:", err);
+      console.error("[shippo] Shippo API failed, falling back to demo rates:", err);
       return { rates: getDemoRates(from, to, parcel), isDemo: true };
     }
   }
 
+  console.log("[shippo] Using demo rates — Shippo API token not configured");
   return { rates: getDemoRates(from, to, parcel), isDemo: true };
 }

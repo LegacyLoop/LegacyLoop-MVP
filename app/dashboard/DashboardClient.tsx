@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ItemCard from "./ItemCard";
 import BundleSuggestions from "@/app/components/BundleSuggestions";
 
@@ -172,6 +172,26 @@ export default function DashboardClient({ items, stats, events }: DashboardClien
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [eventTypeFilter, setEventTypeFilter] = useState<string | null>(null);
+  const [showQuizBanner, setShowQuizBanner] = useState(false);
+
+  useEffect(() => {
+    try {
+      const completed = localStorage.getItem("legacyloop_quiz_completed");
+      const dismissed = sessionStorage.getItem("legacyloop_quiz_banner_dismissed");
+      if (!completed && !dismissed) {
+        setShowQuizBanner(true);
+      }
+    } catch {
+      // localStorage/sessionStorage not available
+    }
+  }, []);
+
+  const dismissQuizBanner = () => {
+    setShowQuizBanner(false);
+    try {
+      sessionStorage.setItem("legacyloop_quiz_banner_dismissed", "true");
+    } catch {}
+  };
 
   // Counts per status for the pipeline bar
   const statusCounts: Record<ItemStatus, number> = {
@@ -294,6 +314,72 @@ export default function DashboardClient({ items, stats, events }: DashboardClien
 
   return (
     <div>
+      {/* ── Quiz Assessment Banner ── */}
+      {showQuizBanner && (
+        <div
+          style={{
+            background: "var(--accent-dim)",
+            border: "1px solid var(--accent-border)",
+            borderRadius: "1.25rem",
+            padding: "1.25rem 1.5rem",
+            marginBottom: "1.5rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>{"\u{1F3AF}"}</span>
+          <div style={{ flex: 1, minWidth: "200px" }}>
+            <div style={{
+              fontWeight: 700,
+              color: "var(--text-primary)",
+              fontSize: "0.95rem",
+              marginBottom: "0.2rem",
+            }}>
+              Find your perfect plan
+            </div>
+            <div style={{
+              fontSize: "0.85rem",
+              color: "var(--text-secondary)",
+              lineHeight: 1.4,
+            }}>
+              Take our 2-minute assessment to get a personalized recommendation.
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+            <a
+              href="/onboarding/quiz"
+              style={{
+                padding: "0.5rem 1.25rem",
+                background: "var(--accent-theme)",
+                color: "#fff",
+                borderRadius: "0.75rem",
+                fontWeight: 700,
+                fontSize: "0.85rem",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Take Assessment {"\u2192"}
+            </a>
+            <button
+              onClick={dismissQuizBanner}
+              style={{
+                background: "none",
+                border: "none",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+                fontSize: "0.85rem",
+                padding: "0.5rem",
+              }}
+            >
+              {"\u2715"}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Stat Card Filters ─────────────────────────────────────────────── */}
       <div style={{
         display: "grid",

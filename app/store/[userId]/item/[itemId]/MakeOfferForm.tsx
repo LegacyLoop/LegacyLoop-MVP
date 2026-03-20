@@ -19,7 +19,7 @@ export default function MakeOfferForm({ itemId, itemTitle, suggestedPrice, itemS
   const [sending, setSending] = useState(false);
 
   const offerNum = Number(amount) || 0;
-  const fee = offerNum > 0 ? Math.round(offerNum * PROCESSING_FEE.rate * 100) / 100 : 0;
+  const fee = offerNum > 0 ? Math.round(offerNum * PROCESSING_FEE.buyerRate * 100) / 100 : 0;
   const totalIfAccepted = offerNum > 0 ? Math.round((offerNum + fee) * 100) / 100 : 0;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -116,7 +116,7 @@ export default function MakeOfferForm({ itemId, itemTitle, suggestedPrice, itemS
 
         {offerNum > 0 && (
           <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", paddingLeft: "0.25rem" }}>
-            If accepted: ${offerNum.toFixed(2)} + ${fee.toFixed(2)} fee ({PROCESSING_FEE.display} charged to buyer) = <strong style={{ color: "var(--text-primary)" }}>${totalIfAccepted.toFixed(2)} total</strong>
+            If accepted: ${offerNum.toFixed(2)} + ${fee.toFixed(2)} fee ({PROCESSING_FEE.buyerDisplay} — your share) = <strong style={{ color: "var(--text-primary)" }}>${totalIfAccepted.toFixed(2)} total</strong>
           </div>
         )}
 

@@ -57,7 +57,7 @@ export default function OfferHistoryTimeline({ events, originalPrice, currentPri
         background: "var(--bg-card)",
         border: "1px solid var(--border-default)",
         textAlign: "center",
-        color: "#888",
+        color: "var(--text-muted)",
         fontSize: "0.85rem",
       }}>
         No negotiation history yet.
@@ -75,14 +75,14 @@ export default function OfferHistoryTimeline({ events, originalPrice, currentPri
       <div style={{
         fontWeight: 700,
         fontSize: "0.85rem",
-        color: "#aaa",
+        color: "var(--text-muted)",
         marginBottom: "1rem",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
       }}>
         <span>Negotiation History</span>
-        <span style={{ fontSize: "0.75rem", color: "#666" }}>
+        <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
           {events.length} event{events.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -147,7 +147,7 @@ export default function OfferHistoryTimeline({ events, originalPrice, currentPri
                   {ev.message && (
                     <div style={{
                       fontSize: "0.78rem",
-                      color: "#888",
+                      color: "var(--text-muted)",
                       marginTop: "4px",
                       fontStyle: "italic",
                       lineHeight: 1.4,
@@ -158,10 +158,10 @@ export default function OfferHistoryTimeline({ events, originalPrice, currentPri
                 </div>
 
                 <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "#e5e5e5" }}>
+                  <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--text-primary)" }}>
                     ${dollars(ev.price)}
                   </div>
-                  <div style={{ fontSize: "0.7rem", color: "#666" }}>
+                  <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
                     {new Date(ev.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     {" "}
                     {new Date(ev.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
@@ -182,7 +182,7 @@ export default function OfferHistoryTimeline({ events, originalPrice, currentPri
           display: "flex",
           justifyContent: "space-between",
           fontSize: "0.78rem",
-          color: "#888",
+          color: "var(--text-muted)",
         }}>
           <span>Original: ${dollars(originalPrice)}</span>
           <span>Current: <strong style={{ color: "#00bcd4" }}>${dollars(currentPrice)}</strong></span>

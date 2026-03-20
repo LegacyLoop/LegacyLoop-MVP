@@ -157,10 +157,23 @@ function mapSuggestionToPreset(suggestion: PackageSuggestion | null): { key: str
   const tolerance = 2; // inches
   const presetOrder = ["tiny", "small", "medium", "large", "xl", "oversized", "furniture"] as const;
 
+  // Thin/flat items (< 2" on any dimension) always get custom box
+  const minDim = Math.min(aiL, aiW, aiH);
+  if (minDim < 2) {
+    return { key: "custom", autoCustom: true, reason: `Thin/flat item (${minDim.toFixed(1)}") — custom box: ${aiL}×${aiW}×${aiH}"` };
+  }
+
   // Try to find the smallest preset that fits
   for (const key of presetOrder) {
     const p = BOX_PRESETS[key];
     if (aiL <= p.l + tolerance && aiW <= p.w + tolerance && aiH <= p.h + tolerance) {
+      // Check for excessive void — if any box dimension is > 3x the item's corresponding dimension
+      const voidH = p.h / aiH;
+      const voidW = p.w / aiW;
+      const voidL = p.l / aiL;
+      if (voidH > 3 || voidW > 3 || voidL > 3) {
+        return { key: "custom", autoCustom: true, reason: `${p.label} fits but excessive void (${Math.max(voidH, voidW, voidL).toFixed(1)}x). Custom: ${aiL}×${aiW}×${aiH}"` };
+      }
       return { key, autoCustom: false, reason: `AI dimensions ${aiL}×${aiW}×${aiH}" fit ${p.label}` };
     }
   }
@@ -228,6 +241,12 @@ function PostSaleWizard({
       const rawRates = data.rates ?? [];
       const normalized = normalizeRates(rawRates);
       setRates(normalized.length > 0 ? normalized : generateFallbackRates(weight));
+      // Persist quote to Shipping Center via estimate API (fire-and-forget)
+      fetch("/api/shipping/estimate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemId, destZip: buyerZip }),
+      }).catch(() => {});
     } catch {
       setRates(generateFallbackRates(weight));
     } finally {
@@ -1330,8 +1349,8 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                       </div>
                       <div style={{ marginTop: "0.2rem", padding: "0.55rem 0.7rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "8px" }}>
                         <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "0.3rem" }}>Processing Fee</div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--text-muted)" }}><span>Charged to buyer</span><span style={{ color: "#00bcd4", fontWeight: 600 }}>{PROCESSING_FEE.display}</span></div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--text-muted)" }}><span>Seller pays</span><span style={{ color: "rgba(16,185,129,0.8)", fontWeight: 600 }}>0%</span></div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--text-muted)" }}><span>Buyer pays</span><span style={{ color: "#00bcd4", fontWeight: 600 }}>{PROCESSING_FEE.buyerDisplay}</span></div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--text-muted)" }}><span>Seller pays</span><span style={{ color: "#ef4444", fontWeight: 600 }}>{PROCESSING_FEE.sellerDisplay}</span></div>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", marginTop: "0.1rem" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
@@ -2403,6 +2422,21 @@ export default function ShippingPanel({
   const [rates, setRates] = useState<ShippingRate[]>([]);
   const [loadingRates, setLoadingRates] = useState(false);
   const [buyerZip, setBuyerZip] = useState("");
+  const [selectedPreSaleRate, setSelectedPreSaleRate] = useState<ShippingRate | null>(null);
+  const [preSaleQuoteSaved, setPreSaleQuoteSaved] = useState(false);
+  const [savedQuoteData, setSavedQuoteData] = useState<any>(null);
+
+  // Load saved quote from localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`ll_quote_${itemId}`);
+      if (raw) {
+        const q = JSON.parse(raw);
+        const ageMs = Date.now() - (q.savedAt || 0);
+        setSavedQuoteData({ ...q, isFresh: ageMs < 86400000, ageHrs: Math.round(ageMs / 3600000) });
+      }
+    } catch { /* ignore */ }
+  }, [itemId]);
 
   // Fetch rates when package details are available (pre-sale)
   const fetchPreSaleRates = async (toZip?: string) => {
@@ -2425,6 +2459,12 @@ export default function ShippingPanel({
       const rawRates = data.rates ?? [];
       const normalized = normalizeRates(rawRates);
       setRates(normalized.length > 0 ? normalized : generateFallbackRates(weight));
+      // Persist quote to Shipping Center via estimate API (fire-and-forget)
+      fetch("/api/shipping/estimate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemId, destZip: toZip || "10001" }),
+      }).catch(() => {});
     } catch {
       setRates(generateFallbackRates(weight));
     }
@@ -2811,8 +2851,8 @@ export default function ShippingPanel({
                   Fragile item
                 </label>
 
-                <div className="flex items-center gap-2">
-                  {(["BUYER_PAYS", "FREE_SHIPPING", "LOCAL_ONLY"] as const).map((p) => (
+                <div className="flex items-center gap-2" style={{ flexWrap: "wrap" }}>
+                  {(["BUYER_PAYS", "FREE_SHIPPING", "SPLIT_COST", "LOCAL_ONLY"] as const).map((p) => (
                     <label
                       key={p}
                       style={{
@@ -2825,10 +2865,15 @@ export default function ShippingPanel({
                       }}
                     >
                       <input type="radio" name="shippref" checked={preference === p} onChange={() => setPreference(p)} style={{ accentColor: "var(--accent)" }} />
-                      {p === "BUYER_PAYS" ? "Buyer pays" : p === "FREE_SHIPPING" ? "Free shipping" : "Local only"}
+                      {p === "BUYER_PAYS" ? "Buyer pays" : p === "FREE_SHIPPING" ? "Free shipping" : p === "SPLIT_COST" ? "Split cost" : "Local only"}
                     </label>
                   ))}
                 </div>
+                {preference === "SPLIT_COST" && (
+                  <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.3rem", padding: "0.35rem 0.6rem", borderRadius: "0.35rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.1)" }}>
+                    Buyer and seller each pay 50% of shipping. Seller{"\u2019"}s half is deducted from earnings.
+                  </div>
+                )}
               </div>
 
               {/* Packing tips with box recommendation */}
@@ -2952,42 +2997,146 @@ export default function ShippingPanel({
                   </div>
                 </div>
 
+                {/* Saved quote banner */}
+                {savedQuoteData && !loadingRates && (
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "0.45rem 0.65rem", borderRadius: "0.4rem", marginBottom: "0.5rem",
+                    background: savedQuoteData.isFresh ? "rgba(34,197,94,0.04)" : "rgba(245,158,11,0.04)",
+                    border: `1px solid ${savedQuoteData.isFresh ? "rgba(34,197,94,0.15)" : "rgba(245,158,11,0.15)"}`,
+                  }}>
+                    <div style={{ fontSize: "0.68rem" }}>
+                      <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>📋 Saved: {savedQuoteData.carrier?.carrier || savedQuoteData.carrier?.provider || "?"} {savedQuoteData.carrier?.service || savedQuoteData.carrier?.servicelevel_name || ""}</span>
+                      <span style={{ color: "var(--text-muted)" }}> — </span>
+                      <span style={{ fontWeight: 700, color: "#4caf50" }}>${parseFloat(savedQuoteData.carrier?.price || savedQuoteData.carrier?.rate || savedQuoteData.carrier?.amount || "0").toFixed(2)}</span>
+                      <span style={{
+                        fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", marginLeft: "0.3rem",
+                        background: savedQuoteData.isFresh ? "rgba(34,197,94,0.12)" : "rgba(245,158,11,0.12)",
+                        color: savedQuoteData.isFresh ? "#22c55e" : "#f59e0b",
+                      }}>
+                        {savedQuoteData.isFresh ? "✅ Fresh" : `⚠️ ${savedQuoteData.ageHrs}h ago`}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {loadingRates ? (
                   <div style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>Loading rates...</div>
                 ) : rates.length > 0 ? (
-                  <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem" }}>
-                      <thead>
-                        <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
-                          <th style={{ textAlign: "left", padding: "0.4rem", color: "var(--text-muted)", fontWeight: 600 }}>Carrier</th>
-                          <th style={{ textAlign: "left", padding: "0.4rem", color: "var(--text-muted)", fontWeight: 600 }}>Service</th>
-                          <th style={{ textAlign: "left", padding: "0.4rem", color: "var(--text-muted)", fontWeight: 600 }}>Speed</th>
-                          <th style={{ textAlign: "right", padding: "0.4rem", color: "var(--text-muted)", fontWeight: 600 }}>Cost</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {rates.map((r) => {
-                          const cheapest = rates.every((o) => parseFloat(o.amount) >= parseFloat(r.amount));
-                          const fastest = r.estimated_days != null && rates.every((o) => (o.estimated_days ?? 99) >= (r.estimated_days ?? 99));
-                          return (
-                            <tr key={r.object_id} style={{ borderBottom: "1px solid var(--border-default)" }}>
-                              <td style={{ padding: "0.4rem", color: "var(--text-primary)" }}>{r.provider}</td>
-                              <td style={{ padding: "0.4rem", color: "var(--text-secondary)" }}>
-                                {r.servicelevel_name}
-                                {cheapest && <span style={{ marginLeft: "0.4rem", fontSize: "0.6rem", background: "var(--success-text)", color: "#fff", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontWeight: 700 }}>Cheapest</span>}
-                                {fastest && <span style={{ marginLeft: "0.4rem", fontSize: "0.6rem", background: "var(--accent)", color: "#fff", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontWeight: 700 }}>Fastest</span>}
-                              </td>
-                              <td style={{ padding: "0.4rem", color: "var(--text-secondary)" }}>
-                                {r.estimated_days != null ? `${r.estimated_days} day${r.estimated_days !== 1 ? "s" : ""}` : "—"}
-                              </td>
-                              <td style={{ padding: "0.4rem", textAlign: "right", fontWeight: 600, color: "var(--text-primary)" }}>
-                                {isNaN(parseFloat(r.amount)) ? "Quote N/A" : `$${parseFloat(r.amount).toFixed(2)}`}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                  <div>
+                    <div style={{ overflowX: "auto" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem" }}>
+                        <thead>
+                          <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
+                            <th style={{ textAlign: "left", padding: "0.4rem", color: "var(--text-muted)", fontWeight: 600 }}>Carrier</th>
+                            <th style={{ textAlign: "left", padding: "0.4rem", color: "var(--text-muted)", fontWeight: 600 }}>Service</th>
+                            <th style={{ textAlign: "left", padding: "0.4rem", color: "var(--text-muted)", fontWeight: 600 }}>Speed</th>
+                            <th style={{ textAlign: "right", padding: "0.4rem", color: "var(--text-muted)", fontWeight: 600 }}>Cost</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {rates.length > 0 && !selectedPreSaleRate && (
+                            <tr><td colSpan={4} style={{ padding: "0.25rem 0.4rem", fontSize: "0.58rem", color: "var(--text-muted)" }}>{"\u{1F446}"} Click a carrier to select and save your quote</td></tr>
+                          )}
+                          {rates.map((r) => {
+                            const cheapest = rates.every((o) => parseFloat(o.amount) >= parseFloat(r.amount));
+                            const fastest = r.estimated_days != null && rates.every((o) => (o.estimated_days ?? 99) >= (r.estimated_days ?? 99));
+                            const isSelected = selectedPreSaleRate?.object_id === r.object_id;
+                            return (
+                              <tr
+                                key={r.object_id}
+                                onClick={() => setSelectedPreSaleRate(isSelected ? null : r)}
+                                onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.background = "rgba(0,188,212,0.04)"; }}
+                                onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLTableRowElement).style.background = "transparent"; }}
+                                style={{
+                                  borderBottom: "1px solid var(--border-default)",
+                                  cursor: "pointer",
+                                  background: isSelected ? "rgba(0,188,212,0.08)" : "transparent",
+                                  outline: isSelected ? "1.5px solid var(--accent)" : "none",
+                                  outlineOffset: "-1px",
+                                  borderRadius: isSelected ? "0.25rem" : "0",
+                                  transition: "background 0.1s ease",
+                                }}
+                              >
+                                <td style={{ padding: "0.4rem", color: "var(--text-primary)" }}>
+                                  {isSelected && <span style={{ color: "var(--accent)", marginRight: "0.25rem" }}>✔</span>}
+                                  {r.provider}
+                                </td>
+                                <td style={{ padding: "0.4rem", color: "var(--text-secondary)" }}>
+                                  {r.servicelevel_name}
+                                  {cheapest && <span style={{ marginLeft: "0.4rem", fontSize: "0.6rem", background: "var(--success-text)", color: "#fff", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontWeight: 700 }}>Cheapest</span>}
+                                  {fastest && <span style={{ marginLeft: "0.4rem", fontSize: "0.6rem", background: "var(--accent)", color: "#fff", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontWeight: 700 }}>Fastest</span>}
+                                </td>
+                                <td style={{ padding: "0.4rem", color: "var(--text-secondary)" }}>
+                                  {r.estimated_days != null ? `${r.estimated_days} day${r.estimated_days !== 1 ? "s" : ""}` : "—"}
+                                </td>
+                                <td style={{ padding: "0.4rem", textAlign: "right", fontWeight: 600, color: isSelected ? "#4caf50" : "var(--text-primary)" }}>
+                                  {isNaN(parseFloat(r.amount)) ? "Quote N/A" : `$${parseFloat(r.amount).toFixed(2)}`}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* Save Quote bar */}
+                    {selectedPreSaleRate && (
+                      <div style={{ marginTop: "0.5rem" }}>
+                        {preSaleQuoteSaved ? (
+                          <div style={{ padding: "0.55rem 0.75rem", borderRadius: "0.5rem", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.15)", textAlign: "center" }}>
+                            <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#22c55e" }}>{"\u2705"} Quote Saved {"\u2014"} {selectedPreSaleRate.provider} {selectedPreSaleRate.servicelevel_name} ${parseFloat(selectedPreSaleRate.amount).toFixed(2)}</div>
+                            <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>This quote will carry over to the Shipping Center</div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              try {
+                                localStorage.setItem(`ll_quote_${itemId}`, JSON.stringify({
+                                  carrier: {
+                                    carrier: selectedPreSaleRate.provider,
+                                    service: selectedPreSaleRate.servicelevel_name,
+                                    price: parseFloat(selectedPreSaleRate.amount),
+                                    days: String(selectedPreSaleRate.estimated_days || 5),
+                                  },
+                                  allCarriers: rates.map(r => ({
+                                    carrier: r.provider,
+                                    service: r.servicelevel_name,
+                                    rate: r.amount,
+                                    days: r.estimated_days,
+                                  })),
+                                  savedAt: Date.now(),
+                                  toZip: buyerZip || "",
+                                  fromZip: fromZip || "04101",
+                                }));
+                                setSavedQuoteData({
+                                  carrier: {
+                                    carrier: selectedPreSaleRate.provider,
+                                    service: selectedPreSaleRate.servicelevel_name,
+                                    price: parseFloat(selectedPreSaleRate.amount),
+                                    days: String(selectedPreSaleRate.estimated_days || 5),
+                                  },
+                                  savedAt: Date.now(),
+                                  toZip: buyerZip || "",
+                                  isFresh: true,
+                                  ageHrs: 0,
+                                });
+                              } catch { /* ignore */ }
+                              setPreSaleQuoteSaved(true);
+                              setTimeout(() => setPreSaleQuoteSaved(false), 3000);
+                            }}
+                            style={{
+                              width: "100%", padding: "0.55rem 0.85rem", fontSize: "0.82rem", fontWeight: 700,
+                              borderRadius: "0.5rem", border: "none", cursor: "pointer",
+                              background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
+                              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
+                            }}
+                          >
+                            <span>{"\u{1F4CB}"}</span>
+                            Save Quote {"\u2014"} {selectedPreSaleRate.provider} {selectedPreSaleRate.servicelevel_name} ${parseFloat(selectedPreSaleRate.amount).toFixed(2)}
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ) : null}
               </div>

@@ -1,0 +1,507 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/shipping/ShippingCenterClient.tsx (4,279 lines)
+     — FIX: BOL tracking persistence to EventLog
+     — FIX: Freight/pickup items wiring into tracking board
+     — ADD: Auto-refresh polling (30 second interval)
+     — ADD: Insurance selection persistence
+     — VERIFY: All data props passed from main component
+
+  2. app/items/[id]/ItemDashboardPanels.tsx
+     — VERIFY: Dimension bug fix at line 3113 landed
+     — If NOT fixed, apply the dimension string fix
+     — NOTHING else changed
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 features LOCKED. All previous shipping commands (base build, mega upgrade, final polish, complete flow, unicode fix) LOCKED. Shipping Center at 4,279 lines with full parcel/LTL/pickup flows.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently. Flag missed opportunities.
+
+SECTION 6 — BUILD PATTERN
+
+  Database -> Storage -> API -> AI -> Enrichment -> UI -> Dashboard -> Database update.
+  Build order: A -> B -> C -> D -> E -> F
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo imminent. THIS IS THE LAST SHIPPING CENTER PASS.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Fix all identified gaps, add persistence, wire missing data props, add auto-refresh, verify dimension fix. Make the TMS bulletproof for demo.
+
+You MAY NOT: Touch locked files (except surgical unlocks), rewrite existing components, add npm packages, change schema, deviate from inline style={{}}.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed for this command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — SHIPPING CENTER SURGICAL GAP FIX + LIVE RATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THIS IS THE LAST SHIPPING CENTER COMMAND.
+Fix ALL identified gaps. Lock it. Move on.
+
+*** #1 CRITICAL ISSUE: FAKE RATES ***
+The Shipping Center is showing FAKE carrier rates
+from a basic weight-based calculator instead of
+REAL Shippo API rates. The Item Dashboard's
+ShippingPanel gets REAL Shippo test rates (the
+$7-$93 range you see on the item page) because
+it uses /api/shipping/rates. But the Shipping
+Center's ReadyToShip wizard uses /api/shipping/estimate
+which falls back to a garbage calculator giving
+$6.12 for a 45lb amp. UNACCEPTABLE.
+
+EVERY rate fetch in the Shipping Center MUST use
+/api/shipping/rates (Shippo) FIRST, with
+/api/shipping/estimate as fallback ONLY when
+Shippo returns nothing.
+
+The metro estimates are also fake — same ~$17
+for every city. They need to use actual weight
+and distance calculations, not flat numbers.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read the main ShippingCenterClient component
+   (line 4033) — check what props are passed to:
+   — ShippedTab: does it receive freightBOL and
+     pickupStatuses props?
+   — If not, freight/pickup items won't show in
+     the tracking board even though the component
+     accepts those props.
+
+2. Read the BOL tracking state (line 2678):
+   — bolTracking is useState — client-side only.
+   — When user advances freight status and refreshes
+     the page, the tracking state is LOST.
+   — Check if there's any EventLog save on
+     freight status advancement (line ~3550-3558).
+
+3. Read app/items/[id]/ItemDashboardPanels.tsx
+   at line 3111-3119:
+   — Check if the dimension string fix was applied.
+   — If it still says `aiData.dimensions_estimate`
+     without the fallback chain, it needs fixing.
+
+4. Check if insurance selection is persisted anywhere:
+   — Search for "insurance" in the wizard step 3/4.
+   — Check if it's saved to EventLog or the label.
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — FIX: USE LIVE SHIPPO RATES EVERYWHERE (#1 PRIORITY)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+THE PROBLEM:
+The PreSale tab getEstimate() (line 922) tries
+/api/shipping/rates first — GOOD. But:
+1. It hardcodes toZip: "10001" instead of using
+   the user's destination ZIP → may get wrong rates
+2. The ReadyToShip wizard fetchRatesForWizard()
+   and other rate fetches (lines 1404, 1435, 1524)
+   ONLY use /api/shipping/estimate → gets FAKE rates
+3. Auto-fetch on mount (line 1397-1409) uses
+   /api/shipping/estimate → gets FAKE rates
+
+THE FIX:
+Create a shared helper function at the top of
+the file that ALL rate fetches use:
+
+async function fetchLiveRates(
+  itemId: string,
+  fromZip: string,
+  toZip: string,
+  weight: number,
+  length: number,
+  width: number,
+  height: number,
+): Promise<{ carriers: any[]; isLive: boolean }> {
+  // Try Shippo live rates first
+  try {
+    const res = await fetch("/api/shipping/rates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fromZip, toZip,
+        weight: String(weight),
+        length: String(length),
+        width: String(width),
+        height: String(height),
+      }),
+    });
+    const data = await res.json();
+    if (data.rates && data.rates.length > 0) {
+      return {
+        carriers: data.rates.map((r: any) => ({
+          carrier: r.provider || r.carrier,
+          service: r.servicelevel_name || r.service,
+          price: parseFloat(r.amount || r.rate) || 0,
+          days: String(r.estimated_days || r.estimatedDays || 5),
+        })).filter((c: any) => c.price > 0)
+          .sort((a: any, b: any) => a.price - b.price),
+        isLive: !data.isMock,
+      };
+    }
+  } catch {}
+
+  // Fallback to estimate API
+  try {
+    const res = await fetch("/api/shipping/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemId, destZip: toZip }),
+    });
+    const data = await res.json();
+    return {
+      carriers: (data.carriers || []).map((c: any) => ({
+        ...c,
+        days: c.days || "5",
+      })),
+      isLive: data.isLiveRates || false,
+    };
+  } catch {}
+
+  return { carriers: [], isLive: false };
+}
+
+NOW REPLACE every rate fetch in the file to use
+this helper:
+
+1. PreSaleTab getEstimate() (line 922):
+   Replace the entire function body to use
+   fetchLiveRates(). Pass the user's destination
+   ZIP from the CitySearch or editDims.destZip,
+   NOT hardcoded "10001".
+
+2. ReadyToShipTab auto-fetch on mount (line 1397):
+   Replace to use fetchLiveRates() with item dims.
+
+3. ReadyToShipTab fetchRatesForWizard (line 1524):
+   Replace to use fetchLiveRates() with wizard
+   data (fromZip, toZip, weight, dims).
+
+4. Any other rate fetch that uses /api/shipping/estimate
+   directly: replace with fetchLiveRates().
+
+5. Show "LIVE RATES" or "ESTIMATED" badge on the
+   carrier table so the user knows which type
+   of rates they're seeing.
+
+6. REQUIRE DESTINATION ZIP before showing rates:
+   Do NOT auto-fetch rates with a default ZIP.
+   Show: "Enter destination ZIP to get live
+   carrier rates" until the user provides one.
+   This ensures rates are REAL for the actual route.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — FIX: FREIGHT/PICKUP IN TRACKING BOARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The ShippedTab component accepts optional props:
+  freightBOL?: any
+  pickupStatuses?: Record<string, any>
+
+Check if the main component (line 4033) passes
+these when rendering ShippedTab. If NOT:
+
+The main component needs to track:
+— bolGenerated state from FreightTab → pass to ShippedTab
+— pickupStatuses from LocalPickupTab → pass to ShippedTab
+
+This may require lifting state up from FreightTab
+and LocalPickupTab to the main component, then
+passing it down to ShippedTab.
+
+OR — simpler: ShippedTab can independently fetch
+pickup statuses for shipped/completed items by
+checking item.pickupStatus from the API data.
+The API already returns pickupStatus per item.
+
+For freight: the bolGenerated state is currently
+inside FreightTab. To show it in ShippedTab,
+either lift it to parent OR store it in localStorage
+and read it in ShippedTab.
+
+SIMPLEST APPROACH:
+— ShippedTab already has allData prop.
+— Check if allData contains items with
+  pickupStatus values — use those for pickup display.
+— For freight: store bolGenerated to localStorage
+  when a BOL is created. ShippedTab reads it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — FIX: BOL TRACKING PERSISTENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The bolTracking state (line 2678) is client-side
+only. When user advances freight status and
+refreshes, the tracking is lost.
+
+FIX: When bolTracking state changes (via the
+advance button at line ~3550), save to EventLog:
+
+After setBolTracking in the advance button:
+  fetch("/api/shipping/estimate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      itemId: selectedItem?.id ?? "freight",
+      destZip: "00000",
+    }),
+  }).catch(() => {});
+
+WAIT — that's hacky. Better approach:
+
+Save bolTracking + bolGenerated to localStorage:
+  Key: ll_freight_bol_${itemId or "latest"}
+  Value: JSON.stringify({ bolGenerated, bolTracking })
+
+On FreightTab mount, check localStorage for saved BOL:
+  If found, restore bolGenerated and bolTracking state.
+
+Also save bolGenerated to localStorage when the
+BOL is first created (after setBolGenerated).
+
+This way freight tracking persists across page
+refreshes without needing a new API endpoint.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — ADD: AUTO-REFRESH POLLING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+In the main ShippingCenterClient component
+(line 4033), add auto-refresh polling:
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchData();
+    }, 30000); // 30 seconds
+    return () => clearInterval(interval);
+  }, [fetchData]);
+
+This ensures changes made on the Item Dashboard
+(marking items sold, generating labels) appear
+in the Shipping Center within 30 seconds without
+manual refresh.
+
+Also update the "Last updated" display to show
+the countdown: "Updated X seconds ago"
+using a separate 1-second interval for the display.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — VERIFY: DIMENSION BUG FIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ItemDashboardPanels.tsx
+
+Read lines 3111-3119. Check if the dimension
+string fix was applied from the MEGA-UPGRADE
+command. The code should look like:
+
+  const suggestion = useMemo(() => {
+    if (!aiData) return null;
+    const dimString = aiData.dimensions_estimate
+      || aiData.dimensions
+      || (aiData.shipping_profile
+        ? `${aiData.shipping_profile.length} x ${aiData.shipping_profile.width} x ${aiData.shipping_profile.height}`
+        : null);
+    return suggestPackage(
+      aiData.category || category || null,
+      dimString,
+      aiData.material || null,
+      aiData.weight_estimate_lbs || null,
+      aiData.shipping_notes || null,
+    );
+  }, [aiData, category]);
+
+If it still just says:
+  aiData.dimensions_estimate || null
+
+Then it needs the fix. Apply it.
+
+If it's already fixed, note "Verified — dimension
+fix already applied" in the report.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART G — ADD: INSURANCE PERSISTENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+In the ReadyToShipTab wizard, when a label is
+generated (generateLabel function at line 1468):
+
+The wizard already has insurance selection state.
+When generating the label, include the insurance
+selection in the API call body AND in the
+EventLog entry.
+
+In the generateLabel function body, add:
+  insurance: wizardData.insurance || "none"
+to the JSON body sent to /api/shipping/label.
+
+Also save to localStorage alongside the quote:
+  ll_insurance_${itemId}: wizardData.insurance
+
+When the wizard loads for an item, check
+localStorage for a saved insurance preference.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  *** ALL rate fetches use /api/shipping/rates (Shippo) first: yes/no ***
+4.  fetchLiveRates helper function created: yes/no
+5.  PreSale getEstimate uses user's destination ZIP: yes/no
+6.  ReadyToShip wizard uses Shippo rates: yes/no
+7.  "LIVE RATES" vs "ESTIMATED" badge on carrier table: yes/no
+8.  Rates require destination ZIP (no default fetch): yes/no
+9.  Freight BOL data reaches ShippedTab: yes/no
+4.  Pickup items show in tracking board: yes/no
+5.  BOL tracking persists across page refresh: yes/no
+6.  bolGenerated persists in localStorage: yes/no
+7.  Auto-refresh polling (30s) active: yes/no
+8.  "Updated X seconds ago" display works: yes/no
+9.  Dimension bug verified/fixed: yes/no
+10. Insurance selection persisted: yes/no
+11. All existing features preserved: yes/no
+12. All locked files untouched: yes/no
+13. inline style={{}} throughout: yes/no
+14. Light mode clean: yes/no
+15. Dark mode clean: yes/no
+16. npx tsc --noEmit: 0 errors
+17. npm run build: pass
+18. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — Live Shippo Rates:
+  — fetchLiveRates helper created: [yes/no]
+  — All rate fetches use Shippo first: [yes/no]
+  — User ZIP required before rates shown: [yes/no]
+  — LIVE/ESTIMATED badge: [yes/no]
+  — Rates are realistic for item weight/size: [yes/no]
+
+  PART C — Tracking Board Wiring:
+  — Freight BOL in tracking: [yes/no]
+  — Pickup items in tracking: [yes/no]
+  — Method used: [lifted state / localStorage / API data]
+
+  PART C — BOL Persistence:
+  — bolGenerated in localStorage: [yes/no]
+  — bolTracking in localStorage: [yes/no]
+  — Survives page refresh: [yes/no]
+
+  PART D — Auto-Refresh:
+  — 30s polling active: [yes/no]
+  — Countdown display: [yes/no]
+
+  PART E — Dimension Bug:
+  — Status: [already fixed / fixed now / not applicable]
+  — dimString fallback chain present: [yes/no]
+
+  PART F — Insurance:
+  — Included in label API call: [yes/no]
+  — Saved to localStorage: [yes/no]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  FLAGS: [list any]
+  Files modified: [paths]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD ITEMS:
+
+1. AFTER THIS COMMAND: LOCK the Shipping Center. It is COMPLETE.
+2. Next priority: Bot Page Data Sync (Phase 3 item 19).
+3. Then: Phase 4 Admin Dashboard, Phase 6 Demo Walkthrough.
+4. Pre-demo tasks: Seed pickup data, Dr. Clark demo prep.
+5. Fee Model: 3.5% total (1.75% buyer + 1.75% seller).
+
+Command: Shipping Center Surgical Gap Fix | LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

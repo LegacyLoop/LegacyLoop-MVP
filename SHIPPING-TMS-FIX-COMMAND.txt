@@ -1,0 +1,459 @@
+LEGACYLOOP — SHIPPING CENTER TMS UPGRADE FIX
+Surgical upgrade to match ShipBot quality
+March 19, 2026 | Ryan Hallee, Founder
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ENGINEERING DIRECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUILD REAL. ALWAYS. Patch only what requires
+third-party access we don't have yet.
+
+This is a SURGICAL FIX — not a rewrite.
+The previous command built the foundation.
+The API layer is correct and stays.
+This command upgrades the UI to match the
+quality and depth of the ShipBot page and
+the ShippingPanel in the item dashboard.
+
+The Shipping Center at /shipping must be the
+FULL-BLOWN TMS CONSOLE — the master hub for
+all shipping operations. It must match or
+exceed the ShipBot page in functionality.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Tesla/SpaceX/Grok design system.
+Dark theme, teal #00bcd4, glass morphism.
+All styles inline style={{}} — NO Tailwind.
+LIGHT MODE: CSS variables on theme surfaces.
+ALWAYS-DARK: Hardcoded on forced panels.
+ELON MUSK STANDARD: FedEx Ship Manager
+meets Tesla UI. Dense, smart, fast, premium.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — VERIFICATION CHECKPOINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+echo '=== CHECKPOINT ==='
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3 — LOCKED FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ALL files from Command Template v10: LOCKED.
+
+SURGICAL UNLOCK — THIS FILE ONLY:
+app/shipping/ShippingCenterClient.tsx
+  — Upgrade existing 1,839-line file
+  — ADD features, do NOT rewrite
+  — Build ON TOP of what exists
+
+DO NOT TOUCH:
+app/api/shipping/center/route.ts — LOCKED
+  (already enriched — working correctly)
+app/api/shipping/estimate/route.ts — LOCKED
+  (already has quote persistence — working)
+app/items/[id]/ItemDashboardPanels.tsx — LOCKED
+  (shipping bridge already added — working)
+app/items/[id]/ShippingPanel.tsx — READ ONLY
+  (3,508 lines — reference for features to match)
+app/bots/shipbot/ShipBotClient.tsx — READ ONLY
+  (949 lines — reference for features to match)
+lib/shipping/package-suggestions.ts — LOCKED
+All other locked files per template v10.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4-9 — Same as Command Template v10
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+(All rules apply. inline style={{}}, data
+collection, creative latitude, demo mode,
+build pattern. See template v10.)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — SHIPPING CENTER UI UPGRADE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+THE PROBLEM:
+The API layer is correct. It returns aiBox,
+aiBoxLabel, aiPackingTips, lastQuote,
+shippingStage, urgencyLevel — all the data.
+
+But the Shipping Center UI is not using this
+data to its full potential. It shows basic
+text labels where it should show rich,
+interactive components matching what the
+ShipBot page (949 lines) and ShippingPanel
+(3,508 lines) already deliver.
+
+The Shipping Center must be THE master
+shipping console — not a summary view.
+It needs to feel like you're running a
+real logistics operation from this page.
+
+REFERENCE STANDARD:
+Read ShipBotClient.tsx and ShippingPanel.tsx.
+The Shipping Center must match or exceed
+these pages in:
+— Visual richness
+— Interactive controls
+— Data density
+— Shipping intelligence display
+— Professional TMS feel
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DO NOT BUILD UNTIL ALL READS COMPLETE.
+
+1. Read app/shipping/ShippingCenterClient.tsx
+   — Full file (1,839 lines — current state)
+   — Understand what already exists
+   — This is what you're UPGRADING
+
+2. Read app/bots/shipbot/ShipBotClient.tsx
+   — Full file (949 lines)
+   — Note these features to BRING INTO
+     the Shipping Center:
+   — Item Shipping Profile card (editable
+     dims, weight, packaging type, fragile)
+   — Box/Envelope/Tube/Crate/Pallet selector
+   — Ship From ZIP field
+   — City/ZIP search with autocomplete
+   — Pickup Options (address, availability,
+     special instructions)
+   — AI Agent Tips section
+   — MegaBot button
+   — Live carrier rate table
+
+3. Read app/items/[id]/ShippingPanel.tsx
+   — Focus on lines 2700-2870 (box presets)
+   — Note the BOX_PRESETS grid with:
+     Tiny, Small, Medium, Large, XL,
+     Oversized, Furniture, Custom
+   — Each preset shows: name, dimensions,
+     description, AI Suggested badge
+   — Note the packing tips section
+   — Note the carrier comparison table
+   — Note the "Estimated Shipping to Major
+     Cities" section (metro estimates)
+   — Note the Save Shipping Details button
+
+4. Check what data the API already returns:
+   Read app/api/shipping/center/route.ts
+   — Confirm it returns:
+     aiBox, aiBoxLabel, aiBoxDims,
+     aiEstWeight, aiPackingTips,
+     shippingStage, urgencyLevel,
+     lastQuote, hasSavedDims, hasAiProfile
+
+Print findings. Confirm API data is rich.
+Then proceed to Part B.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — UPGRADE ITEM SHIPPING PROFILE CARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+Target: ShipProfile component (line ~348)
+
+Currently shows: one line of text with
+AI box name, dims, weight, fragile badge,
+and expandable packing tips.
+
+UPGRADE TO — FULL SHIPPING INTELLIGENCE CARD:
+
+When expanded (click item card to expand):
+
+ROW 1 — AI RECOMMENDATION BANNER:
+IF aiBox exists:
+  Teal-tinted banner:
+  "🤖 AI Recommended: [aiBox] — [aiBoxLabel]"
+  "[aiBoxDims.length]×[aiBoxDims.width]×
+   [aiBoxDims.height] in · Est. [aiEstWeight] lbs"
+IF no AI data:
+  Amber banner:
+  "⚠️ No AI analysis — run analysis
+   for shipping recommendations"
+  [Analyze Item →] link
+
+ROW 2 — SAVED DIMENSIONS (if hasSavedDims):
+  Green-tinted row:
+  "✓ Saved: [L]×[W]×[H] in · [weight] lbs"
+  [Edit] button that opens inline edit fields
+
+ROW 3 — PACKAGING + FRAGILE:
+  Packaging type badge (from AI suggestion)
+  FRAGILE badge if isFragile (amber, prominent)
+
+ROW 4 — PACKING TIPS (expandable):
+  Already exists. Keep as-is but add:
+  — Box recommendation text matching
+    ShippingPanel line 2839-2841 format:
+    "📦 Recommended box: [preset label]
+     based on your [item category]"
+
+ROW 5 — LAST QUOTE (if hasQuote):
+  "📋 Quoted [quotedAt]: [cheapest.carrier]
+   [cheapest.service] — $[cheapest.price]"
+  [Use Quote →] button
+  [Refresh Quote] button
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — UPGRADE PRE-SALE TAB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Target: PreSaleTab component (line ~459)
+
+Currently: Shows item card with Get Quote
+button and carrier table. Basic but functional.
+
+UPGRADE — ADD THESE FEATURES:
+
+1. BOX SIZE SELECTOR GRID:
+   When Get Quote is clicked or item is
+   expanded, show a grid of box presets
+   matching ShippingPanel (line 2728):
+   — Tiny (8×6×4) — Small (10×8×4)
+   — Medium (14×12×8) — Large (18×14×12)
+   — XL (24×18×16) — Oversized (36×24×24)
+   — Furniture (48×30×30) — Custom
+   Each card shows: name, dims, description.
+   AI Suggested badge on the recommended one.
+   Clicking a preset updates the quote dims.
+
+   Get these preset values from the API's
+   aiBox/aiBoxLabel/aiBoxDims fields.
+   If no AI data, show all presets without
+   an AI badge and let user choose.
+
+2. EDITABLE WEIGHT + DIMS:
+   Below box selector — 4 input fields:
+   Weight (lbs), Length (in), Width (in),
+   Height (in)
+   Pre-filled from:
+     saved dims → AI dims → preset dims
+   [Save Shipping Details] button
+   Calls /api/items/update/{itemId} to save.
+
+3. PACKAGING TYPE SELECTOR:
+   Row of 5 buttons matching ShipBot (line 48):
+   Box | Envelope | Tube | Crate | Pallet
+   Pre-select based on AI suggestion.
+
+4. FRAGILE CHECKBOX + SHIPPING PREFERENCE:
+   Same as ShippingPanel line 2808-2832:
+   □ Fragile item
+   ○ Buyer pays ○ Free shipping ○ Local only
+
+5. CARRIER RATE TABLE (already exists):
+   Keep existing BEST/FASTEST badges.
+   Add: "Estimated Shipping to Major Cities"
+   section matching ShippingPanel line 3140:
+   Cards for New York, Los Angeles, Chicago,
+   Houston showing estimated cost and days.
+
+6. [SAVE QUOTE] BUTTON:
+   When a quote is displayed, add a visible
+   "💾 Save Quote" button that calls the
+   estimate API (which auto-saves to EventLog).
+   Show confirmation: "Quote saved ✓"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — UPGRADE READY TO SHIP TAB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Target: ReadyToShipTab component (line ~635)
+
+Currently: Has wizard, urgency badges,
+auto-fetch estimates. Good foundation.
+
+UPGRADE:
+
+1. PRE-LOADED QUOTE DISPLAY:
+   If item has lastQuote from API:
+   Show it IMMEDIATELY without clicking
+   anything. Show:
+   "📋 Saved quote from [quotedAt]:
+    [cheapest.carrier] — $[cheapest.price]
+    [Ship Now →] [Get Fresh Quote]"
+
+2. URGENCY ESCALATION VISUAL:
+   Already has day badges. Add:
+   — >2 days: amber pulsing border on card
+   — >5 days: red pulsing border + banner:
+     "⚠️ URGENT: Shipped items with 5+ day
+      delays risk negative buyer reviews"
+
+3. ONE-CLICK SHIP:
+   If hasQuote AND hasSavedDims:
+   Show a big prominent button:
+   "[carrier icon] Ship via [carrier] —
+    $[price] → Generate Label"
+   Clicking it goes STRAIGHT to wizard step 3
+   (carrier select) or step 4 (generate) if
+   they already selected a carrier.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — ADD SHIPPING INTELLIGENCE HEADER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Target: Main component (line ~1655)
+
+Above the TMSDashboard, add:
+
+SHIPPING CENTER HEADER:
+"🚚 LegacyLoop Shipping Center"
+Subtitle: "Transportation Management System"
+Style: Large, bold, premium feel.
+
+INTELLIGENCE STRIP:
+Row of status pills (from data):
+🚨 [count] Urgent (sold >5 days, no label)
+⚠️ [count] Needs Label (sold 2-5 days)
+📦 [count] Quoted (has quote, ready to go)
+🚚 [count] In Transit
+✅ [count] Delivered (this month)
+💰 $[total] Shipping Costs (this month)
+
+Each pill is clickable — switches to the
+relevant tab and filters.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — UPGRADE PAGE WRAPPER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/page.tsx (30 lines)
+
+Update the page header to match the TMS feel:
+
+Replace:
+  <div className="section-title">Logistics</div>
+  <h1 className="h1">Shipping Center</h1>
+  <p className="muted">Manage shipping...</p>
+
+With (inline styles only):
+  Section title: "LOGISTICS COMMAND CENTER"
+  H1: "Shipping Center" with truck icon
+  Subtitle: "Shipping intelligence —
+  carrier comparisons, AI-suggested packaging,
+  and LTL freight detection"
+  (Match the subtitle from the ShipBot page
+   screenshot Ryan showed)
+
+Keep Breadcrumbs as-is.
+Keep auth check as-is.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 10 — FLAGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. DO NOT rewrite ShippingCenterClient.tsx.
+   ADD to it. Enhance existing components.
+2. The API returns all needed data. If any
+   field shows null, check the item's
+   aiResult.rawJson — the data may not exist
+   for that item (not yet analyzed).
+3. Box presets: Import the BOX_PRESETS
+   definition inline (copy the shape from
+   ShippingPanel). Do NOT import from
+   ShippingPanel (it's locked). Create a
+   local constant with the same preset data.
+4. Save Shipping Details: POST to
+   /api/items/update/{itemId} with
+   shippingWeight, shippingLength,
+   shippingWidth, shippingHeight, isFragile,
+   shippingPreference. This API already exists.
+5. Metro estimates: the Shipping Center API
+   does not return metro estimates yet. For
+   now, hardcode the 4 major cities with
+   estimated costs based on weight. Flag this
+   as a future API enhancement.
+6. The page.tsx currently uses className for
+   section-title, h1, muted. Keep those
+   existing classes — they are global utility
+   classes, not Tailwind. Add inline styles
+   for new elements only.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 11 — VERIFICATION CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1.  CHECKPOINT baseline: pass
+2.  Part A reads complete and printed
+3.  Shipping Center header shows TMS title: yes/no
+4.  Intelligence strip with status pills: yes/no
+5.  ShipProfile shows full AI recommendation
+    banner (not just text): yes/no
+6.  Box size selector grid appears in
+    Pre-Sale tab: yes/no
+7.  Editable weight/dims fields in
+    Pre-Sale tab: yes/no
+8.  Packaging type selector (5 buttons): yes/no
+9.  Fragile checkbox + shipping preference
+    radio buttons: yes/no
+10. Save Shipping Details button works: yes/no
+11. Carrier table still shows BEST/FASTEST: yes/no
+12. Metro estimates section shows 4 cities: yes/no
+13. Ready to Ship pre-loads saved quote
+    without clicking: yes/no
+14. Urgency visual escalation (amber/red): yes/no
+15. One-click ship button for quoted items: yes/no
+16. Shipped tab unchanged (already good): yes/no
+17. Freight tab unchanged (already good): yes/no
+18. Local Pickup tab unchanged: yes/no
+19. ?itemId param still works: yes/no
+20. Page header updated to TMS style: yes/no
+21. Light mode clean: yes/no
+22. Dark mode clean: yes/no
+23. All locked files untouched: yes/no
+24. inline style={{}} for all new elements: yes/no
+25. No rewrites — only additions: yes/no
+26. npx tsc --noEmit: 0 errors
+27. npm run build: pass
+28. CHECKPOINT after: pass
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 12 — REQUIRED REPORT FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHECKPOINT before: [pass/issue]
+Part A printed: [yes/no]
+
+PART B — ShipProfile Upgrade:
+— AI recommendation banner: [yes/no]
+— Saved dims display: [yes/no]
+— Packaging + fragile row: [yes/no]
+— Last quote display: [yes/no]
+
+PART C — Pre-Sale Tab Upgrade:
+— Box size selector grid: [yes/no]
+— Editable weight/dims: [yes/no]
+— Packaging type selector: [yes/no]
+— Fragile + preference controls: [yes/no]
+— Save Shipping Details: [yes/no]
+— Metro estimates section: [yes/no]
+
+PART D — Ready to Ship Upgrade:
+— Pre-loaded quote display: [yes/no]
+— Urgency escalation visual: [yes/no]
+— One-click ship button: [yes/no]
+
+PART E — Header Upgrade:
+— TMS title: [yes/no]
+— Intelligence strip pills: [yes/no]
+
+PART F — Page Wrapper:
+— Updated header text: [yes/no]
+
+LIGHT MODE: [clean/issues]
+DARK MODE: [clean/issues]
+EXISTING CODE PRESERVED: [yes/no]
+FLAGS: [list any]
+Files modified: [list exact paths]
+Lines added (approx): [count]
+Build: [pass/fail]
+TypeScript: [0 errors/list]
+CHECKPOINT after: [pass/issue]
+
+IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SURGICAL UNLOCK SUMMARY:
+app/shipping/ShippingCenterClient.tsx — UPGRADE
+app/shipping/page.tsx — MINOR UPDATE
+(2 files only. Everything else stays locked.)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Command: Shipping Center TMS UI Upgrade Fix
+LegacyLoop | March 19, 2026 | Ryan Hallee
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+KEY DIFFERENCE FROM PREVIOUS COMMAND:
+This command does NOT rewrite anything.
+It ADDS to the existing 1,839-line file.
+It brings ShipBot-level features INTO the
+Shipping Center console. Box selector grid,
+editable fields, packaging type buttons,
+save functionality, metro estimates,
+pre-loaded quotes, urgency escalation,
+one-click shipping, TMS header.
+
+The API is already correct. This is UI only.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

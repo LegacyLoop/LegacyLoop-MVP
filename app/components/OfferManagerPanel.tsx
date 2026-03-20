@@ -54,9 +54,9 @@ function statusBadge(status: string): { label: string; bg: string; color: string
     case "COUNTERED": return { label: "Countered", bg: "rgba(245,158,11,0.12)", color: "#f59e0b" };
     case "ACCEPTED": return { label: "Accepted", bg: "rgba(34,197,94,0.12)", color: "#22c55e" };
     case "DECLINED": return { label: "Declined", bg: "rgba(239,68,68,0.12)", color: "#ef4444" };
-    case "EXPIRED": return { label: "Expired", bg: "rgba(136,136,136,0.12)", color: "#888" };
-    case "WITHDRAWN": return { label: "Withdrawn", bg: "rgba(136,136,136,0.12)", color: "#888" };
-    default: return { label: status, bg: "rgba(136,136,136,0.12)", color: "#888" };
+    case "EXPIRED": return { label: "Expired", bg: "rgba(136,136,136,0.12)", color: "var(--text-muted)" };
+    case "WITHDRAWN": return { label: "Withdrawn", bg: "rgba(136,136,136,0.12)", color: "var(--text-muted)" };
+    default: return { label: status, bg: "rgba(136,136,136,0.12)", color: "var(--text-muted)" };
   }
 }
 
@@ -119,7 +119,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
   if (actionDone) {
     const msgs: Record<string, { title: string; desc: string; color: string }> = {
       ACCEPT: { title: "Offer Accepted!", desc: "The buyer has been notified and can now complete their purchase.", color: "#22c55e" },
-      DECLINE: { title: "Offer Declined", desc: "The buyer has been notified. The item is back to Listed status.", color: "#888" },
+      DECLINE: { title: "Offer Declined", desc: "The buyer has been notified. The item is back to Listed status.", color: "var(--text-muted)" },
       COUNTER: { title: "Counter Sent!", desc: "The buyer received an email with your counter offer. They have 48 hours to respond.", color: "#00bcd4" },
     };
     const m = msgs[actionDone] || msgs.DECLINE;
@@ -136,7 +136,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
           {actionDone === "ACCEPT" ? "\u2705" : actionDone === "COUNTER" ? "\u21A9\uFE0F" : "\u2716\uFE0F"}
         </div>
         <div style={{ fontSize: "1.1rem", fontWeight: 700, color: m.color, marginBottom: "0.5rem" }}>{m.title}</div>
-        <div style={{ fontSize: "0.85rem", color: "#aaa", lineHeight: 1.5 }}>{m.desc}</div>
+        <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.5 }}>{m.desc}</div>
       </div>
     );
   }
@@ -157,10 +157,10 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
         alignItems: "center",
       }}>
         <div>
-          <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "#e5e5e5" }}>
+          <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text-primary)" }}>
             Offer from {offer.buyerName}
           </div>
-          <div style={{ fontSize: "0.78rem", color: "#888", marginTop: "2px" }}>
+          <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "2px" }}>
             {offer.buyerEmail} · Round {offer.round}
           </div>
         </div>
@@ -182,14 +182,14 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
         textAlign: "center",
         borderBottom: "1px solid var(--border-default)",
       }}>
-        <div style={{ fontSize: "0.78rem", color: "#888", marginBottom: "4px" }}>
+        <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "4px" }}>
           {offer.status === "COUNTERED" ? "Current Counter" : "Offer Amount"}
         </div>
         <div style={{ fontSize: "2.25rem", fontWeight: 700, color: "#00bcd4" }}>
           ${dollars(offer.currentPrice)}
         </div>
         {offer.listingPrice != null && (
-          <div style={{ fontSize: "0.78rem", color: "#888", marginTop: "4px" }}>
+          <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "4px" }}>
             Listed at ${Number(offer.listingPrice).toLocaleString()} ·{" "}
             {offer.currentPrice >= Math.round(Number(offer.listingPrice) * 100)
               ? <span style={{ color: "#22c55e" }}>At or above asking</span>
@@ -270,13 +270,13 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                 background: "var(--bg-card)",
                 border: "1px solid var(--border-default)",
               }}>
-                <div style={{ fontWeight: 700, fontSize: "0.82rem", color: "#aaa", marginBottom: "0.6rem" }}>
+                <div style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.6rem" }}>
                   Your Counter Price
                 </div>
                 <div style={{ position: "relative", marginBottom: "0.5rem" }}>
                   <span style={{
                     position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)",
-                    fontSize: "1.1rem", fontWeight: 700, color: "#888",
+                    fontSize: "1.1rem", fontWeight: 700, color: "var(--text-muted)",
                   }}>$</span>
                   <input
                     type="number"
@@ -288,7 +288,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                     style={{
                       width: "100%", padding: "12px 12px 12px 28px", fontSize: "1.1rem", fontWeight: 700,
                       background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
-                      borderRadius: "8px", color: "#e5e5e5", outline: "none", boxSizing: "border-box",
+                      borderRadius: "8px", color: "var(--text-primary)", outline: "none", boxSizing: "border-box",
                     }}
                   />
                 </div>
@@ -300,7 +300,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                   style={{
                     width: "100%", padding: "10px 12px", fontSize: "0.85rem",
                     background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
-                    borderRadius: "8px", color: "#e5e5e5", outline: "none", resize: "vertical",
+                    borderRadius: "8px", color: "var(--text-primary)", outline: "none", resize: "vertical",
                     marginBottom: "0.5rem", boxSizing: "border-box",
                   }}
                 />
@@ -322,7 +322,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                     onClick={() => setShowCounter(false)}
                     style={{
                       padding: "12px 16px", fontSize: "0.85rem", border: "1px solid var(--border-default)",
-                      borderRadius: "8px", background: "transparent", color: "#888", cursor: "pointer",
+                      borderRadius: "8px", background: "transparent", color: "var(--text-muted)", cursor: "pointer",
                       minHeight: "48px",
                     }}
                   >
@@ -344,7 +344,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                   border: "1px solid var(--border-default)",
                   borderRadius: "10px",
                   background: "transparent",
-                  color: "#888",
+                  color: "var(--text-muted)",
                   cursor: submitting ? "not-allowed" : "pointer",
                   minHeight: "48px",
                 }}
@@ -359,7 +359,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                 border: "1px solid rgba(239,68,68,0.2)",
                 textAlign: "center",
               }}>
-                <div style={{ fontSize: "0.85rem", color: "#e5e5e5", marginBottom: "0.75rem" }}>
+                <div style={{ fontSize: "0.85rem", color: "var(--text-primary)", marginBottom: "0.75rem" }}>
                   Are you sure you want to decline this offer?
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
@@ -379,7 +379,7 @@ export default function OfferManagerPanel({ offer, events, onAction }: Props) {
                     onClick={() => setConfirmDecline(false)}
                     style={{
                       padding: "10px 20px", fontSize: "0.85rem", border: "1px solid var(--border-default)",
-                      borderRadius: "8px", background: "transparent", color: "#888", cursor: "pointer",
+                      borderRadius: "8px", background: "transparent", color: "var(--text-muted)", cursor: "pointer",
                       minHeight: "44px",
                     }}
                   >

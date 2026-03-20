@@ -11,7 +11,7 @@ import { computeCollectiblesScore } from "@/lib/collectibles-score";
 import { detectCollectible } from "@/lib/collectible-detect";
 import AmazonPriceBadge from "./AmazonPriceBadge";
 import SoldPriceWidget from "./SoldPriceWidget";
-import TradeProposalsPanel from "./TradeProposalsPanel";
+
 type Params = Promise<{ id: string }>;
 
 function safeJsonParse(raw: string): any | null {
@@ -356,11 +356,6 @@ export default async function ItemPage({ params }: { params: Params }) {
           existingSoldPrice={item.soldPrice ?? null}
           existingEstimatedValue={item.valuation ? Math.round((item.valuation.low + item.valuation.high) / 2) : null}
         />
-      </div>
-
-      {/* ═══ Trade Proposals ═══ */}
-      <div style={{ marginTop: "1rem" }}>
-        <TradeProposalsPanel itemId={item.id} />
       </div>
 
       {/* ═══ Bot Dashboard Panels ═══ */}

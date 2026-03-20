@@ -1,6 +1,6 @@
 /**
  * Commission utility — wraps pricing constants for easy client-side use.
- * Commission is taken from the seller's side. Buyer pays processing fee (3.5%).
+ * Commission is taken from the seller's side. Processing fee (3.5%) split 50/50.
  */
 
 import {
@@ -35,17 +35,19 @@ export function earningsBreakdown(
   const rate = getCommissionRate(tierNum, isHero);
   const pct = Math.round(rate * 100);
   const commission = Math.round(salePrice * rate * 100) / 100;
-  const netEarnings = Math.round((salePrice - commission) * 100) / 100;
-  const processingFee =
-    Math.round(salePrice * PROCESSING_FEE.rate * 100) / 100;
-  const buyerTotal =
-    Math.round((salePrice + processingFee) * 100) / 100;
+  const sellerFee = Math.round(salePrice * PROCESSING_FEE.sellerRate * 100) / 100;
+  const buyerFee = Math.round(salePrice * PROCESSING_FEE.buyerRate * 100) / 100;
+  const processingFee = Math.round((sellerFee + buyerFee) * 100) / 100;
+  const netEarnings = Math.round((salePrice - commission - sellerFee) * 100) / 100;
+  const buyerTotal = Math.round((salePrice + buyerFee) * 100) / 100;
 
   return {
     salePrice,
     commissionRate: rate,
     commissionPct: pct,
     commission,
+    sellerFee,
+    buyerFee,
     netEarnings,
     processingFee,
     buyerTotal,

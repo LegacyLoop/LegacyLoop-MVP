@@ -82,7 +82,7 @@ export default function ActiveOffersWidget({ itemId, compact }: Props) {
         background: "rgba(0,188,212,0.04)",
         border: "1px solid rgba(0,188,212,0.12)",
         textAlign: "center",
-        color: "#888",
+        color: "var(--text-muted)",
         fontSize: "0.82rem",
       }}>
         Loading offers...
@@ -151,19 +151,19 @@ export default function ActiveOffersWidget({ itemId, compact }: Props) {
               <div style={{
                 fontWeight: 600,
                 fontSize: compact ? "0.78rem" : "0.82rem",
-                color: "#e5e5e5",
+                color: "var(--text-primary)",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
               }}>
                 {offer.buyerName}
                 {!compact && offer.itemTitle && (
-                  <span style={{ color: "#888", fontWeight: 400 }}> · {offer.itemTitle}</span>
+                  <span style={{ color: "var(--text-muted)", fontWeight: 400 }}> · {offer.itemTitle}</span>
                 )}
               </div>
               <div style={{
                 fontSize: compact ? "0.7rem" : "0.72rem",
-                color: "#888",
+                color: "var(--text-muted)",
                 marginTop: "2px",
               }}>
                 Round {offer.round} · {offer.status === "COUNTERED" ? "Countered" : "Pending"}
@@ -229,7 +229,7 @@ export default function ActiveOffersWidget({ itemId, compact }: Props) {
               <button
                 onClick={() => setSelectedOffer(null)}
                 style={{
-                  background: "none", border: "none", color: "#888",
+                  background: "none", border: "none", color: "var(--text-muted)",
                   fontSize: "1.25rem", cursor: "pointer", padding: "4px 8px",
                 }}
               >

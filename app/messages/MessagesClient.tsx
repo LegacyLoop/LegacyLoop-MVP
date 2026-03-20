@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { safeJson } from "@/lib/utils/json";
 import ActiveOffersWidget from "@/app/components/ActiveOffersWidget";
 import AiMessageToolbar from "@/app/components/messaging/AiMessageToolbar";
@@ -114,6 +115,8 @@ const TEMPLATES = [
 ];
 
 export default function MessagesClient({ initialConversations, itemsForForm }: Props) {
+  const searchParams = useSearchParams();
+  const initialItemId = searchParams.get("itemId") || "";
   const [convs, setConvs] = useState<Conversation[]>(initialConversations);
   const [selectedId, setSelectedId] = useState<string | null>(convs[0]?.id ?? null);
   const [composing, setComposing] = useState(false);
@@ -165,8 +168,8 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
   // ── Search & Filter State ─────────────────────────────
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [filterMode, setFilterMode] = useState<FilterMode>("all");
-  const [selectedItemFilter, setSelectedItemFilter] = useState<string>("");
+  const [filterMode, setFilterMode] = useState<FilterMode>(initialItemId ? "byItem" : "all");
+  const [selectedItemFilter, setSelectedItemFilter] = useState<string>(initialItemId);
   const [itemDropdownOpen, setItemDropdownOpen] = useState(false);
   const [starred, setStarred] = useState<Set<string>>(new Set());
 

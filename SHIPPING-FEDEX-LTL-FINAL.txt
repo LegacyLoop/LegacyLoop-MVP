@@ -1,0 +1,640 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SHIPENGINE_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'FEDEX_LTL_API_KEY' .env | sed 's/=.*/=SET/' || grep 'FEDEX_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. lib/shipping/fedex-ltl.ts (NEW FILE)
+     — CREATE: FedEx LTL API integration library
+     — Auth, Quote, Pickup, Tracking functions
+
+  2. app/api/shipping/ltl-quote/route.ts (82 lines)
+     — EXTEND: Add FedEx LTL as 4th carrier option
+     — Calls FedEx API alongside ShipEngine
+
+  3. app/shipping/ShippingCenterClient.tsx (4,684 lines)
+     — FIX: All HIGH priority gaps from audit
+     — ADD: FedEx LTL carrier option in FreightTab
+     — FIX: Hardcoded ZIPs
+     — FIX: Quick estimate cards clickable
+     — ADD: Mark as Sold in PreSale
+     — FIX: BOL localStorage per-item keying
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping commands LOCKED. Shipping Center at 4,684 lines with full parcel/LTL/pickup flows, fetchLiveRates, ShippingAIPanel, QuoteDetailPanel, BOL questionnaire, 5-step pickup, enrichment badges, ShipEngine LTL, auto-refresh, delivery methods, insurance, carrier selection + save.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently. Flag missed opportunities.
+
+SECTION 6 — BUILD PATTERN
+
+  Database -> Storage -> API -> AI -> Enrichment -> UI -> Dashboard -> Database update.
+  Build order: A -> B -> C -> D -> E -> F -> G
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo THIS WEEK. We now have FOUR carrier API integrations:
+1. Shippo (parcel — USPS/UPS/FedEx) — test token, live rates
+2. ShipEngine/ShipStation (LTL) — sandbox, test quotes
+3. FedEx LTL (freight) — REAL account, sandbox for now, production-capable
+4. Our estimate engine (fallback)
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Add FedEx LTL integration, fix all remaining gaps, make quick estimate cards clickable, add Mark as Sold, fix hardcoded ZIPs, improve BOL keying. Make this the most complete TMS in any resale platform.
+
+You MAY NOT: Touch locked files (except surgical unlocks), rewrite components, add npm packages, change schema, deviate from inline style={{}}.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+  OPENAI_API_KEY: SET GPT-4o
+  ANTHROPIC_API_KEY: SET Claude
+  GEMINI_API_KEY: SET Gemini
+  XAI_API_KEY: SET Grok
+  XAI_BASE_URL: SET
+  XAI_MODEL_TEXT: SET
+  XAI_MODEL_VISION: SET
+  SQUARE_*: SET Sandbox (4 vars)
+  SENDGRID_API_KEY: SET ryan@legacy-loop.com
+  SHIPPO_API_KEY: SET (test token)
+  SHIPENGINE_API_KEY: SET (sandbox)
+  SHIPENGINE_BASE_URL: SET https://api.shipengine.com
+  SHIPENGINE_ENV: sandbox
+  FEDEX_LTL_API_KEY: SET l7485a33eb2fdf4fe2862023adcf3f104d
+  FEDEX_LTL_SECRET_KEY: SET e7f0b1c31fb74936964aeb8c5b65f0e7
+  FEDEX_LTL_URL: SET https://apis-sandbox.fedex.com
+  CRON_SECRET: SET
+  SYSTEM_USER_ID: SET
+  DEMO_MODE: true
+  DATABASE_URL: SET PostgreSQL
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed for this command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — FEDEX LTL INTEGRATION + CLOSE ALL REMAINING GAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THIS COMMAND DOES TWO THINGS:
+1. Adds FedEx LTL as a 4th carrier option (REAL production API)
+2. Closes ALL remaining HIGH priority gaps from the audit
+
+After this command: Shipping Center is LOCKED PERMANENTLY.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read lib/shipping/shipengine-ltl.ts (165 lines)
+   — Understand the pattern for LTL API integration
+   — FedEx library will follow the same structure
+
+2. Read app/api/shipping/ltl-quote/route.ts (82 lines)
+   — How it calls ShipEngine and falls back to demo
+   — FedEx will be added as an additional carrier source
+
+3. Read app/shipping/ShippingCenterClient.tsx
+   — FreightTab (line 2665): where carriers display
+   — Quick estimate cards (line 3310): NOT clickable
+   — Hardcoded ZIPs: grep for "10001" and "04101"
+   — BOL localStorage key: grep for "ll_freight_bol"
+
+4. Check .env for FedEx credentials:
+   grep 'FEDEX' .env
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — CREATE FEDEX LTL API LIBRARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CREATE lib/shipping/fedex-ltl.ts (NEW FILE):
+
+/**
+ * FedEx LTL Freight API Integration
+ * Uses FedEx REST API v1 for LTL freight quotes.
+ *
+ * Auth: OAuth2 client_credentials flow
+ * API Key: FEDEX_LTL_API_KEY
+ * Secret: FEDEX_LTL_SECRET_KEY
+ * Sandbox: https://apis-sandbox.fedex.com
+ * Production: https://apis.fedex.com
+ */
+
+const FEDEX_API_KEY = process.env.FEDEX_LTL_API_KEY || process.env.FEDEX_API_KEY || "";
+const FEDEX_SECRET = process.env.FEDEX_LTL_SECRET_KEY || process.env.FEDEX_SECRET_KEY || "";
+const FEDEX_URL = process.env.FEDEX_LTL_URL || "https://apis-sandbox.fedex.com";
+
+let cachedToken: { token: string; expiresAt: number } | null = null;
+
+// OAuth2 token — FedEx uses client_credentials grant
+async function getAuthToken(): Promise<string | null> {
+  if (cachedToken && cachedToken.expiresAt > Date.now()) {
+    return cachedToken.token;
+  }
+  if (!FEDEX_API_KEY || !FEDEX_SECRET) return null;
+
+  try {
+    const res = await fetch(`${FEDEX_URL}/oauth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: FEDEX_API_KEY,
+        client_secret: FEDEX_SECRET,
+      }),
+    });
+    if (!res.ok) {
+      console.error("[FedEx LTL] Auth failed:", res.status, await res.text());
+      return null;
+    }
+    const data = await res.json();
+    cachedToken = {
+      token: data.access_token,
+      expiresAt: Date.now() + (data.expires_in * 1000) - 60000, // refresh 1 min early
+    };
+    return cachedToken.token;
+  } catch (e) {
+    console.error("[FedEx LTL] Auth error:", e);
+    return null;
+  }
+}
+
+export interface FedExLTLAddress {
+  streetLines: string[];
+  city: string;
+  stateOrProvinceCode: string;
+  postalCode: string;
+  countryCode: string;
+  residential?: boolean;
+}
+
+export interface FedExLTLQuoteRequest {
+  shipper: FedExLTLAddress;
+  recipient: FedExLTLAddress;
+  commodities: {
+    description: string;
+    weight: { units: "LB"; value: number };
+    dimensions: { length: number; width: number; height: number; units: "IN" };
+    freightClass: string;
+    pieces: number;
+    packaging: string;
+  }[];
+  serviceType?: string;
+}
+
+export interface FedExLTLQuote {
+  carrier: string;
+  service: string;
+  totalCharge: number;
+  currency: string;
+  transitDays: number;
+  quoteId: string;
+  surcharges: { description: string; amount: number }[];
+  isLive: boolean;
+}
+
+// Get FedEx LTL freight rate
+export async function getFedExLTLQuote(req: FedExLTLQuoteRequest): Promise<FedExLTLQuote | null> {
+  const token = await getAuthToken();
+  if (!token) {
+    console.log("[FedEx LTL] No auth token — skipping");
+    return null;
+  }
+
+  try {
+    const res = await fetch(`${FEDEX_URL}/rate/v1/rates/quotes`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "X-locale": "en_US",
+      },
+      body: JSON.stringify({
+        accountNumber: { value: "" }, // sandbox doesn't need this
+        requestedShipment: {
+          shipper: { address: req.shipper },
+          recipient: { address: req.recipient },
+          serviceType: req.serviceType || "FEDEX_FREIGHT_ECONOMY",
+          requestedPackageLineItems: req.commodities.map(c => ({
+            weight: c.weight,
+            dimensions: c.dimensions,
+            subPackagingType: c.packaging || "PALLET",
+            groupPackageCount: c.pieces,
+            contentRecord: { received: false, description: c.description },
+          })),
+          rateRequestType: ["LIST", "ACCOUNT"],
+          pickupType: "USE_SCHEDULED_PICKUP",
+          freightShipmentDetail: {
+            role: "SHIPPER",
+            freightShipmentLineItems: req.commodities.map(c => ({
+              freightClass: `CLASS_${c.freightClass}`,
+              weight: c.weight,
+              dimensions: c.dimensions,
+              pieces: c.pieces,
+              description: c.description,
+              packaging: c.packaging || "PALLET",
+            })),
+          },
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("[FedEx LTL] Quote error:", res.status, errText);
+      return null;
+    }
+
+    const data = await res.json();
+    const rate = data.output?.rateReplyDetails?.[0];
+    if (!rate) return null;
+
+    const totalCharge = rate.ratedShipmentDetails?.[0]?.totalNetCharge ??
+      rate.ratedShipmentDetails?.[0]?.totalNetFedExCharge ?? 0;
+    const surcharges = (rate.ratedShipmentDetails?.[0]?.shipmentRateDetail?.surCharges || [])
+      .map((s: any) => ({ description: s.description || s.type, amount: s.amount?.amount || 0 }));
+
+    return {
+      carrier: "FedEx Freight",
+      service: rate.serviceType?.replace(/_/g, " ") || "LTL Economy",
+      totalCharge: typeof totalCharge === "number" ? totalCharge : parseFloat(totalCharge) || 0,
+      currency: "USD",
+      transitDays: rate.commit?.transitDays?.amount || 5,
+      quoteId: data.transactionId || `fedex-${Date.now()}`,
+      surcharges,
+      isLive: true,
+    };
+  } catch (e) {
+    console.error("[FedEx LTL] Quote failed:", e);
+    return null;
+  }
+}
+
+// Track FedEx freight shipment
+export async function trackFedExFreight(trackingNumber: string): Promise<any> {
+  const token = await getAuthToken();
+  if (!token) return null;
+
+  try {
+    const res = await fetch(`${FEDEX_URL}/track/v1/trackingnumbers`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        trackingInfo: [{ trackingNumberInfo: { trackingNumber } }],
+        includeDetailedScans: true,
+      }),
+    });
+    return await res.json();
+  } catch (e) {
+    console.error("[FedEx LTL] Track failed:", e);
+    return null;
+  }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — WIRE FEDEX INTO LTL QUOTE API
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/api/shipping/ltl-quote/route.ts
+
+ADD import at top:
+  import { getFedExLTLQuote } from "@/lib/shipping/fedex-ltl";
+  import type { FedExLTLQuoteRequest } from "@/lib/shipping/fedex-ltl";
+
+AFTER the existing ShipEngine quote logic, ADD FedEx:
+
+  // Also get FedEx LTL quote
+  try {
+    const fedexQuote = await getFedExLTLQuote({
+      shipper: {
+        streetLines: ["123 Main St"],
+        city: "Portland",
+        stateOrProvinceCode: "ME",
+        postalCode: fromZip || "04101",
+        countryCode: "US",
+      },
+      recipient: {
+        streetLines: ["456 Destination St"],
+        city: "Destination",
+        stateOrProvinceCode: "NY",
+        postalCode: toZip || "10001",
+        countryCode: "US",
+      },
+      commodities: [{
+        description: description || "Household goods",
+        weight: { units: "LB", value: Number(weight) || 100 },
+        dimensions: { length: Number(length) || 48, width: Number(width) || 40, height: Number(height) || 36, units: "IN" },
+        freightClass: freightClass || "70",
+        pieces: 1,
+        packaging: "PALLET",
+      }],
+    });
+    if (fedexQuote) {
+      quotes.push({
+        carrier: fedexQuote.carrier,
+        service: fedexQuote.service,
+        price: fedexQuote.totalCharge,
+        transit: `${fedexQuote.transitDays} days`,
+        quoteId: fedexQuote.quoteId,
+        surcharges: fedexQuote.surcharges,
+        source: "fedex",
+        isLive: fedexQuote.isLive,
+      });
+    }
+  } catch (e) {
+    console.error("[FedEx LTL] Error in quote route:", e);
+  }
+
+The response now includes quotes from:
+1. ShipEngine carriers (test/warn/fail in sandbox)
+2. FedEx Freight (real API — sandbox for now, production-ready)
+3. Our estimate engine (fallback)
+
+Show "FEDEX LIVE" badge (purple) when source === "fedex".
+Show "SHIPENGINE" badge (teal) when source === "shipengine".
+Show "ESTIMATED" badge (amber) when source === "demo".
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — FIX ALL HIGH PRIORITY GAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+GAP 1 — Remove hardcoded "10001" NYC fallback (7 places):
+  Search for: "10001"
+  Replace EVERY instance with: ""
+  Instead of defaulting to NYC, show:
+  "Enter destination ZIP for rates"
+  Do NOT auto-fetch rates without a user-provided ZIP.
+
+GAP 2 — Remove hardcoded "04101" Portland ME origin (6 places):
+  Search for: "04101"
+  Replace with: item.saleZip || "04901"
+  (04901 is Waterville ME where Ryan is based)
+  The item's saleZip should be the primary source.
+  Fallback to 04901 (not 04101) for realism.
+
+GAP 3 — Make quick freight estimate cards clickable:
+  The 3 carrier cards (XPO, OD, R+L from quickEstimates)
+  at line ~3310 display but have no onClick.
+  ADD onClick to each card:
+  — Sets selectedFreight to that carrier's data
+  — Highlights the card with teal border
+  — Shows the 3 action paths below (Schedule/Upload/BOL)
+
+GAP 4 — Add "Mark as Sold" in PreSale tab:
+  For each item in PreSale, add a small action menu:
+  [Mark as Sold] button — calls /api/items/status/${itemId}
+  PATCH { status: "SOLD" } — moves item to ReadyToShip
+  Show confirmation: "Item marked as sold! Check Ready to Ship tab."
+
+GAP 5 — Fix BOL localStorage keying:
+  Search for: ll_freight_bol
+  Replace with: ll_freight_bol_${selectedItem?.id || "latest"}
+  Each item gets its own BOL storage.
+  Load on mount should match: ll_freight_bol_${currentItemId}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — FIX MEDIUM PRIORITY GAPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+GAP 6 — Freight class calculation (not hardcoded "70"):
+  In the ShipEngine and FedEx quote calls, calculate
+  freight class from the item's actual weight and dims
+  using the density formula already in the codebase
+  (same as estimateFreightClass in ShippingPanel):
+    density = weight / ((L * W * H) / 1728)
+    freightClass = density-based lookup
+
+  Add a function at the top of FreightTab:
+  function calcFreightClass(w: number, l: number, wi: number, h: number): string {
+    const cubicFt = (l * wi * h) / 1728;
+    const density = cubicFt > 0 ? w / cubicFt : 0;
+    if (density >= 50) return "50";
+    if (density >= 35) return "55";
+    if (density >= 30) return "60";
+    if (density >= 22.5) return "65";
+    if (density >= 15) return "70";
+    if (density >= 13.5) return "77.5";
+    if (density >= 12) return "85";
+    if (density >= 10.5) return "92.5";
+    if (density >= 9) return "100";
+    if (density >= 8) return "110";
+    if (density >= 7) return "125";
+    if (density >= 6) return "150";
+    if (density >= 5) return "175";
+    if (density >= 4) return "200";
+    if (density >= 3) return "250";
+    if (density >= 2) return "300";
+    if (density >= 1) return "400";
+    return "500";
+  }
+
+  Use this in both ShipEngine and FedEx quote requests.
+  Show the calculated class in the UI:
+  "AI Freight Class: [X] (Density: [Y] lbs/ft³)"
+
+GAP 7 — ShipEngine badge consistency:
+  When ShipEngine quotes return, always show
+  "SHIPENGINE" badge (teal) — not sometimes missing.
+  Check the isLive flag in the quote response.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — ADD FEDEX LTL CARRIER OPTION IN FREIGHTTAB UI
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+When the "Get Live LTL Quote" button is clicked and
+returns results, the carrier cards should now show
+UP TO 4 carriers:
+
+1. XPO Logistics (from estimate engine)
+2. Old Dominion (from estimate engine)
+3. R+L Carriers (from estimate engine)
+4. FedEx Freight (from FedEx API — purple branded card)
+
+If ShipEngine returns quotes, they REPLACE #1-3.
+If FedEx returns a quote, it shows as #4.
+
+FedEx card styling:
+— Purple accent (#4D148C) matching FedEx branding
+— "FEDEX LIVE" badge when from real API
+— "FEDEX ESTIMATED" badge when from fallback
+— Show total charge, transit days, surcharges breakdown
+— If FedEx is cheapest: "BEST RATE" badge
+
+When FedEx carrier is selected:
+— Show [Schedule FedEx Pickup] button
+— Show [Get FedEx BOL] button
+— These will use the FedEx API in production
+— For now: use the same BOL questionnaire flow
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART G — VERIFY ALL PREVIOUS FIXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Quick verification:
+1. Unicode rendering clean (no bare \uXXXX): yes/no
+2. Carrier rows clickable in PreSale: yes/no
+3. Save Quote prominent: yes/no
+4. Quote memory carries to ReadyToShip: yes/no
+5. Delivery method options (QR/Print/Pickup): yes/no
+6. Tracking board shows all 3 methods: yes/no
+7. Auto-refresh polling: yes/no
+8. ShippingAIPanel displays: yes/no
+9. Enrichment badges display: yes/no
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  lib/shipping/fedex-ltl.ts created: yes/no
+4.  FedEx OAuth2 auth function: yes/no
+5.  getFedExLTLQuote function: yes/no
+6.  trackFedExFreight function: yes/no
+7.  FedEx wired into ltl-quote API route: yes/no
+8.  FedEx quote appears in carrier cards: yes/no
+9.  "FEDEX LIVE" badge on FedEx quotes: yes/no
+10. Hardcoded "10001" removed (all 7 places): yes/no
+11. Hardcoded "04101" replaced with saleZip: yes/no
+12. Quick estimate cards clickable with onClick: yes/no
+13. Mark as Sold button in PreSale: yes/no
+14. BOL localStorage keyed per item: yes/no
+15. Freight class calculated from density: yes/no
+16. AI Freight Class displayed: yes/no
+17. ShipEngine badge consistent: yes/no
+18. FedEx carrier card with purple branding: yes/no
+19. All previous fixes verified: yes/no
+20. All locked files untouched: yes/no
+21. inline style={{}} throughout: yes/no
+22. Light mode clean: yes/no
+23. Dark mode clean: yes/no
+24. npx tsc --noEmit: 0 errors
+25. npm run build: pass
+26. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — FedEx LTL Library:
+  — File created: [yes/no]
+  — OAuth2 auth: [yes/no]
+  — Quote function: [yes/no]
+  — Track function: [yes/no]
+
+  PART C — FedEx in Quote Route:
+  — FedEx imported: [yes/no]
+  — FedEx quote requested: [yes/no]
+  — 4 carrier sources in response: [yes/no]
+  — Source badges (FEDEX/SHIPENGINE/ESTIMATED): [yes/no]
+
+  PART D — HIGH Gaps Fixed:
+  — "10001" removed: [yes/no]
+  — "04101" replaced: [yes/no]
+  — Quick estimate clickable: [yes/no]
+  — Mark as Sold: [yes/no]
+  — BOL per-item keying: [yes/no]
+
+  PART E — MEDIUM Gaps Fixed:
+  — Freight class calculation: [yes/no]
+  — ShipEngine badge consistent: [yes/no]
+
+  PART F — FedEx UI:
+  — FedEx carrier card: [yes/no]
+  — Purple branding: [yes/no]
+  — FEDEX LIVE badge: [yes/no]
+
+  PART G — Previous Fixes:
+  — All verified: [yes/no]
+  — Any broken: [list]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  FLAGS: [list any]
+  Files modified: [paths]
+  New files: [list]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD:
+
+1. AFTER THIS COMMAND: LOCK Shipping Center PERMANENTLY. NO MORE SHIPPING COMMANDS.
+2. Next: Bot Page Data Sync (Phase 3 item 19).
+3. Then: Phase 4 Admin Dashboard, Phase 6 Demo Walkthrough.
+4. Pre-demo: Seed data, Dr. Clark demo prep.
+5. Fee: 3.5% (1.75%/1.75%). Split cost: 50/50.
+6. FedEx production: Switch FEDEX_LTL_URL to https://apis.fedex.com when ready.
+
+Command: FedEx LTL Integration + Close All Gaps — FINAL
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

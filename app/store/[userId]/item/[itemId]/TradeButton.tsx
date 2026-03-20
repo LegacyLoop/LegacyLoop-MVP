@@ -16,8 +16,8 @@ export default function TradeButton({ itemId, itemTitle }: { itemId: string; ite
 
   return (
     <>
-      <button onClick={() => setShowModal(true)} style={{ width: "100%", height: 48, background: "transparent", border: "1px solid #00bcd4", color: "#00bcd4", fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: "pointer", marginTop: 8 }}>
-        🔄 Propose a Trade
+      <button onClick={() => setShowModal(true)} style={{ width: "100%", height: 48, background: "transparent", border: "1px solid var(--accent, #00bcd4)", color: "var(--accent, #00bcd4)", fontSize: 13, fontWeight: 700, borderRadius: 8, cursor: "pointer", marginTop: 8 }}>
+        {"\u{1F504}"} Propose a Trade
       </button>
       {showModal && <TradeProposalModal itemId={itemId} itemTitle={itemTitle} onClose={() => setShowModal(false)} />}
     </>

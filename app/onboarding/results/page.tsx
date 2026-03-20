@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { Recommendation } from "@/lib/pricing/constants";
@@ -62,9 +62,9 @@ function getTierDescription(tier: string): string {
     FREE: "Perfect for testing the platform with up to 3 items at zero cost.",
     STARTER: "Great for casual sellers with a handful of items to move. AI pricing + basic analytics.",
     PLUS: "MegaBot pricing, Buyer Finder, and custom storefront for active sellers.",
-    PRO: "The full suite — unlimited MegaBot, storytelling tools, legacy archives, and phone support.",
+    PRO: "The full suite \u2014 unlimited MegaBot, storytelling tools, legacy archives, and phone support.",
     ESSENTIALS: "Our team visits your home, photographs and lists up to 100 items, and handles all buyers.",
-    PROFESSIONAL: "Complete estate management for 3–4 bedroom homes. MegaBot on every item, multiple visits.",
+    PROFESSIONAL: "Complete estate management for 3\u20134 bedroom homes. MegaBot on every item, multiple visits.",
     LEGACY: "White-glove premium. Dedicated project manager, unlimited items, printed legacy book, and more.",
   };
   return map[tier] ?? "";
@@ -77,14 +77,14 @@ function getRecommendationReasons(
 
   if (rec.serviceLevel === "whiteGlove") {
     reasons.push({
-      icon: "🤝",
+      icon: "\u{1F91D}",
       title: "Full-service, hands-off experience",
       description:
         "Our team comes on-site, handles everything, and you just approve sales.",
     });
   } else {
     reasons.push({
-      icon: "💪",
+      icon: "\u{1F4AA}",
       title: "AI-powered tools at your pace",
       description:
         "Manage your sale on your own schedule with expert AI pricing and buyer matching.",
@@ -93,20 +93,20 @@ function getRecommendationReasons(
 
   if (rec.primaryCategory === "estate") {
     reasons.push({
-      icon: "🏠",
+      icon: "\u{1F3E0}",
       title: "Built for estate-scale selling",
       description:
         "This plan handles the volume and complexity of full-home liquidation.",
     });
   } else if (rec.primaryCategory === "garage") {
     reasons.push({
-      icon: "📦",
+      icon: "\u{1F4E6}",
       title: "Right-sized for your sale",
-      description: "Perfect for smaller collections without paying for features you won't use.",
+      description: "Perfect for smaller collections without paying for features you won\u2019t use.",
     });
   } else {
     reasons.push({
-      icon: "🏘️",
+      icon: "\u{1F3D8}\u{FE0F}",
       title: "Optimized for group selling",
       description:
         "Shared marketplace means more buyers, split costs, and a bigger event.",
@@ -115,16 +115,16 @@ function getRecommendationReasons(
 
   if (rec.needsAppraisal) {
     reasons.push({
-      icon: "🔍",
+      icon: "\u{1F50D}",
       title: "Expert appraisal recommended",
       description:
-        "Your antiques, jewelry, or art may be worth significantly more than expected. Don't leave money on the table.",
+        "Your antiques, jewelry, or art may be worth significantly more than expected. Don\u2019t leave money on the table.",
     });
   }
 
   if (rec.needsShipping) {
     reasons.push({
-      icon: "📦",
+      icon: "\u{1F4E6}",
       title: "Large item shipping covered",
       description:
         "We include shipping coordination for furniture and oversized items.",
@@ -182,7 +182,7 @@ function getAlternativeOptions(rec: Recommendation): AltOption[] {
     {
       tier: "PROFESSIONAL",
       name: "Estate Professional",
-      description: "Full white-glove for 3–4 bedroom homes.",
+      description: "Full white-glove for 3\u20134 bedroom homes.",
       price: "$3,500 pre-launch",
       href: "/quote",
     },
@@ -193,11 +193,11 @@ function getAlternativeOptions(rec: Recommendation): AltOption[] {
 
 function getCategoryEmoji(cat: string): string {
   const map: Record<string, string> = {
-    estate: "🏠",
-    garage: "📦",
-    neighborhood: "🏘️",
+    estate: "\u{1F3E0}",
+    garage: "\u{1F4E6}",
+    neighborhood: "\u{1F3D8}\u{FE0F}",
   };
-  return map[cat] ?? "🏠";
+  return map[cat] ?? "\u{1F3E0}";
 }
 
 // ── Results inner (needs useSearchParams) ────────────────────────────────────
@@ -222,6 +222,10 @@ function ResultsContent() {
     };
   }
 
+  // Part B URL params
+  const wantsHelp = searchParams.get("wantsHelp") === "true";
+  const userNotes = searchParams.get("userNotes") || "";
+
   const tierName = getTierName(rec.recommendedTier);
   const tierPrice = getTierPrice(rec.recommendedTier);
   const tierDesc = getTierDescription(rec.recommendedTier);
@@ -231,12 +235,48 @@ function ResultsContent() {
   const alternatives = getAlternativeOptions(rec);
 
   const isWhiteGlove = rec.serviceLevel === "whiteGlove";
+  const isDigital = !isWhiteGlove;
+
+  // Personalization
+  const categoryLabel: Record<string, string> = {
+    estate: "estate transition",
+    garage: "garage sale",
+    neighborhood: "neighborhood sale",
+  };
+
+  // Conditional sections
+  const showNeighborhoodBundle =
+    rec.primaryCategory === "neighborhood" && (rec.scores?.neighborhood ?? 0) > 8;
+  const showCreditTip = isDigital;
+  const showWhiteGloveSoftSurface =
+    isDigital && (wantsHelp || (rec.scores?.whiteGlove ?? 0) >= 8);
+
+  // WG pricing transparency
+  const wgPricingDetail: Record<string, string> = {
+    ESSENTIALS: "Includes on-site visit, AI photography, up to 100 items, and full buyer management.",
+    PROFESSIONAL: "Full estate management for 3-4 bedrooms. Multiple visits, MegaBot analysis on every item, dedicated team coordination.",
+    LEGACY: "Unlimited items, dedicated project manager, printed legacy book, premium photography, and white-glove everything.",
+  };
+
+  // Persist quiz completion to localStorage (bridge until schema migration)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    try {
+      localStorage.setItem("legacyloop_quiz_completed", new Date().toISOString());
+      localStorage.setItem("legacyloop_quiz_results", JSON.stringify(rec));
+    } catch {
+      // localStorage not available — silently fail
+    }
+  }, []);
+
+  // userNotes available for future storage/display
+  void userNotes;
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #f0fdfa 0%, #eff6ff 100%)",
+        background: "linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)",
         padding: "2rem 1rem",
         display: "flex",
         flexDirection: "column",
@@ -259,7 +299,7 @@ function ResultsContent() {
             width: "44px",
             height: "44px",
             borderRadius: "12px",
-            background: "#0f766e",
+            background: "var(--accent-theme)",
             color: "#fff",
             fontWeight: 800,
             display: "flex",
@@ -270,7 +310,7 @@ function ResultsContent() {
         >
           LL
         </div>
-        <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "#1c1917" }}>
+        <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--text-primary)" }}>
           LegacyLoop
         </span>
       </Link>
@@ -288,10 +328,10 @@ function ResultsContent() {
               borderRadius: "50%",
               background: isWhiteGlove
                 ? "linear-gradient(135deg, #1c1917, #292524)"
-                : "linear-gradient(135deg, #f0fdfa, #ecfdf5)",
+                : "var(--bg-primary)",
               fontSize: "2.5rem",
               marginBottom: "1rem",
-              boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
+              boxShadow: "var(--card-shadow)",
             }}
           >
             {getCategoryEmoji(rec.primaryCategory)}
@@ -301,14 +341,14 @@ function ResultsContent() {
             style={{
               fontSize: "2rem",
               fontWeight: 900,
-              color: "#1c1917",
+              color: "var(--text-primary)",
               marginBottom: "0.5rem",
             }}
           >
-            Perfect — we found your match!
+            Perfect {"\u2014"} we found your match!
           </h1>
-          <p style={{ color: "#78716c", fontSize: "1rem" }}>
-            Based on your answers, here's what we recommend:
+          <p style={{ color: "var(--text-muted)", fontSize: "1rem" }}>
+            Based on your {categoryLabel[rec.primaryCategory] || "sale"}, here{"\u2019"}s what we recommend:
           </p>
 
           {/* Confidence bar */}
@@ -321,12 +361,24 @@ function ResultsContent() {
               marginTop: "0.75rem",
             }}
           >
-            <span style={{ fontSize: "0.75rem", color: "#a8a29e" }}>Confidence:</span>
+            <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+              We{"\u2019"}re {rec.confidence}% confident this is the right plan for you.
+            </span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.5rem",
+              marginTop: "0.5rem",
+            }}
+          >
             <div
               style={{
-                width: "120px",
+                width: "140px",
                 height: "6px",
-                background: "#e7e5e4",
+                background: "var(--ghost-bg)",
                 borderRadius: "999px",
                 overflow: "hidden",
               }}
@@ -335,7 +387,7 @@ function ResultsContent() {
                 style={{
                   width: `${rec.confidence}%`,
                   height: "100%",
-                  background: "#0f766e",
+                  background: "var(--accent-theme)",
                   borderRadius: "999px",
                 }}
               />
@@ -344,7 +396,7 @@ function ResultsContent() {
               style={{
                 fontSize: "0.75rem",
                 fontWeight: 700,
-                color: "#0f766e",
+                color: "var(--accent-theme)",
               }}
             >
               {rec.confidence}%
@@ -352,12 +404,12 @@ function ResultsContent() {
           </div>
         </div>
 
-        {/* Primary recommendation card */}
+        {/* ── Primary recommendation card (always-dark surface — hardcoded light text) ── */}
         <div
           style={{
             background: isWhiteGlove
               ? "linear-gradient(135deg, #1c1917, #292524)"
-              : "linear-gradient(135deg, #0f766e, #0d9488)",
+              : "linear-gradient(135deg, var(--accent-theme), var(--accent))",
             borderRadius: "1.5rem",
             padding: "2rem",
             color: "#fff",
@@ -378,7 +430,7 @@ function ResultsContent() {
               <p
                 style={{
                   fontSize: "0.72rem",
-                  color: "var(--text-secondary)",
+                  color: "rgba(255,255,255,0.7)",
                   textTransform: "uppercase",
                   letterSpacing: "0.1em",
                   fontWeight: 700,
@@ -397,7 +449,7 @@ function ResultsContent() {
               <p
                 style={{
                   fontSize: "0.72rem",
-                  color: "var(--text-secondary)",
+                  color: "rgba(255,255,255,0.7)",
                   marginBottom: "0.15rem",
                 }}
               >
@@ -417,28 +469,44 @@ function ResultsContent() {
 
           <p
             style={{
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.85)",
               fontSize: "0.92rem",
               lineHeight: 1.6,
-              marginBottom: "1.5rem",
+              marginBottom: "1rem",
             }}
           >
             {tierDesc}
           </p>
 
+          {/* WG pricing transparency */}
+          {isWhiteGlove && wgPricingDetail[rec.recommendedTier] && (
+            <p
+              style={{
+                fontSize: "0.85rem",
+                color: "rgba(255,255,255,0.8)",
+                lineHeight: 1.5,
+                marginBottom: "1.25rem",
+                paddingLeft: "0.75rem",
+                borderLeft: "2px solid rgba(255,255,255,0.2)",
+              }}
+            >
+              {wgPricingDetail[rec.recommendedTier]}
+            </p>
+          )}
+
           {/* Pre-launch callout */}
           <div
             style={{
-              background: "var(--bg-card-hover)",
-              border: "1px solid var(--border-default)",
+              background: "rgba(255,255,255,0.1)",
+              border: "1px solid rgba(255,255,255,0.15)",
               borderRadius: "0.75rem",
               padding: "0.6rem 1rem",
               fontSize: "0.8rem",
-              color: "var(--text-primary)",
+              color: "rgba(255,255,255,0.9)",
               marginBottom: "1.25rem",
             }}
           >
-            ⚡ <strong>Pre-launch pricing:</strong> Lock in this rate forever —{" "}
+            {"\u26A1"} <strong>Pre-launch pricing:</strong> Lock in this rate forever {"\u2014"}{" "}
             {DISCOUNTS.preLaunch.spotsRemaining} of {DISCOUNTS.preLaunch.totalSpots} founding
             member spots remaining.
           </div>
@@ -457,17 +525,153 @@ function ResultsContent() {
               textDecoration: "none",
             }}
           >
-            {ctaLabel} →
+            {ctaLabel} {"\u2192"}
           </Link>
         </div>
+
+        {/* ── Neighborhood Bundle (conditional) ── */}
+        {showNeighborhoodBundle && (
+          <div
+            style={{
+              background: "var(--accent-dim)",
+              border: "1px solid var(--accent-border)",
+              borderRadius: "1.25rem",
+              padding: "1.5rem",
+              display: "flex",
+              gap: "0.75rem",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <span style={{ fontSize: "1.75rem", flexShrink: 0 }}>{"\u{1F3D8}\u{FE0F}"}</span>
+            <div>
+              <div
+                style={{
+                  fontWeight: 800,
+                  color: "var(--text-primary)",
+                  fontSize: "1.05rem",
+                  marginBottom: "0.35rem",
+                }}
+              >
+                Neighborhood Bundle {"\u2014"} Perfect for You
+              </div>
+              <p
+                style={{
+                  fontSize: "0.88rem",
+                  color: "var(--text-secondary)",
+                  lineHeight: 1.6,
+                  marginBottom: "0.75rem",
+                }}
+              >
+                You mentioned organizing a group or community sale.
+                Our Neighborhood Bundle lets you coordinate with neighbors,
+                share the costs, and turn it into a real event.
+                More buyers. Less hassle. Better prices for everyone.
+              </p>
+              <Link
+                href="/services/neighborhood-bundle"
+                style={{
+                  fontSize: "0.88rem",
+                  color: "var(--accent-theme)",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                Learn More About Neighborhood Bundles {"\u2192"}
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* ── Credit add-ons tip (digital tiers only) ── */}
+        {showCreditTip && (
+          <div
+            style={{
+              background: "var(--ghost-bg)",
+              border: "1px solid var(--border-default)",
+              borderRadius: "1rem",
+              padding: "1rem 1.25rem",
+              display: "flex",
+              gap: "0.6rem",
+              alignItems: "flex-start",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <span style={{ fontSize: "1.25rem", flexShrink: 0 }}>{"\u{1F4A1}"}</span>
+            <p
+              style={{
+                fontSize: "0.85rem",
+                color: "var(--text-secondary)",
+                lineHeight: 1.5,
+                margin: 0,
+              }}
+            >
+              <strong style={{ color: "var(--text-primary)" }}>Pro tip:</strong> Boost your results
+              with AI-powered add-ons like Expert Appraisals, Buyer Outreach, and Market Reports.
+              Credit packs start at just $25.
+            </p>
+          </div>
+        )}
+
+        {/* ── White Glove soft-surface (digital + wantsHelp) ── */}
+        {showWhiteGloveSoftSurface && (
+          <div
+            style={{
+              background: "linear-gradient(135deg, var(--bg-card-solid), var(--ghost-bg))",
+              border: "1px solid var(--accent-border)",
+              borderRadius: "1.25rem",
+              padding: "1.5rem",
+              display: "flex",
+              gap: "0.75rem",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <span style={{ fontSize: "1.75rem", flexShrink: 0 }}>{"\u{1F91D}"}</span>
+            <div>
+              <div
+                style={{
+                  fontWeight: 800,
+                  color: "var(--text-primary)",
+                  fontSize: "1.05rem",
+                  marginBottom: "0.35rem",
+                }}
+              >
+                Want us to handle it all?
+              </div>
+              <p
+                style={{
+                  fontSize: "0.88rem",
+                  color: "var(--text-secondary)",
+                  lineHeight: 1.6,
+                  marginBottom: "0.75rem",
+                }}
+              >
+                Our White Glove service starts at $1,495.
+                We come to your home, photograph everything, price with AI,
+                and manage all buyers and shipping. You just approve sales.
+              </p>
+              <Link
+                href="/white-glove"
+                style={{
+                  fontSize: "0.88rem",
+                  color: "var(--accent-theme)",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                Explore White Glove Options {"\u2192"}
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Why we recommend this */}
         <div
           style={{
-            background: "#fff",
+            background: "var(--bg-card-solid)",
             borderRadius: "1.25rem",
             padding: "1.75rem",
-            boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+            boxShadow: "var(--card-shadow)",
+            border: "1px solid var(--border-default)",
             marginBottom: "1.5rem",
           }}
         >
@@ -475,7 +679,7 @@ function ResultsContent() {
             style={{
               fontSize: "1.1rem",
               fontWeight: 700,
-              color: "#1c1917",
+              color: "var(--text-primary)",
               marginBottom: "1rem",
             }}
           >
@@ -490,7 +694,7 @@ function ResultsContent() {
                   alignItems: "flex-start",
                   gap: "0.75rem",
                   padding: "0.875rem 1rem",
-                  background: "#fafaf9",
+                  background: "var(--ghost-bg)",
                   borderRadius: "0.75rem",
                 }}
               >
@@ -499,14 +703,14 @@ function ResultsContent() {
                   <div
                     style={{
                       fontWeight: 700,
-                      color: "#1c1917",
+                      color: "var(--text-primary)",
                       fontSize: "0.9rem",
                       marginBottom: "0.15rem",
                     }}
                   >
                     {r.title}
                   </div>
-                  <div style={{ fontSize: "0.82rem", color: "#57534e", lineHeight: 1.5 }}>
+                  <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
                     {r.description}
                   </div>
                 </div>
@@ -515,7 +719,7 @@ function ResultsContent() {
           </div>
         </div>
 
-        {/* Expert appraisal upsell */}
+        {/* Expert appraisal upsell (always gold — intentional) */}
         {rec.needsAppraisal && (
           <div
             style={{
@@ -528,7 +732,7 @@ function ResultsContent() {
               marginBottom: "1.5rem",
             }}
           >
-            <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>💡</span>
+            <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>{"\u{1F4A1}"}</span>
             <div>
               <div
                 style={{
@@ -541,13 +745,13 @@ function ResultsContent() {
               </div>
               <p style={{ fontSize: "0.85rem", color: "#78350f", lineHeight: 1.5 }}>
                 You mentioned antiques, jewelry, or art. A certified appraiser review can
-                unlock 30–200% more accurate pricing. Don't leave money on the table.
+                unlock 30{"\u2013"}200% more accurate pricing. Don{"\u2019"}t leave money on the table.
               </p>
             </div>
           </div>
         )}
 
-        {/* Vehicle note */}
+        {/* Vehicle note (always blue — intentional) */}
         {rec.hasVehicles && (
           <div
             style={{
@@ -560,14 +764,14 @@ function ResultsContent() {
               marginBottom: "1.5rem",
             }}
           >
-            <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>🚗</span>
+            <span style={{ fontSize: "1.5rem", flexShrink: 0 }}>{"\u{1F697}"}</span>
             <div>
               <div style={{ fontWeight: 700, color: "#1e40af", marginBottom: "0.25rem" }}>
                 Vehicle selling is a specialty service
               </div>
               <p style={{ fontSize: "0.85rem", color: "#1e3a8a", lineHeight: 1.5 }}>
                 Vehicles (cars, boats, RVs) are handled separately. Contact us at{" "}
-                <strong>hello@legacyloop.com</strong> and we'll connect you with the right buyer
+                <strong>hello@legacyloop.com</strong> and we{"\u2019"}ll connect you with the right buyer
                 network.
               </p>
             </div>
@@ -577,10 +781,11 @@ function ResultsContent() {
         {/* Alternatives */}
         <div
           style={{
-            background: "#fff",
+            background: "var(--bg-card-solid)",
             borderRadius: "1.25rem",
             padding: "1.75rem",
-            boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+            boxShadow: "var(--card-shadow)",
+            border: "1px solid var(--border-default)",
             marginBottom: "2rem",
           }}
         >
@@ -588,7 +793,7 @@ function ResultsContent() {
             style={{
               fontSize: "1.1rem",
               fontWeight: 700,
-              color: "#1c1917",
+              color: "var(--text-primary)",
               marginBottom: "1rem",
             }}
           >
@@ -608,7 +813,7 @@ function ResultsContent() {
                 style={{
                   display: "block",
                   padding: "1rem 1.25rem",
-                  border: "2px solid #e7e5e4",
+                  border: "2px solid var(--ghost-bg)",
                   borderRadius: "0.875rem",
                   textDecoration: "none",
                   transition: "border-color 0.15s",
@@ -617,7 +822,7 @@ function ResultsContent() {
                 <div
                   style={{
                     fontWeight: 700,
-                    color: "#1c1917",
+                    color: "var(--text-primary)",
                     marginBottom: "0.2rem",
                   }}
                 >
@@ -626,7 +831,7 @@ function ResultsContent() {
                 <div
                   style={{
                     fontSize: "0.78rem",
-                    color: "#57534e",
+                    color: "var(--text-secondary)",
                     marginBottom: "0.5rem",
                     lineHeight: 1.4,
                   }}
@@ -637,7 +842,7 @@ function ResultsContent() {
                   style={{
                     fontSize: "1rem",
                     fontWeight: 800,
-                    color: "#0f766e",
+                    color: "var(--accent-theme)",
                   }}
                 >
                   {alt.price}
@@ -654,7 +859,7 @@ function ResultsContent() {
             style={{
               display: "inline-block",
               padding: "0.9rem 2.5rem",
-              background: "#0f766e",
+              background: "var(--accent-theme)",
               color: "#fff",
               borderRadius: "9999px",
               fontWeight: 800,
@@ -663,28 +868,35 @@ function ResultsContent() {
               marginBottom: "1rem",
             }}
           >
-            Continue with {tierName} →
+            Continue with {tierName} {"\u2192"}
           </Link>
           <div
-            style={{ fontSize: "0.82rem", color: "#a8a29e", display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}
+            style={{
+              fontSize: "0.82rem",
+              color: "var(--muted-color)",
+              display: "flex",
+              gap: "1rem",
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
           >
             <Link
               href="/onboarding/quiz"
-              style={{ color: "#0f766e", textDecoration: "none" }}
+              style={{ color: "var(--accent-theme)", textDecoration: "none" }}
             >
-              ← Retake quiz
+              {"\u2190"} Retake quiz
             </Link>
-            <span style={{ color: "#d6d3d1" }}>·</span>
+            <span style={{ color: "var(--border-default)" }}>{"\u00B7"}</span>
             <Link
               href="/pricing"
-              style={{ color: "#0f766e", textDecoration: "none" }}
+              style={{ color: "var(--accent-theme)", textDecoration: "none" }}
             >
               View all pricing
             </Link>
-            <span style={{ color: "#d6d3d1" }}>·</span>
+            <span style={{ color: "var(--border-default)" }}>{"\u00B7"}</span>
             <Link
               href="/auth/signup"
-              style={{ color: "#0f766e", textDecoration: "none" }}
+              style={{ color: "var(--accent-theme)", textDecoration: "none" }}
             >
               Start free
             </Link>
@@ -707,11 +919,11 @@ export default function ResultsPage() {
             alignItems: "center",
             justifyContent: "center",
             minHeight: "100vh",
-            color: "#78716c",
+            color: "var(--text-muted)",
             fontSize: "1rem",
           }}
         >
-          Loading your results…
+          Loading your results{"\u2026"}
         </div>
       }
     >

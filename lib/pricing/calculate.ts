@@ -349,21 +349,26 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
   const commissionRate = getCommissionRate(userTier, isHero);
   const commissionPct = Math.round(commissionRate * 100);
 
-  // ── Step 8: Processing fee (buyer side) ───────────────────────────────────
-  const processingFeeRate = PROCESSING_FEE.rate;
+  // ── Step 8: Processing fee (split — buyer half for buyer totals) ──────────
+  const processingFeeRate = PROCESSING_FEE.buyerRate;
 
   // ── Calculate earnings ────────────────────────────────────────────────────
+  const sellerFeeRate = PROCESSING_FEE.sellerRate;
+
   const localMid = localPrice.mid;
   const localCommission = Math.round(localMid * commissionRate * 100) / 100;
-  const localNet = Math.round((localMid - localCommission) * 100) / 100;
+  const localSellerFee = Math.round(localMid * sellerFeeRate * 100) / 100;
+  const localNet = Math.round((localMid - localCommission - localSellerFee) * 100) / 100;
 
   const bestMid = bestMarket.mid;
   const shippedCommission = Math.round(bestMid * commissionRate * 100) / 100;
-  const shippedNet = Math.round((bestMid - shippedCommission - shippingCost) * 100) / 100;
+  const shippedSellerFee = Math.round(bestMid * sellerFeeRate * 100) / 100;
+  const shippedNet = Math.round((bestMid - shippedCommission - shippedSellerFee - shippingCost) * 100) / 100;
 
   const nationalMid = nationalPrice.mid;
   const nationalCommission = Math.round(nationalMid * commissionRate * 100) / 100;
-  const nationalNet = Math.round((nationalMid - nationalCommission) * 100) / 100;
+  const nationalSellerFee = Math.round(nationalMid * sellerFeeRate * 100) / 100;
+  const nationalNet = Math.round((nationalMid - nationalCommission - nationalSellerFee) * 100) / 100;
 
   // ── Seller Net (what seller actually receives) ────────────────────────────
   const sellerNet = {

@@ -1,0 +1,624 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock:
+
+— Core Adapters —
+  lib/adapters/ai.ts
+  lib/adapters/rainforest.ts
+  lib/adapters/auth.ts — EXTEND ONLY
+  lib/adapters/storage.ts
+  lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+  lib/antique-detect.ts
+  lib/collectible-detect.ts
+
+— MegaBot Engine —
+  lib/megabot/** — LOCKED
+
+— Agents —
+  lib/agents/runner.ts (already imported)
+
+— Shipping Libraries —
+  lib/shipping/** — ALL LOCKED (already imported where needed)
+
+— Data + Enrichment + Credits + Billing + Offers + Email + Pricing —
+  lib/data/** — LOCKED
+  lib/enrichment/** — LOCKED
+  lib/addons/** — LOCKED
+  lib/credits.ts — LOCKED
+  lib/tier-enforcement.ts — READ ONLY
+  lib/billing/** — LOCKED
+  lib/offers/** — LOCKED
+  lib/email/** — LOCKED
+  lib/constants/pricing.ts — LOCKED
+  lib/pricing/** — LOCKED
+
+— API Routes —
+  app/api/** — ALL LOCKED
+    EXCEPTION: app/api/shipping/center/route.ts (179 lines)
+    — EXTEND to include label address data + quote detail
+    EXCEPTION: app/api/shipping/estimate/route.ts (162 lines)
+    — EXTEND to save richer quote data to EventLog
+
+— Item + Dashboard + Bots —
+  app/items/** — ALL LOCKED
+    EXCEPTION: app/items/[id]/ShippingPanel.tsx
+    — SURGICAL: Post-sale wizard must save buyer address
+      and selected carrier to EventLog when rates are fetched
+    — SURGICAL: Pre-sale rates must also save to EventLog
+    — NOTHING ELSE changed in this 3,508-line file
+  app/dashboard/** — LOCKED
+  app/bots/** — ALL LOCKED
+
+— Core UI —
+  app/components/** — ALL LOCKED
+  app/page.tsx — LOCKED
+  globals.css — LOCKED
+
+— Commerce + Pages —
+  app/subscription/** — LOCKED
+  app/credits/** — LOCKED
+  app/marketplace/** — LOCKED
+  app/bundles/** — LOCKED
+  app/pricing/** — LOCKED
+  app/projects/** — LOCKED
+  app/offers/** — ALL LOCKED
+
+— Messaging + Add-Ons + Onboarding —
+  app/messages/** — ALL LOCKED
+  app/components/messaging/** — ALL LOCKED
+  app/addons/** — ALL LOCKED
+  app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+  vercel.json — LOCKED
+  prisma/schema.prisma — READ ONLY
+
+SURGICAL UNLOCK — These files ONLY:
+
+  1. app/api/shipping/center/route.ts (179 lines)
+     — EXTEND: Pull label address data (fromAddressJson, toAddressJson)
+     — EXTEND: Pull richer quote details from EventLog
+     — Return buyer name, address, ZIP, carrier selection per item
+
+  2. app/api/shipping/estimate/route.ts (162 lines)
+     — EXTEND: Save fromZip, toZip in SHIPPING_QUOTED payload (already partially there)
+     — No other changes
+
+  3. app/items/[id]/ShippingPanel.tsx (3,508 lines)
+     — SURGICAL ONLY: Two small additions:
+       a. Post-sale wizard fetchRates() (~line 210-236): After fetching rates,
+          save a SHIPPING_QUOTED event to EventLog with buyer address + rates
+       b. Pre-sale fetchPreSaleRates() (~line 2408-2432): After fetching rates,
+          save a SHIPPING_QUOTED event with destination ZIP + rates
+     — DO NOT change any UI, styling, or other logic in this file
+
+  4. app/shipping/ShippingCenterClient.tsx (3,149 lines)
+     — UPGRADE: Display full quote details on item cards
+     — UPGRADE: Show buyer address when available
+     — UPGRADE: Expandable quote detail panel per item
+     — UPGRADE: Continue-where-you-left-off flow
+     — POLISH: Final visual refinements for investor demo
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any of these:
+
+Pass 1-3 Locked: All bot AI, MegaBot, antique/collectible detection, shipping calc, offers, credits, subscriptions, pro-rate, commission, ListBot, marketplace, bundles, trade, data pipelines.
+
+Pass 3 Final Locked (March 16-17): Custom credits, subscription page, email system, Gemini reliability.
+
+Pass 4 Locked (March 18): Amazon enrichment, upload system, edit form, Item Control Center, light mode, message center.
+
+Pass 5 Locked (March 19): Quiz, Bot Hub, fee split, edit/sell/trade/offer/return systems, action panel, messages filter, PriceBot, SoldPriceWidget, shipping estimate API.
+
+Pass 6 Locked (March 19-20): Shipping Center TMS base, API enrichment (fixed dim string, metro estimates, quote persistence, selected quote, enrichment flags), ShipBot renamed, all links fixed to /shipping, BOX_PRESETS grid, packaging type selector, editable dims, Save Shipping Details, carrier BEST/FASTEST, ShipProfile with AI/saved/quote badges, intelligence strip, ShippingLabel + CSS barcode, FreightTab with real library + BOL + 5 toggles, LocalPickupTab with 5-step progress + handoff codes + safety tips, ShippingAIPanel 4-AI intelligence, CitySearch autocomplete, real metro estimates, clickable quote selection + save, profit analysis, vehicle auto-routing, enrichment badges (antique/high-value/condition), tracking board with Close Sale.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged. Every feature must answer: Does this collect signal we learn from? Does it make the next AI prediction better? Does it create data nobody else has? Does it compound in value over time? Flag all missed data collection opportunities.
+
+SECTION 6 — BUILD PATTERN
+
+  Always follow: Database -> Storage -> API -> AI -> Enrichment -> UI -> Dashboard -> Database update.
+  Never skip steps. Close the loop every time.
+
+  Build order: A -> B -> C -> D -> E -> F
+
+SECTION 7 — PLATFORM CONTEXT
+
+PHASE 1 (NOW): Copy hub — no OAuth needed. 13 platforms. Demo-ready. DEMO_MODE=true — admin accounts bypass all gates and credit deductions. Both test accounts are Tier 4 Estate Manager with full access.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Improve beyond spec, flag gaps, choose cleanest path, add error handling, make UI impressive for demo, wire logical connections, flag missed data collection, add Elon-standard polish, make it feel like $1B product, hardcode colors on always-dark panels.
+
+You MAY NOT: Touch locked files (except surgical unlocks listed), change bot AI/prompt logic, change bot output format, deviate from inline style={{}}, add unapproved npm packages, add routes beyond scope, change schema without approval, change business/pricing logic, use Tailwind/external CSS, use className for styling.
+
+Flag everything outside scope. Read FULL code before building. Never assume. Never guess.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true in .env. shouldBypassGates(user.role) checks isDemoMode() ||
+  isAdminUser(role). Admin: never locked out, no credits deducted.
+  TEST ACCOUNTS: annalyse07@gmail.com / LegacyLoop123! — Tier 4. ryanroger11@gmail.com /
+  Freedom26$ — Tier 4. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+  TO GO LIVE: Set DEMO_MODE=false, switch Square sandbox to production keys.
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+  OPENAI_API_KEY: SET GPT-4o
+  ANTHROPIC_API_KEY: SET Claude
+  GEMINI_API_KEY: SET Gemini
+  XAI_API_KEY: SET Grok
+  XAI_BASE_URL: SET
+  XAI_MODEL_TEXT: SET
+  XAI_MODEL_VISION: SET
+  SQUARE_*: SET Sandbox (4 vars)
+  SENDGRID_API_KEY: SET (new) ryan@legacy-loop.com
+  CRON_SECRET: SET
+  SYSTEM_USER_ID: SET
+  DEMO_MODE: true
+  DATABASE_URL: SET PostgreSQL
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+DO ALL AT ONCE — Never piecemeal:
+  User.role, soldPrice Int->Float, soldVia, estimatedValue, priceDelta, TradeProposal, AgentSettings, Bundle + BundleItem, quizCompletedAt, feeModel, RETURN statuses.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — SHIPPING CENTER FINAL POLISH: FULL DATA SYNC + QUOTE DETAIL + CONTINUITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+*** THIS IS THE LAST SHIPPING CENTER PASS BEFORE INVESTOR DEMO ***
+
+THE PROBLEM:
+The Shipping Center shows items and their AI profiles, but does NOT show the FULL DETAIL of quotes obtained on the Item Dashboard. When a user enters a buyer ZIP, gets carrier rates, selects a carrier, chooses insurance, enters a buyer name and address — NONE of that detail appears in the Shipping Center.
+
+The user cannot pick up where they left off. The Shipping Center should show:
+— Every quote with full carrier breakdown (carrier, service, rate, transit days)
+— The destination ZIP and buyer address that was used
+— Which carrier was selected
+— The insurance level chosen
+— Whether a label was already generated (and the full label details)
+— The from/to addresses from the label record
+
+RIGHT NOW THIS DATA IS LOST because:
+1. The ShippingPanel fetches rates from /api/shipping/rates but does NOT save the results to EventLog (only the estimate API saves to EventLog, and the post-sale wizard uses /api/shipping/rates instead)
+2. The center API reads EventLog SHIPPING_QUOTED but that only contains data from /api/shipping/estimate calls, NOT from the post-sale wizard's /api/shipping/rates calls
+3. The label record has fromAddressJson and toAddressJson but the center API doesn't read those fields
+4. The Shipping Center UI shows a one-line "Quoted: USPS — $8.95" but not the full carrier table, buyer address, or quote details
+
+THE FIX — 3 layers:
+Layer 1: Make the ShippingPanel save quote data to EventLog (surgical)
+Layer 2: Make the center API read ALL shipping data including label addresses
+Layer 3: Make the Shipping Center UI display FULL quote detail cards
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DO NOT BUILD UNTIL ALL READS COMPLETE.
+
+1. Read app/items/[id]/ShippingPanel.tsx
+   — Line 210-236: Post-sale wizard fetchRates() — calls /api/shipping/rates
+     This does NOT save to EventLog. Rates live in React state only.
+   — Line 238-270: createLabel() — calls /api/shipping/label
+     This saves LABEL_CREATED to EventLog but with limited data.
+   — Line 198-208: Post-sale wizard state — buyerZip, buyerName,
+     buyerStreet, buyerCity, buyerState, selectedRate, deliveryMethod, insurance
+   — Line 2408-2432: Pre-sale fetchPreSaleRates() — calls /api/shipping/rates
+     Also does NOT save to EventLog.
+
+2. Read app/api/shipping/center/route.ts (179 lines)
+   — Line 18: shipmentLabels included but NO select for fromAddressJson/toAddressJson
+   — Line 157: shipped push — has carrier, trackingNumber, rate BUT no addresses
+   — Line 141-147: lastQuote from EventLog — has carriers, cheapest, weight, box, quotedAt
+     But does NOT have buyer address because it was never saved
+
+3. Read app/api/shipping/label/route.ts
+   — Line 44-45: fromAddressJson and toAddressJson ARE saved to the label record
+   — Line 69-80: EventLog LABEL_CREATED saves carrier, service, tracking, deliveryMethod
+     But NOT the rate amount, addresses, or insurance level
+
+4. Read app/shipping/ShippingCenterClient.tsx (3,149 lines)
+   — ShipProfile (line 477): Shows one-line quote summary
+   — PreSaleTab (line 584): Shows carrier table after Get Quote
+   — ReadyToShipTab (line 915): Shows wizard with carrier selection
+   — What's MISSING: full quote detail card with all the data
+
+Print ALL findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — SAVE QUOTE DATA FROM SHIPPINGPANEL TO EVENTLOG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+*** SURGICAL — minimal changes only ***
+
+1. POST-SALE WIZARD fetchRates() at line 210-236:
+   After the rates are fetched and set (line 230),
+   ADD a fire-and-forget EventLog save:
+
+   // Save quote to EventLog for Shipping Center sync
+   fetch("/api/shipping/estimate", {
+     method: "POST",
+     headers: { "Content-Type": "application/json" },
+     body: JSON.stringify({
+       itemId,
+       destZip: buyerZip,
+       buyerName,
+       buyerAddress: { street: buyerStreet, city: buyerCity, state: buyerState, zip: buyerZip },
+     }),
+   }).catch(() => {});
+
+   This calls the estimate API which already saves SHIPPING_QUOTED
+   to EventLog. The estimate API will now also have the buyer info.
+
+   WAIT — the estimate API currently does NOT accept buyerName or buyerAddress.
+   See Part C for the estimate API extension.
+
+   ALTERNATIVE (simpler): Save directly to EventLog via a fetch to
+   a simple logging endpoint. But we don't have one.
+
+   SIMPLEST APPROACH: After fetchRates completes (line 230-231 area),
+   add a direct EventLog-style save by calling the estimate API with
+   the destZip parameter — it will re-run the estimate and save to
+   EventLog. This is slightly redundant but ensures the quote persists.
+
+   Actually the cleanest approach:
+   After `setRates(...)` on line 230, add:
+   // Persist quote to shipping center
+   fetch("/api/shipping/estimate", {
+     method: "POST",
+     headers: { "Content-Type": "application/json" },
+     body: JSON.stringify({ itemId, destZip: buyerZip }),
+   }).catch(() => {});
+
+   This re-runs the estimate API with the buyer's ZIP, which
+   saves a SHIPPING_QUOTED event to EventLog with the carrier data.
+   The Shipping Center can then read this on next load.
+
+2. PRE-SALE fetchPreSaleRates() at line 2408-2432:
+   Same pattern. After line 2427 `setRates(...)`, add:
+   fetch("/api/shipping/estimate", {
+     method: "POST",
+     headers: { "Content-Type": "application/json" },
+     body: JSON.stringify({ itemId, destZip: toZip || "10001" }),
+   }).catch(() => {});
+
+These are TWO small additions. The rest of the 3,508-line file stays untouched.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — EXTEND CENTER API TO INCLUDE LABEL ADDRESSES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/api/shipping/center/route.ts
+
+1. In the Prisma query (line 18), add to shipmentLabels select:
+   shipmentLabels: {
+     orderBy: { createdAt: "desc" },
+     take: 1,
+     select: {
+       id: true,
+       carrier: true,
+       trackingNumber: true,
+       status: true,
+       rate: true,
+       estimatedDays: true,
+       deliveryMethod: true,
+       createdAt: true,
+       fromAddressJson: true,   // <-- ADD
+       toAddressJson: true,     // <-- ADD
+     },
+   },
+
+2. In the shipped push (line 157), add label address parsing:
+   const fromAddr = label.fromAddressJson ? (() => { try { return JSON.parse(label.fromAddressJson); } catch { return null; } })() : null;
+   const toAddr = label.toAddressJson ? (() => { try { return JSON.parse(label.toAddressJson); } catch { return null; } })() : null;
+
+   Add to shipped object:
+   fromAddress: fromAddr,
+   toAddress: toAddr,
+
+3. In the readyToShip push (line 158-159), add the lastQuote FULL carriers array:
+   The lastQuote already has carriers array (line 143).
+   Make sure it includes ALL carrier details not just cheapest.
+
+4. Pull ALL SHIPPING_QUOTED events per item (not just most recent):
+   Change from returning just lastQuote to returning quoteHistory (last 5):
+
+   Build a quoteHistoryMap:
+   const quoteHistoryMap = new Map<string, any[]>();
+   for (const ev of quoteEvents) {
+     const arr = quoteHistoryMap.get(ev.itemId) || [];
+     if (arr.length < 5) {
+       try { arr.push({ ...JSON.parse(ev.payload ?? "{}"), quotedAt: ev.createdAt.toISOString() }); } catch {}
+     }
+     quoteHistoryMap.set(ev.itemId, arr);
+   }
+
+   Add to base object:
+   quoteHistory: quoteHistoryMap.get(item.id) ?? [],
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — FULL QUOTE DETAIL DISPLAY IN SHIPPING CENTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+This is the BIG UI upgrade. Every item in the Shipping Center should
+show FULL quote detail when expanded — not just a one-liner.
+
+1. EXPANDABLE QUOTE DETAIL CARD per item:
+   When user clicks an item card or a "Show Details" button:
+
+   IF item has lastQuote:
+   Show a full quote detail panel:
+   ┌─────────────────────────────────────────┐
+   │ 📋 QUOTE DETAILS                        │
+   │ Quoted: [date] · [fromZip] → [toZip]   │
+   │                                          │
+   │ Carrier     Service          Rate  Days  │
+   │ ✓ UPS      Ground Saver    $7.66  3d    │
+   │   USPS     Ground Adv.     $8.16  5d    │
+   │   USPS     Priority Mail   $12.27 2d    │
+   │   UPS      3 Day Select    $13.93 3d    │
+   │                                          │
+   │ 📦 Package: 14×12×8 in · 4 lbs         │
+   │ 🏷️ Insurance: Basic ($2.50)             │
+   │ 📍 From: Portland, ME 04101             │
+   │ 📍 To: [Buyer ZIP or address]           │
+   │                                          │
+   │ [Ship with UPS Ground — $7.66 →]        │
+   │ [🔄 Refresh Rates]                      │
+   └─────────────────────────────────────────┘
+
+   The full carrier table should be displayed — not just cheapest.
+   The selected/saved carrier should be highlighted with ✓.
+   Show from/to addresses when available.
+   Show package details (weight, dims, fragile).
+
+   IF item has NO quote:
+   Show: "No quotes yet — Get Quote to see carrier options"
+   [Get Quote →] button
+
+2. QUOTE HISTORY TIMELINE:
+   Below the current quote, show quote history:
+   "📋 Quote History"
+   — Mar 20, 10:25 AM · UPS Ground $7.66 · 04101→33510
+   — Mar 19, 3:15 PM · USPS Priority $12.27 · 04101→10001
+   — Mar 19, 11:00 AM · UPS Ground $6.29 · 04101→10001
+   Each entry shows: date, cheapest carrier, rate, from→to ZIPs.
+   Click to expand full carrier list from that quote.
+
+3. LABEL DETAIL (for shipped items):
+   IF item has a label (shipped tab):
+   Show full label detail:
+   — Carrier + service + tracking number
+   — From address (full: name, street, city, state, zip)
+   — To address (full: name, street, city, state, zip)
+   — Rate paid
+   — Insurance level
+   — Delivery method (QR/Print/Pickup)
+   — Ship date
+   — Estimated delivery
+   — Current tracking status
+
+4. CONTINUE WHERE YOU LEFT OFF:
+   When a user has a saved quote (from Item Dashboard or Shipping Center):
+   The ReadyToShip tab should show:
+   — Full quote detail pre-loaded (not just "from $X.XX")
+   — Buyer address pre-filled if available from quote history
+   — Selected carrier highlighted
+   — One-click [Ship Now →] that opens wizard at step 3
+     with everything pre-filled from the saved data
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — BUG FIXES + VISUAL POLISH FOR INVESTOR DEMO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+Final pass — fix bugs and make everything investor-ready:
+
+0. UNICODE BUG FIX (CRITICAL):
+   Search the entire ShippingCenterClient.tsx for any place where
+   the valuation range is displayed. It currently shows:
+   "$473\u2013$788" as literal text instead of "$473–$788"
+
+   The issue: the code uses the string "\u2013" literally
+   instead of the actual – character or a proper template literal.
+
+   Find ALL instances where valuationLow/valuationHigh or
+   price ranges are displayed and fix them to use either:
+   — The actual – character: `${item.valuationLow}–${item.valuationHigh}`
+   — Or a proper Unicode: `${item.valuationLow}\u2013${item.valuationHigh}`
+     (inside a template literal, not a raw string)
+
+   Check: grep -n "u2013\|\\\\u2013\|valuationLow.*valuationHigh" in the file.
+   Fix every instance.
+
+1. QUOTE DETAIL CARDS: Glass morphism, teal accent border on expanded,
+   smooth expand/collapse animation, proper spacing.
+
+2. CARRIER TABLE in quote detail: Proper header row, alternating
+   backgrounds, checkmark on selected carrier, BEST/FASTEST badges.
+
+3. ADDRESS DISPLAY: Clean two-column layout:
+   FROM: [name] / [street] / [city, ST ZIP]
+   TO: [name] / [street] / [city, ST ZIP]
+
+4. TIMELINE: Small vertical line with dots at each quote event.
+   Clean date formatting. Muted older entries.
+
+5. EMPTY STATES: Every section that could be empty should have
+   an attractive empty state with clear call-to-action.
+
+6. OVERALL CONSISTENCY: Every card, badge, button, and text element
+   should feel like it belongs to the same premium design system.
+   Check font sizes, spacing, border-radius, colors — everything
+   should be cohesive.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — FINAL SYNC VERIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+After all parts are built, verify the full data sync:
+
+1. On the Item Dashboard, enter a buyer ZIP and get rates.
+2. Go to the Shipping Center (/shipping). Refresh.
+3. The item should show the quote with the buyer ZIP and carrier rates.
+4. On the Item Dashboard, select a carrier and generate a label.
+5. Go to the Shipping Center. Refresh.
+6. The item should now be in the Tracking tab with full label details,
+   including from/to addresses, carrier, tracking number, and rate.
+7. If the item had a pre-sale quote, the quote history should show it.
+
+If any of these steps fail, debug and fix before reporting.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  ShippingPanel post-sale saves quote to EventLog: yes/no
+4.  ShippingPanel pre-sale saves quote to EventLog: yes/no
+5.  Center API reads label fromAddressJson/toAddressJson: yes/no
+6.  Center API returns quoteHistory (last 5): yes/no
+7.  Shipped items include from/to addresses: yes/no
+8.  Expandable quote detail card per item: yes/no
+9.  Full carrier table in quote detail: yes/no
+10. Selected carrier highlighted with checkmark: yes/no
+11. Package details shown (weight, dims, fragile): yes/no
+12. From/to addresses displayed: yes/no
+13. Ship Now button with pre-filled data: yes/no
+14. Quote history timeline: yes/no
+15. Label detail for shipped items (full addresses): yes/no
+16. Continue-where-you-left-off flow works: yes/no
+17. Glass morphism on quote detail cards: yes/no
+18. Visual consistency across all sections: yes/no
+19. Empty states have clear CTAs: yes/no
+20. Full sync test passes (Part F steps 1-7): yes/no
+21. All existing features preserved: yes/no
+22. All locked files untouched: yes/no
+23. inline style={{}} throughout: yes/no
+24. Light mode clean: yes/no
+25. Dark mode clean: yes/no
+26. npx tsc --noEmit: 0 errors
+27. npm run build: pass
+28. CHECKPOINT post-change: pass
+29. Dev server: localhost:3000
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — ShippingPanel Quote Persistence:
+  — Post-sale fetchRates saves to EventLog: [yes/no]
+  — Pre-sale fetchPreSaleRates saves to EventLog: [yes/no]
+  — Minimal changes to 3,508-line file: [yes/no]
+
+  PART C — Center API Extension:
+  — fromAddressJson/toAddressJson in query: [yes/no]
+  — Addresses parsed and included in response: [yes/no]
+  — quoteHistory (last 5) per item: [yes/no]
+
+  PART D — Quote Detail Display:
+  — Expandable quote detail card: [yes/no]
+  — Full carrier table with selection: [yes/no]
+  — From/to address display: [yes/no]
+  — Quote history timeline: [yes/no]
+  — Label detail for shipped items: [yes/no]
+  — Continue-where-you-left-off: [yes/no]
+  — Ship Now pre-filled: [yes/no]
+
+  PART E — Visual Polish:
+  — Glass morphism on detail cards: [yes/no]
+  — Carrier table styling: [yes/no]
+  — Address layout: [yes/no]
+  — Timeline design: [yes/no]
+  — Empty states: [yes/no]
+  — Overall consistency: [yes/no]
+
+  PART F — Sync Verification:
+  — Full sync test passed: [yes/no]
+  — Steps 1-7 verified: [yes/no]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  ALWAYS-DARK PANELS: [hardcoded colors/issues]
+  EXISTING LOGIC UNTOUCHED: [list verified files]
+  FLAGS FROM CLAUDE CODE: [gaps, risks, out-of-scope]
+  Files modified: [list exact paths]
+  New files: [list or none]
+  Schema changes needed: [list or none]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  Dev server: [localhost:3000]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd — Conversation clicked
+  conversation-counts-updated: Messages -> InboxCmd — Update count badges
+  agent-fill-message: InboxCmd -> Messages — AI fills reply box
+  agent-settings-toggle: InboxCmd -> AgentSettings — Open settings panel
+  inbox-filter-change: InboxCmd -> Messages — Sidebar category clicked
+  inbox-filter-reset: Messages -> InboxCmd — Tab bar clicked — reset sidebar
+
+CRITICAL CARRY-FORWARD ITEMS FOR NEXT SESSION:
+
+1. Bot Page Data Sync: All bot pages must load cached results without re-running. This is the NEXT priority after shipping is locked.
+
+2. Fee Model: 3.5% total. Buyer 1.75%. Seller 1.75%. Platform: 3.5%. Subs: 0%.
+
+3. After this command: Shipping Center is COMPLETE. Lock it. Move to Phase 3 remaining (Bot Page Data Sync), then Phase 4 (Admin Dashboard), then Phase 6 (Demo Walkthrough + investor prep).
+
+4. Pre-demo tasks banked: Seed pickup status data, verify all shipping avenues, Dr. Clark demo preparation.
+
+Command: Shipping Center Final Polish — Full Data Sync + Quote Detail + Continuity
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

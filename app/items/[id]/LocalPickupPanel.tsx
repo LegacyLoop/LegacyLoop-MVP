@@ -421,11 +421,11 @@ export default function LocalPickupPanel({
                     <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.35rem", fontWeight: 700, letterSpacing: "0.04em" }}>PROCESSING FEE</div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.35rem" }}>
                       <span style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Buyer pays</span>
-                      <span style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.75rem" }}>{PROCESSING_FEE.display}</span>
+                      <span style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.75rem" }}>{PROCESSING_FEE.buyerDisplay}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.2rem" }}>
                       <span style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Seller pays</span>
-                      <span style={{ color: "rgba(16,185,129,0.8)", fontWeight: 700, fontSize: "0.75rem" }}>0%</span>
+                      <span style={{ color: "#ef4444", fontWeight: 700, fontSize: "0.75rem" }}>{PROCESSING_FEE.sellerDisplay}</span>
                     </div>
                     <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "0.3rem", display: "flex", justifyContent: "space-between" }}>
                       <span style={{ color: "var(--text-muted)", fontSize: "0.7rem" }}>Total processing fee</span>

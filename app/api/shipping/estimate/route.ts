@@ -66,8 +66,30 @@ export async function POST(req: NextRequest) {
     const aiData = item.aiResult?.rawJson ? (() => { try { return JSON.parse(item.aiResult!.rawJson); } catch { return null; } })() : null;
     const category = aiData?.category || (item as any).category || "general";
 
-    const weight = (item as any).shippingWeight || estimateWeight(category);
-    const box = estimateBox(weight);
+    // Use item's actual dimensions → AI fallback → category estimate
+    const itemWeight = (item as any).shippingWeight;
+    const itemLength = (item as any).shippingLength;
+    const itemWidth = (item as any).shippingWidth;
+    const itemHeight = (item as any).shippingHeight;
+
+    const aiShip = aiData?.shipping_profile ?? aiData?.dimensions_estimate;
+    const aiWeight = aiShip?.weight ?? aiShip?.estimated_weight;
+    const aiLength = aiShip?.length ?? aiShip?.estimated_length;
+    const aiWidth = aiShip?.width ?? aiShip?.estimated_width;
+    const aiHeight = aiShip?.height ?? aiShip?.estimated_height;
+
+    const weight = itemWeight ?? aiWeight ?? estimateWeight(category);
+    const hasRealDims = (itemLength && itemWidth && itemHeight) || (aiLength && aiWidth && aiHeight);
+
+    const box = hasRealDims
+      ? {
+          length: itemLength ?? aiLength,
+          width: itemWidth ?? aiWidth,
+          height: itemHeight ?? aiHeight,
+          label: `${itemLength ?? aiLength}\u00D7${itemWidth ?? aiWidth}\u00D7${itemHeight ?? aiHeight} in`,
+        }
+      : estimateBox(weight);
+
     const isLTL = weight >= 40;
     const isFragile = (item as any).isFragile || /glass|ceramic|porcelain|crystal|china|mirror|antique/i.test(category + " " + (item.title || ""));
     const fromZip = item.saleZip || "04101";
@@ -98,10 +120,28 @@ export async function POST(req: NextRequest) {
     }
 
     const packagingTips: string[] = [];
-    if (isFragile) packagingTips.push("Wrap in bubble wrap — double layer for antiques and glass items");
+    if (isFragile) packagingTips.push("Wrap in bubble wrap \u2014 double layer for antiques and glass items");
     if (weight > 20) packagingTips.push("Use double-walled corrugated box for heavy items");
     packagingTips.push("Fill all empty space with packing peanuts or crumpled paper");
-    if (isLTL) packagingTips.push("Palletize for LTL freight — must be strapped and shrink-wrapped");
+    if (isLTL) packagingTips.push("Palletize for LTL freight \u2014 must be strapped and shrink-wrapped");
+
+    // Persist quote to EventLog for history
+    const cheapest = carriers.filter(c => c.price > 0).sort((a, b) => a.price - b.price)[0] ?? null;
+    await prisma.eventLog.create({
+      data: {
+        itemId,
+        userId: user.id,
+        eventType: "SHIPPING_QUOTED",
+        payload: JSON.stringify({
+          carriers: carriers.slice(0, 4),
+          cheapest,
+          weight, box, isFragile, isLTL,
+          fromZip, toZip,
+          quotedAt: new Date().toISOString(),
+          isLiveRates,
+        }),
+      },
+    }).catch(() => null);
 
     return NextResponse.json({
       itemId,

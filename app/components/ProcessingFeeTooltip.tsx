@@ -14,7 +14,7 @@ export default function ProcessingFeeTooltip({ amount, style, compact, showSplit
   const [show, setShow] = useState(false);
 
   const feeAmount = amount != null
-    ? Math.round(amount * PROCESSING_FEE.rate * 100) / 100
+    ? Math.round(amount * PROCESSING_FEE.buyerRate * 100) / 100
     : null;
 
   const pctLabel = `${PROCESSING_FEE.rate * 100}%`;
@@ -79,11 +79,11 @@ export default function ProcessingFeeTooltip({ amount, style, compact, showSplit
           </div>
           <p style={{ margin: 0 }}>
             {showSplit ? (
-              <>Square applies a {pctLabel} payment processing fee on all transactions,
-              charged to the buyer.{" "}
-              <strong style={{ color: "var(--accent)" }}>Sellers pay no processing fees</strong>.</>
+              <>LegacyLoop applies a {pctLabel} payment processing fee on all transactions,
+              split evenly {"\u2014"} {PROCESSING_FEE.buyerDisplay} added to buyer{"\u2019"}s total,{" "}
+              <strong style={{ color: "var(--accent)" }}>{PROCESSING_FEE.sellerDisplay} deducted from seller{"\u2019"}s earnings</strong>.</>
             ) : (
-              <>Square applies a {pctLabel} payment processing fee on all transactions.</>
+              <>LegacyLoop applies a {pctLabel} payment processing fee on all transactions, split evenly between buyer and seller.</>
             )}
           </p>
           {feeAmount != null && amount != null && (
@@ -96,7 +96,7 @@ export default function ProcessingFeeTooltip({ amount, style, compact, showSplit
               fontSize: "0.72rem",
               color: "var(--text-primary)",
             }}>
-              ${amount.toFixed(2)} + ${feeAmount.toFixed(2)} fee{showSplit ? <> (charged to buyer)</> : null} = <strong>${(amount + feeAmount).toFixed(2)}</strong>
+              ${amount.toFixed(2)} + ${feeAmount.toFixed(2)} fee{showSplit ? <> (your share)</> : null} = <strong>${(amount + feeAmount).toFixed(2)}</strong>
             </div>
           )}
           {/* Arrow */}

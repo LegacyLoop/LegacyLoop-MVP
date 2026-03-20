@@ -1,0 +1,544 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/shipping/ShippingCenterClient.tsx (3,298 lines)
+     — Complete the full TMS flow for all 3 methods
+     — ADD: Parcel quote-to-label bridge
+     — ADD: LTL official quote upload + BOL tracking
+     — ADD: Flow completion for all tabs
+     — Do NOT rewrite existing components
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 features + all previous shipping commands LOCKED. The Shipping Center currently has: 3,298 lines with TMSDashboard, intelligence strip, ShipProfile with AI/antique/premium badges, ShippingAIPanel, BOX_PRESETS with fit indicators, CitySearch, carrier tables with BEST/FASTEST + Net Profit + clickable selection + Save Quote, metro estimates, ShippingLabel with CSS barcode, FreightTab with real library + BOL + 5 toggles, LocalPickupTab with 5-step progress + handoff codes, tracking board, QuoteDetailPanel, quote history, enrichment badges.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently. Flag missed opportunities.
+
+SECTION 6 — BUILD PATTERN
+
+  Database -> Storage -> API -> AI -> Enrichment -> UI -> Dashboard -> Database update.
+  Build order: A -> B -> C -> D -> E
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo imminent. This is the LAST pass on the Shipping Center.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Complete ALL shipping flows end-to-end, add label generation from saved quotes, add LTL quote upload flow, make the TMS flow seamless and complete. Make it feel like a $1B logistics platform.
+
+You MAY NOT: Touch locked files, rewrite existing components, deviate from inline style={{}}, add npm packages, change schema, use Tailwind.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed for this command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — COMPLETE TMS FLOW: START TO FINISH FOR ALL 3 METHODS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+*** THIS IS THE LAST SHIPPING CENTER COMMAND ***
+*** EVERY FLOW MUST WORK END-TO-END ***
+
+THE PROBLEM:
+Users can get quotes and save them, but the flow DEAD-ENDS.
+There is no way to take a saved quote and complete the shipment.
+The TMS needs complete start-to-finish flows for ALL 3 methods:
+
+METHOD 1 — PARCEL (USPS/UPS/FedEx):
+  Current flow: Get Quote → Select Carrier → Save Quote → ???
+  Missing: The saved quote on PreSale items needs to carry over
+  to ReadyToShip when the item is sold. Then: one-click label
+  generation from the saved quote. Full label with tracking.
+
+METHOD 2 — LTL FREIGHT:
+  Current flow: Get Estimate → Select Carrier → Schedule Pickup → BOL
+  Missing: Upload Official Quote step (seller gets real quote via
+  email from FreightQuote/MyCarrier, uploads the quote number
+  and pricing into the system). BOL tracking after pickup.
+
+METHOD 3 — LOCAL PICKUP:
+  Current flow: 5-step progress (Invite → Confirm → En Route → Handoff → Complete)
+  This flow is mostly complete from the previous command.
+  May need polish.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read app/shipping/ShippingCenterClient.tsx — ALL 3,298 lines
+   — PreSaleTab (line 694): Has carrier table + Save Quote.
+     NO label generation (correct — item not sold yet).
+     But saved quotes do NOT carry over to ReadyToShip.
+   — ReadyToShipTab (line 1371): Has wizard with generateLabel
+     at line 1418. Has 4 steps. BUT does not pre-load saved
+     quotes from PreSale or from EventLog/localStorage.
+   — FreightTab (line 1890): Has quote request, carrier
+     selection, pickup scheduling, BOL. But no "Upload
+     Official Quote" step and no BOL tracking after confirmation.
+   — LocalPickupTab (line 2658): Has 5-step flow.
+
+2. Note the generateLabel function at line 1418:
+   It calls /api/shipping/label and shows ShippingLabel component.
+   This WORKS — just not reachable from saved quotes.
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — PARCEL: COMPLETE QUOTE-TO-LABEL FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+THE FULL PARCEL FLOW MUST BE:
+1. PreSale: Get Quote → Select Carrier → Save Quote
+   (this works now — keep it)
+2. Item gets sold (status changes to SOLD)
+3. Item moves from PreSale tab to ReadyToShip tab
+4. ReadyToShip: Saved quote auto-loads with all details
+5. User clicks [Ship Now — $X.XX] → opens wizard
+6. Wizard pre-fills from saved quote:
+   — Step 1 (Package): Skip if dims saved — show summary
+   — Step 2 (Address): Pre-fill buyer ZIP from saved quote
+   — Step 3 (Carrier): Pre-select the saved carrier
+   — Step 4 (Label): Generate and display label
+7. Label generated → item moves to Shipped tab → tracking
+
+CHANGES NEEDED:
+
+1. ReadyToShipTab — Load saved quotes on mount:
+   When ReadyToShipTab renders, for each item:
+   — Check localStorage for ll_quote_${item.id}
+   — Check item.lastQuote from API
+   — Check item.selectedQuote from API
+   If any exist, pre-load the quote data into the UI.
+
+   Show on each ReadyToShip item card:
+   IF saved quote exists:
+   "📋 Saved Quote: [Carrier] [Service] — $[rate]
+    [fromZip] → [toZip] · [X hours ago]
+    [Fresh ✓ / Expired ⚠️]"
+   BIG BUTTON: [🚀 Ship Now — [Carrier] $[rate]]
+   Smaller link: [Change carrier / Get new rates]
+
+   IF no saved quote:
+   BIG BUTTON: [📦 Get Rates & Ship]
+   Opens wizard at step 1
+
+2. "Ship Now" with saved quote:
+   When user clicks [Ship Now]:
+   — If quote is fresh (<24hrs):
+     Open wizard at step 2 (address) with carrier pre-selected
+     If toZip exists in quote: skip to step 3
+     If toZip + carrier selected: skip to step 4 (summary + generate)
+   — If quote is expired (>24hrs):
+     Show inline: "⚠️ Quote expired. Refreshing rates..."
+     Auto-fetch fresh rates for the same route
+     Show updated carrier table with old selection highlighted
+     User confirms → proceed to label
+
+3. Step 4 enhancement — LABEL CONFIRMATION:
+   Before generating the label, show a full summary:
+   ┌─────────────────────────────────────────┐
+   │ 📦 SHIPMENT SUMMARY                     │
+   │                                          │
+   │ Item: [title]                            │
+   │ Package: [L]×[W]×[H] in · [W] lbs      │
+   │ Fragile: [Yes/No]                        │
+   │                                          │
+   │ From: Portland, ME [fromZip]             │
+   │ To: [buyerCity or toZip]                 │
+   │                                          │
+   │ Carrier: [Carrier] [Service]             │
+   │ Rate: $[rate]                            │
+   │ Est. Delivery: [days] business days      │
+   │                                          │
+   │ Insurance: [Basic $2.50 / Full / None]   │
+   │ Label: [QR Code / Print PDF / Schedule]  │
+   │                                          │
+   │ [✅ Generate Label]  [← Back]            │
+   └─────────────────────────────────────────┘
+
+   After label is generated:
+   — Show ShippingLabel component (already works)
+   — Show [Mark as Shipped] button
+   — Show [Print Label] button
+   — Show [Copy Tracking #] button
+   — Show [View in Tracking Board →] link to Tracking tab
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — LTL FREIGHT: COMPLETE QUOTE-TO-BOL FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+THE FULL LTL FLOW MUST BE:
+1. FreightTab: Get instant estimate (works now)
+2. Select carrier (works now)
+3. Schedule pickup (works now)
+4. *** NEW *** Upload Official Quote:
+   After the estimate + pickup scheduling, show:
+   "📋 Waiting for official quote from our freight team.
+    We'll email your request to shipping@legacy-loop.com
+    and quote through our carrier network."
+
+   When the official quote comes back:
+   [Upload Official Quote] button opens form:
+   — Quote number: [text input]
+   — Carrier: [dropdown: XPO / Old Dominion / R+L /
+     ABF Freight / Estes / SAIA / YRC / FreightQuote / Other]
+   — Official rate: [$ input]
+   — Transit time: [text input, e.g. "3-5 business days"]
+   — Pickup date: [date picker]
+   — Special instructions: [textarea]
+   — [Upload Quote] button
+
+   This saves to EventLog as "LTL_QUOTE_UPLOADED"
+   with all the details.
+
+   After upload:
+   "✅ Official quote uploaded! Complete the BOL
+    to finalize the shipment."
+   [Complete BOL →] button
+
+5. *** NEW *** FULL BOL QUESTIONNAIRE (real-world TMS):
+   This is a COMPLETE Bill of Lading form matching
+   what real freight carriers require. AI assists
+   with freight class calculation.
+
+   BOL FORM — SECTION BY SECTION:
+
+   SECTION A — SHIPPER INFORMATION:
+   — Company/Name: [pre-fill from seller profile]
+   — Street Address: [text]
+   — City: [text] State: [dropdown] ZIP: [pre-fill fromZip]
+   — Contact Name: [text]
+   — Phone: [text]
+   — Email: [pre-fill from seller email]
+   — SID #: [text, optional — shipper ID]
+
+   SECTION B — CONSIGNEE INFORMATION:
+   — Company/Name: [pre-fill buyerName if available]
+   — Street Address: [text]
+   — City: [text] State: [dropdown] ZIP: [pre-fill toZip]
+   — Contact Name: [text]
+   — Phone: [text]
+   — Email: [text]
+   — CID #: [text, optional — consignee ID]
+
+   SECTION C — THIRD PARTY BILLING (optional):
+   — Bill To: [Shipper / Consignee / Third Party]
+   — If Third Party: Company, Address, Phone
+
+   SECTION D — SHIPMENT DETAILS:
+   — Number of pieces: [number, default 1]
+   — Package type: [Pallet / Crate / Box / Drum / Bundle]
+   — Total weight (lbs): [pre-fill from item data]
+   — Dimensions (L×W×H): [pre-fill from item data]
+
+   *** AI FREIGHT CLASS ASSISTANT ***
+   Show an AI-powered freight class calculator:
+   — Based on item weight, dimensions, category, material
+   — The app already has estimateFreightClass() in
+     ShippingPanel.tsx (lines 91-146) — use that same
+     logic but display it as an AI recommendation:
+
+   "🤖 AI Freight Class: [class number]"
+   "Density: [X] lbs/ft³"
+   "[Category note from AI]"
+
+   Dropdown to override: [Class 50-500]
+   If user overrides, show:
+   "Manual override — carrier may adjust"
+
+   — NMFC #: [text, optional]
+   — Commodity description: [pre-fill from AI item name]
+   — Hazmat: [No / Yes → hazmat class dropdown]
+
+   SECTION E — SPECIAL SERVICES:
+   Checkboxes matching the existing toggles:
+   — [ ] Residential Delivery (+$75-95)
+   — [ ] Liftgate at Delivery (+$85-95)
+   — [ ] Liftgate at Pickup (+$85-95)
+   — [ ] Inside Delivery (+$150)
+   — [ ] Delivery Notification (+$15)
+   — [ ] Blanket Wrap / Pad Wrap (+$75)
+   — [ ] White Glove Service (+$350)
+   — [ ] Appointment Delivery
+   — [ ] Sort & Segregate
+   Pre-check from previous toggle selections.
+
+   SECTION F — CARRIER + PRICING:
+   — Carrier: [pre-fill from uploaded quote]
+   — Quote #: [pre-fill from uploaded quote]
+   — Rate: $[pre-fill from uploaded quote]
+   — Transit: [pre-fill from uploaded quote]
+
+   SECTION G — REFERENCES:
+   — BOL #: [auto-generated: BOL-LL-XXXXXX]
+   — PO #: [text, optional]
+   — PRO #: [text, optional — carrier assigns]
+   — Reference notes: [textarea]
+
+   [📋 Generate BOL] button
+
+   This generates a professional BOL card that
+   looks like a real Bill of Lading document:
+   — All sections laid out in a structured form
+   — BOL number prominent at top
+   — Carrier info section
+   — Shipper/Consignee blocks side by side
+   — Item description with freight class + weight
+   — Special services listed
+   — Signature lines at bottom
+   — [🖨️ Print BOL] button (window.print())
+   — [📋 Copy BOL #] button
+   — [💾 Save BOL] saves to EventLog
+
+6. *** NEW *** BOL Tracking section:
+   After BOL is generated:
+   — BOL # displayed prominently
+   — PRO # field (editable — carrier assigns this)
+   — Status progression:
+     BOL Created → Pickup Scheduled → Picked Up →
+     In Transit → Out for Delivery → Delivered
+   — [Advance Status] button at each step
+   — Carrier + contact info
+   — Estimated delivery date
+   — When delivered: auto-update item to COMPLETED
+   — Close Sale button
+
+6. *** NEW *** BOL Tracking section:
+   After BOL is generated:
+   — BOL # displayed prominently
+   — Status: Pickup Scheduled → Picked Up → In Transit → Delivered
+   — Carrier + contact info
+   — Estimated delivery date
+   — [Mark as Picked Up] → [Mark In Transit] → [Mark Delivered]
+   — When delivered: Close Sale button (same as parcel tracking)
+
+   This section shows in the FreightTab for active freight
+   shipments AND in the Tracking tab alongside parcel shipments
+   (with freight/LTL badge in purple).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — PICKUP: VERIFY + POLISH THE 5-STEP FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The 5-step pickup flow was built in a previous command.
+Read the LocalPickupTab and verify:
+
+1. Items with saleMethod LOCAL_PICKUP or vehicle category
+   appear in the Local Pickup tab: YES/NO?
+
+2. The 5-step progress tracker shows correctly: YES/NO?
+
+3. Send Pickup Invite form works: YES/NO?
+
+4. Status advancement buttons work: YES/NO?
+
+5. Handoff code displays prominently: YES/NO?
+
+6. Completed pickups section shows: YES/NO?
+
+If any of these are broken or missing, fix them.
+
+If the pickup flow is working but items just don't appear
+(because no items have LOCAL_PICKUP saleMethod), add:
+— Vehicle detection: items with aiBox === "freight" and
+  category including "vehicle" or "boat" should ALSO appear
+  in the pickup tab even if saleMethod is not explicitly set
+— A note: "Vehicles and large items automatically appear
+  here for local pickup coordination"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — TRACKING BOARD: UNIFIED VIEW ALL METHODS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The Tracking tab (ShippedTab) currently shows parcel shipments.
+It needs to also show:
+
+1. FREIGHT SHIPMENTS:
+   Items that went through the LTL flow with a BOL.
+   Show with purple "FREIGHT" badge.
+   BOL # instead of tracking number.
+   Status progress: Pickup Scheduled → Picked Up → In Transit → Delivered
+   Carrier info from the official uploaded quote.
+
+2. PICKUP COMPLETIONS:
+   Items that went through the pickup flow and reached
+   HANDED_OFF or COMPLETED status.
+   Show with purple "PICKUP" badge.
+   Handoff code instead of tracking number.
+   Completion date.
+
+3. GROUP ALL in one unified view:
+   "Active Shipments" section:
+   — Parcel shipments in transit (blue)
+   — Freight shipments in transit (purple)
+   — Pickups in progress (violet)
+
+   "Completed" section:
+   — Delivered parcels (green)
+   — Delivered freight (green + freight badge)
+   — Completed pickups (green + pickup badge)
+
+   Each has a [Close Sale] button if not yet COMPLETED.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  PARCEL: Saved quote auto-loads on ReadyToShip: yes/no
+4.  PARCEL: Ship Now button with pre-filled data: yes/no
+5.  PARCEL: Expired quote auto-refreshes: yes/no
+6.  PARCEL: Wizard skips to appropriate step: yes/no
+7.  PARCEL: Shipment summary before label gen: yes/no
+8.  PARCEL: Label generates successfully: yes/no
+9.  PARCEL: Mark as Shipped button works: yes/no
+10. PARCEL: View in Tracking Board link works: yes/no
+11. LTL: Upload Official Quote form: yes/no
+12. LTL: Quote saves to EventLog: yes/no
+13. LTL: Full BOL questionnaire (7 sections): yes/no
+14. LTL: AI freight class calculator displays: yes/no
+15. LTL: Shipper/Consignee pre-fill from item data: yes/no
+16. LTL: Special services checkboxes (8+): yes/no
+17. LTL: BOL generates as structured document: yes/no
+18. LTL: Print BOL button: yes/no
+19. LTL: PRO # field for carrier assignment: yes/no
+20. LTL: BOL tracking status progression: yes/no
+21. LTL: Freight shipments in Tracking tab: yes/no
+17. PICKUP: Items appear in pickup tab: yes/no
+18. PICKUP: Vehicle auto-detection: yes/no
+19. PICKUP: 5-step flow functional: yes/no
+20. TRACKING: All 3 methods show in unified view: yes/no
+21. TRACKING: Close Sale button on completed: yes/no
+22. All existing features preserved: yes/no
+23. All locked files untouched: yes/no
+24. inline style={{}} throughout: yes/no
+25. Light mode clean: yes/no
+26. Dark mode clean: yes/no
+27. npx tsc --noEmit: 0 errors
+28. npm run build: pass
+29. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — Parcel Flow:
+  — Saved quote loads on ReadyToShip: [yes/no]
+  — Ship Now pre-fills from quote: [yes/no]
+  — Expired quote refresh: [yes/no]
+  — Shipment summary shown: [yes/no]
+  — Label generation works: [yes/no]
+  — Mark as Shipped: [yes/no]
+  — Tracking Board link: [yes/no]
+
+  PART C — LTL Flow:
+  — Upload Official Quote form: [yes/no]
+  — Quote saves to EventLog: [yes/no]
+  — Full BOL questionnaire (7 sections): [yes/no]
+  — AI freight class calculator: [yes/no]
+  — Shipper/Consignee pre-fill: [yes/no]
+  — Special services checkboxes: [yes/no]
+  — BOL generates as document: [yes/no]
+  — Print BOL: [yes/no]
+  — PRO # field: [yes/no]
+  — BOL tracking progression: [yes/no]
+  — Freight in Tracking tab: [yes/no]
+
+  PART D — Pickup Flow:
+  — Items appear: [yes/no]
+  — Vehicle detection: [yes/no]
+  — 5-step functional: [yes/no]
+
+  PART E — Unified Tracking:
+  — All 3 methods in view: [yes/no]
+  — Close Sale: [yes/no]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  FLAGS: [list any]
+  Files modified: [paths]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD ITEMS:
+
+1. After this command: LOCK the Shipping Center. Move to Bot Page Data Sync.
+2. Pre-demo tasks: Seed pickup data, Dr. Clark demo prep.
+3. Fee Model: 3.5% total (1.75% buyer + 1.75% seller).
+
+Command: Shipping TMS Complete Flow | LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

@@ -1,0 +1,447 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SHIPPO_API_KEY' .env | sed 's/=.*/=SET/' || grep 'SHIPPO_API_TOKEN' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/shipping/ShippingCenterClient.tsx (4,393 lines)
+     — FIX: Rate badge must show "DEMO RATES" not "LIVE RATES" when isDemo
+     — FIX: Carrier table clickable in PreSale (verify Command 1 landed)
+     — ADD: Split shipping cost option (buyer/seller split)
+     — ADD: Proper rate input form for accurate quoting
+
+  2. app/items/[id]/ShippingPanel.tsx (3,640 lines)
+     — SURGICAL: Add "Split cost" as 4th shipping preference option
+     — SURGICAL: Verify clickable carrier rows from Command 1
+     — MINIMAL changes only
+
+  3. lib/shipping/shippo.ts
+     — DIAGNOSTIC: Check if Shippo test token is actually configured
+     — FIX: getDemoRates must be clearly labeled as demo in its return data
+     — FIX: Improve demo rate accuracy for realistic quoting
+
+  4. app/api/shipping/rates/route.ts (30 lines)
+     — FIX: Return isMock/isDemo flag clearly so UI can show correct badge
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping commands LOCKED. Shipping Center at 4,393 lines with fetchLiveRates helper, ShippingAIPanel, BOX_PRESETS with fit indicators, CitySearch, carrier tables with BEST/FASTEST + Net Profit, quote persistence, FreightTab with BOL, LocalPickupTab with 5-step flow, tracking board, enrichment badges.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently. Flag missed opportunities.
+
+SECTION 6 — BUILD PATTERN
+
+  Database -> Storage -> API -> AI -> Enrichment -> UI -> Dashboard -> Database update.
+  Build order: A -> B -> C -> D -> E -> F
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo THIS WEEK. We have a live Shippo test API token (Shippo_test_a251afad...). Shippo test tokens return REAL rate structures with test/demo pricing. The UI must clearly distinguish between live production rates and demo/test rates.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Fix rate labeling, add split cost feature, improve rate accuracy, add proper rate quoting form, diagnose Shippo API connectivity. Make the TMS rates trustworthy and accurate.
+
+You MAY NOT: Touch locked files (except surgical unlocks), rewrite existing components, add npm packages, change schema, deviate from inline style={{}}.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+  OPENAI_API_KEY: SET GPT-4o
+  ANTHROPIC_API_KEY: SET Claude
+  GEMINI_API_KEY: SET Gemini
+  XAI_API_KEY: SET Grok
+  XAI_BASE_URL: SET
+  XAI_MODEL_TEXT: SET
+  XAI_MODEL_VISION: SET
+  SQUARE_*: SET Sandbox (4 vars)
+  SENDGRID_API_KEY: SET (new) ryan@legacy-loop.com
+  SHIPPO_API_KEY or SHIPPO_API_TOKEN: CHECK (test token)
+  CRON_SECRET: SET
+  SYSTEM_USER_ID: SET
+  DEMO_MODE: true
+  DATABASE_URL: SET PostgreSQL
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed for this command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — COMMAND 2: RATE ACCURACY + SPLIT COST + FINAL FIXES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+*** THIS IS THE FINAL SHIPPING CENTER COMMAND ***
+
+PROBLEM 1 — RATES ARE MISLABELED:
+The Shipping Center shows "LIVE RATES" badge but the rates
+are coming from Shippo's demo rate generator (getDemoRates
+in lib/shipping/shippo.ts), not actual Shippo API rates.
+The Shippo test token (Shippo_test_...) should return real
+test rates from the Shippo API. Either:
+a) The token IS working and Shippo test rates ARE being returned
+   (they just look similar to demo rates for test accounts), OR
+b) The Shippo API call is failing silently and falling back
+   to getDemoRates()
+
+DIAGNOSE THIS FIRST. Then fix the badge:
+— If rates come from Shippo API: "SHIPPO TEST RATES" (teal badge)
+— If rates come from getDemoRates: "ESTIMATED RATES" (amber badge)
+— NEVER show "LIVE RATES" unless we have production Shippo keys
+
+PROBLEM 2 — NO SPLIT COST OPTION:
+Users need a 4th shipping preference: "Split cost" where
+buyer and seller each pay half the shipping. This affects
+the fee calculation and the payout math.
+
+PROBLEM 3 — CARRIER TABLE NOT INTERACTIVE IN ITEM DASHBOARD:
+Command 1 added clickable carrier rows to ShippingPanel.
+Verify it's working. If not, debug and fix.
+
+PROBLEM 4 — METRO ESTIMATES STILL FLAT IN ITEM DASHBOARD:
+The Shipping Center's metro estimates were improved in the
+center API with weight/distance variation. But the Item
+Dashboard ShippingPanel uses getMetroEstimates() directly
+which has the flat formula. We can't change the library
+(locked) but we CAN post-process the results in the
+ShippingPanel's call at line 3135-3138.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read lib/shipping/shippo.ts — FULL FILE
+   — Line 44: SHIPPO_TOKEN — is it set? What value?
+   — Line 235: getShippingRates checks if token exists
+   — Line 236: fetchShippoRates tries real API
+   — Line 241: Falls back to getDemoRates on failure
+   — Line 112-166: getDemoRates — the formula-based rates
+   — Run this diagnostic:
+     grep 'SHIPPO_API_KEY\|SHIPPO_API_TOKEN' .env
+     to confirm the token is present and non-empty
+
+2. Read app/api/shipping/rates/route.ts (30 lines)
+   — Check if it passes isDemo flag in response
+   — The response from getShippingRates has { rates, isDemo }
+   — Does the route pass isDemo to the client? If not, the
+     client can't distinguish demo from live rates.
+
+3. Read app/shipping/ShippingCenterClient.tsx
+   — Line 51: fetchLiveRates helper
+   — Line 86: isLive: !data.isMock — is this checking the right field?
+   — The /api/shipping/rates route returns { rates, isDemo }
+     but fetchLiveRates checks data.isMock — MISMATCH?
+
+4. Read app/items/[id]/ShippingPanel.tsx
+   — Line 2808-2832: shipping preference radio buttons
+   — Currently: BUYER_PAYS, FREE_SHIPPING, LOCAL_ONLY
+   — Need to add: SPLIT_COST
+
+5. Verify Command 1 changes landed in ShippingPanel:
+   — Search for "selectedPreSaleRate" — should exist
+   — Search for "Save Quote" — should exist
+   — Search for "ll_quote_" — localStorage key
+
+Print ALL findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — FIX RATE BADGE LABELING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/api/shipping/rates/route.ts
+
+The route currently returns:
+  return Response.json(result);
+
+Where result = { rates: ShippingRate[], isDemo: boolean }
+
+Make sure the response CLEARLY includes the isDemo flag.
+Change to:
+  return Response.json({
+    rates: result.rates,
+    isDemo: result.isDemo,
+    isMock: result.isDemo,  // backward compat
+    rateSource: result.isDemo ? "demo" : "shippo",
+  });
+
+File: app/shipping/ShippingCenterClient.tsx
+
+In fetchLiveRates (line 86), change:
+  isLive: !data.isMock
+To:
+  isLive: !data.isDemo && !data.isMock
+
+In the carrier table header/badge display:
+— If isLive === true: Show "SHIPPO RATES" in teal
+— If isLive === false: Show "ESTIMATED RATES" in amber
+— NEVER show "LIVE RATES" — that implies production rates
+
+Also: Show a small info tooltip:
+"Rates are from Shippo's test environment. Production
+rates will be available after launch."
+
+File: lib/shipping/shippo.ts
+
+In getDemoRates(), add a console.log when it fires:
+  console.log("[shippo] Using demo rates — Shippo API not available or token missing");
+
+In fetchShippoRates(), add a console.log on success:
+  console.log(`[shippo] Got ${rates.length} live rates from Shippo API`);
+
+This helps diagnose whether Shippo is actually being called.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — ADD SPLIT SHIPPING COST OPTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+*** SURGICAL — one section only ***
+
+At lines 2808-2832, add a 4th radio option:
+
+Current options: BUYER_PAYS, FREE_SHIPPING, LOCAL_ONLY
+
+Add: SPLIT_COST
+
+  <label style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.78rem", color: preference === "SPLIT_COST" ? "var(--text-primary)" : "var(--text-muted)", cursor: "pointer" }}>
+    <input type="radio" name="shippref" checked={preference === "SPLIT_COST"} onChange={() => setPreference("SPLIT_COST")} style={{ accentColor: "var(--accent)" }} />
+    Split cost
+  </label>
+
+When SPLIT_COST is selected, show below the radios:
+"Buyer and seller each pay 50% of shipping cost.
+The seller's half is deducted from earnings."
+
+File: app/shipping/ShippingCenterClient.tsx
+
+In the packaging/preference section of PreSaleTab (the
+edit shipping details panel), add the same SPLIT_COST
+option to the preference radios.
+
+In the Net Profit calculation, when preference is SPLIT_COST:
+net = valuationMid - (carrier price / 2) - commission - seller fee
+(Seller only pays half the shipping cost)
+
+Show: "Split: Seller pays $X.XX / Buyer pays $X.XX"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — FIX METRO ESTIMATES IN ITEM DASHBOARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ItemDashboardPanels.tsx
+*** SURGICAL — lines 3135-3138 ONLY ***
+
+Currently:
+  const metroEstimates = useMemo(() => {
+    const weight = suggestion?.weightEstimate ?? 5;
+    return getMetroEstimates(saleZip, weight);
+  }, [saleZip, suggestion]);
+
+Change to add the same weight/distance variation:
+  const metroEstimates = useMemo(() => {
+    const weight = suggestion?.weightEstimate ?? 5;
+    const rawMetros = getMetroEstimates(saleZip, weight);
+    // Add realistic weight + distance variation
+    return rawMetros.map(m => ({
+      ...m,
+      estimatedCost: Math.round(
+        (m.estimatedCost + (weight * 0.5) + ((m.estimatedDays ?? 3) * 1.5)) * 100
+      ) / 100,
+    }));
+  }, [saleZip, suggestion]);
+
+This matches the same adjustment we made in the center API.
+Now the Item Dashboard metro estimates will vary realistically.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — VERIFY COMMAND 1 CARRIER SELECTION IN SHIPPINGPANEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+
+Search for:
+  grep -n "selectedPreSaleRate\|Save Quote\|ll_quote_" \
+  app/items/[id]/ShippingPanel.tsx
+
+If Command 1 changes are present:
+— Carrier rows should be clickable
+— Save Quote button should appear on selection
+— Saved quote should persist to localStorage
+— Report: "Command 1 carrier selection: VERIFIED"
+
+If Command 1 changes are NOT present:
+— Implement them now per Command 1 Part B spec:
+  Add selectedPreSaleRate state
+  Make carrier rows clickable with teal highlight
+  Add Save Quote button below table
+  Save to localStorage ll_quote_${itemId}
+  Show saved quote banner above table
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — SHIPPO API DIAGNOSTIC + RATE QUALITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: lib/shipping/shippo.ts
+
+Run this diagnostic to determine if Shippo API actually works:
+
+1. Check .env for SHIPPO_API_KEY or SHIPPO_API_TOKEN
+2. If token exists and is not "your_shippo_api_token_here":
+   — The API SHOULD be calling Shippo
+   — Add a console.log in fetchShippoRates to confirm
+   — If it errors, the error message will tell us why
+     (e.g., "test mode", "invalid token", "rate limit")
+3. If token is missing or placeholder:
+   — getDemoRates is the only option
+   — Improve getDemoRates to be MORE realistic:
+     — Use actual USPS/UPS/FedEx rate tables
+     — Account for dimensional weight
+       (dim weight = L×W×H / 139 for UPS/FedEx)
+     — Use the HIGHER of actual vs dimensional weight
+     — This makes demo rates closer to real rates
+
+Dimensional weight formula:
+  const dimWeight = (length * width * height) / 139;
+  const billableWeight = Math.max(weight, dimWeight);
+
+Add this to getDemoRates() and use billableWeight
+for all rate calculations. This makes rates much
+more realistic — especially for large light items
+(furniture, art) vs small heavy items (tools, books).
+
+Also: getDemoRates currently uses zipDistance() which
+only compares the first 3 digits of the ZIP. Improve it
+to use all 5 digits for better distance estimation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  Shippo token present in .env: yes/no
+4.  Rate badge shows "SHIPPO RATES" or "ESTIMATED": yes/no
+5.  Badge NEVER says "LIVE RATES": yes/no
+6.  Console.log confirms Shippo API call status: yes/no
+7.  Split cost option in ShippingPanel: yes/no
+8.  Split cost option in Shipping Center: yes/no
+9.  Net Profit calculation correct for split cost: yes/no
+10. Metro estimates vary in Item Dashboard: yes/no
+11. Heavier items show higher metro costs: yes/no
+12. Command 1 carrier selection verified/fixed: yes/no
+13. Carrier rows clickable in ShippingPanel: yes/no
+14. Save Quote button in ShippingPanel: yes/no
+15. getDemoRates uses dimensional weight: yes/no
+16. Demo rates more realistic: yes/no
+17. All existing features preserved: yes/no
+18. All locked files untouched (except surgical): yes/no
+19. inline style={{}} throughout: yes/no
+20. Light mode clean: yes/no
+21. Dark mode clean: yes/no
+22. npx tsc --noEmit: 0 errors
+23. npm run build: pass
+24. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — Rate Badge Fix:
+  — isDemo flag in rates API: [yes/no]
+  — Badge shows correct label: [yes/no]
+  — Console diagnostic: [Shippo API working / demo fallback]
+
+  PART C — Split Cost:
+  — SPLIT_COST option in ShippingPanel: [yes/no]
+  — SPLIT_COST in Shipping Center: [yes/no]
+  — Net Profit adjusted for split: [yes/no]
+
+  PART D — Metro Estimates:
+  — Weight/distance variation in Item Dashboard: [yes/no]
+  — Costs vary realistically: [yes/no]
+
+  PART E — Carrier Selection Verification:
+  — Command 1 changes present: [yes/no]
+  — Clickable rows work: [yes/no]
+  — Save Quote works: [yes/no]
+
+  PART F — Rate Quality:
+  — Shippo token status: [present / missing / placeholder]
+  — Dimensional weight added: [yes/no]
+  — Demo rates more realistic: [yes/no]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  FLAGS: [list any]
+  Files modified: [paths]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD ITEMS:
+
+1. AFTER THIS COMMAND: LOCK the Shipping Center completely.
+2. Next priority: Bot Page Data Sync (Phase 3 item 19).
+3. Then: Phase 4 Admin Dashboard, Phase 6 Demo Walkthrough.
+4. Pre-demo: Seed pickup data, Dr. Clark demo preparation.
+5. Fee Model: 3.5% total (1.75% buyer + 1.75% seller).
+6. Split cost: 50/50 shipping split deducted from seller earnings.
+
+Command 2 of 2: Rate Accuracy + Split Cost + Final Fixes
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

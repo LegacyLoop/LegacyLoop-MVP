@@ -1,7 +1,7 @@
 /**
  * Payment Ledger Service
  * Records all financial transactions and seller earnings.
- * Processing fee (3.5%) is charged to buyer, NOT deducted from seller.
+ * Processing fee (3.5%) split 50/50 — 1.75% buyer, 1.75% seller.
  */
 import { prisma } from "@/lib/db";
 import {
@@ -23,7 +23,7 @@ export async function recordPayment(
     isDemo?: boolean;
   }
 ) {
-  const processingFee = calculateProcessingFee(subtotal);
+  const processingFee = calculateProcessingFee(subtotal, "buyer");
   try {
     return await prisma.paymentLedger.create({
       data: {

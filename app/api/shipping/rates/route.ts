@@ -23,7 +23,12 @@ export async function POST(req: Request) {
         weight: Number(weight),
       }
     );
-    return Response.json(result);
+    return Response.json({
+      rates: result.rates,
+      isDemo: result.isDemo,
+      isMock: result.isDemo,
+      rateSource: result.isDemo ? "demo" : "shippo",
+    });
   } catch (e: any) {
     return new Response(e.message ?? "Shipping error", { status: 500 });
   }

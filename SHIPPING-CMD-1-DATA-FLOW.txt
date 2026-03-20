@@ -1,0 +1,429 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/items/[id]/ShippingPanel.tsx (3,520 lines)
+     — SURGICAL: Add carrier selection save to EventLog
+     — SURGICAL: When custom box should be highlighted, auto-select it
+     — SURGICAL: Add clickable carrier row selection with Save button
+     — MINIMAL changes — this file is huge, touch ONLY what's specified
+
+  2. app/items/[id]/ItemDashboardPanels.tsx
+     — SURGICAL: Fix mapSuggestionToPreset call to recommend custom
+       for items with excessive void space in preset boxes
+     — ONE AREA ONLY — the suggestion useMemo block (line 3111-3126)
+
+  3. app/shipping/ShippingCenterClient.tsx (4,393 lines)
+     — UPGRADE: Carrier table needs clickable selection with save
+       IN THE PRE-SALE TAB (matching what we add to ShippingPanel)
+     — UPGRADE: Better metro estimate display
+
+  4. app/api/shipping/center/route.ts (198 lines)
+     — EXTEND: Metro estimates should vary by weight realistically
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping upgrades LOCKED. The Shipping Center currently has 4,393 lines with full parcel/LTL/pickup flows, fetchLiveRates helper using Shippo, ShippingAIPanel, QuoteDetailPanel, BOL questionnaire, 5-step pickup, enrichment badges, auto-refresh polling, BOL localStorage persistence.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently. Flag missed opportunities.
+
+SECTION 6 — BUILD PATTERN
+
+  Database -> Storage -> API -> AI -> Enrichment -> UI -> Dashboard -> Database update.
+  Build order: A -> B -> C -> D -> E
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo THIS WEEK. All shipping flows must work end-to-end.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Fix carrier selection saving, improve box recommendations, make quote saving work from Item Dashboard, add clickable carrier rows with real save functionality. Make the TMS flow seamless start to finish.
+
+You MAY NOT: Touch locked files (except surgical unlocks), rewrite existing components, add npm packages, change schema, deviate from inline style={{}}.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed for this command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — COMMAND 1 OF 2: ITEM DASHBOARD → SHIPPING CENTER DATA FLOW FIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+*** THE CORE PROBLEM ***
+
+When a user gets carrier rates on the Item Dashboard ShippingPanel,
+enters a buyer ZIP, and sees the carrier rate table — they CANNOT:
+1. Click on a carrier quote to select it
+2. Save that selected carrier for later
+3. Have the Shipping Center pick up where they left off with that
+   specific carrier, buyer ZIP, and pricing
+
+The rates display but the flow DEAD-ENDS. No selection. No save.
+No continuity to the Shipping Center or to label generation.
+
+Also: The AI box suggestion picks Medium for a laptop (14x9.5x0.7)
+because the tolerance is 2" — so 16 <= 14+2. But a Medium box is
+14x12x8 for a laptop that's only 0.7" thick. That's absurd void space.
+The Custom box should be recommended with exact dims.
+
+Also: Metro estimates show ~$14 for every city. They need to vary
+based on item weight and distance realistically.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read app/items/[id]/ShippingPanel.tsx
+   — Line 2402-2432: Pre-sale carrier rates section
+     This shows carrier rates but NO way to select or save them.
+     The rate table is DISPLAY ONLY.
+   — Line 195-270: Post-sale wizard
+     This has selectedRate state (line 203) and createLabel function.
+     The wizard flow works once you're in it.
+   — Line 148-170: mapSuggestionToPreset function
+     This picks the box preset. The 2" tolerance causes
+     thin/flat items to fit Medium when Custom is better.
+
+2. Read app/items/[id]/ItemDashboardPanels.tsx
+   — Line 3111-3126: suggestPackage call with dimension fix
+   — Already correct. The issue is in mapSuggestionToPreset
+     in ShippingPanel.tsx, not here.
+
+3. Read app/shipping/ShippingCenterClient.tsx
+   — Line 51: fetchLiveRates helper — already deployed
+   — PreSaleTab carrier table — already has clickable
+     selection + Save Quote. But the RATES may not match
+     Item Dashboard rates because they use different APIs
+     or different params.
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — ADD CLICKABLE CARRIER SELECTION TO SHIPPINGPANEL PRE-SALE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+*** SURGICAL — minimal changes to this 3,520-line file ***
+
+Currently the pre-sale carrier rate table (line ~2935-2990)
+displays rates with Cheapest/Fastest badges but NO way to
+click/select a carrier or save it.
+
+ADD:
+
+1. STATE: Add a selectedPreSaleRate state:
+   const [selectedPreSaleRate, setSelectedPreSaleRate] = useState<ShippingRate | null>(null);
+
+2. CLICKABLE ROWS: Make each carrier row in the pre-sale
+   rate table clickable:
+   — onClick: setSelectedPreSaleRate(rate)
+   — Selected row: teal border, checkmark icon
+   — Only ONE selected at a time
+
+3. SAVE QUOTE BAR: Below the carrier table, when a rate
+   is selected, show:
+   [Save Quote — [Carrier] [Service] $X.XX]
+   Teal gradient button.
+
+   On click:
+   — Save to localStorage: ll_saved_quote_{itemId} =
+     JSON.stringify({
+       carrier: rate.provider,
+       service: rate.servicelevel_name,
+       rate: rate.amount,
+       days: rate.estimated_days,
+       destZip: buyerZip,
+       fromZip: fromZip,
+       savedAt: new Date().toISOString(),
+       weight, length, width, height,
+     })
+   — Also fire the EventLog save (already exists at line 2435)
+   — Show "Quote saved!" for 2 seconds
+
+4. SAVED QUOTE DISPLAY: If localStorage has a saved quote
+   for this item, show it above the carrier table:
+   "Saved: [Carrier] [Service] — $[rate] · [time ago]"
+   [Fresh / Expired] badge
+   [Use this quote →] link
+
+This means: user enters ZIP → gets rates → clicks a carrier →
+saves it → goes to Shipping Center → quote is there → continues
+to label generation. THE LOOP IS CLOSED.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — FIX CUSTOM BOX RECOMMENDATION FOR THIN/FLAT ITEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+*** SURGICAL — one function change ***
+
+The mapSuggestionToPreset function (line 151-170) picks
+the smallest preset that fits with 2" tolerance. For a
+laptop that's 14x9.5x0.7: after suggestPackage adds 2"
+padding, dims become 16x11.5x2.7. The function checks:
+— Does 16 <= 14+2? YES (16 <= 16) → picks Medium
+
+But Medium is 14x12x8. The laptop is 0.7" thick going
+into a box that's 8" tall. That's 7.3 inches of void.
+
+FIX: After finding the "fits" preset, check for excessive
+void on ANY dimension. If the preset is more than 3x the
+item dimension on any axis, recommend Custom instead.
+
+Replace lines 160-166 with:
+
+  for (const key of presetOrder) {
+    const p = BOX_PRESETS[key];
+    if (aiL <= p.l + tolerance && aiW <= p.w + tolerance && aiH <= p.h + tolerance) {
+      // Check for excessive void space
+      const voidL = p.l - aiL;
+      const voidW = p.w - aiW;
+      const voidH = p.h - aiH;
+      const maxVoid = Math.max(voidL, voidW, voidH);
+      const maxItemDim = Math.max(aiL, aiW, aiH);
+      // If any void dimension is more than 3x the item's smallest dimension,
+      // or the box height is more than 4x the item height, recommend custom
+      if (maxVoid > maxItemDim * 0.5 || p.h > aiH * 4) {
+        return { key: "custom", autoCustom: true, reason: `${p.label} fits but has excessive void (${maxVoid.toFixed(0)}" unused). Custom box recommended: ${aiL}×${aiW}×${aiH}"` };
+      }
+      return { key, autoCustom: false, reason: `AI dimensions ${aiL}×${aiW}×${aiH}" fit ${p.label}` };
+    }
+  }
+
+This means: HP Envy 15 (16x11.5x2.7 after padding) →
+Medium fits (16<=16) → but void check: box H is 8, item
+H is 2.7, 8 > 2.7*4? YES (8 > 10.8? No, 8 < 10.8).
+Actually 8/2.7 = 2.96, not quite 4x.
+
+Let me recalculate: p.h (8) > aiH (2.7) * 3? 8 > 8.1? No.
+p.h (8) > aiH (2.7) * 2.5? 8 > 6.75? YES.
+
+Adjust threshold: if box height > item height * 2.5 for
+items where height is the SMALLEST dimension.
+
+Better logic:
+  const minItemDim = Math.min(aiL, aiW, aiH);
+  const matchingBoxDim = aiH === minItemDim ? p.h : (aiW === minItemDim ? p.w : p.l);
+  if (matchingBoxDim > minItemDim * 3) {
+    return custom with reason
+  }
+
+This catches: laptop H=2.7, box H=8, 8 > 2.7*3 = 8.1? No.
+Still doesn't trigger. The issue is the tolerance is just
+barely including it.
+
+SIMPLEST FIX: For items where the THINNEST dimension is
+less than 2 inches (like a laptop at 0.7"), ALWAYS
+recommend custom:
+
+  if (Math.min(aiL, aiW, aiH) < 2) {
+    return { key: "custom", autoCustom: true, reason: `Very thin/flat item (${Math.min(aiL, aiW, aiH).toFixed(1)}") — custom box recommended: ${aiL}×${aiW}×${aiH}"` };
+  }
+
+Add this check at the TOP of the function, before the
+preset loop. This handles laptops, tablets, records,
+framed art, and other thin/flat items perfectly.
+
+Then the box grid will show Custom highlighted with
+the exact dims pre-filled. MUCH better recommendation.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — FIX METRO ESTIMATES TO VARY BY WEIGHT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/api/shipping/center/route.ts
+
+Currently metro estimates come from getMetroEstimates()
+which uses a simplified formula. The results look the
+same (~$14) for every city regardless of item weight.
+
+Read lib/shipping/metro-estimates.ts to understand the
+formula. The estimateShippingCost function takes fromZip
+prefix, toZip prefix, and weight. But the results are
+nearly flat because the formula doesn't differentiate
+enough by weight and distance.
+
+FIX: After calling getMetroEstimates(), POST-PROCESS
+the results to add more weight-based variation:
+
+  const metros = getMetroEstimates(
+    item.saleZip || "04101",
+    actualWeight
+  );
+
+  // Add realistic weight-based variation
+  const adjustedMetros = metros.map(m => ({
+    ...m,
+    estimatedCost: Math.round(
+      (m.estimatedCost + (actualWeight * 0.5) + (m.estimatedDays * 1.5))
+      * 100
+    ) / 100,
+  }));
+
+This adds $0.50/lb + $1.50/transit-day to each estimate,
+making heavier items and farther cities cost more.
+A 5 lb item to NYC (3 days) = base + $2.50 + $4.50 = ~$21
+A 45 lb amp to LA (5 days) = base + $22.50 + $7.50 = ~$44
+MUCH more realistic.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — ENSURE SHIPPING CENTER READS SAVED QUOTES FROM ITEM DASHBOARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The Shipping Center's ReadyToShipTab already loads saved
+quotes from localStorage (line ~1440-1470). Verify it
+reads the SAME key format used by the ShippingPanel save
+in Part B: ll_saved_quote_{itemId}
+
+If the keys don't match, align them. The Shipping Center
+should read quotes saved from:
+1. ShippingPanel pre-sale (Part B above)
+2. ShippingPanel post-sale wizard
+3. Shipping Center's own Save Quote button
+
+All should use the SAME localStorage key format:
+  ll_saved_quote_{itemId}
+
+Also verify: when the Shipping Center's Ship Now button
+is clicked, it uses the saved carrier, ZIP, and dims
+to pre-fill the wizard. This should already work from
+previous commands — just verify.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  ShippingPanel pre-sale carrier rows clickable: yes/no
+4.  Selected carrier highlights with checkmark: yes/no
+5.  Save Quote button appears on selection: yes/no
+6.  Quote saved to localStorage: yes/no
+7.  Saved quote displays above carrier table: yes/no
+8.  Fresh/Expired badge on saved quote: yes/no
+9.  Custom box recommended for thin items (<2"): yes/no
+10. HP Envy 15 laptop gets Custom not Medium: yes/no
+11. Custom box dims pre-filled correctly: yes/no
+12. Metro estimates vary by weight: yes/no
+13. Heavier items show higher metro costs: yes/no
+14. Farther cities show higher costs: yes/no
+15. Shipping Center reads Item Dashboard saved quotes: yes/no
+16. localStorage key format aligned: yes/no
+17. Ship Now pre-fills from saved quote: yes/no
+18. All existing features preserved: yes/no
+19. All locked files untouched (except surgical): yes/no
+20. inline style={{}} throughout: yes/no
+21. Light mode clean: yes/no
+22. Dark mode clean: yes/no
+23. npx tsc --noEmit: 0 errors
+24. npm run build: pass
+25. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — Clickable Carrier Selection:
+  — Rows clickable in pre-sale: [yes/no]
+  — Save Quote button: [yes/no]
+  — localStorage save: [yes/no]
+  — Saved quote display: [yes/no]
+
+  PART C — Custom Box Fix:
+  — Thin item detection (<2"): [yes/no]
+  — HP Envy gets Custom: [yes/no]
+  — Custom dims pre-filled: [yes/no]
+
+  PART D — Metro Estimates:
+  — Weight-based variation: [yes/no]
+  — Distance-based variation: [yes/no]
+  — Realistic costs: [yes/no]
+
+  PART E — Quote Sync:
+  — localStorage keys aligned: [yes/no]
+  — Shipping Center reads Item Dashboard quotes: [yes/no]
+  — Ship Now pre-fills: [yes/no]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  FLAGS: [list any]
+  Files modified: [paths]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD:
+
+1. Command 2 (NEXT): Add "Split shipping cost" option (Buyer/Seller split) + final visual polish.
+2. After both commands: LOCK Shipping Center. Move to Bot Page Data Sync.
+3. Pre-demo: Seed pickup data, Dr. Clark demo prep.
+4. Fee Model: 3.5% total (1.75%/1.75%).
+
+Command 1 of 2: Item Dashboard → Shipping Center Data Flow Fix
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

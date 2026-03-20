@@ -40,6 +40,25 @@ export default async function SettingsPage() {
       {/* Password section */}
       <ChangePasswordSection />
 
+      {/* Assessment */}
+      <div className="card p-6 mt-4">
+        <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-primary, #1c1917)", marginBottom: "0.25rem" }}>
+          Personalized Assessment
+        </div>
+        <div style={{ color: "var(--text-muted, #78716c)", fontSize: "0.85rem", marginBottom: "1rem" }}>
+          Retake the quiz to update your plan recommendation as your needs change.
+        </div>
+        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+          <Link
+            href="/onboarding/quiz"
+            className="btn-ghost"
+            style={{ fontSize: "0.85rem" }}
+          >
+            Retake Assessment →
+          </Link>
+        </div>
+      </div>
+
       {/* Your Data */}
       <div className="card p-6 mt-4">
         <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-primary, #1c1917)", marginBottom: "0.25rem" }}>

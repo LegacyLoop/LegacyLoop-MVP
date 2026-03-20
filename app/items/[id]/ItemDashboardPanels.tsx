@@ -2928,8 +2928,8 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
             isLocal = true; scenario = "Local sale";
           }
           const comm = Math.round(salePrice * cRate * 100) / 100;
-          const sellerProcessingFee = 0; // Processing fee is charged to buyer, not seller
-          const net = Math.round((salePrice - shipCost - comm) * 100) / 100;
+          const sellerProcessingFee = Math.round(salePrice * 0.0175 * 100) / 100;
+          const net = Math.round((salePrice - shipCost - comm - sellerProcessingFee) * 100) / 100;
 
           // ── Parse PriceBot result ──
           const pb = priceBotResult ? (typeof priceBotResult === "string" ? (() => { try { return JSON.parse(priceBotResult); } catch { return null; } })() : priceBotResult) : null;
@@ -2983,8 +2983,12 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                       <span style={{ color: "#ef4444" }}>-${comm.toFixed(2)}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
-                      <span>Processing fee</span>
-                      <span style={{ color: "#4ade80" }}>$0.00 (buyer pays {PROCESSING_FEE.display})</span>
+                      <span>Processing fee ({PROCESSING_FEE.sellerDisplay})</span>
+                      <span style={{ color: "#ef4444" }}>-${sellerProcessingFee.toFixed(2)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)", fontSize: "0.65rem", opacity: 0.7 }}>
+                      <span>Buyer also pays {PROCESSING_FEE.buyerDisplay}</span>
+                      <span>+${(Math.round(salePrice * 0.0175 * 100) / 100).toFixed(2)}</span>
                     </div>
                     <div style={{ borderTop: "1px solid var(--border-default)", marginTop: "0.25rem", paddingTop: "0.35rem", display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
                       <span style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: "0.75rem" }}>You keep</span>
@@ -3106,9 +3110,15 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
   // Compute package suggestion from AI data (including AI weight + shipping notes)
   const suggestion = useMemo(() => {
     if (!aiData) return null;
+    // Build dimension string from whichever AI field has the data
+    const dimString = aiData.dimensions_estimate
+      || aiData.dimensions
+      || (aiData.shipping_profile
+        ? `${aiData.shipping_profile.length} x ${aiData.shipping_profile.width} x ${aiData.shipping_profile.height}`
+        : null);
     return suggestPackage(
       aiData.category || category || null,
-      aiData.dimensions_estimate || null,
+      dimString,
       aiData.material || null,
       aiData.weight_estimate_lbs || null,
       aiData.shipping_notes || null,
@@ -3130,7 +3140,14 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
   // Metro estimates for pre-sale preview
   const metroEstimates = useMemo(() => {
     const weight = suggestion?.weightEstimate ?? 5;
-    return getMetroEstimates(saleZip, weight);
+    const rawMetros = getMetroEstimates(saleZip, weight);
+    // Add realistic weight + distance variation
+    return rawMetros.map(m => ({
+      ...m,
+      estimatedCost: Math.round(
+        (m.estimatedCost + (weight * 0.5) + ((m.estimatedDays ?? 3) * 1.5)) * 100
+      ) / 100,
+    }));
   }, [saleZip, suggestion]);
 
   // Determine mode based on item status
@@ -3176,7 +3193,7 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
         {boosted && boostResult && <MegaBotBoostResults botType="shipping" result={boostResult} aiData={aiData} />}
       </div>
 
-      <PanelFooter botName="Shipping Center" botLink="/bots/shipbot" itemId={itemId} />
+      <PanelFooter botName="Shipping Center" botLink="/shipping" itemId={itemId} />
       </div>
     </GlassCard>
   );
@@ -6219,7 +6236,7 @@ function BotSummaryContent({ aiData, valuation, antique, photos, megabotUsed, it
     { name: "PriceBot", icon: "💰", status: valuation ? "Complete" : "Not run", finding: valuation ? `$${Math.round(valuation.low)} – $${Math.round(valuation.high)}` : "—", link: `/bots/pricebot?item=${itemId}` },
     { name: "ListBot", icon: "📝", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Ready to generate listing" : "Needs analysis first", link: `/bots/listbot?item=${itemId}` },
     { name: "BuyerBot", icon: "🎯", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Ready to scan for buyers" : "Analyze item first", link: `/bots/buyerbot?item=${itemId}` },
-    { name: "Shipping", icon: "📦", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Estimates available" : "Analyze first", link: `/bots/shipbot?item=${itemId}` },
+    { name: "Shipping", icon: "📦", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Estimates available" : "Analyze first", link: `/shipping?itemId=${itemId}` },
     { name: "PhotoBot", icon: "📷", status: photos.length > 0 ? "Ready" : "No photos", finding: `${photos.length} photo${photos.length !== 1 ? "s" : ""}`, link: `/bots/stylebot?item=${itemId}` },
     { name: "MegaBot", icon: "⚡", status: megabotUsed ? "Used" : "Available", finding: megabotUsed ? "Multi-agent complete" : "Run MegaBot on any bot", link: `/bots/megabot?item=${itemId}` },
   ];
@@ -6293,6 +6310,13 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   const [updating, setUpdating] = useState(false);
   const [priceInput, setPriceInput] = useState(initialListingPrice ? String(initialListingPrice) : "");
   const [priceSaveState, setPriceSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [shareCopied, setShareCopied] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [refundRequests, setRefundRequests] = useState<any[]>([]);
+  const [refundLoading, setRefundLoading] = useState(false);
+  const [refundActionLoading, setRefundActionLoading] = useState<string | null>(null);
+  const [relistLoading, setRelistLoading] = useState(false);
+  const [showReturnsInfo, setShowReturnsInfo] = useState(false);
   const currentIdx = STATUS_FLOW.findIndex((s) => s.key === status);
 
   const updateStatus = async (newStatus: string) => {
@@ -6311,77 +6335,163 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
     }
   };
 
+  const shareItem = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/items/${itemId}`);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    } catch {}
+  };
+
+  const deleteItem = async () => {
+    if (!confirm("Delete this item? This cannot be undone.")) return;
+    setDeleting(true);
+    try {
+      await fetch(`/api/items/delete/${itemId}`, { method: "DELETE" });
+      router.push("/dashboard");
+    } catch { setDeleting(false); }
+  };
+
+  // ── Refund fetch + handlers ──
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!["SOLD", "SHIPPED", "COMPLETED"].includes(status)) return;
+    setRefundLoading(true);
+    fetch("/api/refunds")
+      .then(r => r.json())
+      .then(data => {
+        const itemRefunds = (data.refunds || []).filter((r: any) => r.itemId === itemId);
+        setRefundRequests(itemRefunds);
+      })
+      .catch(() => {})
+      .finally(() => setRefundLoading(false));
+  }, [itemId, status]);
+
+  async function relistItem() {
+    if (!confirm("Relist this item? It will move back to LISTED status and be visible to buyers again.")) return;
+    setRelistLoading(true);
+    try {
+      await fetch(`/api/items/status/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "LISTED" }),
+      });
+      router.refresh();
+    } catch {}
+    setRelistLoading(false);
+  }
+
+  async function handleRefund(action: "approve" | "deny") {
+    const msg = action === "approve"
+      ? "Approve this refund? The item will be relisted and earnings marked as refunded. Processing fee is non-refundable."
+      : "Deny this refund request?";
+    if (!confirm(msg)) return;
+    setRefundActionLoading(action);
+    try {
+      await fetch(`/api/refunds/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      router.refresh();
+    } catch {}
+    setRefundActionLoading(null);
+  }
+
   // Quick actions based on current status
-  const actions: { label: string; onClick: () => void; primary?: boolean }[] = [];
+  type ActionDef = { label: string; onClick: () => void; primary?: boolean; danger?: boolean };
+  const actions: ActionDef[] = [];
   if (status === "DRAFT") {
-    actions.push({ label: "Run AI Analysis", onClick: () => { router.push(`/items/${itemId}?analyze=true`); }, primary: true });
+    actions.push({ label: "\u{1F9E0} Run AI Analysis", onClick: () => { router.push(`/items/${itemId}?analyze=true`); }, primary: true });
+    actions.push({ label: "\u{1F4DD} Edit Item", onClick: () => { router.push(`/items/${itemId}/edit`); } });
   }
   if (status === "ANALYZED" || status === "READY") {
-    actions.push({ label: "Mark as Listed", onClick: () => updateStatus("LISTED"), primary: true });
+    actions.push({ label: "\u{1F4E2} Mark as Listed", onClick: () => updateStatus("LISTED"), primary: true });
+    actions.push({ label: "\u26A1 Run MegaBot", onClick: () => { router.push(`/bots/megabot?itemId=${itemId}`); } });
+    actions.push({ label: "\u{1F4DD} Edit Item", onClick: () => { router.push(`/items/${itemId}/edit`); } });
   }
   if (status === "LISTED") {
-    actions.push({ label: "Mark Interest", onClick: () => updateStatus("INTERESTED") });
-    actions.push({ label: "Mark as Sold", onClick: () => updateStatus("SOLD"), primary: true });
+    actions.push({ label: "\u{1F4AC} Mark Interest", onClick: () => updateStatus("INTERESTED") });
+    actions.push({ label: "\u{1F4B0} Mark as Sold", onClick: () => updateStatus("SOLD"), primary: true });
+    actions.push({ label: "\u26A1 Run MegaBot", onClick: () => { router.push(`/bots/megabot?itemId=${itemId}`); } });
   }
   if (status === "INTERESTED") {
-    actions.push({ label: "Mark as Sold", onClick: () => updateStatus("SOLD"), primary: true });
-    actions.push({ label: "Back to Listed", onClick: () => updateStatus("LISTED") });
+    actions.push({ label: "\u{1F4B0} Mark as Sold", onClick: () => updateStatus("SOLD"), primary: true });
+    actions.push({ label: "\u{1F4E2} Back to Listed", onClick: () => updateStatus("LISTED") });
   }
   if (status === "SOLD") {
-    actions.push({ label: "Ship Now ↓", onClick: () => {
+    actions.push({ label: "\u{1F4E6} Ship Now \u2193", onClick: () => {
       const el = document.getElementById("shipping-panel");
       if (el) el.scrollIntoView({ behavior: "smooth" });
     }, primary: true });
-    actions.push({ label: "Mark Completed", onClick: () => updateStatus("COMPLETED") });
+    actions.push({ label: "\u{1F389} Mark Completed", onClick: () => updateStatus("COMPLETED") });
   }
   if (status === "SHIPPED") {
-    actions.push({ label: "Mark Completed", onClick: () => updateStatus("COMPLETED"), primary: true });
+    actions.push({ label: "\u{1F389} Mark Completed", onClick: () => updateStatus("COMPLETED"), primary: true });
+  }
+  // Universal actions
+  if (status !== "COMPLETED") {
+    actions.push({ label: shareCopied ? "\u2713 Copied!" : "\u{1F4E4} Share", onClick: shareItem });
+  }
+  if (!["SOLD", "SHIPPED", "COMPLETED"].includes(status)) {
+    actions.push({ label: "\u{1F5D1}\u{FE0F} Delete", onClick: deleteItem, danger: true });
   }
 
   const price = valuation?.estimatedPriceLow ?? null;
   const priceHigh = valuation?.estimatedPriceHigh ?? null;
 
+  // Net earnings preview
+  const listPriceNum = parseFloat(priceInput) || 0;
+  const commissionEst = Math.round(listPriceNum * 0.05 * 100) / 100;
+  const sellerFeeEst = Math.round(listPriceNum * 0.0175 * 100) / 100;
+  const netEst = Math.round((listPriceNum - commissionEst - sellerFeeEst) * 100) / 100;
+
+  // Confidence value
+  const rawConf = valuation?.confidence ?? aiData?.confidence ?? 0;
+  const confPct = Math.round(rawConf > 1 ? rawConf : rawConf * 100);
+
   return (
     <GlassCard fullWidth>
-      <PanelHeader icon="🎛️" title="Item Control Center" hasData={true} badge="STATUS" collapsed={collapsed} onToggle={onToggle} />
+      <PanelHeader icon={"\u{1F39B}\u{FE0F}"} title="Item Control Center" hasData={true} badge="STATUS" collapsed={collapsed} onToggle={onToggle} />
       <div style={{ display: collapsed ? "none" : undefined }}>
       <div style={{ padding: "0.75rem 1rem" }}>
-        {/* Status Progress Bar */}
-        <div style={{ marginBottom: "0.6rem" }}>
+
+        {/* ── STATUS PROGRESS BAR ── */}
+        <div style={{ marginBottom: "0.75rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.4rem" }}>
+            <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Status</span>
+            <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>Step {currentIdx + 1} of {STATUS_FLOW.length} {"\u00B7"} {Math.round(((currentIdx + 1) / STATUS_FLOW.length) * 100)}%</span>
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: 0, position: "relative" }}>
             {STATUS_FLOW.map((s, i) => {
               const isPast = i < currentIdx;
               const isCurrent = i === currentIdx;
-              const isFuture = i > currentIdx;
               return (
                 <div key={s.key} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", position: "relative" }}>
-                  {/* Connector line */}
                   {i > 0 && (
                     <div style={{
-                      position: "absolute", top: "0.65rem", right: "50%", width: "100%", height: "2px",
+                      position: "absolute", top: "0.7rem", right: "50%", width: "100%", height: "2px",
                       background: isPast || isCurrent ? "var(--accent)" : "var(--ghost-bg)",
                       zIndex: 0,
                     }} />
                   )}
-                  {/* Circle */}
                   <div style={{
-                    width: isCurrent ? "1.5rem" : "1.3rem",
-                    height: isCurrent ? "1.5rem" : "1.3rem",
+                    width: isCurrent ? "1.6rem" : "1.3rem",
+                    height: isCurrent ? "1.6rem" : "1.3rem",
                     borderRadius: "50%",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     fontSize: isCurrent ? "0.75rem" : "0.65rem",
                     background: isPast ? "var(--accent)" : isCurrent ? "var(--accent)" : "var(--ghost-bg)",
                     border: isCurrent ? "2px solid var(--accent)" : "1px solid " + (isPast ? "var(--accent)" : "var(--border-default)"),
-                    boxShadow: isCurrent ? "0 0 8px rgba(0,188,212,0.4)" : "none",
+                    boxShadow: isCurrent ? "0 0 10px rgba(0,188,212,0.45)" : "none",
                     color: isPast || isCurrent ? "#fff" : "var(--text-muted)",
                     zIndex: 1, position: "relative",
                     transition: "all 0.3s",
                   }}>
-                    {isPast ? "✓" : s.icon}
+                    {isPast ? "\u2713" : s.icon}
                   </div>
-                  {/* Label */}
                   <div style={{
-                    fontSize: "0.58rem", fontWeight: isCurrent ? 700 : 400,
+                    fontSize: "0.65rem", fontWeight: isCurrent ? 800 : 400,
                     color: isCurrent ? "var(--accent)" : isPast ? "var(--text-secondary)" : "var(--text-muted)",
                     marginTop: "0.25rem", textAlign: "center", whiteSpace: "nowrap",
                   }}>
@@ -6393,46 +6503,52 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           </div>
         </div>
 
-        {/* Item Info Strip */}
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", margin: "0 0 0.6rem 0" }}>
+        {/* ── INFO STRIP ── */}
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.75rem", paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)" }}>
           {(photos?.length ?? 0) > 0 && (
-            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)", border: "1px solid var(--border-default)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "var(--ghost-bg)" }}>
-              📷 {photos!.length} photo{photos!.length !== 1 ? "s" : ""}
+            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#00bcd4", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "rgba(0,188,212,0.08)" }}>
+              {"\u{1F4F7}"} {photos!.length} photo{photos!.length !== 1 ? "s" : ""}
             </span>
           )}
           {(category || aiData?.category) && (
-            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)", border: "1px solid var(--border-default)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "var(--ghost-bg)" }}>
-              🏷️ {category || aiData.category}
+            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--accent)", border: "1px solid var(--accent-border, rgba(0,188,212,0.2))", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "var(--accent-dim, rgba(0,188,212,0.06))" }}>
+              {"\u{1F3F7}\u{FE0F}"} {category || aiData.category}
             </span>
           )}
-          {(valuation?.confidence != null || aiData?.confidence != null) && (
-            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)", border: "1px solid var(--border-default)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "var(--ghost-bg)" }}>
-              🎯 AI: {Math.round(((valuation?.confidence ?? aiData?.confidence ?? 0) > 1 ? (valuation?.confidence ?? aiData?.confidence ?? 0) : (valuation?.confidence ?? aiData?.confidence ?? 0) * 100))}%
+          {confPct > 0 && (
+            <span style={{
+              fontSize: "0.68rem", fontWeight: 600, borderRadius: "9999px", padding: "0.15rem 0.5rem",
+              color: confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#eab308" : "#ef4444",
+              border: `1px solid ${confPct >= 80 ? "rgba(34,197,94,0.3)" : confPct >= 60 ? "rgba(234,179,8,0.3)" : "rgba(239,68,68,0.3)"}`,
+              background: confPct >= 80 ? "rgba(34,197,94,0.08)" : confPct >= 60 ? "rgba(234,179,8,0.08)" : "rgba(239,68,68,0.08)",
+            }}>
+              {"\u{1F3AF}"} AI: {confPct}%
             </span>
           )}
           {valuation?.low != null && valuation?.high != null && (
-            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)", border: "1px solid var(--border-default)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "var(--ghost-bg)" }}>
-              ${Math.round(valuation.low)}–${Math.round(valuation.high)} est
+            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "rgba(74,222,128,0.08)" }}>
+              ${Math.round(valuation.low)}{"\u2013"}${Math.round(valuation.high)} est
             </span>
           )}
         </div>
 
-        {/* Quick Actions */}
+        {/* ── QUICK ACTIONS ── */}
         {actions.length > 0 && (
-          <div style={{ marginBottom: "0.5rem" }}>
-            <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>Quick Actions</div>
+          <div style={{ marginBottom: "0.75rem", paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)" }}>
+            <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>Quick Actions</div>
             <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
               {actions.map((a) => (
                 <button
                   key={a.label}
                   onClick={a.onClick}
-                  disabled={updating}
+                  disabled={updating || deleting}
                   style={{
                     padding: "0.35rem 0.75rem", borderRadius: "0.5rem", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
-                    background: a.primary ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "var(--ghost-bg)",
-                    border: a.primary ? "none" : "1px solid var(--border-default)",
-                    color: a.primary ? "#fff" : "var(--text-secondary)",
-                    opacity: updating ? 0.5 : 1,
+                    background: a.primary ? "linear-gradient(135deg, #00bcd4, #0097a7)" : a.danger ? "transparent" : "var(--ghost-bg)",
+                    border: a.primary ? "none" : a.danger ? "1px solid rgba(239,68,68,0.25)" : "1px solid var(--border-default)",
+                    color: a.primary ? "#fff" : a.danger ? "#ef4444" : "var(--text-secondary)",
+                    opacity: (updating || deleting) ? 0.5 : 1,
+                    transition: "all 0.15s ease",
                   }}
                 >
                   {a.label}
@@ -6442,102 +6558,103 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           </div>
         )}
 
-        {/* Set Listing Price */}
+        {/* ── LISTING PRICE ── */}
         <div style={{
           background: "var(--bg-card)",
           backdropFilter: "blur(12px)",
           border: "1px solid rgba(0,188,212,0.15)",
           borderRadius: "12px",
           padding: "0.65rem 1rem",
-          display: "flex",
-          alignItems: "center",
-          gap: "1rem",
-          flexWrap: "wrap",
-          marginBottom: "0.5rem",
+          marginBottom: "0.75rem",
         }}>
-          <span style={{
-            color: "var(--text-secondary)",
-            fontSize: "0.8rem",
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-            whiteSpace: "nowrap",
-          }}>💰 Listing Price</span>
-          <div>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="$0.00"
-              value={priceInput}
-              onChange={(e) => setPriceInput(e.target.value)}
-              style={{
-                background: "var(--ghost-bg)",
-                border: "1px solid rgba(0,188,212,0.3)",
-                borderRadius: "8px",
-                padding: "0.5rem 0.75rem",
-                color: "var(--text-primary)",
-                fontSize: "1rem",
-                fontWeight: 600,
-                width: "140px",
-                outline: "none",
-              }}
-            />
-            {valuation?.mid && !priceInput && (
-              <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginTop: "0.25rem" }}>
-                AI Est: ${Math.round(valuation.mid).toLocaleString()}
-              </div>
-            )}
-          </div>
-          <button
-            onClick={async () => {
-              const val = parseFloat(priceInput);
-              if (isNaN(val) || val < 0) return;
-              setPriceSaveState("saving");
-              try {
-                const res = await fetch(`/api/items/status/${itemId}`, {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ listingPrice: val }),
-                });
-                if (res.ok) {
-                  setPriceSaveState("saved");
-                  setTimeout(() => setPriceSaveState("idle"), 2000);
-                } else {
-                  setPriceSaveState("error");
-                  setTimeout(() => setPriceSaveState("idle"), 2000);
-                }
-              } catch {
-                setPriceSaveState("error");
-                setTimeout(() => setPriceSaveState("idle"), 2000);
-              }
-            }}
-            disabled={priceSaveState === "saving"}
-            style={{
-              background: priceSaveState === "saved" ? "rgba(74,222,128,0.2)" : priceSaveState === "error" ? "rgba(239,68,68,0.2)" : "linear-gradient(135deg, #00bcd4, #009688)",
-              border: priceSaveState === "saved" ? "1px solid rgba(74,222,128,0.4)" : priceSaveState === "error" ? "1px solid rgba(239,68,68,0.4)" : "none",
-              borderRadius: "8px",
-              padding: "0.5rem 1.25rem",
-              color: priceSaveState === "saved" ? "#4ade80" : priceSaveState === "error" ? "#ef4444" : "white",
-              fontWeight: 600,
-              fontSize: "0.85rem",
-              cursor: priceSaveState === "saving" ? "not-allowed" : "pointer",
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+            <span style={{
+              color: "var(--text-secondary)",
+              fontSize: "0.72rem",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.06em",
               whiteSpace: "nowrap",
-              opacity: priceSaveState === "saving" ? 0.6 : 1,
-            }}
-          >
-            {priceSaveState === "saving" ? "Saving..." : priceSaveState === "saved" ? "✓ Saved" : priceSaveState === "error" ? "Save failed" : "Set Price"}
-          </button>
+            }}>{"\u{1F4B0}"} Listing Price</span>
+            <div>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="$0.00"
+                value={priceInput}
+                onChange={(e) => setPriceInput(e.target.value)}
+                style={{
+                  background: "var(--ghost-bg)",
+                  border: "1px solid rgba(0,188,212,0.3)",
+                  borderRadius: "8px",
+                  padding: "0.5rem 0.75rem",
+                  color: "var(--text-primary)",
+                  fontSize: "1rem",
+                  fontWeight: 600,
+                  width: "140px",
+                  outline: "none",
+                }}
+              />
+              {valuation?.mid && !priceInput && (
+                <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginTop: "0.2rem" }}>
+                  AI Est: ${Math.round(valuation.mid).toLocaleString()}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={async () => {
+                const val = parseFloat(priceInput);
+                if (isNaN(val) || val < 0) return;
+                setPriceSaveState("saving");
+                try {
+                  const res = await fetch(`/api/items/status/${itemId}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ listingPrice: val }),
+                  });
+                  if (res.ok) { setPriceSaveState("saved"); setTimeout(() => setPriceSaveState("idle"), 2000); }
+                  else { setPriceSaveState("error"); setTimeout(() => setPriceSaveState("idle"), 2000); }
+                } catch { setPriceSaveState("error"); setTimeout(() => setPriceSaveState("idle"), 2000); }
+              }}
+              disabled={priceSaveState === "saving"}
+              style={{
+                background: priceSaveState === "saved" ? "rgba(74,222,128,0.2)" : priceSaveState === "error" ? "rgba(239,68,68,0.2)" : "linear-gradient(135deg, #00bcd4, #009688)",
+                border: priceSaveState === "saved" ? "1px solid rgba(74,222,128,0.4)" : priceSaveState === "error" ? "1px solid rgba(239,68,68,0.4)" : "none",
+                borderRadius: "8px",
+                padding: "0.5rem 1.25rem",
+                color: priceSaveState === "saved" ? "#4ade80" : priceSaveState === "error" ? "#ef4444" : "white",
+                fontWeight: 600, fontSize: "0.85rem",
+                cursor: priceSaveState === "saving" ? "not-allowed" : "pointer",
+                whiteSpace: "nowrap",
+                opacity: priceSaveState === "saving" ? 0.6 : 1,
+              }}
+            >
+              {priceSaveState === "saving" ? "Saving..." : priceSaveState === "saved" ? "\u2713 Saved" : priceSaveState === "error" ? "Save failed" : "Set Price"}
+            </button>
+          </div>
+          {/* Net earnings preview */}
+          {listPriceNum > 0 && (
+            <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.4rem", display: "flex", gap: "0.35rem", alignItems: "baseline" }}>
+              <span>You{"\u2019"}ll keep</span>
+              <span style={{ color: "#4ade80", fontWeight: 700, fontSize: "0.82rem" }}>~${netEst.toFixed(2)}</span>
+              <span>after ~5% commission + 1.75% fee</span>
+            </div>
+          )}
         </div>
 
-        {/* ── Accept Trades ── */}
-        <div style={{ marginBottom: "0.5rem" }}>
-          <TradeToggle itemId={itemId} />
-        </div>
-
-        {/* ── Sale Assignment ── */}
-        <div style={{ marginBottom: "0.5rem" }}>
-          <SaleAssignment itemId={itemId} initialProjectId={null} />
+        {/* ── TRADE & ASSIGNMENT ── */}
+        <div style={{ paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)", marginBottom: "0.5rem" }}>
+          <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>Trade & Assignment</div>
+          <div style={{ marginBottom: "0.5rem" }}>
+            <TradeToggle itemId={itemId} />
+          </div>
+          <div style={{ marginBottom: "0.5rem" }}>
+            <SaleAssignment itemId={itemId} initialProjectId={null} />
+          </div>
+          <div style={{ marginBottom: "0.5rem" }}>
+            <ActiveOffersWidget itemId={itemId} compact />
+          </div>
         </div>
 
         {/* Sale Details (when sold/shipped/completed) */}
@@ -6551,7 +6668,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
             <div style={{ display: "flex", gap: "1.5rem", fontSize: "0.8rem", flexWrap: "wrap" }}>
               <div>
                 <span style={{ color: "var(--text-muted)" }}>Est. Value: </span>
-                <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>${price}–${priceHigh}</span>
+                <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>${price}{"\u2013"}${priceHigh}</span>
               </div>
               {aiData?.category && (
                 <div>
@@ -6563,21 +6680,188 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           </div>
         )}
 
-        {/* Quick Links */}
-        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", fontSize: "0.7rem", borderTop: "1px solid var(--border-default)", paddingTop: "0.5rem", marginTop: "0.5rem" }}>
-          <a href={`/items/${itemId}/edit`} style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500, display: "flex", alignItems: "center", gap: "0.2rem" }}>
-            ✏️ Edit Item
-          </a>
-          <a href={`/store`} style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500, display: "flex", alignItems: "center", gap: "0.2rem" }}>
-            🏪 View Store
-          </a>
-          <a href={`/messages`} style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500, display: "flex", alignItems: "center", gap: "0.2rem" }}>
-            💬 Messages
-          </a>
-          <a href={`/dashboard`} style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500, display: "flex", alignItems: "center", gap: "0.2rem" }}>
-            📊 Dashboard
-          </a>
+        {/* ── SHIPPING BRIDGE (post-sale) ── */}
+        {(status === "SOLD" || status === "SHIPPED") && (
+          <div style={{ paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)", marginBottom: "0.75rem" }}>
+            <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>{"\u{1F4E6}"} Shipping</div>
+            <a
+              href={`/shipping?itemId=${itemId}`}
+              style={{
+                display: "flex", alignItems: "center", gap: "0.5rem",
+                width: "100%", padding: "0.65rem 0.75rem", borderRadius: "0.5rem",
+                border: "1px solid rgba(0,188,212,0.25)", background: "rgba(0,188,212,0.04)",
+                color: "var(--accent, #00bcd4)", fontSize: "0.82rem", fontWeight: 600,
+                textDecoration: "none", transition: "all 0.15s ease",
+              }}
+            >
+              <span>{"\u{1F4E6}"}</span>
+              <div style={{ flex: 1 }}>
+                <div>Go to Shipping Center</div>
+                <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400, marginTop: 1 }}>
+                  {status === "SOLD" ? "Generate label, compare carriers, track shipments" : "Track this shipment"}
+                </div>
+              </div>
+              <span>{"\u2192"}</span>
+            </a>
+          </div>
+        )}
+
+        {/* ── RETURNS & RELISTING ── */}
+        {(status === "SOLD" || status === "SHIPPED" || status === "COMPLETED") && (
+          <div style={{ paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)", marginBottom: "0.75rem" }}>
+            <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>{"\u{1F504}"} Returns & Relisting</div>
+
+            {/* Relist button */}
+            {status !== "COMPLETED" && (
+              <button
+                onClick={relistItem}
+                disabled={relistLoading}
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.5rem",
+                  width: "100%", padding: "0.65rem 0.75rem", borderRadius: "0.5rem",
+                  border: "1px solid rgba(0,188,212,0.25)", background: "rgba(0,188,212,0.04)",
+                  color: "var(--accent, #00bcd4)", fontSize: "0.82rem", fontWeight: 600,
+                  cursor: relistLoading ? "wait" : "pointer", textAlign: "left",
+                  opacity: relistLoading ? 0.6 : 1, marginBottom: "0.5rem",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <span>{"\u{1F504}"}</span>
+                <div style={{ flex: 1 }}>
+                  <div>Relist This Item</div>
+                  <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 400, marginTop: 1 }}>Move back to LISTED {"\u2014"} does not process a refund</div>
+                </div>
+              </button>
+            )}
+            {status === "COMPLETED" && (
+              <button
+                onClick={relistItem}
+                disabled={relistLoading}
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.5rem",
+                  width: "100%", padding: "0.65rem 0.75rem", borderRadius: "0.5rem",
+                  border: "1px solid var(--border-default)", background: "var(--ghost-bg)",
+                  color: "var(--text-secondary)", fontSize: "0.82rem", fontWeight: 600,
+                  cursor: relistLoading ? "wait" : "pointer", textAlign: "left",
+                  opacity: relistLoading ? 0.6 : 1, marginBottom: "0.5rem",
+                }}
+              >
+                <span>{"\u{1F504}"}</span>
+                <div style={{ flex: 1 }}>
+                  <div>Relist This Item</div>
+                  <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 400, marginTop: 1 }}>Sale complete {"\u2014"} relist if needed</div>
+                </div>
+              </button>
+            )}
+
+            {/* Refund requests */}
+            {!refundLoading && refundRequests.length > 0 && (
+              <div style={{ marginBottom: "0.5rem" }}>
+                <div style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "0.3rem" }}>Refund Requests</div>
+                {refundRequests.map((r: any) => {
+                  const isPending = r.type === "refund_requested";
+                  const isApproved = r.type === "refund_approved";
+                  const badge = isPending ? { label: "Pending Review", color: "#f59e0b", bg: "rgba(245,158,11,0.12)" }
+                    : isApproved ? { label: "Approved", color: "#22c55e", bg: "rgba(34,197,94,0.12)" }
+                    : { label: "Denied", color: "#ef4444", bg: "rgba(239,68,68,0.12)" };
+                  return (
+                    <div key={r.id} style={{
+                      padding: "0.5rem 0.65rem", borderRadius: "0.45rem",
+                      background: "var(--bg-card)", border: "1px solid var(--border-default)",
+                      marginBottom: "0.35rem",
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.25rem" }}>
+                        <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)" }}>
+                          {r.data?.reason || "Refund request"}
+                        </span>
+                        <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: 8, background: badge.bg, color: badge.color }}>{badge.label}</span>
+                      </div>
+                      {r.data?.refundAmount && (
+                        <div style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
+                          Amount: ${Number(r.data.refundAmount).toFixed(2)} {"\u00B7"} Fee: ${Number(r.data.processingFee || 0).toFixed(2)} (non-refundable)
+                        </div>
+                      )}
+                      {isPending && (
+                        <div style={{ display: "flex", gap: "0.35rem", marginTop: "0.4rem" }}>
+                          <button
+                            onClick={() => handleRefund("approve")}
+                            disabled={refundActionLoading === "approve"}
+                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.68rem", fontWeight: 700, borderRadius: 6, border: "none", background: "#22c55e", color: "#fff", cursor: "pointer", opacity: refundActionLoading === "approve" ? 0.5 : 1 }}
+                          >
+                            {refundActionLoading === "approve" ? "..." : "Approve"}
+                          </button>
+                          <button
+                            onClick={() => handleRefund("deny")}
+                            disabled={refundActionLoading === "deny"}
+                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.68rem", fontWeight: 700, borderRadius: 6, border: "1px solid rgba(239,68,68,0.3)", background: "transparent", color: "#ef4444", cursor: "pointer", opacity: refundActionLoading === "deny" ? 0.5 : 1 }}
+                          >
+                            {refundActionLoading === "deny" ? "..." : "Deny"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {!refundLoading && refundRequests.length === 0 && (
+              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>No refund requests for this item.</div>
+            )}
+
+            {/* How Returns Work */}
+            <button
+              onClick={() => setShowReturnsInfo(!showReturnsInfo)}
+              style={{
+                fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)",
+                background: "none", border: "none", cursor: "pointer", padding: 0,
+                display: "flex", alignItems: "center", gap: "0.25rem",
+              }}
+            >
+              {showReturnsInfo ? "\u25B2" : "\u25BC"} How Returns Work
+            </button>
+            {showReturnsInfo && (
+              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.5, marginTop: "0.35rem", padding: "0.5rem 0.65rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.45rem" }}>
+                1. Buyer requests a return through LegacyLoop{"\n"}
+                2. You review the request and approve or deny{"\n"}
+                3. If approved, the item is automatically relisted{"\n"}
+                4. Processing fees are non-refundable per our terms{"\n"}
+                5. Refund is issued to the buyer (minus processing fee)
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── QUICK LINKS ── */}
+        <div style={{ paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)" }}>
+          <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>Quick Links</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "0.35rem" }}>
+            {[
+              { icon: "\u270F\u{FE0F}", label: "Edit Item", href: `/items/${itemId}/edit` },
+              { icon: "\u{1F4F7}", label: "Add Item", href: "/items/new" },
+              { icon: "\u{1F3EA}", label: "View Store", href: "/store" },
+              { icon: "\u{1F4AC}", label: "Item Messages", href: `/messages?itemId=${itemId}` },
+              { icon: "\u{1F4CA}", label: "Dashboard", href: "/dashboard" },
+              ...((status === "ANALYZED" || status === "READY") ? [{ icon: "\u{1F916}", label: "Run Bots", href: "/bots" }] : []),
+            ].map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.35rem",
+                  padding: "0.4rem 0.55rem", borderRadius: "0.45rem",
+                  background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                  color: "var(--text-secondary)", textDecoration: "none",
+                  fontSize: "0.7rem", fontWeight: 500,
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <span>{link.icon}</span>
+                <span>{link.label}</span>
+              </a>
+            ))}
+          </div>
         </div>
+
       </div>
       </div>
     </GlassCard>

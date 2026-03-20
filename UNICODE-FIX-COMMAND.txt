@@ -1,0 +1,197 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK — This file ONLY:
+
+  app/shipping/ShippingCenterClient.tsx
+  — FIX unicode rendering bug on line 906
+  — Search entire file for ALL instances of broken unicode
+  — Nothing else changes
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 features LOCKED. All previous shipping upgrades LOCKED.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+No data changes in this command.
+
+SECTION 6 — BUILD PATTERN
+
+Single targeted fix. Read -> Fix -> Verify.
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo imminent.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Fix all unicode rendering issues across the file.
+You MAY NOT: Change any functionality, layout, or logic.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$
+  SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed for this command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — FIX UNICODE RENDERING BUG IN SHIPPING CENTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THE BUG:
+The estimated value display shows literal "\u2013" text
+instead of the actual – (en dash) character.
+
+Example: "$473\u2013$788 Est. value" should be "$473–$788"
+
+ROOT CAUSE:
+Line 906 of ShippingCenterClient.tsx:
+  ${item.valuationLow}\u2013${item.valuationHigh}
+
+In JSX, the \u2013 escape sequence inside curly brace
+expressions renders as the literal string "\u2013" instead
+of the – character. It needs to use either:
+  — The {"\u2013"} JSX expression pattern
+  — Or the actual – character directly
+
+The rest of the app uses {"\u2013"} pattern correctly.
+This line missed it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Search the ENTIRE file for ALL instances of this pattern:
+
+  grep -n 'u2013\|u2014\|u00B7\|u00D7' \
+  app/shipping/ShippingCenterClient.tsx
+
+Check EVERY match. If any are NOT wrapped in
+{"\uXXXX"} JSX expression syntax, they need fixing.
+
+Known broken instance:
+  Line 906: ${item.valuationLow}\u2013${item.valuationHigh}
+
+There may be others. Find and fix ALL of them.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — FIX ALL UNICODE RENDERING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+For EVERY broken unicode escape found in Part A:
+
+Change from (broken — renders as literal text):
+  ${item.valuationLow}\u2013${item.valuationHigh}
+
+Change to (correct — renders as actual character):
+  ${item.valuationLow}{"\u2013"}${item.valuationHigh}
+
+OR even simpler — use the actual character:
+  ${item.valuationLow}–${item.valuationHigh}
+
+The {"\uXXXX"} pattern is what the rest of the app uses
+(see all the "\u2013", "\u00B7", "\u00D7" throughout).
+Be consistent with the existing pattern.
+
+Check these specific unicode characters:
+  \u2013 = – (en dash, used for ranges like $100–$200)
+  \u2014 = — (em dash)
+  \u00B7 = · (middle dot, used as separator)
+  \u00D7 = × (multiplication sign, used for dimensions)
+
+ANY that appear OUTSIDE of {""} expressions in JSX
+template literals will render as literal text.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. grep found all broken unicode instances: yes/no
+3. Line 906 fixed: yes/no
+4. All other instances fixed: yes/no
+5. Visual check: valuation displays correctly: yes/no
+6. No functionality changed: yes/no
+7. All locked files untouched: yes/no
+8. npx tsc --noEmit: 0 errors
+9. npm run build: pass
+10. CHECKPOINT after: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Broken instances found: [list line numbers]
+  All fixed: [yes/no]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD ITEMS:
+
+1. Shipping Center Final Polish (quote detail sync) — run next
+2. Bot Page Data Sync — after shipping is locked
+3. Dr. Clark demo preparation
+4. Pre-demo data seeding
+
+Command: Unicode Fix | LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

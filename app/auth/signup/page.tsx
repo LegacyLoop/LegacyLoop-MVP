@@ -124,14 +124,13 @@ export default function SignupPage() {
             marginBottom: "2rem",
           }}
         >
-          Your account is ready. Let&apos;s start selling.
+          Your account is ready. Let&apos;s find the perfect plan for you.
         </p>
 
         <button
           className="btn-primary"
           onClick={() => {
-            router.push("/dashboard");
-            router.refresh();
+            router.push("/onboarding/quiz");
           }}
           style={{
             width: "100%",
@@ -140,7 +139,27 @@ export default function SignupPage() {
             borderRadius: "0.75rem",
           }}
         >
-          Go to Dashboard
+          Take Your Personalized Assessment →
+        </button>
+
+        <button
+          onClick={() => {
+            router.push("/dashboard");
+            router.refresh();
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            color: "var(--text-muted)",
+            fontSize: "0.82rem",
+            marginTop: "0.75rem",
+            cursor: "pointer",
+            display: "block",
+            width: "100%",
+            textAlign: "center",
+          }}
+        >
+          Skip to Dashboard →
         </button>
       </div>
     );

@@ -131,7 +131,7 @@ export default function BotLoadingState({ botName }: { botName: string }) {
         style={{
           fontSize: "1rem",
           fontWeight: 600,
-          color: "#fff",
+          color: "var(--text-primary)",
           marginBottom: "0.5rem",
           position: "relative",
           zIndex: 1,
@@ -144,7 +144,7 @@ export default function BotLoadingState({ botName }: { botName: string }) {
       <div
         style={{
           fontSize: "0.85rem",
-          color: "rgba(255,255,255,0.5)",
+          color: "var(--text-muted)",
           marginBottom: "1.5rem",
           minHeight: "1.5em",
           position: "relative",
@@ -170,7 +170,7 @@ export default function BotLoadingState({ botName }: { botName: string }) {
               width: "8px",
               height: "8px",
               borderRadius: "50%",
-              background: "#00bcd4",
+              background: "var(--accent, #00bcd4)",
               animation: `botDotFade 1.4s ease-in-out ${i * 0.2}s infinite`,
             }}
           />

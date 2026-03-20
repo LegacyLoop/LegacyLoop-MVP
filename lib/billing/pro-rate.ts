@@ -18,7 +18,7 @@ export function calculateProRate(currentPlanPrice: number, billingStartDate: Dat
   const daysRemaining = Math.max(daysInCycle - daysUsed, 0);
   const dailyRate = Math.round((currentPlanPrice / daysInCycle) * 100) / 100;
   const creditForUnused = Math.round(dailyRate * daysRemaining * 100) / 100;
-  const squareFeeAmount = Math.round(creditForUnused * 0.035 * 100) / 100;
+  const squareFeeAmount = Math.round(creditForUnused * 0.0175 * 100) / 100;
   const cashRefundAmount = Math.round((creditForUnused - squareFeeAmount) * 100) / 100;
   const upgradeCharge = newPlanPrice ? Math.max(Math.round((newPlanPrice - creditForUnused) * 100) / 100, 0) : 0;
   const creditsEquivalent = Math.round(creditForUnused * 10);

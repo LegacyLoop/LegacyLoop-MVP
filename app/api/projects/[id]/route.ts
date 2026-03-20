@@ -71,6 +71,60 @@ export async function PATCH(req: Request, { params }: { params: Params }) {
     return Response.json({ ok: true, action: "publishAll" });
   }
 
+  // Sell All — mark all unsold items as SOLD with bulk pricing
+  if (body.sellAll) {
+    const { discountPct, bulkPrice } = body.sellAll;
+
+    const unsoldItems = await prisma.item.findMany({
+      where: {
+        projectId: id,
+        userId: user.id,
+        status: { notIn: ["SOLD", "SHIPPED", "COMPLETED"] },
+      },
+      select: { id: true, listingPrice: true },
+    });
+
+    if (unsoldItems.length === 0) {
+      return Response.json({ ok: false, error: "No unsold items" });
+    }
+
+    const perItemPrice = bulkPrice
+      ? Math.round((bulkPrice / unsoldItems.length) * 100) / 100
+      : null;
+
+    for (const item of unsoldItems) {
+      const soldPrice = perItemPrice ?? Math.round((Number(item.listingPrice) || 0) * (1 - (discountPct ?? 0) / 100));
+      await prisma.item.update({
+        where: { id: item.id },
+        data: { status: "SOLD", soldPrice: Math.round(soldPrice) },
+      });
+    }
+
+    await prisma.eventLog.create({
+      data: {
+        itemId: unsoldItems[0].id,
+        userId: user.id,
+        eventType: "SELL_ALL_BULK",
+        payload: JSON.stringify({
+          projectId: id,
+          itemCount: unsoldItems.length,
+          discountPct: discountPct ?? null,
+          bulkPrice: bulkPrice ?? null,
+          perItemPrice,
+        }),
+      },
+    }).catch(() => null);
+
+    updateProjectRollup(id).catch(() => null);
+
+    return Response.json({
+      ok: true,
+      action: "sellAll",
+      itemCount: unsoldItems.length,
+      bulkPrice: bulkPrice ?? null,
+    });
+  }
+
   // Update project fields
   const updated = await prisma.project.update({
     where: { id },

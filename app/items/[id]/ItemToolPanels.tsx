@@ -376,7 +376,7 @@ function PricingPanel({ valuation: v, antique, userTier, aiData }: { valuation: 
           </div>
 
           <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", display: "flex", justifyContent: "space-between" }}>
-            <span>Tier {userTier} · {pr.commissionPct}% commission · {PROCESSING_FEE.display} processing fee (charged to buyer)</span>
+            <span>Tier {userTier} · {pr.commissionPct}% commission · {PROCESSING_FEE.display} processing fee (split: {PROCESSING_FEE.sellerDisplay} seller + {PROCESSING_FEE.buyerDisplay} buyer)</span>
             <a href="/pricing" style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>Upgrade tier →</a>
           </div>
         </div>

@@ -130,7 +130,7 @@ export function orderConfirmationEmail(
             <td style="padding:10px 16px;font-size:14px;color:${TEXT_PRIMARY};text-align:right">$${itemPrice.toFixed(2)}</td></tr>
         ${shippingCost > 0 ? `<tr><td style="padding:10px 16px;font-size:14px;color:${TEXT_SECONDARY}">Shipping</td>
             <td style="padding:10px 16px;font-size:14px;color:${TEXT_PRIMARY};text-align:right">$${shippingCost.toFixed(2)}</td></tr>` : ""}
-        <tr><td style="padding:10px 16px;font-size:14px;color:${TEXT_SECONDARY}">Processing Fee</td>
+        <tr><td style="padding:10px 16px;font-size:14px;color:${TEXT_SECONDARY}">Processing Fee (your share)</td>
             <td style="padding:10px 16px;font-size:14px;color:${TEXT_MUTED};text-align:right">$${processingFee.toFixed(2)}</td></tr>
         <tr style="border-top:2px solid rgba(255,255,255,0.08)"><td style="padding:12px 16px;font-size:16px;font-weight:800;color:${TEXT_PRIMARY}">Total</td>
             <td style="padding:12px 16px;font-size:16px;font-weight:800;color:${ACCENT};text-align:right">$${total.toFixed(2)}</td></tr>

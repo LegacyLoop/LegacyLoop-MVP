@@ -1,0 +1,763 @@
+LEGACYLOOP — SHIPPING CENTER TMS v5 — FINAL
+Full Templated Command for Claude Code
+March 19, 2026 | Ryan Hallee, Founder
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ENGINEERING DIRECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUILD REAL. ALWAYS.
+Patch only what requires third-party access.
+
+This command does THREE things:
+1. FIXES a critical bug in AI box sizing
+2. WIRES all 4 AI engines as background
+   intelligence (NOT a bot button)
+3. ADDS every missing shipping capability
+
+The 4 AIs (OpenAI, Claude, Gemini, Grok)
+each have a SHIPPING SPECIALTY:
+— OpenAI: Practical logistics (parcel, insurance)
+— Claude: Preservation (custom packaging, antiques)
+— Gemini: Cost optimization (rates, regional carriers)
+— Grok: Market trends (buyer expectations, social)
+
+They run as BACKGROUND INTELLIGENCE — built
+into the shipping profile card, not as a
+button the user clicks. The AI consensus
+is just THERE, helping every decision.
+
+REMOVE the MegaBot button from the Shipping
+Center. It belongs on the ShipBot page only.
+The Shipping Center IS the AI-powered console.
+
+DO NOT REWRITE existing code. ADD AND ENHANCE.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Tesla/SpaceX/Grok design system.
+Dark theme, teal #00bcd4, glass morphism.
+All styles inline style={{}} — NO Tailwind.
+NO className for styling. ONLY inline style={{}}.
+LIGHT MODE: CSS variables on theme surfaces.
+ALWAYS-DARK: Hardcoded on forced panels.
+ELON MUSK STANDARD: $1B product feel.
+FedEx Ship Manager meets Tesla UI meets
+AI-powered logistics intelligence.
+Dense, smart, fast, premium, easy to follow.
+Senior-friendly. Investor demo ready.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 2 — VERIFICATION CHECKPOINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 3 — PERMANENTLY LOCKED FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ALWAYS LOCKED — Never touch:
+
+lib/adapters/** — ALL LOCKED
+lib/antique-detect.ts — LOCKED
+lib/collectible-detect.ts — LOCKED
+lib/megabot/** — LOCKED
+lib/data/** — LOCKED
+lib/enrichment/** — LOCKED
+lib/addons/** — LOCKED
+lib/credits.ts — LOCKED
+lib/tier-enforcement.ts — READ ONLY
+lib/billing/** — LOCKED
+lib/offers/** — LOCKED
+lib/email/** — LOCKED
+lib/constants/pricing.ts — LOCKED
+lib/pricing/** — LOCKED
+
+lib/agents/runner.ts — LOCKED
+  IMPORT ALLOWED: runStandardAnalysis,
+  runMegaAnalysis, AgentResult,
+  MultiAgentRun, MasterSummary types
+
+lib/shipping/package-suggestions.ts — LOCKED
+lib/shipping/metro-estimates.ts — LOCKED
+  IMPORT ALLOWED: getMetroEstimates
+lib/shipping/freight-estimates.ts — LOCKED
+  IMPORT ALLOWED: getFreightEstimates
+lib/shipping/city-lookup.ts — LOCKED
+  IMPORT ALLOWED: searchCities, CityEntry
+lib/shipping/shippo.ts — LOCKED
+
+app/api/** — ALL LOCKED
+  EXCEPTION: app/api/shipping/center/route.ts
+  — FIX dimension bug + ADD metro + selected quote
+
+app/items/** — ALL LOCKED
+app/bots/** — ALL LOCKED
+  (READ ONLY: ShipBotClient.tsx, ShippingPanel.tsx)
+app/dashboard/** — LOCKED
+app/components/** — ALL LOCKED
+app/page.tsx — LOCKED
+globals.css — LOCKED
+app/subscription/** — LOCKED
+app/credits/** — LOCKED
+app/marketplace/** — LOCKED
+app/bundles/** — LOCKED
+app/pricing/** — LOCKED
+app/projects/** — LOCKED
+app/offers/** — ALL LOCKED
+app/messages/** — ALL LOCKED
+app/components/messaging/** — ALL LOCKED
+app/addons/** — ALL LOCKED
+app/onboarding/** — ALL LOCKED
+vercel.json — LOCKED
+prisma/schema.prisma — READ ONLY
+
+SURGICAL UNLOCK:
+
+1. app/api/shipping/center/route.ts
+   — FIX suggestPackage dimension string
+   — ADD metro estimates
+   — ADD selected quote lookup
+
+2. app/shipping/ShippingCenterClient.tsx
+   — UPGRADE existing 2,051 lines
+   — ADD all Part C-J features
+   — REMOVE MegaBot button if present
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ALL PASS 1-5 + ALL SHIPPING COMMANDS: LOCKED
+
+Working in Shipping Center (keep all):
+BOX_PRESETS, editable dims, packaging type,
+Save Shipping Details, packing tips, carrier
+table BEST/FASTEST, ShipProfile, intelligence
+strip, ShippingLabel + CSS barcode, FreightTab
+BOL, LocalPickupTab, URL params, quote persist.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 5 — DATA COLLECTION STANDARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Every shipping action is valuable data.
+Flag missed data collection opportunities.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 6 — BUILD PATTERN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Build: A → B → C → D → E → F → G → H → I → J
+(Bug fix → API → AI layer → UI features)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 7 — PLATFORM CONTEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEMO_MODE=true. Logistics expert user.
+Must be a real, professional TMS.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 8 — CREATIVE LATITUDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+You MAY: Build the most impressive TMS ever.
+Wire AI as background intelligence. Import
+from allowed libraries. Add profit analysis,
+smart routing, confidence indicators. Make
+it feel like a $1B logistics platform.
+
+You MAY NOT: Touch locked files, rewrite or
+delete existing components, use Tailwind,
+add npm packages, change schema, change
+bot logic.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 9 — DEMO MODE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DEMO_MODE=true. shouldBypassGates.
+annalyse07@gmail.com / LegacyLoop123!
+ryanroger11@gmail.com / Freedom26$
+SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — SHIPPING CENTER TMS v5
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10 PARTS — everything LegacyLoop's Shipping
+Center needs to be a state-of-the-art TMS:
+
+B: Critical bug fix (AI box dimensions)
+C: 4-AI background intelligence layer
+D: City/ZIP autocomplete search
+E: Real metro estimates (5 cities)
+F: Clickable quote selection + save lifecycle
+G: Shipping profit analysis
+H: Professional freight comparison
+I: Smart box recommendation display
+J: Remove MegaBot button from Shipping Center
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DO NOT BUILD UNTIL ALL READS COMPLETE.
+
+1. app/api/shipping/center/route.ts (128 lines)
+   — Line 55: THE BUG — JSON.stringify(aiShipping)
+   — suggestPackage call at line 53-60
+
+2. lib/shipping/package-suggestions.ts (262 lines)
+   — parseDimensions() line 90: expects "14 x 9 x 0.7"
+   — suggestPackage() line 113: main function
+   — Dimension-aware sizing line 158-186
+
+3. app/shipping/ShippingCenterClient.tsx (2,051 lines)
+   — BOX_PRESETS (line 45)
+   — ShipProfile (line 375) — UPGRADE
+   — PreSaleTab (line 482) — UPGRADE
+   — ReadyToShipTab (line 803) — UPGRADE
+   — FreightTab (line 1463) — UPGRADE
+   — Main component (line 1831) — UPGRADE
+
+4. lib/agents/runner.ts
+   — BotType "shipping" (line 8)
+   — Each AI's shipping specialty:
+     OpenAI line 113-115: practical logistics
+     Claude line 163-165: preservation packaging
+     Gemini line 214-216: cost optimization
+     Grok: social/market trend awareness
+   — runStandardAnalysis: single agent (free)
+   — runMegaAnalysis: 4 agents (costs credits)
+   — buildMasterSummary: consensus builder
+
+5. lib/shipping/metro-estimates.ts
+6. lib/shipping/freight-estimates.ts
+7. lib/shipping/city-lookup.ts
+
+8. Check for MegaBot button in Shipping Center:
+   grep -n "MegaBot\|megaBot\|mega\|MEGA\|Run Mega" \
+   app/shipping/ShippingCenterClient.tsx | head -10
+
+Print findings. Then proceed.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — FIX AI BOX DIMENSION BUG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/api/shipping/center/route.ts
+*** #1 PRIORITY — FIX THIS FIRST ***
+
+THE BUG (line 55):
+  aiShipping ? JSON.stringify(aiShipping) : null
+This passes: {"weight":4.5,"length":14,"width":9}
+parseDimensions() regex can't match JSON.
+Box sizing falls back to category → WRONG.
+
+THE FIX — Replace line 53-60 with:
+
+  // Build dimension string parseDimensions() can match
+  let aiDimString: string | null = null;
+  if (aiShipping) {
+    const dims = [aiShipping.length, aiShipping.width, aiShipping.height]
+      .filter((d: any) => d != null && Number(d) > 0);
+    if (dims.length === 3) {
+      aiDimString = dims.join(" x ");
+    }
+  }
+  if (!aiDimString && ai?.dimensions) {
+    aiDimString = String(ai.dimensions);
+  }
+
+  let pkgSuggestion: any = null;
+  try {
+    pkgSuggestion = suggestPackage(
+      category,
+      aiDimString,
+      material,
+      (item as any).shippingWeight ?? aiShipping?.weight ?? null,
+      ai?.shipping_notes ?? null,
+    );
+  } catch {}
+
+RESULT: HP Envy 15 (14x9x0.7) now gets:
+"14 x 9 x 0.7" → parsed → 16x11x2.7 with
+padding → Small box → CORRECT.
+
+ALSO ADD to this file:
+
+Import metro estimates:
+  import { getMetroEstimates } from
+    "@/lib/shipping/metro-estimates";
+
+In preSale push (line 119), add:
+  metroEstimates: getMetroEstimates(
+    item.saleZip || "04101",
+    (item as any).shippingWeight
+      ?? pkgSuggestion?.weightEstimate ?? 5
+  ),
+  valuationMid: item.valuation
+    ? Math.round((item.valuation.low
+      + item.valuation.high) / 2) : null,
+
+Also add valuationMid to readyToShip push.
+
+ADD selectedQuote lookup:
+  const selectedEvents = itemIds.length > 0
+    ? await prisma.eventLog.findMany({
+        where: {
+          itemId: { in: itemIds },
+          eventType: "SHIPPING_QUOTE_SELECTED",
+        },
+        orderBy: { createdAt: "desc" },
+      }).catch(() => [])
+    : [];
+
+  const selectedMap = new Map<string, any>();
+  for (const ev of selectedEvents) {
+    if (!selectedMap.has(ev.itemId)) {
+      try {
+        const p = JSON.parse(ev.payload ?? "{}");
+        const hrs = (Date.now()
+          - new Date(ev.createdAt).getTime()) / 3600000;
+        selectedMap.set(ev.itemId, {
+          ...p,
+          selectedAt: ev.createdAt.toISOString(),
+          isExpired: hrs > 24,
+          hoursAgo: Math.round(hrs),
+        });
+      } catch {}
+    }
+  }
+
+Add to base object:
+  selectedQuote: selectedMap.get(item.id) ?? null,
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — 4-AI BACKGROUND INTELLIGENCE LAYER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+
+Add imports:
+  import { runStandardAnalysis } from
+    "@/lib/agents/runner";
+  import type { AgentResult } from
+    "@/lib/agents/runner";
+
+*** THIS IS NOT A BOT BUTTON. ***
+*** NO "Run MegaBot" BUTTON. ***
+*** The AI runs automatically via useMemo ***
+*** when an item card is expanded. ***
+
+Create: ShippingAIPanel component
+
+function ShippingAIPanel({ item }: { item: any }) {
+  // Run standard analysis (free, single agent)
+  // Uses useMemo — runs once, no re-renders
+  const aiInsight = useMemo(() => {
+    if (!item.category && !item.title) return null;
+    return runStandardAnalysis(
+      item.id, "shipping",
+      { name: item.title,
+        category: item.category || "General",
+        priceMid: item.valuationMid || 50 }
+    );
+  }, [item.id, item.title, item.category]);
+
+  if (!aiInsight) return null;
+  const agent = aiInsight; // AgentResult
+
+  // Collapsed by default
+  const [expanded, setExpanded] = useState(false);
+
+  RENDER:
+  Teal-accented glass card, collapsed state:
+
+  "🤖 AI Shipping Advisor — [confidence]%"
+  "[agent.keyInsight]" (one-liner preview)
+  [▶ Show Details] to expand
+
+  EXPANDED STATE:
+  4-section intelligence display:
+
+  SECTION 1 — AI ASSESSMENT:
+  Confidence bar (teal gradient, X% filled)
+  Key insight text
+  Recommendation text from agent.data.rationale
+
+  SECTION 2 — SHIPPING STRATEGY:
+  "What each AI recommends:"
+  Show agent.data.shippingNotes as bullets
+  with 🤖 icon. Each note is from the AI's
+  shipping specialty perspective:
+  — Practical logistics advice
+  — Preservation recommendations
+  — Cost optimization tips
+
+  SECTION 3 — PACKAGING INTELLIGENCE:
+  Show agent.data.packagingTips as bullets
+  with 📦 icon. Specific packaging guidance
+  from AI analysis of this item.
+
+  SECTION 4 — AI CONSENSUS (if available):
+  If item has been analyzed by multiple AIs
+  (check if item has existing analysis):
+  "4-AI Consensus: [agree level]"
+  Strong agreement = green badge
+  Mixed = amber badge
+  Divergent = red badge
+
+  Style: teal left-border accent bar,
+  glass morphism background, subtle shadow.
+  Collapse animation smooth.
+  Should feel like an AI assistant built
+  into the TMS — not a separate tool.
+
+PLACEMENT:
+Inside each item's expanded detail view —
+AFTER the ShipProfile (dims, fragile, tips)
+BEFORE the carrier rate table.
+Shows in PreSaleTab AND ReadyToShipTab.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — CITY AUTOCOMPLETE SEARCH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+
+Import:
+  import { searchCities } from
+    "@/lib/shipping/city-lookup";
+  import type { CityEntry } from
+    "@/lib/shipping/city-lookup";
+
+Create: CitySearch component
+
+function CitySearch({ value, onChange }:
+  { value: string; onChange: (zip: string,
+    label: string) => void }) {
+
+  — Text input: "Search city or enter ZIP..."
+  — On 2+ chars: dropdown with matching cities
+  — Each result: "[City], [ST] — [ZIP]"
+  — Click → fills ZIP + shows label
+  — Direct 5-digit ZIP also works
+  — Click outside → close dropdown
+  — Glass dropdown, teal hover highlight
+
+Replace ALL plain ZIP inputs in:
+— PreSaleTab "Buyer ZIP" field
+— ReadyToShipTab wizard step 2 "toZip" field
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — REAL METRO ESTIMATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+
+Replace hardcoded METRO_CITIES section
+(PreSaleTab ~line 691-707) with real data
+from item.metroEstimates (added in Part B):
+
+5 city cards (horizontal scroll):
+— City name
+— ~$[estimatedCost]
+— [estimatedDays] days
+— CHEAPEST badge (green) on lowest cost
+— FASTEST badge (blue) on fastest delivery
+
+Remove local METRO_CITIES constant (line 64-70).
+Use API data instead.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — CLICKABLE QUOTE SELECTION + SAVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+
+Make carrier rate table rows CLICKABLE
+in BOTH PreSaleTab AND ReadyToShipTab:
+
+— Click row → teal border + ✓ checkmark
+— ONE selected at a time
+— Below table: action bar:
+  [💾 Save Quote — [Carrier] $X.XX]
+
+SAVE QUOTE:
+— POST to /api/shipping/estimate with
+  item dims (auto-saves SHIPPING_QUOTED)
+— ALSO save SHIPPING_QUOTE_SELECTED:
+  await fetch("/api/shipping/center", {
+    ... eventType: "SHIPPING_QUOTE_SELECTED" })
+
+  Actually — since we can't add a POST to
+  the center route (it's GET only) — save
+  the selection client-side to localStorage
+  AND log it via the estimate API by passing
+  the selected carrier info.
+
+  OR — create the EventLog entry by calling
+  a generic log endpoint if one exists.
+
+  SIMPLEST APPROACH: When saving a quote,
+  call the estimate API which already saves
+  SHIPPING_QUOTED with the full carrier array.
+  On the CLIENT, track which carrier was
+  SELECTED in localStorage keyed by itemId.
+  On next page load, check localStorage for
+  selections and display them.
+
+  Flag as future enhancement: proper
+  SHIPPING_QUOTE_SELECTED EventLog when
+  a shipping log POST endpoint is created.
+
+SAVED QUOTE DISPLAY:
+"📋 Saved: [Carrier] — $[rate]
+ [X hours ago] [Fresh ✓ / Expired ⚠️]"
+
+SHIP WITH SAVED QUOTE:
+Fresh (<24hrs) → wizard step 3
+Expired (>24hrs) → refresh rates
+
+QUOTE HISTORY (expandable):
+Last 3 quotes from item.lastQuote data.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART G — SHIPPING PROFIT ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+
+Add Net Profit column to carrier tables:
+
+net = valuationMid (or soldPrice)
+      - carrier price
+      - (value * 0.05) commission
+      - (value * 0.0175) seller fee
+
+Green if positive. Red if shipping > 30% value.
+
+Summary: "💰 Best profit: [carrier] — $[net]
+after shipping + 6.75% fees"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART H — UPGRADE FREIGHT TAB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+
+Import:
+  import { getFreightEstimates } from
+    "@/lib/shipping/freight-estimates";
+  import type { FreightEstimate } from
+    "@/lib/shipping/freight-estimates";
+
+Upgrade FreightTab to use real library:
+— 3 carriers: XPO, Old Dominion, R+L
+— Table: Carrier | Service | Transit | Base | Total
+— 5 toggles (update totals in real time):
+  □ Residential delivery
+  □ Liftgate required
+  □ Delivery notification
+  □ Blanket wrap protection
+  □ Inside delivery
+Match ShippingPanel lines 2929-3128.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART I — SMART BOX RECOMMENDATION DISPLAY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+
+After Part B fix, AI box recommendations
+will be CORRECT. Now upgrade the display:
+
+1. AI SUGGESTED badge on the RIGHT box
+   (now based on actual item dimensions)
+
+2. RECOMMENDATION REASON:
+   "Based on item dimensions [L]×[W]×[H]
+    + 2" padding per side"
+   Shows WHY this box was chosen.
+
+3. FIT INDICATOR per box preset:
+   — "✓ Fits" (green) — item fits with padding
+   — "✗ Too small" (red) — won't fit
+   — "⚠️ Loose fit" (amber) — wasted space
+   Calculate: itemDim + 4 vs boxDim
+
+4. CUSTOM BOX AUTO-RECOMMEND:
+   If no standard preset is a perfect fit:
+   "📦 Custom: [itemL+4]×[itemW+4]×[itemH+4]
+    Perfectly sized for this item"
+   Auto-fill custom dims in inputs.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART J — REMOVE MEGABOT BUTTON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+
+Search for any MegaBot button, "Run MegaBot",
+or mega-related UI elements in the file.
+If found — REMOVE them.
+
+The Shipping Center does NOT need a MegaBot
+button. The AI intelligence is built-in
+(Part C). MegaBot (4-AI parallel, costs
+credits) stays on the ShipBot page only.
+
+The Shipping Center uses runStandardAnalysis
+(single agent, free) as background
+intelligence. No user action required.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 10 — FLAGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. DO NOT REWRITE. ADD AND ENHANCE.
+2. Part B bug fix is #1 priority.
+3. runStandardAnalysis is client-side,
+   returns demo data in DEMO_MODE.
+   Uses useMemo to prevent re-runs.
+4. Metro estimates: server-side in API.
+5. Freight estimates: client-side.
+6. City lookup: client-side.
+7. Profit: commission 5%, seller fee 1.75%.
+8. Quote selection: localStorage for carrier
+   choice. EventLog for full quote data.
+9. suggestPackage is LOCKED. Fix is in
+   HOW we call it (API route param format).
+10. If MegaBot button doesn't exist in
+    Shipping Center — skip Part J, note it.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 11 — PENDING SCHEMA MIGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DO ALL AT ONCE — Never piecemeal:
+User.role, soldPrice Int→Float, soldVia,
+estimatedValue, priceDelta, TradeProposal,
+AgentSettings, Bundle + BundleItem,
+quizCompletedAt, feeModel, RETURN statuses
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 12 — VERIFICATION CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1.  CHECKPOINT baseline: pass
+2.  Part A reads complete
+3.  *** BUG FIX: dimension string format: yes/no ***
+4.  AI box matches actual item dims: yes/no
+5.  API returns real metro estimates: yes/no
+6.  API returns selectedQuote: yes/no
+7.  API returns valuationMid: yes/no
+8.  ShippingAIPanel component added: yes/no
+9.  AI runs via useMemo (no button): yes/no
+10. AI shipping notes display: yes/no
+11. AI packaging tips display: yes/no
+12. AI confidence bar: yes/no
+13. City autocomplete in PreSale: yes/no
+14. City autocomplete in wizard: yes/no
+15. Real metro estimates (5 cities): yes/no
+16. CHEAPEST/FASTEST metro badges: yes/no
+17. Carrier rows clickable: yes/no
+18. Save Quote on selection: yes/no
+19. Saved quote display (fresh/expired): yes/no
+20. Quote History panel: yes/no
+21. Net Profit column: yes/no
+22. Best profit summary: yes/no
+23. FreightTab real library: yes/no
+24. Freight 5 toggles: yes/no
+25. BOX_PRESETS AI badge CORRECT: yes/no
+26. Fit indicator per preset: yes/no
+27. Recommendation reason line: yes/no
+28. Custom box auto-recommend: yes/no
+29. MegaBot button REMOVED or absent: yes/no
+30. Existing ShippingLabel untouched: yes/no
+31. Existing ShippedTab untouched: yes/no
+32. Existing LocalPickupTab untouched: yes/no
+33. Light mode clean: yes/no
+34. Dark mode clean: yes/no
+35. All locked files untouched: yes/no
+36. inline style={{}} for all new code: yes/no
+37. NO components deleted (except MegaBot btn): yes/no
+38. npx tsc --noEmit: 0 errors
+39. npm run build: pass
+40. CHECKPOINT after: pass
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECTION 13 — REQUIRED REPORT FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHECKPOINT before: [pass/issue]
+Part A reads: [yes/no]
+
+PART B — Bug Fix + API:
+— *** Dimension string fix: [yes/no] ***
+— AI box now uses actual dims: [yes/no]
+— Metro estimates added: [yes/no]
+— selectedQuote lookup: [yes/no]
+— valuationMid added: [yes/no]
+
+PART C — 4-AI Intelligence Layer:
+— ShippingAIPanel component: [yes/no]
+— Runs via useMemo (no button): [yes/no]
+— Shipping notes display: [yes/no]
+— Packaging tips display: [yes/no]
+— Confidence bar: [yes/no]
+— Collapsed by default: [yes/no]
+
+PART D — City Autocomplete:
+— CitySearch component: [yes/no]
+— PreSale: [yes/no]
+— Wizard: [yes/no]
+
+PART E — Real Metro:
+— 5 cities: [yes/no]
+— Badges: [yes/no]
+
+PART F — Quote Selection:
+— Clickable rows: [yes/no]
+— Save button: [yes/no]
+— Fresh/expired display: [yes/no]
+— History panel: [yes/no]
+
+PART G — Profit:
+— Net column: [yes/no]
+— Summary: [yes/no]
+
+PART H — Freight:
+— Real library: [yes/no]
+— 3 carriers: [yes/no]
+— 5 toggles: [yes/no]
+
+PART I — Smart Box:
+— Correct AI badge: [yes/no]
+— Reason line: [yes/no]
+— Fit indicators: [yes/no]
+— Custom auto-recommend: [yes/no]
+
+PART J — MegaBot:
+— Button removed or absent: [yes/no]
+
+EXISTING PRESERVED:
+ShippingLabel, ShippedTab, LocalPickupTab,
+Intelligence strip, BOX_PRESETS grid
+
+LIGHT MODE: [clean/issues]
+DARK MODE: [clean/issues]
+FLAGS: [list]
+Files modified: [paths]
+Lines added: [count]
+Build: [pass/fail]
+TypeScript: [0 errors/list]
+CHECKPOINT after: [pass/issue]
+
+IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUICK REFERENCE — CUSTOMEVENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+conversation-selected: Messages → InboxCmd
+conversation-counts-updated: Messages → InboxCmd
+agent-fill-message: InboxCmd → Messages
+agent-settings-toggle: InboxCmd → AgentSettings
+inbox-filter-change: InboxCmd → Messages
+inbox-filter-reset: Messages → InboxCmd
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CARRY-FORWARD:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Bot Page Data Sync (all bots load cached)
+2. Fee: 3.5% total (1.75% buyer + 1.75% seller)
+3. Shipping API + Quote Persistence: LOCKED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Command: Shipping Center TMS v5 — FINAL
+LegacyLoop | March 19, 2026 | Ryan Hallee
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT THIS FIXES + ADDS:
+— *** CRITICAL: AI box dimension bug fix ***
+— 4-AI background intelligence (not a button)
+  with shipping notes from all 4 AI perspectives
+— Smart box fit indicators per preset
+— Custom box auto-recommendation from dims
+— Recommendation reasoning displayed
+— City/ZIP autocomplete search
+— Real metro estimates (5 cities)
+— Clickable quote selection + save lifecycle
+— Shipping profit analysis (net after fees)
+— Professional freight (XPO/OD/R+L, 5 toggles)
+— MegaBot button removed from Shipping Center
+
+WHAT IT DOES NOT TOUCH:
+— ShippingLabel, CSSBarcode, tracking numbers
+— TMSDashboard, intelligence strip
+— ShippedTab, LocalPickupTab
+— Any locked files (except imports)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

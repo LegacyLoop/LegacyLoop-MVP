@@ -1,0 +1,625 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/shipping/ShippingCenterClient.tsx (4,615 lines)
+     — FIX: All unicode rendering bugs (\u2192, \u2190, etc in bare JSX)
+     — FIX: LTL freight carrier selection — make rows clickable with save
+     — FIX: Freight flow progression buttons visible at every step
+     — UPGRADE: Demo shipping label to look more professional
+     — UPGRADE: Wire ShipEngine LTL API for real freight quotes
+
+  2. lib/shipping/shipengine-ltl.ts (NEW FILE)
+     — CREATE: ShipEngine LTL API integration library
+     — Quote, Pickup, BOL, Tracking functions
+
+  3. app/api/shipping/ltl-quote/route.ts (NEW FILE)
+     — CREATE: API route for ShipEngine LTL quotes
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping commands LOCKED.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently.
+
+SECTION 6 — BUILD PATTERN
+
+  Build order: A -> B -> C -> D -> E
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo THIS WEEK.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Fix all identified bugs, make freight carrier selection interactive, improve the demo label visual. Make every flow feel complete and professional.
+
+You MAY NOT: Touch locked files, rewrite components, add npm packages, change schema, deviate from inline style={{}}.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed for this command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — SHIPPING CENTER FINAL CLEANUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5 targeted fixes + ShipEngine LTL API integration. Then shipping is LOCKED.
+
+*** NEW: ShipEngine/ShipStation Sandbox API is configured: ***
+  SHIPENGINE_API_KEY=TEST_... (in .env)
+  SHIPENGINE_BASE_URL=https://api.shipengine.com
+  SHIPENGINE_ENV=sandbox
+
+This gives us REAL LTL freight quotes via API.
+The full lifecycle: Quote → Pickup → BOL → Track → Documents.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Search for ALL broken unicode in the file:
+   grep -n '\\u2192\|\\u2190\|\\u2013\|\\u2014\|\\u00B7\|\\u00D7' \
+   app/shipping/ShippingCenterClient.tsx
+
+   Check EVERY match. If the \uXXXX escape is in
+   BARE JSX TEXT (between > and < or between } and {)
+   it will render as literal text. It needs to be
+   wrapped in {"\uXXXX"} or replaced with the actual
+   character.
+
+   KNOWN BROKEN from screenshots:
+   — "Next \u2192" button text → should be "Next →"
+   — "Get Rates & Ship \u2192" → should be "Get Rates & Ship →"
+   — "\u2190 Back" → should be "← Back"
+   — Any other bare \u escapes in JSX text
+
+2. Read FreightTab (line 2665):
+   — Find the carrier selection area after quotes display
+   — Check if carriers are clickable
+   — Find where the "Upload Official Quote" button renders
+   — Find where the "Complete BOL" button renders
+   — Trace the state flow: confirmation → showQuoteUpload → officialQuote → showBOL → bolGenerated
+
+3. Read ShippingLabel component (line 343):
+   — Note the current label design
+   — It should look like a real carrier shipping label
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — FIX ALL UNICODE RENDERING BUGS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+Search the ENTIRE file for bare unicode escapes
+in JSX text. Every instance of \uXXXX that is NOT
+inside a quoted string ("" or '') or a template
+literal (``) will render as literal text.
+
+For each broken instance, fix by wrapping in {""} :
+
+WRONG (bare JSX text — renders as literal \u2192):
+  Next \u2192
+
+CORRECT (JSX expression — renders as →):
+  Next {"\u2192"}
+
+OR use the actual character:
+  Next →
+
+Fix ALL of these:
+  \u2192 → → (right arrow)
+  \u2190 → ← (left arrow)
+  \u2013 → – (en dash)
+  \u2014 → — (em dash)
+  \u00B7 → · (middle dot)
+  \u00D7 → × (multiplication)
+
+Search thoroughly. Fix every single one.
+This has been a recurring bug — kill it permanently.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — FIX LTL FREIGHT CARRIER SELECTION + SAVE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The FreightTab shows carrier estimate cards (XPO, Old
+Dominion, R+L) but the user CANNOT select one and
+proceed to the next step (scheduling, quote upload, BOL).
+
+The freight flow MUST work like this:
+1. User enters dims + weight + ZIPs → Request Freight Quote
+2. Carrier cards appear (XPO, OD, R+L with pricing)
+3. User CLICKS a carrier card to SELECT it
+   — Selected card: teal border, checkmark, slightly larger
+   — Other cards: muted
+4. After selecting: show action buttons:
+   [Schedule Pickup] — opens pickup date form
+   [Upload Official Quote →] — opens the quote upload form
+   OR if no official quote needed:
+   [Proceed to BOL →] — opens the BOL form directly
+
+Currently the freight flow requires:
+confirmation (from schedulePickup) → showQuoteUpload → officialQuote → showBOL → bolGenerated
+
+The issue: the user has to go through pickup scheduling
+BEFORE they can upload a quote or create a BOL. But
+sometimes the user wants to:
+a) Get estimates → upload official quote → then schedule
+b) Get estimates → go straight to BOL (for demo)
+
+FIX: After carrier cards display AND a carrier is selected:
+Show THREE action paths:
+[📅 Schedule Carrier Pickup] — existing pickup flow
+[📋 Upload Official Quote] — opens quote upload directly
+  (skip the scheduling step if not needed yet)
+[📄 Create BOL] — opens BOL form directly
+  (for demo or when using manual process)
+
+The "Upload Official Quote" and "Create BOL" buttons
+should be accessible WITHOUT requiring the scheduling
+step first. The scheduling can happen before or after.
+
+Each button sets the appropriate state:
+— Schedule Pickup → setConfirmation flow
+— Upload Quote → setShowQuoteUpload(true)
+— Create BOL → setShowBOL(true)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — UPGRADE DEMO SHIPPING LABEL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+The ShippingLabel component (line 343) generates a
+demo label. It needs to look MORE like a real carrier
+shipping label.
+
+UPGRADE the label to include:
+
+1. LABEL HEADER:
+   "LEGACYLOOP SHIPPING LABEL" centered, bold
+   DEMO badge in top-right corner (amber)
+
+2. FROM/TO ADDRESS BLOCKS side by side:
+   FROM:                    TO:
+   [Seller Name]           [Buyer Name or "Buyer"]
+   [Street or "Seller"]    [Street or "Destination"]
+   Portland, ME [ZIP]      [City, ST] [ZIP]
+
+3. CARRIER BRANDING SECTION:
+   Full-width bar with carrier-specific color:
+   USPS: blue (#004B87)
+   UPS: brown (#351C15)
+   FedEx: purple (#4D148C)
+   Show: CARRIER — SERVICE NAME
+   Large text, centered, white on colored bg
+
+4. TRACKING SECTION:
+   "TRACKING" label
+   Tracking number in LARGE monospace font (1.2rem)
+   Color: teal (#00bcd4)
+
+5. CSS BARCODE (keep existing CSSBarcode component)
+   Centered below tracking number
+
+6. QR CODE VISUAL (keep existing QR grid if present)
+   Bottom-right corner
+
+7. SHIPMENT DETAILS:
+   Weight: [X] lbs
+   Dims: [L]×[W]×[H] in
+   Ship Date: [date]
+   Est. Delivery: [X] business days
+   Insurance: [Basic/Full/None]
+
+8. ACTION BUTTONS:
+   [🖨️ Print Label] — prominent, teal gradient
+   [📋 Copy Tracking #] — secondary
+   [📱 QR Code] — if available
+
+Style: white background (forced for printing),
+black text, carrier-colored header bar, clean borders.
+Should look like you could tape it to a box.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — SHIPENGINE LTL API INTEGRATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+*** NEW: REAL LTL FREIGHT QUOTES VIA SHIPENGINE ***
+
+Ryan has a ShipEngine/ShipStation sandbox API key configured:
+  SHIPENGINE_API_KEY=TEST_Qu72NlNYQssk1q4Ia1cBzF7Zcme5b8DMopATyjuGg7I
+  SHIPENGINE_BASE_URL=https://api.shipengine.com
+  SHIPENGINE_ENV=sandbox
+
+This replaces our estimate-based LTL freight with REAL API quotes.
+
+STEP 1 — CREATE lib/shipping/shipengine-ltl.ts (NEW FILE):
+
+/**
+ * ShipEngine LTL API Integration
+ * Provides real LTL freight quotes, pickup scheduling,
+ * BOL generation, and tracking via ShipEngine/ShipStation API.
+ *
+ * Sandbox carriers: test, warn, fail
+ * Production: connect real carriers (XPO, Old Dominion, etc.)
+ */
+
+const SHIPENGINE_KEY = process.env.SHIPENGINE_API_KEY || "";
+const SHIPENGINE_BASE = process.env.SHIPENGINE_BASE_URL || "https://api.shipengine.com";
+
+interface LTLAddress {
+  company_name: string;
+  address_line1: string;
+  city_locality: string;
+  state_province: string;
+  postal_code: string;
+  country_code?: string;
+  contact_name?: string;
+  phone?: string;
+  email?: string;
+}
+
+interface LTLPackage {
+  weight: { value: number; unit: "pound" };
+  dimensions: { length: number; width: number; height: number; unit: "inch" };
+  freight_class: string;
+  description?: string;
+  nmfc_code?: string;
+}
+
+interface LTLQuoteRequest {
+  carrier_id: string;
+  ship_from: LTLAddress;
+  ship_to: LTLAddress;
+  packages: LTLPackage[];
+  accessorials?: string[];
+}
+
+interface LTLQuoteResponse {
+  quote_id: string;
+  carrier: string;
+  service: string;
+  total_amount: number;
+  currency: string;
+  transit_days: number;
+  valid_until: string;
+  charges: { description: string; amount: number }[];
+}
+
+// Connect sandbox test carriers (one-time)
+export async function connectTestCarriers(): Promise<string[]> {
+  const carriers = ["test", "warn", "fail"];
+  const ids: string[] = [];
+  for (const c of carriers) {
+    try {
+      const res = await fetch(`${SHIPENGINE_BASE}/v-beta/ltl/connections/${c}`, {
+        method: "POST",
+        headers: { "API-Key": SHIPENGINE_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({ credentials: {} }),
+      });
+      const data = await res.json();
+      if (data.carrier_id) ids.push(data.carrier_id);
+    } catch {}
+  }
+  return ids;
+}
+
+// Get LTL quote from ShipEngine
+export async function getLTLQuote(req: LTLQuoteRequest): Promise<LTLQuoteResponse | null> {
+  if (!SHIPENGINE_KEY) return null;
+  try {
+    const res = await fetch(`${SHIPENGINE_BASE}/v-beta/ltl/quotes`, {
+      method: "POST",
+      headers: { "API-Key": SHIPENGINE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify(req),
+    });
+    if (!res.ok) {
+      console.error("[ShipEngine LTL] Quote error:", res.status, await res.text());
+      return null;
+    }
+    return await res.json();
+  } catch (e) {
+    console.error("[ShipEngine LTL] Quote failed:", e);
+    return null;
+  }
+}
+
+// Schedule LTL pickup
+export async function scheduleLTLPickup(quoteId: string, pickupDate: string): Promise<any> {
+  if (!SHIPENGINE_KEY) return null;
+  try {
+    const res = await fetch(`${SHIPENGINE_BASE}/v-beta/ltl/pickups`, {
+      method: "POST",
+      headers: { "API-Key": SHIPENGINE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ quote_id: quoteId, pickup_date: pickupDate }),
+    });
+    return await res.json();
+  } catch (e) {
+    console.error("[ShipEngine LTL] Pickup failed:", e);
+    return null;
+  }
+}
+
+// Get LTL documents (BOL, invoice, proof of delivery)
+export async function getLTLDocuments(pickupId: string): Promise<any> {
+  if (!SHIPENGINE_KEY) return null;
+  try {
+    const res = await fetch(`${SHIPENGINE_BASE}/v-beta/ltl/pickups/${pickupId}/documents`, {
+      headers: { "API-Key": SHIPENGINE_KEY },
+    });
+    return await res.json();
+  } catch (e) {
+    console.error("[ShipEngine LTL] Documents failed:", e);
+    return null;
+  }
+}
+
+export type { LTLAddress, LTLPackage, LTLQuoteRequest, LTLQuoteResponse };
+
+STEP 2 — CREATE app/api/shipping/ltl-quote/route.ts (NEW FILE):
+
+This API route receives freight quote requests from the
+Shipping Center and calls ShipEngine:
+
+import { NextRequest, NextResponse } from "next/server";
+import { authAdapter } from "@/lib/adapters/auth";
+import { getLTLQuote, connectTestCarriers } from "@/lib/shipping/shipengine-ltl";
+import type { LTLQuoteRequest } from "@/lib/shipping/shipengine-ltl";
+
+// Cache carrier IDs (they don't change per session)
+let cachedCarrierIds: string[] = [];
+
+export async function POST(req: NextRequest) {
+  const user = await authAdapter.getSession();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const body = await req.json();
+  const { fromZip, toZip, weight, length, width, height, freightClass, description } = body;
+
+  // Connect test carriers if not yet connected
+  if (cachedCarrierIds.length === 0) {
+    cachedCarrierIds = await connectTestCarriers();
+  }
+
+  if (cachedCarrierIds.length === 0) {
+    return NextResponse.json({ error: "No LTL carriers connected", quotes: [] });
+  }
+
+  // Get quotes from all connected carriers
+  const quotes = [];
+  for (const carrierId of cachedCarrierIds) {
+    const quoteReq: LTLQuoteRequest = {
+      carrier_id: carrierId,
+      ship_from: {
+        company_name: "LegacyLoop Seller",
+        address_line1: "123 Main St",
+        city_locality: "Portland",
+        state_province: "ME",
+        postal_code: fromZip || "04101",
+        country_code: "US",
+      },
+      ship_to: {
+        company_name: "Buyer",
+        address_line1: "456 Destination St",
+        city_locality: "Destination",
+        state_province: "NY",
+        postal_code: toZip || "10001",
+        country_code: "US",
+      },
+      packages: [{
+        weight: { value: Number(weight) || 100, unit: "pound" },
+        dimensions: {
+          length: Number(length) || 48,
+          width: Number(width) || 40,
+          height: Number(height) || 36,
+          unit: "inch",
+        },
+        freight_class: freightClass || "70",
+        description: description || "Household goods",
+      }],
+    };
+
+    const quote = await getLTLQuote(quoteReq);
+    if (quote) quotes.push(quote);
+  }
+
+  return NextResponse.json({ quotes, carrierCount: cachedCarrierIds.length });
+}
+
+STEP 3 — WIRE INTO FREIGHTTAB:
+
+In app/shipping/ShippingCenterClient.tsx FreightTab:
+
+Add a "Get ShipEngine Quote" button alongside the existing
+"Request Freight Quote" button:
+
+[Request Freight Quote] — existing flow (estimate-based)
+[Get Live LTL Quote] — NEW, calls /api/shipping/ltl-quote
+
+When "Get Live LTL Quote" is clicked:
+— Call /api/shipping/ltl-quote with the form data
+— Display the returned quotes in the carrier cards
+— Show "SHIPENGINE LIVE" badge (teal) on the quotes
+— If ShipEngine returns nothing, fall back to existing estimates
+
+The quote response includes a quote_id that can be used
+for pickup scheduling and BOL generation — store it.
+
+After selecting a carrier quote:
+— Show [Schedule Pickup] — calls ShipEngine pickup API
+— Show [Get BOL] — calls ShipEngine documents API
+— These are REAL carrier documents, not generated mockups
+
+For sandbox: the "test" carrier returns valid test quotes.
+The "warn" carrier returns quotes with warnings.
+The "fail" carrier returns errors (for testing error handling).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — VERIFY PREVIOUS FIXES STILL WORKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Quick verification:
+1. Carrier rows in PreSale tab still clickable? yes/no
+2. Save Quote button still prominent? yes/no
+3. Shipping readiness stepper displays? yes/no
+4. ReadyToShip shows saved quotes with Ship Now? yes/no
+5. Delivery method options in wizard? yes/no
+6. Auto-refresh polling still active? yes/no
+
+If any are broken, fix them. Report in checklist.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  ALL unicode rendering bugs fixed: yes/no
+4.  No bare \uXXXX in JSX text anywhere: yes/no
+5.  "Next →" button renders arrow correctly: yes/no
+6.  "← Back" renders arrow correctly: yes/no
+7.  LTL carrier cards clickable with selection: yes/no
+8.  Selected carrier highlights with teal border: yes/no
+9.  Schedule Pickup button accessible: yes/no
+10. Upload Official Quote accessible without scheduling: yes/no
+11. Create BOL accessible without scheduling: yes/no
+12. Demo label has carrier branding color bar: yes/no
+13. Demo label has FROM/TO address blocks: yes/no
+14. Demo label has large tracking number: yes/no
+15. Demo label has shipment details section: yes/no
+16. Demo label looks professional (tapeable to box): yes/no
+17. lib/shipping/shipengine-ltl.ts created: yes/no
+18. app/api/shipping/ltl-quote/route.ts created: yes/no
+19. ShipEngine connectTestCarriers works: yes/no
+20. getLTLQuote returns real quotes: yes/no
+21. FreightTab has "Get Live LTL Quote" button: yes/no
+22. Live quotes display with SHIPENGINE LIVE badge: yes/no
+23. Quote ID stored for pickup/BOL flow: yes/no
+24. Previous fixes verified (Part F): yes/no
+18. All locked files untouched: yes/no
+19. inline style={{}} throughout: yes/no
+20. Light mode clean: yes/no
+21. Dark mode clean: yes/no
+22. npx tsc --noEmit: 0 errors
+23. npm run build: pass
+24. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — Unicode Fix:
+  — Instances found: [count + line numbers]
+  — All fixed: [yes/no]
+
+  PART C — LTL Carrier Selection:
+  — Carrier cards clickable: [yes/no]
+  — 3 action paths after selection: [yes/no]
+  — Upload Quote without scheduling: [yes/no]
+  — Create BOL without scheduling: [yes/no]
+
+  PART D — Demo Label Upgrade:
+  — Carrier branding bar: [yes/no]
+  — FROM/TO blocks: [yes/no]
+  — Large tracking number: [yes/no]
+  — Shipment details: [yes/no]
+  — Print button: [yes/no]
+
+  PART E — ShipEngine LTL Integration:
+  — Library file created: [yes/no]
+  — API route created: [yes/no]
+  — Test carriers connect: [yes/no]
+  — Live quotes return: [yes/no]
+  — FreightTab wired: [yes/no]
+  — SHIPENGINE LIVE badge: [yes/no]
+
+  PART F — Previous Fixes:
+  — All verified working: [yes/no]
+  — Any broken: [list]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  FLAGS: [list any]
+  Files modified: [paths]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD:
+
+1. AFTER THIS COMMAND: LOCK Shipping Center PERMANENTLY.
+2. Next: Bot Page Data Sync (Phase 3 item 19).
+3. LTL API: Ryan is looking at SurePost / FreightQuote API — wire in when available.
+4. Pre-demo: Seed pickup data, Dr. Clark demo prep.
+5. Fee: 3.5% (1.75%/1.75%). Split cost: 50/50.
+
+Command: Shipping Center Final Cleanup
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

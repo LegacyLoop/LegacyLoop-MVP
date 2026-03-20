@@ -1,0 +1,287 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/shipping/ShippingCenterClient.tsx
+     — FIX: Box grid AI PICK badge must validate fit before displaying
+     — When AI suggests a box that's "Too small", auto-upgrade to the first box that "Fits"
+     — When excessive void detected, recommend Custom with exact dims
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping commands LOCKED.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+No data changes in this command.
+
+SECTION 6 — BUILD PATTERN
+
+Single targeted fix. Read -> Fix -> Verify.
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo imminent.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Fix box recommendation logic to validate against fit indicators before displaying AI PICK. Auto-upgrade recommendations when the suggested box doesn't fit.
+
+You MAY NOT: Change any other functionality. Touch locked files.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed for this command.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — FIX AI BOX RECOMMENDATION IN SHIPPING CENTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THE PROBLEM:
+The Shipping Center's box grid shows "AI PICK" on the box
+that suggestPackage() recommends. But suggestPackage() uses
+category-based matching which can be WRONG for the actual
+item dimensions.
+
+Example: Leica M6 camera (10x8x6 inches)
+— suggestPackage returns boxSize: "small" (camera category)
+— Small preset is 10x8x4
+— Item is 6" tall, box is only 4" tall
+— Fit indicator correctly shows "Too small" in red
+— But AI PICK badge is STILL on Small
+— The correct box is Large (18x14x12) which shows "Fits"
+— The user sees contradictory information: AI says Small
+  but the fit check says Too Small
+
+Example: HP Envy 15 laptop (14x9.5x0.7 inches)
+— After the thin-item fix, suggestPackage returns "custom"
+— Custom box should be highlighted and dims pre-filled
+— This may already work — verify
+
+THE FIX:
+In the BOX_PRESETS grid rendering (PreSaleTab and
+ReadyToShipTab wizard step 1), add a VALIDATION step:
+
+After computing the fit indicator for each box, check
+if the AI-suggested box (item.aiBox) has a "Too small"
+fit indicator. If it does:
+
+1. Find the FIRST preset in order (tiny→small→medium→
+   large→xl→oversized→furniture) that has a "Fits" indicator
+2. Show "AI PICK" badge on THAT box instead
+3. Show a note: "AI upgraded from [original] to [new]
+   based on actual dimensions"
+
+If NO standard preset fits well (all are "Loose" or
+the smallest "Fits" box has excessive void):
+4. Show "AI PICK" on Custom
+5. Pre-fill custom dims: itemL+4, itemW+4, itemH+4
+6. Show: "Custom recommended — sized for your item"
+
+ALSO: When Custom IS the AI recommendation (item.aiBox
+=== "custom" or autoCustom is true):
+7. The Custom card should be highlighted with teal border
+   (same as any other AI PICK box)
+8. The dim fields should be pre-filled with the AI dims
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read app/shipping/ShippingCenterClient.tsx
+   — Find the BOX_PRESETS grid rendering in PreSaleTab
+   — Find the fit indicator calculation logic
+   — Find where "AI PICK" / isAi badge is displayed
+   — Note: isAi = item.aiBox === key (line ~1093)
+   — Note: fit calculation at lines ~1096-1113
+   — Note: the grid is also in ReadyToShipTab wizard
+
+2. Check how item.aiBox flows from the API:
+   — aiBox comes from pkgSuggestion?.boxSize in center API
+   — It's a string: "tiny"|"small"|"medium" etc.
+
+Print findings with line numbers. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — FIX AI PICK VALIDATION IN BOX GRID
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+In the BOX_PRESETS grid (PreSaleTab), BEFORE the
+grid renders, compute the VALIDATED AI pick:
+
+  // Validate AI pick against actual fit
+  const itemL = Number(editDims.length) || item.aiBoxDims?.length || 0;
+  const itemW = Number(editDims.width) || item.aiBoxDims?.width || 0;
+  const itemH = Number(editDims.height) || item.aiBoxDims?.height || 0;
+  const hasItemDims = itemL > 0 && itemW > 0 && itemH > 0;
+
+  let validatedAiPick = item.aiBox || "";
+  let aiPickUpgraded = false;
+  let aiPickReason = "";
+
+  if (hasItemDims && validatedAiPick && validatedAiPick !== "custom") {
+    const aiPreset = BOX_PRESETS[validatedAiPick];
+    if (aiPreset) {
+      // Check if AI pick actually fits
+      const fitsAi = (itemL + 4) <= aiPreset.l
+        && (itemW + 4) <= aiPreset.w
+        && (itemH + 4) <= aiPreset.h;
+
+      if (!fitsAi) {
+        // AI pick doesn't fit — find the first preset that does
+        const presetOrder = ["tiny", "small", "medium", "large", "xl", "oversized", "furniture"];
+        let foundFit = false;
+        for (const key of presetOrder) {
+          const p = BOX_PRESETS[key];
+          if ((itemL + 4) <= p.l && (itemW + 4) <= p.w && (itemH + 4) <= p.h) {
+            // Check for excessive void
+            const maxVoid = Math.max(p.l - (itemL + 4), p.w - (itemW + 4), p.h - (itemH + 4));
+            const minItemDim = Math.min(itemL, itemW, itemH);
+            if (maxVoid < minItemDim * 3) {
+              // Good fit — use this preset
+              validatedAiPick = key;
+              aiPickUpgraded = true;
+              aiPickReason = `Upgraded from ${item.aiBox} (too small) to ${p.label}`;
+              foundFit = true;
+              break;
+            }
+          }
+        }
+        if (!foundFit) {
+          // No preset fits well — recommend custom
+          validatedAiPick = "custom";
+          aiPickUpgraded = true;
+          aiPickReason = `Custom box recommended — ${Math.ceil(itemL + 4)}×${Math.ceil(itemW + 4)}×${Math.ceil(itemH + 4)}" fits perfectly`;
+        }
+      }
+    }
+  }
+
+Then in the grid rendering, replace:
+  const isAi = item.aiBox === key;
+With:
+  const isAi = validatedAiPick === key;
+
+And when isAi is true AND aiPickUpgraded:
+  Show: "AI PICK (upgraded)" badge
+  Show: aiPickReason text below
+
+When validatedAiPick === "custom":
+  Highlight the Custom card with teal border
+  Pre-fill custom dims: Math.ceil(itemL+4), Math.ceil(itemW+4), Math.ceil(itemH+4)
+  Show: "📦 Custom: [dims] — Sized for your item"
+
+Do the SAME fix in the ReadyToShipTab wizard
+step 1 box grid (if it has the same pattern).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  Leica camera (10x8x6) no longer shows AI PICK on Small: yes/no
+4.  Leica camera shows AI PICK on the first fitting box: yes/no
+5.  "AI PICK (upgraded)" badge shows when box changed: yes/no
+6.  Upgrade reason text displays: yes/no
+7.  Custom box highlights when it's the AI recommendation: yes/no
+8.  Custom dims pre-fill correctly: yes/no
+9.  Normal items (where AI pick fits) still show correct AI PICK: yes/no
+10. ReadyToShipTab wizard grid also fixed: yes/no
+11. All existing features preserved: yes/no
+12. All locked files untouched: yes/no
+13. inline style={{}} throughout: yes/no
+14. npx tsc --noEmit: 0 errors
+15. npm run build: pass
+16. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — Box Fix:
+  — Validated AI pick logic added: [yes/no]
+  — Too-small detection works: [yes/no]
+  — Auto-upgrade to fitting box: [yes/no]
+  — Custom fallback when no good fit: [yes/no]
+  — Upgraded badge shows: [yes/no]
+  — Custom dims pre-fill: [yes/no]
+  — ReadyToShip wizard also fixed: [yes/no]
+
+  LIGHT MODE: [clean/issues]
+  DARK MODE: [clean/issues]
+  FLAGS: [list any]
+  Files modified: [paths]
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD:
+
+1. Command 2 (SHIPPING-CMD-2-FINAL.txt) still needs to run for rate badge fix, split cost, metro fix, and Shippo diagnostic.
+2. After both: LOCK shipping. Move to Bot Page Data Sync.
+
+Command: Box Recommendation Fix | LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

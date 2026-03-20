@@ -23,6 +23,24 @@ function safeJson(s: string | null): any {
   try { return JSON.parse(s); } catch { return null; }
 }
 
+function timeAgo(dateStr: string | null): string {
+  if (!dateStr) return "";
+  const ms = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
+function sellerNet(price: number): number {
+  const commission = Math.round(price * 0.05 * 100) / 100;
+  const fee = Math.round(price * 0.0175 * 100) / 100;
+  return Math.round((price - commission - fee) * 100) / 100;
+}
+
 // ── Glass card helper ──
 function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
@@ -225,7 +243,7 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
       {/* Agent cards */}
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "0.75rem" }}>
         {successful.map((p: any) => {
-          const meta = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888", specialty: "" };
+          const meta = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "var(--text-muted)", specialty: "" };
           const isExp = expandedAgent === p.provider;
           const isJson = showAgentJson === p.provider;
           const ph = extractPH(p);
@@ -359,7 +377,7 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
 
         {/* Unavailable agents */}
         {failed.map((p: any) => {
-          const meta = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888", specialty: "" };
+          const meta = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "var(--text-muted)", specialty: "" };
           return (
             <div key={p.provider} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.65rem", opacity: 0.4, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", fontSize: "0.68rem" }}>
               <span style={{ opacity: 0.5 }}>{meta.icon}</span><span style={{ fontWeight: 600, color: "var(--text-muted)" }}>{meta.label}</span><span style={{ color: "var(--text-muted)", flex: 1, fontSize: "0.62rem" }}>Unavailable</span>
@@ -524,9 +542,17 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
         </div>
       ) : !v ? (
         <Card style={{ marginTop: "1.5rem", textAlign: "center", padding: "3rem" }}>
-          <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>💰</div>
+          <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>{"\u{1F4B0}"}</div>
           <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>No pricing data yet</h3>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Run AnalyzeBot first to generate pricing intelligence.</p>
+          <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", lineHeight: 1.5, maxWidth: 400, margin: "0 auto" }}>
+            Run AnalyzeBot first to generate base pricing. Then PriceBot will layer on market comparisons, platform breakdowns, and negotiation strategy.
+          </p>
+          <a href={`/bots/analyzebot?item=${item.id}`} style={{
+            display: "inline-block", marginTop: "1rem", padding: "0.55rem 1.25rem", fontSize: "0.85rem", fontWeight: 700,
+            borderRadius: "0.6rem", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", textDecoration: "none",
+          }}>
+            {"\u{1F9E0}"} Run AnalyzeBot First
+          </a>
         </Card>
       ) : loading ? (
         <Card style={{ marginTop: "1.5rem" }}>
@@ -609,19 +635,40 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
             <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start", flexWrap: "wrap" }}>
               {item.photo && <img src={item.photo} alt="" style={{ width: 56, height: 56, borderRadius: "0.5rem", objectFit: "cover" }} />}
               <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--text-primary)" }}>{item.title}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                  <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--text-primary)" }}>{item.title}</span>
+                  {item.priceBotRunAt && (
+                    <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 500 }}>
+                      {"\u00B7"} Last run: {timeAgo(item.priceBotRunAt)}
+                    </span>
+                  )}
+                  {item.priceBotRunAt && (Date.now() - new Date(item.priceBotRunAt).getTime()) > 7 * 24 * 60 * 60 * 1000 && (
+                    <span style={{ fontSize: "0.62rem", color: "#f59e0b", fontWeight: 600 }}>
+                      {"\u26A0\uFE0F"} Stale
+                    </span>
+                  )}
+                </div>
                 <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", marginTop: "0.35rem" }}>
                   <span style={{ fontSize: "2.2rem", fontWeight: 800, color: "var(--accent)" }}>
                     ${pb.price_validation?.revised_low ?? Math.round(v.low)}
                   </span>
-                  <span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>—</span>
+                  <span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>{"\u2014"}</span>
                   <span style={{ fontSize: "2.2rem", fontWeight: 800, color: "var(--accent)" }}>
                     ${pb.price_validation?.revised_high ?? Math.round(v.high)}
                   </span>
                 </div>
+                {(() => {
+                  const midPrice = pb.price_validation?.revised_mid ?? v.mid ?? Math.round((v.low + v.high) / 2);
+                  const net = sellerNet(midPrice);
+                  return (
+                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+                      Mid ${Math.round(midPrice)} {"\u2192"} You keep ~<span style={{ color: "#4ade80", fontWeight: 600 }}>${net.toFixed(2)}</span> after ~5% commission + 1.75% fee
+                    </div>
+                  );
+                })()}
                 {pb.price_validation && !pb.price_validation.agrees_with_estimate && (
                   <div style={{ fontSize: "0.78rem", color: "#ff9800", marginTop: "0.25rem" }}>
-                    📊 PriceBot revised the estimate from ${Math.round(v.low)}–${Math.round(v.high)} — {pb.price_validation.revision_reasoning?.slice(0, 120)}
+                    {"\u{1F4CA}"} PriceBot revised the estimate from ${Math.round(v.low)}{"\u2013"}${Math.round(v.high)} {"\u2014"} {pb.price_validation.revision_reasoning?.slice(0, 120)}
                   </div>
                 )}
               </div>
