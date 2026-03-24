@@ -101,6 +101,57 @@ export async function GET() {
         );
       } catch {}
 
+      // Post-process: for small/flat items where category-specific
+      // packaging is better than dimension-based sizing
+      const CATEGORY_OVERRIDES: Record<string, { boxSize: string; label: string }> = {
+        "trading cards": { boxSize: "tiny", label: "Card Mailer" },
+        "pokemon": { boxSize: "tiny", label: "Card Mailer" },
+        "hockey card": { boxSize: "tiny", label: "Card Mailer" },
+        "baseball card": { boxSize: "tiny", label: "Card Mailer" },
+        "jewelry": { boxSize: "tiny", label: "Jewelry Box" },
+        "watch": { boxSize: "tiny", label: "Watch Box" },
+        "phone": { boxSize: "tiny", label: "Small Padded Box" },
+        "coins": { boxSize: "tiny", label: "Coin Mailer" },
+        "stamps": { boxSize: "tiny", label: "Stamp Mailer" },
+      };
+
+      if (pkgSuggestion && category) {
+        const catLower = category.toLowerCase();
+        for (const [key, override] of Object.entries(CATEGORY_OVERRIDES)) {
+          if (catLower.includes(key)) {
+            const sizeOrder = ["tiny", "small", "medium", "large", "xl", "oversized", "furniture", "freight"];
+            const pkgIdx = sizeOrder.indexOf(pkgSuggestion.boxSize);
+            const overIdx = sizeOrder.indexOf(override.boxSize);
+            if (pkgIdx > overIdx) {
+              pkgSuggestion = { ...pkgSuggestion, boxSize: override.boxSize, label: override.label };
+            }
+            break;
+          }
+        }
+      }
+
+      // For items where the THINNEST dimension is < 0.5 inches
+      // (cards, photos, documents, thin electronics) — use mailer not box
+      if (pkgSuggestion && aiDimString) {
+        const parsedDims = aiDimString.split(/\s*x\s*/i).map(Number).filter((d: number) => d > 0);
+        if (parsedDims.length === 3) {
+          const minDim = Math.min(...parsedDims);
+          if (minDim < 0.5 && pkgSuggestion.boxSize !== "tiny") {
+            pkgSuggestion = {
+              ...pkgSuggestion,
+              boxSize: "tiny",
+              label: "Padded Mailer / Rigid Envelope",
+              notes: [
+                "Use a rigid mailer or padded envelope",
+                "Add stiffener cardboard if needed",
+                "Do NOT bend \u2014 mark as DO NOT BEND",
+                ...(pkgSuggestion.notes || []),
+              ],
+            };
+          }
+        }
+      }
+
       const hasSavedDims = !!((item as any).shippingWeight || (item as any).shippingLength);
       const hasAiProfile = !!(aiShipping || pkgSuggestion);
       const lastQuote = quoteMap.get(item.id) ?? null;

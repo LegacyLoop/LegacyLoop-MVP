@@ -60,6 +60,11 @@ async function getAuthToken(): Promise<string | null> {
     return null;
   }
 
+  console.log("[FedEx LTL] === AUTH ATTEMPT ===");
+  console.log("[FedEx LTL] URL:", `${FEDEX_URL}/oauth/token`);
+  console.log("[FedEx LTL] API Key present:", !!FEDEX_API_KEY, "length:", FEDEX_API_KEY.length);
+  console.log("[FedEx LTL] Secret present:", !!FEDEX_SECRET, "length:", FEDEX_SECRET.length);
+
   try {
     const res = await fetch(`${FEDEX_URL}/oauth/token`, {
       method: "POST",
@@ -71,7 +76,8 @@ async function getAuthToken(): Promise<string | null> {
       }),
     });
     if (!res.ok) {
-      console.error("[FedEx LTL] Auth failed:", res.status, await res.text().catch(() => ""));
+      const body = await res.text().catch(() => "");
+      console.error("[FedEx LTL] Auth FAILED — status:", res.status, "body:", body.slice(0, 500));
       return null;
     }
     const data = await res.json();
@@ -79,7 +85,7 @@ async function getAuthToken(): Promise<string | null> {
       token: data.access_token,
       expiresAt: Date.now() + (data.expires_in * 1000) - 60000,
     };
-    console.log("[FedEx LTL] Auth token obtained, expires in", data.expires_in, "seconds");
+    console.log("[FedEx LTL] Auth SUCCESS — token received, expires in", data.expires_in, "seconds");
     return cachedToken.token;
   } catch (e) {
     console.error("[FedEx LTL] Auth error:", e);
@@ -92,6 +98,10 @@ async function getAuthToken(): Promise<string | null> {
 export async function getFedExLTLQuote(req: FedExLTLQuoteRequest): Promise<FedExLTLQuote | null> {
   const token = await getAuthToken();
   if (!token) return null;
+
+  console.log("[FedEx LTL] === RATE REQUEST ===");
+  console.log("[FedEx LTL] Token available:", !!token);
+  console.log("[FedEx LTL] Request URL:", `${FEDEX_URL}/rate/v1/rates/quotes`);
 
   try {
     const res = await fetch(`${FEDEX_URL}/rate/v1/rates/quotes`, {
@@ -131,13 +141,17 @@ export async function getFedExLTLQuote(req: FedExLTLQuoteRequest): Promise<FedEx
       }),
     });
 
+    console.log("[FedEx LTL] Rate response status:", res.status);
+
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
-      console.error("[FedEx LTL] Quote error:", res.status, errText.slice(0, 200));
+      console.error("[FedEx LTL] FULL ERROR:", { status: res.status, statusText: res.statusText, body: errText.slice(0, 1000), url: `${FEDEX_URL}/rate/v1/rates/quotes` });
       return null;
     }
 
     const data = await res.json();
+    console.log("[FedEx LTL] Response keys:", Object.keys(data));
+    console.log("[FedEx LTL] rateReplyDetails count:", data.output?.rateReplyDetails?.length ?? 0);
     const rate = data.output?.rateReplyDetails?.[0];
     if (!rate) {
       console.log("[FedEx LTL] No rate reply details in response");

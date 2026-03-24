@@ -1,0 +1,172 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+  All styles inline style={{}} — NO Tailwind. NO className for styling.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+  NEVER hardcoded rgba(255,255,255,...) or #fff for text on theme surfaces.
+  NEVER hardcoded dark-mode text colors (#cfd8dc, #e2e8f0, rgba(207,216,220,...)) on theme surfaces.
+  Use var(--text-primary), var(--text-secondary), var(--text-muted) instead.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+  echo '=== CHECKPOINT ==='
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/items/[id]/ItemDashboardPanels.tsx (8,028 lines)
+     — SURGICAL: Fix ALL hardcoded dark-mode colors in:
+       · ListingCreatorPanel (line 4479+)
+       · ListingCommandCenter (line 4318+)
+       · Any other sections with hardcoded dark text colors
+     — FIX: All bare \uXXXX unicode in JSX text
+     — Replace with CSS variables for theme support
+
+SECTION 4-11 — Same as Command Template v10
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — FIX LISTBOT LIGHT MODE: FULL CONTRAST + UNICODE CLEANUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THE PROBLEM:
+The Listing Creator panel and ListingCommandCenter look
+terrible in light mode. Hardcoded dark-mode text colors
+(#fff, rgba(207,216,220,0.5), #cfd8dc) are invisible on
+white backgrounds. Unicode escapes render as literal text.
+
+KNOWN BROKEN INSTANCES (from code audit):
+
+Line 4386: color: "rgba(207,216,220,0.5)" → var(--text-muted)
+Line 4392: color: "rgba(207,216,220,0.5)" → var(--text-muted)
+Line 4393: color: "#fff" → var(--text-primary)
+Line 4399: color: "rgba(207,216,220,0.5)" → var(--text-muted)
+Line 4400: color: "#fff" → var(--text-primary)
+Line 4408: color: "rgba(207,216,220,0.8)" → var(--text-secondary)
+Line 4414: color: "#fff" → var(--text-primary)
+Line 4415: color: "rgba(207,216,220,0.5)" → var(--text-muted)
+Line 4415: \u2014 bare in JSX → {"\u2014"} or actual — character
+Line 4448: \u2192 bare in JSX → {"\u2192"} or actual → character
+Line 4599: color: "#cfd8dc" → var(--text-secondary)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Search the ENTIRE file for ALL instances of hardcoded
+dark-mode colors that break in light mode:
+
+  grep -n '"rgba(207,216,220\|"#cfd8dc\|"#e2e8f0\|"#fff"\|color: "#fff\|"#0a1929' \
+  app/items/[id]/ItemDashboardPanels.tsx | head -30
+
+Also search for bare unicode escapes in JSX text:
+
+  grep -n '>[^"]*\\u[0-9A-Fa-f]\{4\}' \
+  app/items/[id]/ItemDashboardPanels.tsx | head -20
+
+Print ALL findings with line numbers.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — FIX ALL HARDCODED DARK-MODE COLORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ItemDashboardPanels.tsx
+
+Replace EVERY instance found in Part A:
+
+REPLACEMENT RULES:
+
+1. Text that should be PRIMARY (titles, values, names):
+   "#fff" → "var(--text-primary)"
+   "#e2e8f0" → "var(--text-primary)"
+
+2. Text that should be SECONDARY (descriptions, body):
+   "#cfd8dc" → "var(--text-secondary)"
+   "rgba(207,216,220,0.8)" → "var(--text-secondary)"
+
+3. Text that should be MUTED (labels, hints, captions):
+   "rgba(207,216,220,0.5)" → "var(--text-muted)"
+   "#94a3b8" → "var(--text-muted)"
+   "#64748b" → "var(--text-muted)"
+
+4. KEEP these — they're accent colors, not text on theme bg:
+   "#00bcd4" → KEEP (teal accent)
+   "#f5a623" → KEEP (amber strategy badge bg)
+   "#ef4444" → KEEP (error red)
+   "#4caf50" → KEEP (success green)
+   "#fff" on GRADIENT BUTTONS → KEEP (white on colored bg is fine)
+   "#0a1929" on BADGE BACKGROUNDS → KEEP (badge text on colored bg)
+
+5. SPECIAL: The intelligence strip (line 4382-4402):
+   This uses a teal-tinted background. The text inside needs
+   to be readable in BOTH light and dark mode. Use:
+   — var(--text-primary) for values
+   — var(--text-muted) for labels
+
+FOCUS AREAS:
+— ListingCommandCenter (line 4318-4470): MegaBot strip,
+  Strategy text, platform cards, copy buttons
+— ListingCreatorPanel (line 4479-4670): listings, copy
+  buttons, platform icons
+— Platform listing cards: title text, price, tags
+— "Top platforms — copy and post" line
+— "Ready to Launch" heading
+— AI Analysis, Best Platform, Est. Sale labels
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — FIX ALL BARE UNICODE IN JSX TEXT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ItemDashboardPanels.tsx
+
+Search for ALL bare unicode escapes in JSX text
+(NOT inside quotes or template literals):
+
+Known instances:
+— Line 4415: \u2014 → {"\u2014"} or —
+— Line 4448: \u2192 → {"\u2192"} or →
+
+Search the ENTIRE file for any others:
+  grep -n '\\u2192\|\\u2014\|\\u2013\|\\u00B7\|\\u00D7' \
+  app/items/[id]/ItemDashboardPanels.tsx
+
+Check each match. If it's in BARE JSX TEXT (between > and <
+or between } and {), it needs wrapping in {""}.
+
+Fix ALL instances.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1. All rgba(207,216,220,...) replaced: yes/no
+2. All "#fff" text colors on theme surfaces replaced: yes/no
+3. All "#cfd8dc" replaced: yes/no
+4. ListingCommandCenter readable in light mode: yes/no
+5. ListingCreatorPanel readable in light mode: yes/no
+6. Platform cards readable in light mode: yes/no
+7. Strategy text readable: yes/no
+8. MegaBot strip readable: yes/no
+9. All bare \uXXXX fixed: yes/no
+10. "Open →" renders correctly: yes/no
+11. All existing functionality preserved: yes/no
+12. npx tsc --noEmit: 0 errors
+13. npm run build: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  Instances found: [count + line numbers]
+  All fixed: [yes/no]
+  Light mode verified: [yes/no]
+  Build: [pass/fail]
+  CHECKPOINT after: [pass/issue]
+
+Command: ListBot Light Mode Full Fix
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

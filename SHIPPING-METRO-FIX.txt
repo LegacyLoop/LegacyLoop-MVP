@@ -1,0 +1,297 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/items/[id]/ShippingPanel.tsx
+     — SURGICAL: Replace formula-based metro estimates
+       with real Shippo API calls per city
+     — MINIMAL changes — only the metro estimates section
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping commands LOCKED.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently.
+
+SECTION 6 — BUILD PATTERN
+
+Single targeted fix.
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Last fix of the day.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Replace the metro estimates in ShippingPanel with real Shippo rates per city. Match the Shipping Center's metro implementation.
+
+You MAY NOT: Touch any other functionality. Touch locked files.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — FIX ITEM DASHBOARD METRO ESTIMATES TO USE REAL SHIPPO RATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THE PROBLEM:
+The Shipping Center's metro estimates show REAL varied
+pricing per city ($7.19 NYC, $11.29 LA, etc.) with
+CHEAPEST/FASTEST badges and "SHIPPO RATES" label.
+
+The Item Dashboard ShippingPanel's metro estimates show
+FLAT ~$20-$23 for every city using a formula from
+getMetroEstimates() + a weight/distance adjustment.
+This looks fake and inconsistent with the Shipping Center.
+
+Both need to match. The Item Dashboard metro estimates
+need to use real Shippo rates per city, just like the
+Shipping Center does.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read app/items/[id]/ShippingPanel.tsx
+   — Find the metro estimates display section
+   — Search for "ESTIMATED SHIPPING TO MAJOR CITIES"
+     or "metroEstimates" or "metro"
+   — Note how it currently calls getMetroEstimates()
+   — Note the display component
+
+2. Read app/items/[id]/ItemDashboardPanels.tsx
+   — Line 3135-3138: metroEstimates useMemo
+   — This calls getMetroEstimates(saleZip, weight)
+     then adds +$0.50/lb + $1.50/transit-day adjustment
+   — This is the DATA SOURCE for ShippingPanel
+
+3. Read how the Shipping Center does it:
+   — The Shipping Center has a "Get Live Rates" button
+     per item that calls fetchLiveRates for each metro city
+   — It displays results with CHEAPEST/FASTEST badges
+     and "SHIPPO RATES" label
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — REPLACE METRO ESTIMATES WITH SHIPPO RATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+
+The ShippingPanel receives metroEstimates as a prop
+from ItemDashboardPanels.tsx. Those estimates use a
+formula. We need to REPLACE or ENHANCE them with
+real Shippo rates.
+
+APPROACH: Add a "Get Live Metro Rates" button to
+the metro estimates section in the ShippingPanel.
+When clicked, it calls /api/shipping/rates for each
+metro city with the item's actual weight and dims.
+
+This matches how the Shipping Center does it —
+user-triggered, not auto-fetched on mount (to avoid
+bulk API calls).
+
+In the ShippingPanel metro estimates section:
+
+1. Show the existing formula-based estimates initially
+   (these come from the prop — keep showing them)
+
+2. ADD a "Get Live Rates" button (teal, small):
+   [📡 Get Live Rates]
+
+3. When clicked:
+   — Set a loading state
+   — Call /api/shipping/rates for 4 cities:
+     NYC (10001), LA (90001), Chicago (60601), Houston (77001)
+   — Use the item's actual weight and dims from the
+     ShippingPanel's state (weight, length, width, height)
+   — Pass fromZip from the seller's saleZip
+
+   const METRO_ZIPS = [
+     { city: "New York", zip: "10001" },
+     { city: "Los Angeles", zip: "90001" },
+     { city: "Chicago", zip: "60601" },
+     { city: "Houston", zip: "77001" },
+   ];
+
+   const fetchLiveMetro = async () => {
+     setMetroLoading(true);
+     const results = [];
+     for (const metro of METRO_ZIPS) {
+       try {
+         const res = await fetch("/api/shipping/rates", {
+           method: "POST",
+           headers: { "Content-Type": "application/json" },
+           body: JSON.stringify({
+             fromZip: fromZip || "04901",
+             toZip: metro.zip,
+             weight: String(weight),
+             length: String(length),
+             width: String(width),
+             height: String(height),
+           }),
+         });
+         const data = await res.json();
+         const rates = (data.rates || [])
+           .map((r: any) => ({
+             carrier: r.provider || r.carrier,
+             service: r.servicelevel_name || r.service,
+             rate: parseFloat(r.amount || r.rate) || 0,
+             days: r.estimated_days || r.estimatedDays || 5,
+           }))
+           .filter((r: any) => r.rate > 0)
+           .sort((a: any, b: any) => a.rate - b.rate);
+
+         if (rates.length > 0) {
+           results.push({
+             city: metro.city,
+             estimatedCost: rates[0].rate,
+             estimatedDays: rates[0].days,
+             carrier: rates[0].carrier,
+             service: rates[0].service,
+             isLive: !data.isMock && !data.isDemo,
+           });
+         }
+       } catch {}
+     }
+
+     if (results.length > 0) {
+       // Mark cheapest and fastest
+       const minCost = Math.min(...results.map(r => r.estimatedCost));
+       const minDays = Math.min(...results.map(r => r.estimatedDays));
+       results.forEach(r => {
+         r.isCheapest = r.estimatedCost === minCost;
+         r.isFastest = r.estimatedDays === minDays && !r.isCheapest;
+       });
+       setLiveMetro(results);
+     }
+     setMetroLoading(false);
+   };
+
+4. Display live metro results when available:
+   — Replace the formula-based cards with live data
+   — Show carrier name under the price (e.g. "USPS")
+   — Show CHEAPEST/FASTEST badges
+   — Show "SHIPPO RATES" label in top-right
+   — If live fetch failed, keep showing formula estimates
+
+5. ADD state variables to the ShippingPanel component:
+   const [liveMetro, setLiveMetro] = useState<any[] | null>(null);
+   const [metroLoading, setMetroLoading] = useState(false);
+
+6. In the metro display section, render:
+   IF liveMetro exists: show live data with badges
+   ELSE: show formula-based estimates (existing)
+
+   The live data cards should match the Shipping Center
+   style: city name, price, days, carrier, badges.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  "Get Live Rates" button in metro section: yes/no
+3.  Button calls Shippo for 4 cities: yes/no
+4.  Live results replace formula estimates: yes/no
+5.  CHEAPEST/FASTEST badges display: yes/no
+6.  Carrier name shown under price: yes/no
+7.  "SHIPPO RATES" label shown: yes/no
+8.  Formula estimates still show before button click: yes/no
+9.  Loading state during fetch: yes/no
+10. All other ShippingPanel functionality preserved: yes/no
+11. All locked files untouched: yes/no
+12. inline style={{}} throughout: yes/no
+13. npx tsc --noEmit: 0 errors
+14. npm run build: pass
+15. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+
+  PART B — Metro Fix:
+  — Get Live Rates button: [yes/no]
+  — Shippo calls per city: [yes/no]
+  — Live results display: [yes/no]
+  — Badges: [yes/no]
+  — Carrier names: [yes/no]
+  — Formula fallback preserved: [yes/no]
+
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD:
+
+1. AFTER THIS: Shipping is LOCKED PERMANENTLY.
+2. Next session: Bot Page Data Sync (Phase 3 item 19).
+3. Pre-demo: Seed data, Dr. Clark demo prep.
+
+Command: Metro Estimates Fix — Last Shipping Fix
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

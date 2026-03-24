@@ -1,0 +1,433 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/items/[id]/ShippingPanel.tsx (3,657 lines)
+     — UPGRADE: Post-sale wizard to show saved quotes first
+     — ADD: Quote dashboard before wizard steps
+     — ADD: Editable package details in step 1
+     — ADD: "Use Saved Quote" shortcut flow
+     — ADD: Link to Shipping Center for full TMS
+     — Keep ALL existing functionality
+
+  2. lib/shipping/fedex-parcel.ts (155 lines)
+     — DEBUG: Add detailed console logging to auth + rate functions
+     — FIX: Auth or request format if failing
+     — ADD: Demo rate fallback if sandbox non-functional
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping commands LOCKED.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently.
+
+SECTION 6 — BUILD PATTERN
+
+  Build order: A -> B -> C -> D
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo THIS WEEK. The Item Dashboard ShippingPanel is the "mobile/mini" version of the Shipping Center. Both need the same functions at different scales.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Add saved quote display, quick-ship flow, editable package details, Shipping Center link. Make the post-sale flow seamless and intuitive. Think of this as the mobile app version of the full TMS.
+
+You MAY NOT: Touch locked files, rewrite the entire wizard, add npm packages, change schema, deviate from inline style={{}}.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — ITEM DASHBOARD POST-SALE SHIPPING FLOW FIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THE PROBLEM:
+When an item is SOLD, the ShippingPanel post-sale wizard
+(PostSaleWizard component, line 187-574) jumps straight to
+"Confirm Package" with:
+— NO saved quote display
+— NO "use previous quote" shortcut
+— NO way to edit package dims in step 1 (just "Looks Good")
+— NO quote history from pre-sale
+— NO link to Shipping Center for more options
+— NO way to get a fresh quote without going through all 4 steps
+
+The user has to click through 4 steps every time — even if
+they already saved a quote during the pre-sale phase.
+
+THE FIX:
+Add a "Step 0" — a QUOTE DASHBOARD that shows BEFORE the
+wizard steps. This is the first thing the user sees when
+an item is sold and they're ready to ship.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read app/items/[id]/ShippingPanel.tsx
+   — Line 187-574: PostSaleWizard component
+   — Line 208: step state starts at 1 (or 4 if label exists)
+   — Line 339-351: Step 1 — just shows dims, no edit
+   — Line 354-385: Step 2 — buyer address
+   — Line 388-565: Step 3 — carrier table + insurance + delivery method + summary
+   — Line 304-307: Step 4 — PackingChecklist (after label)
+
+2. Check localStorage for saved quotes:
+   — Key: ll_quote_${itemId}
+   — Contains: carrier, service, rate, days, toZip, fromZip, savedAt, allCarriers
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — ADD "STEP 0" QUOTE DASHBOARD BEFORE WIZARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+
+In the PostSaleWizard component (line 187):
+
+ADD a new step BEFORE the existing step 1. Change the
+initial step state from 1 to 0 (when no existing label):
+
+  const [step, setStep] = useState(existingLabel ? 4 : 0);
+
+ADD new Step 0 rendering BEFORE step 1 (before line 339):
+
+{step === 0 && (
+  <div>
+    QUOTE DASHBOARD — shows what the user has and what to do:
+
+    1. CHECK FOR SAVED QUOTE:
+       Read from localStorage: ll_quote_${itemId}
+       If found:
+
+       SAVED QUOTE CARD:
+       ┌─────────────────────────────────────────┐
+       │ 📋 SAVED QUOTE                          │
+       │ [Carrier] [Service] — $[rate]            │
+       │ [fromZip] → [toZip] · [time ago]        │
+       │ [Fresh ✓ / Expiring ⚠️ / Expired ❌]     │
+       │                                          │
+       │ [🚀 Ship with This Quote]  (big green)   │
+       │ [📋 View All Carriers]  [🔄 Fresh Quote]│
+       └─────────────────────────────────────────┘
+
+       "Ship with This Quote" → skips to step 2 (address)
+       with the saved carrier pre-selected. If toZip exists
+       in the quote, skip to step 3 (carrier confirm).
+
+       "View All Carriers" → shows the full carrier list
+       from the saved quote's allCarriers array.
+
+       "Fresh Quote" → goes to step 1 (package confirm)
+       then step 2 (address) to get fresh rates.
+
+    2. IF NO SAVED QUOTE:
+       Show: "📦 Ready to ship! Let's get a shipping label."
+       Package summary: [L]×[W]×[H] in · [weight] lbs
+       [Edit Package Details ▼] — expands to show editable
+       dims/weight fields (currently step 1 is read-only)
+       [Get Shipping Rates →] — goes to step 2 (address)
+
+    3. QUICK ACTIONS BAR:
+       [📦 Quick Ship] — starts wizard at step 1
+       [🏢 Open Shipping Center →] — link to /shipping?itemId={id}
+       "For full TMS options, carrier comparison, and LTL freight"
+
+    4. QUOTE HISTORY (if available):
+       Check localStorage for previous quotes.
+       Check if the component received any quote props.
+       If any history exists, show a small expandable section:
+       "📋 Quote History"
+       — [date] [carrier] $[rate] [fromZip]→[toZip] [status]
+  </div>
+)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — UPGRADE STEP 1 WITH EDITABLE PACKAGE DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+
+Currently Step 1 (line 339-351) shows:
+  "Package: 10×8×4 in, 0.1 lbs (FRAGILE)"
+  "Looks right? You can edit shipping details from the edit page."
+  [Looks Good — Next]
+
+This is NOT enough. The user needs to be able to EDIT here.
+
+UPGRADE Step 1 to include:
+
+1. PACKAGE SUMMARY (keep existing display)
+   "📦 Package: [L]×[W]×[H] in · [weight] lbs"
+   If FRAGILE: show amber badge
+
+2. [Edit Package ▼] toggle — expands to show:
+   — 4 input fields: Weight, Length, Width, Height
+   — Pre-filled from current values
+   — Box size quick-select (mini version of the preset grid):
+     Just show the names: Tiny | Small | Medium | Large | XL | Custom
+     Clicking one updates the dims to match that preset
+   — Fragile checkbox
+   — [Save Changes] updates the item via API
+     POST /api/items/update/${itemId}
+   — [Cancel] collapses back to summary
+
+3. [Confirm Package →] button (renamed from "Looks Good — Next")
+
+This makes Step 1 actually useful — the user can adjust
+their package before getting rates.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — ENSURE SYNC WITH SHIPPING CENTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+
+The PostSaleWizard should save progress to localStorage
+so the Shipping Center can read it:
+
+1. When step changes, save current state:
+   localStorage.setItem(`ll_wizard_${itemId}`, JSON.stringify({
+     step, buyerZip, buyerName, buyerStreet, buyerCity, buyerState,
+     selectedRate: selectedRate ? {
+       carrier: selectedRate.provider,
+       service: selectedRate.servicelevel_name,
+       rate: selectedRate.amount,
+       days: selectedRate.estimated_days,
+     } : null,
+     insurance, deliveryMethod,
+     updatedAt: new Date().toISOString(),
+   }));
+
+2. On mount, check for saved wizard state:
+   const saved = localStorage.getItem(`ll_wizard_${itemId}`);
+   If found, restore the state (step, buyerZip, etc.)
+   so the user picks up where they left off.
+
+3. After label is created (step 4), clear the wizard state:
+   localStorage.removeItem(`ll_wizard_${itemId}`);
+
+4. The "Open Shipping Center" link should include the itemId:
+   href={`/shipping?itemId=${itemId}`}
+   The Shipping Center already handles this param.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PART E — DEBUG + FIX FEDEX PARCEL RATES NOT SHOWING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: lib/shipping/fedex-parcel.ts
+
+The FedEx Parcel API is wired into /api/shipping/rates
+(line 23-26) but NO FedEx rates are appearing in the
+carrier table. getFedExParcelRates() is returning empty.
+
+DIAGNOSE:
+
+1. Add detailed console.log to every step of the FedEx flow:
+
+   In getAuthToken():
+   — Log: "[FedEx Parcel] Requesting auth token..."
+   — Log: "[FedEx Parcel] Token URL: ${FEDEX_URL}/oauth/token"
+   — Log: "[FedEx Parcel] API Key present: ${!!FEDEX_API_KEY}"
+   — Log: "[FedEx Parcel] Secret present: ${!!FEDEX_SECRET}"
+   — On success: "[FedEx Parcel] Auth SUCCESS — token received"
+   — On failure: "[FedEx Parcel] Auth FAILED — status: ${res.status}, body: ${await res.text()}"
+
+   In getFedExParcelRates():
+   — Log: "[FedEx Parcel] Requesting rates: ${fromZip} → ${toZip}, ${weight}lbs"
+   — Log the full request body (JSON.stringify, first 500 chars)
+   — On success: "[FedEx Parcel] Got ${rates.length} rates"
+   — On failure: "[FedEx Parcel] Rate request FAILED — status: ${res.status}"
+   — Log the full error response body
+
+2. POSSIBLE ISSUES TO CHECK:
+
+   a) FedEx sandbox may require an account number even in test mode.
+      The current code sends accountNumber: { value: "" }.
+      Try: remove the accountNumber field entirely, OR
+      check FedEx docs for sandbox account number format.
+
+   b) FedEx sandbox URL might need /sandbox path segment.
+      Current: https://apis-sandbox.fedex.com/rate/v1/rates/quotes
+      This should be correct for sandbox.
+
+   c) The rate request body structure might not match FedEx's
+      expected format. The FedEx Rate API expects specific
+      field names. Check if:
+      — requestedShipment is the correct wrapper
+      — requestedPackageLineItems vs packageLineItems
+      — rateRequestType values: should be ["LIST"] or ["ACCOUNT"]
+      — pickupType: "DROPOFF_AT_FEDEX_LOCATION" may need to be
+        "USE_SCHEDULED_PICKUP" for sandbox
+
+   d) The FedEx sandbox may return rates in a different response
+      structure than production. Check if:
+      — data.output exists
+      — data.output.rateReplyDetails exists
+      — The rate amounts are in the expected location
+
+3. IF FedEx auth works but rates fail:
+   Try a simpler request format — just the minimum fields:
+   {
+     requestedShipment: {
+       shipper: { address: { postalCode: fromZip, countryCode: "US" } },
+       recipient: { address: { postalCode: toZip, countryCode: "US" } },
+       pickupType: "DROPOFF_AT_FEDEX_LOCATION",
+       rateRequestType: ["LIST"],
+       requestedPackageLineItems: [{
+         weight: { units: "LB", value: weight },
+         dimensions: { length, width, height, units: "IN" },
+       }],
+     },
+   }
+
+4. NO FAKE FALLBACK. If FedEx API fails, show NOTHING
+   for FedEx. Do NOT add demo/estimated FedEx rates.
+   Only show real API rates. If the sandbox auth or
+   request format is wrong, FIX IT — don't fake it.
+
+   Log the FULL error response so Ryan can debug:
+   console.error("[FedEx Parcel] FULL ERROR:", {
+     status: res.status,
+     statusText: res.statusText,
+     body: await res.text(),
+     url: `${FEDEX_URL}/rate/v1/rates/quotes`,
+   });
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  Step 0 quote dashboard renders before wizard: yes/no
+4.  Saved quote from localStorage displays: yes/no
+5.  "Ship with This Quote" skips to step 2/3: yes/no
+6.  "View All Carriers" shows saved carriers: yes/no
+7.  "Fresh Quote" starts at step 1: yes/no
+8.  "Open Shipping Center" link works: yes/no
+9.  Step 1 has editable package details: yes/no
+10. Box size quick-select in step 1: yes/no
+11. Save Changes updates via API: yes/no
+12. Wizard state saves to localStorage: yes/no
+13. Wizard state restores on mount: yes/no
+14. Wizard state clears after label: yes/no
+15. FedEx Parcel auth diagnostic logged: yes/no
+16. FedEx rates appear in carrier table: yes/no
+17. If FedEx API fails: NO fake rates shown, error logged: yes/no
+18. FedEx badge shows (LIVE or ESTIMATED): yes/no
+19. All existing wizard functionality preserved: yes/no
+16. All locked files untouched: yes/no
+17. inline style={{}} throughout: yes/no
+18. Light mode clean: yes/no
+19. Dark mode clean: yes/no
+20. npx tsc --noEmit: 0 errors
+21. npm run build: pass
+22. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — Quote Dashboard (Step 0):
+  — Renders before wizard: [yes/no]
+  — Saved quote displays: [yes/no]
+  — Ship with Quote shortcut: [yes/no]
+  — Fresh Quote flow: [yes/no]
+  — Shipping Center link: [yes/no]
+
+  PART C — Step 1 Upgrade:
+  — Editable dims: [yes/no]
+  — Box quick-select: [yes/no]
+  — Save Changes: [yes/no]
+
+  PART E — FedEx Debug:
+  — Auth diagnostic: [success / failed / reason]
+  — Rates returned: [count or 0]
+  — No fake fallback (real API only): [yes/no]
+  — FedEx badge in carrier table: [yes/no]
+
+  PART D — Sync:
+  — Wizard state saves: [yes/no]
+  — State restores on mount: [yes/no]
+  — State clears after label: [yes/no]
+
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD:
+
+1. Auth visual upgrade command ready (AUTH-VISUAL-UPGRADE.txt)
+2. Next after shipping: Bot Page Data Sync (Phase 3 item 19)
+3. Pre-demo: Seed data, Dr. Clark demo prep
+
+Command: Item Dashboard Post-Sale Shipping Flow Fix
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

@@ -186,11 +186,11 @@ function mapSuggestionToPreset(suggestion: PackageSuggestion | null): { key: str
 
 function PostSaleWizard({
   itemId,
-  weight,
-  length,
-  width,
-  height,
-  isFragile,
+  weight: initWeight,
+  length: initLength,
+  width: initWidth,
+  height: initHeight,
+  isFragile: initFragile,
   fromZip,
   itemValue,
   existingLabel,
@@ -205,7 +205,14 @@ function PostSaleWizard({
   itemValue: number | null;
   existingLabel: ShipmentLabelData | null;
 }) {
-  const [step, setStep] = useState(existingLabel ? 4 : 1);
+  // Editable package dims (Part C)
+  const [weight, setEditWeight] = useState(initWeight);
+  const [length, setEditLength] = useState(initLength);
+  const [width, setEditWidth] = useState(initWidth);
+  const [height, setEditHeight] = useState(initHeight);
+  const [isFragile, setEditFragile] = useState(initFragile);
+
+  const [step, setStep] = useState(existingLabel ? 4 : 0);
   const [rates, setRates] = useState<ShippingRate[]>([]);
   const [loadingRates, setLoadingRates] = useState(false);
   const [buyerZip, setBuyerZip] = useState("");
@@ -219,6 +226,53 @@ function PostSaleWizard({
   const [creating, setCreating] = useState(false);
   const [label, setLabel] = useState<ShipmentLabelData | null>(existingLabel);
   const [error, setError] = useState("");
+
+  // Step 0: Saved quote state
+  const [savedQuote, setSavedQuote] = useState<any>(null);
+  const [showAllCarriers, setShowAllCarriers] = useState(false);
+  const [editingPackage, setEditingPackage] = useState(false);
+  const [savingDims, setSavingDims] = useState(false);
+
+  // Load saved quote + wizard state from localStorage (Part D)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`ll_quote_${itemId}`);
+      if (raw) {
+        const q = JSON.parse(raw);
+        const ageMs = Date.now() - (q.savedAt || 0);
+        setSavedQuote({ ...q, isFresh: ageMs < 43200000, isExpiring: ageMs >= 43200000 && ageMs < 86400000, isExpired: ageMs >= 86400000, ageHrs: Math.round(ageMs / 3600000) });
+      }
+    } catch { /* ignore */ }
+    // Restore wizard state
+    try {
+      const ws = localStorage.getItem(`ll_wizard_${itemId}`);
+      if (ws && !existingLabel) {
+        const s = JSON.parse(ws);
+        if (s.step > 0 && s.step < 4) {
+          if (s.buyerZip) setBuyerZip(s.buyerZip);
+          if (s.buyerName) setBuyerName(s.buyerName);
+          if (s.buyerStreet) setBuyerStreet(s.buyerStreet);
+          if (s.buyerCity) setBuyerCity(s.buyerCity);
+          if (s.buyerState) setBuyerState(s.buyerState);
+          if (s.insurance) setInsurance(s.insurance);
+          if (s.deliveryMethod) setDeliveryMethod(s.deliveryMethod);
+        }
+      }
+    } catch { /* ignore */ }
+  }, [itemId, existingLabel]);
+
+  // Save wizard state on step change (Part D)
+  useEffect(() => {
+    if (step > 0 && step < 4 && !label) {
+      try {
+        localStorage.setItem(`ll_wizard_${itemId}`, JSON.stringify({
+          step, buyerZip, buyerName, buyerStreet, buyerCity, buyerState,
+          selectedRate: selectedRate ? { carrier: selectedRate.provider, service: selectedRate.servicelevel_name, rate: selectedRate.amount, days: selectedRate.estimated_days } : null,
+          insurance, deliveryMethod, updatedAt: new Date().toISOString(),
+        }));
+      } catch { /* ignore */ }
+    }
+  }, [step, buyerZip, buyerName, buyerStreet, buyerCity, buyerState, selectedRate, insurance, deliveryMethod, itemId, label]);
 
   const fetchRates = async () => {
     if (!buyerZip || buyerZip.length < 5) return;
@@ -301,53 +355,217 @@ function PostSaleWizard({
     }
   };
 
+  // Clear wizard state after label created (Part D)
+  useEffect(() => {
+    if (label && step === 4) {
+      try { localStorage.removeItem(`ll_wizard_${itemId}`); } catch { /* ignore */ }
+    }
+  }, [label, step, itemId]);
+
+  // Save package dims via API (Part C)
+  const savePackageDims = async () => {
+    setSavingDims(true);
+    try {
+      await fetch(`/api/items/update/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shippingWeight: weight, shippingLength: length, shippingWidth: width, shippingHeight: height, isFragile }),
+      });
+    } catch { /* ignore */ }
+    setSavingDims(false);
+    setEditingPackage(false);
+  };
+
   // If we already have a label, show the packing checklist (step 4)
   if (label && step === 4) {
     return <PackingChecklist label={label} isFragile={isFragile} deliveryMethod={label.deliveryMethod || deliveryMethod} />;
   }
 
-  return (
-    <div className="space-y-4">
-      {/* Step indicator */}
-      <div className="flex items-center gap-1" style={{ fontSize: "0.7rem" }}>
-        {["Confirm Package", "Buyer Address", "Choose Carrier", "Label"].map((s, i) => (
-          <div key={s} className="flex items-center gap-1">
-            <span
-              style={{
-                width: "1.25rem",
-                height: "1.25rem",
-                borderRadius: "50%",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "0.6rem",
-                fontWeight: 700,
-                background: step > i + 1 ? "var(--accent)" : step === i + 1 ? "var(--accent)" : "var(--bg-card-hover)",
-                color: step >= i + 1 ? "#fff" : "var(--text-muted)",
-              }}
-            >
-              {step > i + 1 ? "✓" : i + 1}
-            </span>
-            <span style={{ color: step === i + 1 ? "var(--text-primary)" : "var(--text-muted)", fontWeight: step === i + 1 ? 600 : 400 }}>
-              {s}
-            </span>
-            {i < 3 && <span style={{ color: "var(--text-muted)", margin: "0 0.25rem" }}>→</span>}
-          </div>
-        ))}
-      </div>
+  // Box presets for quick-select (Part C)
+  const BOX_QUICK = [
+    { key: "tiny", l: 6, w: 4, h: 3, label: "Tiny" },
+    { key: "small", l: 10, w: 8, h: 4, label: "Small" },
+    { key: "medium", l: 14, w: 12, h: 8, label: "Medium" },
+    { key: "large", l: 18, w: 14, h: 12, label: "Large" },
+    { key: "xl", l: 24, w: 18, h: 16, label: "XL" },
+  ];
 
-      {/* Step 1: Confirm Package */}
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+
+      {/* Step 0: Quote Dashboard (Part B) */}
+      {step === 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          {/* Saved quote card */}
+          {savedQuote && savedQuote.carrier && (() => {
+            const c = savedQuote.carrier;
+            const remainMs = savedQuote.savedAt ? 86400000 - (Date.now() - savedQuote.savedAt) : 0;
+            const remainHrs = Math.max(0, Math.floor(remainMs / 3600000));
+            const remainMins = Math.max(0, Math.floor((remainMs % 3600000) / 60000));
+            return (
+              <div style={{ padding: "0.75rem", borderRadius: "0.75rem", background: savedQuote.isFresh ? "rgba(34,197,94,0.04)" : savedQuote.isExpiring ? "rgba(245,158,11,0.04)" : "rgba(239,68,68,0.04)", border: `1px solid ${savedQuote.isFresh ? "rgba(34,197,94,0.15)" : savedQuote.isExpiring ? "rgba(245,158,11,0.15)" : "rgba(239,68,68,0.15)"}` }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", marginBottom: "0.35rem", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>{"\u{1F4CB}"} Saved Quote</span>
+                  <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: savedQuote.isFresh ? "rgba(34,197,94,0.12)" : savedQuote.isExpiring ? "rgba(245,158,11,0.12)" : "rgba(239,68,68,0.12)", color: savedQuote.isFresh ? "#22c55e" : savedQuote.isExpiring ? "#f59e0b" : "#ef4444" }}>
+                    {savedQuote.isFresh ? "\u2705 Fresh" : savedQuote.isExpiring ? `\u26A0\uFE0F Expiring (${savedQuote.ageHrs}h)` : `\u274C Expired (${savedQuote.ageHrs}h)`}
+                  </span>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.25rem" }}>
+                  <span style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)" }}>{c.carrier || "?"} {c.service || ""}</span>
+                  <span style={{ fontSize: "1rem", fontWeight: 800, color: "#4caf50" }}>${c.price?.toFixed(2) ?? "?"}</span>
+                </div>
+                <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+                  {c.days ? `${c.days}d transit` : ""}{savedQuote.toZip ? ` \u00B7 ${fromZip || "04901"} \u2192 ${savedQuote.toZip}` : ""}{remainMs > 0 ? ` \u00B7 valid ~${remainHrs}h ${remainMins}m` : ""}
+                </div>
+                <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                  <button
+                    onClick={() => {
+                      if (savedQuote.toZip) { setBuyerZip(savedQuote.toZip); fetchRates(); setStep(3); }
+                      else { setStep(2); }
+                    }}
+                    style={{ padding: "0.45rem 1rem", fontSize: "0.82rem", fontWeight: 700, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #4caf50, #2e7d32)", color: "#fff", cursor: "pointer" }}
+                  >
+                    {"\u{1F680}"} Ship with This Quote
+                  </button>
+                  <button onClick={() => setShowAllCarriers(!showAllCarriers)} style={{ padding: "0.35rem 0.75rem", fontSize: "0.75rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>
+                    {showAllCarriers ? "\u25BC Hide Carriers" : "\u{1F4CB} View All Carriers"}
+                  </button>
+                  <button onClick={() => setStep(1)} style={{ padding: "0.35rem 0.75rem", fontSize: "0.75rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>
+                    {"\u{1F504}"} Fresh Quote
+                  </button>
+                </div>
+                {/* Expanded all carriers view */}
+                {showAllCarriers && savedQuote.allCarriers && savedQuote.allCarriers.length > 0 && (
+                  <div style={{ marginTop: "0.5rem", borderTop: "1px solid var(--border-default)", paddingTop: "0.5rem" }}>
+                    {savedQuote.allCarriers.sort((a: any, b: any) => (a.price || 0) - (b.price || 0)).map((cr: any, i: number) => (
+                      <div key={`${cr.carrier}-${cr.service}-${i}`} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.3rem 0.4rem", borderRadius: "0.35rem", fontSize: "0.75rem", background: cr.carrier === c.carrier && cr.service === c.service ? "rgba(0,188,212,0.06)" : "transparent" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          <span style={{ color: "var(--text-primary)", fontWeight: 500 }}>{cr.carrier}</span>
+                          <span style={{ color: "var(--text-muted)" }}>{cr.service}</span>
+                          {i === 0 && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>BEST</span>}
+                        </div>
+                        <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>${cr.price?.toFixed(2) ?? "?"} {cr.days ? `\u00B7 ${cr.days}d` : ""}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* No saved quote — package summary */}
+          {(!savedQuote || !savedQuote.carrier) && (
+            <div style={{ padding: "0.75rem", borderRadius: "0.75rem", border: "1px solid var(--border-default)", background: "var(--bg-card)" }}>
+              <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.25rem" }}>
+                {"\u{1F4E6}"} Ready to ship!
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+                Package: {length}{"\u00D7"}{width}{"\u00D7"}{height} in {"\u00B7"} {weight} lbs {isFragile ? "\u00B7 FRAGILE" : ""}
+              </div>
+              <button onClick={() => setStep(1)} style={{ padding: "0.45rem 1rem", fontSize: "0.82rem", fontWeight: 700, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer" }}>
+                Get Shipping Rates {"\u2192"}
+              </button>
+            </div>
+          )}
+
+          {/* Quick actions bar */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.3rem" }}>
+            <button onClick={() => setStep(1)} style={{ fontSize: "0.72rem", color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+              {"\u{1F4E6}"} Edit Package & Get Rates
+            </button>
+            <a href={`/shipping?itemId=${itemId}`} style={{ fontSize: "0.72rem", color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>
+              {"\u{1F3E2}"} Open Shipping Center {"\u2192"}
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Step indicator (steps 1-3) */}
+      {step >= 1 && step <= 3 && (
+        <div style={{ display: "flex", alignItems: "center", gap: "0.2rem", fontSize: "0.7rem", flexWrap: "wrap" }}>
+          {["Package", "Address", "Carrier", "Label"].map((s, i) => (
+            <div key={s} style={{ display: "flex", alignItems: "center", gap: "0.2rem" }}>
+              <span
+                style={{
+                  width: "1.25rem",
+                  height: "1.25rem",
+                  borderRadius: "50%",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "0.6rem",
+                  fontWeight: 700,
+                  background: step > i + 1 ? "var(--accent)" : step === i + 1 ? "var(--accent)" : "var(--bg-card-hover, var(--ghost-bg))",
+                  color: step >= i + 1 ? "#fff" : "var(--text-muted)",
+                }}
+              >
+                {step > i + 1 ? "\u2713" : i + 1}
+              </span>
+              <span style={{ color: step === i + 1 ? "var(--text-primary)" : "var(--text-muted)", fontWeight: step === i + 1 ? 600 : 400 }}>
+                {s}
+              </span>
+              {i < 3 && <span style={{ color: "var(--text-muted)", margin: "0 0.15rem" }}>{"\u2192"}</span>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Step 1: Confirm Package (upgraded with editable dims — Part C) */}
       {step === 1 && (
-        <div className="space-y-3">
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem" }}>
-            Package: {length}×{width}×{height} in, {weight} lbs {isFragile ? "(FRAGILE)" : ""}
-          </p>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
-            Looks right? You can edit shipping details from the edit page.
-          </p>
-          <button className="btn-primary" onClick={() => setStep(2)} style={{ padding: "0.5rem 1.25rem", fontSize: "0.85rem" }}>
-            Looks Good — Next
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+            {"\u{1F4E6}"} Package: {length}{"\u00D7"}{width}{"\u00D7"}{height} in, {weight} lbs {isFragile ? "(FRAGILE)" : ""}
+          </div>
+          {/* Edit toggle */}
+          <button onClick={() => setEditingPackage(!editingPackage)} style={{ fontSize: "0.75rem", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0, textAlign: "left", fontWeight: 500 }}>
+            {editingPackage ? "\u25BC Hide Package Editor" : "\u25B6 Edit Package Details"}
           </button>
+          {/* Editable dims */}
+          {editingPackage && (
+            <div style={{ padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid var(--border-default)", background: "var(--bg-card)" }}>
+              {/* Box quick-select */}
+              <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+                {BOX_QUICK.map(b => (
+                  <button key={b.key} onClick={() => { setEditLength(b.l); setEditWidth(b.w); setEditHeight(b.h); }} style={{
+                    padding: "0.25rem 0.55rem", fontSize: "0.68rem", fontWeight: 600, borderRadius: "0.35rem", cursor: "pointer",
+                    border: length === b.l && width === b.w && height === b.h ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
+                    background: length === b.l && width === b.w && height === b.h ? "rgba(0,188,212,0.06)" : "transparent",
+                    color: length === b.l && width === b.w && height === b.h ? "var(--accent)" : "var(--text-muted)",
+                  }}>
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+              {/* Dim inputs */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.4rem", marginBottom: "0.5rem" }}>
+                {[{ k: "weight", l: "Weight (lbs)", v: weight, set: setEditWeight }, { k: "length", l: "L (in)", v: length, set: setEditLength }, { k: "width", l: "W (in)", v: width, set: setEditWidth }, { k: "height", l: "H (in)", v: height, set: setEditHeight }].map(f => (
+                  <div key={f.k}>
+                    <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
+                    <input value={f.v} onChange={e => f.set(Number(e.target.value) || 0)} type="number" style={{ width: "100%", padding: "0.35rem 0.5rem", fontSize: "0.78rem", borderRadius: "0.35rem", border: "1px solid var(--border-default)", background: "var(--input-bg, var(--ghost-bg))", color: "var(--text-primary)", outline: "none", boxSizing: "border-box" }} />
+                  </div>
+                ))}
+              </div>
+              <label style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.75rem", color: "var(--text-muted)", cursor: "pointer", marginBottom: "0.5rem" }}>
+                <input type="checkbox" checked={isFragile} onChange={e => setEditFragile(e.target.checked)} style={{ accentColor: "var(--accent)" }} /> Fragile
+              </label>
+              <div style={{ display: "flex", gap: "0.4rem" }}>
+                <button onClick={savePackageDims} disabled={savingDims} style={{ padding: "0.35rem 0.85rem", fontSize: "0.75rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", opacity: savingDims ? 0.6 : 1 }}>
+                  {savingDims ? "Saving..." : "Save Changes"}
+                </button>
+                <button onClick={() => setEditingPackage(false)} style={{ padding: "0.35rem 0.75rem", fontSize: "0.75rem", borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+          <div style={{ display: "flex", gap: "0.4rem" }}>
+            <button onClick={() => setStep(0)} style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "0.5rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>
+              Back
+            </button>
+            <button onClick={() => setStep(2)} style={{ padding: "0.5rem 1.25rem", fontSize: "0.85rem", fontWeight: 700, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer" }}>
+              Confirm Package {"\u2192"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -2426,6 +2644,72 @@ export default function ShippingPanel({
   const [preSaleQuoteSaved, setPreSaleQuoteSaved] = useState(false);
   const [savedQuoteData, setSavedQuoteData] = useState<any>(null);
 
+  // Live metro rates (Shippo per-city)
+  const [liveMetro, setLiveMetro] = useState<any[] | null>(null);
+  const [metroLoading, setMetroLoading] = useState(false);
+
+  const METRO_ZIPS = [
+    { city: "New York", zip: "10001" },
+    { city: "Los Angeles", zip: "90001" },
+    { city: "Chicago", zip: "60601" },
+    { city: "Houston", zip: "77001" },
+  ];
+
+  const fetchLiveMetro = async () => {
+    setMetroLoading(true);
+    const results: any[] = [];
+    for (const metro of METRO_ZIPS) {
+      try {
+        const res = await fetch("/api/shipping/rates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fromZip: fromZip || "04901",
+            toZip: metro.zip,
+            weight: String(weight),
+            length: String(length),
+            width: String(width),
+            height: String(height),
+          }),
+        });
+        const data = await res.json();
+        const sorted = (data.rates || [])
+          .map((r: any) => ({
+            carrier: r.provider || r.carrier,
+            service: r.servicelevel_name || r.service,
+            rate: parseFloat(r.amount || r.rate) || 0,
+            days: r.estimated_days || r.estimatedDays || 5,
+          }))
+          .filter((r: any) => r.rate > 0)
+          .sort((a: any, b: any) => a.rate - b.rate);
+
+        if (sorted.length > 0) {
+          results.push({
+            city: metro.city,
+            estimatedCost: sorted[0].rate,
+            estimatedDays: sorted[0].days,
+            carrier: sorted[0].carrier,
+            service: sorted[0].service,
+            isLive: !data.isMock && !data.isDemo,
+            isCheapest: false,
+            isFastest: false,
+          });
+        }
+      } catch { /* ignore */ }
+    }
+
+    if (results.length > 0) {
+      const minCost = Math.min(...results.map(r => r.estimatedCost));
+      const minDays = Math.min(...results.map(r => r.estimatedDays));
+      results.forEach(r => {
+        r.isCheapest = r.estimatedCost === minCost;
+        r.isFastest = r.estimatedDays === minDays && !r.isCheapest;
+      });
+      setLiveMetro(results);
+    }
+    setMetroLoading(false);
+  };
+
   // Load saved quote from localStorage
   useEffect(() => {
     try {
@@ -2551,6 +2835,50 @@ export default function ShippingPanel({
   const [showLtlQuoteForm, setShowLtlQuoteForm] = useState(needsFreight);
   const [ltlQuoteSubmitted, setLtlQuoteSubmitted] = useState(false);
   const [ltlSubmitting, setLtlSubmitting] = useState(false);
+  const [liveLtlQuotes, setLiveLtlQuotes] = useState<any[] | null>(null);
+  const [ltlQuoteLoading, setLtlQuoteLoading] = useState(false);
+  const [ltlQuoteSource, setLtlQuoteSource] = useState<string>("");
+  const [selectedLtlCarrier, setSelectedLtlCarrier] = useState<any>(null);
+
+  const fetchLiveLtlQuotes = async () => {
+    setLtlQuoteLoading(true);
+    try {
+      const fc = (() => {
+        const cubicFt = (length * width * height) / 1728;
+        const density = cubicFt > 0 ? weight / cubicFt : 0;
+        if (density >= 50) return "50";
+        if (density >= 35) return "55";
+        if (density >= 22.5) return "65";
+        if (density >= 15) return "70";
+        if (density >= 12) return "85";
+        if (density >= 9) return "100";
+        if (density >= 6) return "150";
+        if (density >= 4) return "200";
+        return "250";
+      })();
+      const res = await fetch("/api/shipping/ltl-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fromZip: fromZip || "04901",
+          toZip: "10001",
+          weight,
+          length,
+          width,
+          height,
+          freightClass: fc,
+          description: suggestion?.label || "Household goods",
+          packaging: "palletized",
+        }),
+      });
+      const data = await res.json();
+      if (data.quotes && data.quotes.length > 0) {
+        setLiveLtlQuotes(data.quotes);
+        setLtlQuoteSource(data.source || "demo");
+      }
+    } catch { /* ignore */ }
+    setLtlQuoteLoading(false);
+  };
 
   const freightEstimates: FreightEstimate[] = useMemo(() => {
     if (!showFreight) return [];
@@ -3232,47 +3560,125 @@ export default function ShippingPanel({
                   Estimates only — official quote coming. Toggles update in real-time.
                 </div>
 
-                {/* LTL Quote Request Form */}
-                {!ltlQuoteSubmitted ? (
-                  <div style={{ marginTop: "0.75rem" }}>
-                    {!showLtlQuoteForm ? (
-                      <button onClick={() => setShowLtlQuoteForm(true)} className="btn-ghost" style={{ padding: "0.4rem 1rem", fontSize: "0.82rem" }}>
-                        📋 Request Official Freight Quote
-                      </button>
-                    ) : (
-                      <LtlQuoteForm
-                        itemId={itemId}
-                        fromZip={fromZip}
-                        weight={weight}
-                        length={length}
-                        width={width}
-                        height={height}
-                        suggestion={suggestion}
-                        itemValue={itemValue}
-                        accessorials={{ residential, liftgate, notifyBeforeDelivery, blanketWrap, insideDelivery, whiteGlove }}
-                        ltlSubmitting={ltlSubmitting}
-                        category={suggestion?.label}
-                        onSubmit={async (formData) => {
-                          setLtlSubmitting(true);
-                          try {
-                            await fetch("/api/shipping/ltl-quote-request", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify(formData),
-                            });
-                          } catch { /* non-critical */ }
-                          setLtlQuoteSubmitted(true);
-                          setLtlSubmitting(false);
-                        }}
-                        onCancel={() => setShowLtlQuoteForm(false)}
-                      />
-                    )}
-                  </div>
-                ) : (
-                  <div style={{ marginTop: "0.75rem", padding: "0.6rem 0.75rem", borderRadius: "0.5rem", background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.2)", fontSize: "0.82rem", color: "var(--success-text)" }}>
-                    ✅ Quote request sent to our freight team! We&apos;ll have your official quote within 24 hours.
-                  </div>
-                )}
+                {/* LTL Live Quotes + Manual Backup */}
+                <div style={{ marginTop: "0.75rem" }}>
+                  {/* Primary: Get Live LTL Quotes */}
+                  {!liveLtlQuotes && (
+                    <button
+                      onClick={fetchLiveLtlQuotes}
+                      disabled={ltlQuoteLoading}
+                      style={{
+                        padding: "0.5rem 1.25rem", fontSize: "0.82rem", fontWeight: 700, borderRadius: "0.5rem",
+                        border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
+                        cursor: ltlQuoteLoading ? "wait" : "pointer", opacity: ltlQuoteLoading ? 0.6 : 1,
+                      }}
+                    >
+                      {ltlQuoteLoading ? "Getting Quotes..." : "\u{1F4E1} Get Live LTL Quotes"}
+                    </button>
+                  )}
+
+                  {/* Live LTL Quote Results */}
+                  {liveLtlQuotes && liveLtlQuotes.length > 0 && (
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.4rem" }}>
+                        <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                          {liveLtlQuotes.length} Carrier Quote{liveLtlQuotes.length !== 1 ? "s" : ""}
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          {ltlQuoteSource === "live" && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>LIVE RATES</span>}
+                          {ltlQuoteSource === "demo" && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800" }}>ESTIMATED</span>}
+                          <button
+                            onClick={fetchLiveLtlQuotes}
+                            disabled={ltlQuoteLoading}
+                            style={{ fontSize: "0.55rem", color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                          >
+                            {ltlQuoteLoading ? "..." : "\u{1F504}"}
+                          </button>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                        {liveLtlQuotes.map((q: any, i: number) => {
+                          const isBest = i === 0;
+                          const isFastest = liveLtlQuotes.every((o: any) => (o.transit_days || 99) >= (q.transit_days || 99));
+                          const isSelected = selectedLtlCarrier?.quote_id === q.quote_id;
+                          const isFedEx = q.source === "fedex";
+                          const isShipEngine = q.source === "shipengine";
+                          return (
+                            <button
+                              key={q.quote_id || `ltl-${i}`}
+                              onClick={() => setSelectedLtlCarrier(isSelected ? null : q)}
+                              style={{
+                                display: "flex", alignItems: "center", justifyContent: "space-between",
+                                padding: "0.6rem 0.75rem", borderRadius: "0.5rem", cursor: "pointer", textAlign: "left",
+                                border: isSelected ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
+                                background: isSelected ? "rgba(0,188,212,0.06)" : "var(--bg-card)",
+                              }}
+                            >
+                              <div>
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexWrap: "wrap" }}>
+                                  <span style={{ fontWeight: 600, fontSize: "0.82rem", color: "var(--text-primary)" }}>{q.carrier}</span>
+                                  {isBest && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>BEST RATE</span>}
+                                  {isFastest && !isBest && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(59,130,246,0.15)", color: "#3b82f6" }}>FASTEST</span>}
+                                  {isFedEx && q.isLive && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(77,20,140,0.15)", color: "#4D148C" }}>FEDEX LIVE</span>}
+                                  {isShipEngine && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>SHIPENGINE</span>}
+                                  {!q.isLive && !isFedEx && !isShipEngine && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800" }}>ESTIMATED</span>}
+                                </div>
+                                <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+                                  {q.service} {"\u00B7"} {q.transit_days} day{q.transit_days !== 1 ? "s" : ""}
+                                </div>
+                              </div>
+                              <span style={{ fontSize: "1rem", fontWeight: 700, color: isSelected ? "#4caf50" : "var(--accent)" }}>
+                                ${(q.total_amount || 0).toFixed(2)}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Secondary: Manual quote request */}
+                  {!ltlQuoteSubmitted ? (
+                    <div style={{ marginTop: "0.5rem" }}>
+                      {!showLtlQuoteForm ? (
+                        <button onClick={() => setShowLtlQuoteForm(true)} style={{ background: "none", border: "none", padding: 0, fontSize: "0.72rem", color: "var(--text-muted)", cursor: "pointer", textDecoration: "underline" }}>
+                          Need a custom quote? Request Manual Quote {"\u2192"}
+                        </button>
+                      ) : (
+                        <LtlQuoteForm
+                          itemId={itemId}
+                          fromZip={fromZip}
+                          weight={weight}
+                          length={length}
+                          width={width}
+                          height={height}
+                          suggestion={suggestion}
+                          itemValue={itemValue}
+                          accessorials={{ residential, liftgate, notifyBeforeDelivery, blanketWrap, insideDelivery, whiteGlove }}
+                          ltlSubmitting={ltlSubmitting}
+                          category={suggestion?.label}
+                          onSubmit={async (formData) => {
+                            setLtlSubmitting(true);
+                            try {
+                              await fetch("/api/shipping/ltl-quote-request", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify(formData),
+                              });
+                            } catch { /* non-critical */ }
+                            setLtlQuoteSubmitted(true);
+                            setLtlSubmitting(false);
+                          }}
+                          onCancel={() => setShowLtlQuoteForm(false)}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{ marginTop: "0.5rem", padding: "0.6rem 0.75rem", borderRadius: "0.5rem", background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.2)", fontSize: "0.82rem", color: "var(--success-text)" }}>
+                      {"\u2705"} Quote request sent to our freight team! We&apos;ll have your official quote within 24 hours.
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -3289,11 +3695,34 @@ export default function ShippingPanel({
             {/* ── Section E — Metro Estimates ── */}
             {preference !== "LOCAL_ONLY" && shippingTab === "ship" && metroEstimates.length > 0 && (
               <div>
-                <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>
-                  Estimated Shipping to Major Cities
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                  <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                    Estimated Shipping to Major Cities
+                  </div>
+                  {!liveMetro && (
+                    <button
+                      onClick={fetchLiveMetro}
+                      disabled={metroLoading}
+                      style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: metroLoading ? "wait" : "pointer", padding: 0 }}
+                    >
+                      {metroLoading ? "Loading..." : "\u{1F4E1} Get Live Rates"}
+                    </button>
+                  )}
+                  {liveMetro && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                      <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>SHIPPO RATES</span>
+                      <button
+                        onClick={fetchLiveMetro}
+                        disabled={metroLoading}
+                        style={{ fontSize: "0.55rem", color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                      >
+                        {metroLoading ? "..." : "\u{1F504}"}
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem", overflowX: "auto", paddingBottom: "0.25rem" }}>
-                  {metroEstimates.map((m) => (
+                  {(liveMetro || metroEstimates).map((m: any) => (
                     <div
                       key={m.city}
                       style={{
@@ -3301,18 +3730,21 @@ export default function ShippingPanel({
                         minWidth: "5.5rem",
                         padding: "0.6rem 0.5rem",
                         borderRadius: "0.5rem",
-                        border: "1px solid var(--border-default)",
+                        border: m.isCheapest ? "1px solid rgba(76,175,80,0.2)" : m.isFastest ? "1px solid rgba(59,130,246,0.2)" : "1px solid var(--border-default)",
                         background: "var(--bg-card)",
                         textAlign: "center",
                       }}
                     >
                       <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.2rem" }}>{m.city.split(",")[0]}</div>
-                      <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--accent)" }}>
-                        ~${m.estimatedCost.toFixed(0)}
+                      <div style={{ fontSize: "0.95rem", fontWeight: 700, color: m.isCheapest ? "#4caf50" : "var(--accent)" }}>
+                        ${m.estimatedCost.toFixed(2)}
                       </div>
                       <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
-                        {m.estimatedDays} days
+                        {m.estimatedDays}d
                       </div>
+                      {m.carrier && <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{m.carrier}</div>}
+                      {m.isCheapest && <div style={{ fontSize: "0.48rem", fontWeight: 700, color: "#4caf50", marginTop: "0.1rem" }}>CHEAPEST</div>}
+                      {m.isFastest && !m.isCheapest && <div style={{ fontSize: "0.48rem", fontWeight: 700, color: "#3b82f6", marginTop: "0.1rem" }}>FASTEST</div>}
                     </div>
                   ))}
                 </div>

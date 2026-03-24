@@ -166,14 +166,20 @@ function ResetPasswordForm() {
 
         <button
           type="button"
-          className="btn-primary"
           onClick={() => router.push("/auth/forgot-password")}
           style={{
             width: "100%",
-            padding: "0.85rem",
-            fontSize: "0.9rem",
-            borderRadius: "0.75rem",
+            padding: "14px",
+            fontSize: "1rem",
+            fontWeight: 700,
+            borderRadius: 12,
             marginTop: "1.5rem",
+            border: "none",
+            background: "linear-gradient(135deg, #00bcd4, #009688)",
+            color: "#fff",
+            cursor: "pointer",
+            boxShadow: "0 4px 16px rgba(0,188,212,0.2)",
+            transition: "all 0.2s ease",
           }}
         >
           Request a new reset link
@@ -260,14 +266,20 @@ function ResetPasswordForm() {
 
         <button
           type="button"
-          className="btn-primary"
           onClick={() => router.push("/auth/login")}
           style={{
             width: "100%",
-            padding: "0.85rem",
-            fontSize: "0.9rem",
-            borderRadius: "0.75rem",
+            padding: "14px",
+            fontSize: "1rem",
+            fontWeight: 700,
+            borderRadius: 12,
             marginTop: "1.5rem",
+            border: "none",
+            background: "linear-gradient(135deg, #00bcd4, #009688)",
+            color: "#fff",
+            cursor: "pointer",
+            boxShadow: "0 4px 16px rgba(0,188,212,0.2)",
+            transition: "all 0.2s ease",
           }}
         >
           Sign in with your new password
@@ -295,11 +307,15 @@ function ResetPasswordForm() {
       <div style={{ marginBottom: "1.75rem" }}>
         <h1
           style={{
-            fontSize: "1.375rem",
-            fontWeight: 700,
-            color: "#f5f5f7",
-            letterSpacing: "-0.015em",
+            fontSize: "1.5rem",
+            fontWeight: 800,
+            backgroundImage: "linear-gradient(135deg, #f1f5f9, #00bcd4)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            letterSpacing: "-0.02em",
             margin: 0,
+            lineHeight: 1.2,
           }}
         >
           Create new password
@@ -307,8 +323,8 @@ function ResetPasswordForm() {
         <p
           style={{
             fontSize: "0.85rem",
-            color: "var(--text-muted)",
-            marginTop: "0.35rem",
+            color: "#94a3b8",
+            marginTop: "0.4rem",
             lineHeight: 1.5,
           }}
         >
@@ -322,20 +338,28 @@ function ResetPasswordForm() {
       >
         {/* New password */}
         <div>
-          <label className="label-light" htmlFor="reset-password">
+          <label htmlFor="reset-password" style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "#cbd5e1", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>
             New password
           </label>
           <div style={{ position: "relative" }}>
             <input
               id="reset-password"
               type={showPass ? "text" : "password"}
-              className="input-dark"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="At least 8 characters"
               required
               autoComplete="new-password"
-              style={{ minHeight: 52, paddingRight: "2.75rem" }}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                padding: "14px 16px", paddingRight: "2.75rem", fontSize: "0.95rem",
+                background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
+                border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+                outline: "none", transition: "all 0.2s ease", fontFamily: "inherit",
+                minHeight: 52,
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
             />
             <button
               type="button"
@@ -395,20 +419,28 @@ function ResetPasswordForm() {
 
         {/* Confirm password */}
         <div>
-          <label className="label-light" htmlFor="reset-confirm">
+          <label htmlFor="reset-confirm" style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "#cbd5e1", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>
             Confirm new password
           </label>
           <div style={{ position: "relative" }}>
             <input
               id="reset-confirm"
               type={showConfirm ? "text" : "password"}
-              className="input-dark"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="Same password again"
               required
               autoComplete="new-password"
-              style={{ minHeight: 52, paddingRight: "2.75rem" }}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                padding: "14px 16px", paddingRight: "2.75rem", fontSize: "0.95rem",
+                background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
+                border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+                outline: "none", transition: "all 0.2s ease", fontFamily: "inherit",
+                minHeight: 52,
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
             />
             <button
               type="button"
@@ -498,18 +530,24 @@ function ResetPasswordForm() {
         {/* Submit */}
         <button
           type="submit"
-          className="btn-primary"
           disabled={!canSubmit}
           style={{
             width: "100%",
-            padding: "0.85rem",
-            fontSize: "0.9rem",
-            borderRadius: "0.75rem",
+            padding: "14px",
+            fontSize: "1rem",
+            fontWeight: 700,
+            borderRadius: 12,
             marginTop: "0.25rem",
-            opacity: canSubmit ? 1 : 0.45,
+            border: "none",
+            background: "linear-gradient(135deg, #00bcd4, #009688)",
+            color: "#fff",
+            opacity: canSubmit ? 1 : 0.4,
             cursor: canSubmit ? "pointer" : "not-allowed",
-            transition: "opacity 0.2s",
+            transition: "all 0.2s ease",
+            boxShadow: canSubmit ? "0 4px 16px rgba(0,188,212,0.2)" : "none",
           }}
+          onMouseEnter={(e) => { if (canSubmit) { (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 24px rgba(0,188,212,0.3)"; } }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = canSubmit ? "0 4px 16px rgba(0,188,212,0.2)" : "none"; }}
         >
           {loading ? (
             <span

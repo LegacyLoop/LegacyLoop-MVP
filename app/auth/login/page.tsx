@@ -273,11 +273,15 @@ export default function LoginPage() {
       <div style={{ marginBottom: "1.75rem" }}>
         <h1
           style={{
-            fontSize: "1.375rem",
-            fontWeight: 700,
-            color: "#f5f5f7",
-            letterSpacing: "-0.015em",
+            fontSize: "1.5rem",
+            fontWeight: 800,
+            backgroundImage: "linear-gradient(135deg, #f1f5f9, #00bcd4)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            letterSpacing: "-0.02em",
             margin: 0,
+            lineHeight: 1.2,
           }}
         >
           Welcome back
@@ -285,9 +289,9 @@ export default function LoginPage() {
         <p
           style={{
             fontSize: "0.85rem",
-            color: "var(--text-muted)",
-            marginTop: "0.35rem",
-            margin: "0.35rem 0 0 0",
+            color: "#94a3b8",
+            marginTop: "0.4rem",
+            margin: "0.4rem 0 0 0",
           }}
         >
           Sign in to your LegacyLoop dashboard
@@ -298,7 +302,7 @@ export default function LoginPage() {
       <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.125rem" }}>
         {/* Email */}
         <div>
-          <label className="label-light" htmlFor="login-email">
+          <label htmlFor="login-email" style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "#cbd5e1", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>
             Email address
           </label>
           <input
@@ -306,16 +310,25 @@ export default function LoginPage() {
             type="email"
             autoComplete="email"
             required
-            className="input-dark"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            style={{
+              width: "100%", boxSizing: "border-box",
+              padding: "14px 16px", fontSize: "0.95rem",
+              background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
+              border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+              outline: "none", transition: "all 0.2s ease",
+              fontFamily: "inherit",
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
           />
         </div>
 
         {/* Password */}
         <div>
-          <label className="label-light" htmlFor="login-password">
+          <label htmlFor="login-password" style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "#cbd5e1", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>
             Password
           </label>
           <div style={{ position: "relative" }}>
@@ -324,11 +337,19 @@ export default function LoginPage() {
               type={showPass ? "text" : "password"}
               autoComplete="current-password"
               required
-              className="input-dark"
               placeholder="Enter your password"
-              style={{ paddingRight: "3.5rem" }}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                padding: "14px 16px", paddingRight: "3.5rem", fontSize: "0.95rem",
+                background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
+                border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+                outline: "none", transition: "all 0.2s ease",
+                fontFamily: "inherit",
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
             />
             <button
               type="button"
@@ -392,15 +413,20 @@ export default function LoginPage() {
           <div
             role="alert"
             style={{
-              background: "rgba(220, 38, 38, 0.12)",
-              border: "1px solid rgba(220, 38, 38, 0.3)",
-              borderRadius: "12px",
+              background: "rgba(239,68,68,0.08)",
+              border: "1px solid rgba(239,68,68,0.15)",
+              borderLeft: "3px solid #ef4444",
+              borderRadius: 12,
               padding: "12px 16px",
               fontSize: "0.82rem",
               color: "#fca5a5",
               lineHeight: 1.5,
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
             }}
           >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             {error}
           </div>
         )}
@@ -408,19 +434,27 @@ export default function LoginPage() {
         {/* Sign In button */}
         <button
           type="submit"
-          className="btn-primary"
           disabled={loading}
           style={{
             width: "100%",
-            padding: "0.8rem",
-            fontSize: "0.9rem",
-            fontWeight: 600,
-            borderRadius: "12px",
+            padding: "14px",
+            fontSize: "1rem",
+            fontWeight: 700,
+            borderRadius: 12,
             marginTop: "0.25rem",
+            border: "none",
+            background: "linear-gradient(135deg, #00bcd4, #009688)",
+            color: "#fff",
             cursor: loading ? "not-allowed" : "pointer",
             opacity: loading ? 0.7 : 1,
-            transition: "opacity 0.15s ease",
+            transition: "all 0.2s ease",
+            boxShadow: "0 4px 16px rgba(0,188,212,0.2)",
+            letterSpacing: "0.01em",
           }}
+          onMouseEnter={(e) => { if (!loading) { (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 24px rgba(0,188,212,0.3)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; } }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,188,212,0.2)"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}
+          onMouseDown={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(0.98)"; }}
+          onMouseUp={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; }}
         >
           {loading ? (
             <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
@@ -470,12 +504,12 @@ export default function LoginPage() {
           margin: "1.5rem 0 1.25rem",
         }}
       >
-        <div style={{ flex: 1, height: "1px", background: "var(--ghost-bg)" }} />
+        <div style={{ flex: 1, height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)" }} />
         <span
           style={{
-            fontSize: "0.68rem",
-            color: "var(--text-muted)",
-            letterSpacing: "0.1em",
+            fontSize: "0.65rem",
+            color: "#475569",
+            letterSpacing: "0.12em",
             textTransform: "uppercase",
             whiteSpace: "nowrap",
             fontWeight: 500,
@@ -483,7 +517,7 @@ export default function LoginPage() {
         >
           or continue with
         </span>
-        <div style={{ flex: 1, height: "1px", background: "var(--ghost-bg)" }} />
+        <div style={{ flex: 1, height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)" }} />
       </div>
 
       {/* ────── Alternate sign-in buttons ────── */}
@@ -499,20 +533,25 @@ export default function LoginPage() {
             height: 48,
             width: "100%",
             borderRadius: 12,
-            border: "1px solid var(--border-default)",
-            background: "#fff",
-            color: "#333",
+            border: "1px solid rgba(255,255,255,0.1)",
+            background: "rgba(255,255,255,0.95)",
+            color: "#1f2937",
             fontSize: "0.85rem",
-            fontWeight: 500,
+            fontWeight: 600,
             textDecoration: "none",
             cursor: "pointer",
-            transition: "background 0.15s ease, border-color 0.15s ease",
+            transition: "all 0.2s ease",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "#f5f5f5";
+            (e.currentTarget as HTMLElement).style.background = "#fff";
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
+            (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "#fff";
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.95)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+            (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
           }}
         >
           <GoogleLogo />
@@ -531,24 +570,26 @@ export default function LoginPage() {
             height: 48,
             width: "100%",
             borderRadius: 12,
-            border: activePanel === "phone" ? "1px solid #00bcd4" : "1px solid var(--border-default)",
-            background: "transparent",
-            color: activePanel === "phone" ? "#00bcd4" : "var(--text-secondary)",
+            border: activePanel === "phone" ? "1px solid rgba(0,188,212,0.4)" : "1px solid rgba(255,255,255,0.08)",
+            background: activePanel === "phone" ? "rgba(0,188,212,0.06)" : "rgba(255,255,255,0.04)",
+            color: activePanel === "phone" ? "#00bcd4" : "#94a3b8",
             fontSize: "0.85rem",
             fontWeight: 500,
             cursor: "pointer",
-            transition: "border-color 0.15s ease, color 0.15s ease",
+            transition: "all 0.2s ease",
           }}
           onMouseEnter={(e) => {
             if (activePanel !== "phone") {
-              (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
-              (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.12)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
+              (e.currentTarget as HTMLElement).style.color = "#e2e8f0";
             }
           }}
           onMouseLeave={(e) => {
             if (activePanel !== "phone") {
-              (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
-              (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+              (e.currentTarget as HTMLElement).style.color = "#94a3b8";
             }
           }}
         >
@@ -568,24 +609,26 @@ export default function LoginPage() {
             height: 48,
             width: "100%",
             borderRadius: 12,
-            border: activePanel === "magic" ? "1px solid #00bcd4" : "1px solid var(--border-default)",
-            background: "transparent",
-            color: activePanel === "magic" ? "#00bcd4" : "var(--text-secondary)",
+            border: activePanel === "magic" ? "1px solid rgba(0,188,212,0.4)" : "1px solid rgba(255,255,255,0.08)",
+            background: activePanel === "magic" ? "rgba(0,188,212,0.06)" : "rgba(255,255,255,0.04)",
+            color: activePanel === "magic" ? "#00bcd4" : "#94a3b8",
             fontSize: "0.85rem",
             fontWeight: 500,
             cursor: "pointer",
-            transition: "border-color 0.15s ease, color 0.15s ease",
+            transition: "all 0.2s ease",
           }}
           onMouseEnter={(e) => {
             if (activePanel !== "magic") {
-              (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
-              (e.currentTarget as HTMLElement).style.color = "var(--text-primary)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.12)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
+              (e.currentTarget as HTMLElement).style.color = "#e2e8f0";
             }
           }}
           onMouseLeave={(e) => {
             if (activePanel !== "magic") {
-              (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
-              (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+              (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+              (e.currentTarget as HTMLElement).style.color = "#94a3b8";
             }
           }}
         >

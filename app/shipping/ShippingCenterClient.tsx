@@ -841,7 +841,7 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
             const isSelected = selected && selected.carrier === c.carrier && selected.service === c.service;
             const isCheapest = i === 0;
             return (
-              <div key={`${c.carrier}-${c.service}`} style={{
+              <div key={`${c.carrier}-${c.service}-${i}`} style={{
                 display: "grid", gridTemplateColumns: "2fr 2.5fr 0.8fr 1fr", gap: "0.25rem",
                 padding: "0.3rem 0.5rem", borderRadius: "0.3rem",
                 background: isSelected ? "rgba(0,188,212,0.08)" : i % 2 === 0 ? "var(--ghost-bg)" : "transparent",
@@ -921,6 +921,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
   const [markingSold, setMarkingSold] = useState<string | null>(null);
   const [markedSold, setMarkedSold] = useState<Set<string>>(new Set());
   const [savedQuotes, setSavedQuotes] = useState<Record<string, "fresh" | "expiring" | "expired">>({});
+  const [savedQuoteFullData, setSavedQuoteFullData] = useState<Record<string, any>>({});
   const [detailOpen, setDetailOpen] = useState<Record<string, boolean>>({});
 
   // Auto-expand quote details for items that have quotes
@@ -936,9 +937,10 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
     }
   }, [items]);
 
-  // Load saved quote statuses from localStorage on mount
+  // Load saved quote statuses + full data from localStorage on mount
   useEffect(() => {
     const map: Record<string, "fresh" | "expiring" | "expired"> = {};
+    const fullMap: Record<string, any> = {};
     items.forEach((item) => {
       try {
         const raw = localStorage.getItem(`ll_quote_${item.id}`);
@@ -946,17 +948,22 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
           const q = JSON.parse(raw);
           const ageMs = Date.now() - (q.savedAt || 0);
           map[item.id] = ageMs < 43200000 ? "fresh" : ageMs < 86400000 ? "expiring" : "expired";
+          fullMap[item.id] = { ...q, ageHrs: Math.round(ageMs / 3600000), isFresh: ageMs < 43200000, isExpiring: ageMs >= 43200000 && ageMs < 86400000, isExpired: ageMs >= 86400000 };
         }
       } catch { /* ignore */ }
     });
     setSavedQuotes(map);
+    setSavedQuoteFullData(fullMap);
   }, [items]);
 
   function saveQuote(itemId: string, carrier: any) {
     try {
       const toZip = editDims.destZip || "";
-      localStorage.setItem(`ll_quote_${itemId}`, JSON.stringify({ carrier, savedAt: Date.now(), toZip }));
+      const now = Date.now();
+      const quoteObj = { carrier, savedAt: now, toZip };
+      localStorage.setItem(`ll_quote_${itemId}`, JSON.stringify(quoteObj));
       setSavedQuotes((prev) => ({ ...prev, [itemId]: "fresh" }));
+      setSavedQuoteFullData((prev) => ({ ...prev, [itemId]: { ...quoteObj, ageHrs: 0, isFresh: true, isExpiring: false, isExpired: false } }));
     } catch { /* ignore */ }
   }
 
@@ -1203,6 +1210,48 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                 )}
               </div>
             </div>
+            {/* Saved Quote from Item Dashboard (localStorage) */}
+            {savedQuoteFullData[item.id] && savedQuoteFullData[item.id].carrier && !selectedCarrierMap[item.id] && (() => {
+              const sq = savedQuoteFullData[item.id];
+              const c = sq.carrier;
+              const status = savedQuotes[item.id];
+              const remainMs = sq.savedAt ? 86400000 - (Date.now() - sq.savedAt) : 0;
+              const remainHrs = Math.max(0, Math.floor(remainMs / 3600000));
+              const remainMins = Math.max(0, Math.floor((remainMs % 3600000) / 60000));
+              return (
+                <div style={{ margin: "0 0.85rem", padding: "0.55rem 0.75rem", borderRadius: "0.5rem", background: sq.isFresh ? "rgba(34,197,94,0.04)" : sq.isExpiring ? "rgba(245,158,11,0.04)" : "rgba(239,68,68,0.04)", border: `1px solid ${sq.isFresh ? "rgba(34,197,94,0.15)" : sq.isExpiring ? "rgba(245,158,11,0.15)" : "rgba(239,68,68,0.15)"}` }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.3rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexWrap: "wrap" }}>
+                      <span style={{ fontSize: "0.75rem" }}>{"\u{1F4CB}"}</span>
+                      <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)" }}>Saved Quote: {c.carrier || "?"} {c.service || ""}</span>
+                      <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#4caf50" }}>${c.price?.toFixed(2) ?? "?"}</span>
+                      <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: sq.isFresh ? "rgba(34,197,94,0.12)" : sq.isExpiring ? "rgba(245,158,11,0.12)" : "rgba(239,68,68,0.12)", color: sq.isFresh ? "#22c55e" : sq.isExpiring ? "#f59e0b" : "#ef4444" }}>
+                        {sq.isFresh ? "\u2705 Fresh" : sq.isExpiring ? `\u26A0\uFE0F Expiring (${sq.ageHrs}h)` : `\u274C Expired (${sq.ageHrs}h)`}
+                      </span>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                      <button
+                        onClick={() => { setSelectedCarrierMap((prev) => ({ ...prev, [item.id]: c })); saveQuote(item.id, c); }}
+                        style={{ padding: "0.25rem 0.6rem", fontSize: "0.6rem", fontWeight: 700, borderRadius: "0.35rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer" }}
+                      >
+                        Use This Quote {"\u2192"}
+                      </button>
+                      <button
+                        onClick={() => getEstimate(item.id)}
+                        disabled={estimating === item.id}
+                        style={{ padding: "0.25rem 0.5rem", fontSize: "0.6rem", fontWeight: 600, borderRadius: "0.35rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}
+                      >
+                        {estimating === item.id ? "..." : "\u{1F504} Get Fresh Rates"}
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+                    {c.days ? `${c.days}d transit` : ""}{c.days && sq.savedAt ? " \u00B7 " : ""}{sq.savedAt ? `saved ${new Date(sq.savedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : ""}
+                    {remainMs > 0 ? ` \u00B7 valid ~${remainHrs}h ${remainMins}m` : sq.savedAt ? ` \u00B7 expired ${sq.ageHrs - 24}h ago` : ""}
+                  </div>
+                </div>
+              );
+            })()}
             {/* Quote detail toggle */}
             {item.lastQuote && (
               <div style={{ padding: "0 0.85rem" }}>
@@ -1267,6 +1316,23 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                     }
                   }
 
+                  // Override: for very thin/small items, trust AI category over dimension fit calc
+                  const itemDims = [dimL, dimW, dimH].filter(d => d > 0);
+                  const minItemDim = itemDims.length > 0 ? Math.min(...itemDims) : 999;
+                  if (minItemDim < 1 && item.aiBox === "tiny") {
+                    validatedPick = "tiny";
+                    pickUpgraded = false;
+                    pickReason = "Category-appropriate packaging for thin/small items";
+                  }
+                  // Override: for known small-item categories, keep tiny if AI says tiny
+                  const catLower = (item.category || "").toLowerCase();
+                  const isSmallCategory = ["card", "trading", "jewelry", "coin", "stamp", "watch", "phone", "pokemon", "hockey"].some(k => catLower.includes(k));
+                  if (isSmallCategory && item.aiBox === "tiny" && validatedPick !== "tiny") {
+                    validatedPick = "tiny";
+                    pickUpgraded = false;
+                    pickReason = "Category-appropriate packaging";
+                  }
+
                   return (
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.3rem", marginBottom: "0.65rem" }}>
                       {Object.entries(BOX_PRESETS).map(([key, p]) => {
@@ -1282,7 +1348,12 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                           const tooSmall = iL > p.l || iW > p.w || iH > p.h;
                           const loose = fits && (p.l > iL * 2 || p.w > iW * 2 || p.h > iH * 2);
                           const excessiveVoid = fits && !tooSmall && p.h > (iH + 4) * 3;
-                          if (tooSmall) { fitLabel = "\u274C Too small"; fitColor = "#ef4444"; fitBg = "rgba(239,68,68,0.08)"; }
+                          // Small-category items use rigid mailers — Tiny is perfect, not "too small"
+                          if (key === "tiny" && isSmallCategory) {
+                            fitLabel = "\u2705 Perfect"; fitColor = "#22c55e"; fitBg = "rgba(34,197,94,0.08)";
+                          } else if (key === "tiny" && minItemDim < 0.5) {
+                            fitLabel = "\u2705 Mailer"; fitColor = "#22c55e"; fitBg = "rgba(34,197,94,0.08)";
+                          } else if (tooSmall) { fitLabel = "\u274C Too small"; fitColor = "#ef4444"; fitBg = "rgba(239,68,68,0.08)"; }
                           else if (excessiveVoid && !loose) { fitLabel = "\u26A0\uFE0F Void space"; fitColor = "#f59e0b"; fitBg = "rgba(245,158,11,0.08)"; }
                           else if (loose) { fitLabel = "\u26A0\uFE0F Loose"; fitColor = "#f59e0b"; fitBg = "rgba(245,158,11,0.08)"; }
                           else if (fits) { fitLabel = "\u2705 Fits"; fitColor = "#22c55e"; fitBg = "rgba(34,197,94,0.08)"; }
@@ -1526,7 +1597,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                     const pct = val > 0 ? Math.round((c.price / val) * 100) : 0;
                     return (
                       <div
-                        key={`${c.carrier}-${c.service}`}
+                        key={`${c.carrier}-${c.service}-${i}`}
                         onClick={() => setSelectedCarrierMap((prev) => ({ ...prev, [item.id]: isSelectedRow ? null : c }))}
                         onMouseEnter={(e) => { if (!isSelectedRow) (e.currentTarget as HTMLDivElement).style.background = "rgba(0,188,212,0.06)"; }}
                         onMouseLeave={(e) => { if (!isSelectedRow) (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? "var(--ghost-bg)" : "transparent"; }}
@@ -2181,7 +2252,7 @@ function ReadyToShipTab({
                                 const isFastest = fastestC && c.carrier === fastestC.carrier && c.service === fastestC.service && !isBest;
                                 return (
                                   <button
-                                    key={`${c.carrier}-${c.service}`}
+                                    key={`${c.carrier}-${c.service}-${i}`}
                                     onClick={() => setSelectedCarrier(c)}
                                     style={{
                                       display: "grid",
@@ -2947,8 +3018,6 @@ function FreightTab({ items }: { items: any[] }) {
   const [confirmation, setConfirmation] = useState<any>(null);
   const [pickupDate, setPickupDate] = useState("");
   const [selectedFreight, setSelectedFreight] = useState<any>(null);
-  // Quick Freight Estimate state
-  const [quickEstimates, setQuickEstimates] = useState<FreightEstimate[] | null>(null);
   const [accessorials, setAccessorials] = useState({
     residential: false,
     liftgate: false,
@@ -3070,30 +3139,44 @@ function FreightTab({ items }: { items: any[] }) {
     fontFamily: "inherit",
   };
 
+  // Unified quote function — calls /api/shipping/ltl-quote (ShipEngine + FedEx + fallback)
   async function getQuote() {
     setLoading(true);
     try {
-      const r = await fetch("/api/shipping/freight", {
+      const cW = Number(form.weight) || 80;
+      const cL = Number(form.length) || 48;
+      const cWi = Number(form.width) || 40;
+      const cH = Number(form.height) || 36;
+      const fc = calcFreightClass(cW, cL, cWi, cH);
+      const res = await fetch("/api/shipping/ltl-quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "quote", ...form, weight: Number(form.weight) }),
+        body: JSON.stringify({ fromZip: form.fromZip, toZip: form.toZip, weight: cW, length: cL, width: cWi, height: cH, packaging: form.packaging, freightClass: fc }),
       });
-      const d = await r.json();
-      if (!d.error) {
-        setQuote(d);
+      const data = await res.json();
+      if (data.quotes?.length > 0) {
+        const calcClass = fc;
+        const calcDensity = ((cL * cWi * cH) / 1728) > 0 ? (cW / ((cL * cWi * cH) / 1728)).toFixed(1) : "0";
+        setQuote({
+          freightClass: calcClass,
+          density: calcDensity,
+          cubicFeet: ((cL * cWi * cH) / 1728).toFixed(1),
+          carriers: data.quotes.map((q: any) => ({
+            carrier: q.carrier,
+            service: q.service,
+            price: q.total_amount,
+            transit: `${q.transit_days} days`,
+            guaranteed: false,
+            isLive: q.isLive,
+            quoteId: q.quote_id,
+            source: q.source || "demo",
+          })),
+          isLive: data.isLive,
+        });
         setSelectedFreight(null);
       }
     } catch {}
     setLoading(false);
-  }
-
-  function runQuickEstimate() {
-    const w = Number(form.weight) || 80;
-    const l = Number(form.length) || 48;
-    const wi = Number(form.width) || 40;
-    const h = Number(form.height) || 36;
-    const estimates = getFreightEstimates({ weight: w, lengthIn: l, widthIn: wi, heightIn: h, fromZip: form.fromZip, toZip: form.toZip || undefined });
-    setQuickEstimates(estimates);
   }
 
   async function schedulePickup(carrier: string) {
@@ -3178,12 +3261,44 @@ function FreightTab({ items }: { items: any[] }) {
             <input value={form.accessNotes} onChange={(e) => setForm({ ...form, accessNotes: e.target.value })} placeholder="Ground, stairs..." style={inputStyle} />
           </div>
         </div>
+        {/* Accessorial toggles */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginBottom: "0.65rem" }}>
+          {([
+            { key: "residential", label: "\u{1F3E0} Residential", range: "$75\u201395" },
+            { key: "liftgate", label: "\u{1F4E6} Liftgate", range: "$85\u201395" },
+            { key: "notification", label: "\u{1F514} Notification", range: "$10\u201315" },
+            { key: "blanketWrap", label: "\u{1FAE7} Blanket Wrap", range: "+$75" },
+            { key: "insideDelivery", label: "\u{1F6AA} Inside Delivery", range: "+$150" },
+          ] as { key: keyof typeof accessorials; label: string; range: string }[]).map((ac) => {
+            const on = accessorials[ac.key];
+            return (
+              <button
+                key={ac.key}
+                onClick={() => setAccessorials((prev) => ({ ...prev, [ac.key]: !on }))}
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.25rem",
+                  padding: "0.25rem 0.55rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 600, cursor: "pointer",
+                  border: on ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
+                  background: on ? "rgba(0,188,212,0.08)" : "transparent",
+                  color: on ? "var(--accent)" : "var(--text-muted)",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                {ac.label} <span style={{ fontSize: "0.52rem", opacity: 0.7 }}>{ac.range}</span>
+              </button>
+            );
+          })}
+          {accessorialTotal > 0 && (
+            <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "#f59e0b", alignSelf: "center" }}>+${accessorialTotal} accessorials</span>
+          )}
+        </div>
         <button
           onClick={getQuote}
           disabled={loading || !form.weight || !form.toZip}
           style={{
-            padding: "0.5rem 1.25rem",
-            fontSize: "0.82rem",
+            width: "100%",
+            padding: "0.6rem 1.25rem",
+            fontSize: "0.88rem",
             fontWeight: 700,
             borderRadius: "0.5rem",
             border: "none",
@@ -3191,64 +3306,11 @@ function FreightTab({ items }: { items: any[] }) {
             color: "#fff",
             cursor: loading ? "wait" : "pointer",
             opacity: loading || !form.weight || !form.toZip ? 0.5 : 1,
+            boxShadow: "0 4px 16px rgba(0,188,212,0.15)",
+            transition: "all 0.2s ease",
           }}
         >
-          {loading ? "Getting Quote..." : "Request Freight Quote"}
-        </button>
-        <button
-          onClick={async () => {
-            setLoading(true);
-            try {
-              const res = await fetch("/api/shipping/ltl-quote", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ fromZip: form.fromZip, toZip: form.toZip, weight: Number(form.weight), length: Number(form.length), width: Number(form.width), height: Number(form.height), packaging: form.packaging, freightClass: calcFreightClass(Number(form.weight) || 80, Number(form.length) || 48, Number(form.width) || 40, Number(form.height) || 36) }),
-              });
-              const data = await res.json();
-              if (data.quotes?.length > 0) {
-                // Map ShipEngine quotes to existing carrier format
-                const cW = Number(form.weight) || 80;
-                const cL = Number(form.length) || 48;
-                const cWi = Number(form.width) || 40;
-                const cH = Number(form.height) || 36;
-                const calcClass = calcFreightClass(cW, cL, cWi, cH);
-                const calcDensity = ((cL * cWi * cH) / 1728) > 0 ? (cW / ((cL * cWi * cH) / 1728)).toFixed(1) : "0";
-                const mapped = {
-                  freightClass: calcClass,
-                  density: calcDensity,
-                  cubicFeet: ((cL * cWi * cH) / 1728).toFixed(1),
-                  carriers: data.quotes.map((q: any) => ({
-                    carrier: q.carrier,
-                    service: q.service,
-                    price: q.total_amount,
-                    transit: `${q.transit_days} days`,
-                    guaranteed: false,
-                    isLive: q.isLive,
-                    quoteId: q.quote_id,
-                    source: q.source || "demo",
-                  })),
-                  isLive: data.isLive,
-                };
-                setQuote(mapped);
-                setSelectedFreight(null);
-              }
-            } catch { /* ignore */ }
-            setLoading(false);
-          }}
-          disabled={loading || !form.weight || !form.toZip}
-          style={{
-            padding: "0.5rem 1.25rem",
-            fontSize: "0.82rem",
-            fontWeight: 700,
-            borderRadius: "0.5rem",
-            border: "none",
-            background: "linear-gradient(135deg, #9c27b0, #7b1fa2)",
-            color: "#fff",
-            cursor: loading ? "wait" : "pointer",
-            opacity: loading || !form.weight || !form.toZip ? 0.5 : 1,
-          }}
-        >
-          {loading ? "Getting Quote..." : "\u{1F4E1} Get Live LTL Quote"}
+          {loading ? "Getting Quotes from All Carriers..." : "\u{1F4E1} Get Freight Quotes"}
         </button>
       </div>
 
@@ -3368,98 +3430,6 @@ function FreightTab({ items }: { items: any[] }) {
           )}
         </div>
       )}
-
-      {/* BOL-style confirmation card */}
-      {/* Quick Freight Estimate */}
-      <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "1rem", padding: "1.25rem" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text-primary)" }}>{"\u26A1"} Quick Freight Estimate</div>
-            <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>Instant carrier estimates — no ZIP required</div>
-          </div>
-          <button
-            onClick={runQuickEstimate}
-            style={{ padding: "0.4rem 0.9rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #9c27b0, #7b1fa2)", color: "#fff", cursor: "pointer" }}
-          >
-            Run Estimate
-          </button>
-        </div>
-        {/* Accessorial toggles */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.75rem" }}>
-          {([
-            { key: "residential", label: "\u{1F3E0} Residential", range: "$75–95" },
-            { key: "liftgate", label: "\u{1F4E6} Liftgate", range: "$85–95" },
-            { key: "notification", label: "\u{1F514} Notification", range: "$10–15" },
-            { key: "blanketWrap", label: "\u{1FAE7} Blanket Wrap", range: "+$75" },
-            { key: "insideDelivery", label: "\u{1F6AA} Inside Delivery", range: "+$150" },
-          ] as { key: keyof typeof accessorials; label: string; range: string }[]).map((ac) => {
-            const on = accessorials[ac.key];
-            return (
-              <button
-                key={ac.key}
-                onClick={() => setAccessorials((prev) => ({ ...prev, [ac.key]: !on }))}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.3rem",
-                  padding: "0.3rem 0.65rem",
-                  borderRadius: "9999px",
-                  fontSize: "0.68rem",
-                  fontWeight: 600,
-                  border: on ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
-                  background: on ? "rgba(0,188,212,0.08)" : "transparent",
-                  color: on ? "var(--accent)" : "var(--text-muted)",
-                  cursor: "pointer",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                <div style={{ width: 10, height: 10, borderRadius: 2, background: on ? "var(--accent)" : "var(--border-default)", transition: "background 0.15s ease" }} />
-                {ac.label}
-                <span style={{ fontSize: "0.58rem", opacity: 0.7 }}>{ac.range}</span>
-              </button>
-            );
-          })}
-          {accessorialTotal > 0 && (
-            <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#f59e0b", alignSelf: "center" }}>+${accessorialTotal} accessorials</span>
-          )}
-        </div>
-        {/* Carrier cards */}
-        {quickEstimates && quickEstimates.length > 0 && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.5rem" }}>
-            {quickEstimates.slice(0, 3).map((est, idx) => {
-              const isQSel = selectedFreight?.carrier === est.carrier && selectedFreight?.fromQuickEstimate;
-              return (
-                <div
-                  key={est.carrier}
-                  onClick={() => setSelectedFreight({ carrier: est.carrier, service: "LTL Freight", price: est.costLow + accessorialTotal, transit: `${est.transitDays.min}-${est.transitDays.max} days`, fromQuickEstimate: true })}
-                  style={{
-                    padding: "0.75rem",
-                    borderRadius: "0.65rem",
-                    border: isQSel ? "1.5px solid var(--accent)" : idx === 0 ? "1.5px solid rgba(0,188,212,0.3)" : "1px solid var(--border-default)",
-                    background: isQSel ? "rgba(0,188,212,0.08)" : idx === 0 ? "rgba(0,188,212,0.04)" : "var(--ghost-bg)",
-                    textAlign: "center",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  {isQSel && <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "var(--accent)", marginBottom: "0.15rem" }}>{"\u2714"} SELECTED</div>}
-                  <div style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-primary)", marginBottom: "0.2rem" }}>{est.carrier}</div>
-                  <div style={{ fontSize: "1.1rem", fontWeight: 800, color: isQSel ? "#4caf50" : idx === 0 ? "#4caf50" : "var(--accent)" }}>
-                    ${(est.costLow + accessorialTotal).toFixed(0)}{"\u2013"}${(est.costHigh + accessorialTotal).toFixed(0)}
-                  </div>
-                  <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>{est.transitDays.min}{"\u2013"}{est.transitDays.max} business days</div>
-                  {idx === 0 && !isQSel && <div style={{ fontSize: "0.52rem", fontWeight: 700, color: "#4caf50", marginTop: "0.2rem" }}>BEST RATE</div>}
-                </div>
-              );
-            })}
-          </div>
-        )}
-        {!quickEstimates && (
-          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontStyle: "italic" }}>
-            Fill in dimensions above and click "Run Estimate" for instant carrier pricing.
-          </div>
-        )}
-      </div>
 
       {confirmation && !showQuoteUpload && !showBOL && !bolGenerated && (
         <div style={{ background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.2)", borderRadius: "1rem", padding: "1.25rem" }}>

@@ -4383,21 +4383,21 @@ function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, ge
       <div style={{ display: "flex", alignItems: "center", padding: "12px 16px", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.2)", borderLeft: "3px solid #00bcd4", borderRadius: 8, marginBottom: 16 }}>
         <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ background: "rgba(0,188,212,0.15)", color: "#00bcd4", padding: "2px 8px", borderRadius: 4, fontSize: 10, fontWeight: 700 }}>⚡ MegaBot</span>
-          <span style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>{agentCount > 0 ? `${agentCount} AI Engines` : "AI Analysis"}</span>
+          <span style={{ fontSize: 9, color: "var(--text-muted)" }}>{agentCount > 0 ? `${agentCount} AI Engines` : "AI Analysis"}</span>
         </div>
         <div style={{ width: 1, height: 20, background: "var(--bg-card-hover)", margin: "0 12px" }} />
         {bestPlatform && (
           <>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>🏆 Best Platform</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{String(bestPlatform).slice(0, 20)}</div>
+              <div style={{ fontSize: 9, color: "var(--text-muted)" }}>{"\u{1F3C6}"} Best Platform</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{String(bestPlatform).slice(0, 20)}</div>
             </div>
             <div style={{ width: 1, height: 20, background: "var(--bg-card-hover)", margin: "0 12px" }} />
           </>
         )}
         <div style={{ textAlign: "center" }}>
-          <div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>⏱️ Est. Sale</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{estimatedDays || "\u2013"} <span style={{ fontSize: 10, color: "#00bcd4" }}>days</span></div>
+          <div style={{ fontSize: 9, color: "var(--text-muted)" }}>{"\u23F1\uFE0F"} Est. Sale</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{estimatedDays || "\u2013"} <span style={{ fontSize: 10, color: "#00bcd4" }}>days</span></div>
         </div>
       </div>
 
@@ -4405,14 +4405,14 @@ function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, ge
       {execSummary && (
         <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 14 }}>
           <span style={{ background: "#f5a623", color: "#0a1929", fontSize: 8, fontWeight: 700, padding: "2px 7px", borderRadius: 4, flexShrink: 0, marginTop: 1 }}>Strategy</span>
-          <span style={{ fontSize: 11, fontStyle: "italic", color: "rgba(207,216,220,0.8)", lineHeight: 1.5 }}>{String(execSummary).split(". ").slice(0, 2).join(". ")}.</span>
+          <span style={{ fontSize: 11, fontStyle: "italic", color: "var(--text-secondary)", lineHeight: 1.5 }}>{String(execSummary).split(". ").slice(0, 2).join(". ")}.</span>
         </div>
       )}
 
       {/* ── BLOCK 3: Featured Platform Cards (Top 3) ── */}
       <div style={{ marginBottom: 6 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 2 }}>🚀 Ready to Launch</div>
-        <div style={{ fontSize: 10, color: "rgba(207,216,220,0.5)", marginBottom: 10 }}>Top platforms \u2014 copy and post</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)", marginBottom: 2 }}>{"\u{1F680}"} Ready to Launch</div>
+        <div style={{ fontSize: 10, color: "var(--text-muted)", marginBottom: 10 }}>Top platforms {"\u2014"} copy and post</div>
       </div>
 
       {top3.map((plat) => {
@@ -4427,11 +4427,11 @@ function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, ge
           <div key={plat.key} style={{ background: "var(--bg-card)", borderLeft: `4px solid ${plat.color}`, borderTop: "1px solid var(--border-default)", borderRight: "1px solid var(--border-default)", borderBottom: "1px solid var(--border-default)", borderRadius: 10, padding: "14px 16px", marginBottom: 10 }}>
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{plat.icon} {plat.name}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{plat.icon} {plat.name}</span>
               {price != null && <span style={{ fontSize: 13, fontWeight: 700, color: "#00bcd4" }}>${price}</span>}
             </div>
             {/* Title */}
-            <div style={{ fontSize: 11, color: "rgba(207,216,220,0.7)", lineHeight: 1.4, margin: "8px 0 6px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{title}</div>
+            <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4, margin: "8px 0 6px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{title}</div>
             {/* Tags */}
             {tags.length > 0 && (
               <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 10 }}>
@@ -4445,7 +4445,7 @@ function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, ge
               <button onClick={() => { const lst = findListing(plat.key); if (lst) { navigator.clipboard.writeText(getFullText(lst, plat.key)); setCopiedPlatform(plat.key); setTimeout(() => setCopiedPlatform(null), 2000); fetch("/api/listings/save", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ itemId, platform: plat.key, status: "COPIED" }) }).catch(() => {}); } }} style={{ flex: 65, height: 38, background: isCopied ? plat.color : `rgba(${plat.color === "#e53238" ? "229,50,56" : plat.color === "#1877f2" ? "24,119,242" : plat.color === "#e1306c" ? "225,48,108" : plat.color === "#f1641e" ? "241,100,30" : "0,188,212"},0.15)`, border: `1px solid ${plat.color}`, color: isCopied ? "#000" : plat.color, fontSize: 11, fontWeight: 700, borderRadius: 7, cursor: "pointer", transition: "all 0.2s" }}>
                 {isCopied ? "✓ Copied!" : `📋 Copy ${plat.name}`}
               </button>
-              <a href={plat.url} target="_blank" rel="noopener noreferrer" style={{ flex: 33, height: 38, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", fontSize: 11, borderRadius: 7, textDecoration: "none", cursor: "pointer" }}>Open \u2192</a>
+              <a href={plat.url} target="_blank" rel="noopener noreferrer" style={{ flex: 33, height: 38, display: "flex", alignItems: "center", justifyContent: "center", background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", fontSize: 11, borderRadius: 7, textDecoration: "none", cursor: "pointer" }}>Open {"\u2192"}</a>
             </div>
           </div>
         );
@@ -4457,7 +4457,7 @@ function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, ge
           {copiedPlatform === "__all__" ? "✓ All Copied!" : "📋 Copy All 13 Platforms"}
         </button>
         <button onClick={() => { window.location.href = `/bots/listbot?item=${itemId}`; }} style={{ flex: 40, height: 40, background: "var(--ghost-bg)", border: "1px solid var(--border-default)", color: "var(--text-secondary)", fontSize: 11, borderRadius: 8, cursor: "pointer" }}>
-          📊 All 13 Platforms \u2192
+          {"\u{1F4CA}"} All 13 Platforms {"\u2192"}
         </button>
       </div>
 
@@ -4466,7 +4466,7 @@ function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, ge
         <div style={{ height: 3, borderRadius: 2, background: "var(--ghost-bg)", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${Math.round((copiedCount / 13) * 100)}%`, background: "linear-gradient(90deg, #00bcd4, #00e5ff)", borderRadius: 2, transition: "width 0.4s ease" }} />
         </div>
-        <div style={{ fontSize: 9, color: "rgba(207,216,220,0.6)", marginTop: 4 }}>{copiedCount} of 13 platforms reached</div>
+        <div style={{ fontSize: 9, color: "var(--text-muted)", marginTop: 4 }}>{copiedCount} of 13 platforms reached</div>
       </div>
     </div>
   );
@@ -4596,7 +4596,7 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
                   return (
                     <div key={key} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.45rem 0.6rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.15)" }}>
                       <span style={{ fontSize: "1rem" }}>{meta.icon}</span>
-                      <span style={{ flex: 1, fontSize: "0.72rem", color: "#cfd8dc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title.slice(0, 50)}</span>
+                      <span style={{ flex: 1, fontSize: "0.72rem", color: "var(--text-secondary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title.slice(0, 50)}</span>
                       {price != null && <span style={{ fontSize: "0.72rem", color: "#00bcd4", fontWeight: 600, marginRight: "0.35rem" }}>${price}</span>}
                       <button onClick={() => copyPlatform(key)} style={{ padding: "0.2rem 0.55rem", background: isCopied ? "#00bcd4" : "transparent", border: "1px solid #00bcd4", borderRadius: "0.35rem", color: isCopied ? "#000" : "#00bcd4", fontSize: "0.65rem", cursor: "pointer", transition: "all 0.2s ease", minHeight: "28px" }}>
                         {isCopied ? "✓" : "📋"}
@@ -6947,7 +6947,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
                 <div style={{ textAlign: "center", padding: "0.5rem", borderRadius: "0.4rem", background: "var(--bg-card)" }}>
                   <div style={{
                     fontSize: "0.78rem", fontWeight: 700,
-                    color: scan.price_position === "Well-Priced" ? "#4ade80" : scan.price_position === "Overpriced" ? "#ef4444" : scan.price_position === "Underpriced" ? "#f59e0b" : "#94a3b8",
+                    color: scan.price_position === "Well-Priced" ? "#4ade80" : scan.price_position === "Overpriced" ? "#ef4444" : scan.price_position === "Underpriced" ? "#f59e0b" : "var(--text-muted)",
                   }}>
                     {scan.price_position}
                   </div>

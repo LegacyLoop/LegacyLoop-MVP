@@ -1,0 +1,597 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'FEDEX_PARCEL_API_KEY' .env | sed 's/=.*/=SET/' || echo 'FEDEX_PARCEL not found'
+  grep 'FEDEX_LTL_API_KEY' .env | sed 's/=.*/=SET/' || echo 'FEDEX_LTL not found'
+  grep 'SHIPENGINE_API_KEY' .env | sed 's/=.*/=SET/' || echo 'SHIPENGINE not found'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. lib/shipping/fedex-parcel.ts (NEW FILE)
+     — CREATE: FedEx Parcel shipping API library
+     — OAuth2 auth, rate quotes, label creation, tracking
+
+  2. app/api/shipping/rates/route.ts (35 lines)
+     — EXTEND: Add FedEx Parcel as additional carrier source
+     — FedEx rates run alongside Shippo rates
+
+  3. app/items/[id]/ShippingPanel.tsx
+     — SURGICAL: Replace "Submit Quote Request" in LTL section
+       with automated LTL quote via ShipEngine + FedEx LTL APIs
+     — SURGICAL: Add "Get Live Metro Rates" button (from SHIPPING-METRO-FIX)
+     — MINIMAL changes only
+
+  4. app/api/shipping/ltl-quote/route.ts (144 lines)
+     — VERIFY: ShipEngine + FedEx LTL already wired
+     — No changes needed unless missing
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping commands LOCKED.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently.
+
+SECTION 6 — BUILD PATTERN
+
+  Build order: A -> B -> C -> D -> E -> F
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. We now have FIVE carrier API integrations:
+1. Shippo (parcel — USPS/UPS/FedEx test rates)
+2. FedEx Parcel (NEW — real FedEx account, sandbox for demo)
+3. FedEx LTL (real FedEx account, sandbox for demo)
+4. ShipEngine/ShipStation (LTL — sandbox)
+5. Our estimate engine (fallback only)
+
+FedEx credentials in .env:
+  FEDEX_PARCEL_API_KEY=l72694398fc3ee49538fcfe598c54b4bea
+  FEDEX_PARCEL_SECRET_KEY=02421bd4320e45ddbaefcf680371f826
+  FEDEX_PARCEL_URL=https://apis-sandbox.fedex.com
+
+  FEDEX_LTL_API_KEY=l7485a33eb2fdf4fe2862023adcf3f104d
+  FEDEX_LTL_SECRET_KEY=e7f0b1c31fb74936964aeb8c5b65f0e7
+  FEDEX_LTL_URL=https://apis-sandbox.fedex.com
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Create FedEx Parcel library, wire into rates API, replace manual LTL quote request with automated API quotes, add live metro rates to Item Dashboard. Make carrier integrations production-quality.
+
+You MAY NOT: Touch locked files (except surgical unlocks), rewrite components, add npm packages, change schema, deviate from inline style={{}}.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+  OPENAI_API_KEY: SET GPT-4o
+  ANTHROPIC_API_KEY: SET Claude
+  GEMINI_API_KEY: SET Gemini
+  XAI_API_KEY: SET Grok
+  SQUARE_*: SET Sandbox
+  SENDGRID_API_KEY: SET
+  SHIPPO_API_KEY: SET (test token)
+  SHIPENGINE_API_KEY: SET (sandbox)
+  FEDEX_PARCEL_API_KEY: SET l72694398fc3ee49538fcfe598c54b4bea
+  FEDEX_PARCEL_SECRET_KEY: SET 02421bd4320e45ddbaefcf680371f826
+  FEDEX_PARCEL_URL: SET https://apis-sandbox.fedex.com
+  FEDEX_LTL_API_KEY: SET l7485a33eb2fdf4fe2862023adcf3f104d
+  FEDEX_LTL_SECRET_KEY: SET e7f0b1c31fb74936964aeb8c5b65f0e7
+  FEDEX_LTL_URL: SET https://apis-sandbox.fedex.com
+  DEMO_MODE: true
+  DATABASE_URL: SET PostgreSQL
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — FEDEX PARCEL API + LTL AUTO-QUOTE + METRO FIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THREE things:
+1. Add FedEx Parcel API as a carrier source for all parcel quotes
+   (alongside Shippo's USPS/UPS/FedEx test rates)
+2. Replace "Submit Quote Request" manual form in Item Dashboard
+   LTL section with automated API quote from ShipEngine + FedEx LTL
+3. Add "Get Live Metro Rates" button to Item Dashboard ShippingPanel
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read lib/shipping/fedex-ltl.ts (193 lines)
+   — Understand the FedEx OAuth2 auth pattern
+   — Same auth approach for FedEx Parcel (same API gateway)
+   — But DIFFERENT API key + secret (parcel vs LTL are separate accounts)
+
+2. Read app/api/shipping/rates/route.ts (35 lines)
+   — Currently calls getShippingRates from Shippo
+   — FedEx Parcel will be an ADDITIONAL source
+
+3. Read app/items/[id]/ShippingPanel.tsx
+   — Find "Submit Quote Request" button in LTL section
+   — Find the LtlQuoteForm component
+   — Find the metro estimates section
+   — Note line numbers for surgical changes
+
+4. Read app/api/shipping/ltl-quote/route.ts (144 lines)
+   — Verify ShipEngine + FedEx LTL are both wired
+
+5. Check .env for FedEx Parcel credentials:
+   grep 'FEDEX_PARCEL' .env
+
+   If FEDEX_PARCEL_API_KEY is NOT in .env, ADD IT:
+   FEDEX_PARCEL_API_KEY=l72694398fc3ee49538fcfe598c54b4bea
+   FEDEX_PARCEL_SECRET_KEY=02421bd4320e45ddbaefcf680371f826
+   FEDEX_PARCEL_URL=https://apis-sandbox.fedex.com
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — CREATE FEDEX PARCEL API LIBRARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CREATE lib/shipping/fedex-parcel.ts (NEW FILE):
+
+This follows the SAME pattern as fedex-ltl.ts but for
+PARCEL shipping (FedEx Ground, Express, 2Day, etc.)
+
+/**
+ * FedEx Parcel Shipping API Integration
+ * Uses FedEx REST API for parcel rate quotes.
+ *
+ * SEPARATE credentials from FedEx LTL.
+ * Same OAuth2 flow, different API key + secret.
+ *
+ * Auth: OAuth2 client_credentials
+ * Sandbox: https://apis-sandbox.fedex.com
+ * Production: https://apis.fedex.com
+ */
+
+const FEDEX_API_KEY = process.env.FEDEX_PARCEL_API_KEY || "";
+const FEDEX_SECRET = process.env.FEDEX_PARCEL_SECRET_KEY || "";
+const FEDEX_URL = process.env.FEDEX_PARCEL_URL || "https://apis-sandbox.fedex.com";
+
+let cachedToken: { token: string; expiresAt: number } | null = null;
+
+// OAuth2 token
+async function getAuthToken(): Promise<string | null> {
+  if (cachedToken && cachedToken.expiresAt > Date.now()) {
+    return cachedToken.token;
+  }
+  if (!FEDEX_API_KEY || !FEDEX_SECRET) return null;
+  try {
+    const res = await fetch(`${FEDEX_URL}/oauth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: FEDEX_API_KEY,
+        client_secret: FEDEX_SECRET,
+      }),
+    });
+    if (!res.ok) {
+      console.error("[FedEx Parcel] Auth failed:", res.status);
+      return null;
+    }
+    const data = await res.json();
+    cachedToken = {
+      token: data.access_token,
+      expiresAt: Date.now() + (data.expires_in * 1000) - 60000,
+    };
+    return cachedToken.token;
+  } catch (e) {
+    console.error("[FedEx Parcel] Auth error:", e);
+    return null;
+  }
+}
+
+export interface FedExParcelRate {
+  carrier: string;
+  service: string;
+  rate: number;
+  currency: string;
+  estimatedDays: number;
+  isLive: boolean;
+}
+
+// Get FedEx parcel rates
+export async function getFedExParcelRates(
+  fromZip: string,
+  toZip: string,
+  weight: number,
+  length: number,
+  width: number,
+  height: number,
+): Promise<FedExParcelRate[]> {
+  const token = await getAuthToken();
+  if (!token) {
+    console.log("[FedEx Parcel] No auth token — skipping");
+    return [];
+  }
+
+  try {
+    const res = await fetch(`${FEDEX_URL}/rate/v1/rates/quotes`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "X-locale": "en_US",
+      },
+      body: JSON.stringify({
+        accountNumber: { value: "" },
+        requestedShipment: {
+          shipper: {
+            address: {
+              postalCode: fromZip,
+              countryCode: "US",
+            },
+          },
+          recipient: {
+            address: {
+              postalCode: toZip,
+              countryCode: "US",
+              residential: true,
+            },
+          },
+          pickupType: "DROPOFF_AT_FEDEX_LOCATION",
+          rateRequestType: ["LIST"],
+          requestedPackageLineItems: [{
+            weight: { units: "LB", value: weight },
+            dimensions: {
+              length: Math.ceil(length),
+              width: Math.ceil(width),
+              height: Math.ceil(height),
+              units: "IN",
+            },
+          }],
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      console.error("[FedEx Parcel] Rate error:", res.status);
+      return [];
+    }
+
+    const data = await res.json();
+    const rates: FedExParcelRate[] = [];
+
+    for (const detail of (data.output?.rateReplyDetails || [])) {
+      const charge = detail.ratedShipmentDetails?.[0]?.totalNetCharge;
+      const amount = typeof charge === "number" ? charge : parseFloat(charge) || 0;
+      if (amount <= 0) continue;
+
+      const serviceMap: Record<string, string> = {
+        "FEDEX_GROUND": "FedEx Ground",
+        "GROUND_HOME_DELIVERY": "FedEx Home Delivery",
+        "FEDEX_EXPRESS_SAVER": "FedEx Express Saver",
+        "FEDEX_2_DAY": "FedEx 2Day",
+        "FEDEX_2_DAY_AM": "FedEx 2Day AM",
+        "STANDARD_OVERNIGHT": "Standard Overnight",
+        "PRIORITY_OVERNIGHT": "Priority Overnight",
+        "FIRST_OVERNIGHT": "First Overnight",
+      };
+
+      rates.push({
+        carrier: "FedEx",
+        service: serviceMap[detail.serviceType] || detail.serviceType?.replace(/_/g, " ") || "FedEx",
+        rate: amount,
+        currency: "USD",
+        estimatedDays: detail.commit?.dateDetail?.dayOfWeek ? 3 : (detail.serviceType?.includes("GROUND") ? 5 : detail.serviceType?.includes("2_DAY") ? 2 : detail.serviceType?.includes("OVERNIGHT") ? 1 : 3),
+        isLive: true,
+      });
+    }
+
+    console.log(`[FedEx Parcel] Got ${rates.length} rates`);
+    return rates.sort((a, b) => a.rate - b.rate);
+  } catch (e) {
+    console.error("[FedEx Parcel] Rate failed:", e);
+    return [];
+  }
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — WIRE FEDEX PARCEL INTO RATES API
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/api/shipping/rates/route.ts
+
+Currently this route calls Shippo only. ADD FedEx Parcel
+as an additional carrier source. Run both in PARALLEL.
+
+ADD import:
+  import { getFedExParcelRates } from "@/lib/shipping/fedex-parcel";
+
+CHANGE the route to:
+
+  export async function POST(req: Request) {
+    const user = await authAdapter.getSession();
+    if (!user) return new Response("Unauthorized", { status: 401 });
+
+    const body = await req.json().catch(() => ({}));
+    const { fromZip, toZip, weight = 2, length = 12, width = 10, height = 6 } = body;
+
+    if (!fromZip || !toZip) {
+      return new Response("Missing fromZip or toZip", { status: 400 });
+    }
+
+    // Run Shippo + FedEx in parallel
+    const [shippoResult, fedexRates] = await Promise.all([
+      getShippingRates(
+        { zip: String(fromZip) },
+        { zip: String(toZip) },
+        { length: Number(length), width: Number(width), height: Number(height), weight: Number(weight) }
+      ).catch(() => ({ rates: [], isDemo: true })),
+      getFedExParcelRates(
+        String(fromZip), String(toZip),
+        Number(weight), Number(length), Number(width), Number(height)
+      ).catch(() => []),
+    ]);
+
+    // Merge rates — Shippo rates + FedEx direct rates
+    const allRates = [
+      ...shippoResult.rates.map(r => ({
+        ...r,
+        source: shippoResult.isDemo ? "demo" : "shippo",
+      })),
+      ...fedexRates.map(r => ({
+        provider: r.carrier,
+        servicelevel_name: r.service,
+        amount: String(r.rate),
+        estimated_days: r.estimatedDays,
+        currency: r.currency,
+        source: "fedex",
+        isLive: r.isLive,
+      })),
+    ];
+
+    // Dedupe — if FedEx returns a rate for FedEx Ground AND
+    // Shippo also has FedEx Ground, keep the FedEx direct rate
+    // (it's from the real account, more accurate)
+    const seen = new Map<string, any>();
+    for (const r of allRates) {
+      const key = `${(r.provider || r.carrier || "").toLowerCase()}_${(r.servicelevel_name || r.service || "").toLowerCase()}`;
+      const existing = seen.get(key);
+      if (!existing) {
+        seen.set(key, r);
+      } else if (r.source === "fedex" && existing.source !== "fedex") {
+        // Prefer FedEx direct over Shippo's FedEx rates
+        seen.set(key, r);
+      }
+    }
+
+    const deduped = Array.from(seen.values());
+
+    return Response.json({
+      rates: deduped,
+      isDemo: shippoResult.isDemo && fedexRates.length === 0,
+      isMock: shippoResult.isDemo && fedexRates.length === 0,
+      rateSource: fedexRates.length > 0 ? "shippo+fedex" : shippoResult.isDemo ? "demo" : "shippo",
+      fedexLive: fedexRates.length > 0,
+    });
+  }
+
+This means EVERY parcel rate request now gets:
+— Shippo rates (USPS, UPS, FedEx via Shippo)
+— FedEx direct rates (from Ryan's real FedEx account)
+— FedEx direct rates REPLACE Shippo's FedEx rates (more accurate)
+— Response includes source per rate so UI can show badges
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — REPLACE LTL "SUBMIT QUOTE REQUEST" WITH AUTO-QUOTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+*** SURGICAL — LTL section only ***
+
+Currently the Item Dashboard ShippingPanel LTL section has
+a "Submit Quote Request" button that opens an LtlQuoteForm.
+This sends a manual request — the user waits for an email
+from shipping@legacy-loop.com with a quote.
+
+REPLACE this manual flow with an AUTOMATED quote:
+
+Find the LtlQuoteForm rendering section. Where it shows:
+  [Submit Quote Request]
+
+Change to:
+  [Get Live LTL Quotes]
+
+When clicked:
+— Call /api/shipping/ltl-quote with the item's dims, weight,
+  fromZip, toZip, and freight class
+— Display the returned quotes inline (same as Shipping Center
+  FreightTab carrier cards)
+— Show source badges (SHIPENGINE / FEDEX LIVE / ESTIMATED)
+— User can select a carrier and proceed
+
+KEEP the manual "Submit Quote Request" as a SECONDARY option:
+  "Need a custom quote? [Request Manual Quote →]"
+  This still opens the LtlQuoteForm for email-based quoting
+  via shipping@legacy-loop.com
+
+The automated flow is PRIMARY. Manual is backup.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — ADD LIVE METRO RATES TO ITEM DASHBOARD
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/items/[id]/ShippingPanel.tsx
+*** SURGICAL — metro section only ***
+
+The Shipping Center has a "Get Live Rates" button for
+metro estimates that calls Shippo per city. The Item
+Dashboard ShippingPanel needs the same thing.
+
+In the metro estimates display section, ADD:
+  [📡 Get Live Rates] button (small, teal)
+
+When clicked:
+— Call /api/shipping/rates for NYC, LA, Chicago, Houston
+  using the item's actual weight and dims
+— Display real carrier pricing per city
+— Show CHEAPEST/FASTEST badges
+— Show carrier name under price
+— Show "SHIPPO RATES" or "FEDEX" label
+— Replace the formula-based estimates with live data
+
+This is the same implementation as the Shipping Center's
+metro live rates — just in the Item Dashboard context.
+
+ADD state:
+  const [liveMetro, setLiveMetro] = useState<any[] | null>(null);
+  const [metroLoading, setMetroLoading] = useState(false);
+
+The fetch function calls /api/shipping/rates for each city
+(same approach as SHIPPING-METRO-FIX.txt Part B).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — VERIFY AND ADD .ENV VARIABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Check .env for FedEx Parcel credentials. If not present, ADD:
+
+  # FedEx Parcel API (separate from LTL)
+  FEDEX_PARCEL_API_KEY=l72694398fc3ee49538fcfe598c54b4bea
+  FEDEX_PARCEL_SECRET_KEY=02421bd4320e45ddbaefcf680371f826
+  FEDEX_PARCEL_URL=https://apis-sandbox.fedex.com
+
+Verify existing FedEx LTL credentials still present:
+  FEDEX_LTL_API_KEY=l7485a33eb2fdf4fe2862023adcf3f104d
+  FEDEX_LTL_SECRET_KEY=e7f0b1c31fb74936964aeb8c5b65f0e7
+  FEDEX_LTL_URL=https://apis-sandbox.fedex.com
+
+Verify ShipEngine credentials still present:
+  SHIPENGINE_API_KEY=TEST_Qu72NlNYQssk1q4Ia1cBzF7Zcme5b8DMopATyjuGg7I
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Part A reads completed: yes/no
+3.  lib/shipping/fedex-parcel.ts created: yes/no
+4.  FedEx Parcel OAuth2 auth works: yes/no
+5.  getFedExParcelRates returns rates: yes/no
+6.  FedEx Parcel wired into /api/shipping/rates: yes/no
+7.  Shippo + FedEx run in parallel: yes/no
+8.  FedEx rates replace Shippo's FedEx rates (dedup): yes/no
+9.  Response includes rateSource + fedexLive flags: yes/no
+10. Item Dashboard LTL "Get Live LTL Quotes" button: yes/no
+11. LTL auto-quote calls /api/shipping/ltl-quote: yes/no
+12. LTL results display with source badges: yes/no
+13. Manual "Request Manual Quote" still available: yes/no
+14. "Get Live Metro Rates" button in Item Dashboard: yes/no
+15. Metro rates call Shippo per city: yes/no
+16. CHEAPEST/FASTEST badges on metro: yes/no
+17. .env has FEDEX_PARCEL credentials: yes/no
+18. .env has FEDEX_LTL credentials: yes/no
+19. .env has SHIPENGINE credentials: yes/no
+20. All locked files untouched: yes/no
+21. inline style={{}} throughout: yes/no
+22. Light mode clean: yes/no
+23. Dark mode clean: yes/no
+24. npx tsc --noEmit: 0 errors
+25. npm run build: pass
+26. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+  Part A printed: [yes/no]
+
+  PART B — FedEx Parcel Library:
+  — File created: [yes/no]
+  — OAuth2 auth: [yes/no]
+  — Rate function: [yes/no]
+  — Service types mapped: [yes/no]
+
+  PART C — Rates API:
+  — FedEx imported: [yes/no]
+  — Parallel execution: [yes/no]
+  — Dedup logic: [yes/no]
+  — Source flags in response: [yes/no]
+
+  PART D — LTL Auto-Quote:
+  — Get Live LTL Quotes button: [yes/no]
+  — API call works: [yes/no]
+  — Results display: [yes/no]
+  — Manual backup available: [yes/no]
+
+  PART E — Metro Live Rates:
+  — Get Live Rates button: [yes/no]
+  — Calls Shippo per city: [yes/no]
+  — Badges: [yes/no]
+
+  PART F — .env:
+  — All credentials present: [yes/no]
+
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD:
+
+1. After this: Shipping is LOCKED.
+2. LegacyLoop now has 5 carrier APIs: Shippo, FedEx Parcel, FedEx LTL, ShipEngine, estimates.
+3. FedEx production: Switch URLs from sandbox to https://apis.fedex.com when ready.
+4. Next: Bot Page Data Sync (Phase 3 item 19).
+5. Pre-demo: Seed data, Dr. Clark demo prep.
+
+Command: FedEx Parcel API + LTL Auto-Quote + Metro Fix
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

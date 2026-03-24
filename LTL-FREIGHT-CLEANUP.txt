@@ -1,0 +1,291 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/shipping/ShippingCenterClient.tsx
+     — REWRITE FreightTab to be ONE powerful LTL quoting tool
+     — FIX: Duplicate React key errors on carrier rows
+     — Remove 3 separate buttons, replace with 1 unified flow
+
+  2. lib/shipping/fedex-ltl.ts
+     — DEBUG: Add detailed logging to diagnose why FedEx LTL returns nothing
+
+  3. lib/shipping/fedex-parcel.ts
+     — DEBUG: Add detailed logging to diagnose why FedEx Parcel returns nothing
+
+SECTION 4-11 — Same as Command Template v10
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — LTL FREIGHT TAB CLEANUP + FEDEX DEBUG + DUPLICATE KEY FIX
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THREE problems to fix:
+
+1. FreightTab has 3 separate quoting buttons that confuse
+   users. Merge into ONE powerful LTL quoting flow.
+
+2. FedEx LTL and FedEx Parcel rates not showing — both APIs
+   return empty. Need diagnostic logging to find out why.
+
+3. Duplicate React key errors on carrier rows — Shippo returns
+   multiple rates with same carrier+service name.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read app/shipping/ShippingCenterClient.tsx FreightTab
+   — Line 3021+: Quick Freight Estimate state
+   — Line 3267: "Request Freight Quote" button
+   — Line 3322: "Get Live LTL Quote" button
+   — Line 3444: Quick Freight Estimate section with "Run Estimate"
+   — Understand why there are 3 separate sections
+
+2. Read lib/shipping/fedex-ltl.ts — check auth function
+3. Read lib/shipping/fedex-parcel.ts — check auth function
+4. Read app/api/shipping/ltl-quote/route.ts — both ShipEngine + FedEx called
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — MERGE FREIGHTTAB INTO ONE POWERFUL LTL TOOL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+THE CURRENT MESS:
+— "Request Freight Quote" → calls /api/shipping/freight (old Shippo LTL)
+— "Get Live LTL Quote" → calls /api/shipping/ltl-quote (ShipEngine + FedEx)
+— "Run Estimate" (Quick Freight Estimate) → runs getFreightEstimates client-side
+
+THREE buttons doing similar things. Confusing. Unprofessional.
+
+THE FIX — ONE UNIFIED FREIGHT QUOTING FLOW:
+
+Replace all three with a single clean flow:
+
+STEP 1 — SHIPMENT DETAILS FORM:
+  Length, Width, Height, Weight, From ZIP, To ZIP
+  Packaging type: Pallet / Crate / Box / Drum / Bundle
+  Access: Ground / Dock / Stairs
+  AI Freight Class: [auto-calculated, with override dropdown]
+  Accessorial toggles: Residential, Liftgate, Notification,
+    Blanket Wrap, Inside Delivery (keep existing toggles)
+
+  ONE BUTTON: [Get Freight Quotes]
+  Teal gradient, full width, prominent.
+
+STEP 2 — WHEN "Get Freight Quotes" IS CLICKED:
+  Show loading state: "Getting quotes from all carriers..."
+
+  Call /api/shipping/ltl-quote with ALL form data.
+  This API already calls ShipEngine + FedEx + demo fallback.
+
+  The API response includes quotes with source per carrier:
+  — source: "shipengine" — from ShipEngine API
+  — source: "fedex" — from FedEx LTL API
+  — source: "demo" — from our estimate engine
+
+STEP 3 — DISPLAY RESULTS AS UNIFIED CARRIER TABLE:
+  Show ALL carriers in ONE sorted table (cheapest first):
+
+  | Carrier | Service | Transit | Rate | Source |
+  | Estes Express | Standard LTL | 8 days | $278.96 | SHIPENGINE |
+  | SAIA | Standard LTL | 6 days | $293.64 | ESTIMATED |
+  | FedEx Freight | LTL Economy | 5 days | $310.00 | FEDEX LIVE |
+  | XPO Logistics | Standard LTL | 7 days | $308.33 | ESTIMATED |
+  | Old Dominion | Priority LTL | 5 days | $337.69 | ESTIMATED |
+
+  Each row is CLICKABLE (select a carrier).
+  Source badges:
+  — "FEDEX LIVE" — purple badge (from real FedEx API)
+  — "SHIPENGINE" — teal badge (from ShipEngine API)
+  — "ESTIMATED" — amber badge (from our calculator)
+  BEST RATE and FASTEST badges on appropriate rows.
+
+  Below the table: accessorial total shown
+  "+$252 accessorials" (updates in real time as toggles change)
+
+STEP 4 — AFTER SELECTING A CARRIER:
+  Show 3 action paths (keep existing):
+  [Schedule Pickup] [Upload Official Quote] [Create BOL]
+
+REMOVE:
+— The "Quick Freight Estimate" section entirely (it's redundant)
+— The separate "Request Freight Quote" button
+— The separate "Get Live LTL Quote" button
+
+KEEP:
+— The freight form (dims, weight, ZIPs, packaging, access)
+— The accessorial toggles
+— The BOL questionnaire
+— The BOL tracking
+— The pickup scheduling
+— Everything AFTER carrier selection
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — FIX DUPLICATE REACT KEY ERRORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+Search for ALL instances of:
+  key={`${c.carrier}-${c.service}`}
+
+Replace EVERY instance with:
+  key={`${c.carrier}-${c.service}-${i}`}
+
+This prevents the React duplicate key warning when Shippo
+returns multiple rates with the same carrier+service name
+(e.g., two "UPS Ground" entries for different account types).
+
+Also fix in QuoteDetailPanel (line ~844) and any other
+carrier .map() with the same pattern.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — DEBUG FEDEX LTL + PARCEL APIs
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: lib/shipping/fedex-ltl.ts
+File: lib/shipping/fedex-parcel.ts
+
+BOTH FedEx APIs return empty arrays. We need to know WHY.
+
+Add DETAILED console.log to BOTH files:
+
+In getAuthToken() for BOTH:
+  console.log("[FedEx] === AUTH ATTEMPT ===");
+  console.log("[FedEx] URL:", `${FEDEX_URL}/oauth/token`);
+  console.log("[FedEx] API Key present:", !!FEDEX_API_KEY, "length:", FEDEX_API_KEY.length);
+  console.log("[FedEx] Secret present:", !!FEDEX_SECRET, "length:", FEDEX_SECRET.length);
+
+  After response:
+  console.log("[FedEx] Auth response status:", res.status);
+  const responseText = await res.clone().text();
+  console.log("[FedEx] Auth response body:", responseText.slice(0, 500));
+
+In getFedExLTLQuote() and getFedExParcelRates():
+  console.log("[FedEx] === RATE REQUEST ===");
+  console.log("[FedEx] Token available:", !!token);
+  console.log("[FedEx] Request URL:", `${FEDEX_URL}/rate/v1/rates/quotes`);
+  console.log("[FedEx] Request body:", JSON.stringify(requestBody).slice(0, 800));
+
+  After response:
+  console.log("[FedEx] Rate response status:", res.status);
+  const rateText = await res.clone().text();
+  console.log("[FedEx] Rate response body:", rateText.slice(0, 1000));
+
+These logs will appear in Ryan's terminal when he runs
+npm run dev and triggers a rate quote. He can see exactly
+what's happening with the FedEx API — auth success/fail,
+request format, response content.
+
+NO FAKE FALLBACK. Real API only. The logs tell us what to fix.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  FreightTab has ONE "Get Freight Quotes" button: yes/no
+3.  "Request Freight Quote" button removed: yes/no
+4.  "Get Live LTL Quote" button removed: yes/no
+5.  "Quick Freight Estimate" section removed: yes/no
+6.  Unified carrier table displays all sources: yes/no
+7.  Source badges (FEDEX/SHIPENGINE/ESTIMATED): yes/no
+8.  BEST RATE + FASTEST badges: yes/no
+9.  Carrier rows clickable: yes/no
+10. Accessorial toggles still work: yes/no
+11. BOL questionnaire still accessible: yes/no
+12. Pickup scheduling still accessible: yes/no
+13. Duplicate key errors fixed: yes/no
+14. FedEx LTL debug logging added: yes/no
+15. FedEx Parcel debug logging added: yes/no
+16. All existing BOL/tracking features preserved: yes/no
+17. All locked files untouched: yes/no
+18. inline style={{}} throughout: yes/no
+19. npx tsc --noEmit: 0 errors
+20. npm run build: pass
+21. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+
+  PART B — FreightTab Cleanup:
+  — Single quote button: [yes/no]
+  — Old buttons removed: [yes/no]
+  — Unified carrier table: [yes/no]
+  — Source badges: [yes/no]
+
+  PART C — Duplicate Keys:
+  — Instances fixed: [count]
+  — No more React warnings: [yes/no]
+
+  PART D — FedEx Debug:
+  — LTL logging added: [yes/no]
+  — Parcel logging added: [yes/no]
+  — Console shows auth attempt: [noted for Ryan to check]
+
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD:
+
+1. Auth visual upgrade ready (AUTH-VISUAL-UPGRADE.txt)
+2. After FedEx debug: check terminal for [FedEx] logs
+3. If FedEx auth fails: check FedEx Developer Portal credentials
+4. Next after shipping: Bot Page Data Sync
+
+Command: LTL Freight Cleanup + FedEx Debug + Duplicate Key Fix
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

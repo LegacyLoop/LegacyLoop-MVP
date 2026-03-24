@@ -128,15 +128,21 @@ export default function SignupPage() {
         </p>
 
         <button
-          className="btn-primary"
           onClick={() => {
             router.push("/onboarding/quiz");
           }}
           style={{
             width: "100%",
-            padding: "0.8rem",
-            fontSize: "0.9rem",
-            borderRadius: "0.75rem",
+            padding: "14px",
+            fontSize: "1rem",
+            fontWeight: 700,
+            borderRadius: 12,
+            border: "none",
+            background: "linear-gradient(135deg, #00bcd4, #009688)",
+            color: "#fff",
+            cursor: "pointer",
+            boxShadow: "0 4px 16px rgba(0,188,212,0.2)",
+            transition: "all 0.2s ease",
           }}
         >
           Take Your Personalized Assessment →
@@ -191,16 +197,20 @@ export default function SignupPage() {
       <div style={{ marginBottom: "1.75rem" }}>
         <h1
           style={{
-            fontSize: "1.375rem",
-            fontWeight: 700,
-            color: "#f5f5f7",
-            letterSpacing: "-0.015em",
+            fontSize: "1.5rem",
+            fontWeight: 800,
+            backgroundImage: "linear-gradient(135deg, #f1f5f9, #00bcd4)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            letterSpacing: "-0.02em",
             margin: 0,
+            lineHeight: 1.2,
           }}
         >
           Create your account
         </h1>
-        <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.35rem" }}>
+        <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: "0.4rem" }}>
           Start your first item in minutes.
         </p>
       </div>
@@ -210,7 +220,7 @@ export default function SignupPage() {
 
         {/* Email */}
         <div>
-          <label className="label-light" htmlFor="signup-email">
+          <label htmlFor="signup-email" style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "#cbd5e1", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>
             Email address
           </label>
           <input
@@ -219,17 +229,24 @@ export default function SignupPage() {
             type="email"
             autoComplete="email"
             required
-            className="input-dark"
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            style={{ fontSize: "0.95rem", padding: "0.75rem 0.875rem" }}
+            style={{
+              width: "100%", boxSizing: "border-box",
+              padding: "14px 16px", fontSize: "0.95rem",
+              background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
+              border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+              outline: "none", transition: "all 0.2s ease", fontFamily: "inherit",
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
           />
         </div>
 
         {/* Password */}
         <div>
-          <label className="label-light" htmlFor="signup-password">
+          <label htmlFor="signup-password" style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "#cbd5e1", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>
             Password
           </label>
           <div style={{ position: "relative" }}>
@@ -239,11 +256,18 @@ export default function SignupPage() {
               type={showPass ? "text" : "password"}
               autoComplete="new-password"
               required
-              className="input-dark"
-              placeholder="••••••••"
+              placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              style={{ paddingRight: "2.75rem" }}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                padding: "14px 16px", paddingRight: "2.75rem", fontSize: "0.95rem",
+                background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
+                border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+                outline: "none", transition: "all 0.2s ease", fontFamily: "inherit",
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
             />
             <button
               type="button"
@@ -316,7 +340,7 @@ export default function SignupPage() {
 
         {/* Confirm Password */}
         <div>
-          <label className="label-light" htmlFor="signup-confirm">
+          <label htmlFor="signup-confirm" style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "#cbd5e1", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>
             Confirm password
           </label>
           <div style={{ position: "relative" }}>
@@ -326,11 +350,18 @@ export default function SignupPage() {
               type={showConfirm ? "text" : "password"}
               autoComplete="new-password"
               required
-              className="input-dark"
-              placeholder="••••••••"
+              placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              style={{ paddingRight: "2.75rem" }}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                padding: "14px 16px", paddingRight: "2.75rem", fontSize: "0.95rem",
+                background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
+                border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+                outline: "none", transition: "all 0.2s ease", fontFamily: "inherit",
+              }}
+              onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
             />
             <button
               type="button"
@@ -375,15 +406,24 @@ export default function SignupPage() {
         {/* Submit */}
         <button
           type="submit"
-          className="btn-primary"
           disabled={loading}
           style={{
             width: "100%",
-            padding: "0.8rem",
-            fontSize: "0.9rem",
-            borderRadius: "0.75rem",
+            padding: "14px",
+            fontSize: "1rem",
+            fontWeight: 700,
+            borderRadius: 12,
             marginTop: "0.25rem",
+            border: "none",
+            background: "linear-gradient(135deg, #00bcd4, #009688)",
+            color: "#fff",
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.7 : 1,
+            transition: "all 0.2s ease",
+            boxShadow: "0 4px 16px rgba(0,188,212,0.2)",
           }}
+          onMouseEnter={(e) => { if (!loading) { (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 24px rgba(0,188,212,0.3)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; } }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,188,212,0.2)"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}
         >
           {loading ? (
             <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>

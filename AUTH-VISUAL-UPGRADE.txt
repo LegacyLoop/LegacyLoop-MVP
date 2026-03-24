@@ -1,0 +1,387 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/auth/layout.tsx (143 lines)
+     — VISUAL UPGRADE: Premium auth page wrapper
+     — Keep existing structure. Enhance visually.
+
+  2. app/auth/login/page.tsx (1,137 lines)
+     — VISUAL UPGRADE: Premium login form design
+     — Keep ALL existing functionality (email/password,
+       phone OTP, magic link, Google, error handling)
+     — Only change VISUAL PRESENTATION
+
+  3. app/auth/signup/page.tsx (451 lines)
+     — VISUAL UPGRADE: Premium signup form design
+     — Keep all functionality
+
+  4. app/auth/forgot-password/page.tsx (442 lines)
+     — VISUAL UPGRADE: Premium forgot password design
+     — Keep all functionality
+
+  5. app/auth/reset-password/page.tsx (589 lines)
+     — VISUAL UPGRADE: Premium reset password design
+     — Keep all functionality
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + shipping LOCKED. Auth FUNCTIONALITY is locked — only VISUAL PRESENTATION changes.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently.
+
+SECTION 6 — BUILD PATTERN
+
+  Visual upgrade only. Read -> Upgrade styles -> Verify.
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo THIS WEEK. The login page is the FIRST thing Dr. Clark sees after the landing page. It must make an immediate impression.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Transform the auth pages into the most impressive login experience in any resale platform. Premium glass morphism, smooth animations, subtle particle effects, gradient accents, premium typography. Think Tesla account login, Grok sign-in, SpaceX portal. The auth pages are ALWAYS DARK — they don't need to support light mode. Use hardcoded dark colors.
+
+You MAY NOT: Change ANY functionality — login logic, form validation, API calls, error handling, OTP flow, magic link flow, Google sign-in, password strength checker. ONLY change how it LOOKS. Touch any locked files outside of auth.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — AUTH PAGES PREMIUM VISUAL UPGRADE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+THE PROBLEM:
+The login page works but looks basic. It's the FIRST thing
+an investor sees after the landing page. It must set the
+tone for the entire platform — premium, trustworthy,
+high-tech, professional.
+
+Current state:
+— Dark background with radial teal glow (good)
+— Floating particle dots (good base)
+— Logo centered above card (good)
+— Glass morphism card with form (needs upgrade)
+— Form inputs are plain (need premium styling)
+— Buttons are basic (need gradient + effects)
+— Social login buttons are flat (need premium treatment)
+— Phone OTP and magic link panels need polish
+— No subtle animations on form interactions
+— Tagline and footer links are small and plain
+
+THE VISION:
+Think: Tesla account sign-in meets Stripe login meets
+Apple ID. Dark, premium, confident. Every element should
+feel intentional and polished. The form should feel like
+signing into a $1B product.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Read ALL 5 auth files completely:
+1. app/auth/layout.tsx (143 lines)
+2. app/auth/login/page.tsx (1,137 lines)
+3. app/auth/signup/page.tsx (451 lines)
+4. app/auth/forgot-password/page.tsx (442 lines)
+5. app/auth/reset-password/page.tsx (589 lines)
+
+Understand every component, every state variable,
+every conditional render. Map the visual elements
+that need upgrading vs the functional logic that
+must NOT change.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — UPGRADE AUTH LAYOUT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/auth/layout.tsx
+
+The layout wraps all auth pages. Keep the existing
+structure but enhance:
+
+1. BACKGROUND:
+   Keep #0a0a0a dark base.
+   ADD a subtle animated gradient mesh behind everything:
+   — Slow-moving dark teal/purple gradient blobs
+   — Very subtle (opacity 0.03-0.05) so it's not distracting
+   — Creates depth and movement
+   — Use CSS radial-gradient with animated position via
+     inline style and a subtle CSS animation class
+
+2. PARTICLES:
+   Keep the existing floating dots.
+   Make them slightly larger (3-5px instead of 2-4px).
+   Add a subtle glow effect (box-shadow with teal color).
+   Increase count from 8 to 12 for more visual richness.
+
+3. LOGO:
+   Keep centered. Add a subtle glow behind the logo:
+   — A teal radial gradient behind the image (very subtle)
+   — Gives the logo a "lit from behind" effect
+
+4. AUTH CARD:
+   Enhance the glass morphism card:
+   — Increase blur: backdropFilter blur(30px)
+   — Add a subtle teal border glow:
+     boxShadow: "0 0 40px rgba(0,188,212,0.06), 0 8px 32px rgba(0,0,0,0.4)"
+   — Add a thin top border with teal gradient:
+     borderTop: "1px solid rgba(0,188,212,0.15)"
+   — Slightly darker card bg: rgba(10,10,10,0.85)
+   — Rounded corners: 24px
+
+5. TAGLINE:
+   Slightly larger font. Add teal accent color on
+   "Connecting Generations":
+   "AI-powered resale · <teal>Connecting Generations</teal>"
+
+6. FOOTER LINKS:
+   Subtle hover effect: teal color on hover.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — UPGRADE LOGIN PAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/auth/login/page.tsx
+*** VISUAL ONLY — do NOT change any login logic ***
+
+1. WELCOME HEADER:
+   "Welcome back" → larger, bolder, with subtle teal
+   gradient text effect:
+   backgroundImage: "linear-gradient(135deg, #e2e8f0, #00bcd4)"
+   backgroundClip: "text", WebkitTextFillColor: "transparent"
+   "Sign in to your LegacyLoop dashboard" → slightly
+   larger, warmer color (#94a3b8 instead of muted)
+
+2. FORM INPUTS (email + password):
+   Premium input styling:
+   — Background: rgba(255,255,255,0.04)
+   — Border: 1px solid rgba(255,255,255,0.08)
+   — Border on focus: 1px solid rgba(0,188,212,0.5)
+   — Box shadow on focus: 0 0 0 3px rgba(0,188,212,0.1)
+   — Text color: #e2e8f0
+   — Placeholder color: rgba(255,255,255,0.3)
+   — Border radius: 12px
+   — Padding: 14px 16px
+   — Font size: 0.95rem
+   — Smooth transition on focus (all 0.2s ease)
+   — Label above each input: uppercase, small, tracked,
+     white-ish color (#cbd5e1)
+
+3. PASSWORD SHOW/HIDE:
+   Premium toggle button inside the input:
+   — Positioned absolute right side
+   — Teal text on hover
+   — Smooth transition
+
+4. SIGN IN BUTTON:
+   Premium gradient button:
+   — Background: linear-gradient(135deg, #00bcd4, #009688)
+   — Full width, padding: 14px
+   — Border radius: 12px
+   — Font weight: 700, font size: 1rem
+   — Box shadow: 0 4px 16px rgba(0,188,212,0.2)
+   — Hover: slightly brighter, shadow increases
+   — Active: scale(0.98)
+   — Loading state: subtle pulse animation
+
+5. "Forgot password?" LINK:
+   Teal color (#00bcd4), right-aligned.
+   Hover: brighter teal.
+
+6. "Keep me signed in" CHECKBOX:
+   Premium custom checkbox:
+   — Teal accent when checked
+   — Rounded corners
+   — Smooth animation on check
+
+7. DIVIDER ("OR CONTINUE WITH"):
+   Premium divider:
+   — Thin line with fade on both sides
+   — Text in center with slight letter spacing
+   — Muted color
+
+8. SOCIAL LOGIN BUTTONS:
+   Premium card-style buttons (not flat):
+   — Background: rgba(255,255,255,0.04)
+   — Border: 1px solid rgba(255,255,255,0.08)
+   — Hover: border brightens, subtle background shift
+   — Border radius: 12px
+   — Padding: 12px
+   — Icon + text centered
+   — Each on its own row (full width)
+   — "Continue with Google" — with Google icon styling
+   — "Continue with Phone" — with phone icon
+   — "Email me a sign-in link" — with email icon
+
+9. "Don't have an account? Sign up" LINK:
+   Bottom of form. "Sign up" in teal, bold.
+
+10. ERROR STATE:
+    Premium error display:
+    — Red-tinted glass card (rgba(239,68,68,0.08))
+    — Red left border accent
+    — Error icon + message
+    — Smooth slide-in animation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — UPGRADE SIGNUP PAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/auth/signup/page.tsx
+*** VISUAL ONLY — keep all functionality ***
+
+Match the login page premium styling:
+— Same input styles
+— Same button gradient
+— Password strength meter: enhance visually
+  (teal gradient bar instead of flat color)
+— Confirm password match indicator
+— "Already have an account? Sign in" link
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — UPGRADE FORGOT + RESET PASSWORD PAGES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/auth/forgot-password/page.tsx
+File: app/auth/reset-password/page.tsx
+*** VISUAL ONLY — keep all functionality ***
+
+Match the same premium styling:
+— Same input styles
+— Same button gradient
+— OTP digit inputs (if present): premium styling
+  with auto-focus, teal border on active
+— Success states: green tinted glass card with
+  checkmark animation
+— Back to login link: teal accent
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  All 5 auth files read: yes/no
+3.  Layout background enhanced: yes/no
+4.  Particles upgraded (12 count, glow): yes/no
+5.  Logo glow effect: yes/no
+6.  Auth card glass morphism enhanced: yes/no
+7.  Teal border glow on card: yes/no
+8.  Login inputs premium styled: yes/no
+9.  Focus states with teal glow: yes/no
+10. Sign In button gradient: yes/no
+11. Social login buttons premium: yes/no
+12. Divider enhanced: yes/no
+13. Error state premium: yes/no
+14. Signup page matches login style: yes/no
+15. Forgot/reset pages match: yes/no
+16. ALL login functionality preserved: yes/no
+17. ALL signup functionality preserved: yes/no
+18. ALL OTP/magic link functionality preserved: yes/no
+19. ALL API calls unchanged: yes/no
+20. inline style={{}} throughout: yes/no
+21. Auth pages are always-dark (hardcoded colors): yes/no
+22. npx tsc --noEmit: 0 errors
+23. npm run build: pass
+24. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+
+  PART B — Layout:
+  — Background gradient: [yes/no]
+  — Particles upgraded: [yes/no]
+  — Logo glow: [yes/no]
+  — Card glass morphism: [yes/no]
+
+  PART C — Login:
+  — Input styling: [yes/no]
+  — Button gradient: [yes/no]
+  — Social buttons: [yes/no]
+  — Error state: [yes/no]
+  — All functionality preserved: [yes/no]
+
+  PART D — Signup:
+  — Matches login style: [yes/no]
+  — Password strength enhanced: [yes/no]
+
+  PART E — Forgot/Reset:
+  — Matches style: [yes/no]
+  — OTP inputs enhanced: [yes/no]
+
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD:
+
+1. Shipping Center: LOCKED.
+2. Next after auth: Bot Page Data Sync (Phase 3 item 19).
+3. Pre-demo: Seed data, Dr. Clark demo prep.
+
+Command: Auth Pages Premium Visual Upgrade
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

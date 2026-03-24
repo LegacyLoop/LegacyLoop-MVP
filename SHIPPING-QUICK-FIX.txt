@@ -1,0 +1,309 @@
+LEGACYLOOP — COMMAND TEMPLATE v10
+Master Template for Every Claude Code Command
+Updated: March 20, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS sections for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+  This app has an established design system: sleek, elegant, high-tech — inspired by Tesla,
+  SpaceX, and Grok. Dark theme with teal (#00bcd4) accents, glass morphism cards, subtle
+  animations, generous whitespace, premium typography. Senior-friendly.
+  All styles inline style={{}} — NO Tailwind. NO external CSS. NO className for styling. ONLY
+  inline style={{}}.
+  LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables. NEVER hardcoded
+  rgba(255,255,255,...) or #fff on theme surfaces.
+  ELON MUSK STANDARD: This must feel like a $1B product. Every interaction must feel responsive
+  and purposeful. Think Tesla center console — dense, smart, fast.
+  ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use hardcoded colors
+  (#e2e8f0 text, rgba(255,255,255,0.05) bg). NEVER CSS variables — they invert in light mode.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+  echo '=== CHECKPOINT ==='
+  grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+  grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+  grep 'DEMO_MODE' .env | head -2
+  grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+  grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+  npx tsc --noEmit 2>&1 | tail -3
+  echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALL files locked per Command Template v10 EXCEPT:
+
+SURGICAL UNLOCK:
+
+  1. app/shipping/ShippingCenterClient.tsx
+     — FIX: Duplicate React key error on carrier rows
+     — FIX: Same key issue in QuoteDetailPanel
+
+  2. app/api/shipping/rates/route.ts
+     — FIX: Dedupe logic needs to also handle duplicate UPS Ground entries from Shippo
+
+  3. lib/shipping/fedex-parcel.ts
+     — DIAGNOSE: Why FedEx returns no rates
+     — FIX: Auth or request format
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+All Pass 1-6 + all shipping commands LOCKED.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects ALL data permanently.
+
+SECTION 6 — BUILD PATTERN
+
+Quick targeted fixes.
+
+SECTION 7 — PLATFORM CONTEXT
+
+DEMO_MODE=true. Investor demo THIS WEEK.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY: Fix duplicate key errors, improve dedup logic, diagnose and fix FedEx API. Real rates only — no fake fallback.
+
+You MAY NOT: Touch locked files, rewrite components, add npm packages, change schema.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+  DEMO_MODE=true. annalyse07@gmail.com / LegacyLoop123!
+  ryanroger11@gmail.com / Freedom26$. SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES STATUS
+
+All SET per template v10. FEDEX_PARCEL_API_KEY: SET. FEDEX_PARCEL_SECRET_KEY: SET.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No changes needed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — FIX DUPLICATE KEY ERRORS + FEDEX RATE DIAGNOSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TWO bugs:
+1. React duplicate key warnings — Shippo returns multiple rates
+   with the same carrier+service (e.g., two "UPS Ground" entries
+   for different account types). The key `${c.carrier}-${c.service}`
+   isn't unique. Need to add index.
+
+2. FedEx Parcel rates not showing — the API is wired but returning
+   empty. Need to diagnose why and fix.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Read app/shipping/ShippingCenterClient.tsx
+   — Line 1600: key={`${c.carrier}-${c.service}`} — NOT UNIQUE
+   — Line 844: same pattern in QuoteDetailPanel
+   — Search for ALL instances of this key pattern
+
+2. Read lib/shipping/fedex-parcel.ts
+   — Check the auth function
+   — Check the rate request body
+   — Run a diagnostic: what does the FedEx API actually return?
+
+3. Read app/api/shipping/rates/route.ts
+   — The dedup at line 46-56 uses carrier+service as key
+   — But Shippo returns MULTIPLE rates for the same carrier+service
+     (e.g., UPS Ground with different pricing tiers)
+   — The dedup catches Shippo vs FedEx duplicates but NOT
+     Shippo-internal duplicates
+
+Print findings. Then proceed.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — FIX DUPLICATE REACT KEYS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+Search for ALL instances of:
+  key={`${c.carrier}-${c.service}`}
+
+Replace EVERY instance with:
+  key={`${c.carrier}-${c.service}-${i}`}
+
+Where `i` is the map index. This ensures uniqueness
+even when Shippo returns duplicate carrier+service combos.
+
+Check these known locations:
+— Line 1600 (PreSaleTab carrier table)
+— Line 844 (QuoteDetailPanel carrier list)
+— Any other carrier .map() with the same key pattern
+
+Also fix in the dedup logic OR filter out true duplicates
+(same carrier, service, AND price) before rendering.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — FIX RATE API DEDUP TO REMOVE SHIPPO INTERNAL DUPLICATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/api/shipping/rates/route.ts
+
+Currently the dedup (line 46-56) only handles FedEx vs Shippo
+duplicates. But Shippo itself returns multiple entries for
+the same carrier+service (different account types or zones).
+
+UPGRADE the dedup to also handle Shippo-internal duplicates:
+
+  // Dedup — keep cheapest rate per carrier+service combo
+  const seen = new Map<string, any>();
+  for (const r of allRates) {
+    const key = `${(r.provider || r.carrier || "").toLowerCase()}_${(r.servicelevel_name || r.service || "").toLowerCase()}`;
+    const existing = seen.get(key);
+    if (!existing) {
+      seen.set(key, r);
+    } else {
+      // Keep the one with better source priority OR cheaper price
+      const existingPrice = parseFloat(existing.amount || existing.rate || "0");
+      const newPrice = parseFloat(r.amount || r.rate || "0");
+      if (r.source === "fedex" && existing.source !== "fedex") {
+        // Prefer FedEx direct
+        seen.set(key, r);
+      } else if (r.source === existing.source && newPrice < existingPrice && newPrice > 0) {
+        // Same source — keep cheaper
+        seen.set(key, r);
+      }
+    }
+  }
+
+This eliminates duplicate "UPS Ground" entries from Shippo
+AND keeps the cheapest one when there are duplicates.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — DIAGNOSE AND FIX FEDEX PARCEL API
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: lib/shipping/fedex-parcel.ts
+
+STEP 1 — Check if auth is working:
+  Run this in the terminal (or add a temp test):
+  Look at the dev server console for [FedEx Parcel] logs.
+  The detailed logging from the previous command should show:
+  — "Requesting auth token..."
+  — "Auth SUCCESS" or "Auth FAILED — status: XXX, body: YYY"
+
+STEP 2 — If auth FAILS:
+  Common FedEx sandbox issues:
+  a) The API key format might need adjustment. FedEx keys
+     sometimes need to be URL-encoded or have spaces trimmed.
+  b) The grant_type might need to be "client_credentials"
+     (verify this is correct for FedEx)
+  c) The sandbox may require a specific account number.
+     Try adding: grant_type: "client_credentials" AND
+     scope: "CXS" (Customer Experience Sandbox)
+
+  FedEx sandbox auth endpoint:
+  POST https://apis-sandbox.fedex.com/oauth/token
+  Content-Type: application/x-www-form-urlencoded
+  Body: grant_type=client_credentials&client_id=KEY&client_secret=SECRET
+
+  If this returns 401 or 403, the credentials may not be
+  activated for the Rate API. Ryan may need to:
+  — Log into FedEx Developer Portal
+  — Ensure the Rate API is enabled for this project
+  — Check if the sandbox credentials are active
+
+STEP 3 — If auth SUCCEEDS but rates fail:
+  The rate request body might not match FedEx's expected format.
+  Try the SIMPLEST possible request:
+
+  {
+    "accountNumber": { "value": "" },
+    "requestedShipment": {
+      "shipper": { "address": { "postalCode": "04901", "countryCode": "US" } },
+      "recipient": { "address": { "postalCode": "78704", "countryCode": "US" } },
+      "pickupType": "DROPOFF_AT_FEDEX_LOCATION",
+      "rateRequestType": ["LIST"],
+      "requestedPackageLineItems": [{
+        "weight": { "units": "LB", "value": 5 },
+        "dimensions": { "length": 12, "width": 10, "height": 8, "units": "IN" }
+      }]
+    }
+  }
+
+  If this still fails, try removing accountNumber entirely.
+  If it works, gradually add back fields.
+
+STEP 4 — Log the FULL FedEx response for debugging:
+  In getFedExParcelRates, after the response:
+  console.log("[FedEx Parcel] Response status:", res.status);
+  console.log("[FedEx Parcel] Response body:", JSON.stringify(data).slice(0, 2000));
+
+  This helps Ryan see exactly what FedEx returns.
+
+NO FAKE FALLBACK. Real API only. If FedEx fails, log the
+error clearly so Ryan can debug the credentials or format.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 12 — VERIFICATION CHECKLIST
+
+1.  CHECKPOINT baseline: pass
+2.  Duplicate key errors fixed in PreSaleTab: yes/no
+3.  Duplicate key errors fixed in QuoteDetailPanel: yes/no
+4.  No more React key warnings in console: yes/no
+5.  Rate API dedup removes Shippo-internal duplicates: yes/no
+6.  UPS Ground shows only ONCE per unique price: yes/no
+7.  FedEx auth diagnostic logged: yes/no
+8.  FedEx auth status: [success / failed + reason]
+9.  FedEx rates returned: [count or 0 + error]
+10. If FedEx fails: full error logged, no fake rates: yes/no
+11. All existing features preserved: yes/no
+12. npx tsc --noEmit: 0 errors
+13. npm run build: pass
+14. CHECKPOINT post-change: pass
+
+SECTION 13 — REQUIRED REPORT FORMAT
+
+  CHECKPOINT before: [pass/issue]
+
+  PART B — Duplicate Keys:
+  — Instances found: [count]
+  — All fixed with index: [yes/no]
+
+  PART C — Rate API Dedup:
+  — Cheapest-wins logic: [yes/no]
+  — Duplicate UPS Ground removed: [yes/no]
+
+  PART D — FedEx Diagnosis:
+  — Auth status: [success / failed + HTTP status + error]
+  — Rate status: [success + count / failed + error]
+  — Full error logged: [yes/no]
+
+  Build: [pass/fail]
+  TypeScript: [0 errors/list]
+  CHECKPOINT after: [pass/issue]
+  IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
+
+QUICK REFERENCE — CUSTOMEVENTS IN USE
+
+  conversation-selected: Messages -> InboxCmd
+  conversation-counts-updated: Messages -> InboxCmd
+  agent-fill-message: InboxCmd -> Messages
+  agent-settings-toggle: InboxCmd -> AgentSettings
+  inbox-filter-change: InboxCmd -> Messages
+  inbox-filter-reset: Messages -> InboxCmd
+
+CRITICAL CARRY-FORWARD:
+
+1. Auth visual upgrade ready (AUTH-VISUAL-UPGRADE.txt)
+2. If FedEx auth fails: Ryan needs to check FedEx Developer Portal credentials
+3. Next after shipping: Bot Page Data Sync
+
+Command: Duplicate Key Fix + FedEx Diagnosis
+LegacyLoop | March 20, 2026 | Ryan Hallee, Founder

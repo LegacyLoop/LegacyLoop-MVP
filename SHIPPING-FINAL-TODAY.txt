@@ -88,7 +88,7 @@ No changes needed for this command.
 OBJECTIVE — FINAL FIX FOR TODAY: STATS SORTING + QUOTE CONTINUITY + EXPIRATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-3 targeted fixes. Then we're done for the day.
+4 targeted fixes. Then we're done for the day.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PART A — MANDATORY FULL READ
@@ -244,7 +244,157 @@ to track this and alert users.
    just informational.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PART E — VERIFY ALL PREVIOUS FIXES
+PART E — FIX BOX RECOMMENDATIONS TO BE REAL-WORLD ACCURATE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/api/shipping/center/route.ts
+File: app/shipping/ShippingCenterClient.tsx
+
+*** THE PROBLEM ***
+
+The box recommendation system is producing absurd results:
+— A hockey card (2.5×3.5×0.01") gets recommended "Small" or "Large"
+  when it should be "Tiny" (Card Mailer / padded envelope)
+— The suggestPackage() function (LOCKED, lib/shipping/package-suggestions.ts)
+  has CORRECT category mappings: "trading cards" → Tiny (8×6×2 Card Mailer)
+  But the dimension override at line 158 REPLACES the category result
+  because it adds 2" padding to each dimension, making a 0.01" thick
+  card need a 3" tall box, which doesn't fit Tiny (3<=3 YES) but
+  5>4 for Small width, so it cascades to Medium or worse.
+
+*** ROOT CAUSE ***
+The suggestPackage() function does:
+1. Find category template (correct — "trading cards" → Tiny)
+2. If parsed dimensions exist, OVERRIDE the template with
+   dimension-based sizing (adds 2" padding per side)
+3. The dimension override doesn't respect the category template
+   when the category recommendation is BETTER for the item type
+
+We CANNOT change suggestPackage() (locked file). But we CAN
+fix how the center API and Shipping Center INTERPRET the result.
+
+*** THE FIX ***
+
+In app/api/shipping/center/route.ts, AFTER calling suggestPackage():
+
+Add a post-processing step that checks for category-specific
+packaging that the dimension override may have broken:
+
+  // Post-process: for small/flat items where category-specific
+  // packaging is better than dimension-based sizing
+  const CATEGORY_OVERRIDES: Record<string, { boxSize: string; label: string }> = {
+    "trading cards": { boxSize: "tiny", label: "Card Mailer" },
+    "pokemon": { boxSize: "tiny", label: "Card Mailer" },
+    "jewelry": { boxSize: "tiny", label: "Jewelry Box" },
+    "watch": { boxSize: "tiny", label: "Watch Box" },
+    "phone": { boxSize: "tiny", label: "Small Padded Box" },
+    "coins": { boxSize: "tiny", label: "Coin Mailer" },
+    "stamps": { boxSize: "tiny", label: "Stamp Mailer" },
+  };
+
+  if (pkgSuggestion && category) {
+    const catLower = category.toLowerCase();
+    for (const [key, override] of Object.entries(CATEGORY_OVERRIDES)) {
+      if (catLower.includes(key)) {
+        // Category says this is a small item type
+        // If suggestPackage returned something BIGGER than the override,
+        // use the category recommendation instead
+        const sizeOrder = ["tiny", "small", "medium", "large", "xl", "oversized", "furniture", "freight"];
+        const pkgIdx = sizeOrder.indexOf(pkgSuggestion.boxSize);
+        const overIdx = sizeOrder.indexOf(override.boxSize);
+        if (pkgIdx > overIdx) {
+          // Dimension calculation suggested a bigger box — override it
+          pkgSuggestion = {
+            ...pkgSuggestion,
+            boxSize: override.boxSize as any,
+            label: override.label,
+          };
+        }
+        break;
+      }
+    }
+  }
+
+  // Also: for items where the THINNEST dimension is < 0.5 inches
+  // (cards, photos, documents, thin electronics), always recommend
+  // category-appropriate packaging, not dimension-calculated boxes
+  if (pkgSuggestion && aiDimString) {
+    const dims = aiDimString.split(/\s*x\s*/i).map(Number).filter(d => d > 0);
+    if (dims.length === 3) {
+      const minDim = Math.min(...dims);
+      if (minDim < 0.5 && pkgSuggestion.boxSize !== "tiny") {
+        // Very thin item — use padded mailer/envelope, not a box
+        pkgSuggestion = {
+          ...pkgSuggestion,
+          boxSize: "tiny" as any,
+          label: "Padded Mailer / Rigid Envelope",
+          notes: [
+            "Use a rigid mailer or padded envelope",
+            "Add stiffener cardboard if needed",
+            "Do NOT bend — mark as DO NOT BEND",
+            ...(pkgSuggestion.notes || []),
+          ],
+        };
+      }
+    }
+  }
+
+In app/shipping/ShippingCenterClient.tsx, update the validated
+AI pick logic in the BOX_PRESETS grid:
+
+When item.aiBox is "tiny" and the item has very small dimensions
+(thinnest dim < 1 inch), the AI PICK should stay on Tiny
+regardless of what the fit indicator says. Add:
+
+  // For very thin/small items, trust the AI category over fit calc
+  const dims = [itemL, itemW, itemH].filter(d => d > 0);
+  const minDim = dims.length > 0 ? Math.min(...dims) : 999;
+  if (minDim < 1 && item.aiBox === "tiny") {
+    validatedAiPick = "tiny";
+    aiPickUpgraded = false;
+    aiPickReason = "Category-appropriate packaging for thin/small items";
+  }
+
+Also update the fit indicator for Tiny when item is a card/jewelry:
+— If item.category includes "card", "trading", "jewelry", "coin", "stamp":
+  Show "✓ Perfect" instead of "Too small" on Tiny
+  Because these items use rigid mailers, not boxes
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — REFRESH RATES / NEW QUOTE FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+File: app/shipping/ShippingCenterClient.tsx
+
+Users need an obvious way to get NEW rates at any time.
+Currently the "Refresh" button on quotes exists but may
+not be visible enough.
+
+1. In the PreSale tab, on every item card — whether or
+   not a quote exists — show a clear action:
+   IF no quote: [Get Rates →] button (already exists)
+   IF has quote: [🔄 Get New Rates] button alongside
+   the existing quote display. Clicking it:
+   — Clears the current estimate
+   — Opens the destination ZIP input
+   — Fetches fresh rates from Shippo
+   — Replaces the old quote with new data
+   — Saves the new quote to localStorage + EventLog
+
+2. In the ReadyToShip tab, on the saved quote display:
+   [🔄 Refresh Rates] button — prominently visible
+   Clicking it fetches fresh rates for the same route
+   (same fromZip/toZip) and updates the display.
+   If the new cheapest rate is different from the saved
+   carrier, highlight the change:
+   "Rate changed: was $X.XX, now $Y.YY"
+
+3. In the QuoteDetailPanel:
+   [🔄 Refresh] button in the header (this may already
+   exist — verify and make it prominent)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART G — VERIFY ALL PREVIOUS FIXES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Quick verification:
@@ -277,7 +427,12 @@ SECTION 12 — VERIFICATION CHECKLIST
 13. Expiration alert banner at top: yes/no
 14. Auto-expiration check on mount + refresh: yes/no
 15. Quote countdown in detail view: yes/no
-16. All previous fixes verified: yes/no
+16. Hockey card (2.5×3.5×0.01) gets Tiny not Small/Large: yes/no
+17. Jewelry items get Tiny not dimension-based sizing: yes/no
+18. Very thin items (<0.5") get padded mailer recommendation: yes/no
+19. Category overrides applied in center API: yes/no
+20. Fit indicator shows "Perfect" for cards on Tiny: yes/no
+21. All previous fixes verified: yes/no
 17. All locked files untouched: yes/no
 18. inline style={{}} throughout: yes/no
 19. Light mode clean: yes/no

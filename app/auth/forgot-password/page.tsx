@@ -241,11 +241,15 @@ export default function ForgotPasswordPage() {
       <div style={{ marginBottom: "1.75rem" }}>
         <h1
           style={{
-            fontSize: "1.375rem",
-            fontWeight: 700,
-            color: "#f5f5f7",
-            letterSpacing: "-0.015em",
+            fontSize: "1.5rem",
+            fontWeight: 800,
+            backgroundImage: "linear-gradient(135deg, #f1f5f9, #00bcd4)",
+            backgroundClip: "text",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            letterSpacing: "-0.02em",
             margin: 0,
+            lineHeight: 1.2,
           }}
         >
           Forgot your password?
@@ -253,8 +257,8 @@ export default function ForgotPasswordPage() {
         <p
           style={{
             fontSize: "0.85rem",
-            color: "var(--text-muted)",
-            marginTop: "0.35rem",
+            color: "#94a3b8",
+            marginTop: "0.4rem",
             lineHeight: 1.5,
           }}
         >
@@ -268,19 +272,27 @@ export default function ForgotPasswordPage() {
       >
         {/* Email */}
         <div>
-          <label className="label-light" htmlFor="forgot-email">
+          <label htmlFor="forgot-email" style={{ display: "block", fontSize: "0.7rem", fontWeight: 600, color: "#cbd5e1", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>
             Email address
           </label>
           <input
             id="forgot-email"
             type="email"
-            className="input-dark"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
             required
             autoComplete="email"
-            style={{ minHeight: 52 }}
+            style={{
+              width: "100%", boxSizing: "border-box",
+              padding: "14px 16px", fontSize: "0.95rem",
+              background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
+              border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+              outline: "none", transition: "all 0.2s ease", fontFamily: "inherit",
+              minHeight: 52,
+            }}
+            onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
           />
         </div>
 
@@ -303,15 +315,24 @@ export default function ForgotPasswordPage() {
         {/* Submit */}
         <button
           type="submit"
-          className="btn-primary"
           disabled={loading}
           style={{
             width: "100%",
-            padding: "0.85rem",
-            fontSize: "0.9rem",
-            borderRadius: "0.75rem",
+            padding: "14px",
+            fontSize: "1rem",
+            fontWeight: 700,
+            borderRadius: 12,
             marginTop: "0.25rem",
+            border: "none",
+            background: "linear-gradient(135deg, #00bcd4, #009688)",
+            color: "#fff",
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.7 : 1,
+            transition: "all 0.2s ease",
+            boxShadow: "0 4px 16px rgba(0,188,212,0.2)",
           }}
+          onMouseEnter={(e) => { if (!loading) { (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 24px rgba(0,188,212,0.3)"; } }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,188,212,0.2)"; }}
         >
           {loading ? (
             <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
