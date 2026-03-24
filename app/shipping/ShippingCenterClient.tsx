@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { runStandardAnalysis } from "@/lib/agents/runner";
@@ -4113,14 +4113,21 @@ function LocalPickupTab({ data }: { data: ShipData }) {
     } catch {}
   }, []);
 
+  const pickupFetchedRef = useRef(false);
   useEffect(() => {
+    if (pickupFetchedRef.current || pickupItems.length === 0) return;
+    pickupFetchedRef.current = true;
+    const statuses: Record<string, any> = {};
+    let fetched = 0;
     pickupItems.forEach((item) => {
       fetch(`/api/shipping/pickup/${item.id}`)
         .then(r => r.json())
-        .then(d => {
-          if (!d.error) setPickupStatuses(prev => ({ ...prev, [item.id]: d }));
-        })
-        .catch(() => {});
+        .then(d => { if (!d.error) statuses[item.id] = d; })
+        .catch(() => {})
+        .finally(() => {
+          fetched++;
+          if (fetched === pickupItems.length) setPickupStatuses(statuses);
+        });
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -4524,9 +4531,11 @@ export default function ShippingCenterClient() {
     } catch { /* ignore */ }
   }, [tab, data]); // Re-check when switching tabs or data loads
 
-  // Fetch pickup statuses for tracking board
+  // Fetch pickup statuses for tracking board — once on initial data load
+  const trackingPickupFetchedRef = useRef(false);
   useEffect(() => {
-    if (!data) return;
+    if (!data || trackingPickupFetchedRef.current) return;
+    trackingPickupFetchedRef.current = true;
     const allItems = [...data.preSale, ...data.readyToShip];
     const pickupItems = allItems.filter((i) =>
       i.saleMethod === "LOCAL_PICKUP" || i.saleMethod === "BOTH" ||
