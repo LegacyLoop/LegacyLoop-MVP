@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { getShippingRates } from "@/lib/shipping/shippo";
+import { getFedExParcelRates } from "@/lib/shipping/fedex-parcel";
 
 type CarrierEstimate = {
   carrier: string;
@@ -95,26 +96,58 @@ export async function POST(req: NextRequest) {
     const fromZip = item.saleZip || "04101";
     const toZip = destZip || "10001"; // default to NYC (best market)
 
-    // Try real Shippo rates first, fall back to estimates
+    // Try Shippo + FedEx in parallel, fall back to estimates
     let carriers: CarrierEstimate[];
     let isLiveRates = false;
     try {
-      const shippoResult = await getShippingRates(
-        { zip: fromZip },
-        { zip: toZip },
-        { length: box.length, width: box.width, height: box.height, weight },
-      );
+      const [shippoResult, fedexRates] = await Promise.all([
+        getShippingRates(
+          { zip: fromZip },
+          { zip: toZip },
+          { length: box.length, width: box.width, height: box.height, weight },
+        ).catch(() => ({ rates: [] as any[], isDemo: true })),
+        isLTL ? Promise.resolve([]) : getFedExParcelRates(
+          fromZip, toZip, weight, box.length, box.width, box.height,
+        ).catch(() => []),
+      ]);
+
+      const allRates: CarrierEstimate[] = [];
+
+      // Add Shippo rates
       if (shippoResult.rates.length > 0) {
-        carriers = shippoResult.rates.slice(0, 6).map((r) => ({
+        for (const r of shippoResult.rates.slice(0, 6)) {
+          allRates.push({
+            carrier: r.carrier,
+            service: r.service,
+            price: r.rate,
+            days: r.estimatedDays ? `${r.estimatedDays}` : "3-7",
+          });
+        }
+        if (!shippoResult.isDemo) isLiveRates = true;
+      }
+
+      // Add FedEx direct rates
+      for (const r of fedexRates) {
+        allRates.push({
           carrier: r.carrier,
           service: r.service,
           price: r.rate,
-          days: r.estimatedDays ? `${r.estimatedDays}` : "3-7",
-        }));
-        isLiveRates = !shippoResult.isDemo;
-      } else {
-        carriers = getCarrierEstimates(weight);
+          days: r.estimatedDays ? `${r.estimatedDays}` : "3-5",
+        });
+        isLiveRates = true;
       }
+
+      // Dedupe — prefer FedEx direct over Shippo's FedEx rates
+      const seen = new Map<string, CarrierEstimate>();
+      for (const r of allRates) {
+        const key = `${r.carrier.toLowerCase()}_${r.service.toLowerCase()}`;
+        if (!seen.has(key) || r.price < (seen.get(key)!.price || Infinity)) {
+          seen.set(key, r);
+        }
+      }
+      const deduped = Array.from(seen.values()).sort((a, b) => a.price - b.price);
+
+      carriers = deduped.length > 0 ? deduped : getCarrierEstimates(weight);
     } catch {
       carriers = getCarrierEstimates(weight);
     }

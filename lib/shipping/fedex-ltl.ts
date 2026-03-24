@@ -10,6 +10,7 @@
 const FEDEX_API_KEY = process.env.FEDEX_LTL_API_KEY || process.env.FEDEX_API_KEY || "";
 const FEDEX_SECRET = process.env.FEDEX_LTL_SECRET_KEY || process.env.FEDEX_SECRET_KEY || "";
 const FEDEX_URL = process.env.FEDEX_LTL_URL || "https://apis-sandbox.fedex.com";
+const FEDEX_ACCOUNT = process.env.FEDEX_ACCOUNT_NUMBER || "";
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
@@ -59,6 +60,10 @@ async function getAuthToken(): Promise<string | null> {
     console.log("[FedEx LTL] No API key or secret configured");
     return null;
   }
+  if (!FEDEX_ACCOUNT) {
+    console.log("[FedEx LTL] No account number configured (FEDEX_ACCOUNT_NUMBER) — skipping");
+    return null;
+  }
 
   console.log("[FedEx LTL] === AUTH ATTEMPT ===");
   console.log("[FedEx LTL] URL:", `${FEDEX_URL}/oauth/token`);
@@ -102,6 +107,7 @@ export async function getFedExLTLQuote(req: FedExLTLQuoteRequest): Promise<FedEx
   console.log("[FedEx LTL] === RATE REQUEST ===");
   console.log("[FedEx LTL] Token available:", !!token);
   console.log("[FedEx LTL] Request URL:", `${FEDEX_URL}/rate/v1/rates/quotes`);
+    console.log("[FedEx LTL] Account:", FEDEX_ACCOUNT, "| Payment block: included");
 
   try {
     const res = await fetch(`${FEDEX_URL}/rate/v1/rates/quotes`, {
@@ -112,11 +118,19 @@ export async function getFedExLTLQuote(req: FedExLTLQuoteRequest): Promise<FedEx
         "X-locale": "en_US",
       },
       body: JSON.stringify({
-        accountNumber: { value: "" },
+        accountNumber: { value: FEDEX_ACCOUNT },
         requestedShipment: {
           shipper: { address: req.shipper },
           recipient: { address: req.recipient },
           serviceType: req.serviceType || "FEDEX_FREIGHT_ECONOMY",
+          shippingChargesPayment: {
+            paymentType: "SENDER",
+            payor: {
+              responsibleParty: {
+                accountNumber: { value: FEDEX_ACCOUNT },
+              },
+            },
+          },
           requestedPackageLineItems: req.commodities.map((c) => ({
             weight: c.weight,
             dimensions: c.dimensions,
@@ -129,7 +143,7 @@ export async function getFedExLTLQuote(req: FedExLTLQuoteRequest): Promise<FedEx
           freightShipmentDetail: {
             role: "SHIPPER",
             freightShipmentLineItems: req.commodities.map((c) => ({
-              freightClass: `CLASS_${c.freightClass}`,
+              freightClass: `CLASS_${c.freightClass.replace(/^0+/, "")}`,
               weight: c.weight,
               dimensions: c.dimensions,
               pieces: c.pieces,

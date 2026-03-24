@@ -16,6 +16,7 @@
 const FEDEX_API_KEY = process.env.FEDEX_PARCEL_API_KEY || "";
 const FEDEX_SECRET = process.env.FEDEX_PARCEL_SECRET_KEY || "";
 const FEDEX_URL = process.env.FEDEX_PARCEL_URL || "https://apis-sandbox.fedex.com";
+const FEDEX_ACCOUNT = process.env.FEDEX_ACCOUNT_NUMBER || "";
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
@@ -27,6 +28,10 @@ async function getAuthToken(): Promise<string | null> {
   }
   if (!FEDEX_API_KEY || !FEDEX_SECRET) {
     console.log("[FedEx Parcel] No API key or secret configured — skipping FedEx rates");
+    return null;
+  }
+  if (!FEDEX_ACCOUNT) {
+    console.log("[FedEx Parcel] No account number configured (FEDEX_ACCOUNT_NUMBER) — skipping");
     return null;
   }
 
@@ -117,7 +122,7 @@ export async function getFedExParcelRates(
 
   try {
     const reqBody = {
-      accountNumber: { value: "" },
+      accountNumber: { value: FEDEX_ACCOUNT },
       requestedShipment: {
         shipper: {
           address: { postalCode: fromZip, countryCode: "US" },
@@ -126,7 +131,15 @@ export async function getFedExParcelRates(
           address: { postalCode: toZip, countryCode: "US", residential: true },
         },
         pickupType: "DROPOFF_AT_FEDEX_LOCATION",
-        rateRequestType: ["LIST"],
+        rateRequestType: ["LIST", "ACCOUNT"],
+        shippingChargesPayment: {
+          paymentType: "SENDER",
+          payor: {
+            responsibleParty: {
+              accountNumber: { value: FEDEX_ACCOUNT },
+            },
+          },
+        },
         requestedPackageLineItems: [{
           weight: { units: "LB", value: Math.max(1, weight) },
           dimensions: {
@@ -140,6 +153,7 @@ export async function getFedExParcelRates(
     };
 
     console.log("[FedEx Parcel] Request body:", JSON.stringify(reqBody).slice(0, 500));
+    console.log("[FedEx Parcel] Account:", FEDEX_ACCOUNT, "| Payment block: included");
 
     const rateUrl = `${FEDEX_URL}/rate/v1/rates/quotes`;
     const res = await fetch(rateUrl, {
