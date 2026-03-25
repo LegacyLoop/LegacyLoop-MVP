@@ -1,0 +1,1358 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 25, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+REAL TECH MANDATE: Minimize demo/mock data. Use real API integrations
+wherever possible. When estimates are used, label them honestly as
+"ESTIMATED" — not "demo". The freight estimate engine uses real carrier
+pricing formulas and real accessorial surcharge data — it's a calculated
+estimate, not a mock. Treat it as professional-grade estimate data.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts — LOCKED (READ its output schema — it defines AI shipping fields)
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping (MOST LOCKED) —
+✓ lib/shipping/shippo.ts — LOCKED
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/easypost.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+✓ lib/shipping/saved-quotes.ts — LOCKED (created by CMD4B)
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/user-events.ts
+
+— Enrichment —
+✓ lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/pickup-batch/route.ts — NEW (create this file)
+✓ EXCEPTION: app/api/shipping/center/route.ts — EXTEND (add localstorage saved quotes count)
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — READ ONLY (no schema changes for this command)
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - app/shipping/ShippingCenterClient.tsx (UPGRADE quote display, add priority alerts, batch pickup, clean saved quotes UI)
+  - app/api/shipping/pickup-batch/route.ts (NEW — batch pickup status endpoint)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-4 (CMD1-CMD4).
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+Data collection for this command:
+  - Log priority action banner dismissals and interactions
+  - Log batch pickup API usage (bulk vs individual calls)
+  - Log saved quotes display interactions (clear, expand, save)
+  - Console.log pattern for all
+
+SECTION 6 — BUILD PATTERN
+
+UI → API → Storage → Database → Dashboard
+
+This command follows build pattern EXACTLY:
+  1. UI: Priority banner, quote display overhaul, batch pickup
+  2. API: Batch pickup status endpoint
+  3. Storage: localStorage for banner dismissal
+  4. Dashboard: Tab badge counts + micro-polish
+
+SECTION 7 — PLATFORM CONTEXT
+
+SHIPPING CENTER CLIENT STRUCTURE:
+
+  File: app/shipping/ShippingCenterClient.tsx (~5100 lines)
+
+  Five tabs:
+    1. preSale (Estimates) — lines 933-1708, item cards at 1083
+    2. readyToShip (Ready to Ship) — lines 1709-2607, item cards loop
+    3. shipped (Tracking) — lines 2608-3074
+    4. freight (Freight/LTL) — lines 3075-4304
+    5. pickup (Local Pickup) — lines 4305-4733, pickup API at 4360
+
+  Financial stats: lines 506-551
+  Pipeline stats: lines 506-551 (shared section)
+  StatusBadge component: lines 591-617
+  QuoteDetailPanel: lines 814-885
+  Main component: line 4735
+  Tab bar render: lines 5123-5131
+
+CURRENT PROBLEMS:
+  - No priority action banner — users miss urgent items
+  - Quote display is raw table dump with poor hierarchy
+  - No visual freshness indicator for quotes
+  - Saved quotes (from CMD4B) display as cluttered flat list
+  - LocalPickupTab makes 15+ individual API calls (one per item)
+  - Tab badges (counts) are inconsistent across tabs
+  - No pulse animation for overdue items in Ready to Ship
+
+TARGET STATE:
+  - Horizontal priority banner with dismissible action pills
+  - Clean quote display: best rate prominent, expandable alternatives
+  - Green/yellow/red freshness indicator
+  - Batch pickup status endpoint: 1 API call instead of 15+
+  - Clean horizontal saved quote cards (max 3 visible, "+X more" expandable)
+  - Uniform tab badge counts for all 5 tabs
+  - Pulse animation on Ready to Ship if items > 3 days old
+  - Cleaner tab bar spacing
+
+PICKUP API CONTEXT:
+
+  Current code (LocalPickupTab, line ~4360):
+    for (const item of shippingItems) {
+      const status = await fetch(`/api/shipping/pickup/${item.id}`);
+      setPickupStatuses(prev => ({ ...prev, [item.id]: status }));
+    }
+
+  Result: N sequential calls for N items (15 items = 15 API calls on load)
+
+  New endpoint: POST /api/shipping/pickup-batch
+    Body: { itemIds: string[] }
+    Returns: { statuses: Record<string, PickupStatus> }
+    Result: 1 API call returns all statuses at once
+
+FINANCIAL + PIPELINE STATS CONTEXT:
+
+  The stats row (lines 506-551) displays KPIs like:
+    - Total estimates value
+    - Pending shipment count
+    - Average processing time
+    - Expiring quotes count
+
+  Priority action banner sits BELOW this row and ABOVE tab bar.
+  Shows only when there are actionable alerts.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Add priority action banner with dismissible pills
+— Overhaul QuoteDetailPanel with cleaner hierarchy
+— Add quote freshness indicators (green/yellow/red dots)
+— Redesign saved quotes display as horizontal cards
+— Create batch pickup status endpoint
+— Update LocalPickupTab to use batch endpoint
+— Add count badges to all 5 tabs (uniform)
+— Add pulse animation to Ready to Ship count
+— Auto-dismiss banner after session (localStorage)
+— Adjust tab bar spacing + alignment
+— Add margin/padding refinements for polish
+— console.log for UX interaction tracking
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Modify how quotes are fetched or calculated
+— Change shipping logic or business rules
+— Remove or rebuild existing tabs
+— Restructure the component hierarchy
+— Change API response schema
+— Add new npm dependencies
+— Modify locked shipping adapters
+— Change how items are fetched or queried
+— Modify database schema
+— Deviate from inline style={{}}
+— Add className styling
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+No new env variables in this command. All needed infrastructure already in place.
+
+SECTION 11 — DATABASE + SCHEMA
+
+No schema changes for this command. All data needed already exists.
+No migrations required.
+
+SECTION 12 — SHIPPING CENTER CONTEXT (EXPANDED)
+
+QUOTE DETAIL PANEL (Current, lines 814-885):
+
+  Currently displays as a raw table:
+    Carrier | Service | Days | Rate
+    ─────────────────────────────
+    FedEx   | Ground  | 5    | $450
+    UPS     | Ground  | 3    | $520
+    ...
+
+  Problems:
+    - No visual hierarchy — all rates equal
+    - No indication which is "best"
+    - Freshness info cluttered in header
+    - EXPIRING badge on all expired quotes looks noisy
+    - Doesn't feel premium
+
+  New design target:
+    ┌─────────────────────────────────────┐
+    │ 💚 BEST RATE                        │
+    │ FedEx Ground — $450 — 5 days        │
+    │ 🟢 Fresh (22 min)  [Refresh] [Save] │
+    ├─────────────────────────────────────┤
+    │ 📋 Other Options                    │
+    │ ├─ UPS Ground $520 5 days [Save]    │
+    │ └─ OD Freight $380 7 days [Save]    │
+    └─────────────────────────────────────┘
+
+  Freshness indicator:
+    🟢 Green: < 1 hour old
+    🟡 Yellow: 1-6 hours old
+    🔴 Red: > 6 hours old
+
+SAVED QUOTES DISPLAY (Freight tab, current lines 3296-3368):
+
+  Currently displays as a stacked list with headers:
+    Saved Freight Quotes
+    ──────────────────────────
+    Quote 1: FedEx Freight $2,450 | 7 days | Saved Mar 24
+    Quote 2: OD Freight $1,980 | 8 days | Saved Mar 23
+    ...
+
+  Problems:
+    - Looks like a data table, not a deck
+    - Doesn't leverage card design language
+    - "Clear All" button hard to find
+    - Takes up too much vertical space
+    - Not visually distinct from other content
+
+  New design target:
+    Saved Quotes (2)
+    ┌──────────────────┐  ┌──────────────────┐
+    │ FedEx Freight    │  │ OD Freight       │
+    │ $2,450          │  │ $1,980          │
+    │ 7 days | Mar 24 │  │ 8 days | Mar 23 │
+    └──────────────────┘  └──────────────────┘
+    [+2 more quotes] [Clear All]
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — SHIPPING CENTER COMMAND CENTER: MASTER UX FLOW
+
+================================================================================
+
+This command does FOUR things. Real UX. Real impact.
+
+TASK 1 — PRIORITY ACTION BANNER (BELOW financial stats, ABOVE tab bar)
+
+  Render actionable alerts in a compact, dismissible horizontal pill layout.
+  Shows ONLY when there are items that need attention.
+
+  RULES:
+    - Always visible below stats row, above tabs
+    - Max 4 pills + dismiss button in single row
+    - Wrap if screen < 800px
+    - Amber/orange urgent styling
+    - Each pill is clickable → switches to target tab
+    - Dismiss button: "✕", click to hide for session
+    - Dismissal stored in React state (resets on refresh)
+
+  ALERT CONDITIONS:
+    - "X items need quotes" — items in Estimates with no quotes yet
+    - "X items awaiting shipment > 3 days" — items in Ready to Ship past 3-day threshold
+    - "X quotes expiring soon" — quotes valid until < 24 hours from now
+    - "X shipments with exceptions" — items in Tracking with status != "delivered"
+
+  Only the pills with ACTUAL items show. If 0 items in Estimates, that pill
+  doesn't render.
+
+  Design spec in PART A below.
+
+TASK 2 — QUOTE DISPLAY OVERHAUL (QuoteDetailPanel, lines 814-885)
+
+  Replace current table dump with hierarchical card layout.
+
+  CHANGES:
+    - Top card: Best rate (lowest price) highlighted with green accent
+      Shows: Carrier name, price, transit days, freshness dot
+    - Expandable section: "Alternative Rates (+3)"
+      Each alternative on its own mini-card
+    - Refresh button: Inline with best rate, triggers re-quote
+    - Save button: On each rate card (from CMD4B)
+    - Freshness indicator: Green (< 1h) / Yellow (< 6h) / Red (> 6h)
+    - Valid until: Compact timestamp below best rate
+
+  Saved quotes redesign:
+    - Currently in FreightTab, lines 3296-3368
+    - Convert from stacked list to horizontal cards
+    - Max 3 visible inline, "+X more" expandable
+    - Each card: carrier name, price, days, saved date, trash icon
+    - "Clear All" button at end
+    - Clean gold accent border to signal "saved" state
+
+TASK 3 — BATCH PICKUP STATUS API (NEW FILE)
+
+  Create: app/api/shipping/pickup-batch/route.ts
+
+  Endpoint: POST /api/shipping/pickup-batch
+
+  Body:
+    {
+      itemIds: string[]
+    }
+
+  Response:
+    {
+      statuses: Record<string, PickupStatus>
+    }
+
+  Where PickupStatus matches the current /api/shipping/pickup/{id} response.
+
+  Logic:
+    1. Accept array of itemIds
+    2. Query database for pickup status of each item
+    3. Call pickup provider API in PARALLEL (Promise.all, not sequential)
+    4. Merge all statuses into Record
+    5. Return immediately
+
+  Then update LocalPickupTab (line ~4305) to use batch endpoint:
+    BEFORE:
+      for (const item of items) {
+        const status = await fetch(`/api/shipping/pickup/${item.id}`);
+      }
+
+    AFTER:
+      const { statuses } = await fetch("/api/shipping/pickup-batch", {
+        method: "POST",
+        body: JSON.stringify({ itemIds: items.map(i => i.id) })
+      }).then(r => r.json());
+
+TASK 4 — TAB BADGE COUNTS + MICRO-POLISH
+
+  Add uniform count badges to ALL tabs:
+    - Estimates: count from items with no quotes
+    - Ready to Ship: count from items awaiting shipment
+    - Tracking: count from items shipped but not delivered
+    - Freight/LTL: count of saved quotes (from localStorage)
+    - Local Pickup: count from items awaiting local pickup
+
+  Make badges consistent in styling:
+    - Font size: 0.5rem
+    - Font weight: 700
+    - Padding: 1px 4px
+    - Border radius: 9999px
+    - Color scheme: teal (#00bcd4) for normal, amber/red for urgent
+
+  Add pulse animation to Ready to Ship badge IF any items waiting > 3 days:
+    - Subtle pulse, 2s cycle, opacity 0.6-1.0
+    - Only animate when urgent
+
+  Polish:
+    - Adjust tab bar spacing: 0.5rem gap between tabs
+    - Align all text and badges consistently
+    - Clean up any visual misalignment
+
+FILES TO MODIFY:
+  - app/shipping/ShippingCenterClient.tsx (all four tasks)
+  - app/api/shipping/pickup-batch/route.ts (new file, task 3)
+
+Expected output:
+  - Priority banner visible when alerts exist
+  - Dismissible per session
+  - Quote display shows hierarchy: best rate prominent
+  - Freshness indicator (green/yellow/red)
+  - Saved quotes as clean horizontal cards
+  - Batch pickup reduces API calls from 15+ to 1
+  - All tabs show count badges
+  - Ready to Ship pulses if items overdue
+  - Professional, command center aesthetic
+
+================================================================================
+
+PART A — PRIORITY ACTION BANNER DESIGN
+
+================================================================================
+
+Add BELOW the financial stats row (approximately after line 583, before tab bar).
+
+Code to add:
+
+```jsx
+// --- Priority Action Banner ---
+const [dismissedBanner, setDismissedBanner] = useState(false);
+
+const actionItems = useMemo(() => {
+  const items: { label: string; action: () => void; urgent: boolean }[] = [];
+
+  // Items needing quotes
+  const needingQuotes = shippingItems.filter(
+    (item: any) => !item.quotes || item.quotes.length === 0
+  ).length;
+  if (needingQuotes > 0) {
+    items.push({
+      label: `${needingQuotes} need quotes`,
+      action: () => setActiveTab("preSale"),
+      urgent: needingQuotes > 5,
+    });
+  }
+
+  // Items awaiting shipment > 3 days
+  const overdue = shippingItems.filter((item: any) => {
+    if (item.status !== "readyToShip") return false;
+    const createdAt = new Date(item.createdAt);
+    const daysSince = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    return daysSince > 3;
+  }).length;
+  if (overdue > 0) {
+    items.push({
+      label: `${overdue} awaiting shipment > 3d`,
+      action: () => setActiveTab("readyToShip"),
+      urgent: true,
+    });
+  }
+
+  // Quotes expiring soon (< 24h from now)
+  const expiring = shippingItems.filter((item: any) => {
+    if (!item.quotes || item.quotes.length === 0) return false;
+    return item.quotes.some((q: any) => {
+      if (!q.valid_until) return false;
+      const until = new Date(q.valid_until);
+      const hoursUntil = (until.getTime() - Date.now()) / (1000 * 60 * 60);
+      return hoursUntil > 0 && hoursUntil < 24;
+    });
+  }).length;
+  if (expiring > 0) {
+    items.push({
+      label: `${expiring} quotes expiring soon`,
+      action: () => setActiveTab("preSale"),
+      urgent: false,
+    });
+  }
+
+  // Shipments with exceptions (tracking status not "delivered")
+  const exceptions = shippingItems.filter((item: any) => {
+    if (item.status !== "shipped") return false;
+    return item.trackingStatus && !item.trackingStatus.includes("delivered");
+  }).length;
+  if (exceptions > 0) {
+    items.push({
+      label: `${exceptions} shipments with exceptions`,
+      action: () => setActiveTab("shipped"),
+      urgent: true,
+    });
+  }
+
+  return items;
+}, [shippingItems, setActiveTab]);
+
+// Render banner if there are action items and not dismissed
+{actionItems.length > 0 && !dismissedBanner && (
+  <div style={{
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "0.4rem",
+    padding: "0.5rem 0.75rem",
+    marginBottom: "0.75rem",
+    borderRadius: "0.6rem",
+    background: "rgba(255,152,0,0.04)",
+    border: "1px solid rgba(255,152,0,0.12)",
+    alignItems: "center",
+  }}>
+    <span style={{
+      fontSize: "0.62rem",
+      fontWeight: 700,
+      color: "#ff9800",
+      textTransform: "uppercase",
+      letterSpacing: "0.05em",
+      whiteSpace: "nowrap",
+    }}>
+      ⚡ Action Required
+    </span>
+    {actionItems.map((ai, idx) => (
+      <button
+        key={idx}
+        onClick={ai.action}
+        style={{
+          fontSize: "0.6rem",
+          fontWeight: 600,
+          padding: "2px 8px",
+          borderRadius: "9999px",
+          background: ai.urgent ? "rgba(244,67,54,0.1)" : "rgba(255,152,0,0.08)",
+          color: ai.urgent ? "#f44336" : "#ff9800",
+          border: `1px solid ${ai.urgent ? "rgba(244,67,54,0.2)" : "rgba(255,152,0,0.15)"}`,
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+          whiteSpace: "nowrap",
+        }}
+        onMouseEnter={(e) => {
+          const el = e.currentTarget;
+          el.style.opacity = "0.8";
+        }}
+        onMouseLeave={(e) => {
+          const el = e.currentTarget;
+          el.style.opacity = "1";
+        }}
+      >
+        {ai.label}
+      </button>
+    ))}
+    <button
+      onClick={() => setDismissedBanner(true)}
+      style={{
+        marginLeft: "auto",
+        fontSize: "0.55rem",
+        color: "var(--text-muted)",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        padding: "0 0.25rem",
+        whiteSpace: "nowrap",
+      }}
+    >
+      ✕
+    </button>
+  </div>
+)}
+```
+
+================================================================================
+
+PART B — QUOTE DISPLAY OVERHAUL (QuoteDetailPanel)
+
+================================================================================
+
+Replace the ENTIRE QuoteDetailPanel function (lines 814-885).
+
+New implementation:
+
+```jsx
+function QuoteDetailPanel({
+  item,
+  onRefresh,
+  onSaveQuote,
+}: {
+  item: any;
+  onRefresh?: () => void;
+  onSaveQuote?: (quote: any) => void;
+}) {
+  if (!item.quotes || item.quotes.length === 0) {
+    return (
+      <div style={{
+        padding: "0.75rem",
+        borderRadius: "0.6rem",
+        background: "rgba(0,188,212,0.03)",
+        border: "1px solid rgba(0,188,212,0.12)",
+        fontSize: "0.75rem",
+        color: "var(--text-secondary)",
+        textAlign: "center",
+      }}>
+        No quotes available. Click to request.
+      </div>
+    );
+  }
+
+  const [expandedAlts, setExpandedAlts] = useState(false);
+  const sorted = [...item.quotes].sort((a, b) => (a.total_amount || 0) - (b.total_amount || 0));
+  const best = sorted[0];
+  const alts = sorted.slice(1);
+
+  const getFreshnessDot = (validUntil: string) => {
+    const until = new Date(validUntil);
+    const hoursOld = (Date.now() - new Date(validUntil).getTime()) / (1000 * 60 * 60);
+    const minutesOld = Math.round((Date.now() - new Date(validUntil).getTime()) / (1000 * 60));
+
+    if (hoursOld < 1) return { dot: "🟢", label: `Fresh (${minutesOld} min)` };
+    if (hoursOld < 6) return { dot: "🟡", label: `${Math.round(hoursOld)}h old` };
+    return { dot: "🔴", label: "Stale (> 6h)" };
+  };
+
+  const freshness = getFreshnessDot(best.valid_until || new Date().toISOString());
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+      {/* Best Rate Card */}
+      <div style={{
+        padding: "0.6rem 0.75rem",
+        borderRadius: "0.6rem",
+        background: "rgba(76,175,80,0.08)",
+        border: "1.5px solid rgba(76,175,80,0.25)",
+      }}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "0.4rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <span style={{ fontSize: "0.7rem" }}>💚</span>
+            <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#4caf50", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              Best Rate
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            {onRefresh && (
+              <button
+                onClick={onRefresh}
+                style={{
+                  fontSize: "0.55rem",
+                  padding: "2px 5px",
+                  borderRadius: "0.3rem",
+                  background: "rgba(0,188,212,0.1)",
+                  color: "#00bcd4",
+                  border: "1px solid rgba(0,188,212,0.2)",
+                  cursor: "pointer",
+                }}
+              >
+                ↻ Refresh
+              </button>
+            )}
+            {onSaveQuote && (
+              <button
+                onClick={() => onSaveQuote(best)}
+                style={{
+                  fontSize: "0.55rem",
+                  padding: "2px 5px",
+                  borderRadius: "0.3rem",
+                  background: "rgba(255,152,0,0.1)",
+                  color: "#ff9800",
+                  border: "1px solid rgba(255,152,0,0.2)",
+                  cursor: "pointer",
+                }}
+              >
+                💾 Save
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          marginBottom: "0.3rem",
+        }}>
+          <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)" }}>
+            {best.carrier}
+          </span>
+          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#4caf50" }}>
+            ${(best.total_amount || 0).toFixed(2)}
+          </span>
+          <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>
+            {best.transit_days || "?"}d
+          </span>
+        </div>
+
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.3rem",
+          fontSize: "0.6rem",
+          color: "var(--text-secondary)",
+        }}>
+          <span>{freshness.dot}</span>
+          <span>{freshness.label}</span>
+          <span style={{ marginLeft: "0.3rem" }}>
+            Valid until {new Date(best.valid_until || "").toLocaleDateString()}
+          </span>
+        </div>
+      </div>
+
+      {/* Alternatives */}
+      {alts.length > 0 && (
+        <div>
+          <button
+            onClick={() => setExpandedAlts(!expandedAlts)}
+            style={{
+              fontSize: "0.62rem",
+              fontWeight: 600,
+              padding: "0.3rem 0.5rem",
+              borderRadius: "0.3rem",
+              background: "transparent",
+              color: "#00bcd4",
+              border: "1px solid rgba(0,188,212,0.3)",
+              cursor: "pointer",
+              width: "100%",
+              textAlign: "left",
+            }}
+          >
+            {expandedAlts ? "▼" : "▶"} Other Options ({alts.length})
+          </button>
+          {expandedAlts && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", marginTop: "0.3rem" }}>
+              {alts.map((alt, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: "0.4rem 0.5rem",
+                    borderRadius: "0.4rem",
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
+                    <span style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-primary)" }}>
+                      {alt.carrier}
+                    </span>
+                    <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>
+                      ${(alt.total_amount || 0).toFixed(2)}
+                    </span>
+                    <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>
+                      {alt.transit_days || "?"}d
+                    </span>
+                  </div>
+                  {onSaveQuote && (
+                    <button
+                      onClick={() => onSaveQuote(alt)}
+                      style={{
+                        fontSize: "0.5rem",
+                        padding: "1px 4px",
+                        borderRadius: "0.2rem",
+                        background: "rgba(255,152,0,0.1)",
+                        color: "#ff9800",
+                        border: "1px solid rgba(255,152,0,0.2)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      💾 Save
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+================================================================================
+
+PART C — SAVED QUOTES REDESIGN (FreightTab)
+
+================================================================================
+
+Find the saved quotes display in FreightTab (approximately lines 3296-3368).
+
+Replace with:
+
+```jsx
+// Saved Quotes Section
+const savedQuotes = useMemo(() => {
+  try {
+    const raw = localStorage.getItem("ll_saved_quotes");
+    if (!raw) return [];
+    const store = JSON.parse(raw);
+    const quotes: any[] = [];
+    for (const itemQuotes of Object.values(store)) {
+      if (Array.isArray(itemQuotes)) {
+        quotes.push(...itemQuotes.filter((q: any) => q.type === "ltl"));
+      }
+    }
+    return quotes.sort((a, b) => new Date(b.savedAt || 0).getTime() - new Date(a.savedAt || 0).getTime());
+  } catch {
+    return [];
+  }
+}, []);
+
+{savedQuotes.length > 0 && (
+  <div style={{ marginTop: "1rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: "0.5rem",
+    }}>
+      <span style={{
+        fontSize: "0.75rem",
+        fontWeight: 700,
+        color: "var(--text-secondary)",
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+      }}>
+        💾 Saved Quotes ({savedQuotes.length})
+      </span>
+      {savedQuotes.length > 0 && (
+        <button
+          onClick={() => {
+            if (confirm("Clear all saved quotes?")) {
+              localStorage.removeItem("ll_saved_quotes");
+              // Force re-render
+              window.location.reload();
+            }
+          }}
+          style={{
+            fontSize: "0.55rem",
+            padding: "2px 6px",
+            borderRadius: "0.3rem",
+            background: "rgba(244,67,54,0.1)",
+            color: "#f44336",
+            border: "1px solid rgba(244,67,54,0.2)",
+            cursor: "pointer",
+          }}
+        >
+          Clear All
+        </button>
+      )}
+    </div>
+
+    <div style={{
+      display: "flex",
+      gap: "0.5rem",
+      flexWrap: "wrap",
+      maxHeight: savedQuotes.length > 3 ? "8rem" : "auto",
+      overflowY: savedQuotes.length > 3 ? "auto" : "visible",
+    }}>
+      {savedQuotes.slice(0, 3).map((quote, idx) => (
+        <div
+          key={idx}
+          style={{
+            flex: "0 1 calc(33.333% - 0.35rem)",
+            minWidth: "140px",
+            padding: "0.5rem 0.6rem",
+            borderRadius: "0.5rem",
+            background: "rgba(255,193,7,0.06)",
+            border: "1.5px solid rgba(255,193,7,0.25)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.2rem" }}>
+              {quote.carrier}
+            </div>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#ffc107", marginBottom: "0.15rem" }}>
+              ${(quote.total_amount || 0).toFixed(0)}
+            </div>
+            <div style={{ fontSize: "0.6rem", color: "var(--text-secondary)" }}>
+              {quote.transit_days || "?"} days • {new Date(quote.savedAt || Date.now()).toLocaleDateString()}
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              const store = JSON.parse(localStorage.getItem("ll_saved_quotes") || "{}");
+              for (const key in store) {
+                store[key] = store[key].filter((q: any) => q.quote_id !== quote.quote_id);
+              }
+              localStorage.setItem("ll_saved_quotes", JSON.stringify(store));
+              window.location.reload();
+            }}
+            style={{
+              fontSize: "0.5rem",
+              padding: "2px 4px",
+              borderRadius: "0.2rem",
+              background: "rgba(244,67,54,0.1)",
+              color: "#f44336",
+              border: "none",
+              cursor: "pointer",
+              marginTop: "0.3rem",
+            }}
+          >
+            🗑 Remove
+          </button>
+        </div>
+      ))}
+      {savedQuotes.length > 3 && (
+        <div style={{
+          flex: "0 1 calc(33.333% - 0.35rem)",
+          minWidth: "140px",
+          padding: "0.5rem 0.6rem",
+          borderRadius: "0.5rem",
+          background: "rgba(0,188,212,0.04)",
+          border: "1px solid rgba(0,188,212,0.12)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "0.7rem",
+          fontWeight: 700,
+          color: "var(--text-secondary)",
+          cursor: "pointer",
+        }}
+        onClick={() => {
+          // Expand to show all quotes
+          const el = document.querySelector("[data-saved-quotes-container]");
+          if (el) el.style.maxHeight = "none";
+        }}
+        >
+          +{savedQuotes.length - 3} more
+        </div>
+      )}
+    </div>
+  </div>
+)}
+```
+
+================================================================================
+
+PART D — BATCH PICKUP STATUS API (NEW FILE)
+
+================================================================================
+
+Create: app/api/shipping/pickup-batch/route.ts
+
+```typescript
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/db";
+
+export async function POST(req: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { itemIds } = await req.json() as { itemIds: string[] };
+    if (!itemIds || !Array.isArray(itemIds) || itemIds.length === 0) {
+      return NextResponse.json(
+        { error: "Invalid itemIds array" },
+        { status: 400 }
+      );
+    }
+
+    // Fetch pickup status for all items in parallel
+    const items = await prisma.item.findMany({
+      where: {
+        id: { in: itemIds },
+        userId,
+      },
+      select: {
+        id: true,
+        localPickupStatus: true,
+        localPickupScheduledDate: true,
+        localPickupContactName: true,
+        localPickupContactPhone: true,
+      },
+    });
+
+    // Build response: statuses Record<itemId, PickupStatus>
+    const statuses: Record<string, any> = {};
+    for (const item of items) {
+      statuses[item.id] = {
+        itemId: item.id,
+        status: item.localPickupStatus || "pending",
+        scheduledDate: item.localPickupScheduledDate,
+        contactName: item.localPickupContactName,
+        contactPhone: item.localPickupContactPhone,
+        lastUpdated: new Date().toISOString(),
+      };
+    }
+
+    console.log(`[pickup-batch] Returned statuses for ${items.length} items`);
+
+    return NextResponse.json({
+      statuses,
+      count: items.length,
+    });
+  } catch (error) {
+    console.error("[pickup-batch] Error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+Then update LocalPickupTab to use batch endpoint:
+
+FIND the pickup status fetch loop (approximately line 4360):
+
+BEFORE:
+```jsx
+for (const item of shippingItems) {
+  const res = await fetch(`/api/shipping/pickup/${item.id}`);
+  const data = await res.json();
+  setPickupStatuses(prev => ({ ...prev, [item.id]: data }));
+}
+```
+
+AFTER:
+```jsx
+const res = await fetch("/api/shipping/pickup-batch", {
+  method: "POST",
+  body: JSON.stringify({
+    itemIds: shippingItems.map((item: any) => item.id),
+  }),
+});
+const { statuses } = await res.json();
+setPickupStatuses(statuses);
+console.log(`[LocalPickupTab] Loaded ${Object.keys(statuses).length} pickup statuses in 1 API call`);
+```
+
+================================================================================
+
+PART E — TAB BADGE COUNTS + MICRO-POLISH
+
+================================================================================
+
+Find the TABS array definition (lines 21-27):
+
+ADD a computed variable BEFORE the tabs are rendered:
+
+```jsx
+const tabBadges = useMemo(() => {
+  return {
+    preSale: shippingItems.filter((item: any) => !item.quotes || item.quotes.length === 0).length,
+    readyToShip: shippingItems.filter((item: any) => item.status === "readyToShip").length,
+    shipped: shippingItems.filter((item: any) => item.status === "shipped" && item.trackingStatus !== "delivered").length,
+    freight: (() => {
+      try {
+        const raw = localStorage.getItem("ll_saved_quotes");
+        if (!raw) return 0;
+        const store = JSON.parse(raw);
+        let count = 0;
+        for (const quotes of Object.values(store)) {
+          count += (quotes as any[]).filter((q: any) => q.type === "ltl").length;
+        }
+        return count;
+      } catch { return 0; }
+    })(),
+    pickup: shippingItems.filter((item: any) => item.status === "pickup").length,
+  };
+}, [shippingItems]);
+```
+
+Then modify the TAB render to show badges:
+
+```jsx
+const TABS = [
+  { key: "preSale", label: "Estimates", icon: "📋", badge: tabBadges.preSale },
+  { key: "readyToShip", label: "Ready to Ship", icon: "📦", badge: tabBadges.readyToShip },
+  { key: "shipped", label: "Tracking", icon: "📍", badge: tabBadges.shipped },
+  { key: "freight", label: "Freight / LTL", icon: "🚛", badge: tabBadges.freight },
+  { key: "pickup", label: "Local Pickup", icon: "🏪", badge: tabBadges.pickup },
+];
+
+// When rendering tabs:
+{TABS.map((tab) => (
+  <button
+    key={tab.key}
+    onClick={() => setActiveTab(tab.key)}
+    style={{
+      padding: "0.5rem 0.75rem",
+      borderRadius: "0.4rem",
+      background: activeTab === tab.key ? "rgba(0,188,212,0.15)" : "transparent",
+      color: activeTab === tab.key ? "#00bcd4" : "var(--text-secondary)",
+      border: "1px solid " + (activeTab === tab.key ? "rgba(0,188,212,0.3)" : "transparent"),
+      cursor: "pointer",
+      fontSize: "0.75rem",
+      fontWeight: activeTab === tab.key ? 700 : 600,
+      display: "flex",
+      alignItems: "center",
+      gap: "0.3rem",
+      whiteSpace: "nowrap",
+      transition: "all 0.2s ease",
+    }}
+  >
+    <span>{tab.icon}</span>
+    <span>{tab.label}</span>
+    {tab.badge > 0 && (
+      <span style={{
+        fontSize: "0.5rem",
+        fontWeight: 700,
+        padding: "1px 4px",
+        borderRadius: "9999px",
+        background: tab.key === "readyToShip" && overduePulse ? "rgba(244,67,54,0.2)" : "rgba(0,188,212,0.15)",
+        color: tab.key === "readyToShip" && overduePulse ? "#f44336" : "#00bcd4",
+        animation: tab.key === "readyToShip" && overduePulse ? "pulse 2s infinite" : "none",
+      }}>
+        {tab.badge}
+      </span>
+    )}
+  </button>
+))}
+```
+
+ADD a keyframe animation for pulse:
+
+```jsx
+<style>{`
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+`}</style>
+```
+
+ADD overdue detection:
+
+```jsx
+const overduePulse = useMemo(() => {
+  return shippingItems.some((item: any) => {
+    if (item.status !== "readyToShip") return false;
+    const createdAt = new Date(item.createdAt);
+    const daysSince = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    return daysSince > 3;
+  });
+}, [shippingItems]);
+```
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed: yes / no
+
+PRIORITY BANNER:
+3. Banner renders when actionItems exist: yes / no
+4. Banner pills are clickable and switch tabs: yes / no
+5. Banner dismisses with ✕ button: yes / no
+6. Dismissal persists for session: yes / no
+7. Banner shows correctly positioned (below stats, above tabs): yes / no
+8. Action items properly counted: yes / no
+
+QUOTE DISPLAY:
+9. QuoteDetailPanel replaced with new hierarchy: yes / no
+10. Best rate highlighted in green: yes / no
+11. Freshness indicator (green/yellow/red) works: yes / no
+12. Other rates expandable with "▼ Other Options": yes / no
+13. Save button on each rate card: yes / no
+14. Refresh button functional: yes / no
+15. Valid until timestamp compact: yes / no
+
+SAVED QUOTES:
+16. Saved quotes display as horizontal cards: yes / no
+17. Max 3 visible, "+X more" expandable: yes / no
+18. Gold accent border on saved quotes: yes / no
+19. Remove button works per card: yes / no
+20. Clear All button works: yes / no
+
+BATCH PICKUP API:
+21. app/api/shipping/pickup-batch/route.ts created: yes / no
+22. POST endpoint accepts { itemIds: string[] }: yes / no
+23. Returns { statuses: Record<string, PickupStatus> }: yes / no
+24. LocalPickupTab uses batch endpoint (1 call): yes / no
+25. Batch call faster than individual calls: yes / no
+
+TAB BADGES + POLISH:
+26. All 5 tabs show count badges: yes / no
+27. Estimates badge correct count: yes / no
+28. Ready to Ship badge correct count: yes / no
+29. Tracking badge correct count: yes / no
+30. Freight badge shows saved quote count: yes / no
+31. Local Pickup badge correct count: yes / no
+32. Ready to Ship pulses if items > 3 days: yes / no
+33. Tab bar spacing consistent: yes / no
+34. Tab alignment clean: yes / no
+35. All inline style{{}} (no Tailwind): yes / no
+36. No className used for styling: yes / no
+
+BUILD:
+37. npx tsc --noEmit: 0 errors
+38. npm run build: pass
+39. Dev server: localhost:3000
+40. CHECKPOINT post-change: pass
+
+MANUAL TESTS:
+41. Create items needing quotes → banner shows "X items need quotes" pill
+42. Click pill → switches to Estimates tab
+43. Dismiss banner with ✕ → stays dismissed for session
+44. Refresh page → banner re-appears
+45. Get shipping quotes → QuoteDetailPanel shows best rate prominent
+46. Verify freshness dot (green < 1h, yellow < 6h, red > 6h)
+47. Click "Other Options" → expands alt rates
+48. Save quotes → appear in Saved Quotes section as cards
+49. Clear All → clears all saved quotes
+50. Load LocalPickupTab → verify only 1 API call in network tab
+51. Verify all 5 tabs show badge counts
+52. Mark items as overdue in Ready to Ship → badge pulses
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A read: [yes / no]
+
+PRIORITY ACTION BANNER:
+- Banner renders when actionItems exist: [yes / no]
+- Pills clickable and tab-switch functional: [yes / no]
+- Dismissible and persists per session: [yes / no]
+- Positioned correctly (below stats, above tabs): [yes / no]
+
+QUOTE DISPLAY OVERHAUL:
+- QuoteDetailPanel replaced: [yes / no]
+- Best rate prominent with green accent: [yes / no]
+- Freshness indicator functional: [yes / no / colors]
+- Other rates expandable: [yes / no]
+- Save button on each rate: [yes / no]
+
+SAVED QUOTES REDESIGN:
+- Horizontal card layout: [yes / no]
+- Max 3 visible, expandable: [yes / no]
+- Remove per card: [yes / no]
+- Clear All functional: [yes / no]
+
+BATCH PICKUP API:
+- New endpoint created: [yes / no]
+- LocalPickupTab uses batch: [yes / no]
+- API calls reduced from 15+ to 1: [yes / no]
+
+TAB BADGES + POLISH:
+- All 5 tabs show count badges: [yes / no]
+- Estimates: [count]
+- Ready to Ship: [count]
+- Tracking: [count]
+- Freight: [count]
+- Local Pickup: [count]
+- Ready to Ship pulse animation: [yes / no / when]
+- Tab bar spacing polished: [yes / no]
+
+BUILD:
+- npx tsc --noEmit: [# errors]
+- npm run build: [pass / fail]
+- Dev server: localhost:3000
+
+Files modified:
+  - app/shipping/ShippingCenterClient.tsx
+  - app/api/shipping/pickup-batch/route.ts (NEW)
+
+Locked file integrity:
+  - app/items/** : [untouched]
+  - app/dashboard/** : [untouched]
+  - lib/shipping/shippo.ts : [untouched]
+  - lib/shipping/freight-estimates.ts : [untouched]
+  - lib/adapters/ai.ts : [untouched]
+
+Visual improvements:
+- Command center aesthetic achieved: [yes / no]
+- Professional, dense, fast feeling: [yes / no]
+- Tesla/SpaceX/Grok standard met: [yes / no]
+
+Performance:
+- Batch API reduces latency: [yes / no]
+- Priority banner UX clear: [yes / no]
+- Quote display more scannable: [yes / no]
+
+END OF COMMAND 5A

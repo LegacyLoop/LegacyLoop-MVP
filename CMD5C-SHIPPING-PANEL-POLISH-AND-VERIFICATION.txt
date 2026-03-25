@@ -1,0 +1,1092 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 25, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+================================================================================
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+REAL TECH MANDATE: Minimize demo/mock data. Use real API integrations
+wherever possible. When estimates are used, label them honestly as
+"ESTIMATED" — not "demo". The freight estimate engine uses real carrier
+pricing formulas and real accessorial surcharge data — it's a calculated
+estimate, not a mock. Treat it as professional-grade estimate data.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts — LOCKED (READ its output schema)
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping (MOST LOCKED) —
+✓ lib/shipping/shippo.ts — LOCKED
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/easypost.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+✓ lib/shipping/saved-quotes.ts — LOCKED
+✓ lib/shipping/freight-estimates.ts — LOCKED (created by CMD4C)
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/user-events.ts
+✓ lib/data/populate-intelligence.ts — LOCKED (created by CMD4C)
+
+— Enrichment —
+✓ lib/addons/enrich-item-context.ts
+✓ lib/enrichment/item-context.ts — LOCKED (created by CMD4C)
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/arta-quote/route.ts (CREATE NEW for Arta API)
+✓ EXCEPTION: app/api/shipping/center/route.ts — EXTEND with Arta eligibility
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED except:
+✓ EXCEPTION: app/items/[id]/ShippingPanel.tsx — SURGICAL POLISH (section headers, AI Brief in both modes)
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — LOCKED (fields created by CMD4C)
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - app/items/[id]/ShippingPanel.tsx (ADD section headers, move AI Brief to both modes)
+  - app/shipping/ShippingCenterClient.tsx (ADD Arta badges on item cards, ADD Arta quote section in FreightTab)
+  - app/api/shipping/arta-quote/route.ts (CREATE NEW — Arta white-glove quote integration)
+  - app/api/shipping/center/route.ts (EXTEND with isArtaEligible computation)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5 and CMD4C.
+This command is FINAL — shipping is locked down after this.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+
+Data collection for this command:
+  - Log Arta eligibility checks: item ID, isPremium, isHighValue, isAntique, isFragile, aiShippingDifficulty
+  - Log Arta API calls: quote request params, response status, quote tiers returned
+  - Log Arta quote selection: which tier chosen, amount, item ID
+  - Console.log pattern: [arta] or [shipping] prefix for all
+
+SECTION 6 — BUILD PATTERN
+
+UI → API → Integration → DB → Dashboard
+
+This command follows build pattern:
+  1. UI: Add section headers and visual flow to ShippingPanel
+  2. UI: Add AI Brief to both pre-sale and post-sale modes
+  3. UI: Add Arta eligibility badges to item cards in Shipping Center
+  4. UI: Add Arta quote section to FreightTab
+  5. API: Create Arta quote endpoint
+  6. API: Extend Shipping Center to compute isArtaEligible
+  7. Integration: Wire Arta API calls from frontend
+  8. Verification: Test all shipping flows end-to-end
+
+SECTION 7 — PLATFORM CONTEXT
+
+• CMD4C shipped with: AI shipping intelligence, freight estimates (6 carriers), LTL pipeline fixed
+• ShippingPanel.tsx has AI Brief but only shows in pre-sale mode (lines 3773-3799)
+• AI Brief should be visible in BOTH modes — context is useful after purchase too
+• ShippingPanel lacks visual structure: no section headers, no guided flow
+• Arta white-glove is NOT integrated: no eligibility check, no quote section, no API
+• Shipping Center has no Arta badges or quote visibility
+• PostSaleWizard (line 188) and LtlCompletionFlow (line 2029) exist but need verification
+• PickupCompletionFlow (line 1080) exists but needs verification
+• Saved quotes sync between Item Dashboard and Shipping Center via localStorage
+
+================================================================================
+
+OBJECTIVE
+
+CMD5C is the FINAL shipping polish command. After this, shipping is locked down.
+
+TASK 1 — SHIPPING PANEL VISUAL FLOW CLEANUP
+Add clear section dividers and headers to create a guided top-to-bottom flow
+in the pre-sale Ship It tab. Make each section stand out with consistent styling.
+
+TASK 2 — AI BRIEF VISIBILITY IN BOTH MODES
+Move AI Shipping Brief from pre-sale only to show in BOTH pre-sale AND post-sale
+modes. The AI context (difficulty, weight, packing tips) is useful after sale.
+
+TASK 3 — ARTA INTEGRATION IN SHIPPING CENTER
+Wire Arta white-glove quotes into the Shipping Center:
+  - Add Arta eligibility badges on item cards
+  - Compute eligibility from item data
+  - Add "Get Arta White-Glove Quote" section in FreightTab for eligible items
+  - Call /api/shipping/arta-quote and display results
+  - Show Arta branding and attribution
+
+TASK 4 — VERIFY END-TO-END SHIPPING FLOWS
+Run verification tests for all four shipping flows: parcel, LTL, pickup, and Arta.
+Document exact results. This is NOT a code task — executor must test manually.
+
+TASK 5 — FINAL POLISH SWEEP
+No hydration errors, clean console logs, no "demo" labels, carrier tracking URLs
+work, saved quotes sync, no dead code. This is the FINAL state of shipping.
+
+================================================================================
+
+SECTION 8 — OBJECTIVE DETAIL
+
+OVERVIEW:
+LegacyLoop's shipping is nearly complete (CMD4C delivered AI intelligence + LTL
+fixes). CMD5C adds the final layer: polished UI flow, Arta integration, and
+comprehensive verification. After this command, shipping is locked down and
+requires external approvals to modify.
+
+KEY CONTEXT:
+- ShippingPanel.tsx is ~4400 lines with scattered shipping logic
+- AI Shipping Brief exists but hides post-sale (unnecessary — it's context, not a pre-sale gate)
+- Arta white-glove is a premium carrier for high-value/fragile items; integration
+  is blocked without visibility in the Shipping Center
+- Four distinct shipping flows exist: parcel (USPS/UPS/FedEx), LTL freight (6 carriers),
+  pickup (local handoff), and Arta (white-glove). All must flow cleanly and report
+  status correctly
+
+SHIPPING PANEL SECTIONS (current, unstructured):
+  - AI Shipping Brief (exists, hides post-sale)
+  - Package Details (weight, dims, box rec — exists but no header)
+  - Get Quotes / Carrier Rates (parcel quotes — exists)
+  - Freight Shipping (LTL section — exists)
+  - White-Glove by Arta (exists, but only for pre-sale)
+  - Saved Quotes (exists)
+  - Metro Estimates (exists)
+  → NEED: Clear headers, consistent spacing, visual hierarchy, guided flow
+
+ARTA INTEGRATION (missing):
+  - No eligibility check
+  - No badges on item cards
+  - No quote section in FreightTab
+  - No API to fetch Arta quotes
+  → NEED: Compute eligibility (premium OR antique/high-value OR fragile/high-value
+           OR difficult/high-value), wire /api/shipping/arta-quote, display tiers
+
+VERIFICATION (manual tests required):
+  - Parcel: quote → save → label → tracking → delivery → COMPLETED status
+  - LTL: quote → save → BOL → tracking → delivery → COMPLETED status
+  - Pickup: setup → confirm → handoff code → HANDED_OFF → COMPLETED status
+  - Arta: eligible check → quote → quote selection (optional, not required for mvp)
+
+POLISH SWEEP:
+  - No hydration errors (localStorage reads in useEffect)
+  - Console logs clean: [shipping], [arta], [ltl] prefixes
+  - No "demo" labels (all "estimate" or "live")
+  - Carrier tracking URLs valid
+  - Saved quotes persist across views
+
+================================================================================
+
+SECTION 9 — PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2620,2650p'
+   Focus: Component definition, props, data pipeline.
+
+2. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3080,3120p'
+   Focus: Ship It / Local Pickup tabs structure.
+
+3. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3410,3420p'
+   Focus: Carrier Rates section (parcel).
+
+4. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3600,3610p'
+   Focus: Freight/LTL section header.
+
+5. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3675,3690p'
+   Focus: Arta section structure.
+
+6. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3770,3810p'
+   Focus: AI Shipping Brief card (exists, location, styling).
+
+7. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3825,3860p'
+   Focus: Saved Quotes section.
+
+8. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '4090,4150p'
+   Focus: Metro Estimates section.
+
+9. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1080,1120p'
+   Focus: PickupCompletionFlow / completion tracking.
+
+10. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2025,2040p'
+    Focus: LtlCompletionFlow / tracking status updates.
+
+11. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '250,265p'
+    Focus: isArtaEligible badge area (premium/high-value badges).
+
+12. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '3070,3090p'
+    Focus: FreightTab structure, where to add Arta section.
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+SECTION 10 — PART B — SHIPPING PANEL VISUAL FLOW CLEANUP
+
+================================================================================
+
+FILE: app/items/[id]/ShippingPanel.tsx
+
+TASK: Add clear section dividers and headers to guide user through shipping flow.
+Create visual structure so each section is recognizable.
+
+--- B1: Add section header component (use everywhere) ---
+
+Place this helper function at the top of the file (before main component):
+
+const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
+  <div style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "0.4rem",
+    marginTop: "0.75rem",
+    marginBottom: "0.4rem",
+    paddingBottom: "0.3rem",
+    borderBottom: "1px solid rgba(0,188,212,0.08)",
+  }}>
+    <span style={{ fontSize: "0.7rem" }}>{icon}</span>
+    <span style={{
+      fontSize: "0.68rem",
+      fontWeight: 700,
+      color: "var(--text-muted)",
+      textTransform: "uppercase",
+      letterSpacing: "0.06em",
+    }}>
+      {title}
+    </span>
+  </div>
+);
+
+--- B2: Add to AI Shipping Brief section (lines ~3773-3799) ---
+
+BEFORE the existing Brief card, ADD:
+  <SectionHeader icon="🤖" title="AI Shipping Brief" />
+
+This makes the AI Brief the FIRST thing in the shipping flow.
+
+--- B3: Add to Package Details section (find where weight/dims/box displays) ---
+
+ADD header before the section:
+  <SectionHeader icon="📐" title="Package Details" />
+
+This section should show: weight, dimensions, box recommendation.
+If these fields are scattered, consider wrapping them in a container with
+the header on top.
+
+--- B4: Add to Carrier Rates / Get Quotes section (line ~3417) ---
+
+ADD header before the carrier rates results:
+  <SectionHeader icon="📊" title="Carrier Rates" />
+
+This is the parcel shipping section (USPS, UPS, FedEx, etc.).
+
+--- B5: Add to Freight Shipping section (line ~3603) ---
+
+ADD header before the freight form:
+  <SectionHeader icon="🚛" title="Freight Shipping (LTL)" />
+
+Keep the existing freight logic — just add the header.
+
+--- B6: Arta section header already visible? ---
+
+FIND the Arta section (line ~3678).
+ADD header if missing:
+  <SectionHeader icon="🏛️" title="White-Glove by Arta" />
+
+--- B7: Add to Saved Quotes section (line ~3830) ---
+
+ADD header before saved quotes display:
+  <SectionHeader icon="💾" title="Saved Quotes" />
+
+--- B8: Add to Metro Estimates section (line ~4093) ---
+
+ADD header before metro estimates:
+  <SectionHeader icon="🌎" title="Metro Estimates" />
+
+RESULT: Shipping flow is now guided, top-to-bottom, with clear visual sections.
+
+================================================================================
+
+SECTION 11 — PART C — AI BRIEF IN BOTH MODES
+
+================================================================================
+
+FILE: app/items/[id]/ShippingPanel.tsx
+
+TASK: Make AI Shipping Brief visible in BOTH pre-sale and post-sale modes.
+Currently it only renders when `mode === "preSale"`. Change it to show always.
+
+FIND: The AI Shipping Brief card (line ~3773-3799).
+LOOK for: A condition like: `{mode === "preSale" && (...)}`
+
+CHANGE to: Remove the mode check. The card should render regardless of mode.
+
+NEW CONDITION (if AI Brief is mode-gated):
+- REMOVE: `{mode === "preSale" &&`
+- KEEP: Just the card JSX
+
+RATIONALE: The AI data (weight estimate, difficulty rating, packing tips) is
+context, not a pre-sale gate. Users benefit from knowing "this item is Difficult
+to ship / Fragile / Heavy" even after purchase — helps them prepare for arrival.
+
+VERIFY: After change, AI Brief appears in both pre-sale and post-sale views.
+
+================================================================================
+
+SECTION 12 — PART D — ARTA INTEGRATION
+
+================================================================================
+
+--- D1: Compute Arta Eligibility ---
+
+FILE: app/api/shipping/center/route.ts
+
+FIND: Where enriched items are built (line ~175-210).
+
+ADD this eligibility computation to the enriched response:
+
+// Compute Arta eligibility for each item
+const isArtaEligible = (item: any) => {
+  const isPremium = item.isPremium === true;
+  const isHighValue = item.value && item.value > 500;
+  const isAntique = item.isAntique === true;
+  const isFragile = item.isFragile === true;
+  const isDifficult = item.aiShippingDifficulty === "Difficult" || item.aiShippingDifficulty === "Freight only";
+
+  return isPremium || (isHighValue && isAntique) || (isHighValue && isFragile) || (isHighValue && isDifficult);
+};
+
+Then when building the enriched item object, ADD:
+  isArtaEligible: isArtaEligible(item),
+
+This tells the frontend which items can get Arta quotes.
+
+--- D2: Create Arta Quote API Endpoint ---
+
+FILE: app/api/shipping/arta-quote/route.ts (NEW FILE)
+
+Create this file with the following structure:
+
+```typescript
+import { NextRequest, NextResponse } from "next/server";
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { itemId, weight, length, width, height, fromZip, toZip } = body;
+
+    if (!toZip || !weight) {
+      return NextResponse.json(
+        { error: "Missing toZip or weight" },
+        { status: 400 }
+      );
+    }
+
+    console.log(`[arta] Quote request: item=${itemId}, weight=${weight}lbs, from=${fromZip}, to=${toZip}`);
+
+    // Placeholder: Call actual Arta API here
+    // For now, return mock quote tiers matching Arta's actual pricing structure
+    const quotes = {
+      premium: {
+        tier: "Premium",
+        description: "White-glove service with dedicated concierge",
+        basePrice: 250,
+        transitDays: "2-3",
+        isWhiteGlove: true,
+      },
+      select: {
+        tier: "Select",
+        description: "Premium service with signature required",
+        basePrice: 150,
+        transitDays: "3-5",
+        isWhiteGlove: true,
+      },
+      parcel: {
+        tier: "Parcel",
+        description: "Standard shipping with insurance",
+        basePrice: 75,
+        transitDays: "5-7",
+        isWhiteGlove: false,
+      },
+    };
+
+    const estimatedTotal = (
+      quotes.premium.basePrice +
+      (weight > 50 ? (weight - 50) * 0.5 : 0) +
+      (Math.abs(Number(toZip) - Number(fromZip)) > 1000 ? 50 : 0)
+    );
+
+    console.log(`[arta] Quote response: ${estimatedTotal} estimate, 3 tiers`);
+
+    return NextResponse.json({
+      tiers: quotes,
+      estimatedTotal: Math.round(estimatedTotal * 100) / 100,
+      source: "arta",
+      isLive: false, // Set to true when real Arta API is integrated
+      powered_by: "Arta",
+    });
+  } catch (error) {
+    console.error("[arta] Error:", error);
+    return NextResponse.json(
+      { error: "Failed to get Arta quote" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+This endpoint returns three quote tiers (Premium, Select, Parcel) that match
+Arta's actual service levels. Update the basePrice and formula based on real
+Arta pricing when integrating their actual API.
+
+--- D3: Add Arta Eligibility Badges on Item Cards ---
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+FIND: Where item cards render in PreSaleTab (around line 1083).
+
+ADD after the item title/name:
+
+```jsx
+{item.isArtaEligible && (
+  <span style={{
+    fontSize: "0.45rem",
+    fontWeight: 700,
+    padding: "1px 5px",
+    borderRadius: "9999px",
+    background: "linear-gradient(90deg, rgba(255,215,0,0.1), rgba(255,152,0,0.08))",
+    color: "#f59e0b",
+    border: "1px solid rgba(255,215,0,0.12)",
+    marginLeft: "0.35rem",
+  }}>
+    🏛️ ARTA
+  </span>
+)}
+```
+
+REPEAT: Same badge in ReadyToShipTab (around line 1709).
+
+This makes Arta-eligible items visually distinct.
+
+--- D4: Add Arta Quote Section in FreightTab ---
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+FIND: FreightTab (line ~3075).
+
+After the freight quote results section, ADD:
+
+```jsx
+{heavyItem?.isArtaEligible && (
+  <div style={{
+    marginTop: "1rem",
+    borderRadius: "0.75rem",
+    background: "linear-gradient(135deg, rgba(255,215,0,0.04), rgba(255,152,0,0.02))",
+    border: "1px solid rgba(255,215,0,0.15)",
+    padding: "0.75rem 0.85rem",
+  }}>
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "0.3rem",
+      marginBottom: "0.5rem",
+    }}>
+      <span style={{ fontSize: "0.8rem" }}>🏛️</span>
+      <span style={{
+        fontSize: "0.72rem",
+        fontWeight: 700,
+        color: "#f59e0b",
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+      }}>
+        White-Glove by Arta
+      </span>
+    </div>
+
+    <p style={{
+      fontSize: "0.68rem",
+      color: "var(--text-secondary)",
+      marginBottom: "0.4rem",
+      lineHeight: 1.5,
+    }}>
+      Premium white-glove shipping for high-value, fragile, or difficult items.
+      Dedicated concierge handles pickup and delivery.
+    </p>
+
+    <button
+      onClick={() => getArtaQuote(heavyItem.id)}
+      disabled={loadingArtaQuote}
+      style={{
+        fontSize: "0.65rem",
+        fontWeight: 700,
+        padding: "5px 12px",
+        borderRadius: "0.4rem",
+        background: "rgba(255,215,0,0.12)",
+        border: "1px solid rgba(255,215,0,0.2)",
+        color: "#f59e0b",
+        cursor: loadingArtaQuote ? "not-allowed" : "pointer",
+        opacity: loadingArtaQuote ? 0.6 : 1,
+        textTransform: "uppercase",
+        letterSpacing: "0.04em",
+        transition: "all 0.2s",
+      }}
+    >
+      {loadingArtaQuote ? "Fetching..." : "Get Arta Quote"}
+    </button>
+
+    {artaQuoteError && (
+      <div style={{
+        marginTop: "0.4rem",
+        fontSize: "0.62rem",
+        color: "#f44336",
+        padding: "0.3rem 0.4rem",
+        borderRadius: "0.3rem",
+        background: "rgba(244,67,54,0.08)",
+      }}>
+        {artaQuoteError}
+      </div>
+    )}
+
+    {artaQuoteData && (
+      <div style={{ marginTop: "0.5rem" }}>
+        {["premium", "select", "parcel"].map((tier) => (
+          <div
+            key={tier}
+            style={{
+              marginBottom: "0.35rem",
+              padding: "0.4rem 0.5rem",
+              borderRadius: "0.4rem",
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,215,0,0.08)",
+              fontSize: "0.62rem",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
+                {artaQuoteData.tiers[tier as keyof typeof artaQuoteData.tiers]
+                  ?.tier || tier.toUpperCase()}
+              </div>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.56rem", marginTop: "0.15rem" }}>
+                {artaQuoteData.tiers[tier as keyof typeof artaQuoteData.tiers]
+                  ?.description}
+              </div>
+            </div>
+            <div style={{ fontWeight: 700, color: "#f59e0b" }}>
+              ${(artaQuoteData.tiers[tier as keyof typeof artaQuoteData.tiers]?.basePrice || 0) + Math.round(artaQuoteData.estimatedTotal * 100) / 100}
+            </div>
+          </div>
+        ))}
+        <div style={{
+          marginTop: "0.4rem",
+          fontSize: "0.56rem",
+          color: "var(--text-muted)",
+          fontStyle: "italic",
+          textAlign: "center",
+        }}>
+          Powered by Arta
+        </div>
+      </div>
+    )}
+  </div>
+)}
+```
+
+Then ADD state management at the top of FreightTab component:
+
+```jsx
+const [artaQuoteData, setArtaQuoteData] = useState(null);
+const [loadingArtaQuote, setLoadingArtaQuote] = useState(false);
+const [artaQuoteError, setArtaQuoteError] = useState("");
+
+const getArtaQuote = async (itemId: string) => {
+  setLoadingArtaQuote(true);
+  setArtaQuoteError("");
+  try {
+    const res = await fetch("/api/shipping/arta-quote", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        itemId,
+        weight: Number(formState.weight) || 100,
+        length: Number(formState.length) || 48,
+        width: Number(formState.width) || 40,
+        height: Number(formState.height) || 36,
+        fromZip: formState.fromZip || "04901",
+        toZip: formState.toZip,
+      }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      console.log("[arta] Quote received:", data);
+      setArtaQuoteData(data);
+    } else {
+      setArtaQuoteError(data.error || "Failed to fetch Arta quote");
+    }
+  } catch (err) {
+    console.error("[arta] Error:", err);
+    setArtaQuoteError("Failed to fetch Arta quote");
+  } finally {
+    setLoadingArtaQuote(false);
+  }
+};
+```
+
+This wires Arta quotes into the Shipping Center's FreightTab.
+
+================================================================================
+
+SECTION 13 — PART E — CONSOLE LOGGING STANDARDS
+
+================================================================================
+
+FILE: All unlocked files (ShippingPanel.tsx, ShippingCenterClient.tsx, arta-quote route)
+
+AUDIT: Search for all console.log statements.
+
+REPLACE or ADD prefix:
+- Parcel shipping: [shipping] or [parcel]
+- LTL/freight: [ltl] or [freight]
+- Arta: [arta]
+- General shipping flow: [shipping]
+
+EXAMPLE replacements:
+  OLD: console.log("Quote received");
+  NEW: console.log("[shipping] Quote received");
+
+  OLD: console.log("LTL response:", response);
+  NEW: console.log("[ltl] LTL response:", response);
+
+  OLD: console.log("Arta API call", artaResult);
+  NEW: console.log("[arta] Quote response:", artaResult);
+
+GOAL: When debugging, developers can quickly filter console output:
+  `console logs | grep "^\[shipping\]"`
+  `console logs | grep "^\[arta\]"`
+
+No "demo" or "DEMO" labels. All log labels should be professional.
+
+================================================================================
+
+SECTION 14 — PART F — CARRIER TRACKING URL VERIFICATION
+
+================================================================================
+
+TASK: Verify all carrier tracking URLs are valid and formatted correctly.
+
+FILE: lib/shipping/shippo.ts or wherever carrier URLs are generated.
+
+STANDARD TRACKING URLs:
+  - USPS: https://tools.usps.com/go/TrackConfirmAction?tLabels={tracking_number}
+  - UPS: https://www.ups.com/track?tracknum={tracking_number}
+  - FedEx: https://tracking.fedex.com/en-US/tracking/search?q={tracking_number}
+  - DHL: https://www.dhl.com/en/en/express/tracking.html?AWB={tracking_number}
+
+AUDIT each route:
+1. Search code for hardcoded URL patterns
+2. Confirm placeholders like {tracking_number} are replaced correctly
+3. Test URLs in browser to ensure they resolve
+4. If any URL returns 404 or redirects to homepage, report in final section
+
+VERIFY in ShippingPanel or ShippingCenterClient where tracking links are displayed.
+
+================================================================================
+
+SECTION 15 — PART G — SAVED QUOTES SYNC VERIFICATION
+
+================================================================================
+
+TASK: Verify saved quotes persist and sync across Item Dashboard and Shipping Center.
+
+MECHANISM:
+- Quotes stored in localStorage under key: `ll_saved_quotes_{userId}`
+- Format: { [itemId]: [{ type, carrier, amount, ... }] }
+- Both views (Item Dashboard + Shipping Center) read/write same key
+
+AUDIT:
+1. Item Dashboard ShippingPanel saves quote to localStorage
+2. Shipping Center reads same localStorage key
+3. Quote appears in both views without refresh (or with manual refresh)
+4. Saved quote count badge updates correctly
+5. Clearing localStorage clears quotes
+
+TEST manually:
+- Get quote in Item Dashboard → Save
+- Navigate to Shipping Center → Verify quote appears
+- Add quote in Shipping Center → Go back to Item Dashboard → Verify quote appears
+
+REPORT: Pass or fail with details.
+
+================================================================================
+
+SECTION 16 — PART H — HYDRATION ERROR CHECK
+
+================================================================================
+
+TASK: Verify no hydration errors from localStorage reads.
+
+RULE: localStorage is client-only. Reading it during server-side render (SSR)
+causes hydration mismatch.
+
+FIX: All localStorage reads must be in useEffect, not in component body.
+
+AUDIT ShippingPanel.tsx and ShippingCenterClient.tsx:
+
+Search for: localStorage.getItem
+MUST be wrapped in:
+  useEffect(() => {
+    const data = localStorage.getItem(...);
+    // use data
+  }, []);
+
+NOT in component body:
+  const data = localStorage.getItem(...); // WRONG!
+
+Same for localStorage.setItem — must be in useEffect or event handler.
+
+TEST: Dev server, check browser console for hydration errors.
+
+REPORT: Pass (no errors) or list specific hydration issues found.
+
+================================================================================
+
+SECTION 17 — PART I — BUILD + TYPE CHECK
+
+================================================================================
+
+Run:
+  npx tsc --noEmit
+
+Expected: 0 errors
+
+If errors found:
+  1. Report which file and which line
+  2. Fix type issues (usually missing types on function params)
+  3. Rerun until 0 errors
+
+Run:
+  npm run build
+
+Expected: Success
+
+If build fails:
+  1. Check error message
+  2. Fix imports, syntax, type issues
+  3. Rerun until pass
+
+Run dev server:
+  npm run dev
+
+Navigate to localhost:3000, browse to Item Dashboard, then Shipping Center.
+Verify:
+  - No console errors
+  - Shipping Panel sections visible with headers
+  - AI Brief shows in both pre-sale and post-sale
+  - Arta badges appear on eligible items
+  - FreightTab has Arta quote section
+  - Get Arta Quote button works
+  - No hydration mismatch
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+CHECKPOINT before: [pass / issue]
+
+SHIPPING PANEL VISUAL FLOW:
+1. SectionHeader component created: yes / no
+2. Section headers added to all 7 sections: yes / no
+3. Headers have: icon, title, border, proper styling: yes / no
+4. Section flow is top-to-bottom guided: yes / no
+5. No visual clutter, consistent spacing: yes / no
+
+AI BRIEF IN BOTH MODES:
+6. AI Brief shows in pre-sale mode: yes / no
+7. AI Brief shows in post-sale mode: yes / no
+8. Mode check removed from AI Brief: yes / no
+9. AI Brief displays: difficulty, weight, dims, notes: yes / no
+
+ARTA INTEGRATION:
+10. isArtaEligible computation in API: yes / no
+11. Eligibility logic correct (premium OR antique/high-value OR fragile/high-value): yes / no
+12. /api/shipping/arta-quote endpoint created: yes / no
+13. Endpoint returns 3 tiers (Premium, Select, Parcel): yes / no
+14. Arta eligibility badges on item cards: yes / no
+15. Badges in PreSaleTab: yes / no
+16. Badges in ReadyToShipTab: yes / no
+17. Arta quote section in FreightTab: yes / no
+18. "Get Arta Quote" button fires API call: yes / no
+19. Quote results display with tiers: yes / no
+20. "Powered by Arta" attribution visible: yes / no
+
+CONSOLE + LOGGING:
+21. All logs have [shipping], [arta], [ltl] prefix: yes / no
+22. No "demo" labels (all "estimate" or "live"): yes / no
+23. No console.error or console.warn left from debugging: yes / no
+
+TRACKING URLS:
+24. USPS tracking URL valid: yes / no
+25. UPS tracking URL valid: yes / no
+26. FedEx tracking URL valid: yes / no
+27. DHL tracking URL valid: yes / no
+
+SAVED QUOTES SYNC:
+28. localStorage key consistent: yes / no
+29. Quotes persist across views: yes / no
+30. Saved quote badge updates: yes / no
+
+HYDRATION:
+31. All localStorage reads in useEffect: yes / no
+32. No hydration mismatch errors: yes / no
+
+BUILD:
+33. npx tsc --noEmit: [# errors]
+34. npm run build: [pass / fail]
+35. Dev server localhost:3000: [working / broken]
+
+MANUAL TESTS:
+36. Item Dashboard ShippingPanel loads: yes / no
+37. All 7 section headers visible: yes / no
+38. AI Brief visible in pre-sale: yes / no
+39. AI Brief visible in post-sale: yes / no
+40. Navigate to Shipping Center: yes / no
+41. Arta badges visible on eligible items: yes / no
+42. FreightTab has Arta section: yes / no
+43. "Get Arta Quote" button works: yes / no
+44. Arta quote results display: yes / no
+45. Saved quotes sync across views: yes / no
+
+LOCKED FILE INTEGRITY:
+46. lib/shipping/shippo.ts untouched: yes / no
+47. lib/shipping/fedex-ltl.ts untouched: yes / no
+48. lib/adapters/ai.ts untouched: yes / no
+49. All API routes except arta-quote untouched: yes / no
+
+FINAL STATE:
+50. inline style={{}} throughout: yes / no
+51. No Tailwind classes added: yes / no
+52. No unused imports: yes / no
+53. Shipping is ready to lock down: yes / no
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+
+SHIPPING PANEL VISUAL FLOW:
+- SectionHeader component added: [yes / no]
+- All 7 section headers in place: [yes / no]
+- Visual hierarchy clear: [yes / no]
+
+AI BRIEF:
+- Shows in pre-sale: [yes / no]
+- Shows in post-sale: [yes / no]
+
+ARTA INTEGRATION:
+- API endpoint created: [yes / no]
+- Eligibility logic implemented: [yes / no]
+- Badges on item cards: [yes / no]
+- Quote section in FreightTab: [yes / no]
+- Quote fetch works: [yes / no]
+
+CONSOLE LOGGING:
+- All logs prefixed [shipping], [arta], [ltl]: [yes / no]
+- No "demo" labels: [yes / no]
+
+TRACKING URLS:
+- USPS: [working / broken]
+- UPS: [working / broken]
+- FedEx: [working / broken]
+- DHL: [working / broken]
+
+SAVED QUOTES SYNC:
+- Persist across views: [yes / no]
+- Badge updates: [yes / no]
+
+HYDRATION:
+- localStorage reads in useEffect: [yes / no]
+- No mismatch errors: [yes / no]
+
+BUILD:
+- npx tsc --noEmit: [0 errors / # errors]
+- npm run build: [pass / fail]
+- Dev server: [working / broken]
+
+MANUAL VERIFICATION TESTS:
+
+PARCEL FLOW:
+  1. Get parcel quote (USPS/UPS/FedEx) — [success / failed]
+  2. Save quote — [success / failed]
+  3. Generate label — [success / failed]
+  4. Tracking number appears — [success / failed]
+  5. Advance status: CREATED → PICKED_UP → IN_TRANSIT → OUT_FOR_DELIVERY → DELIVERED — [success / failed]
+  6. Item status changes to COMPLETED — [success / failed]
+  7. runSaleCompletionChain fires on delivery — [success / failed / not verified]
+  Status: [PASS / FAIL]
+  Details: [notes]
+
+LTL FLOW:
+  1. Get LTL quote (6 carriers incl FedEx Freight) — [success / failed]
+  2. Save quote — [success / failed]
+  3. Accept quote — [success / failed]
+  4. BOL generated — [success / failed]
+  5. Advance status: PICKUP_SCHEDULED → PICKED_UP → IN_TRANSIT → DELIVERED — [success / failed]
+  6. Item status changes to COMPLETED — [success / failed]
+  7. Correct carrier shows (verify FedEx Freight appears) — [success / failed]
+  Status: [PASS / FAIL]
+  Details: [notes]
+
+PICKUP FLOW:
+  1. Set up local pickup — [success / failed]
+  2. Invite sent to seller — [success / failed]
+  3. Seller confirms pickup — [success / failed]
+  4. Handoff code generated — [success / failed]
+  5. Advance status: EN_ROUTE → HANDED_OFF → COMPLETED — [success / failed]
+  6. Item status changes to COMPLETED — [success / failed]
+  Status: [PASS / FAIL]
+  Details: [notes]
+
+ARTA FLOW:
+  1. Find eligible item (premium or antique > $500) — [success / failed]
+  2. Get Arta quote — [success / failed]
+  3. API call fires to /api/shipping/arta-quote — [success / failed]
+  4. Response displays (3 tiers) — [success / failed]
+  5. Quote amounts reasonable — [success / failed]
+  Status: [PASS / FAIL]
+  Details: [notes]
+
+LOCKED FILE INTEGRITY:
+  - lib/shipping/shippo.ts: [untouched]
+  - lib/shipping/fedex-ltl.ts: [untouched]
+  - lib/shipping/freight-estimates.ts: [untouched]
+  - lib/adapters/ai.ts: [untouched]
+  - lib/data/populate-intelligence.ts: [untouched]
+
+FILES MODIFIED:
+  - app/items/[id]/ShippingPanel.tsx (section headers, AI Brief both modes)
+  - app/shipping/ShippingCenterClient.tsx (Arta badges, Arta quote section)
+  - app/api/shipping/arta-quote/route.ts (NEW — Arta quote endpoint)
+  - app/api/shipping/center/route.ts (EXTENDED — isArtaEligible)
+
+FINAL STATUS:
+  - Shipping Panel polish complete: [yes / no]
+  - Arta integration complete: [yes / no]
+  - All verifications passed: [yes / no]
+  - Ready to lock down shipping: [yes / no]
+  - CHECKPOINT post-change: [pass / issue]
+
+END OF COMMAND 5C

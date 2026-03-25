@@ -10,6 +10,30 @@ import LocalPickupPanel from "./LocalPickupPanel";
 import { PROCESSING_FEE } from "@/lib/constants/pricing";
 import { saveQuote, getQuotes, deleteQuote, isQuoteSaved } from "@/lib/shipping/saved-quotes";
 
+// ─── Section Header (consistent shipping flow dividers) ─────────────────────
+const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
+  <div style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "0.4rem",
+    marginTop: "0.75rem",
+    marginBottom: "0.4rem",
+    paddingBottom: "0.3rem",
+    borderBottom: "1px solid rgba(0,188,212,0.08)",
+  }}>
+    <span style={{ fontSize: "0.7rem" }}>{icon}</span>
+    <span style={{
+      fontSize: "0.68rem",
+      fontWeight: 700,
+      color: "var(--text-muted)",
+      textTransform: "uppercase" as const,
+      letterSpacing: "0.06em",
+    }}>
+      {title}
+    </span>
+  </div>
+);
+
 type ShippingRate = {
   object_id: string;
   provider: string;
@@ -3192,11 +3216,72 @@ export default function ShippingPanel({
             </div>
           )}
 
+          {/* ── AI Shipping Brief (visible in both pre-sale and post-sale) ── */}
+          {aiShipBrief && shippingTab === "ship" && (
+            <div style={{ marginTop: "0.75rem" }}>
+              <SectionHeader icon={"\u{1F916}"} title="AI Shipping Brief" />
+              <div style={{
+                borderRadius: "0.75rem",
+                background: "rgba(0,188,212,0.03)", border: "1px solid rgba(0,188,212,0.12)",
+                padding: "0.75rem 0.85rem",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <span style={{ fontSize: "0.85rem" }}>{"\u{1F916}"}</span>
+                    <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)" }}>AI Shipping Brief</span>
+                  </div>
+                  {(() => {
+                    const d = aiShipBrief.difficulty;
+                    const colors: Record<string, { bg: string; text: string }> = {
+                      "Easy": { bg: "rgba(76,175,80,0.15)", text: "#4caf50" },
+                      "Moderate": { bg: "rgba(255,152,0,0.15)", text: "#ff9800" },
+                      "Difficult": { bg: "rgba(244,67,54,0.15)", text: "#f44336" },
+                      "Freight only": { bg: "rgba(156,39,176,0.15)", text: "#9c27b0" },
+                    };
+                    const c = colors[d] || colors["Moderate"];
+                    return (
+                      <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "2px 8px", borderRadius: "9999px", background: c.bg, color: c.text, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
+                        {d === "Freight only" ? "FREIGHT ONLY" : d.toUpperCase()}
+                      </span>
+                    );
+                  })()}
+                </div>
+                <div style={{ display: "flex", gap: "1rem", marginBottom: aiShipBrief.notes ? "0.4rem" : "0", flexWrap: "wrap" as const }}>
+                  {aiShipBrief.weightLbs && (
+                    <div>
+                      <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)" }}>Est. Weight</div>
+                      <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{aiShipBrief.weightLbs} lbs</div>
+                    </div>
+                  )}
+                  {aiShipBrief.dims && (
+                    <div>
+                      <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)" }}>Est. Dimensions</div>
+                      <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{aiShipBrief.dims}</div>
+                    </div>
+                  )}
+                  {aiShipBrief.isFragile && (
+                    <div>
+                      <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)" }}>Handling</div>
+                      <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#f44336" }}>{"\u26A0\uFE0F"} FRAGILE</div>
+                    </div>
+                  )}
+                </div>
+                {aiShipBrief.notes && (
+                  <div style={{ padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.08)", fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                    <span style={{ fontWeight: 600, color: "var(--accent)", fontSize: "0.65rem" }}>PACKING: </span>
+                    {aiShipBrief.notes}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* ── PRE-SALE: Section A — Package Details ── */}
           <div className="mt-4 space-y-4">
             {!isVehicle && shippingTab === "ship" && <div>
+              <SectionHeader icon={"\u{1F4D0}"} title="Package Details" />
               <div className="flex items-center gap-2 mb-2">
-                <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", display: "none" }}>
                   Package Details
                 </span>
                 {isFromAI && (
@@ -3416,6 +3501,7 @@ export default function ShippingPanel({
             {/* ── Section B — Carrier Comparison ── */}
             {preference !== "LOCAL_ONLY" && !isVehicle && shippingTab === "ship" && (
               <div>
+                <SectionHeader icon={"\u{1F4CA}"} title="Carrier Rates" />
                 <div className="flex items-center gap-2 mb-2">
                   <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                     Carrier Rates
@@ -3603,8 +3689,9 @@ export default function ShippingPanel({
             {/* ── Section D — Freight Shipping ── */}
             {(showFreight || showFreightManual) && !isVehicle && shippingTab === "ship" && (
               <div id="freight-section">
+                <SectionHeader icon={"\u{1F69B}"} title="Freight Shipping (LTL)" />
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                  <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                  <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", display: "none" }}>
                     🚛 Freight Shipping (LTL)
                   </span>
                   <span style={{ fontSize: "0.6rem", fontWeight: 700, background: "rgba(0,188,212,0.12)", color: "var(--accent)", padding: "0.15rem 0.5rem", borderRadius: "9999px", border: "1px solid rgba(0,188,212,0.25)" }}>
@@ -3770,64 +3857,8 @@ export default function ShippingPanel({
                   </div>
                 )}
 
-                {/* AI Shipping Brief */}
-                {aiShipBrief && (
-                  <div style={{
-                    marginBottom: "0.75rem", borderRadius: "0.75rem",
-                    background: "rgba(0,188,212,0.03)", border: "1px solid rgba(0,188,212,0.12)",
-                    padding: "0.75rem 0.85rem",
-                  }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                        <span style={{ fontSize: "0.85rem" }}>{"\u{1F916}"}</span>
-                        <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)" }}>AI Shipping Brief</span>
-                      </div>
-                      {(() => {
-                        const d = aiShipBrief.difficulty;
-                        const colors: Record<string, { bg: string; text: string }> = {
-                          "Easy": { bg: "rgba(76,175,80,0.15)", text: "#4caf50" },
-                          "Moderate": { bg: "rgba(255,152,0,0.15)", text: "#ff9800" },
-                          "Difficult": { bg: "rgba(244,67,54,0.15)", text: "#f44336" },
-                          "Freight only": { bg: "rgba(156,39,176,0.15)", text: "#9c27b0" },
-                        };
-                        const c = colors[d] || colors["Moderate"];
-                        return (
-                          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "2px 8px", borderRadius: "9999px", background: c.bg, color: c.text, textTransform: "uppercase", letterSpacing: "0.04em" }}>
-                            {d === "Freight only" ? "FREIGHT ONLY" : d.toUpperCase()}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                    <div style={{ display: "flex", gap: "1rem", marginBottom: aiShipBrief.notes ? "0.4rem" : "0", flexWrap: "wrap" }}>
-                      {aiShipBrief.weightLbs && (
-                        <div>
-                          <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Est. Weight</div>
-                          <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{aiShipBrief.weightLbs} lbs</div>
-                        </div>
-                      )}
-                      {aiShipBrief.dims && (
-                        <div>
-                          <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Est. Dimensions</div>
-                          <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{aiShipBrief.dims}</div>
-                        </div>
-                      )}
-                      {aiShipBrief.isFragile && (
-                        <div>
-                          <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Handling</div>
-                          <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#f44336" }}>{"\u26A0\uFE0F"} FRAGILE</div>
-                        </div>
-                      )}
-                    </div>
-                    {aiShipBrief.notes && (
-                      <div style={{ padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.08)", fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                        <span style={{ fontWeight: 600, color: "var(--accent)", fontSize: "0.65rem" }}>PACKING: </span>
-                        {aiShipBrief.notes}
-                      </div>
-                    )}
-                  </div>
-                )}
-
                 {/* Saved Quotes Section */}
+                {ltlSavedQuotes.length > 0 && <SectionHeader icon={"\u{1F4BE}"} title="Saved Quotes" />}
                 {ltlSavedQuotes.length > 0 && (
                   <div style={{
                     marginBottom: "0.75rem", borderRadius: "0.75rem",
@@ -4093,6 +4124,7 @@ export default function ShippingPanel({
             {/* ── Section E — Metro Estimates ── */}
             {preference !== "LOCAL_ONLY" && shippingTab === "ship" && metroEstimates.length > 0 && (
               <div>
+                <SectionHeader icon={"\u{1F30E}"} title="Metro Estimates" />
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
                   <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                     Estimated Shipping to Major Cities

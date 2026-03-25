@@ -796,50 +796,124 @@ function ItemRow({ item, children }: { item: any; children?: React.ReactNode }) 
 // ─── Quote Detail Panel ─────────────────────────────────────────────────────
 
 function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; onRefresh?: () => void }) {
+  const [expandedAlts, setExpandedAlts] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   if (!quote) return null;
 
   const carriers = (quote.carriers || []).filter((c: any) => c.price > 0).sort((a: any, b: any) => a.price - b.price);
-  const selected = item.selectedQuote;
+  if (carriers.length === 0) {
+    return (
+      <div style={{
+        borderTop: "1px solid var(--border-default)", padding: "0.75rem 0.85rem",
+        background: "rgba(0,188,212,0.015)", fontSize: "0.75rem", color: "var(--text-secondary)", textAlign: "center" as const,
+      }}>
+        No quotes available yet. Enter a destination and get estimate.
+      </div>
+    );
+  }
+
+  const best = carriers[0];
+  const alts = carriers.slice(1);
   const quotedDate = quote.quotedAt ? new Date(quote.quotedAt) : null;
-  const ageHrs = quotedDate ? Math.round((Date.now() - quotedDate.getTime()) / 3600000) : 0;
-  const isFresh = ageHrs < 12;
-  const isExpiring = ageHrs >= 12 && ageHrs < 24;
-  const isExpired = ageHrs >= 24;
+  const ageMs = quotedDate ? Date.now() - quotedDate.getTime() : 0;
+  const ageHrs = Math.round(ageMs / 3600000);
+  const ageMins = Math.round(ageMs / 60000);
   const history = item.quoteHistory || [];
-  const remainMs = quotedDate ? 86400000 - (Date.now() - quotedDate.getTime()) : 0;
-  const remainHrs = Math.max(0, Math.floor(remainMs / 3600000));
-  const remainMins = Math.max(0, Math.floor((remainMs % 3600000) / 60000));
+
+  // Freshness indicator
+  const freshness = ageHrs < 1
+    ? { dot: "\u{1F7E2}", label: `Fresh (${ageMins}m)`, color: "#22c55e" }
+    : ageHrs < 6
+      ? { dot: "\u{1F7E1}", label: `${ageHrs}h old`, color: "#f59e0b" }
+      : { dot: "\u{1F534}", label: "Stale (> 6h)", color: "#ef4444" };
+
+  const remainMs = quotedDate ? 86400000 - ageMs : 0;
 
   return (
-    <div style={{ borderTop: "1px solid var(--border-default)", padding: "0.75rem 0.85rem", background: "rgba(0,188,212,0.015)" }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-          <span style={{ fontSize: "0.7rem" }}>{"\u{1F4CB}"}</span>
-          <span style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Quote Details</span>
-          {isFresh && <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(34,197,94,0.12)", color: "#22c55e" }}>{"\u2705"} FRESH</span>}
-          {isExpiring && <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(245,158,11,0.12)", color: "#f59e0b" }}>{"\u26A0\uFE0F"} EXPIRING</span>}
-          {isExpired && quotedDate && <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(239,68,68,0.12)", color: "#ef4444" }}>{"\u274C"} EXPIRED ({ageHrs}h)</span>}
+    <div style={{ borderTop: "1px solid var(--border-default)", padding: "0.75rem 0.85rem", background: "rgba(0,188,212,0.015)", display: "flex", flexDirection: "column" as const, gap: "0.5rem" }}>
+      {/* Best Rate Card */}
+      <div style={{
+        padding: "0.6rem 0.75rem",
+        borderRadius: "0.6rem",
+        background: "rgba(76,175,80,0.08)",
+        border: "1.5px solid rgba(76,175,80,0.25)",
+      }}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "0.4rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <span style={{ fontSize: "0.7rem" }}>{"\u{1F49A}"}</span>
+            <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#4caf50", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
+              Best Rate
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            {onRefresh && (
+              <button
+                onClick={onRefresh}
+                style={{
+                  fontSize: "0.55rem",
+                  padding: "2px 5px",
+                  borderRadius: "0.3rem",
+                  background: "rgba(0,188,212,0.1)",
+                  color: "#00bcd4",
+                  border: "1px solid rgba(0,188,212,0.2)",
+                  cursor: "pointer",
+                }}
+              >
+                {"\u21BB"} Refresh
+              </button>
+            )}
+          </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          marginBottom: "0.3rem",
+        }}>
+          <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)" }}>
+            {best.carrier}
+          </span>
+          {best.service && (
+            <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>{best.service}</span>
+          )}
+          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#4caf50" }}>
+            ${best.price.toFixed(2)}
+          </span>
+          <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>
+            {best.days || "?"}d
+          </span>
+        </div>
+
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.3rem",
+          fontSize: "0.6rem",
+          color: "var(--text-secondary)",
+        }}>
+          <span>{freshness.dot}</span>
+          <span style={{ color: freshness.color }}>{freshness.label}</span>
           {quotedDate && remainMs > 0 && (
-            <span style={{ fontSize: "0.52rem", color: isExpiring ? "#f59e0b" : "var(--text-muted)", fontWeight: isExpiring ? 600 : 400 }}>
-              valid ~{remainHrs}h {remainMins}m
+            <span style={{ marginLeft: "0.3rem" }}>
+              Valid ~{Math.max(0, Math.floor(remainMs / 3600000))}h
             </span>
           )}
           {quotedDate && remainMs <= 0 && (
-            <span style={{ fontSize: "0.52rem", color: "#ef4444", fontWeight: 600 }}>
-              expired {Math.abs(Math.round(remainMs / 3600000))}h ago
+            <span style={{ marginLeft: "0.3rem", color: "#ef4444" }}>
+              Expired {Math.abs(Math.round(remainMs / 3600000))}h ago
             </span>
           )}
-          {quotedDate && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u00B7"} {quotedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} {quotedDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>}
-          {onRefresh && <button onClick={onRefresh} style={{ fontSize: "0.55rem", color: "var(--accent)", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}>{"\u{1F504}"} Refresh</button>}
         </div>
       </div>
 
       {/* Route + Package info strip */}
-      <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginBottom: "0.5rem", fontSize: "0.62rem", color: "var(--text-muted)" }}>
+      <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" as const, fontSize: "0.62rem", color: "var(--text-muted)" }}>
         {quote.fromZip && quote.toZip && (
           <span>{"\u{1F4CD}"} {quote.fromZip} {"\u2192"} {quote.toZip}</span>
         )}
@@ -850,48 +924,70 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
         {quote.isLiveRates && <span style={{ color: "#22c55e" }}>{"\u{1F7E2}"} Live rates</span>}
       </div>
 
-      {/* Full carrier table */}
-      {carriers.length > 0 && (
-        <div style={{ marginBottom: "0.4rem" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 2.5fr 0.8fr 1fr", gap: "0.25rem", padding: "0.25rem 0.5rem", marginBottom: "0.15rem" }}>
-            {["Carrier", "Service", "Days", "Rate"].map(h => (
-              <div key={h} style={{ fontSize: "0.48rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>{h}</div>
-            ))}
-          </div>
-          {carriers.map((c: any, i: number) => {
-            const isSelected = selected && selected.carrier === c.carrier && selected.service === c.service;
-            const isCheapest = i === 0;
-            return (
-              <div key={`${c.carrier}-${c.service}-${i}`} style={{
-                display: "grid", gridTemplateColumns: "2fr 2.5fr 0.8fr 1fr", gap: "0.25rem",
-                padding: "0.3rem 0.5rem", borderRadius: "0.3rem",
-                background: isSelected ? "rgba(0,188,212,0.08)" : i % 2 === 0 ? "var(--ghost-bg)" : "transparent",
-                border: isSelected ? "1px solid rgba(0,188,212,0.2)" : "1px solid transparent",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.2rem" }}>
-                  {isSelected && <span style={{ fontSize: "0.6rem", color: "var(--accent)" }}>{"\u2714"}</span>}
-                  <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-primary)" }}>{c.carrier}</span>
+      {/* Alternative Rates */}
+      {alts.length > 0 && (
+        <div>
+          <button
+            onClick={() => setExpandedAlts(!expandedAlts)}
+            style={{
+              fontSize: "0.62rem",
+              fontWeight: 600,
+              padding: "0.3rem 0.5rem",
+              borderRadius: "0.3rem",
+              background: "transparent",
+              color: "#00bcd4",
+              border: "1px solid rgba(0,188,212,0.3)",
+              cursor: "pointer",
+              width: "100%",
+              textAlign: "left" as const,
+            }}
+          >
+            {expandedAlts ? "\u25BC" : "\u25B6"} Other Options ({alts.length})
+          </button>
+          {expandedAlts && (
+            <div style={{ display: "flex", flexDirection: "column" as const, gap: "0.3rem", marginTop: "0.3rem" }}>
+              {alts.map((alt: any, idx: number) => (
+                <div
+                  key={idx}
+                  style={{
+                    padding: "0.4rem 0.5rem",
+                    borderRadius: "0.4rem",
+                    background: "var(--ghost-bg)",
+                    border: "1px solid var(--border-default)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
+                    <span style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-primary)" }}>
+                      {alt.carrier}
+                    </span>
+                    {alt.service && (
+                      <span style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{alt.service}</span>
+                    )}
+                    <span style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-secondary)" }}>
+                      ${alt.price.toFixed(2)}
+                    </span>
+                    <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>
+                      {alt.days || "?"}d
+                    </span>
+                  </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.2rem", flexWrap: "wrap" }}>
-                  <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{c.service}</span>
-                  {isCheapest && <span style={{ fontSize: "0.45rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>BEST</span>}
-                </div>
-                <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{c.days}d</span>
-                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: isCheapest ? "#4caf50" : "var(--text-primary)" }}>${c.price.toFixed(2)}</span>
-              </div>
-            );
-          })}
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* Quote History (collapsible) */}
       {history.length > 1 && (
-        <div style={{ marginTop: "0.3rem" }}>
+        <div style={{ marginTop: "0.1rem" }}>
           <button onClick={() => setHistoryOpen(!historyOpen)} style={{ fontSize: "0.55rem", fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
             {historyOpen ? "\u25BC" : "\u25B6"} Quote History ({history.length})
           </button>
           {historyOpen && (
-            <div style={{ marginTop: "0.3rem", display: "flex", flexDirection: "column", gap: "0.2rem" }}>
+            <div style={{ marginTop: "0.3rem", display: "flex", flexDirection: "column" as const, gap: "0.2rem" }}>
               {history.map((h: any, i: number) => {
                 const hDate = h.quotedAt ? new Date(h.quotedAt) : null;
                 const cheapest = (h.carriers || []).filter((c: any) => c.price > 0).sort((a: any, b: any) => a.price - b.price)[0];
@@ -2607,30 +2703,21 @@ function ReadyToShipTab({
 
 function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any[]; allData?: ShipData; freightBOL?: any; pickupStatuses?: Record<string, any> }) {
   const [copied, setCopied] = useState<string | null>(null);
-  const [expandedLabel, setExpandedLabel] = useState<string | null>(null);
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [closingSale, setClosingSale] = useState<string | null>(null);
   const [closedSales, setClosedSales] = useState<Set<string>>(new Set());
-  const STEPS = ["CREATED", "PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"];
-  const STEP_LABELS = ["Label", "Pickup", "Transit", "Out", "Done"];
+  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+  const [boardRefreshTs, setBoardRefreshTs] = useState(new Date());
 
-  // Group parcel items by status
-  const inTransit = items.filter(i => i.deliveryStatus === "IN_TRANSIT" || i.deliveryStatus === "PICKED_UP");
-  const outForDelivery = items.filter(i => i.deliveryStatus === "OUT_FOR_DELIVERY");
-  const delivered = items.filter(i => i.deliveryStatus === "DELIVERED");
-  const issues = items.filter(i => i.deliveryStatus === "EXCEPTION");
-  const created = items.filter(i => i.deliveryStatus === "CREATED");
+  const PARCEL_STEPS = ["CREATED", "PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"];
+  const FREIGHT_STEPS = ["BOL_CREATED", "PICKUP_SCHEDULED", "PICKED_UP", "IN_TRANSIT", "DELIVERED"];
+  const PICKUP_STEPS = ["INVITE_SENT", "CONFIRMED", "EN_ROUTE", "HANDED_OFF", "COMPLETED"];
 
-  // Pickup completions from allData
-  const pickupCompleted: any[] = [];
-  const pickupActive: any[] = [];
-  if (allData && pickupStatuses) {
-    const allItems = [...(allData.preSale || []), ...(allData.readyToShip || [])];
-    allItems.forEach((item) => {
-      const ps = pickupStatuses[item.id];
-      if (ps?.status === "COMPLETED") pickupCompleted.push({ ...item, pickupData: ps });
-      else if (ps?.status && ps.status !== "COMPLETED") pickupActive.push({ ...item, pickupData: ps });
-    });
-  }
+  // Auto-update timestamp every 60s
+  useEffect(() => {
+    const interval = setInterval(() => setBoardRefreshTs(new Date()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Carrier branding colors
   const carrierBorderColor = (carrier: string) => {
@@ -2638,6 +2725,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
     if (c.includes("USPS")) return "#333366";
     if (c.includes("UPS")) return "#351c15";
     if (c.includes("FEDEX")) return "#4d148c";
+    if (c.includes("DHL")) return "#FFCC00";
     return "var(--accent)";
   };
 
@@ -2645,6 +2733,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
     navigator.clipboard.writeText(tn).catch(() => {});
     setCopied(tn);
     setTimeout(() => setCopied(null), 2000);
+    console.log(`[tracking-dashboard] Copied tracking: ${tn}`);
   }
 
   const getTrackingUrl = (carrier: string, tracking: string): string | null => {
@@ -2665,384 +2754,632 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
         body: JSON.stringify({ status: "COMPLETED" }),
       });
       setClosedSales(prev => new Set(prev).add(itemId));
+      console.log(`[tracking-dashboard] Closed sale: ${itemId}`);
     } catch {}
     setClosingSale(null);
   }
 
-  if (items.length === 0)
+  // Build unified shipments list: parcel + freight + pickup
+  const pickupCompleted: any[] = [];
+  const pickupActive: any[] = [];
+  if (allData && pickupStatuses) {
+    const allItems = [...(allData.preSale || []), ...(allData.readyToShip || [])];
+    allItems.forEach((item) => {
+      const ps = pickupStatuses[item.id];
+      if (ps?.status === "COMPLETED") pickupCompleted.push({ ...item, pickupData: ps });
+      else if (ps?.status && ps.status !== "COMPLETED") pickupActive.push({ ...item, pickupData: ps });
+    });
+  }
+
+  // Normalize all shipment types into unified rows
+  type BoardRow = {
+    id: string;
+    type: "parcel" | "freight" | "pickup";
+    title: string;
+    photo?: string;
+    carrier: string;
+    trackingId: string;
+    status: string;
+    normalizedStatus: string; // for filtering + sorting
+    accentColor: string;
+    eta: string | null;
+    shipDate: string | null;
+    weight: string;
+    rate: string;
+    fromAddress: any;
+    toAddress: any;
+    steps: string[];
+    stepIndex: number;
+    isDelivered: boolean;
+    raw: any;
+  };
+
+  const parcelRows: BoardRow[] = items.map((item: any) => {
+    const tn = item.trackingNumber || generateTrackingNumber(item.id, item.carrier || "USPS");
+    const stepIdx = PARCEL_STEPS.indexOf(item.deliveryStatus);
+    const estDate = item.estimatedDays && item.shipDate
+      ? new Date(new Date(item.shipDate).getTime() + item.estimatedDays * 86400000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      : null;
+    return {
+      id: item.id,
+      type: "parcel" as const,
+      title: item.title || "Item",
+      photo: item.photo,
+      carrier: item.carrier || "USPS",
+      trackingId: tn,
+      status: item.deliveryStatus || "CREATED",
+      normalizedStatus: item.deliveryStatus || "CREATED",
+      accentColor: carrierBorderColor(item.carrier),
+      eta: estDate,
+      shipDate: item.shipDate || null,
+      weight: item.weight ? `${item.weight} lbs` : "",
+      rate: item.rate ? `$${Number(item.rate).toFixed(2)}` : "",
+      fromAddress: item.fromAddress,
+      toAddress: item.toAddress,
+      steps: PARCEL_STEPS,
+      stepIndex: stepIdx >= 0 ? stepIdx : 0,
+      isDelivered: item.deliveryStatus === "DELIVERED",
+      raw: item,
+    };
+  });
+
+  const freightRows: BoardRow[] = freightBOL ? [{
+    id: `freight-${freightBOL.bolNumber || "bol"}`,
+    type: "freight" as const,
+    title: "Freight Shipment",
+    photo: undefined,
+    carrier: freightBOL.carrier || "LTL",
+    trackingId: freightBOL.bolNumber ? `BOL: ${freightBOL.bolNumber}` : "Pending",
+    status: freightBOL.trackingStatus || "BOL_CREATED",
+    normalizedStatus: (() => {
+      const s = freightBOL.trackingStatus || "BOL_CREATED";
+      if (s === "DELIVERED") return "DELIVERED";
+      if (s === "IN_TRANSIT") return "IN_TRANSIT";
+      return "CREATED";
+    })(),
+    accentColor: "#9c27b0",
+    eta: null,
+    shipDate: null,
+    weight: freightBOL.weight ? `${freightBOL.weight} lbs` : "",
+    rate: freightBOL.rate ? `$${Number(freightBOL.rate).toFixed(2)}` : "",
+    fromAddress: freightBOL.fromAddress || null,
+    toAddress: freightBOL.toAddress || null,
+    steps: FREIGHT_STEPS,
+    stepIndex: FREIGHT_STEPS.indexOf(freightBOL.trackingStatus || "BOL_CREATED"),
+    isDelivered: freightBOL.trackingStatus === "DELIVERED",
+    raw: freightBOL,
+  }] : [];
+
+  const pickupRows: BoardRow[] = [...pickupActive, ...pickupCompleted].map((item: any) => {
+    const ps = item.pickupData;
+    const stepIdx = PICKUP_STEPS.indexOf(ps?.status || "");
+    return {
+      id: item.id,
+      type: "pickup" as const,
+      title: item.title || "Pickup Item",
+      photo: item.photo,
+      carrier: "Local Pickup",
+      trackingId: ps?.handoffCode ? `CODE: ${ps.handoffCode}` : "Pending",
+      status: ps?.status || "INVITE_SENT",
+      normalizedStatus: (() => {
+        const s = ps?.status || "INVITE_SENT";
+        if (s === "COMPLETED") return "DELIVERED";
+        if (s === "EN_ROUTE" || s === "HANDED_OFF") return "IN_TRANSIT";
+        if (s === "CONFIRMED") return "OUT_FOR_DELIVERY";
+        return "CREATED";
+      })(),
+      accentColor: "#ff9800",
+      eta: ps?.scheduledAt ? new Date(ps.scheduledAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : null,
+      shipDate: null,
+      weight: "",
+      rate: item.listingPrice ? `$${item.listingPrice}` : "",
+      fromAddress: null,
+      toAddress: null,
+      steps: PICKUP_STEPS,
+      stepIndex: stepIdx >= 0 ? stepIdx : 0,
+      isDelivered: ps?.status === "COMPLETED",
+      raw: item,
+    };
+  });
+
+  // Combine and sort by status priority
+  const allRows = [...parcelRows, ...freightRows, ...pickupRows];
+
+  const getStatusPriority = (ns: string) => {
+    if (ns === "EXCEPTION") return 0;
+    if (ns === "OUT_FOR_DELIVERY") return 1;
+    if (ns === "IN_TRANSIT" || ns === "PICKED_UP") return 2;
+    if (ns === "CREATED") return 3;
+    if (ns === "DELIVERED") return 4;
+    return 5;
+  };
+
+  const sortedRows = [...allRows].sort((a, b) => getStatusPriority(a.normalizedStatus) - getStatusPriority(b.normalizedStatus));
+
+  // Status counts for command header
+  const counts = {
+    inTransit: allRows.filter(r => r.normalizedStatus === "IN_TRANSIT" || r.normalizedStatus === "PICKED_UP").length,
+    outForDelivery: allRows.filter(r => r.normalizedStatus === "OUT_FOR_DELIVERY").length,
+    delivered: allRows.filter(r => r.normalizedStatus === "DELIVERED").length,
+    exceptions: allRows.filter(r => r.normalizedStatus === "EXCEPTION").length,
+  };
+
+  // Filter rows by selected status
+  const filteredRows = filterStatus
+    ? sortedRows.filter(r => {
+        if (filterStatus === "inTransit") return r.normalizedStatus === "IN_TRANSIT" || r.normalizedStatus === "PICKED_UP";
+        if (filterStatus === "outForDelivery") return r.normalizedStatus === "OUT_FOR_DELIVERY";
+        if (filterStatus === "delivered") return r.normalizedStatus === "DELIVERED";
+        if (filterStatus === "exceptions") return r.normalizedStatus === "EXCEPTION";
+        return true;
+      })
+    : sortedRows;
+
+  // Empty state
+  if (allRows.length === 0) {
     return (
-      <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-muted)" }}>
-        <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem", opacity: 0.4 }}>{"\u{1F69A}"}</div>
+      <div style={{ textAlign: "center" as const, padding: "3rem", color: "var(--text-muted)" }}>
+        <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem", opacity: 0.4 }}>{"\u{1F4E1}"}</div>
         <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.35rem" }}>No Shipments Yet</div>
         <div style={{ fontSize: "0.82rem", lineHeight: 1.5, maxWidth: 360, margin: "0 auto" }}>Your shipped and delivered items will be tracked here with real-time status updates, carrier tracking, and delivery confirmation.</div>
       </div>
     );
+  }
 
-  // Check for overdue shipments (estimated delivery passed)
-  const hasOverdue = items.some(i => {
-    if (i.deliveryStatus === "DELIVERED") return false;
-    if (i.estimatedDays && i.shipDate) {
-      const estDelivery = new Date(new Date(i.shipDate).getTime() + i.estimatedDays * 86400000);
-      return estDelivery.getTime() < Date.now();
-    }
-    return false;
-  });
-
-  function renderShippedCard(item: any) {
-    const stepIdx = STEPS.indexOf(item.deliveryStatus);
-    const isDelivered = item.deliveryStatus === "DELIVERED";
-    const isClosed = closedSales.has(item.id);
-    const estDate =
-      item.estimatedDays && item.shipDate
-        ? new Date(new Date(item.shipDate).getTime() + item.estimatedDays * 86400000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-        : null;
-    const tn = item.trackingNumber || generateTrackingNumber(item.id, item.carrier || "USPS");
-    const isExpanded = expandedLabel === item.id;
-    const borderColor = carrierBorderColor(item.carrier);
+  // Progress bar renderer
+  function renderProgressBar(steps: string[], currentIndex: number, isDone: boolean) {
+    const progress = currentIndex < 0 ? 0 : ((currentIndex + 1) / steps.length) * 100;
     return (
-      <div
-        key={item.id}
-        style={{
-          borderRadius: "0.75rem",
-          overflow: "hidden",
-          border: isDelivered ? "1px solid rgba(76,175,80,0.2)" : "1px solid var(--border-default)",
-          borderLeft: `4px solid ${borderColor}`,
-          background: "var(--bg-card)",
-          transition: "all 0.15s ease",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.85rem" }}>
-          {item.photo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={item.photo} alt="" style={{ width: 56, height: 56, borderRadius: "0.4rem", objectFit: "cover", flexShrink: 0 }} />
-          ) : (
-            <div style={{ width: 56, height: 56, borderRadius: "0.4rem", background: "var(--ghost-bg)", flexShrink: 0 }} />
-          )}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <Link href={`/items/${item.id}`} style={{ fontWeight: 600, fontSize: "0.85rem", color: "var(--text-primary)", textDecoration: "none" }}>
-                {item.title}
-              </Link>
-              <StatusBadge status={item.deliveryStatus} />
-            </div>
-            <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
-              {item.carrier} {"\u00B7"} {item.rate ? `$${Number(item.rate).toFixed(2)}` : ""} {"\u00B7"} Shipped {item.shipDate}
-              {estDate && !isDelivered && ` \u00B7 Est. ${estDate}`}
-            </div>
-            {/* Addresses from label */}
-            {(item.fromAddress || item.toAddress) && (
-              <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.2rem" }}>
-                <AddressDisplay label="FROM" address={item.fromAddress} />
-                <AddressDisplay label="TO" address={item.toAddress} />
+      <div style={{
+        height: 4,
+        borderRadius: 2,
+        background: "rgba(0,188,212,0.1)",
+        marginTop: "0.35rem",
+        overflow: "hidden",
+        position: "relative" as const,
+      }}>
+        <div style={{
+          height: "100%",
+          width: `${progress}%`,
+          background: isDone
+            ? "linear-gradient(90deg, #00bcd4, #4caf50)"
+            : "linear-gradient(90deg, #00bcd4, #00838f)",
+          borderRadius: 2,
+          transition: "width 0.4s ease",
+        }} />
+        {progress > 0 && progress < 100 && (
+          <div style={{
+            position: "absolute" as const,
+            top: "50%",
+            left: `${progress}%`,
+            transform: "translate(-50%, -50%)",
+            width: 6,
+            height: 6,
+            borderRadius: "50%",
+            background: "#00bcd4",
+            boxShadow: "0 0 4px rgba(0,188,212,0.5)",
+          }} />
+        )}
+      </div>
+    );
+  }
+
+  // Render a single board row
+  function renderBoardRow(row: BoardRow, idx: number) {
+    const isExpanded = expandedRow === row.id;
+    const isClosed = closedSales.has(row.id);
+    const isException = row.normalizedStatus === "EXCEPTION";
+    const typeIcon = row.type === "freight" ? "\u{1F69B}" : row.type === "pickup" ? "\u{1F91D}" : "\u{1F4E6}";
+    const trackUrl = row.type === "parcel" ? getTrackingUrl(row.carrier, row.trackingId) : null;
+
+    // ETA display
+    let etaDisplay = "Pending";
+    if (row.isDelivered) {
+      etaDisplay = "\u2713 Done";
+    } else if (row.eta) {
+      // Check if "today" or "tomorrow"
+      const etaDate = new Date(row.eta);
+      const now = new Date();
+      const diffDays = Math.floor((etaDate.getTime() - now.getTime()) / 86400000);
+      if (diffDays === 0) etaDisplay = "Today";
+      else if (diffDays === 1) etaDisplay = "Tomorrow";
+      else etaDisplay = row.eta;
+    }
+
+    return (
+      <div key={row.id}>
+        {/* Row */}
+        <div
+          onClick={() => { setExpandedRow(isExpanded ? null : row.id); console.log(`[tracking-dashboard] ${isExpanded ? "Collapsed" : "Expanded"} row: ${row.id}`); }}
+          style={{
+            borderRadius: "0.5rem",
+            overflow: "hidden",
+            cursor: "pointer",
+            borderLeft: `3px solid ${row.isDelivered ? "#4caf50" : isException ? "#f44336" : row.accentColor}`,
+            background: idx % 2 === 0 ? "transparent" : "rgba(0,188,212,0.02)",
+            transition: "all 0.2s ease",
+            marginBottom: "0.35rem",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLDivElement).style.background = "rgba(0,188,212,0.04)";
+            (e.currentTarget as HTMLDivElement).style.transform = "scale(1.005)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLDivElement).style.background = idx % 2 === 0 ? "transparent" : "rgba(0,188,212,0.02)";
+            (e.currentTarget as HTMLDivElement).style.transform = "scale(1)";
+          }}
+        >
+          {/* Main row content */}
+          <div style={{
+            padding: "0.75rem 0.9rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.6rem",
+          }}>
+            {/* Thumbnail */}
+            {row.photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={row.photo} alt="" style={{ width: 40, height: 40, borderRadius: 4, objectFit: "cover", flexShrink: 0 }} />
+            ) : (
+              <div style={{
+                width: 40, height: 40, borderRadius: 4,
+                background: row.type === "freight" ? "rgba(156,39,176,0.08)" : row.type === "pickup" ? "rgba(255,152,0,0.08)" : "rgba(0,188,212,0.06)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "0.85rem", flexShrink: 0,
+              }}>
+                {typeIcon}
               </div>
             )}
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.2rem", flexShrink: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-              {(() => {
-                const trackUrl = getTrackingUrl(item.carrier, tn);
-                return trackUrl ? (
-                  <a
-                    href={trackUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontFamily: "monospace", fontSize: "0.68rem", color: "var(--accent)", textDecoration: "underline", textUnderlineOffset: "2px" }}
-                    onClick={() => console.log("[tracking] Clicked:", item.carrier, tn)}
-                  >
-                    {tn} {"\u2197"}
-                  </a>
-                ) : (
-                  <span style={{ fontFamily: "monospace", fontSize: "0.68rem", color: "var(--text-primary)" }}>
-                    {tn}
-                  </span>
-                );
-              })()}
-              <button
-                onClick={() => copyTracking(tn)}
-                style={{
-                  background: "none", border: "none", cursor: "pointer",
-                  fontSize: "0.62rem", color: copied === tn ? "#4caf50" : "var(--text-muted)", padding: 0,
-                }}
-              >
-                {copied === tn ? "\u2713" : "\u{1F4CB}"}
-              </button>
+
+            {/* Item info + progress bar */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: "0.3rem",
+              }}>
+                {row.type !== "parcel" && (
+                  <span style={{ fontSize: "0.65rem" }}>{typeIcon}</span>
+                )}
+                <span style={{
+                  fontWeight: 700, fontSize: "0.85rem", color: "var(--text-primary)",
+                  overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const,
+                  maxWidth: "260px",
+                }}>
+                  {row.title}
+                </span>
+              </div>
+              {renderProgressBar(row.steps, row.stepIndex, row.isDelivered)}
+              <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
+                {row.fromAddress?.city && row.toAddress?.city
+                  ? `${row.fromAddress.city}, ${row.fromAddress.state || ""} \u2192 ${row.toAddress.city}, ${row.toAddress.state || ""}`
+                  : row.type === "pickup" ? "Local pickup" : row.type === "freight" ? "LTL Freight" : ""}
+              </div>
             </div>
-            <button
-              onClick={() => setExpandedLabel(isExpanded ? null : item.id)}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "0.62rem",
-                color: "var(--text-muted)",
-                padding: 0,
-              }}
-            >
-              {isExpanded ? "\u25B2 Hide Label" : "\u25BC Show Label"}
-            </button>
-            {(() => {
-              const trackUrl = getTrackingUrl(item.carrier, tn);
-              if (!trackUrl) return null;
-              const cUp = (item.carrier || "").toUpperCase();
-              const tColor = cUp.includes("USPS") ? "#333366" : cUp.includes("UPS") ? "#351c15" : cUp.includes("FEDEX") ? "#4d148c" : "var(--accent)";
-              return (
+
+            {/* Carrier badge */}
+            <div style={{
+              padding: "2px 6px", fontSize: "0.62rem", fontWeight: 600,
+              fontFamily: "monospace", border: `1px solid ${row.accentColor}`,
+              borderRadius: 3, color: row.accentColor, whiteSpace: "nowrap" as const,
+              flexShrink: 0,
+            }}>
+              {row.type === "freight" ? "LTL" : row.type === "pickup" ? "LOCAL" : row.carrier.toUpperCase().substring(0, 4)}
+            </div>
+
+            {/* Tracking / BOL / Code */}
+            <div style={{ display: "flex", gap: "0.25rem", alignItems: "center", flexShrink: 0 }}>
+              {trackUrl ? (
                 <a
                   href={trackUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => console.log("[tracking] Link clicked:", item.carrier, tn)}
-                  style={{ fontSize: "0.6rem", fontWeight: 600, color: tColor, textDecoration: "none", padding: 0 }}
-                >
-                  Track on {(item.carrier || "Carrier").split(" ")[0]} {"\u2197"}
-                </a>
-              );
-            })()}
-          </div>
-        </div>
-        {/* Progress bar */}
-        <div style={{ display: "flex", padding: "0 0.85rem 0.75rem", alignItems: "center", position: "relative" }}>
-          {STEPS.map((step, i) => {
-            const past = i <= stepIdx;
-            const isCurrent = i === stepIdx;
-            const activeColor = isDelivered ? "#4caf50" : "#00bcd4";
-            const isInTransitDot = isCurrent && !isDelivered && (step === "IN_TRANSIT" || step === "PICKED_UP");
-            return (
-              <div key={step} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", position: "relative", zIndex: 1 }}>
-                {/* Connecting line before dot */}
-                {i > 0 && (
-                  <div style={{
-                    position: "absolute",
-                    left: "-50%",
-                    right: "50%",
-                    top: 4,
-                    height: 5,
-                    background: past ? activeColor : "var(--ghost-bg)",
-                    borderRadius: 0,
-                    zIndex: 0,
-                  }} />
-                )}
-                {/* Dot */}
-                <div style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: past ? activeColor : "var(--ghost-bg)",
-                  border: isCurrent ? `2px solid ${activeColor}` : "2px solid transparent",
-                  boxShadow: isCurrent ? `0 0 5px ${activeColor}88` : "none",
-                  marginBottom: 4,
-                  zIndex: 1,
-                  position: "relative",
-                  flexShrink: 0,
-                  animation: isInTransitDot ? "pulse 2s infinite" : "none",
-                }} />
-                <span
+                  onClick={(e) => e.stopPropagation()}
                   style={{
-                    fontSize: "0.52rem",
-                    fontWeight: past ? 700 : 400,
-                    color: past ? (isDelivered ? "#4caf50" : "var(--accent)") : "var(--text-muted)",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.04em",
+                    fontSize: "0.65rem", fontFamily: "monospace",
+                    color: "var(--accent)", textDecoration: "none",
                   }}
                 >
-                  {STEP_LABELS[i]}
+                  {row.trackingId.length > 14 ? row.trackingId.substring(0, 14) + "\u2026" : row.trackingId}{"\u2197"}
+                </a>
+              ) : (
+                <span style={{
+                  fontSize: "0.65rem", fontFamily: "monospace",
+                  color: row.type === "freight" ? "#9c27b0" : row.type === "pickup" ? "#ff9800" : "var(--text-muted)",
+                }}>
+                  {row.trackingId}
                 </span>
-              </div>
-            );
-          })}
-        </div>
-        {/* Close Sale button for delivered items */}
-        {isDelivered && !isClosed && (
-          <div style={{ padding: "0 0.85rem 0.75rem" }}>
-            <button
-              onClick={() => closeSale(item.id)}
-              disabled={closingSale === item.id}
-              style={{
-                width: "100%",
-                padding: "0.45rem 0.85rem",
-                fontSize: "0.75rem",
-                fontWeight: 700,
-                borderRadius: "0.4rem",
-                border: "none",
-                background: "linear-gradient(135deg, #4caf50, #2e7d32)",
-                color: "#fff",
-                cursor: closingSale === item.id ? "wait" : "pointer",
-                opacity: closingSale === item.id ? 0.6 : 1,
-              }}
-            >
-              {closingSale === item.id ? "Closing..." : "\u2713 Close Sale \u2014 Mark Completed"}
-            </button>
-          </div>
-        )}
-        {isClosed && (
-          <div style={{ padding: "0 0.85rem 0.75rem", fontSize: "0.72rem", fontWeight: 600, color: "#4caf50" }}>
-            {"\u2705"} Sale completed successfully
-          </div>
-        )}
-        {/* Collapsible label */}
-        {isExpanded && (
-          <div style={{ borderTop: "1px solid var(--border-default)" }}>
-            {/* Full label details */}
-            {(item.fromAddress || item.toAddress) && (
-              <div style={{ display: "flex", gap: "1.5rem", padding: "0.75rem 1rem", justifyContent: "center" }}>
-                <AddressDisplay label="FROM" address={item.fromAddress} />
-                <div style={{ width: 1, background: "var(--border-default)" }} />
-                <AddressDisplay label="TO" address={item.toAddress} />
-              </div>
-            )}
-            <div style={{ padding: "1rem", display: "flex", justifyContent: "center" }}>
-              <ShippingLabel
-                item={item}
-                carrier={item.carrier || "USPS"}
-                service={item.deliveryMethod || "Standard"}
-                rate={item.rate || 0}
-                trackingNumber={tn}
-                fromZip="04901"
-                toZip={item.toAddress?.zip || item.buyerZip || ""}
-                weight={item.weight || 5}
-              />
+              )}
+              <button
+                onClick={(e) => { e.stopPropagation(); copyTracking(row.trackingId); }}
+                style={{
+                  padding: "1px 3px", fontSize: "0.55rem",
+                  border: "1px solid rgba(0,188,212,0.2)", borderRadius: 2,
+                  background: "transparent",
+                  color: copied === row.trackingId ? "#4caf50" : "var(--text-muted)",
+                  cursor: "pointer", flexShrink: 0,
+                }}
+              >
+                {copied === row.trackingId ? "\u2713" : "\u{1F4CB}"}
+              </button>
             </div>
-          </div>
-        )}
-      </div>
-    );
-  }
 
-  function renderFreightCard() {
-    if (!freightBOL) return null;
-    const isDelivered = freightBOL.trackingStatus === "DELIVERED";
-    return (
-      <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: isDelivered ? "1px solid rgba(76,175,80,0.2)" : "1px solid rgba(156,39,176,0.2)", borderLeft: "4px solid #9c27b0", background: "var(--bg-card)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.85rem" }}>
-          <div style={{ width: 56, height: 56, borderRadius: "0.4rem", background: "rgba(156,39,176,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", flexShrink: 0 }}>{"\u{1F69B}"}</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <span style={{ fontWeight: 600, fontSize: "0.85rem", color: "var(--text-primary)" }}>Freight Shipment</span>
-              <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(156,39,176,0.12)", color: "#9c27b0" }}>FREIGHT</span>
-            </div>
-            <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
-              {freightBOL.carrier || "LTL"} {"\u00B7"} BOL: {freightBOL.bolNumber} {"\u00B7"} ${Number(freightBOL.rate || 0).toFixed(2)}
-            </div>
-          </div>
-          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "2px 8px", borderRadius: "9999px", background: isDelivered ? "rgba(76,175,80,0.15)" : "rgba(156,39,176,0.15)", color: isDelivered ? "#4caf50" : "#9c27b0" }}>
-            {(freightBOL.trackingStatus || "BOL CREATED").replace(/_/g, " ")}
-          </span>
-        </div>
-      </div>
-    );
-  }
+            {/* Status badge */}
+            <StatusBadge status={row.status} />
 
-  function renderPickupCard(item: any) {
-    const ps = item.pickupData;
-    const isDone = ps?.status === "COMPLETED";
-    return (
-      <div key={item.id} style={{ borderRadius: "0.75rem", overflow: "hidden", border: isDone ? "1px solid rgba(76,175,80,0.2)" : "1px solid rgba(168,85,247,0.2)", borderLeft: "4px solid #a855f7", background: "var(--bg-card)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.85rem" }}>
-          {item.photo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={item.photo} alt="" style={{ width: 56, height: 56, borderRadius: "0.4rem", objectFit: "cover", flexShrink: 0 }} />
-          ) : (
-            <div style={{ width: 56, height: 56, borderRadius: "0.4rem", background: "var(--ghost-bg)", flexShrink: 0 }} />
+            {/* ETA */}
+            <div style={{
+              fontSize: "0.75rem", fontWeight: 600,
+              color: row.isDelivered ? "#4caf50" : "var(--text-muted)",
+              whiteSpace: "nowrap" as const, minWidth: "50px", textAlign: "right" as const,
+              flexShrink: 0,
+            }}>
+              {etaDisplay}
+            </div>
+
+            {/* Expand chevron */}
+            <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", flexShrink: 0 }}>
+              {isExpanded ? "\u25B2" : "\u25BC"}
+            </span>
+          </div>
+
+          {/* Expanded details */}
+          {isExpanded && (
+            <div style={{
+              padding: "0.65rem 0.9rem 0.75rem",
+              background: "rgba(0,188,212,0.02)",
+              borderTop: "1px solid rgba(0,188,212,0.08)",
+              fontSize: "0.72rem",
+            }}>
+              {/* Address row */}
+              {(row.fromAddress || row.toAddress) && (
+                <div style={{ display: "flex", gap: "1.5rem", marginBottom: "0.5rem" }}>
+                  <AddressDisplay label="FROM" address={row.fromAddress} />
+                  <AddressDisplay label="TO" address={row.toAddress} />
+                </div>
+              )}
+
+              {/* Details row */}
+              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" as const, fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+                {row.weight && <span>Weight: {row.weight}</span>}
+                {row.rate && <span>Rate: {row.rate}</span>}
+                {row.shipDate && <span>Shipped: {row.shipDate}</span>}
+                {row.type === "pickup" && row.raw?.pickupData?.scheduledAt && (
+                  <span>Scheduled: {new Date(row.raw.pickupData.scheduledAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                )}
+                {row.type === "pickup" && row.raw?.pickupData?.handoffCode && (
+                  <span style={{ fontFamily: "monospace", fontWeight: 700 }}>Handoff Code: {row.raw.pickupData.handoffCode}</span>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" as const }}>
+                {row.type === "parcel" && (() => {
+                  const url = getTrackingUrl(row.carrier, row.trackingId);
+                  if (!url) return null;
+                  const cUp = row.carrier.toUpperCase();
+                  const tColor = cUp.includes("USPS") ? "#333366" : cUp.includes("UPS") ? "#351c15" : cUp.includes("FEDEX") ? "#4d148c" : "var(--accent)";
+                  return (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); window.open(url, "_blank"); }}
+                      style={{
+                        padding: "4px 8px", fontSize: "0.62rem", fontWeight: 600,
+                        border: `1px solid ${tColor}`, borderRadius: 3,
+                        background: "transparent", color: tColor, cursor: "pointer",
+                      }}
+                    >
+                      Track on {row.carrier.split(" ")[0]} {"\u2197"}
+                    </button>
+                  );
+                })()}
+                {row.isDelivered && !isClosed && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); closeSale(row.id); }}
+                    disabled={closingSale === row.id}
+                    style={{
+                      padding: "4px 8px", fontSize: "0.62rem", fontWeight: 600,
+                      border: "1px solid #4caf50", borderRadius: 3,
+                      background: "rgba(76,175,80,0.1)", color: "#4caf50",
+                      cursor: closingSale === row.id ? "wait" : "pointer",
+                      opacity: closingSale === row.id ? 0.6 : 1,
+                    }}
+                  >
+                    {closingSale === row.id ? "Closing..." : "\u2713 Close Sale"}
+                  </button>
+                )}
+                {isClosed && (
+                  <span style={{ fontSize: "0.62rem", fontWeight: 600, color: "#4caf50" }}>{"\u2705"} Sale completed</span>
+                )}
+                {row.type === "parcel" && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setExpandedRow(isExpanded ? null : row.id); }}
+                    style={{
+                      padding: "4px 8px", fontSize: "0.62rem", fontWeight: 600,
+                      border: "1px solid var(--border-default)", borderRadius: 3,
+                      background: "transparent", color: "var(--text-muted)", cursor: "pointer",
+                    }}
+                  >
+                    {"\u{1F3F7}\uFE0F"} View Label
+                  </button>
+                )}
+              </div>
+
+              {/* Inline label for parcel when expanded */}
+              {row.type === "parcel" && (
+                <div style={{ marginTop: "0.75rem", display: "flex", justifyContent: "center" }}>
+                  <ShippingLabel
+                    item={row.raw}
+                    carrier={row.carrier}
+                    service={row.raw.deliveryMethod || "Standard"}
+                    rate={row.raw.rate || 0}
+                    trackingNumber={row.trackingId}
+                    fromZip="04901"
+                    toZip={row.toAddress?.zip || row.raw.buyerZip || ""}
+                    weight={row.raw.weight || 5}
+                  />
+                </div>
+              )}
+            </div>
           )}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <Link href={`/items/${item.id}`} style={{ fontWeight: 600, fontSize: "0.85rem", color: "var(--text-primary)", textDecoration: "none" }}>{item.title}</Link>
-              <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(168,85,247,0.12)", color: "#a855f7" }}>PICKUP</span>
-            </div>
-            <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
-              {ps?.handoffCode ? `Handoff: ${ps.handoffCode}` : "Local pickup"}
-              {ps?.completedAt && ` \u00B7 ${new Date(ps.completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
-            </div>
-          </div>
-          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "2px 8px", borderRadius: "9999px", background: isDone ? "rgba(76,175,80,0.15)" : "rgba(168,85,247,0.15)", color: isDone ? "#4caf50" : "#a855f7" }}>
-            {(ps?.status || "PENDING").replace(/_/g, " ")}
-          </span>
         </div>
-        {/* Close sale for completed pickups */}
-        {isDone && !closedSales.has(item.id) && (
-          <div style={{ padding: "0 0.85rem 0.75rem" }}>
-            <button onClick={() => closeSale(item.id)} disabled={closingSale === item.id} style={{ width: "100%", padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #4caf50, #2e7d32)", color: "#fff", cursor: closingSale === item.id ? "wait" : "pointer", opacity: closingSale === item.id ? 0.6 : 1 }}>
-              {closingSale === item.id ? "Closing..." : "\u2713 Close Sale"}
-            </button>
-          </div>
-        )}
       </div>
     );
   }
 
-  // Render grouped sections
-  const sections = [
-    { title: "Shipping Alerts", items: [] as any[], isAlerts: true },
-    ...(issues.length > 0 ? [{ title: "\u26A0\uFE0F Exceptions", items: issues, isAlerts: false }] : []),
-    ...(outForDelivery.length > 0 ? [{ title: "\u{1F69A} Out for Delivery", items: outForDelivery, isAlerts: false }] : []),
-    ...(inTransit.length > 0 ? [{ title: "\u{1F4E6} In Transit", items: inTransit, isAlerts: false }] : []),
-    ...(created.length > 0 ? [{ title: "\u{1F3F7}\uFE0F Label Created", items: created, isAlerts: false }] : []),
-    ...(delivered.length > 0 ? [{ title: "\u2705 Delivered", items: delivered, isAlerts: false }] : []),
-  ];
+  console.log(`[tracking-dashboard] Board render: ${allRows.length} total (${parcelRows.length} parcel, ${freightRows.length} freight, ${pickupRows.length} pickup)`);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      {/* Shipping Alerts */}
-      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.25rem" }}>
-        {inTransit.length > 0 && <div style={{ padding: "0.35rem 0.75rem", borderRadius: "0.5rem", background: "rgba(59,130,246,0.08)", border: "1px solid rgba(59,130,246,0.15)", fontSize: "0.72rem", fontWeight: 600, color: "#3b82f6" }}>{"\u{1F69A}"} {inTransit.length} package{inTransit.length !== 1 ? "s" : ""} in transit</div>}
-        {outForDelivery.length > 0 && <div style={{ padding: "0.35rem 0.75rem", borderRadius: "0.5rem", background: "rgba(255,152,0,0.08)", border: "1px solid rgba(255,152,0,0.15)", fontSize: "0.72rem", fontWeight: 600, color: "#ff9800" }}>{"\u{1F4E6}"} {outForDelivery.length} out for delivery</div>}
-        {delivered.length > 0 && <div style={{ padding: "0.35rem 0.75rem", borderRadius: "0.5rem", background: "rgba(76,175,80,0.08)", border: "1px solid rgba(76,175,80,0.15)", fontSize: "0.72rem", fontWeight: 600, color: "#4caf50" }}>{"\u2705"} {delivered.length} delivered</div>}
-        {hasOverdue && <div style={{ padding: "0.35rem 0.75rem", borderRadius: "0.5rem", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.15)", fontSize: "0.72rem", fontWeight: 600, color: "#f59e0b" }}>{"\u26A0\uFE0F"} Overdue shipments</div>}
-        {issues.length > 0 && <div style={{ padding: "0.35rem 0.75rem", borderRadius: "0.5rem", background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.15)", fontSize: "0.72rem", fontWeight: 600, color: "#ef4444" }}>{"\u{1F6A8}"} {issues.length} exception{issues.length !== 1 ? "s" : ""}</div>}
-        {(() => {
-          if (!allData) return null;
-          const pickupActive = [...allData.preSale, ...allData.readyToShip].filter(i => i.pickupStatus && i.pickupStatus !== "COMPLETED" && i.pickupStatus !== null).length;
-          if (pickupActive === 0) return null;
-          return <div style={{ padding: "0.35rem 0.75rem", borderRadius: "0.5rem", background: "rgba(168,85,247,0.08)", border: "1px solid rgba(168,85,247,0.15)", fontSize: "0.72rem", fontWeight: 600, color: "#a855f7" }}>{"\u{1F91D}"} {pickupActive} active pickup{pickupActive !== 1 ? "s" : ""}</div>;
-        })()}
+    <div style={{ display: "flex", flexDirection: "column" as const, gap: "0.75rem" }}>
+      {/* Scan line keyframes */}
+      <style>{`@keyframes ll-scan { 0% { top: 0; } 100% { top: 100%; } }`}</style>
+
+      {/* ─── TRACKING COMMAND HEADER ─── */}
+      <div style={{
+        padding: "0.85rem 1rem",
+        borderRadius: "0.75rem",
+        background: "linear-gradient(135deg, rgba(0,188,212,0.04), rgba(0,150,136,0.03))",
+        border: "1px solid rgba(0,188,212,0.12)",
+        position: "relative" as const,
+        overflow: "hidden",
+      }}>
+        {/* Scan line animation */}
+        <div style={{
+          position: "absolute" as const,
+          left: 0, right: 0,
+          height: 1,
+          background: "linear-gradient(90deg, transparent, rgba(0,188,212,0.3), transparent)",
+          animation: "ll-scan 3s ease-in-out infinite",
+          top: 0,
+        }} />
+
+        {/* Title row */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          marginBottom: "0.6rem",
+        }}>
+          <span style={{
+            fontSize: "0.9rem", fontWeight: 700,
+            letterSpacing: "0.08em", color: "var(--text-primary)",
+          }}>
+            {"\u{1F4E1}"} SHIPMENT TRACKING
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <span style={{
+              fontSize: "0.68rem", color: "var(--text-muted)", fontFamily: "monospace",
+            }}>
+              Last: {boardRefreshTs.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </span>
+            <button
+              onClick={() => { setBoardRefreshTs(new Date()); console.log("[tracking-dashboard] Manual refresh"); }}
+              style={{
+                padding: "4px 8px", fontSize: "0.62rem", fontWeight: 600,
+                border: "1px solid rgba(0,188,212,0.2)", borderRadius: 3,
+                background: "rgba(0,188,212,0.08)", color: "var(--accent)",
+                cursor: "pointer", transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,188,212,0.15)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,188,212,0.08)"; }}
+            >
+              {"\u{1F504}"} Refresh
+            </button>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ height: 1, background: "rgba(0,188,212,0.08)", marginBottom: "0.6rem" }} />
+
+        {/* Status counts row */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
+          {[
+            { key: "inTransit", icon: "\u{1F7E2}", label: "In Transit", count: counts.inTransit },
+            { key: "outForDelivery", icon: "\u{1F7E0}", label: "Out for Delivery", count: counts.outForDelivery },
+            { key: "delivered", icon: "\u2705", label: "Delivered", count: counts.delivered },
+            { key: "exceptions", icon: "\u26A0\uFE0F", label: "Exceptions", count: counts.exceptions },
+          ].map((status) => (
+            <button
+              key={status.key}
+              onClick={() => {
+                setFilterStatus(filterStatus === status.key ? null : status.key);
+                console.log(`[tracking-dashboard] Filter: ${filterStatus === status.key ? "cleared" : status.key}`);
+              }}
+              style={{
+                padding: "0.5rem 0.6rem",
+                textAlign: "center" as const,
+                fontSize: "0.7rem",
+                fontWeight: 600,
+                border: filterStatus === status.key ? "1px solid var(--accent)" : "1px solid rgba(0,188,212,0.15)",
+                borderRadius: 4,
+                background: filterStatus === status.key ? "rgba(0,188,212,0.15)" : "transparent",
+                color: "var(--text-primary)",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                fontFamily: "monospace",
+              }}
+              onMouseEnter={(e) => {
+                if (filterStatus !== status.key) (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,188,212,0.06)";
+              }}
+              onMouseLeave={(e) => {
+                if (filterStatus !== status.key) (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+              }}
+            >
+              <div>{status.icon}</div>
+              <div style={{ fontWeight: 700, fontSize: "0.85rem" }}>{status.count}</div>
+              <div style={{ fontSize: "0.48rem", marginTop: 2, opacity: 0.8, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>{status.label}</div>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Grouped sections */}
-      {sections.filter(s => !s.isAlerts && s.items.length > 0).map((section) => (
-        <div key={section.title}>
-          <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
-            {section.title} ({section.items.length})
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {section.items.map(renderShippedCard)}
-          </div>
-        </div>
-      ))}
-
-      {/* Freight shipments */}
-      {freightBOL && (
-        <div>
-          <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
-            {"\u{1F69B}"} Freight Shipments (1)
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {renderFreightCard()}
-          </div>
-        </div>
-      )}
-
-      {/* Active pickups */}
-      {pickupActive.length > 0 && (
-        <div>
-          <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
-            {"\u{1F91D}"} Active Pickups ({pickupActive.length})
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {pickupActive.map(renderPickupCard)}
-          </div>
+      {/* Active filter indicator */}
+      {filterStatus && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: "0.4rem",
+          fontSize: "0.68rem", color: "var(--text-muted)",
+        }}>
+          <span>Showing: <strong style={{ color: "var(--accent)" }}>{filterStatus === "inTransit" ? "In Transit" : filterStatus === "outForDelivery" ? "Out for Delivery" : filterStatus === "delivered" ? "Delivered" : "Exceptions"}</strong></span>
+          <button
+            onClick={() => setFilterStatus(null)}
+            style={{
+              fontSize: "0.55rem", padding: "1px 4px", borderRadius: 3,
+              border: "1px solid var(--border-default)", background: "transparent",
+              color: "var(--text-muted)", cursor: "pointer",
+            }}
+          >
+            {"\u2715"} Clear
+          </button>
+          <span style={{ marginLeft: "auto", fontSize: "0.6rem", color: "var(--text-muted)" }}>
+            {filteredRows.length} of {allRows.length} shipments
+          </span>
         </div>
       )}
 
-      {/* Completed pickups */}
-      {pickupCompleted.length > 0 && (
-        <div>
-          <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
-            {"\u2705"} Completed Pickups ({pickupCompleted.length})
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {pickupCompleted.map(renderPickupCard)}
-          </div>
+      {/* ─── FLIGHT BOARD ─── */}
+      <div>
+        {/* Column header */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: "0.6rem",
+          padding: "0.35rem 0.9rem 0.35rem calc(0.9rem + 3px)",
+          fontSize: "0.48rem", fontWeight: 700,
+          textTransform: "uppercase" as const, letterSpacing: "0.08em",
+          color: "var(--text-muted)", borderBottom: "1px solid var(--border-default)",
+          marginBottom: "0.3rem",
+        }}>
+          <div style={{ width: 40, flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>Item</div>
+          <div style={{ width: 40, flexShrink: 0, textAlign: "center" as const }}>Carrier</div>
+          <div style={{ width: 120, flexShrink: 0 }}>Tracking</div>
+          <div style={{ width: 80, flexShrink: 0 }}>Status</div>
+          <div style={{ width: 50, flexShrink: 0, textAlign: "right" as const }}>ETA</div>
+          <div style={{ width: 12, flexShrink: 0 }} />
         </div>
-      )}
+
+        {/* Rows */}
+        {filteredRows.length === 0 ? (
+          <div style={{ textAlign: "center" as const, padding: "2rem", color: "var(--text-muted)", fontSize: "0.82rem" }}>
+            No shipments match this filter.
+          </div>
+        ) : (
+          filteredRows.map((row, idx) => renderBoardRow(row, idx))
+        )}
+      </div>
     </div>
   );
 }
@@ -3111,6 +3448,47 @@ function FreightTab({ items }: { items: any[] }) {
     blanketWrap: false,
     insideDelivery: false,
   });
+  // Arta quote state
+  const [artaQuoteData, setArtaQuoteData] = useState<any>(null);
+  const [loadingArtaQuote, setLoadingArtaQuote] = useState(false);
+  const [artaQuoteError, setArtaQuoteError] = useState("");
+
+  const getArtaQuote = async (item: any) => {
+    setLoadingArtaQuote(true);
+    setArtaQuoteError("");
+    try {
+      const res = await fetch("/api/shipping/arta-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          item: {
+            id: item.id,
+            title: item.title,
+            isPremium: item.isPremium,
+            isHighValue: item.isHighValue,
+            isAntique: item.isAntique,
+            isFragile: item.isFragile,
+            value: item.listingPrice || 500,
+          },
+          fromZip: form.fromZip || "04901",
+          toZip: form.toZip,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        console.log("[arta] Quote received:", data);
+        setArtaQuoteData(data);
+      } else {
+        setArtaQuoteError(data.error || "Failed to fetch Arta quote");
+      }
+    } catch (err) {
+      console.error("[arta] Error:", err);
+      setArtaQuoteError("Failed to fetch Arta quote");
+    } finally {
+      setLoadingArtaQuote(false);
+    }
+  };
+
   // Official Quote Upload state
   const [showQuoteUpload, setShowQuoteUpload] = useState(false);
   const [officialQuote, setOfficialQuote] = useState<any>(null);
@@ -3293,7 +3671,7 @@ function FreightTab({ items }: { items: any[] }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      {/* Saved Freight Quotes */}
+      {/* Saved Freight Quotes — Horizontal Card Layout */}
       {(() => {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         freightQuoteVer; // trigger re-render on delete
@@ -3307,40 +3685,81 @@ function FreightTab({ items }: { items: any[] }) {
             borderRadius: "0.75rem",
             background: "rgba(156,39,176,0.03)", border: "1px solid rgba(156,39,176,0.12)",
             overflow: "hidden",
+            padding: "0.6rem 0.85rem 0.75rem",
           }}>
             <div style={{
-              padding: "0.6rem 0.85rem", display: "flex", alignItems: "center",
+              display: "flex", alignItems: "center",
               justifyContent: "space-between",
+              marginBottom: "0.5rem",
             }}>
-              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>
-                {"\u{1F4BE}"} Saved Freight Quotes ({ltlQuotes.length})
+              <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
+                {"\u{1F4BE}"} Saved Quotes ({ltlQuotes.length})
               </span>
+              {ltlQuotes.length > 0 && (
+                <button
+                  onClick={() => {
+                    if (confirm("Clear all saved quotes?")) {
+                      ltlQuotes.forEach((q: any) => deleteQuote(q.itemId, q.quoteKey));
+                      setFreightQuoteVer(v => v + 1);
+                      console.log("[SavedQuotes] Cleared all saved quotes");
+                    }
+                  }}
+                  style={{
+                    fontSize: "0.55rem",
+                    padding: "2px 6px",
+                    borderRadius: "0.3rem",
+                    background: "rgba(244,67,54,0.1)",
+                    color: "#f44336",
+                    border: "1px solid rgba(244,67,54,0.2)",
+                    cursor: "pointer",
+                  }}
+                >
+                  Clear All
+                </button>
+              )}
             </div>
-            <div style={{ padding: "0 0.85rem 0.75rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-              {ltlQuotes.map((q: any) => (
+
+            <div style={{
+              display: "flex",
+              gap: "0.5rem",
+              flexWrap: "wrap" as const,
+            }}>
+              {ltlQuotes.slice(0, 3).map((q: any) => (
                 <div
                   key={`${q.itemId}-${q.quoteKey}`}
                   style={{
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
-                    padding: "0.5rem 0.65rem", borderRadius: "0.4rem",
-                    background: "var(--bg-card)", border: "1px solid var(--border-default)",
-                    borderLeft: "3px solid #9c27b0",
+                    flex: "0 1 calc(33.333% - 0.35rem)",
+                    minWidth: "140px",
+                    padding: "0.5rem 0.6rem",
+                    borderRadius: "0.5rem",
+                    background: "rgba(255,193,7,0.06)",
+                    border: "1.5px solid rgba(255,193,7,0.25)",
+                    display: "flex",
+                    flexDirection: "column" as const,
+                    justifyContent: "space-between",
                   }}
                 >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                      <span style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-primary)" }}>{q.carrier}</span>
-                      {q.isLive && <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(76,175,80,0.12)", color: "#4caf50" }}>LIVE</span>}
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.25rem", marginBottom: "0.2rem" }}>
+                      <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                        {q.carrier}
+                      </span>
+                      {q.isLive && <span style={{ fontSize: "0.42rem", fontWeight: 700, padding: "1px 3px", borderRadius: "9999px", background: "rgba(76,175,80,0.12)", color: "#4caf50" }}>LIVE</span>}
                     </div>
-                    <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
-                      {q.itemTitle || q.itemId.slice(0, 8)} {"\u00B7"} {q.service} {"\u00B7"} {q.transit}
+                    <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#ffc107", marginBottom: "0.15rem" }}>
+                      ${Number(q.amount).toFixed(0)}
+                    </div>
+                    <div style={{ fontSize: "0.58rem", color: "var(--text-muted)" }}>
+                      {q.transit || "?"} {"\u00B7"} {q.service || ""}
+                    </div>
+                    <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+                      {q.itemTitle || q.itemId.slice(0, 8)}
                     </div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
-                    <span style={{ fontSize: "0.88rem", fontWeight: 800, color: "#4caf50" }}>${Number(q.amount).toFixed(2)}</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", marginTop: "0.35rem" }}>
                     <a
                       href={`/items/${q.itemId}`}
-                      style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}
+                      style={{ fontSize: "0.55rem", fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}
                     >
                       Use {"\u2192"}
                     </a>
@@ -3349,19 +3768,45 @@ function FreightTab({ items }: { items: any[] }) {
                         e.stopPropagation();
                         deleteQuote(q.itemId, q.quoteKey);
                         setFreightQuoteVer(v => v + 1);
+                        console.log("[SavedQuotes] Removed quote", q.quoteKey);
                       }}
                       style={{
-                        background: "none", border: "none", cursor: "pointer",
-                        fontSize: "0.72rem", color: "var(--text-muted)", padding: "0.15rem 0.3rem",
-                        borderRadius: "0.25rem", lineHeight: 1,
+                        fontSize: "0.5rem",
+                        padding: "2px 4px",
+                        borderRadius: "0.2rem",
+                        background: "rgba(244,67,54,0.1)",
+                        color: "#f44336",
+                        border: "none",
+                        cursor: "pointer",
+                        marginLeft: "auto",
                       }}
-                      title="Remove saved quote"
                     >
-                      {"\u2715"}
+                      {"\u{1F5D1}"} Remove
                     </button>
                   </div>
                 </div>
               ))}
+              {ltlQuotes.length > 3 && (
+                <div
+                  style={{
+                    flex: "0 1 calc(33.333% - 0.35rem)",
+                    minWidth: "140px",
+                    padding: "0.5rem 0.6rem",
+                    borderRadius: "0.5rem",
+                    background: "rgba(0,188,212,0.04)",
+                    border: "1px solid rgba(0,188,212,0.12)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "0.7rem",
+                    fontWeight: 700,
+                    color: "var(--text-secondary)",
+                    cursor: "default",
+                  }}
+                >
+                  +{ltlQuotes.length - 3} more
+                </div>
+              )}
             </div>
           </div>
         );
@@ -3634,10 +4079,10 @@ function FreightTab({ items }: { items: any[] }) {
         </div>
       )}
 
-      {/* Arta White-Glove Option */}
+      {/* Arta White-Glove Option — Inline Quote */}
       {(() => {
         const artaItem = heavyItem || items[0];
-        const artaOk = artaItem && (artaItem.isPremium || (artaItem.isHighValue && artaItem.isAntique) || (artaItem.isHighValue && artaItem.isFragile));
+        const artaOk = artaItem && (artaItem.isPremium || artaItem.isArtaEligible || (artaItem.isHighValue && artaItem.isAntique) || (artaItem.isHighValue && artaItem.isFragile));
         if (!artaOk) return null;
         return (
           <div style={{
@@ -3652,17 +4097,92 @@ function FreightTab({ items }: { items: any[] }) {
               <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,215,0,0.1)", color: "#f59e0b", border: "1px solid rgba(255,215,0,0.2)" }}>PREMIUM</span>
             </div>
             <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "0.5rem", lineHeight: 1.5 }}>
-              This item qualifies for museum-grade shipping by Arta — custom crating, climate control, white-glove delivery, and full insurance coverage.
+              This item qualifies for museum-grade shipping by Arta {"\u2014"} custom crating, climate control, white-glove delivery, and full insurance.
             </div>
-            <a
-              href={`/items/${artaItem.id}`}
-              style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", fontSize: "0.68rem", fontWeight: 700, padding: "4px 12px", borderRadius: "0.4rem", background: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff", textDecoration: "none" }}
-            >
-              Get Arta Quote on Item Dashboard {"\u2192"}
-            </a>
-            <div style={{ marginTop: "0.4rem", fontSize: "0.48rem", color: "var(--text-muted)", fontStyle: "italic" }}>
-              Powered by Arta {"\u00B7"} Test Mode
-            </div>
+
+            {!artaQuoteData && !loadingArtaQuote && (
+              <button
+                onClick={() => getArtaQuote(artaItem)}
+                style={{ fontSize: "0.65rem", fontWeight: 700, padding: "5px 12px", borderRadius: "0.4rem", background: "rgba(255,215,0,0.12)", border: "1px solid rgba(255,215,0,0.2)", color: "#f59e0b", cursor: "pointer", textTransform: "uppercase" as const, letterSpacing: "0.04em", transition: "all 0.2s" }}
+              >
+                Get Arta Quote
+              </button>
+            )}
+            {loadingArtaQuote && (
+              <div style={{ fontSize: "0.65rem", color: "#f59e0b", fontWeight: 600 }}>Fetching Arta quotes...</div>
+            )}
+
+            {artaQuoteError && (
+              <div style={{ marginTop: "0.4rem", fontSize: "0.62rem", color: "#f44336", padding: "0.3rem 0.4rem", borderRadius: "0.3rem", background: "rgba(244,67,54,0.08)" }}>
+                {artaQuoteError}
+              </div>
+            )}
+
+            {artaQuoteData && (
+              <div style={{ marginTop: "0.5rem" }}>
+                {(artaQuoteData.quotes && artaQuoteData.quotes.length > 0) ? (
+                  artaQuoteData.quotes.map((q: any, idx: number) => (
+                    <div
+                      key={idx}
+                      style={{
+                        marginBottom: "0.35rem", padding: "0.4rem 0.5rem", borderRadius: "0.4rem",
+                        background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,215,0,0.08)",
+                        fontSize: "0.62rem", display: "flex", justifyContent: "space-between", alignItems: "center",
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{q.quote_type || "Quote"}</div>
+                        {q.services && q.services.length > 0 && (
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.52rem", marginTop: "0.1rem" }}>
+                            {q.services.slice(0, 3).join(", ")}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ fontWeight: 700, color: "#f59e0b" }}>
+                        ${Number(q.total || 0).toFixed(2)}
+                      </div>
+                    </div>
+                  ))
+                ) : artaQuoteData.tiers ? (
+                  ["premium", "select", "parcel"].map((tier) => {
+                    const t = (artaQuoteData.tiers as Record<string, any>)[tier];
+                    if (!t) return null;
+                    return (
+                      <div
+                        key={tier}
+                        style={{
+                          marginBottom: "0.35rem", padding: "0.4rem 0.5rem", borderRadius: "0.4rem",
+                          background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,215,0,0.08)",
+                          fontSize: "0.62rem", display: "flex", justifyContent: "space-between", alignItems: "center",
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{t.tier}</div>
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.52rem", marginTop: "0.1rem" }}>{t.description}</div>
+                        </div>
+                        <div style={{ fontWeight: 700, color: "#f59e0b" }}>${t.basePrice}</div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>No Arta quotes available for this route.</div>
+                )}
+                <div style={{ marginTop: "0.3rem", fontSize: "0.48rem", color: "var(--text-muted)", fontStyle: "italic", textAlign: "center" as const }}>
+                  Powered by Arta {artaQuoteData.isLive ? "" : "\u00B7 Estimated"}
+                </div>
+              </div>
+            )}
+
+            {!artaQuoteData && !loadingArtaQuote && (
+              <div style={{ marginTop: "0.4rem" }}>
+                <a
+                  href={`/items/${artaItem.id}`}
+                  style={{ fontSize: "0.6rem", color: "var(--text-muted)", textDecoration: "none" }}
+                >
+                  Or get quote on Item Dashboard {"\u2192"}
+                </a>
+              </div>
+            )}
           </div>
         );
       })()}
@@ -4354,18 +4874,22 @@ function LocalPickupTab({ data }: { data: ShipData }) {
   useEffect(() => {
     if (pickupFetchedRef.current || pickupItems.length === 0) return;
     pickupFetchedRef.current = true;
-    const statuses: Record<string, any> = {};
-    let fetched = 0;
-    pickupItems.forEach((item) => {
-      fetch(`/api/shipping/pickup/${item.id}`)
-        .then(r => r.json())
-        .then(d => { if (!d.error) statuses[item.id] = d; })
-        .catch(() => {})
-        .finally(() => {
-          fetched++;
-          if (fetched === pickupItems.length) setPickupStatuses(statuses);
-        });
-    });
+    // Batch fetch all pickup statuses in 1 API call
+    fetch("/api/shipping/pickup-batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        itemIds: pickupItems.map((item: any) => item.id),
+      }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d.statuses) {
+          setPickupStatuses(d.statuses);
+          console.log(`[LocalPickupTab] Loaded ${Object.keys(d.statuses).length} pickup statuses in 1 batch API call`);
+        }
+      })
+      .catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function advancePickup(itemId: string, extraData?: any) {
@@ -4743,6 +5267,20 @@ export default function ShippingCenterClient() {
   const [allEstimates, setAllEstimates] = useState<Record<string, any>>({});
   const [pickupStatusesForTracking, setPickupStatusesForTracking] = useState<Record<string, any>>({});
   const [freightBOLForTracking, setFreightBOLForTracking] = useState<any>(null);
+  const [savedFreightCount, setSavedFreightCount] = useState(0);
+  const [dismissedBanner, setDismissedBanner] = useState(false);
+
+  // Hydration-safe: read saved quote count only on client
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("ll_saved_quotes");
+      if (!raw) return;
+      const store = JSON.parse(raw);
+      let sc = 0;
+      for (const qs of Object.values(store)) { sc += (qs as any[]).filter((q: any) => q.type === "ltl").length; }
+      setSavedFreightCount(sc);
+    } catch { /* ignore */ }
+  }, []);
 
   // Listen for tab-change events from child components (e.g., "View in Tracking Board")
   useEffect(() => {
@@ -4784,7 +5322,7 @@ export default function ShippingCenterClient() {
     } catch { /* ignore */ }
   }, [tab, data]); // Re-check when switching tabs or data loads
 
-  // Fetch pickup statuses for tracking board — once on initial data load
+  // Fetch pickup statuses for tracking board — once on initial data load (batch)
   const trackingPickupFetchedRef = useRef(false);
   useEffect(() => {
     if (!data || trackingPickupFetchedRef.current) return;
@@ -4795,18 +5333,21 @@ export default function ShippingCenterClient() {
       (i.aiBox === "freight" && (i.category || "").toLowerCase().match(/vehicle|boat|car|truck|motorcycle/))
     );
     if (pickupItems.length === 0) return;
-    const statuses: Record<string, any> = {};
-    let fetched = 0;
-    pickupItems.forEach((item) => {
-      fetch(`/api/shipping/pickup/${item.id}`)
-        .then(r => r.json())
-        .then(d => { if (!d.error) statuses[item.id] = d; })
-        .catch(() => {})
-        .finally(() => {
-          fetched++;
-          if (fetched === pickupItems.length) setPickupStatusesForTracking(statuses);
-        });
-    });
+    fetch("/api/shipping/pickup-batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        itemIds: pickupItems.map((i: any) => i.id),
+      }),
+    })
+      .then(r => r.json())
+      .then(d => {
+        if (d.statuses) {
+          setPickupStatusesForTracking(d.statuses);
+          console.log(`[TrackingBoard] Batch loaded ${Object.keys(d.statuses).length} pickup statuses`);
+        }
+      })
+      .catch(() => {});
   }, [data]);
 
   const handleEstimate = useCallback((id: string, est: any) => {
@@ -4887,100 +5428,134 @@ export default function ShippingCenterClient() {
         </button>
       </div>
 
-      {/* Quote Expiration Alert Banner */}
-      {data && (() => {
-        const allQuotedItems = [...data.preSale, ...data.readyToShip];
-        let expiringCount = 0;
-        let expiredCount = 0;
-        allQuotedItems.forEach((item) => {
+      {/* Priority Action Banner */}
+      {data && !dismissedBanner && (() => {
+        const actionPills: { label: string; action: () => void; urgent: boolean }[] = [];
+
+        // Items needing quotes
+        const needingQuotes = data.preSale.filter(
+          (item: any) => !item.lastQuote && !item.hasQuote
+        ).length;
+        if (needingQuotes > 0) {
+          actionPills.push({
+            label: `${needingQuotes} need quotes`,
+            action: () => setTab("preSale"),
+            urgent: needingQuotes > 5,
+          });
+        }
+
+        // Items awaiting shipment > 3 days
+        const overdue = data.readyToShip.filter((item: any) => {
+          const soldAt = item.soldAt ? new Date(item.soldAt) : item.createdAt ? new Date(item.createdAt) : null;
+          if (!soldAt) return false;
+          const daysSince = (Date.now() - soldAt.getTime()) / (1000 * 60 * 60 * 24);
+          return daysSince > 3;
+        }).length;
+        if (overdue > 0) {
+          actionPills.push({
+            label: `${overdue} awaiting shipment > 3d`,
+            action: () => setTab("readyToShip"),
+            urgent: true,
+          });
+        }
+
+        // Quotes expiring soon (< 24h from now via localStorage)
+        let expiringQuotes = 0;
+        [...data.preSale, ...data.readyToShip].forEach((item: any) => {
           try {
             const raw = localStorage.getItem(`ll_quote_${item.id}`);
             if (raw) {
               const q = JSON.parse(raw);
               const ageMs = Date.now() - (q.savedAt || 0);
-              if (ageMs >= 86400000) expiredCount++;
-              else if (ageMs >= 43200000) expiringCount++;
+              if (ageMs >= 43200000 && ageMs < 86400000) expiringQuotes++;
             }
           } catch { /* ignore */ }
         });
-        if (expiredCount > 0) {
-          return (
-            <div
-              onClick={() => setTab("preSale")}
-              style={{
-                display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.85rem", marginBottom: "0.65rem",
-                borderRadius: "0.5rem", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", cursor: "pointer",
-                transition: "background 0.15s ease",
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(239,68,68,0.1)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(239,68,68,0.06)"; }}
-            >
-              <span style={{ fontSize: "0.85rem" }}>{"\u274C"}</span>
-              <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "#ef4444" }}>
-                {expiredCount} quote{expiredCount !== 1 ? "s" : ""} expired — click to refresh rates
-              </span>
-              {expiringCount > 0 && (
-                <span style={{ fontSize: "0.65rem", color: "#f59e0b", marginLeft: "auto" }}>+{expiringCount} expiring soon</span>
-              )}
-            </div>
-          );
+        if (expiringQuotes > 0) {
+          actionPills.push({
+            label: `${expiringQuotes} quotes expiring soon`,
+            action: () => setTab("preSale"),
+            urgent: false,
+          });
         }
-        if (expiringCount > 0) {
-          return (
-            <div
-              onClick={() => setTab("preSale")}
-              style={{
-                display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.85rem", marginBottom: "0.65rem",
-                borderRadius: "0.5rem", background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)", cursor: "pointer",
-                transition: "background 0.15s ease",
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(245,158,11,0.1)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(245,158,11,0.06)"; }}
-            >
-              <span style={{ fontSize: "0.85rem" }}>{"\u26A0\uFE0F"}</span>
-              <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "#f59e0b" }}>
-                {expiringCount} quote{expiringCount !== 1 ? "s" : ""} expiring soon — refresh before rates change
-              </span>
-            </div>
-          );
-        }
-        return null;
-      })()}
 
-      {/* Intelligence Strip */}
-      {data && (
-        <div style={{ display: "flex", gap: "0.35rem", marginBottom: "0.75rem", overflowX: "auto", paddingBottom: "0.15rem" }}>
-          {(() => {
-            const urgentCount = data.readyToShip.filter((i: any) => (i.daysSinceSold ?? 0) > 5).length;
-            const needsLabel = data.readyToShip.filter((i: any) => (i.daysSinceSold ?? 0) > 2 && (i.daysSinceSold ?? 0) <= 5).length;
-            const quotedCount = [...data.preSale, ...data.readyToShip].filter((i: any) => i.hasQuote).length;
-            const transitCount = data.shipped.filter((s: any) => s.deliveryStatus !== "DELIVERED").length;
-            const deliveredCount = data.shipped.filter((s: any) => s.deliveryStatus === "DELIVERED").length;
-            const totalCost = data.shipped.reduce((s: number, i: any) => s + (i.rate || 0), 0);
-            const pills = [
-              ...(urgentCount > 0 ? [{ label: `\u{1F6A8} ${urgentCount} Urgent`, color: "#ef4444", bg: "rgba(239,68,68,0.1)", hoverBg: "rgba(239,68,68,0.18)", onClick: () => setTab("readyToShip") }] : []),
-              ...(needsLabel > 0 ? [{ label: `\u{1F3F7}\uFE0F ${needsLabel} Needs Label`, color: "#f59e0b", bg: "rgba(245,158,11,0.1)", hoverBg: "rgba(245,158,11,0.18)", onClick: () => setTab("readyToShip") }] : []),
-              ...(quotedCount > 0 ? [{ label: `\u{1F4CB} ${quotedCount} Quoted`, color: "#00bcd4", bg: "rgba(0,188,212,0.08)", hoverBg: "rgba(0,188,212,0.15)", onClick: () => setTab("preSale") }] : []),
-              ...(transitCount > 0 ? [{ label: `\u{1F69A} ${transitCount} In Transit`, color: "#3b82f6", bg: "rgba(59,130,246,0.08)", hoverBg: "rgba(59,130,246,0.15)", onClick: () => setTab("shipped") }] : []),
-              ...(deliveredCount > 0 ? [{ label: `\u2705 ${deliveredCount} Delivered`, color: "#22c55e", bg: "rgba(34,197,94,0.08)", hoverBg: "rgba(34,197,94,0.15)", onClick: () => setTab("shipped") }] : []),
-              ...(totalCost > 0 ? [{ label: `\u{1F4B0} $${Math.round(totalCost)} Costs`, color: "var(--text-muted)", bg: "var(--ghost-bg)", hoverBg: "var(--border-default)", onClick: () => {} }] : []),
-            ];
-            return pills.map(p => {
-              return (
-                <button
-                  key={p.label}
-                  onClick={p.onClick}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = p.hoverBg; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = p.bg; }}
-                  style={{ padding: "0.3rem 0.75rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 700, border: "none", background: p.bg, color: p.color, cursor: "pointer", whiteSpace: "nowrap", transition: "background 0.15s ease" }}
-                >
-                  {p.label}
-                </button>
-              );
-            });
-          })()}
-        </div>
-      )}
+        // Shipments with exceptions
+        const exceptions = data.shipped.filter((item: any) => {
+          return item.deliveryStatus && item.deliveryStatus !== "DELIVERED";
+        }).length;
+        if (exceptions > 0) {
+          actionPills.push({
+            label: `${exceptions} shipments in transit`,
+            action: () => setTab("shipped"),
+            urgent: true,
+          });
+        }
+
+        if (actionPills.length === 0) return null;
+        console.log("[PriorityBanner] Showing", actionPills.length, "action pills");
+
+        return (
+          <div style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "0.4rem",
+            padding: "0.5rem 0.75rem",
+            marginBottom: "0.75rem",
+            borderRadius: "0.6rem",
+            background: "rgba(255,152,0,0.04)",
+            border: "1px solid rgba(255,152,0,0.12)",
+            alignItems: "center",
+          }}>
+            <span style={{
+              fontSize: "0.62rem",
+              fontWeight: 700,
+              color: "#ff9800",
+              textTransform: "uppercase" as const,
+              letterSpacing: "0.05em",
+              whiteSpace: "nowrap" as const,
+            }}>
+              {"\u26A1"} Action Required
+            </span>
+            {actionPills.map((ai, idx) => (
+              <button
+                key={idx}
+                onClick={() => { ai.action(); console.log("[PriorityBanner] Clicked:", ai.label); }}
+                style={{
+                  fontSize: "0.6rem",
+                  fontWeight: 600,
+                  padding: "2px 8px",
+                  borderRadius: "9999px",
+                  background: ai.urgent ? "rgba(244,67,54,0.1)" : "rgba(255,152,0,0.08)",
+                  color: ai.urgent ? "#f44336" : "#ff9800",
+                  border: `1px solid ${ai.urgent ? "rgba(244,67,54,0.2)" : "rgba(255,152,0,0.15)"}`,
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  whiteSpace: "nowrap" as const,
+                }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "0.8"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}
+              >
+                {ai.label}
+              </button>
+            ))}
+            <button
+              onClick={() => { setDismissedBanner(true); console.log("[PriorityBanner] Dismissed"); }}
+              style={{
+                marginLeft: "auto",
+                fontSize: "0.55rem",
+                color: "var(--text-muted)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "0 0.25rem",
+                whiteSpace: "nowrap" as const,
+              }}
+            >
+              {"\u2715"}
+            </button>
+          </div>
+        );
+      })()}
 
       {/* Redirect breadcrumb */}
       {itemIdParam && (
@@ -4990,94 +5565,74 @@ export default function ShippingCenterClient() {
         </div>
       )}
 
+      {/* Pulse animation for overdue badge */}
+      <style>{`@keyframes ll-badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }`}</style>
       {/* Tabs */}
-      <div style={{ display: "flex", gap: "0.3rem", marginBottom: "1.25rem", overflowX: "auto", paddingBottom: "0.25rem" }}>
-        {TABS.map((t) => {
-          const count =
-            t.key === "preSale"
-              ? data?.preSale.length
-              : t.key === "readyToShip"
-                ? data?.readyToShip.length
-                : t.key === "shipped"
-                  ? data?.shipped.length
-                  : t.key === "pickup"
-                    ? data?.readyToShip.filter((i) => i.saleMethod === "LOCAL_PICKUP" || i.saleMethod === "BOTH").length
-                    : null;
-          const isRTS = t.key === "readyToShip";
-          const urgent = isRTS && hasUrgent;
-          const isActive = tab === t.key;
-          return (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              style={{
-                padding: "0.6rem 1rem",
-                borderRadius: "0.55rem",
-                border: isActive ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
-                background: isActive ? "rgba(0,188,212,0.1)" : "transparent",
-                color: isActive ? "var(--accent)" : "var(--text-muted)",
-                fontSize: "0.8rem",
-                fontWeight: isActive ? 700 : 400,
-                cursor: "pointer",
-                whiteSpace: "nowrap" as const,
-                display: "flex",
-                alignItems: "center",
-                gap: "0.35rem",
-                transition: "all 0.15s ease",
-                position: "relative" as const,
-                borderBottom: isActive ? "3px solid" : "1px solid var(--border-default)",
-                borderBottomColor: isActive ? "var(--accent)" : "var(--border-default)",
-                borderImage: isActive ? "linear-gradient(90deg, #00bcd4, #009688) 1" : "none",
-                boxShadow: isActive ? "0 2px 8px rgba(0,188,212,0.15)" : "none",
-              }}
-            >
-              <span style={{ fontSize: isActive ? "0.9rem" : "0.8rem" }}>{t.icon}</span> {t.label}
-              {t.key === "freight" && (() => {
-                try {
-                  const raw = localStorage.getItem("ll_saved_quotes");
-                  if (!raw) return null;
-                  const store = JSON.parse(raw);
-                  let sc = 0;
-                  for (const qs of Object.values(store)) { sc += (qs as any[]).filter((q: any) => q.type === "ltl").length; }
-                  return sc > 0 ? (
-                    <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>
-                      {"\u{1F4BE}"}{sc}
-                    </span>
-                  ) : null;
-                } catch { return null; }
-              })()}
-              {count != null && count > 0 && (
-                <span
+      {(() => {
+        // Compute overdue pulse: any readyToShip items > 3 days
+        const hasOverdue = data?.readyToShip.some((item: any) => {
+          const soldAt = item.soldAt ? new Date(item.soldAt) : item.createdAt ? new Date(item.createdAt) : null;
+          if (!soldAt) return false;
+          return (Date.now() - soldAt.getTime()) / (1000 * 60 * 60 * 24) > 3;
+        }) ?? false;
+
+        // Compute tab badges
+        const tabBadges: Record<string, number> = {
+          preSale: data?.preSale.length ?? 0,
+          readyToShip: data?.readyToShip.length ?? 0,
+          shipped: data?.shipped.filter((s: any) => s.deliveryStatus !== "DELIVERED").length ?? 0,
+          freight: savedFreightCount,
+          pickup: data ? [...data.preSale, ...data.readyToShip].filter((i: any) => i.saleMethod === "LOCAL_PICKUP" || i.saleMethod === "BOTH").length : 0,
+        };
+
+        return (
+          <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem", overflowX: "auto", paddingBottom: "0.25rem" }}>
+            {TABS.map((t) => {
+              const count = tabBadges[t.key] ?? 0;
+              const isActive = tab === t.key;
+              const isRTS = t.key === "readyToShip";
+              const isUrgent = isRTS && hasOverdue;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
                   style={{
-                    fontSize: "0.62rem",
-                    fontWeight: 700,
-                    padding: "2px 6px",
-                    borderRadius: "9999px",
-                    background: urgent ? "rgba(255,152,0,0.15)" : "rgba(0,188,212,0.12)",
-                    color: urgent ? "#ff9800" : "#00bcd4",
+                    padding: "0.5rem 0.75rem",
+                    borderRadius: "0.4rem",
+                    background: isActive ? "rgba(0,188,212,0.15)" : "transparent",
+                    color: isActive ? "#00bcd4" : "var(--text-muted)",
+                    border: isActive ? "1px solid rgba(0,188,212,0.3)" : "1px solid transparent",
+                    cursor: "pointer",
+                    fontSize: "0.75rem",
+                    fontWeight: isActive ? 700 : 600,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.3rem",
+                    whiteSpace: "nowrap" as const,
+                    transition: "all 0.2s ease",
                   }}
                 >
-                  {count}
-                </span>
-              )}
-              {/* Urgency dot */}
-              {urgent && !isActive && (
-                <span
-                  style={{
-                    position: "absolute" as const,
-                    top: 4,
-                    right: 4,
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: "#ff9800",
-                  }}
-                />
-              )}
-            </button>
-          );
-        })}
-      </div>
+                  <span>{t.icon}</span>
+                  <span>{t.label}</span>
+                  {count > 0 && (
+                    <span style={{
+                      fontSize: "0.5rem",
+                      fontWeight: 700,
+                      padding: "1px 4px",
+                      borderRadius: "9999px",
+                      background: isUrgent ? "rgba(244,67,54,0.2)" : "rgba(0,188,212,0.15)",
+                      color: isUrgent ? "#f44336" : "#00bcd4",
+                      animation: isUrgent ? "ll-badge-pulse 2s infinite" : "none",
+                    }}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* Dashboard */}
       {data && <TMSDashboard data={data} onTabSwitch={(t) => setTab(t as Tab)} />}

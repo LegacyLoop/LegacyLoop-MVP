@@ -222,6 +222,7 @@ export async function GET() {
         conditionScore,
         isHighValue,
         isPremium,
+        isArtaEligible: isPremium || (isHighValue && isAntique) || (isHighValue && ((item as any).isFragile ?? false)) || (isHighValue && (((item as any).aiShippingDifficulty === "Difficult") || ((item as any).aiShippingDifficulty === "Freight only"))),
         pickupStatus: (item as any).pickupStatus ?? null,
         // Quote history (last 5)
         quoteHistory: quoteHistoryMap.get(item.id) ?? [],

@@ -1,0 +1,1098 @@
+     0→LEGACYLOOP — COMMAND TEMPLATE v11
+     1→Master Template for Every Claude Code Command
+     2→Updated: March 25, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+     3→
+     4→Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+     5→
+     6→SECTION 1 — CRITICAL DESIGN DIRECTIVE
+     7→
+     8→READ BEFORE MAKING ANY CHANGES:
+     9→
+    10→This app has an established design system: sleek, elegant, high-tech —
+    11→inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+    12→glass morphism cards, subtle animations, premium typography. Senior-friendly.
+    13→
+    14→ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+    15→NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+    16→
+    17→LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+    18→NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+    19→
+    20→ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+    21→hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+    22→NEVER CSS variables on always-dark panels — they invert in light mode.
+    23→
+    24→ELON MUSK STANDARD: This must feel like a $1B product.
+    25→Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+    26→
+    27→IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+    28→Surgical fixes and targeted improvements only.
+    29→
+    29→REAL TECH MANDATE: All tracking data comes from live carrier APIs (Shippo,
+    30→ShipEngine, FedEx) or persistent database. No mock data. Tracking updates
+    31→reflect real shipment status. The dashboard displays real tracking intelligence
+    32→with honest "ESTIMATED" labels only on calculated fields (ETA, distance).
+    33→
+    34→SECTION 2 — VERIFICATION CHECKPOINT
+    35→
+    36→Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+    37→
+    38→echo '=== CHECKPOINT ==='
+    39→grep -n 'ShippedTab\|renderShippedCard\|getTrackingUrl' app/shipping/ShippingCenterClient.tsx | head -5
+    40→grep 'USPS\|UPS\|FedEx' app/shipping/ShippingCenterClient.tsx | head -3
+    40→grep -n 'StatusBadge' app/shipping/ShippingCenterClient.tsx | head -3
+    41→grep 'inline.*style={{' app/shipping/ShippingCenterClient.tsx | head -3
+    42→npx tsc --noEmit 2>&1 | tail -3
+    43→echo '=== CHECKPOINT COMPLETE ==='
+    44→
+    45→SECTION 3 — PERMANENTLY LOCKED FILES
+    46→
+    47→ALWAYS LOCKED — Never touch without explicit surgical unlock.
+    48→
+    49→— Core Adapters —
+    50→✓ lib/adapters/ai.ts
+    51→✓ lib/adapters/rainforest.ts
+    52→✓ lib/adapters/auth.ts
+    53→✓ lib/adapters/storage.ts
+    54→✓ lib/adapters/multi-ai.ts
+    55→
+    56→— AI Detection + Scoring —
+    57→✓ lib/antique-detect.ts
+    58→✓ lib/collectible-detect.ts
+    59→
+    60→— MegaBot Engine —
+    61→✓ lib/megabot/run-specialized.ts
+    62→✓ lib/megabot/prompts.ts
+    63→
+    64→— Shipping (MOST LOCKED) —
+    65→✓ lib/shipping/shippo.ts
+    66→✓ lib/shipping/fedex-parcel.ts
+    67→✓ lib/shipping/fedex-ltl.ts
+    68→✓ lib/shipping/easypost.ts
+    69→✓ lib/shipping/shipengine-ltl.ts
+    70→✓ lib/shipping/saved-quotes.ts
+    71→✓ lib/shipping/freight-estimates.ts
+    72→
+    73→— Data Pipelines —
+    74→✓ lib/data/backfill.ts
+    75→✓ lib/data/user-events.ts
+    76→
+    77→— Enrichment —
+    78→✓ lib/addons/enrich-item-context.ts
+    79→
+    80→— Credits + Billing —
+    81→✓ lib/credits.ts
+    82→✓ lib/tier-enforcement.ts
+    83→✓ lib/billing/pro-rate.ts
+    84→✓ lib/billing/commission.ts
+    85→
+    86→— Offers —
+    87→✓ lib/offers/expiry.ts
+    88→✓ lib/offers/notify.ts
+    89→✓ lib/offers/cron.ts
+    90→
+    91→— Email System —
+    92→✓ lib/email/send.ts
+    93→✓ lib/email/templates.ts
+    94→
+    95→— Pricing Constants —
+    96→✓ lib/constants/pricing.ts
+    97→✓ lib/pricing/constants.ts
+    98→✓ lib/adapters/pricing.ts
+    99→✓ lib/pricing/calculate.ts
+    100→
+    101→— API Routes —
+    102→✓ app/api/** — ALL LOCKED
+    103→
+    104→— Item + Dashboard + Bots —
+    105→✓ app/items/** — ALL LOCKED
+    106→✓ app/dashboard/** — ALL LOCKED
+    107→✓ app/bots/** — LOCKED
+    108→
+    109→— Core UI —
+    110→✓ app/components/AppNav.tsx
+    111→✓ app/components/UploadModal.tsx
+    112→✓ app/page.tsx
+    113→✓ globals.css
+    114→
+    115→— Commerce + Pages —
+    116→✓ app/subscription/**
+    117→✓ app/credits/**
+    118→✓ app/marketplace/**
+    119→✓ app/bundles/**
+    120→✓ app/pricing/**
+    121→✓ app/projects/**
+    122→✓ app/offers/**
+    123→
+    124→— Always-Dark Overlays —
+    125→✓ app/components/ItemActionPanel.tsx
+    126→✓ app/components/billing/CancelFlowModal.tsx
+    127→✓ app/components/billing/UpgradeFlowModal.tsx
+    128→✓ app/components/TradeProposalModal.tsx
+    129→
+    130→— Messaging System — ALL LOCKED —
+    131→✓ app/messages/** — ALL LOCKED
+    132→✓ app/components/messaging/** — ALL LOCKED
+    133→
+    134→— Add-On Tools — ALL LOCKED —
+    135→✓ app/addons/** — ALL LOCKED
+    136→
+    137→— Onboarding —
+    138→✓ app/onboarding/** — ALL LOCKED
+    139→
+    140→— Infrastructure —
+    141→✓ vercel.json — LOCKED
+    142→✓ prisma/schema.prisma — LOCKED
+    143→
+    144→! SURGICAL UNLOCK for THIS command ONLY:
+    145→  - app/shipping/ShippingCenterClient.tsx (UPGRADE ShippedTab — airport board tracking dashboard)
+    146→
+    147→All unlocked files return to LOCKED after approval.
+    148→
+    149→SECTION 4 — ALL APPROVED + LOCKED FEATURES
+    150→
+    151→Never touch, modify, or rebuild any approved features from Passes 1-5.
+    152→See v11 template for full list. We are in POLISH MODE — fixes only.
+    153→
+    154→SECTION 5 — DATA COLLECTION STANDARD
+    155→
+    155→LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+    156→Flag all missed data collection opportunities. We decide together.
+    157→
+    158→Data collection for this command:
+    159→  - Log tracking dashboard render: carrier, shipment count, board load time
+    159→  - Log filter button clicks: which status filters used most
+    160→  - Log tracking number copies: carrier, frequency
+    161→  - Log row expansions: item, which details viewed
+    162→  - Log auto-refresh timestamp updates
+    163→  - Console.log pattern for all
+    164→
+    165→SECTION 6 — BUILD PATTERN
+    166→
+    166→UI → State → Re-render
+    167→
+    168→This command follows build pattern EXACTLY:
+    169→  1. UI: Redesign ShippedTab rendering (command header + board rows + expandable details)
+    170→  2. State: Filter state, expand state, refresh timestamp
+    171→  3. Integration: Freight + pickup tracking merged into main board
+    172→  4. Polish: Animations, accessibility, responsive behavior
+    173→
+    174→SECTION 7 — PLATFORM CONTEXT
+    175→
+    175→• Shipping Center has 5 tabs: preSale, readyToShip, shipped (tracking), freight, pickup
+    176→• ShippedTab currently shows: card layout with 5-step timeline (CREATED→PICKED_UP→IN_TRANSIT→OUT_FOR_DELIVERY→DELIVERED)
+    176→• StatusBadge (lines 591-617): Renders status with background color
+    177→• renderShippedCard (lines 2691-2908): Current card-based layout for each shipment
+    178→• getTrackingUrl (lines 2650-2657): Returns carrier tracking URL
+    179→• Carrier colors (lines 2636-2642): USPS=#333366, UPS=#351c15, FedEx=#4d148c, DHL=#FFCC00
+    180→• Timeline (lines 2802-2851): 5-step horizontal progress timeline
+    181→• Alert pills (lines 2984-2990): Exception count, out for delivery count, etc — will be replaced
+    182→• Grouping (current): exceptions, out for delivery, in transit, created, delivered, freight, pickups
+    183→• FreightTab (lines 3028-3048): Separate section for freight shipments
+    184→• PickupTab (lines 3049+): Separate section for local pickup items
+    185→
+    186→UPGRADE TARGET: Replace card layout with airport departure board aesthetic. Slim rows,
+    187→compact progress bar, inline status indicators, expandable details, integrated freight + pickup.
+    187→
+    188→SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+    189→
+    189→You MAY:
+    190→— Replace ShippedTab rendering completely (lines 2608-3048)
+    191→— Add state management for filters and expansions (useState within component)
+    191→— Add CSS keyframe animations via inline style={{keyframes: '...' }} — NO external CSS
+    192→— Create helper functions for row rendering, progress calculation
+    193→— Add formatting utilities for tracking numbers, dates, addresses
+    194→— Log filter clicks, expansion events, refresh timestamps
+    195→— Add hover effects, transitions, smooth animations
+    196→— Implement real-time refresh with timestamp
+    197→
+    198→You MAY NOT:
+    199→— Touch ANY file not in surgical unlock
+    198→— Modify StatusBadge component
+    199→— Change getTrackingUrl function signature
+    200→— Modify FreightTab (lines 3028-3048) or PickupTab (lines 3049+) beyond merging INTO main board
+    200→— Remove or rebuild existing functionality (still accessible, just better UI)
+    201→— Change any carrier data structures or API calls
+    202→— Add external CSS or className-based styling
+    203→— Change business logic or pricing
+    204→— Add new npm dependencies
+    205→
+    206→SECTION 9 — DEMO MODE + ADMIN BYPASS
+    207→
+    207→DEMO_MODE=true in .env — active now.
+    208→shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+    208→Admin: never locked out. No credits deducted. Full platform access.
+    209→
+    210→TEST ACCOUNTS:
+    211→annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+    211→ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+    212→SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+    213→
+    214→SECTION 10 — ENVIRONMENT VARIABLES
+    215→
+    215→No new env variables required. Use existing Shippo, ShipEngine, FedEx APIs.
+    216→
+    217→SECTION 11 — PENDING SCHEMA MIGRATION
+    218→
+    218→NONE. No database changes. UI-only upgrade.
+    219→
+    220→SECTION 12 — SHIPPING CENTER CONTEXT
+    221→
+    221→ShippedTab (lines 2608-3048 in ShippingCenterClient.tsx):
+    222→  - Current: Card layout, 5-step timeline per shipment
+    223→  - Data: shipped.map(s => renderShippedCard(s))
+    223→  - Grouping: exceptions, out for delivery, in transit, created, delivered, then freight, then pickups
+    224→  - Status badge uses StatusBadge component (lines 591-617)
+    225→
+    226→UPGRADE:
+    227→  - New: Airport board row layout, slim progress bar, expandable details
+    226→  - Command header with status counts, filter buttons, refresh timestamp + button
+    227→  - Shipment rows: item thumbnail, carrier, tracking #, status, ETA, progress bar, route
+    228→  - Click row to expand: full address, weight, rate, label details, actions (track, close sale)
+    229→  - Integrated freight + pickup: same row style, type-specific status steps
+    230→
+    231→SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+    232→
+    233→================================================================================
+    234→
+    235→OBJECTIVE — AIRPORT BOARD TRACKING DASHBOARD UPGRADE
+    236→
+    237→================================================================================
+    238→
+    238→This command does THREE things. Premium UI. Real tracking data.
+    239→
+    240→TASK 1 — TRACKING COMMAND HEADER (replacing alert pills)
+    241→
+    241→Replace lines 2984-2990 (current alert pills section) with a sleek airport board style header.
+    242→
+    243→Design:
+    244→  - Background: linear-gradient(135deg, rgba(0,188,212,0.04), rgba(0,150,136,0.03))
+    244→  - Border: 1px solid rgba(0,188,212,0.12), border-radius: 0.75rem
+    245→  - Padding: 0.85rem 1rem
+    245→  - Title row: "📡 SHIPMENT TRACKING" + timestamp + manual refresh button
+    246→  - Divider row: thin border
+    247→  - Status row: 4 columns of status counts (In Transit, Out for Delivery, Delivered, Exceptions)
+    248→  - Each status is a clickable button → filter the board to show only that status
+    248→  - Monospace font for counts (like real airport displays)
+    249→
+    250→Structure:
+    250→```
+    251→┌─────────────────────────────────────────────────┐
+    251→│ 📡 SHIPMENT TRACKING    Last: 2:45 PM  🔄 Refresh
+    252→│ ──────────────────────────────────────────────
+    252→│ 🟢 12 In Transit │ 🟠 3 Out for Delivery │ ✅ 8 Delivered │ ⚠️ 1 Exception
+    253→└─────────────────────────────────────────────────┘
+    253→```
+    254→
+    255→Click a status → filter board to show only that group. Click again → clear filter.
+    256→Manual refresh button → fetch latest data from Shippo/ShipEngine API.
+    256→Timestamp auto-updates every 60 seconds with current time.
+    257→Subtle scan line animation across header (CSS animation via inline keyframes).
+    258→
+    259→TASK 2 — FLIGHT BOARD STYLE SHIPMENT ROWS
+    260→
+    260→Replace renderShippedCard (lines 2691-2908) with airport board row rendering.
+    261→
+    262→Each shipment is a ROW (not a card) in a board-style table. Like a flight departure board.
+    263→
+    263→Row structure:
+    264→┌──────────────────────────────────────────────────────────────────────┐
+    264→│ [thumbnail]  ITEM TITLE          CARRIER   TRACKING#  STATUS  ETA   │
+    265→│              ──[====●=========]──                          (progress bar)
+    265→│              Origin → Destination (route)                           │
+    266→└──────────────────────────────────────────────────────────────────────┘
+    267→
+    268→Click row to expand:
+    268→┌──────────────────────────────────────────────────────────────────────┐
+    269→│ [ALL ABOVE] ▼                                                        │
+    269→│ From: 123 Main St, Portland ME 04101                                │
+    270→│ To:   456 Park Ave, New York NY 10022                               │
+    270→│ Weight: 4.2 lbs  |  Rate: $18.50  |  Label: Created Mar 23          │
+    271→│ [Track on Carrier] [Close Sale] [More...]                          │
+    272→│ ──────────────────────────────────────────────────────────────────  │
+    272→└──────────────────────────────────────────────────────────────────────┘
+    273→
+    274→Row styling:
+    274→  - Left accent stripe: 3px solid, carrier color (USPS=#333366, UPS=#351c15, FedEx=#4d148c, etc)
+    275→  - Background: transparent / rgba(0,188,212,0.02) alternating
+    276→  - Hover: rgba(0,188,212,0.04) with smooth transition
+    277→  - Cursor: pointer, slight scale on hover (1.005)
+    278→  - Border-radius: 0.5rem
+    279→  - Padding: 0.85rem 0.9rem
+    280→  - Delivered rows: subtle green left accent (#4caf50)
+    281→  - Exception rows: red left accent (#f44336) with subtle pulse animation
+    282→
+    282→Item layout:
+    283→  - Thumbnail: 40x40 image, border-radius: 4px, margin-right: 0.6rem
+    283→  - Title: bold, truncate at 28 chars (overflow: ellipsis)
+    284→  - All in one horizontal row for compactness
+    285→
+    286→Progress bar:
+    286→  - Height: 4px, border-radius: 2px
+    287→  - Background: var(--ghost-bg) with opacity
+    288→  - Fill: gradient from teal (#00bcd4) to green (#4caf50) based on step
+    289→  - Animated fill transition (0.4s ease)
+    290→  - Shows actual step (1/5 = 20% fill, 3/5 = 60% fill, 5/5 = 100%)
+    291→  - Small dot at current position
+    292→
+    292→Carrier badge:
+    293→  - Monospace font
+    293→  - 1px border with carrier color
+    294→  - Padding: 2px 6px, border-radius: 3px
+    295→  - Font size: 0.65rem
+    296→
+    296→Tracking number:
+    297→  - Monospace font
+    297→  - Clickable → opens getTrackingUrl() in new tab
+    298→  - Copy button (small icon, on hover/focus)
+    298→  - Font size: 0.7rem
+    299→
+    300→Status badge:
+    301→  - Use existing StatusBadge component (lines 591-617)
+    300→  - Render inline with carrier badge
+    301→  - Shows current step name (CREATED, PICKED_UP, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED)
+    302→
+    303→ETA date:
+    303→  - Format: "Mar 28" or "Today" or "Tomorrow"
+    304→  - Gray if not yet delivered, green checkmark if delivered
+    304→  - Font size: 0.8rem
+    305→
+    305→TASK 3 — FREIGHT + PICKUP INTEGRATION
+    306→
+    306→Merge freight and pickup shipments INTO the main board rows (no separate sections).
+    307→
+    307→Freight shipments:
+    308→  - Icon: 🚛 (before title)
+    308→  - Carrier color accent: purple (#9c27b0)
+    309→  - BOL number instead of tracking #: "BOL: 1234567 ↗" with copy button
+    310→  - Status steps: BOL_CREATED → PICKUP_SCHEDULED → PICKED_UP → IN_TRANSIT → DELIVERED
+    311→  - Progress bar: 5 segments, same style as parcel
+    312→  - Weight displayed: "2,400 lbs" or "empty weight + volume"
+    313→
+    314→Pickup items:
+    315→  - Icon: 🤝 (before title)
+    315→  - Carrier color accent: orange (#ff9800)
+    316→  - Handoff code instead of tracking #: "CODE: ABC123" or "Pending acceptance"
+    317→  - Status steps: INVITE_SENT → CONFIRMED → EN_ROUTE → HANDED_OFF → COMPLETED
+    318→  - Progress bar: same style, 5 segments
+    318→  - Shows expected pickup datetime
+    319→
+    320→Sorting:
+    320→  - All types (parcel, freight, pickup) sorted by status priority:
+    321→    1. Exceptions first
+    321→    2. Out for delivery
+    322→    3. In transit
+    323→    4. Created
+    324→    5. Delivered
+    325→  - Within each group, sort by most recent update first
+    326→
+    327→Files modified:
+    327→  - app/shipping/ShippingCenterClient.tsx (ONLY file in surgical unlock)
+    328→
+    329→Expected output:
+    330→  - Tracking dashboard looks like JFK/Heathrow departure board
+    330→  - Real-time feel with auto-refresh timestamp
+    331→  - Premium, dense, high-tech aesthetic
+    332→  - Senior-friendly accessibility
+    333→  - Inline styles only, no external CSS
+    333→  - All existing tracking functionality preserved
+    334→  - Freight + pickup integrated seamlessly
+    335→
+    336→================================================================================
+    337→
+    337→PART A — MANDATORY FULL READ
+    338→
+    338→================================================================================
+    339→
+    339→! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+    340→
+    341→1. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2636,2660p'
+    342→   Focus: Carrier colors (USPS, UPS, FedEx, DHL), getTrackingUrl structure
+    342→
+    343→2. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '591,617p'
+    343→   Focus: StatusBadge component (signature, rendering)
+    344→
+    345→3. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2802,2851p'
+    346→   Focus: Timeline component (5 steps: CREATED, PICKED_UP, IN_TRANSIT, OUT_FOR_DELIVERY, DELIVERED)
+    347→
+    348→4. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2691,2750p'
+    349→   Focus: Start of renderShippedCard (structure, data access)
+    350→
+    351→5. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2984,2990p'
+    351→   Focus: Alert pills section we're replacing
+    352→
+    353→6. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2608,2650p'
+    353→   Focus: ShippedTab function signature and initial data processing
+    354→
+    355→7. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '3028,3048p'
+    356→   Focus: FreightTab structure (how freight shipments are rendered)
+    357→
+    358→8. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '3049,3100p'
+    356→   Focus: PickupTab structure (how pickup items are rendered)
+    357→
+    359→9. grep -n 'const shipped\|shipped.map\|renderShippedCard' app/shipping/ShippingCenterClient.tsx | head -5
+    359→   Focus: How shipped data flows to rendering
+    360→
+    360→10. grep -n 'weight\|weightLbs\|shippingWeight' app/shipping/ShippingCenterClient.tsx | head -10
+    360→    Focus: How item weights are accessed
+    361→
+    362→11. grep -n 'toAddress\|fromAddress\|address' app/shipping/ShippingCenterClient.tsx | head -10
+    361→    Focus: How addresses are accessed from shipment data
+    362→
+    363→12. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '20,50p'
+    362→    Focus: Component state, props, initial render structure
+    363→
+    364→Print ALL findings with exact line numbers. Then build.
+    364→
+    365→================================================================================
+    366→
+    366→PART B — TRACKING COMMAND HEADER
+    367→
+    367→================================================================================
+    368→
+    368→FILE: app/shipping/ShippingCenterClient.tsx
+    369→
+    368→--- B1: Add state for filters and refresh ---
+    369→
+    369→At the TOP of ShippedTab component (before the existing logic), ADD:
+    370→
+    370→  const [filterStatus, setFilterStatus] = useState<string | null>(null);
+    371→  const [lastRefresh, setLastRefresh] = useState(new Date());
+    371→
+    372→  const handleRefresh = async () => {
+    372→    setLastRefresh(new Date());
+    373→    // Shippo/ShipEngine APIs are already called via parent component — this just updates UI timestamp
+    372→    console.log("[tracking-dashboard] Manual refresh:", lastRefresh.toLocaleTimeString());
+    373→  };
+    373→
+    374→  const getStatusCounts = () => {
+    375→    const counts = {
+    375→      inTransit: 0,
+    375→      outForDelivery: 0,
+    375→      delivered: 0,
+    376→      exceptions: 0,
+    376→    };
+    377→    shipped.forEach((s: any) => {
+    377→      if (s.status === "EXCEPTION") counts.exceptions++;
+    378→      else if (s.status === "OUT_FOR_DELIVERY") counts.outForDelivery++;
+    378→      else if (s.status === "IN_TRANSIT") counts.inTransit++;
+    379→      else if (s.status === "DELIVERED") counts.delivered++;
+    379→    });
+    380→    return counts;
+    380→  };
+    381→
+    381→  const counts = getStatusCounts();
+    381→
+    382→--- B2: Render the command header ---
+    382→
+    383→Replace the alert pills section (lines 2984-2990) with:
+    383→
+    384→  {/* ─── TRACKING COMMAND HEADER ─── */}
+    384→  <div style={{
+    384→    marginBottom: "1rem",
+    385→    padding: "0.85rem 1rem",
+    385→    borderRadius: "0.75rem",
+    386→    background: "linear-gradient(135deg, rgba(0,188,212,0.04), rgba(0,150,136,0.03))",
+    387→    border: "1px solid rgba(0,188,212,0.12)",
+    387→    position: "relative",
+    388→    overflow: "hidden",
+    388→  }}>
+    389→    {/* Scan line animation */}
+    389→    <div style={{
+    389→      position: "absolute",
+    389→      top: 0,
+    389→      left: 0,
+    389→      right: 0,
+    389→      height: "1px",
+    389→      background: "linear-gradient(90deg, transparent, rgba(0,188,212,0.3), transparent)",
+    389→      animation: "scan 3s ease-in-out infinite",
+    389→      keyframes: {
+    389→        scan: {
+    389→          "0%": { top: "0" },
+    389→          "100%": { top: "100%" },
+    389→        },
+    389→      },
+    389→    }} />
+    390→
+    391→    {/* Title row */}
+    391→    <div style={{
+    391→      display: "flex",
+    391→      alignItems: "center",
+    391→      justifyContent: "space-between",
+    391→      marginBottom: "0.6rem",
+    391→    }}>
+    391→      <span style={{
+    391→        fontSize: "0.9rem",
+    391→        fontWeight: 700,
+    391→        letterSpacing: "0.08em",
+    391→        color: "var(--text-primary)",
+    392→      }}>
+    392→        📡 SHIPMENT TRACKING
+    392→      </span>
+    393→      <div style={{
+    393→        display: "flex",
+    393→        alignItems: "center",
+    393→        gap: "0.6rem",
+    393→      }}>
+    393→        <span style={{
+    393→          fontSize: "0.7rem",
+    393→          color: "var(--text-muted)",
+    393→          fontFamily: "monospace",
+    394→        }}>
+    394→          Last: {lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+    394→        </span>
+    395→        <button
+    395→          onClick={handleRefresh}
+    395→          style={{
+    395→            padding: "4px 8px",
+    395→            fontSize: "0.65rem",
+    395→            fontWeight: 600,
+    395→            border: "1px solid rgba(0,188,212,0.2)",
+    395→            borderRadius: "3px",
+    395→            background: "rgba(0,188,212,0.08)",
+    395→            color: "var(--accent)",
+    395→            cursor: "pointer",
+    395→            transition: "all 0.2s",
+    395→          }}
+    396→          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,188,212,0.15)")}
+    396→          onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(0,188,212,0.08)")}
+    397→        >
+    397→          🔄 Refresh
+    397→        </button>
+    398→      </div>
+    398→    </div>
+    399→
+    399→    {/* Divider */}
+    399→    <div style={{
+    399→      height: "1px",
+    399→      background: "rgba(0,188,212,0.08)",
+    399→      marginBottom: "0.6rem",
+    399→    }} />
+    400→
+    401→    {/* Status counts row */}
+    401→    <div style={{
+    401→      display: "grid",
+    401→      gridTemplateColumns: "repeat(4, 1fr)",
+    401→      gap: "0.5rem",
+    401→    }}>
+    401→      {[
+    401→        { key: "inTransit", icon: "🟢", label: "In Transit", count: counts.inTransit },
+    401→        { key: "outForDelivery", icon: "🟠", label: "Out for Delivery", count: counts.outForDelivery },
+    401→        { key: "delivered", icon: "✅", label: "Delivered", count: counts.delivered },
+    401→        { key: "exceptions", icon: "⚠️", label: "Exceptions", count: counts.exceptions },
+    401→      ].map((status) => (
+    402→        <button
+    402→          key={status.key}
+    402→          onClick={() => {
+    402→            setFilterStatus(filterStatus === status.key ? null : status.key);
+    402→            console.log(`[tracking-dashboard] Filter: ${status.key}`);
+    402→          }}
+    402→          style={{
+    402→            padding: "0.5rem 0.6rem",
+    402→            textAlign: "center",
+    402→            fontSize: "0.7rem",
+    402→            fontWeight: 600,
+    402→            border: filterStatus === status.key ? "1px solid var(--accent)" : "1px solid rgba(0,188,212,0.15)",
+    402→            borderRadius: "4px",
+    402→            background: filterStatus === status.key ? "rgba(0,188,212,0.15)" : "transparent",
+    402→            color: "var(--text-primary)",
+    402→            cursor: "pointer",
+    402→            transition: "all 0.2s",
+    402→            fontFamily: "monospace",
+    402→          }}
+    403→          onMouseEnter={(e) => {
+    403→            e.currentTarget.style.background = filterStatus === status.key ? "rgba(0,188,212,0.15)" : "rgba(0,188,212,0.06)";
+    403→          }}
+    403→          onMouseLeave={(e) => {
+    403→            e.currentTarget.style.background = filterStatus === status.key ? "rgba(0,188,212,0.15)" : "transparent";
+    403→          }}
+    404→        >
+    404→          <div>{status.icon}</div>
+    404→          <div style={{ fontWeight: 700, fontSize: "0.85rem" }}>{status.count}</div>
+    404→          <div style={{ fontSize: "0.5rem", marginTop: "2px", opacity: 0.8 }}>{status.label}</div>
+    404→        </button>
+    405→      ))}
+    405→    </div>
+    405→  </div>
+    406→
+    407→--- B3: Auto-update timestamp every 60 seconds ---
+    407→
+    408→Add useEffect hook after state declarations:
+    408→
+    409→  useEffect(() => {
+    409→    const interval = setInterval(() => {
+    409→      setLastRefresh(new Date());
+    409→    }, 60000); // Every 60 seconds
+    409→    return () => clearInterval(interval);
+    409→  }, []);
+    410→
+    411→================================================================================
+    412→
+    412→PART C — FLIGHT BOARD STYLE ROWS
+    413→
+    412→================================================================================
+    413→
+    413→FILE: app/shipping/ShippingCenterClient.tsx
+    413→
+    414→--- C1: Filter function ---
+    414→
+    414→Add BEFORE the rendering section:
+    414→
+    415→  const getFilteredShipped = () => {
+    416→    if (!filterStatus) return shipped;
+    415→    const statusMap: Record<string, string> = {
+    416→      inTransit: "IN_TRANSIT",
+    417→      outForDelivery: "OUT_FOR_DELIVERY",
+    418→      delivered: "DELIVERED",
+    418→      exceptions: "EXCEPTION",
+    419→    };
+    419→    const targetStatus = statusMap[filterStatus];
+    420→    return shipped.filter((s: any) => s.status === targetStatus);
+    420→  };
+    421→
+    421→--- C2: Progress bar component ---
+    421→
+    422→Add as helper function:
+    422→
+    422→  const renderProgressBar = (status: string, isDelivered: boolean) => {
+    423→    const steps = ["CREATED", "PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"];
+    423→    const stepIndex = steps.indexOf(status);
+    424→    const progress = stepIndex === -1 ? 0 : ((stepIndex + 1) / steps.length) * 100;
+    424→
+    425→    return (
+    425→      <div style={{
+    425→        height: "4px",
+    425→        borderRadius: "2px",
+    425→        background: "rgba(0,188,212,0.1)",
+    425→        margin: "0.4rem 0 0 0",
+    425→        overflow: "hidden",
+    425→        position: "relative",
+    426→      }}>
+    426→        <div style={{
+    426→          height: "100%",
+    426→          width: `${progress}%`,
+    426→          background: isDelivered ? "linear-gradient(90deg, #00bcd4, #4caf50)" : "linear-gradient(90deg, #00bcd4, #00838f)",
+    426→          borderRadius: "1px",
+    426→          transition: "width 0.4s ease",
+    427→        }} />
+    427→        {progress > 0 && progress < 100 && (
+    427→          <div style={{
+    427→            position: "absolute",
+    427→            top: "50%",
+    427→            left: `${progress}%`,
+    427→            transform: "translate(-50%, -50%)",
+    427→            width: "6px",
+    427→            height: "6px",
+    427→            borderRadius: "50%",
+    427→            background: "var(--accent)",
+    427→            boxShadow: "0 0 0 2px var(--bg-primary)",
+    428→          }} />
+    428→        )}
+    429→      </div>
+    429→    );
+    429→  };
+    430→
+    431→--- C3: Replace renderShippedCard with new row renderer ---
+    431→
+    432→Replace renderShippedCard function (lines 2691-2908) with:
+    432→
+    433→  const renderShipmentRow = (item: any) => {
+    433→    const [isExpanded, setIsExpanded] = useState(false);
+    433→    const isDelivered = item.status === "DELIVERED";
+    433→    const isException = item.status === "EXCEPTION";
+    433→
+    434→    const carrierName = item.carrier || "Unknown";
+    434→    const carrierColor = CARRIER_COLORS[carrierName.toUpperCase()] || "#888";
+    434→    const trackingNumber = item.tracking_number || item.tracking_id || "";
+    435→    const trackingUrl = getTrackingUrl(carrierName, trackingNumber);
+    435→
+    436→    const destination = item.to_address?.city && item.to_address?.state
+    437→      ? `${item.to_address.city} ${item.to_address.state}`
+    436→      : "Destination";
+    437→    const origin = item.from_address?.city && item.from_address?.state
+    437→      ? `${item.from_address.city} ${item.from_address.state}`
+    438→      : "Origin";
+    439→
+    439→    return (
+    439→      <div
+    439→        key={item.id}
+    439→        onClick={() => setIsExpanded(!isExpanded)}
+    439→        style={{
+    440→          marginBottom: "0.6rem",
+    440→          borderRadius: "0.5rem",
+440→          overflow: "hidden",
+440→          cursor: "pointer",
+441→          borderLeft: `3px solid ${isDelivered ? "#4caf50" : isException ? "#f44336" : carrierColor}`,
+441→          background: `${shipped.indexOf(item) % 2 === 0 ? "transparent" : "rgba(0,188,212,0.02)"}`,
+441→          transition: "all 0.2s ease",
+441→          transform: "scale(1)",
+442→        }}
+442→        onMouseEnter={(e) => {
+442→          e.currentTarget.style.background = "rgba(0,188,212,0.04)";
+442→          e.currentTarget.style.transform = "scale(1.005)";
+443→        }}
+443→        onMouseLeave={(e) => {
+443→          e.currentTarget.style.background = `${shipped.indexOf(item) % 2 === 0 ? "transparent" : "rgba(0,188,212,0.02)"}`;
+443→          e.currentTarget.style.transform = "scale(1)";
+444→        }}
+444→      >
+445→        {/* Main row */}
+445→        <div style={{
+445→          padding: "0.85rem 0.9rem",
+445→          display: "grid",
+445→          gridTemplateColumns: "40px 1fr auto auto auto auto",
+445→          gap: "0.8rem",
+445→          alignItems: "center",
+446→        }}>
+446→          {/* Thumbnail */}
+446→          {item.item_image ? (
+446→            <img
+447→              src={item.item_image}
+447→              alt={item.item_name}
+447→              style={{
+447→                width: "40px",
+447→                height: "40px",
+447→                borderRadius: "4px",
+447→                objectFit: "cover",
+448→              }}
+448→            />
+449→          ) : (
+449→            <div style={{
+449→              width: "40px",
+449→              height: "40px",
+449→              borderRadius: "4px",
+450→              background: "rgba(0,188,212,0.1)",
+450→              display: "flex",
+450→              alignItems: "center",
+450→              justifyContent: "center",
+450→              fontSize: "0.75rem",
+451→            }}>
+451→              📦
+452→            </div>
+452→          )}
+453→
+454→          {/* Item info + progress bar */}
+454→          <div>
+454→            <div style={{
+454→              fontWeight: 700,
+454→              fontSize: "0.9rem",
+454→              color: "var(--text-primary)",
+454→              overflow: "hidden",
+454→              textOverflow: "ellipsis",
+454→              whiteSpace: "nowrap",
+454→              maxWidth: "300px",
+454→            }}>
+454→              {item.item_name || "Item"}
+454→            </div>
+455→            {renderProgressBar(item.status, isDelivered)}
+455→            <div style={{
+455→              fontSize: "0.65rem",
+455→              color: "var(--text-muted)",
+455→              marginTop: "0.2rem",
+455→            }}>
+455→              {origin} → {destination}
+455→            </div>
+455→          </div>
+456→
+457→          {/* Carrier badge */}
+457→          <div style={{
+457→            padding: "2px 6px",
+457→            fontSize: "0.65rem",
+457→            fontWeight: 600,
+457→            fontFamily: "monospace",
+457→            border: `1px solid ${carrierColor}`,
+457→            borderRadius: "3px",
+457→            color: carrierColor,
+457→            whiteSpace: "nowrap",
+457→          }}>
+457→            {carrierName.toUpperCase().substring(0, 4)}
+457→          </div>
+458→
+459→          {/* Tracking number with copy */}
+459→          <div style={{
+459→            display: "flex",
+459→            gap: "0.3rem",
+459→            alignItems: "center",
+459→          }}>
+459→            <a
+459→              href={trackingUrl}
+459→              target="_blank"
+459→              rel="noopener noreferrer"
+459→              onClick={(e) => e.stopPropagation()}
+459→              style={{
+459→                fontSize: "0.7rem",
+460→                fontFamily: "monospace",
+460→                color: "var(--accent)",
+460→                textDecoration: "none",
+460→                cursor: "pointer",
+460→              }}
+460→            >
+460→              {trackingNumber.substring(0, 12)}...↗
+460→            </a>
+461→            <button
+461→              onClick={(e) => {
+461→                e.stopPropagation();
+462→                navigator.clipboard.writeText(trackingNumber);
+462→                console.log(`[tracking-dashboard] Copied: ${trackingNumber}`);
+463→              }}
+463→              style={{
+463→                padding: "2px 4px",
+463→                fontSize: "0.6rem",
+463→                border: "1px solid rgba(0,188,212,0.2)",
+463→                borderRadius: "2px",
+463→                background: "transparent",
+463→                color: "var(--text-muted)",
+463→                cursor: "pointer",
+463→              }}
+463→            >
+463→              📋
+463→            </button>
+464→          </div>
+464→
+465→          {/* Status badge */}
+465→          <StatusBadge status={item.status} />
+465→
+466→          {/* ETA or Delivered date */}
+466→          <div style={{
+466→            fontSize: "0.8rem",
+466→            fontWeight: 600,
+466→            color: isDelivered ? "#4caf50" : "var(--text-muted)",
+466→            whiteSpace: "nowrap",
+466→          }}>
+466→            {isDelivered
+467→              ? (item.delivered_date ? new Date(item.delivered_date).toLocaleDateString([], { month: "short", day: "numeric" }) : "✓ Done")
+466→              : (item.eta_date ? new Date(item.eta_date).toLocaleDateString([], { month: "short", day: "numeric" }) : "Pending")}
+467→          </div>
+467→        </div>
+468→
+469→        {/* Expanded details */}
+469→        {isExpanded && (
+469→          <div style={{
+469→            padding: "0.7rem 0.9rem",
+469→            background: "rgba(0,188,212,0.02)",
+469→            borderTop: "1px solid rgba(0,188,212,0.08)",
+469→            fontSize: "0.75rem",
+469→          }}>
+469→            <div style={{ marginBottom: "0.5rem" }}>
+469→              <span style={{ color: "var(--text-muted)" }}>From:</span> {item.from_address?.line1 || "N/A"} {item.from_address?.city} {item.from_address?.state} {item.from_address?.zip}
+469→            </div>
+469→            <div style={{ marginBottom: "0.5rem" }}>
+469→              <span style={{ color: "var(--text-muted)" }}>To:</span> {item.to_address?.line1 || "N/A"} {item.to_address?.city} {item.to_address?.state} {item.to_address?.zip}
+470→            </div>
+470→            <div style={{ marginBottom: "0.5rem" }}>
+470→              <span style={{ color: "var(--text-muted)" }}>Weight:</span> {item.weight || "N/A"} | <span style={{ color: "var(--text-muted)" }}>Rate:</span> ${item.rate || "N/A"} | <span style={{ color: "var(--text-muted)" }}>Label:</span> {item.label_date ? new Date(item.label_date).toLocaleDateString() : "Pending"}
+470→            </div>
+470→            <div style={{
+470→              display: "flex",
+470→              gap: "0.6rem",
+470→              marginTop: "0.5rem",
+471→            }}>
+471→              <button
+471→                onClick={(e) => {
+471→                  e.stopPropagation();
+471→                  window.open(trackingUrl);
+471→                }}
+471→                style={{
+471→                  padding: "4px 8px",
+472→                  fontSize: "0.65rem",
+472→                  fontWeight: 600,
+472→                  border: "1px solid var(--accent)",
+472→                  borderRadius: "3px",
+472→                  background: "rgba(0,188,212,0.1)",
+472→                  color: "var(--accent)",
+472→                  cursor: "pointer",
+473→                }}
+473→              >
+473→                Track on Carrier
+473→              </button>
+474→              {isDelivered && (
+474→                <button
+474→                  onClick={(e) => {
+474→                    e.stopPropagation();
+475→                    // Open close sale flow
+475→                    console.log(`[tracking-dashboard] Close sale: ${item.id}`);
+476→                  }}
+476→                  style={{
+476→                    padding: "4px 8px",
+476→                    fontSize: "0.65rem",
+476→                    fontWeight: 600,
+476→                    border: "1px solid #4caf50",
+476→                    borderRadius: "3px",
+476→                    background: "rgba(76,175,80,0.1)",
+477→                    color: "#4caf50",
+477→                    cursor: "pointer",
+478→                  }}
+478→                >
+478→                  ✓ Close Sale
+478→                </button>
+479→              )}
+479→            </div>
+480→          </div>
+480→        )}
+481→      </div>
+481→    );
+481→  };
+482→
+483→--- C4: Render filtered board ---
+483→
+484→Replace the old rendering of shipped cards with:
+484→
+485→  {getFilteredShipped().map((shipment: any) => renderShipmentRow(shipment))}
+485→
+486→================================================================================
+    487→
+487→PART D — FREIGHT + PICKUP INTEGRATION
+487→
+488→================================================================================
+489→
+488→FILE: app/shipping/ShippingCenterClient.tsx
+488→
+489→Freight and pickup shipments should be:
+489→  1. Rendered using the SAME renderShipmentRow pattern
+490→  2. Merged with parcel shipments in the filtered board
+490→  3. Distinguish via icons (🚛 for freight, 🤝 for pickup)
+491→
+492→Modify the rendering section to combine all three types:
+492→
+493→  const allShipments = [
+493→    ...getFilteredShipped().map((s: any) => ({ ...s, type: "parcel" })),
+493→    ...freight.map((f: any) => ({ ...f, type: "freight" })),
+494→    ...pickups.map((p: any) => ({ ...p, type: "pickup" })),
+494→  ].sort((a, b) => {
+495→    const statusPriority = { exceptions: 0, outForDelivery: 1, inTransit: 2, created: 3, delivered: 4 };
+495→    const getPriority = (status: string) => {
+496→      const normalized = status.replace(/_/g, "").toLowerCase();
+496→      if (normalized.includes("exception")) return 0;
+496→      if (normalized.includes("outfor") || normalized.includes("out_for")) return 1;
+497→      if (normalized.includes("intransit") || normalized.includes("in_transit")) return 2;
+497→      if (normalized.includes("created")) return 3;
+498→      if (normalized.includes("delivered")) return 4;
+498→      return 5;
+499→    };
+499→    return getPriority(a.status) - getPriority(b.status);
+499→  });
+500→
+501→  {allShipments.map((shipment: any) => {
+501→    const icon = shipment.type === "freight" ? "🚛" : shipment.type === "pickup" ? "🤝" : "📦";
+501→    return (
+502→      <div key={`${shipment.type}-${shipment.id}`}>
+502→        {/* Prefix icon */}
+502→        <span>{icon}</span>
+502→        {renderShipmentRow(shipment)}
+502→      </div>
+502→    );
+503→  })}
+503→
+504→================================================================================
+505→
+505→SECTION 18 — VERIFICATION CHECKLIST
+505→
+506→1. CHECKPOINT baseline: pass
+506→
+507→TRACKING COMMAND HEADER:
+507→2. Header renders above shipment rows: yes / no
+508→3. Status counts display correctly: yes / no
+509→4. Filter buttons clickable: yes / no
+510→5. Filter actually filters the board: yes / no
+511→6. Timestamp displays and updates every 60s: yes / no
+512→7. Manual refresh button works: yes / no
+513→8. Scan line animation visible: yes / no
+514→
+515→SHIPMENT ROWS:
+516→9. Rows render instead of cards: yes / no
+517→10. Item thumbnail displays: yes / no
+518→11. Progress bar shows correct step: yes / no
+519→12. Carrier badge shows (4 chars max): yes / no
+520→13. Tracking number clickable and opens carrier URL: yes / no
+521→14. Copy tracking button works: yes / no
+522→15. Status badge renders: yes / no
+523→16. ETA/delivered date displays: yes / no
+524→17. Alternating row backgrounds: yes / no
+525→18. Hover effect works (scale + background): yes / no
+526→19. Left accent color matches carrier: yes / no
+527→20. Delivered rows show green accent: yes / no
+528→21. Exception rows show red accent: yes / no
+529→
+530→EXPANDABLE DETAILS:
+531→22. Click row to expand: yes / no
+532→23. Expanded shows full addresses: yes / no
+533→24. Shows weight, rate, label date: yes / no
+535→25. "Track on Carrier" button works: yes / no
+536→26. "Close Sale" button appears for delivered: yes / no
+537→
+538→FREIGHT + PICKUP:
+539→39. Freight rows appear in main board: yes / no
+540→40. Freight has 🚛 icon: yes / no
+541→41. Freight has purple accent color: yes / no
+542→42. Freight shows BOL instead of tracking: yes / no
+543→43. Pickup rows appear in main board: yes / no
+544→44. Pickup has 🤝 icon: yes / no
+545→45. Pickup has orange accent color: yes / no
+546→46. All types sorted by status priority: yes / no
+547→47. Filter buttons work across all types: yes / no
+548→
+549→BUILD:
+549→49. All locked files untouched: yes / no
+550→50. inline style={{}} throughout: yes / no
+551→51. No external CSS files added: yes / no
+552→52. No className-based styling: yes / no
+553→53. npx tsc --noEmit: 0 errors
+554→54. npm run build: pass
+555→55. CHECKPOINT post-change: pass
+556→56. Dev server: localhost:3000
+557→
+558→MANUAL TESTS:
+559→57. Open shipping center → shipped tab: looks like departure board
+560→58. Click status filter → board filters correctly
+561→59. Hover rows → background and scale change smoothly
+562→60. Click row → expands to show full details
+563→61. Click tracking number → opens carrier tracking page
+564→62. Click copy button → tracking number copied to clipboard
+565→63. Freight shipments appear in main board with 🚛
+566→64. Pickup items appear in main board with 🤝
+565→65. Click refresh → timestamp updates
+566→
+567→================================================================================
+567→
+568→SECTION 19 — REQUIRED REPORT FORMAT
+569→
+569→CHECKPOINT before: [pass / issue]
+570→
+571→TRACKING COMMAND HEADER:
+572→- Header renders: [yes / no]
+573→- Status counts accurate: [yes / no]
+573→- Filter buttons work: [yes / no]
+574→- Timestamp auto-updates: [yes / no]
+575→- Scan line animation visible: [yes / no]
+576→
+577→SHIPMENT ROWS:
+578→- Rows instead of cards: [yes / no]
+578→- Progress bars show correct step: [yes / no]
+579→- Carrier colors correct: [yes / no]
+580→- Tracking numbers clickable: [yes / no]
+581→- Copy button works: [yes / no]
+582→- Expandable details work: [yes / no]
+583→
+584→FREIGHT + PICKUP:
+585→- Freight in main board: [yes / no]
+585→- Pickup in main board: [yes / no]
+586→- All types sorted by status: [yes / no]
+587→
+588→BUILD:
+589→- npx tsc --noEmit: [# errors]
+590→- npm run build: [pass / fail]
+590→- Dev server: localhost:3000
+591→
+592→Files modified:
+593→  - app/shipping/ShippingCenterClient.tsx
+594→
+594→LOCKED FILE INTEGRITY:
+595→  - lib/shipping/shippo.ts: [untouched]
+596→  - lib/shipping/fedex-parcel.ts: [untouched]
+596→  - lib/shipping/easypost.ts: [untouched]
+597→  - lib/shipping/shipengine-ltl.ts: [untouched]
+597→  - lib/adapters/ai.ts: [untouched]
+598→  - app/components/StatusBadge.tsx: [untouched]
+599→  - All other files: [untouched]
+600→
+601→END OF COMMAND 5B
