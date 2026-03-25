@@ -1,0 +1,1252 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 24, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping —
+✓ lib/shipping/package-suggestions.ts
+✓ lib/shipping/shippo.ts — LOCKED (recently modified, stable)
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+✓ lib/shipping/freight-estimates.ts — LOCKED
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/populate-intelligence.ts
+✓ lib/data/project-rollup.ts
+✓ lib/data/user-events.ts
+
+— Enrichment —
+✓ lib/enrichment/item-context.ts
+✓ lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— eBay Adapter (when created) —
+✓ lib/adapters/ebay.ts — LOCKED after creation
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/** — READ + EXTEND for shipping work
+✓ EXCEPTION: app/api/ebay/** — READ + EXTEND for eBay work
+✓ EXCEPTION: app/api/bots/** — READ for bot page data sync work
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED except surgical unlocks for bot upgrades
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — READ ONLY
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - lib/shipping/easypost.ts (CREATE NEW — EasyPost integration library)
+  - app/api/shipping/rates/route.ts (ADD EasyPost as third carrier source)
+  - app/api/shipping/estimate/route.ts (ADD EasyPost as third carrier source)
+  - app/api/shipping/verify-address/route.ts (CREATE NEW — address verification endpoint)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+Data collection for EasyPost:
+  - Log every address verification result (verified/failed, residential flag)
+  - Log every EasyPost rate request (carrier, service, rate, source)
+  - All via existing console.log pattern — EventLog persistence can be added later
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• Shippo API key is SET and LIVE (test token configured in .env).
+• Shippo is our PRIMARY parcel carrier aggregator — returns USPS, UPS, FedEx.
+• Hybrid rate system: live Shippo rates supplemented with demo estimates. WORKING.
+• FedEx direct parcel API fails on sandbox (ACCOUNT.NUMBER.MISMATCH). Expected.
+• EasyPost test key is SET in .env: EASYPOST_TEST_API_KEY.
+
+ARCHITECTURE DECISION (approved by Ryan):
+  - Shippo = PRIMARY parcel carrier rates (USPS, UPS, FedEx) ← WORKING
+  - EasyPost = Address verification + BACKUP carrier rate layer ← THIS COMMAND
+  - FedEx Direct API = LTL freight ONLY ← VERIFIED
+  - ShipEngine = LTL freight (additional carriers) ← VERIFIED
+  - Demo fallback = fills gaps when APIs return limited services ← WORKING
+
+CURRENT PARCEL RATE PIPELINE (rates/route.ts):
+  1. Shippo → live rates (USPS + UPS, ~4 unique services)
+  2. FedEx Parcel → 0 rates (sandbox ACCOUNT.NUMBER.MISMATCH)
+  3. Shippo hybrid → supplements with demo rates for missing services
+  4. Dedupe by carrier+service key
+  5. Returns 13-15 carrier options to UI
+
+THIS COMMAND ADDS:
+  6. EasyPost → backup live rates (additional carrier options)
+  7. EasyPost rates merge into dedupe — fills gaps Shippo missed
+  8. Address verification API → validates buyer addresses before shipping
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Add defensive error handling within scope
+— Improve logging to diagnose rate issues
+— Add Elon-standard polish within scope
+— Create new lib/shipping/ files for new carrier integrations
+— Create new app/api/shipping/ endpoints
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Change business or pricing logic
+— Do any "while I'm in here" fixes beyond scope
+
+APPROVED npm package: @easypost/api
+If npm install fails (network/sandbox), use EasyPost REST API directly
+via fetch (same pattern as fedex-parcel.ts). Either approach is fine.
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+Variable                   Status       Notes
+SHIPPO_API_KEY             SET          Live test token configured
+FEDEX_ACCOUNT_NUMBER       SET          210749015
+FEDEX_PARCEL_API_KEY       SET          Sandbox credentials
+FEDEX_PARCEL_SECRET_KEY    SET          Sandbox credentials
+FEDEX_PARCEL_URL           SET          https://apis-sandbox.fedex.com
+FEDEX_LTL_API_KEY          SET          Sandbox credentials
+FEDEX_LTL_SECRET_KEY       SET          Sandbox credentials
+FEDEX_LTL_URL              SET          https://apis-sandbox.fedex.com
+SHIPENGINE_API_KEY         SET          ShipStation LTL sandbox key
+SHIPENGINE_BASE_URL        SET          https://api.shipengine.com
+SHIPENGINE_ENV             SET          sandbox
+EASYPOST_TEST_API_KEY      SET          EZTKbf13627fa1f0498186bbe64962050b36Xd7MWV0URQMPEmoKptmVOg
+
+NOTE: EasyPost test keys start with "EZTK" and use sandbox environment
+automatically. No separate URL needed — the key determines the mode.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No schema changes in this command.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+The Shipping Center (app/shipping/ShippingCenterClient.tsx) is ~4,855 lines.
+It has 5 tabs: Items, Wizard, Freight/LTL, Tracking, Pickups.
+
+PARCEL RATES: WORKING. 13-15 carrier options per item.
+NET PROFIT: FIXED (Command 1). Using actual listing price + 9.75% fees.
+LTL FREIGHT: VERIFIED (Command 1). Pipeline wired, sandbox limitations noted.
+
+THIS COMMAND adds EasyPost as a backend carrier source. No frontend changes.
+The additional EasyPost rates flow through the existing rate pipeline and
+appear in the UI automatically — same as Shippo and FedEx rates do now.
+
+The address verification API endpoint is backend-only for now. Frontend
+integration (calling it from ShippingPanel buyer address form) will be
+done in a future surgical unlock command.
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — EASYPOST INTEGRATION: ADDRESS VERIFICATION + BACKUP CARRIER LAYER
+
+================================================================================
+
+This command does FOUR things. All surgical. No overhauls.
+
+TASK 1 — CREATE lib/shipping/easypost.ts
+  - Address verification function (verifyAddress)
+  - Backup carrier rate function (getEasyPostRates)
+  - Residential detection function (checkResidential)
+  - All using EasyPost REST API via fetch (no npm dependency needed)
+
+TASK 2 — WIRE EasyPost backup rates into app/api/shipping/rates/route.ts
+  - Add as third source in Promise.all (Shippo + FedEx + EasyPost)
+  - EasyPost rates merge into existing allRates array
+  - Existing dedupe handles it — Shippo wins priority, EasyPost fills gaps
+  - Update logging to show all three sources
+
+TASK 3 — WIRE EasyPost backup rates into app/api/shipping/estimate/route.ts
+  - Add as third source in Promise.all (Shippo + FedEx + EasyPost)
+  - EasyPost rates merge into existing allRates array
+  - Same dedupe logic handles deduplication
+  - Update logging
+
+TASK 4 — CREATE app/api/shipping/verify-address/route.ts
+  - POST endpoint accepting street, city, state, zip
+  - Returns verified/corrected address + residential flag
+  - Backend-ready for frontend integration in a future command
+
+Files created:
+  - lib/shipping/easypost.ts (NEW)
+  - app/api/shipping/verify-address/route.ts (NEW)
+
+Files modified:
+  - app/api/shipping/rates/route.ts (ADD EasyPost source)
+  - app/api/shipping/estimate/route.ts (ADD EasyPost source)
+
+Expected output:
+  - EasyPost rates appear in terminal logs as third source
+  - Rate pipeline: Shippo + FedEx + EasyPost → dedupe → UI
+  - Address verification endpoint responds at /api/shipping/verify-address
+  - No UI changes — EasyPost rates flow through existing frontend automatically
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n app/api/shipping/rates/route.ts
+   This file currently:
+   - Line 1-3: Imports authAdapter, getShippingRates, getFedExParcelRates
+   - Lines 17-27: Promise.all with Shippo + FedEx Parcel
+   - Lines 30-44: Merge allRates array (Shippo spread + FedEx mapped)
+   - Lines 47-64: Dedupe logic using carrier+service key
+   - Line 68: Logging
+   - Lines 70-76: Return response
+
+2. cat -n app/api/shipping/estimate/route.ts
+   This file currently:
+   - Lines 1-5: Imports (authAdapter, prisma, getShippingRates, getFedExParcelRates)
+   - Lines 103-112: Promise.all with Shippo + FedEx (inside try block)
+   - Lines 114-138: Merge allRates (Shippo loop + FedEx loop)
+   - Lines 141-148: Dedupe
+   - Line 150: Logging
+   - Line 152: Fallback to getCarrierEstimates if 0 rates
+
+3. grep 'EASYPOST' .env | sed 's/=.*/=SET/'
+   Confirm the test key is configured.
+
+4. cat -n lib/shipping/fedex-parcel.ts | head -30
+   Reference the REST API pattern (fetch-based, auth headers, error handling).
+   EasyPost will follow the same pattern.
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PART B — CREATE lib/shipping/easypost.ts
+
+================================================================================
+
+CREATE the new file: lib/shipping/easypost.ts
+
+```typescript
+/**
+ * EasyPost Integration — Address Verification + Backup Carrier Rates
+ *
+ * EasyPost provides:
+ *   1. Address verification (deliverability check, residential detection)
+ *   2. Backup carrier rate shopping (USPS, UPS, FedEx via EasyPost accounts)
+ *
+ * Architecture role:
+ *   - Shippo = PRIMARY carrier rates (most services, best coverage)
+ *   - EasyPost = BACKUP carrier rates (fills gaps Shippo misses)
+ *   - EasyPost = Address verification layer (validates before shipping)
+ *
+ * Uses EasyPost REST API v2 directly via fetch — no npm package needed.
+ * Test keys start with "EZTK" and use sandbox automatically.
+ */
+
+const EASYPOST_API_KEY =
+  process.env.EASYPOST_TEST_API_KEY || process.env.EASYPOST_API_KEY || "";
+const EASYPOST_BASE = "https://api.easypost.com/v2";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type AddressVerificationResult = {
+  verified: boolean;
+  residential: boolean | null;
+  correctedZip: string | null;
+  correctedCity: string | null;
+  correctedState: string | null;
+  correctedStreet: string | null;
+  message: string;
+  raw: any;
+};
+
+export type EasyPostRate = {
+  carrier: string;
+  service: string;
+  rate: number;
+  currency: string;
+  estimatedDays: number;
+  isLive: boolean;
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function authHeaders(): Record<string, string> {
+  return {
+    Authorization: `Basic ${Buffer.from(EASYPOST_API_KEY + ":").toString("base64")}`,
+    "Content-Type": "application/json",
+  };
+}
+
+function isConfigured(): boolean {
+  return (
+    !!EASYPOST_API_KEY &&
+    EASYPOST_API_KEY !== "your_easypost_api_key_here" &&
+    EASYPOST_API_KEY.length > 10
+  );
+}
+
+// ─── Address Verification ─────────────────────────────────────────────────────
+
+/**
+ * Verify a shipping address using EasyPost.
+ * Returns verification status, residential flag, and corrected fields.
+ *
+ * Use cases:
+ *   - Validate buyer address before generating shipping label
+ *   - Detect residential vs commercial (affects carrier rates)
+ *   - Correct minor address typos/formatting
+ */
+export async function verifyAddress(
+  street1: string,
+  city: string,
+  state: string,
+  zip: string,
+  street2?: string,
+  country?: string
+): Promise<AddressVerificationResult> {
+  const empty: AddressVerificationResult = {
+    verified: false,
+    residential: null,
+    correctedZip: null,
+    correctedCity: null,
+    correctedState: null,
+    correctedStreet: null,
+    message: "",
+    raw: null,
+  };
+
+  if (!isConfigured()) {
+    console.log("[easypost] Address verification skipped — no API key configured");
+    return { ...empty, message: "EasyPost not configured" };
+  }
+
+  try {
+    const res = await fetch(`${EASYPOST_BASE}/addresses`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        address: {
+          street1,
+          street2: street2 || "",
+          city,
+          state,
+          zip,
+          country: country || "US",
+          verify: ["delivery"],
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(
+        "[easypost] Address verification API error:",
+        res.status,
+        errText.slice(0, 300)
+      );
+      return { ...empty, message: `API error: ${res.status}` };
+    }
+
+    const data = await res.json();
+    const verifications = data.verifications?.delivery;
+    const isVerified = verifications?.success === true;
+    const isResidential = data.residential ?? null;
+    const errors = verifications?.errors || [];
+    const errorMsg = errors.length > 0 ? errors[0].message : "";
+
+    console.log(
+      `[easypost] Address verified: ${isVerified} | Residential: ${isResidential} | ${data.street1 || street1}, ${data.city || city} ${data.state || state} ${data.zip || zip}${errorMsg ? ` | Error: ${errorMsg}` : ""}`
+    );
+
+    return {
+      verified: isVerified,
+      residential: isResidential,
+      correctedZip: data.zip || null,
+      correctedCity: data.city || null,
+      correctedState: data.state || null,
+      correctedStreet: data.street1 || null,
+      message: isVerified
+        ? "Address verified"
+        : errorMsg || "Verification failed",
+      raw: data,
+    };
+  } catch (err) {
+    console.error("[easypost] Address verification exception:", err);
+    return { ...empty, message: "Exception during verification" };
+  }
+}
+
+// ─── Backup Carrier Rates ─────────────────────────────────────────────────────
+
+/**
+ * Get shipping rates from EasyPost as a backup carrier source.
+ * Returns rates from all available carriers connected to our EasyPost account.
+ *
+ * EasyPost test keys include USPS by default. Production keys can add
+ * UPS, FedEx, DHL, and other carriers via the EasyPost dashboard.
+ *
+ * These rates supplement Shippo (primary). The dedupe logic in
+ * rates/route.ts and estimate/route.ts handles overlapping services.
+ */
+export async function getEasyPostRates(
+  fromZip: string,
+  toZip: string,
+  weightLbs: number,
+  lengthIn: number,
+  widthIn: number,
+  heightIn: number
+): Promise<EasyPostRate[]> {
+  if (!isConfigured()) {
+    console.log("[easypost] Rate request skipped — no API key configured");
+    return [];
+  }
+
+  try {
+    const res = await fetch(`${EASYPOST_BASE}/shipments`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        shipment: {
+          from_address: {
+            street1: "123 Main St",
+            city: "Portland",
+            state: "ME",
+            zip: fromZip,
+            country: "US",
+          },
+          to_address: {
+            street1: "456 Destination St",
+            city: "New York",
+            state: "NY",
+            zip: toZip,
+            country: "US",
+          },
+          parcel: {
+            length: lengthIn,
+            width: widthIn,
+            height: heightIn,
+            weight: Math.round(weightLbs * 16), // EasyPost uses ounces
+          },
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(
+        "[easypost] Rate request API error:",
+        res.status,
+        errText.slice(0, 300)
+      );
+      return [];
+    }
+
+    const data = await res.json();
+    const rates = data.rates || [];
+
+    // Normalize carrier names — EasyPost uses "UPSDAP" for UPS
+    const CARRIER_MAP: Record<string, string> = {
+      UPSDAP: "UPS",
+      USPSFirst: "USPS",
+      USPSParcelSelect: "USPS",
+      USPSPriorityMail: "USPS",
+    };
+
+    const ALLOWED_CARRIERS = ["usps", "ups", "fedex", "upsdap"];
+
+    const mapped: EasyPostRate[] = rates
+      .filter((r: any) =>
+        ALLOWED_CARRIERS.includes((r.carrier || "").toLowerCase())
+      )
+      .map((r: any) => ({
+        carrier: CARRIER_MAP[r.carrier] || r.carrier,
+        service: r.service || "Standard",
+        rate: parseFloat(r.rate) || 0,
+        currency: r.currency || "USD",
+        estimatedDays: r.est_delivery_days || r.delivery_days || 5,
+        isLive: true,
+      }))
+      .filter((r: EasyPostRate) => r.rate > 0)
+      .sort((a: EasyPostRate, b: EasyPostRate) => a.rate - b.rate);
+
+    console.log(
+      `[easypost] ${mapped.length} backup rates (${fromZip} → ${toZip}, ${weightLbs}lbs): ${mapped.map((r) => `${r.carrier} ${r.service} $${r.rate}`).join(" | ") || "none"}`
+    );
+
+    return mapped;
+  } catch (err) {
+    console.error("[easypost] Rate request exception:", err);
+    return [];
+  }
+}
+
+// ─── Convenience Exports ──────────────────────────────────────────────────────
+
+/**
+ * Quick check if EasyPost is configured and available.
+ */
+export function isEasyPostConfigured(): boolean {
+  return isConfigured();
+}
+```
+
+================================================================================
+
+PART C — WIRE EASYPOST INTO app/api/shipping/rates/route.ts
+
+================================================================================
+
+FILE: app/api/shipping/rates/route.ts
+
+--- C1: Add import ---
+
+FIND the import block (lines 1-3):
+
+import { authAdapter } from "@/lib/adapters/auth";
+import { getShippingRates } from "@/lib/shipping/shippo";
+import { getFedExParcelRates } from "@/lib/shipping/fedex-parcel";
+
+REPLACE WITH:
+
+import { authAdapter } from "@/lib/adapters/auth";
+import { getShippingRates } from "@/lib/shipping/shippo";
+import { getFedExParcelRates } from "@/lib/shipping/fedex-parcel";
+import { getEasyPostRates } from "@/lib/shipping/easypost";
+
+--- C2: Add EasyPost to Promise.all ---
+
+FIND the Promise.all block (lines 16-27):
+
+  // Run Shippo + FedEx Parcel in parallel
+  const [shippoResult, fedexRates] = await Promise.all([
+    getShippingRates(
+      { zip: String(fromZip) },
+      { zip: String(toZip) },
+      { length: Number(length), width: Number(width), height: Number(height), weight: Number(weight) },
+    ).catch(() => ({ rates: [] as any[], isDemo: true })),
+    getFedExParcelRates(
+      String(fromZip), String(toZip),
+      Number(weight), Number(length), Number(width), Number(height),
+    ).catch(() => []),
+  ]);
+
+REPLACE WITH:
+
+  // Run Shippo + FedEx Parcel + EasyPost in parallel
+  const [shippoResult, fedexRates, easypostRates] = await Promise.all([
+    getShippingRates(
+      { zip: String(fromZip) },
+      { zip: String(toZip) },
+      { length: Number(length), width: Number(width), height: Number(height), weight: Number(weight) },
+    ).catch(() => ({ rates: [] as any[], isDemo: true })),
+    getFedExParcelRates(
+      String(fromZip), String(toZip),
+      Number(weight), Number(length), Number(width), Number(height),
+    ).catch(() => []),
+    getEasyPostRates(
+      String(fromZip), String(toZip),
+      Number(weight), Number(length), Number(width), Number(height),
+    ).catch(() => []),
+  ]);
+
+--- C3: Add EasyPost rates to merge ---
+
+FIND the allRates merge block (lines 29-44):
+
+  // Merge rates — Shippo + FedEx direct
+  const allRates = [
+    ...shippoResult.rates.map((r: any) => ({
+      ...r,
+      source: shippoResult.isDemo ? "demo" : "shippo",
+    })),
+    ...fedexRates.map((r) => ({
+      provider: r.carrier,
+      servicelevel_name: r.service,
+      amount: String(r.rate),
+      estimated_days: r.estimatedDays,
+      currency: r.currency,
+      source: "fedex",
+      isLive: r.isLive,
+    })),
+  ];
+
+REPLACE WITH:
+
+  // Merge rates — Shippo + FedEx direct + EasyPost backup
+  const allRates = [
+    ...shippoResult.rates.map((r: any) => ({
+      ...r,
+      source: shippoResult.isDemo ? "demo" : "shippo",
+    })),
+    ...fedexRates.map((r) => ({
+      provider: r.carrier,
+      servicelevel_name: r.service,
+      amount: String(r.rate),
+      estimated_days: r.estimatedDays,
+      currency: r.currency,
+      source: "fedex",
+      isLive: r.isLive,
+    })),
+    ...easypostRates.map((r) => ({
+      provider: r.carrier,
+      servicelevel_name: r.service,
+      amount: String(r.rate),
+      estimated_days: r.estimatedDays,
+      currency: r.currency,
+      source: "easypost",
+      isLive: r.isLive,
+    })),
+  ];
+
+--- C4: Update logging ---
+
+FIND the logging line (line 68):
+
+  console.log(`[shipping/rates] ${deduped.length} rates → UI: Shippo(${shippoResult.rates.length}) + FedEx-direct(${fedexRates.length}) → deduped(${deduped.length})`);
+
+REPLACE WITH:
+
+  console.log(`[shipping/rates] ${deduped.length} rates → UI: Shippo(${shippoResult.rates.length}) + FedEx-direct(${fedexRates.length}) + EasyPost(${easypostRates.length}) → deduped(${deduped.length})`);
+
+--- C5: Update return block ---
+
+FIND the return block (lines 70-76):
+
+  return Response.json({
+    rates: deduped,
+    isDemo: shippoResult.isDemo && fedexRates.length === 0,
+    isMock: shippoResult.isDemo && fedexRates.length === 0,
+    rateSource: fedexRates.length > 0 ? "shippo+fedex" : shippoResult.isDemo ? "demo" : "shippo",
+    fedexLive: fedexRates.length > 0,
+  });
+
+REPLACE WITH:
+
+  return Response.json({
+    rates: deduped,
+    isDemo: shippoResult.isDemo && fedexRates.length === 0 && easypostRates.length === 0,
+    isMock: shippoResult.isDemo && fedexRates.length === 0 && easypostRates.length === 0,
+    rateSource: [
+      shippoResult.isDemo ? "demo" : "shippo",
+      fedexRates.length > 0 ? "fedex" : null,
+      easypostRates.length > 0 ? "easypost" : null,
+    ].filter(Boolean).join("+"),
+    fedexLive: fedexRates.length > 0,
+    easypostLive: easypostRates.length > 0,
+  });
+
+NOTE: The existing dedupe logic (lines 47-64) does NOT need changes.
+It uses carrier+service key, so EasyPost rates with the same service as
+a Shippo rate will be deduped — Shippo wins (seen first in array).
+EasyPost only adds services that Shippo didn't return.
+
+================================================================================
+
+PART D — WIRE EASYPOST INTO app/api/shipping/estimate/route.ts
+
+================================================================================
+
+FILE: app/api/shipping/estimate/route.ts
+
+--- D1: Add import ---
+
+FIND the import block (lines 1-5):
+
+import { NextRequest, NextResponse } from "next/server";
+import { authAdapter } from "@/lib/adapters/auth";
+import { prisma } from "@/lib/db";
+import { getShippingRates } from "@/lib/shipping/shippo";
+import { getFedExParcelRates } from "@/lib/shipping/fedex-parcel";
+
+REPLACE WITH:
+
+import { NextRequest, NextResponse } from "next/server";
+import { authAdapter } from "@/lib/adapters/auth";
+import { prisma } from "@/lib/db";
+import { getShippingRates } from "@/lib/shipping/shippo";
+import { getFedExParcelRates } from "@/lib/shipping/fedex-parcel";
+import { getEasyPostRates } from "@/lib/shipping/easypost";
+
+--- D2: Add EasyPost to Promise.all ---
+
+FIND the Promise.all block (lines 103-112):
+
+      const [shippoResult, fedexRates] = await Promise.all([
+        getShippingRates(
+          { zip: fromZip },
+          { zip: toZip },
+          { length: box.length, width: box.width, height: box.height, weight },
+        ).catch(() => ({ rates: [] as any[], isDemo: true })),
+        isLTL ? Promise.resolve([]) : getFedExParcelRates(
+          fromZip, toZip, weight, box.length, box.width, box.height,
+        ).catch(() => []),
+      ]);
+
+REPLACE WITH:
+
+      const [shippoResult, fedexRates, easypostRates] = await Promise.all([
+        getShippingRates(
+          { zip: fromZip },
+          { zip: toZip },
+          { length: box.length, width: box.width, height: box.height, weight },
+        ).catch(() => ({ rates: [] as any[], isDemo: true })),
+        isLTL ? Promise.resolve([]) : getFedExParcelRates(
+          fromZip, toZip, weight, box.length, box.width, box.height,
+        ).catch(() => []),
+        isLTL ? Promise.resolve([]) : getEasyPostRates(
+          fromZip, toZip, weight, box.length, box.width, box.height,
+        ).catch(() => []),
+      ]);
+
+--- D3: Add EasyPost rates to allRates ---
+
+FIND the FedEx rate loop (lines 129-138):
+
+      // Add FedEx direct rates
+      for (const r of fedexRates) {
+        allRates.push({
+          carrier: r.carrier,
+          service: r.service,
+          price: r.rate,
+          days: r.estimatedDays ? `${r.estimatedDays}` : "3-5",
+        });
+        isLiveRates = true;
+      }
+
+REPLACE WITH:
+
+      // Add FedEx direct rates
+      for (const r of fedexRates) {
+        allRates.push({
+          carrier: r.carrier,
+          service: r.service,
+          price: r.rate,
+          days: r.estimatedDays ? `${r.estimatedDays}` : "3-5",
+        });
+        isLiveRates = true;
+      }
+
+      // Add EasyPost backup rates
+      for (const r of easypostRates) {
+        allRates.push({
+          carrier: r.carrier,
+          service: r.service,
+          price: r.rate,
+          days: r.estimatedDays ? `${r.estimatedDays}` : "3-7",
+        });
+        if (r.isLive) isLiveRates = true;
+      }
+
+NOTE: The existing dedupe at lines 141-148 handles EasyPost rates
+automatically — same carrier+service key logic, keeps cheapest rate.
+
+================================================================================
+
+PART E — CREATE ADDRESS VERIFICATION ENDPOINT
+
+================================================================================
+
+CREATE the new directory and file:
+  mkdir -p app/api/shipping/verify-address
+  Create: app/api/shipping/verify-address/route.ts
+
+```typescript
+import { NextRequest, NextResponse } from "next/server";
+import { authAdapter } from "@/lib/adapters/auth";
+import { verifyAddress, isEasyPostConfigured } from "@/lib/shipping/easypost";
+
+/**
+ * POST /api/shipping/verify-address
+ *
+ * Verify a shipping address using EasyPost.
+ * Returns verification status, residential flag, and corrected fields.
+ *
+ * Body: { street1, city, state, zip, street2?, country? }
+ *
+ * Used by:
+ *   - ShippingPanel buyer address form (future frontend integration)
+ *   - Shipping Center wizard (future frontend integration)
+ *   - Label creation flow (validate before purchasing label)
+ */
+export async function POST(req: NextRequest) {
+  const user = await authAdapter.getSession();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (!isEasyPostConfigured()) {
+    return NextResponse.json({
+      verified: false,
+      residential: null,
+      message: "Address verification not configured",
+      configured: false,
+    });
+  }
+
+  const body = await req.json().catch(() => ({}));
+  const { street1, city, state, zip, street2, country } = body;
+
+  if (!zip) {
+    return NextResponse.json({ error: "zip is required" }, { status: 400 });
+  }
+
+  const result = await verifyAddress(
+    street1 || "",
+    city || "",
+    state || "",
+    zip,
+    street2 || "",
+    country || "US"
+  );
+
+  return NextResponse.json({
+    verified: result.verified,
+    residential: result.residential,
+    correctedZip: result.correctedZip,
+    correctedCity: result.correctedCity,
+    correctedState: result.correctedState,
+    correctedStreet: result.correctedStreet,
+    message: result.message,
+    configured: true,
+  });
+}
+```
+
+================================================================================
+
+PART F — DIAGNOSTIC: TEST EASYPOST INTEGRATION
+
+================================================================================
+
+Create and run a diagnostic script to verify EasyPost works.
+
+Create: mkdir -p scripts
+Create: scripts/test-easypost.ts
+
+```typescript
+/**
+ * EasyPost Integration Diagnostic
+ * Run with: npx tsx scripts/test-easypost.ts
+ * DELETE THIS FILE after running.
+ */
+require("dotenv").config();
+
+const EP_KEY = process.env.EASYPOST_TEST_API_KEY || process.env.EASYPOST_API_KEY || "";
+
+async function testAddressVerification() {
+  console.log("=== EASYPOST ADDRESS VERIFICATION TEST ===");
+  console.log("API Key:", EP_KEY ? `SET (${EP_KEY.length} chars, starts with ${EP_KEY.slice(0, 8)}...)` : "MISSING");
+
+  if (!EP_KEY) {
+    console.log("SKIP — no EasyPost key");
+    return;
+  }
+
+  const headers = {
+    Authorization: `Basic ${Buffer.from(EP_KEY + ":").toString("base64")}`,
+    "Content-Type": "application/json",
+  };
+
+  // Test 1: Valid address
+  console.log("\n--- Test 1: Valid address ---");
+  try {
+    const res = await fetch("https://api.easypost.com/v2/addresses", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        address: {
+          street1: "417 Montgomery St",
+          city: "San Francisco",
+          state: "CA",
+          zip: "94104",
+          country: "US",
+          verify: ["delivery"],
+        },
+      }),
+    });
+    const data = await res.json();
+    const v = data.verifications?.delivery;
+    console.log("Status:", res.status);
+    console.log("Verified:", v?.success);
+    console.log("Residential:", data.residential);
+    console.log("Address:", data.street1, data.city, data.state, data.zip);
+    if (v?.errors?.length > 0) console.log("Errors:", v.errors.map((e: any) => e.message).join(", "));
+  } catch (e) {
+    console.log("Exception:", e);
+  }
+
+  // Test 2: Bad address
+  console.log("\n--- Test 2: Bad/incomplete address ---");
+  try {
+    const res = await fetch("https://api.easypost.com/v2/addresses", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        address: {
+          street1: "000 Fake Street",
+          city: "Nowhere",
+          state: "XX",
+          zip: "00000",
+          country: "US",
+          verify: ["delivery"],
+        },
+      }),
+    });
+    const data = await res.json();
+    const v = data.verifications?.delivery;
+    console.log("Status:", res.status);
+    console.log("Verified:", v?.success);
+    if (v?.errors?.length > 0) console.log("Errors:", v.errors.map((e: any) => e.message).join(", "));
+  } catch (e) {
+    console.log("Exception:", e);
+  }
+}
+
+async function testRateShopping() {
+  console.log("\n=== EASYPOST RATE SHOPPING TEST ===");
+
+  if (!EP_KEY) {
+    console.log("SKIP — no EasyPost key");
+    return;
+  }
+
+  const headers = {
+    Authorization: `Basic ${Buffer.from(EP_KEY + ":").toString("base64")}`,
+    "Content-Type": "application/json",
+  };
+
+  try {
+    const res = await fetch("https://api.easypost.com/v2/shipments", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        shipment: {
+          from_address: { street1: "123 Main St", city: "Portland", state: "ME", zip: "04101", country: "US" },
+          to_address: { street1: "456 Oak Ave", city: "New York", state: "NY", zip: "10001", country: "US" },
+          parcel: { length: 12, width: 10, height: 6, weight: 80 }, // 5 lbs in ounces
+        },
+      }),
+    });
+
+    console.log("Status:", res.status);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.log("FAILED:", errText.slice(0, 500));
+      return;
+    }
+
+    const data = await res.json();
+    const rates = data.rates || [];
+    console.log(`Total rates: ${rates.length}`);
+
+    if (rates.length === 0) {
+      console.log("⚠️  0 rates returned — test keys may have limited carrier access");
+      console.log("   Production keys will return more carriers.");
+      return;
+    }
+
+    // Group by carrier
+    const byCarrier: Record<string, any[]> = {};
+    for (const r of rates) {
+      const c = r.carrier || "Unknown";
+      if (!byCarrier[c]) byCarrier[c] = [];
+      byCarrier[c].push(r);
+    }
+
+    for (const [carrier, carrierRates] of Object.entries(byCarrier)) {
+      console.log(`\n--- ${carrier} (${carrierRates.length} services) ---`);
+      for (const r of carrierRates.sort((a: any, b: any) => parseFloat(a.rate) - parseFloat(b.rate))) {
+        console.log(`  $${parseFloat(r.rate).toFixed(2)} — ${r.service} (${r.est_delivery_days || r.delivery_days || "?"} days)`);
+      }
+    }
+
+    console.log(`\n✅ ${rates.length} total rates from ${Object.keys(byCarrier).length} carrier(s)`);
+
+  } catch (e) {
+    console.log("Exception:", e);
+  }
+}
+
+async function main() {
+  console.log("========================================");
+  console.log("LEGACYLOOP EASYPOST DIAGNOSTIC");
+  console.log("========================================\n");
+
+  await testAddressVerification();
+  await testRateShopping();
+
+  console.log("\n========================================");
+  console.log("EASYPOST DIAGNOSTIC COMPLETE");
+  console.log("========================================");
+}
+
+main();
+```
+
+Run: npx tsx scripts/test-easypost.ts
+PRINT THE FULL OUTPUT IN THE REPORT.
+After printing, DELETE: rm scripts/test-easypost.ts && rmdir scripts 2>/dev/null
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+3. lib/shipping/easypost.ts created with all 3 exports: yes / no
+4. verifyAddress function: yes / no
+5. getEasyPostRates function: yes / no
+6. isEasyPostConfigured function: yes / no
+7. EasyPost import added to rates/route.ts: yes / no
+8. EasyPost added to rates/route.ts Promise.all: yes / no
+9. EasyPost rates added to rates/route.ts allRates merge: yes / no
+10. rates/route.ts logging updated: yes / no
+11. rates/route.ts return block updated: yes / no
+12. EasyPost import added to estimate/route.ts: yes / no
+13. EasyPost added to estimate/route.ts Promise.all: yes / no
+14. EasyPost rates loop added to estimate/route.ts allRates: yes / no
+15. verify-address/route.ts created: yes / no
+16. Diagnostic script created, run, output printed: yes / no
+17. Diagnostic script deleted: yes / no
+18. All locked files untouched: yes / no
+19. inline style={{}} throughout — no Tailwind, no className: yes / no
+20. Always-dark panels use hardcoded colors: yes / no
+21. Theme-aware surfaces use CSS variables: yes / no
+22. Light mode tested — no broken contrast: yes / no
+23. Dark mode tested — all elements visible: yes / no
+24. npx tsc --noEmit: 0 errors
+25. npm run build: pass
+26. CHECKPOINT post-change: pass
+27. Dev server: localhost:3000
+
+MANUAL TESTS:
+28. Start dev server, open any item, trigger shipping estimate
+29. Check terminal for [easypost] backup rate log line
+30. Check terminal for [shipping/rates] showing 3 sources (Shippo + FedEx + EasyPost)
+31. Verify carrier table still shows 13-15+ options
+32. Test address verification: curl -X POST http://localhost:3000/api/shipping/verify-address -H "Content-Type: application/json" -d '{"street1":"417 Montgomery St","city":"San Francisco","state":"CA","zip":"94104"}'
+   (Will return 401 without auth — that's correct. Just confirm it doesn't 500.)
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+EASYPOST LIBRARY:
+- lib/shipping/easypost.ts created: [yes / no]
+- verifyAddress exported: [yes / no]
+- getEasyPostRates exported: [yes / no]
+- isEasyPostConfigured exported: [yes / no]
+- AddressVerificationResult type exported: [yes / no]
+- EasyPostRate type exported: [yes / no]
+
+RATES ROUTE WIRING:
+- Import added: [yes / no]
+- Promise.all updated (3 sources): [yes / no]
+- allRates merge includes EasyPost: [yes / no]
+- Logging updated: [yes / no]
+- Return block updated: [yes / no]
+- Dedupe logic unchanged (still works): [yes / no]
+
+ESTIMATE ROUTE WIRING:
+- Import added: [yes / no]
+- Promise.all updated (3 sources): [yes / no]
+- EasyPost rate loop added: [yes / no]
+- LTL guard (isLTL ? Promise.resolve([])): [yes / no]
+- Dedupe logic unchanged: [yes / no]
+
+ADDRESS VERIFICATION ENDPOINT:
+- verify-address/route.ts created: [yes / no]
+- POST handler with auth check: [yes / no]
+- Returns verified/residential/corrected fields: [yes / no]
+- Returns 400 if zip missing: [yes / no]
+- Returns graceful response if not configured: [yes / no]
+
+EASYPOST DIAGNOSTIC:
+[Paste the COMPLETE output of npx tsx scripts/test-easypost.ts here]
+
+ADDRESS VERIFICATION:
+- Valid address test: [verified / failed / error]
+- Bad address test: [correctly rejected / incorrectly verified / error]
+- Residential detection working: [yes / no / not supported in test mode]
+
+RATE SHOPPING:
+- Total rates returned: [count]
+- Carriers: [list]
+- Services per carrier: [list]
+- Conclusion: [working / test mode limited / error]
+
+LIGHT MODE: [clean / issues found]
+DARK MODE: [clean / issues found]
+ALWAYS-DARK PANELS: [hardcoded colors used / issues]
+
+EXISTING LOGIC UNTOUCHED:
+— [List every locked file verified as untouched]
+
+FLAGS FROM CLAUDE CODE:
+— [All gaps, risks, missed data collection, out-of-scope items]
+— [EasyPost test key behavior / limitations]
+— [Which carriers EasyPost test key includes vs production]
+— [Address verification edge cases discovered]
+— [Any new carry-forward items]
+
+Files modified: [list all — exact paths]
+New files created: [list all — exact paths]
+Schema changes needed: [list or 'none']
+Build: [pass / fail]
+TypeScript: [0 errors / list all errors]
+
+CHECKPOINT after: [pass / issue]
+Dev server: localhost:3000
+
+IF POST-CHECKPOINT FAILS:
+REVERT IMMEDIATELY.
+Report exactly what broke and what was touched.
+Do NOT proceed until clean.
+
+Command Template v11 | LegacyLoop | March 24, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command | Paste in full — never abbreviate

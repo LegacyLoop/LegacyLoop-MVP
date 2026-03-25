@@ -10,6 +10,29 @@
 const SHIPENGINE_KEY = process.env.SHIPENGINE_API_KEY || "";
 const SHIPENGINE_BASE = process.env.SHIPENGINE_BASE_URL || "https://api.shipengine.com";
 
+// ─── Carrier ID Cache ───────────────────────────────────────────────────────
+let cachedCarrierIds: string[] | null = null;
+let carrierCacheTime = 0;
+const CARRIER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function getConnectedCarrierIds(): Promise<string[]> {
+  if (cachedCarrierIds && Date.now() - carrierCacheTime < CARRIER_CACHE_TTL) {
+    return cachedCarrierIds;
+  }
+  try {
+    const carriers = await listCarriers();
+    const ids = carriers.map((c: any) => c.carrier_id).filter(Boolean);
+    if (ids.length > 0) {
+      cachedCarrierIds = ids;
+      carrierCacheTime = Date.now();
+      console.log(`[ShipEngine] Connected carriers cached: ${ids.length} carriers — ${carriers.map((c: any) => c.friendly_name || c.carrier_id).join(", ")}`);
+    }
+    return ids;
+  } catch {
+    return [];
+  }
+}
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface LTLAddress {
@@ -85,9 +108,10 @@ export async function getShipEngineRateEstimate(
 
   // Use ShipEngine v1 rate estimates API (well-supported in sandbox)
   try {
+    const connectedIds = await getConnectedCarrierIds();
     const rateReq = {
       rate_options: {
-        carrier_ids: [] as string[], // empty = all connected carriers
+        carrier_ids: connectedIds.length > 0 ? connectedIds : ([] as string[]),
       },
       shipment: {
         ship_from: {

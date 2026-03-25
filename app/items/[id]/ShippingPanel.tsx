@@ -8,6 +8,7 @@ import { getFreightEstimates } from "@/lib/shipping/freight-estimates";
 import type { FreightEstimate } from "@/lib/shipping/freight-estimates";
 import LocalPickupPanel from "./LocalPickupPanel";
 import { PROCESSING_FEE } from "@/lib/constants/pricing";
+import { saveQuote, getQuotes, deleteQuote, isQuoteSaved } from "@/lib/shipping/saved-quotes";
 
 type ShippingRate = {
   object_id: string;
@@ -2047,8 +2048,21 @@ function LtlCompletionFlow({ itemId, fromZip, weight, length, width, height }: {
   // Form fields for QUOTE_ACCEPTED step
   const [selectedCarrier, setSelectedCarrier] = useState("XPO Logistics");
   const [scheduledPickupDate, setScheduledPickupDate] = useState("");
+  const [savedQuoteBanner, setSavedQuoteBanner] = useState<{ carrier: string; amount: number } | null>(null);
 
   useEffect(() => {
+    // Check for pre-sale saved LTL quote
+    try {
+      const saved = localStorage.getItem(`ll_ltl_quote_${itemId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.carrier) {
+          setSelectedCarrier(parsed.carrier);
+          setSavedQuoteBanner({ carrier: parsed.carrier, amount: parsed.amount || 0 });
+          console.log("[shipping] Loaded pre-sale LTL quote:", parsed.carrier, "$" + parsed.amount);
+        }
+      }
+    } catch {}
     fetch(`/api/shipping/ltl/${itemId}`)
       .then((r) => r.json())
       .then((data) => {
@@ -2227,6 +2241,18 @@ function LtlCompletionFlow({ itemId, fromZip, weight, length, width, height }: {
                       <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
                         Accept the freight quote to generate a Bill of Lading (BOL). Select the carrier below.
                       </div>
+                      {savedQuoteBanner && !carrier && (
+                        <div style={{
+                          padding: "0.4rem 0.65rem", borderRadius: "0.4rem", marginBottom: "0.1rem",
+                          background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.15)",
+                          display: "flex", alignItems: "center", justifyContent: "space-between",
+                        }}>
+                          <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+                            <span style={{ fontWeight: 600, color: "var(--accent)" }}>Pre-selected:</span> {savedQuoteBanner.carrier} — ${savedQuoteBanner.amount.toFixed(2)}
+                          </div>
+                          <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>SAVED QUOTE</span>
+                        </div>
+                      )}
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
                         <div>
                           <label className="label" style={{ fontSize: "0.68rem" }}>Carrier</label>
@@ -2627,6 +2653,24 @@ export default function ShippingPanel({
   );
   const [ratesStale, setRatesStale] = useState(false);
   const [fragile, setFragile] = useState(savedShipping.isFragile || suggestion?.isFragile || false);
+
+  // AI Shipping Brief — derived from suggestion data
+  const aiShipBrief = useMemo(() => {
+    if (!suggestion) return null;
+    const difficulty = suggestion.boxSize === "freight" ? "Freight only"
+      : suggestion.isFragile ? "Difficult"
+      : (suggestion.weightEstimate ?? 0) > 30 ? "Moderate"
+      : "Easy";
+    return {
+      weightLbs: suggestion.weightEstimate ?? null,
+      dims: suggestion.length && suggestion.width && suggestion.height
+        ? `${suggestion.length} x ${suggestion.width} x ${suggestion.height}`
+        : null,
+      difficulty,
+      notes: suggestion.packagingNotes?.join(". ") || null,
+      isFragile: suggestion.isFragile ?? false,
+    };
+  }, [suggestion]);
   const [preference, setPreference] = useState(savedShipping.preference || "BUYER_PAYS");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -2828,6 +2872,67 @@ export default function ShippingPanel({
   const [showFreightManual, setShowFreightManual] = useState(false);
   const [residential, setResidential] = useState(true);
   const [liftgate, setLiftgate] = useState(true);
+
+  // Arta white-glove quotes
+  const [artaLoading, setArtaLoading] = useState(false);
+  const [artaQuotes, setArtaQuotes] = useState<any[]>([]);
+  const [artaError, setArtaError] = useState<string | null>(null);
+  const [artaHostedUrl, setArtaHostedUrl] = useState<string | null>(null);
+
+  const artaEligible = useMemo(() => {
+    if (!suggestion) return false;
+    const wt = suggestion.weightEstimate || 0;
+    const isFrag = suggestion.isFragile || false;
+    const boxFreight = suggestion.boxSize === "freight";
+    // Approximate eligibility: freight-class + fragile, or high-value patterns
+    if (boxFreight && isFrag) return true;
+    if (boxFreight && wt > 100) return true;
+    if (isFrag && wt > 30) return true;
+    // Check item value from props
+    if ((itemValue || 0) > 2000) return true;
+    if ((itemValue || 0) > 500 && isFrag) return true;
+    if ((itemValue || 0) > 500 && isArtItem) return true;
+    return false;
+  }, [suggestion, itemValue, isArtItem]);
+
+  const fetchArtaQuotes = async () => {
+    setArtaLoading(true);
+    setArtaError(null);
+    try {
+      const res = await fetch("/api/shipping/arta-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          item: {
+            id: itemId,
+            title: suggestion?.label || "",
+            valueLow: (itemValue || 0) * 0.8,
+            valueHigh: (itemValue || 0) * 1.2,
+            shippingWeight: weight || null,
+            aiWeightLbs: suggestion?.weightEstimate || null,
+            shippingLength: length || null,
+            shippingWidth: width || null,
+            shippingHeight: height || null,
+            isFragile: fragile,
+            isAntique: isArtItem,
+          },
+          fromZip: fromZip || "04901",
+          toZip: buyerZip || "10001",
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setArtaError(data.error);
+      } else {
+        setArtaQuotes(data.quotes || []);
+        setArtaHostedUrl(data.hosted_session_url || null);
+      }
+    } catch {
+      setArtaError("Failed to get Arta quotes");
+    } finally {
+      setArtaLoading(false);
+    }
+  };
   const [notifyBeforeDelivery, setNotifyBeforeDelivery] = useState(true);
   const [blanketWrap, setBlanketWrap] = useState(suggestion?.isFragile || false);
   const [insideDelivery, setInsideDelivery] = useState(false);
@@ -2839,13 +2944,20 @@ export default function ShippingPanel({
   const [ltlQuoteLoading, setLtlQuoteLoading] = useState(false);
   const [ltlQuoteSource, setLtlQuoteSource] = useState<string>("");
   const [selectedLtlCarrier, setSelectedLtlCarrier] = useState<any>(null);
+  const [ltlSavedQuotes, setLtlSavedQuotes] = useState<any[]>([]);
+  const [ltlJustSaved, setLtlJustSaved] = useState<string | null>(null);
+  const [ltlSavedOpen, setLtlSavedOpen] = useState(true);
+
+  // Load saved quotes on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (itemId) setLtlSavedQuotes(getQuotes(itemId)); }, [itemId]);
 
   const fetchLiveLtlQuotes = async () => {
     setLtlQuoteLoading(true);
     try {
+      const cubicFt = (length * width * height) / 1728;
+      const density = cubicFt > 0 ? weight / cubicFt : 0;
       const fc = (() => {
-        const cubicFt = (length * width * height) / 1728;
-        const density = cubicFt > 0 ? weight / cubicFt : 0;
         if (density >= 50) return "50";
         if (density >= 35) return "55";
         if (density >= 22.5) return "65";
@@ -2856,12 +2968,14 @@ export default function ShippingPanel({
         if (density >= 4) return "200";
         return "250";
       })();
+      // Use buyer ZIP if available, otherwise default to NYC for estimate
+      const destZip = buyerZip || "10001";
       const res = await fetch("/api/shipping/ltl-quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fromZip: fromZip || "04901",
-          toZip: "10001",
+          toZip: destZip,
           weight,
           length,
           width,
@@ -3556,9 +3670,236 @@ export default function ShippingPanel({
                   </div>
                 )}
 
-                <div style={{ marginTop: "0.75rem", fontSize: "0.75rem", color: "var(--text-muted)", padding: "0.5rem 0.75rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "0.5rem" }}>
-                  Estimates only — official quote coming. Toggles update in real-time.
+                <div style={{ marginTop: "0.75rem", fontSize: "0.75rem", color: "var(--text-muted)", padding: "0.5rem 0.75rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "0.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span>Estimates only — official quotes below. Toggles update in real-time.</span>
+                  <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800" }}>ESTIMATED</span>
                 </div>
+
+                {/* Arta White-Glove Shipping */}
+                {artaEligible && (showFreight || showFreightManual) && (
+                  <div style={{
+                    marginTop: "1rem", marginBottom: "0.75rem", borderRadius: "0.75rem",
+                    background: "linear-gradient(135deg, rgba(255,215,0,0.04), rgba(255,152,0,0.03))",
+                    border: "1px solid rgba(255,215,0,0.15)",
+                    padding: "0.85rem",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.6rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                        <span style={{ fontSize: "1rem" }}>{"\u{1F3DB}\uFE0F"}</span>
+                        <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#f59e0b" }}>Arta White-Glove Shipping</span>
+                        <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,215,0,0.1)", color: "#f59e0b", border: "1px solid rgba(255,215,0,0.2)" }}>PREMIUM</span>
+                      </div>
+                      {!artaQuotes.length && !artaLoading && (
+                        <button
+                          onClick={fetchArtaQuotes}
+                          style={{ fontSize: "0.68rem", fontWeight: 700, padding: "4px 12px", borderRadius: "0.4rem", background: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff", border: "none", cursor: "pointer" }}
+                        >
+                          Get Arta Quote
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "0.5rem", lineHeight: 1.5 }}>
+                      Museum-grade shipping by Arta — custom crating, climate control, white-glove delivery, full insurance.
+                    </div>
+                    {artaLoading && (
+                      <div style={{ padding: "1rem", textAlign: "center", fontSize: "0.72rem", color: "#f59e0b", fontStyle: "italic" }}>
+                        Requesting Arta quote...
+                      </div>
+                    )}
+                    {artaError && (
+                      <div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", background: "rgba(244,67,54,0.08)", border: "1px solid rgba(244,67,54,0.15)", fontSize: "0.65rem", color: "#f44336" }}>
+                        {artaError}
+                        <button onClick={fetchArtaQuotes} style={{ marginLeft: "0.5rem", fontSize: "0.6rem", color: "#f59e0b", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Retry</button>
+                      </div>
+                    )}
+                    {artaQuotes.length > 0 && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                        {artaQuotes.map((q: any, idx: number) => {
+                          const typeLabels: Record<string, { label: string; desc: string; icon: string }> = {
+                            premium: { label: "White Glove", desc: "Custom crating, climate transport, white-glove delivery", icon: "\u{1F3DB}\uFE0F" },
+                            select: { label: "Select Carrier", desc: "Vetted fine art carriers, professional packing", icon: "\u{1F3A8}" },
+                            parcel: { label: "Specialty Parcel", desc: "Insured specialty parcel for smaller valuables", icon: "\u{1F4E6}" },
+                          };
+                          const typeInfo = typeLabels[q.quote_type] || typeLabels.premium;
+                          return (
+                            <div key={idx} style={{
+                              padding: "0.65rem 0.75rem", borderRadius: "0.5rem",
+                              background: "rgba(255,215,0,0.03)",
+                              border: q.quote_type === "premium" ? "1px solid rgba(255,215,0,0.25)" : "1px solid rgba(255,255,255,0.06)",
+                            }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <div>
+                                  <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                                    <span style={{ fontSize: "0.75rem" }}>{typeInfo.icon}</span>
+                                    <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>{typeInfo.label}</span>
+                                    {q.quote_type === "premium" && (
+                                      <span style={{ fontSize: "0.42rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,215,0,0.12)", color: "#f59e0b", textTransform: "uppercase" }}>RECOMMENDED</span>
+                                    )}
+                                  </div>
+                                  <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginTop: "2px" }}>{typeInfo.desc}</div>
+                                </div>
+                                <div style={{ textAlign: "right" }}>
+                                  <div style={{ fontSize: "1rem", fontWeight: 800, color: "#f59e0b" }}>${q.total?.toLocaleString() || "\u2014"}</div>
+                                  <div style={{ fontSize: "0.48rem", color: "var(--text-muted)" }}>{q.is_estimated ? "ESTIMATED" : "LIVE"} {"\u00B7"} {q.currency || "USD"}</div>
+                                </div>
+                              </div>
+                              {q.insurance && (
+                                <div style={{ marginTop: "0.3rem", fontSize: "0.55rem", color: "var(--accent)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                                  {"\u{1F6E1}\uFE0F"} Insurance included: ${q.insurance.amount?.toLocaleString()} coverage
+                                </div>
+                              )}
+                              {q.services && q.services.length > 0 && (
+                                <div style={{ marginTop: "0.3rem", fontSize: "0.52rem", color: "var(--text-secondary)" }}>
+                                  {q.services.slice(0, 4).join(" \u00B7 ")}
+                                  {q.services.length > 4 && ` +${q.services.length - 4} more`}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                        {artaHostedUrl && (
+                          <a href={artaHostedUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", textAlign: "center", padding: "0.5rem", fontSize: "0.65rem", fontWeight: 700, color: "#f59e0b", textDecoration: "none", borderRadius: "0.4rem", border: "1px solid rgba(255,215,0,0.2)", marginTop: "0.25rem" }}>
+                            Book via Arta Checkout {"\u2192"}
+                          </a>
+                        )}
+                      </div>
+                    )}
+                    <div style={{ marginTop: "0.5rem", fontSize: "0.48rem", color: "var(--text-muted)", textAlign: "right", fontStyle: "italic" }}>
+                      Powered by Arta {"\u00B7"} Test Mode
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Shipping Brief */}
+                {aiShipBrief && (
+                  <div style={{
+                    marginBottom: "0.75rem", borderRadius: "0.75rem",
+                    background: "rgba(0,188,212,0.03)", border: "1px solid rgba(0,188,212,0.12)",
+                    padding: "0.75rem 0.85rem",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                        <span style={{ fontSize: "0.85rem" }}>{"\u{1F916}"}</span>
+                        <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)" }}>AI Shipping Brief</span>
+                      </div>
+                      {(() => {
+                        const d = aiShipBrief.difficulty;
+                        const colors: Record<string, { bg: string; text: string }> = {
+                          "Easy": { bg: "rgba(76,175,80,0.15)", text: "#4caf50" },
+                          "Moderate": { bg: "rgba(255,152,0,0.15)", text: "#ff9800" },
+                          "Difficult": { bg: "rgba(244,67,54,0.15)", text: "#f44336" },
+                          "Freight only": { bg: "rgba(156,39,176,0.15)", text: "#9c27b0" },
+                        };
+                        const c = colors[d] || colors["Moderate"];
+                        return (
+                          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "2px 8px", borderRadius: "9999px", background: c.bg, color: c.text, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                            {d === "Freight only" ? "FREIGHT ONLY" : d.toUpperCase()}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                    <div style={{ display: "flex", gap: "1rem", marginBottom: aiShipBrief.notes ? "0.4rem" : "0", flexWrap: "wrap" }}>
+                      {aiShipBrief.weightLbs && (
+                        <div>
+                          <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Est. Weight</div>
+                          <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{aiShipBrief.weightLbs} lbs</div>
+                        </div>
+                      )}
+                      {aiShipBrief.dims && (
+                        <div>
+                          <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Est. Dimensions</div>
+                          <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{aiShipBrief.dims}</div>
+                        </div>
+                      )}
+                      {aiShipBrief.isFragile && (
+                        <div>
+                          <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Handling</div>
+                          <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#f44336" }}>{"\u26A0\uFE0F"} FRAGILE</div>
+                        </div>
+                      )}
+                    </div>
+                    {aiShipBrief.notes && (
+                      <div style={{ padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.08)", fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                        <span style={{ fontWeight: 600, color: "var(--accent)", fontSize: "0.65rem" }}>PACKING: </span>
+                        {aiShipBrief.notes}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Saved Quotes Section */}
+                {ltlSavedQuotes.length > 0 && (
+                  <div style={{
+                    marginBottom: "0.75rem", borderRadius: "0.75rem",
+                    background: "rgba(0,188,212,0.03)", border: "1px solid rgba(0,188,212,0.12)",
+                    overflow: "hidden",
+                  }}>
+                    <button
+                      onClick={() => setLtlSavedOpen(p => !p)}
+                      style={{
+                        width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                        padding: "0.6rem 0.85rem", background: "none", border: "none", cursor: "pointer",
+                      }}
+                    >
+                      <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                        {"\u{1F4BE}"} Saved Quotes ({ltlSavedQuotes.length})
+                      </span>
+                      <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>{ltlSavedOpen ? "\u25B2" : "\u25BC"}</span>
+                    </button>
+                    {ltlSavedOpen && (
+                      <div style={{ padding: "0 0.85rem 0.75rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                        {ltlSavedQuotes.map((q: any) => (
+                          <div
+                            key={q.quoteKey}
+                            style={{
+                              display: "flex", alignItems: "center", justifyContent: "space-between",
+                              padding: "0.5rem 0.65rem", borderRadius: "0.4rem",
+                              background: "var(--bg-card)", border: "1px solid var(--border-default)",
+                              borderLeft: q.type === "ltl" ? "3px solid #9c27b0" : "3px solid #00bcd4",
+                            }}
+                          >
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                                <span style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-primary)" }}>{q.carrier}</span>
+                                <span style={{
+                                  fontSize: "0.48rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px",
+                                  background: q.type === "ltl" ? "rgba(156,39,176,0.12)" : "rgba(0,188,212,0.12)",
+                                  color: q.type === "ltl" ? "#9c27b0" : "#00bcd4",
+                                }}>
+                                  {q.type === "ltl" ? "LTL" : "PARCEL"}
+                                </span>
+                                {q.isLive && (
+                                  <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(76,175,80,0.12)", color: "#4caf50" }}>LIVE</span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+                                {q.service} {"\u00B7"} {q.transit}
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+                              <span style={{ fontSize: "0.88rem", fontWeight: 800, color: "#4caf50" }}>${Number(q.amount).toFixed(2)}</span>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteQuote(itemId, q.quoteKey);
+                                  setLtlSavedQuotes(getQuotes(itemId));
+                                }}
+                                style={{
+                                  background: "none", border: "none", cursor: "pointer",
+                                  fontSize: "0.72rem", color: "var(--text-muted)", padding: "0.15rem 0.3rem",
+                                  borderRadius: "0.25rem", lineHeight: 1,
+                                }}
+                                title="Remove saved quote"
+                              >
+                                {"\u2715"}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* LTL Live Quotes + Manual Backup */}
                 <div style={{ marginTop: "0.75rem" }}>
@@ -3568,12 +3909,17 @@ export default function ShippingPanel({
                       onClick={fetchLiveLtlQuotes}
                       disabled={ltlQuoteLoading}
                       style={{
-                        padding: "0.5rem 1.25rem", fontSize: "0.82rem", fontWeight: 700, borderRadius: "0.5rem",
-                        border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
-                        cursor: ltlQuoteLoading ? "wait" : "pointer", opacity: ltlQuoteLoading ? 0.6 : 1,
+                        width: "100%", padding: "0.65rem 1.25rem", fontSize: "0.85rem", fontWeight: 700,
+                        borderRadius: "0.5rem", border: "none",
+                        background: "linear-gradient(135deg, #00bcd4, #009688)",
+                        color: "#fff", cursor: ltlQuoteLoading ? "wait" : "pointer",
+                        opacity: ltlQuoteLoading ? 0.6 : 1,
+                        boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+                        transition: "all 0.2s ease",
+                        letterSpacing: "0.02em",
                       }}
                     >
-                      {ltlQuoteLoading ? "Getting Quotes..." : "\u{1F4E1} Get Live LTL Quotes"}
+                      {ltlQuoteLoading ? "\u23F3 Getting Live Quotes..." : "\u{1F4E1} Get Live LTL Quotes"}
                     </button>
                   )}
 
@@ -3606,12 +3952,30 @@ export default function ShippingPanel({
                           return (
                             <button
                               key={q.quote_id || `ltl-${i}`}
-                              onClick={() => setSelectedLtlCarrier(isSelected ? null : q)}
+                              onClick={() => {
+                                setSelectedLtlCarrier(isSelected ? null : q);
+                                if (!isSelected) {
+                                  saveQuote(itemId, {
+                                    type: "ltl",
+                                    carrier: q.carrier,
+                                    service: q.service || "LTL",
+                                    amount: q.total_amount || 0,
+                                    transit: q.transit_days ? `${q.transit_days} days` : "5-10 days",
+                                    source: q.source || "demo",
+                                    isLive: !!q.isLive,
+                                    itemTitle: suggestion?.label || "",
+                                  });
+                                  setLtlSavedQuotes(getQuotes(itemId));
+                                  setLtlJustSaved(q.carrier);
+                                  setTimeout(() => setLtlJustSaved(null), 2000);
+                                }
+                              }}
                               style={{
                                 display: "flex", alignItems: "center", justifyContent: "space-between",
                                 padding: "0.6rem 0.75rem", borderRadius: "0.5rem", cursor: "pointer", textAlign: "left",
                                 border: isSelected ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
                                 background: isSelected ? "rgba(0,188,212,0.06)" : "var(--bg-card)",
+                                borderLeft: isQuoteSaved(itemId, q.carrier, q.service || "LTL", "ltl") ? "3px solid #4caf50" : undefined,
                               }}
                             >
                               <div>
@@ -3622,6 +3986,11 @@ export default function ShippingPanel({
                                   {isFedEx && q.isLive && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(77,20,140,0.15)", color: "#4D148C" }}>FEDEX LIVE</span>}
                                   {isShipEngine && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>SHIPENGINE</span>}
                                   {!q.isLive && !isFedEx && !isShipEngine && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800" }}>ESTIMATED</span>}
+                                  {isQuoteSaved(itemId, q.carrier, q.service || "LTL", "ltl") && (
+                                    <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>
+                                      {ltlJustSaved === q.carrier ? "\u2713 SAVED" : "SAVED"}
+                                    </span>
+                                  )}
                                 </div>
                                 <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
                                   {q.service} {"\u00B7"} {q.transit_days} day{q.transit_days !== 1 ? "s" : ""}
@@ -3634,6 +4003,35 @@ export default function ShippingPanel({
                           );
                         })}
                       </div>
+                    </div>
+                  )}
+
+                  {/* Secondary links after carrier selection */}
+                  {selectedLtlCarrier && (
+                    <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                      <a
+                        href={`/shipping?itemId=${itemId}&tab=freight`}
+                        style={{
+                          flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.3rem",
+                          padding: "0.4rem 0.5rem", fontSize: "0.72rem", fontWeight: 600,
+                          borderRadius: "0.4rem", border: "1px solid var(--border-default)",
+                          color: "var(--accent)", textDecoration: "none",
+                          background: "rgba(0,188,212,0.04)",
+                        }}
+                      >
+                        {"\u{1F69B}"} View in Shipping Center {"\u2192"}
+                      </a>
+                      <button
+                        onClick={() => setShowLtlQuoteForm(true)}
+                        style={{
+                          flex: 1, padding: "0.4rem 0.5rem", fontSize: "0.72rem", fontWeight: 600,
+                          borderRadius: "0.4rem", border: "1px solid var(--border-default)",
+                          color: "var(--text-muted)", cursor: "pointer",
+                          background: "transparent",
+                        }}
+                      >
+                        {"\u{1F4CB}"} Request Better Quote
+                      </button>
                     </div>
                   )}
 

@@ -372,7 +372,23 @@ export async function POST(
   console.log("analysis.vehicle_year:", (analysis as any).vehicle_year);
 
   const a = analysis as any;
-  const isVehicle = !!(
+
+  // ── Outdoor equipment exclusion — lawn mowers, garden tractors, etc. are NOT vehicles ──
+  const categoryStr = String(a.category ?? "").toLowerCase();
+  const subcategoryStr = String(a.subcategory ?? "").toLowerCase();
+  const itemNameStr = String(a.item_name ?? a.itemName ?? "").toLowerCase();
+  const isOutdoorEquipment = (
+    categoryStr.includes("outdoor") ||
+    categoryStr.includes("garden") ||
+    /\b(lawn\s*mower|riding\s*mower|push\s*mower|garden\s*tractor|lawn\s*tractor|chainsaw|leaf\s*blower|pressure\s*washer|snow\s*blower|weed\s*(eater|trimmer|whacker)|hedge\s*trimmer|rototiller|log\s*splitter|wood\s*chipper|generator|power\s*washer)\b/i.test(itemNameStr) ||
+    /\b(lawn\s*mower|riding\s*mower|push\s*mower|garden\s*tractor|lawn\s*tractor|chainsaw|leaf\s*blower|pressure\s*washer|snow\s*blower)\b/i.test(subcategoryStr)
+  );
+
+  if (isOutdoorEquipment) {
+    console.log("[analyze] Outdoor equipment detected — NOT a vehicle. Category:", categoryStr, "| Name:", itemNameStr.slice(0, 60));
+  }
+
+  const isVehicle = !isOutdoorEquipment && !!(
     a.is_vehicle === true ||
     a.isVehicle === true ||
     a.vehicle_type != null ||
@@ -380,12 +396,12 @@ export async function POST(
     a.vehicle_make != null ||
     a.vehicle_model != null ||
     a.vehicle_year != null ||
-    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.category ?? "")) ||
-    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.item_type ?? "")) ||
-    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.itemType ?? "")) ||
-    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.type ?? ""))
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|trailer|minivan|lorry)\b/i.test(categoryStr) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|trailer|minivan|lorry)\b/i.test(String(a.item_type ?? "").toLowerCase()) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|trailer|minivan|lorry)\b/i.test(String(a.itemType ?? "").toLowerCase()) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|trailer|minivan|lorry)\b/i.test(String(a.type ?? "").toLowerCase())
   );
-  console.log("=== VEHICLE CHECK RESULT:", isVehicle, "===");
+  console.log("=== VEHICLE CHECK RESULT:", isVehicle, "| Outdoor equipment:", isOutdoorEquipment, "===");
 
   if (isVehicle) {
     console.log("[analyze] Vehicle confirmed — triggering automatic plate blur for item:", item.id);

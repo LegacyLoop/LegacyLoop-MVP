@@ -174,6 +174,7 @@ export async function getFedExParcelRates(
         body: errText.slice(0, 1000),
         url: rateUrl,
       });
+      console.warn("⚠️  [FedEx Parcel] RATE REQUEST FAILED — see error above. Shippo covers FedEx parcel rates as fallback.");
       return [];
     }
 

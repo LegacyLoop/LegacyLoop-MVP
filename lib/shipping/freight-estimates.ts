@@ -82,6 +82,42 @@ const CARRIERS: CarrierProfile[] = [
     transitMin: 7,
     transitMax: 14,
   },
+  {
+    name: "Estes Express",
+    service: "LTL Standard",
+    baseCost: 169,
+    perLbOverThreshold: 0.40,
+    threshold: 100,
+    residentialSurcharge: 65,
+    liftgateSurcharge: 85,
+    deliveryNotification: 12,
+    transitMin: 4,
+    transitMax: 8,
+  },
+  {
+    name: "SAIA",
+    service: "LTL Standard",
+    baseCost: 175,
+    perLbOverThreshold: 0.42,
+    threshold: 100,
+    residentialSurcharge: 70,
+    liftgateSurcharge: 90,
+    deliveryNotification: 12,
+    transitMin: 5,
+    transitMax: 9,
+  },
+  {
+    name: "FedEx Freight",
+    service: "FedEx Freight Economy",
+    baseCost: 199,
+    perLbOverThreshold: 0.48,
+    threshold: 100,
+    residentialSurcharge: 80,
+    liftgateSurcharge: 95,
+    deliveryNotification: 15,
+    transitMin: 3,
+    transitMax: 7,
+  },
 ];
 
 export function getFreightEstimates(input: FreightInput): FreightEstimate[] {
@@ -123,4 +159,34 @@ export function getFreightEstimates(input: FreightInput): FreightEstimate[] {
       allInHigh,
     };
   });
+}
+
+/**
+ * Get midpoint freight estimates formatted for the LTL quote API.
+ * Returns single-price quotes from all 6 carriers.
+ * These are calculated estimates based on real carrier pricing formulas.
+ */
+export function getFreightQuoteMidpoints(input: FreightInput): {
+  carrier: string;
+  service: string;
+  total_amount: number;
+  transit_days: number;
+  accessorials: { residential: number; liftgate: number; notification: number };
+  isLive: false;
+  source: "estimate";
+}[] {
+  const estimates = getFreightEstimates(input);
+  return estimates.map(est => ({
+    carrier: est.carrier,
+    service: est.service,
+    total_amount: Math.round((est.totalLow + est.totalHigh) / 2 * 100) / 100,
+    transit_days: Math.round((est.transitDays.min + est.transitDays.max) / 2),
+    accessorials: {
+      residential: est.residentialSurcharge,
+      liftgate: est.liftgateSurcharge,
+      notification: est.deliveryNotification,
+    },
+    isLive: false as const,
+    source: "estimate" as const,
+  }));
 }

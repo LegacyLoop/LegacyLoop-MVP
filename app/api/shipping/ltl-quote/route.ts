@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { getShipEngineRateEstimate } from "@/lib/shipping/shipengine-ltl";
 import { getFedExLTLQuote } from "@/lib/shipping/fedex-ltl";
-import { getLTLFreightQuotes } from "@/lib/shipping/shippo";
+import { getFreightQuoteMidpoints } from "@/lib/shipping/freight-estimates";
 
 /**
  * POST /api/shipping/ltl-quote
  * Get LTL freight quotes from multiple sources:
- * 1. ShipEngine (sandbox test carriers)
+ * 1. ShipEngine (live carriers when connected)
  * 2. FedEx Freight (real API, sandbox mode)
- * 3. Demo estimates (fallback)
+ * 3. Freight estimate engine (all 6 carriers, calculated estimates)
+ *
+ * Live quotes take priority per carrier. Estimates fill gaps.
  */
 export async function POST(req: NextRequest) {
   const user = await authAdapter.getSession();
@@ -107,38 +109,48 @@ export async function POST(req: NextRequest) {
     console.error("[ltl-quote] FedEx error:", e);
   }
 
-  // If we got live quotes, return them
-  if (allQuotes.length > 0) {
-    return NextResponse.json({
-      quotes: allQuotes.sort((a, b) => (a.total_amount || 0) - (b.total_amount || 0)),
-      source: hasLive ? "live" : "mixed",
-      isLive: hasLive,
-    });
+  // 3. Supplement with freight estimate engine (all 6 carriers incl FedEx Freight)
+  const estimateQuotes = getFreightQuoteMidpoints({
+    weight: Number(weight) || 100,
+    lengthIn: Number(length) || 48,
+    widthIn: Number(width) || 40,
+    heightIn: Number(height) || 36,
+    fromZip: fromZip || "04901",
+    toZip: toZip,
+    residential: false,
+    liftgate: false,
+  });
+
+  // Merge: live quotes take priority over estimates for same carrier
+  const liveCarriers = new Set(allQuotes.map(q => (q.carrier || "").toLowerCase()));
+  for (const eq of estimateQuotes) {
+    if (!liveCarriers.has(eq.carrier.toLowerCase())) {
+      allQuotes.push({
+        quote_id: `est-${eq.carrier.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
+        carrier: eq.carrier,
+        service: eq.service,
+        total_amount: eq.total_amount,
+        currency: "USD",
+        transit_days: eq.transit_days,
+        valid_until: new Date(Date.now() + 86400000 * 7).toISOString(),
+        charges: [
+          { description: "Freight", amount: eq.total_amount },
+          ...(eq.accessorials.residential > 0 ? [{ description: "Residential Surcharge", amount: eq.accessorials.residential }] : []),
+          ...(eq.accessorials.liftgate > 0 ? [{ description: "Liftgate Surcharge", amount: eq.accessorials.liftgate }] : []),
+        ],
+        isLive: false,
+        source: "estimate",
+      });
+    }
   }
 
-  // 3. Fallback to demo estimates
-  const demoQuotes = getLTLFreightQuotes(
-    fromZip || "04901",
-    toZip,
-    Number(weight) || 100,
-    { length: Number(length) || 48, width: Number(width) || 40, height: Number(height) || 36 },
-    packaging || "palletized",
-  );
+  console.log(`[ltl-quote] Returning ${allQuotes.length} quotes: ${allQuotes.filter(q => q.isLive).length} live, ${allQuotes.filter(q => !q.isLive).length} estimated`);
 
   return NextResponse.json({
-    quotes: demoQuotes.map((q) => ({
-      quote_id: `demo-${q.carrier.toLowerCase().replace(/\s/g, "-")}-${Date.now()}`,
-      carrier: q.carrier,
-      service: q.service,
-      total_amount: q.totalCost,
-      currency: "USD",
-      transit_days: parseInt(q.transitDays) || 7,
-      valid_until: new Date(Date.now() + 86400000 * 7).toISOString(),
-      charges: [{ description: "Freight", amount: q.totalCost }],
-      isLive: false,
-      source: "demo",
-    })),
-    source: "demo",
-    isLive: false,
+    quotes: allQuotes.sort((a, b) => (a.total_amount || 0) - (b.total_amount || 0)),
+    source: hasLive ? "live" : "estimated",
+    isLive: hasLive,
+    liveCount: allQuotes.filter(q => q.isLive).length,
+    estimatedCount: allQuotes.filter(q => !q.isLive).length,
   });
 }

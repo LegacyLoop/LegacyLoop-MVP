@@ -9,6 +9,26 @@ import { prisma } from "@/lib/db";
  * No AI detection — guaranteed to cover the plate area without false positives.
  */
 export async function blurPlatesForItem(itemId: string): Promise<{ blurredCount: number }> {
+  // Guard: Check if item is actually a road vehicle before blurring
+  // Outdoor equipment (lawn mowers, garden tractors) should NOT be blurred
+  const item = await prisma.item.findUnique({
+    where: { id: itemId },
+    select: { category: true, title: true },
+  });
+  const cat = (item?.category ?? "").toLowerCase();
+  const title = (item?.title ?? "").toLowerCase();
+
+  const isOutdoorEquipment = (
+    cat.includes("outdoor") ||
+    cat.includes("garden") ||
+    /\b(lawn|mower|chainsaw|leaf blower|pressure washer|snow blower|garden tractor|lawn tractor|riding mower|push mower)\b/i.test(title)
+  );
+
+  if (isOutdoorEquipment) {
+    console.log("[blur-plate] SKIPPED — item is outdoor equipment, not a road vehicle. Category:", cat, "| Title:", title.slice(0, 60));
+    return { blurredCount: 0 };
+  }
+
   // Delete any previous blur-done marker so re-analysis can re-blur
   await prisma.eventLog.deleteMany({
     where: { itemId, eventType: "PLATE_BLUR_DONE" },

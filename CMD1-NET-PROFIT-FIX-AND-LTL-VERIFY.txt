@@ -1,0 +1,808 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 24, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping —
+✓ lib/shipping/package-suggestions.ts
+✓ lib/shipping/shippo.ts — LOCKED (recently modified, stable)
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — READ ONLY for this command
+✓ lib/shipping/shipengine-ltl.ts — READ ONLY for this command
+✓ lib/shipping/freight-estimates.ts — READ ONLY for this command
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/populate-intelligence.ts
+✓ lib/data/project-rollup.ts
+✓ lib/data/user-events.ts
+
+— Enrichment —
+✓ lib/enrichment/item-context.ts
+✓ lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— eBay Adapter (when created) —
+✓ lib/adapters/ebay.ts — LOCKED after creation
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/** — READ + EXTEND for shipping work
+✓ EXCEPTION: app/api/ebay/** — READ + EXTEND for eBay work
+✓ EXCEPTION: app/api/bots/** — READ for bot page data sync work
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED except surgical unlocks for bot upgrades
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — READ ONLY
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - app/api/shipping/center/route.ts (ADD two fields to base object)
+  - app/shipping/ShippingCenterClient.tsx (FIX Net Profit formula — 2 blocks)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• Shippo API key is SET and LIVE (test token configured in .env).
+• Shippo is our PRIMARY parcel carrier aggregator — returns USPS, UPS, FedEx.
+• FedEx direct API is reserved for LTL FREIGHT only (not parcel).
+• Hybrid rate system: live Shippo rates supplemented with demo estimates for
+  missing services. Users see 13-15 carrier options per item. WORKING.
+• ShipEngine/ShipStation LTL sandbox key is SET in .env as SHIPENGINE_API_KEY.
+• EasyPost test key is SET in .env — integration planned for Command 2.
+
+ARCHITECTURE DECISION (approved by Ryan):
+  - Shippo = ALL parcel shipping (USPS, UPS, FedEx parcel, all tiers) ← WORKING
+  - FedEx Direct API = LTL freight ONLY
+  - ShipEngine = LTL freight (additional carriers)
+  - EasyPost = Address verification + backup carrier layer (Command 2)
+  - Demo fallback = fills gaps when APIs return limited services ← WORKING
+
+NET PROFIT BUG (this command fixes):
+  The Shipping Center carrier table shows WRONG Net Profit values.
+  Root causes:
+    A) Uses item.valuationMid (AI estimate ~$85) instead of actual
+       listingPrice ($79) — inflates net profit numbers
+    B) listingPrice and shippingPreference aren't even passed to the
+       frontend from the shipping center API
+    C) Commission hardcoded at 5% — actual tier rates vary (4%-12%)
+    D) "Best profit" footer formula is inconsistent with per-row formula
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Add defensive error handling within scope
+— Improve logging to diagnose rate issues
+— Add Elon-standard polish within scope
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Add unapproved npm packages
+— Change business or pricing logic (EXCEPTION: Net Profit formula fix)
+— Do any "while I'm in here" fixes beyond scope
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+Variable                   Status       Notes
+SHIPPO_API_KEY             SET          Live test token configured
+FEDEX_ACCOUNT_NUMBER       SET          210749015
+FEDEX_PARCEL_API_KEY       SET          Sandbox credentials
+FEDEX_PARCEL_SECRET_KEY    SET          Sandbox credentials
+FEDEX_PARCEL_URL           SET          https://apis-sandbox.fedex.com
+FEDEX_LTL_API_KEY          SET          Sandbox credentials
+FEDEX_LTL_SECRET_KEY       SET          Sandbox credentials
+FEDEX_LTL_URL              SET          https://apis-sandbox.fedex.com
+SHIPENGINE_API_KEY         SET          TEST_Qu72NINYQssk1q4la1cBzF7Zcme5b8DMopATyjuGg7I
+SHIPENGINE_BASE_URL        SET          https://api.shipengine.com
+SHIPENGINE_ENV             SET          sandbox
+EASYPOST_TEST_API_KEY      SET          (reserved for Command 2)
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No schema changes in this command.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+The Shipping Center (app/shipping/ShippingCenterClient.tsx) is ~4,855 lines.
+It has 5 tabs: Items, Wizard, Freight/LTL, Tracking, Pickups.
+
+PARCEL RATES: WORKING. 13-15 carrier options. All 3 carriers.
+NET PROFIT: BROKEN. Shows wrong values. This command fixes it.
+LTL FREIGHT: UNKNOWN. This command verifies it.
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — NET PROFIT ACCURACY FIX + LTL FREIGHT VERIFICATION
+
+================================================================================
+
+This command does TWO things. All surgical. No overhauls.
+
+TASK 1 — FIX NET PROFIT ACCURACY in Shipping Center
+  A) Add listingPrice + shippingPreference to shipping center API base object
+  B) Fix per-row Net Profit formula (price source + commission rate)
+  C) Fix "Best profit" footer to match per-row formula
+
+TASK 2 — VERIFY LTL FREIGHT PIPELINE (read-only diagnostic)
+  A) Run diagnostic script testing ShipEngine + FedEx LTL
+  B) Read ltl-quote/route.ts to verify wiring
+  C) Report status — NO CODE CHANGES for LTL unless something is clearly broken
+
+Files touched:
+  - app/api/shipping/center/route.ts (ADD 2 fields to base object)
+  - app/shipping/ShippingCenterClient.tsx (FIX 2 code blocks)
+  - scripts/test-ltl.ts (CREATE, RUN, then DELETE)
+
+Expected output:
+  - Net Profit shows realistic numbers based on actual listing price
+  - Net Profit varies per carrier row (for FREE_SHIPPING and SPLIT_COST)
+  - "Best profit" footer is consistent with per-row formula
+  - LTL pipeline status reported (working / sandbox limitation / needs fix)
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n app/api/shipping/center/route.ts | sed -n '181,250p'
+   Focus on:
+   - Lines 181-221: The `base` object — confirm it does NOT include
+     listingPrice or shippingPreference
+   - Line 229: readyToShip includes listingPrice/soldPrice
+   - Lines 230-247: preSale does NOT include listingPrice
+   - Confirm these fields exist on the Prisma item (they do — schema
+     line 318: listingPrice Float?, line 326: shippingPreference String)
+
+2. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1580,1660p'
+   Focus on:
+   - Line 1581: Column headers include "Net Profit"
+   - Lines 1594-1596: Per-row formula — note item.valuationMid (WRONG),
+     hardcoded 5% + 1.75% (WRONG), shipping cost logic
+   - Lines 1641-1650: "Best profit" footer — note it ALWAYS subtracts
+     shipping cost and uses valuationMid (inconsistent with per-row)
+
+3. cat -n lib/shipping/shipengine-ltl.ts | head -60
+   Note the getShipEngineRateEstimate function signature and API pattern
+
+4. cat -n lib/shipping/fedex-ltl.ts | head -60
+   Note the getFedExLTLQuote function signature and API pattern
+
+5. cat -n app/api/shipping/ltl-quote/route.ts
+   Note how ShipEngine + FedEx LTL + Shippo fallback are called
+
+6. Check env:
+   grep 'SHIPENGINE' .env | sed 's/=.*/=SET/'
+   grep 'FEDEX_LTL' .env | sed 's/=.*/=SET/'
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PART B — FIX NET PROFIT: Add Fields to Shipping Center API
+
+================================================================================
+
+FILE: app/api/shipping/center/route.ts
+
+In the `base` object (starts around line 181), find this line:
+
+        saleMethod: (item as any).saleMethod ?? null,
+
+ADD these two lines IMMEDIATELY AFTER it (inside the base object):
+
+        listingPrice: (item as any).listingPrice ?? null,
+        shippingPreference: (item as any).shippingPreference ?? "BUYER_PAYS",
+
+This ensures BOTH preSale and readyToShip items include these fields
+since they are part of the shared `base` object.
+
+DO NOT touch any other part of this file.
+
+================================================================================
+
+PART C — FIX NET PROFIT: Per-Row Formula
+
+================================================================================
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+FIND the per-row net profit calculation (around lines 1594-1596).
+It looks like this:
+
+                    const val = item.valuationMid ?? 0;
+                    const shipCost = item.shippingPreference === "SPLIT_COST" ? c.price / 2 : item.shippingPreference === "FREE_SHIPPING" ? c.price : 0;
+                    const net = val > 0 ? Math.round((val - shipCost - val * 0.05 - val * 0.0175) * 100) / 100 : null;
+
+REPLACE those 3 lines with:
+
+                    const val = item.listingPrice || item.soldPrice || item.valuationMid || 0;
+                    const shipCost = item.shippingPreference === "SPLIT_COST" ? c.price / 2 : item.shippingPreference === "BUYER_PAYS" ? 0 : c.price;
+                    // 8% commission (Starter tier default) + 1.75% seller processing = 9.75%
+                    // TODO: Pull actual user tier commission rate when available
+                    const net = val > 0 ? Math.round((val - shipCost - val * 0.08 - val * 0.0175) * 100) / 100 : null;
+
+What changed:
+  - Price source: valuationMid → listingPrice || soldPrice || valuationMid
+  - Commission: 5% → 8% (Starter tier default, most common at launch)
+  - Processing fee: 1.75% unchanged (correct from pricing.ts)
+  - Total seller deduction: 6.75% → 9.75%
+  - Shipping cost logic: unchanged (correct as-is)
+
+================================================================================
+
+PART D — FIX NET PROFIT: "Best Profit" Footer
+
+================================================================================
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+FIND the "Best profit" footer (around lines 1640-1653). It looks like this:
+
+                {carriers.length > 0 && (() => {
+                  const val = item.valuationMid ?? 0;
+                  if (val <= 0) return null;
+                  const bestCarrier = carriers.reduce((best: any, c: any) => {
+                    const net = val - c.price - val * 0.05 - val * 0.0175;
+                    return (!best || net > best.net) ? { ...c, net } : best;
+                  }, null);
+                  if (!bestCarrier) return null;
+                  return (
+                    <div style={{ marginTop: "0.35rem", padding: "0.35rem 0.6rem", borderRadius: "0.35rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.12)", fontSize: "0.62rem", color: "#4caf50", fontWeight: 600 }}>
+                      {"\u{1F4B0}"} Best profit: {bestCarrier.carrier} {"\u2014"} ${bestCarrier.net.toFixed(0)} net after shipping + 6.75% fees
+                    </div>
+                  );
+                })()}
+
+REPLACE that entire block with:
+
+                {carriers.length > 0 && (() => {
+                  const val = item.listingPrice || item.soldPrice || item.valuationMid || 0;
+                  if (val <= 0) return null;
+                  const pref = item.shippingPreference || "BUYER_PAYS";
+                  const bestCarrier = carriers.reduce((best: any, c: any) => {
+                    const sc = pref === "SPLIT_COST" ? c.price / 2 : pref === "BUYER_PAYS" ? 0 : c.price;
+                    const net = val - sc - val * 0.08 - val * 0.0175;
+                    return (!best || net > best.net) ? { ...c, net } : best;
+                  }, null);
+                  if (!bestCarrier) return null;
+                  const feeLabel = pref === "BUYER_PAYS" ? "after 9.75% fees" : "after shipping + 9.75% fees";
+                  return (
+                    <div style={{ marginTop: "0.35rem", padding: "0.35rem 0.6rem", borderRadius: "0.35rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.12)", fontSize: "0.62rem", color: "#4caf50", fontWeight: 600 }}>
+                      {"\u{1F4B0}"} Best profit: {bestCarrier.carrier} {"\u2014"} ${bestCarrier.net.toFixed(0)} net {feeLabel}
+                    </div>
+                  );
+                })()}
+
+What changed:
+  - Price source: valuationMid → listingPrice || soldPrice || valuationMid
+  - Commission: 5% → 8% (matches per-row)
+  - Processing fee: 1.75% unchanged (matches per-row)
+  - Shipping cost: now uses shippingPreference (matches per-row logic)
+  - Fee label: dynamically shows "9.75% fees" or "shipping + 9.75% fees"
+  - Footer and per-row formulas are now 100% CONSISTENT
+
+================================================================================
+
+PART E — LTL FREIGHT VERIFICATION (Diagnostic Only)
+
+================================================================================
+
+--- E1: Create and run LTL diagnostic script ---
+
+Create directory if needed: mkdir -p scripts
+
+Create file: scripts/test-ltl.ts
+
+```typescript
+/**
+ * LTL Freight Diagnostic Test
+ * Run with: npx tsx scripts/test-ltl.ts
+ * DELETE THIS FILE after running.
+ */
+require("dotenv").config();
+
+const SHIPENGINE_KEY = process.env.SHIPENGINE_API_KEY || "";
+const SHIPENGINE_URL = process.env.SHIPENGINE_BASE_URL || "https://api.shipengine.com";
+const FEDEX_LTL_KEY = process.env.FEDEX_LTL_API_KEY || "";
+const FEDEX_LTL_SECRET = process.env.FEDEX_LTL_SECRET_KEY || "";
+const FEDEX_LTL_URL = process.env.FEDEX_LTL_URL || "https://apis-sandbox.fedex.com";
+const FEDEX_ACCOUNT = process.env.FEDEX_ACCOUNT_NUMBER || "";
+
+async function testShipEngine() {
+  console.log("=== SHIPENGINE / SHIPSTATION LTL DIAGNOSTIC ===");
+  console.log("API Key:", SHIPENGINE_KEY ? `SET (${SHIPENGINE_KEY.length} chars, starts with ${SHIPENGINE_KEY.slice(0, 10)}...)` : "MISSING");
+  console.log("Base URL:", SHIPENGINE_URL);
+
+  if (!SHIPENGINE_KEY) {
+    console.log("SKIP — no ShipEngine key");
+    return;
+  }
+
+  // Step 1: List connected carriers
+  try {
+    const carriersRes = await fetch(`${SHIPENGINE_URL}/v1/carriers`, {
+      headers: { "API-Key": SHIPENGINE_KEY, "Content-Type": "application/json" },
+    });
+    if (carriersRes.ok) {
+      const data = await carriersRes.json();
+      const carriers = data.carriers || [];
+      console.log(`Connected carriers: ${carriers.length}`);
+      for (const c of carriers) {
+        console.log(`  - ${c.friendly_name || c.nickname || "Unknown"} (${c.carrier_id}) [${c.carrier_code}]`);
+      }
+      if (carriers.length === 0) {
+        console.log("  ⚠️  No carriers connected — sandbox may need carrier setup");
+        console.log("  This is expected for test keys. Production key will have carriers.");
+      }
+    } else {
+      const errText = await carriersRes.text();
+      console.log("List carriers FAILED:", carriersRes.status, errText.slice(0, 300));
+    }
+  } catch (e) {
+    console.log("List carriers EXCEPTION:", e);
+  }
+
+  // Step 2: Try a rate estimate
+  console.log("");
+  console.log("--- Rate Estimate Test ---");
+  try {
+    const rateRes = await fetch(`${SHIPENGINE_URL}/v1/rates/estimate`, {
+      method: "POST",
+      headers: { "API-Key": SHIPENGINE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        carrier_ids: [],
+        from_country_code: "US",
+        from_postal_code: "04901",
+        to_country_code: "US",
+        to_postal_code: "10001",
+        weight: { value: 200, unit: "pound" },
+        dimensions: { length: 48, width: 40, height: 36, unit: "inch" },
+        confirmation: "none",
+        ship_date: new Date().toISOString().slice(0, 10),
+      }),
+    });
+
+    const rateBody = await rateRes.text();
+    console.log("Rate estimate status:", rateRes.status);
+
+    if (rateRes.ok) {
+      const rates = JSON.parse(rateBody);
+      if (Array.isArray(rates) && rates.length > 0) {
+        console.log(`✅ ${rates.length} rate estimates returned:`);
+        for (const r of rates.slice(0, 10)) {
+          console.log(`  $${r.shipping_amount?.amount || "?"} — ${r.carrier_friendly_name || r.carrier_id} ${r.service_type || ""} (${r.delivery_days || "?"} days)`);
+        }
+      } else if (Array.isArray(rates) && rates.length === 0) {
+        console.log("⚠️  0 rate estimates — no carriers connected in sandbox");
+      } else {
+        console.log("Response:", JSON.stringify(rates).slice(0, 500));
+      }
+    } else {
+      console.log("Rate estimate FAILED:", rateBody.slice(0, 500));
+    }
+  } catch (e) {
+    console.log("Rate estimate EXCEPTION:", e);
+  }
+  console.log("");
+}
+
+async function testFedExLTL() {
+  console.log("=== FEDEX LTL FREIGHT DIAGNOSTIC ===");
+  console.log("API Key:", FEDEX_LTL_KEY ? `SET (${FEDEX_LTL_KEY.length} chars)` : "MISSING");
+  console.log("Secret:", FEDEX_LTL_SECRET ? `SET (${FEDEX_LTL_SECRET.length} chars)` : "MISSING");
+  console.log("URL:", FEDEX_LTL_URL);
+  console.log("Account:", FEDEX_ACCOUNT || "MISSING");
+
+  if (!FEDEX_LTL_KEY || !FEDEX_LTL_SECRET) {
+    console.log("SKIP — no FedEx LTL credentials");
+    return;
+  }
+
+  // Auth
+  let token = "";
+  try {
+    const authRes = await fetch(`${FEDEX_LTL_URL}/oauth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: FEDEX_LTL_KEY,
+        client_secret: FEDEX_LTL_SECRET,
+      }),
+    });
+    if (authRes.ok) {
+      const authData = await authRes.json();
+      token = authData.access_token;
+      console.log("Auth: SUCCESS (token length:", token.length + ")");
+    } else {
+      const body = await authRes.text();
+      console.log("Auth: FAILED —", authRes.status, body.slice(0, 300));
+      return;
+    }
+  } catch (e) {
+    console.log("Auth EXCEPTION:", e);
+    return;
+  }
+
+  // LTL Rate request
+  console.log("");
+  console.log("--- LTL Rate Quote Test ---");
+  const reqBody = {
+    accountNumber: { value: FEDEX_ACCOUNT },
+    requestedShipment: {
+      shipper: { address: { postalCode: "04901", countryCode: "US" } },
+      recipient: { address: { postalCode: "10001", countryCode: "US", residential: true } },
+      pickupType: "USE_SCHEDULED_PICKUP",
+      rateRequestType: ["LIST", "ACCOUNT"],
+      shippingChargesPayment: {
+        paymentType: "SENDER",
+        payor: { responsibleParty: { accountNumber: { value: FEDEX_ACCOUNT } } },
+      },
+      freightShipmentDetail: {
+        fedExFreightBillingContactAndAddress: {
+          address: { postalCode: "04901", countryCode: "US" },
+        },
+        lineItems: [{
+          freightClass: "CLASS_100",
+          weight: { units: "LB", value: 200 },
+          dimensions: { length: 48, width: 40, height: 36, units: "IN" },
+          pieces: 1,
+          description: "General merchandise",
+        }],
+      },
+    },
+  };
+
+  try {
+    const rateRes = await fetch(`${FEDEX_LTL_URL}/rate/v1/rates/quotes`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "X-locale": "en_US",
+      },
+      body: JSON.stringify(reqBody),
+    });
+
+    const rateBody = await rateRes.text();
+    console.log("Rate status:", rateRes.status);
+
+    if (rateRes.ok) {
+      const rateData = JSON.parse(rateBody);
+      const details = rateData.output?.rateReplyDetails || [];
+      console.log(`✅ ${details.length} LTL services returned:`);
+      for (const d of details) {
+        const charge = d.ratedShipmentDetails?.[0]?.totalNetCharge ?? d.ratedShipmentDetails?.[0]?.totalNetFedExCharge ?? 0;
+        const days = d.commit?.dateDetail?.dayCount || d.commit?.transitDays?.amount || "?";
+        console.log(`  $${charge} — ${d.serviceType} (${days} days)`);
+      }
+    } else {
+      console.log("Rate FAILED — Full error:");
+      console.log(rateBody.slice(0, 500));
+      if (rateBody.includes("ACCOUNT.NUMBER.MISMATCH")) {
+        console.log("");
+        console.log("⚠️  ACCOUNT.NUMBER.MISMATCH — known FedEx sandbox limitation.");
+        console.log("   Auth succeeds but rate requests fail. NOT a code bug.");
+        console.log("   Will work with production FedEx credentials.");
+      }
+    }
+  } catch (e) {
+    console.log("Rate EXCEPTION:", e);
+  }
+  console.log("");
+}
+
+async function checkLTLRoute() {
+  console.log("=== LTL QUOTE ENDPOINT CHECK ===");
+  const fs = require("fs");
+  const path = "app/api/shipping/ltl-quote/route.ts";
+  if (fs.existsSync(path)) {
+    const code = fs.readFileSync(path, "utf-8");
+    console.log("✅ ltl-quote/route.ts EXISTS (" + code.length + " chars)");
+    console.log("   Calls ShipEngine:", code.includes("ShipEngine") || code.includes("shipengine") ? "YES" : "NO");
+    console.log("   Calls FedEx LTL:", code.includes("FedEx") || code.includes("fedex") ? "YES" : "NO");
+    console.log("   Has Shippo/demo fallback:", code.includes("demo") || code.includes("Demo") || code.includes("fallback") || code.includes("Fallback") || code.includes("freight-estimates") || code.includes("getLTL") ? "YES" : "NO");
+  } else {
+    console.log("❌ ltl-quote/route.ts NOT FOUND");
+    console.log("   The LTL quote endpoint does not exist — needs to be created.");
+  }
+  console.log("");
+}
+
+async function main() {
+  console.log("========================================");
+  console.log("LEGACYLOOP LTL FREIGHT DIAGNOSTIC");
+  console.log("Test route: Waterville ME 04901 → New York NY 10001");
+  console.log("Test freight: 200 lbs, 48×40×36 in, Class 100");
+  console.log("========================================\n");
+
+  await testShipEngine();
+  await testFedExLTL();
+  await checkLTLRoute();
+
+  console.log("========================================");
+  console.log("LTL DIAGNOSTIC COMPLETE");
+  console.log("========================================");
+}
+
+main();
+```
+
+Create scripts/ if needed: mkdir -p scripts
+Run: npx tsx scripts/test-ltl.ts
+PRINT THE FULL OUTPUT IN THE REPORT.
+After printing, DELETE: rm scripts/test-ltl.ts && rmdir scripts 2>/dev/null
+
+--- E2: READ (do not modify) the LTL quote endpoint ---
+
+Run: cat -n app/api/shipping/ltl-quote/route.ts
+
+Verify it calls:
+  1. ShipEngine (getShipEngineRateEstimate or similar)
+  2. FedEx LTL (getFedExLTLQuote or similar)
+  3. Shippo demo freight (getLTLFreightQuotes or similar)
+  4. Returns combined results with source tags
+
+If it does all three — report "LTL pipeline verified" in the report.
+If the endpoint is MISSING — report "LTL endpoint missing — needs Command 3."
+If wiring is INCOMPLETE — report exactly what's missing.
+
+DO NOT MODIFY any LTL files. This is diagnostic only.
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+3. listingPrice added to center API base object: yes / no
+4. shippingPreference added to center API base object: yes / no
+5. Per-row Net Profit price source changed from valuationMid: yes / no
+6. Per-row Net Profit commission changed from 5% to 8%: yes / no
+7. "Best profit" footer price source matches per-row: yes / no
+8. "Best profit" footer commission matches per-row (8%): yes / no
+9. "Best profit" footer shipping logic matches per-row: yes / no
+10. "Best profit" fee label is dynamic (BUYER_PAYS vs other): yes / no
+11. LTL diagnostic script created, run, output printed: yes / no
+12. LTL diagnostic script deleted: yes / no
+13. LTL quote endpoint read and verified: yes / no
+14. All locked files untouched: yes / no
+15. inline style={{}} throughout — no Tailwind, no className: yes / no
+16. Always-dark panels use hardcoded colors: yes / no
+17. Theme-aware surfaces use CSS variables: yes / no
+18. Light mode tested — no broken contrast: yes / no
+19. Dark mode tested — all elements visible: yes / no
+20. npx tsc --noEmit: 0 errors
+21. npm run build: pass
+22. CHECKPOINT post-change: pass
+23. Dev server: localhost:3000
+
+MANUAL TESTS:
+24. Start dev server, navigate to Shipping Center
+25. Open an item's carrier rate table
+26. Verify Net Profit column shows realistic numbers (NOT equal to item price)
+27. Verify "Best profit" footer number is consistent with cheapest row
+28. If item is BUYER_PAYS: Net Profit should be same for all rows (correct — buyer pays)
+29. If item is FREE_SHIPPING: Net Profit should decrease as shipping cost increases
+30. Check terminal for LTL diagnostic output
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+NET PROFIT FIX:
+- listingPrice added to base object at line: [number]
+- shippingPreference added to base object at line: [number]
+- Per-row price source: valuationMid → listingPrice || soldPrice || valuationMid: [yes / no]
+- Per-row commission: 5% → 8%: [yes / no]
+- Per-row processing fee: 1.75% unchanged: [yes / no]
+- Footer price source matches per-row: [yes / no]
+- Footer commission matches per-row: [yes / no]
+- Footer shipping logic matches per-row: [yes / no]
+- Footer fee label dynamic: [yes / no]
+- Formulas now 100% consistent: [yes / no]
+
+LTL FREIGHT DIAGNOSTIC:
+[Paste the COMPLETE output of npx tsx scripts/test-ltl.ts here]
+
+SHIPENGINE STATUS:
+- API key configured: [yes / no]
+- Connected carriers: [count + list OR "0 — sandbox limitation"]
+- Rate estimate: [success / failed / 0 carriers]
+- Conclusion: [working / sandbox limitation / needs production key]
+
+FEDEX LTL STATUS:
+- Auth: [pass / fail]
+- Rate request: [pass / fail / ACCOUNT.NUMBER.MISMATCH]
+- Conclusion: [working / sandbox limitation / needs production credentials]
+
+LTL ENDPOINT:
+- ltl-quote/route.ts exists: [yes / no]
+- Calls ShipEngine: [yes / no]
+- Calls FedEx LTL: [yes / no]
+- Calls Shippo/demo fallback: [yes / no]
+- Pipeline verified: [yes / needs fix / endpoint missing]
+
+LIGHT MODE: [clean / issues found]
+DARK MODE: [clean / issues found]
+ALWAYS-DARK PANELS: [hardcoded colors used / issues]
+
+EXISTING LOGIC UNTOUCHED:
+— [List every locked file verified as untouched]
+
+FLAGS FROM CLAUDE CODE:
+— [All gaps, risks, missed data collection, out-of-scope items]
+— [ShipEngine sandbox limitations discovered]
+— [FedEx LTL sandbox limitations discovered]
+— [Net Profit edge cases found]
+— [Any new carry-forward items for Command 2]
+
+Files modified: [list all — exact paths]
+New files created: [list all or 'none']
+Schema changes needed: [list or 'none']
+Build: [pass / fail]
+TypeScript: [0 errors / list all errors]
+
+CHECKPOINT after: [pass / issue]
+Dev server: localhost:3000
+
+IF POST-CHECKPOINT FAILS:
+REVERT IMMEDIATELY.
+Report exactly what broke and what was touched.
+Do NOT proceed until clean.
+
+Command Template v11 | LegacyLoop | March 24, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command | Paste in full — never abbreviate

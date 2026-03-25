@@ -1,0 +1,1109 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 24, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping —
+✓ lib/shipping/package-suggestions.ts
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/populate-intelligence.ts
+✓ lib/data/project-rollup.ts
+✓ lib/data/user-events.ts
+
+— Enrichment —
+✓ lib/enrichment/item-context.ts
+✓ lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— eBay Adapter (when created) —
+✓ lib/adapters/ebay.ts — LOCKED after creation
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/** — READ + EXTEND for shipping work
+✓ EXCEPTION: app/api/ebay/** — READ + EXTEND for eBay work
+✓ EXCEPTION: app/api/bots/** — READ for bot page data sync work
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED except surgical unlocks for bot upgrades
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — READ ONLY
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - lib/shipping/easypost.ts (CREATE NEW — EasyPost integration)
+  - app/api/shipping/center/route.ts (ADD listingPrice + shippingPreference to base object)
+  - app/shipping/ShippingCenterClient.tsx (FIX Net Profit formula only)
+  - app/api/shipping/rates/route.ts (ADD EasyPost backup carrier call)
+  - app/api/shipping/ltl-quote/route.ts (VERIFY + FIX LTL carrier wiring)
+  - lib/shipping/shipengine-ltl.ts (VERIFY + FIX if needed)
+  - lib/shipping/fedex-ltl.ts (READ ONLY — verify status)
+  - lib/shipping/freight-estimates.ts (READ ONLY — verify fallback)
+  - .env (ADD EASYPOST env vars if missing)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• Shippo API key is SET and LIVE (test token configured in .env).
+• Shippo is our PRIMARY parcel carrier aggregator — returns USPS, UPS, FedEx.
+• FedEx direct API is reserved for LTL FREIGHT only (not parcel).
+• Hybrid rate system: live Shippo rates supplemented with demo estimates for
+  missing services. Users see 13-15 carrier options per item.
+• EasyPost test key is SET in .env — needs integration.
+• ShipEngine/ShipStation LTL sandbox key is SET in .env as SHIPENGINE_API_KEY.
+
+ARCHITECTURE DECISION (approved by Ryan):
+  - Shippo = ALL parcel shipping (USPS, UPS, FedEx parcel, all tiers)
+  - EasyPost = Address verification + backup carrier rate layer
+  - FedEx Direct API = LTL freight ONLY
+  - ShipEngine = LTL freight (additional carriers)
+  - Demo fallback = fills gaps when APIs return limited services
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Add defensive error handling within scope
+— Improve logging to diagnose rate issues
+— Expand service coverage within existing carrier integrations
+— Add Elon-standard polish within scope
+— Create new lib/shipping/ files for new carrier integrations
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Add unapproved npm packages (EXCEPTION: @easypost/api is APPROVED)
+— Change business or pricing logic (EXCEPTION: Net Profit formula fix)
+— Do any "while I'm in here" fixes beyond scope
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+Variable                   Status       Notes
+SHIPPO_API_KEY             SET          Live test token configured
+FEDEX_ACCOUNT_NUMBER       SET          210749015
+FEDEX_PARCEL_API_KEY       SET          Sandbox credentials
+FEDEX_PARCEL_SECRET_KEY    SET          Sandbox credentials
+FEDEX_PARCEL_URL           SET          https://apis-sandbox.fedex.com
+FEDEX_LTL_API_KEY          SET          Sandbox credentials
+FEDEX_LTL_SECRET_KEY       SET          Sandbox credentials
+FEDEX_LTL_URL              SET          https://apis-sandbox.fedex.com
+SHIPENGINE_API_KEY         SET          TEST_Qu72NINYQssk1q4la1cBzF7Zcme5b8DMopATyjuGg7I
+SHIPENGINE_BASE_URL        SET          https://api.shipengine.com
+SHIPENGINE_ENV             SET          sandbox
+EASYPOST_TEST_API_KEY      SET          EZTKbf13627fa1f0498186bbe64962050b36Xd7MWV0URQMPEmoKptmVOg
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No schema changes in this command.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+The Shipping Center (app/shipping/ShippingCenterClient.tsx) is ~4,855 lines.
+It has 5 tabs: Items, Wizard, Freight/LTL, Tracking, Pickups.
+
+PARCEL RATES (WORKING — recently fixed):
+  - Hybrid system: Shippo live + demo supplement = 13-15 carrier options
+  - All 3 carriers showing: USPS, UPS, FedEx
+  - Ground, 2-Day, Express, Overnight all appearing
+
+REMAINING ISSUES THIS COMMAND FIXES:
+  1. Net Profit column shows wrong value (uses AI valuation not listing price)
+  2. Net Profit commission hardcoded at 5% instead of tier-based
+  3. Net Profit formula inconsistent between per-row and footer
+  4. EasyPost not integrated (address verification + backup rates)
+  5. LTL freight tab needs verification — ShipEngine + FedEx LTL wired but untested
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — SHIPPING FINAL POLISH: NET PROFIT + EASYPOST + LTL VERIFICATION
+
+================================================================================
+
+This command does FOUR things. All surgical. No overhauls.
+
+TASK 1 — FIX NET PROFIT ACCURACY in Shipping Center
+TASK 2 — CREATE EasyPost integration (address verification + backup carrier)
+TASK 3 — WIRE EasyPost into parcel rate pipeline as backup layer
+TASK 4 — VERIFY + FIX LTL freight carrier pipeline
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n app/api/shipping/center/route.ts
+   - Lines 181-221: Find the `base` object — note it does NOT include
+     listingPrice or shippingPreference
+   - Line 229: readyToShip DOES include listingPrice/soldPrice
+   - Lines 230-247: preSale does NOT include listingPrice
+   - These fields exist on the Prisma model (schema line 318: listingPrice,
+     line 326: shippingPreference) and are returned by findMany
+
+2. cat -n app/shipping/ShippingCenterClient.tsx | head -1600 | tail -70
+   (Lines 1580-1650 — the Net Profit carrier table + "Best profit" footer)
+   - Line 1581: Column headers include "Net Profit"
+   - Lines 1594-1596: Per-row formula: val * 0.05 + val * 0.0175 (hardcoded 6.75%)
+   - Line 1594: Uses item.valuationMid (AI valuation, NOT actual price)
+   - Lines 1641-1650: "Best profit" footer — ALWAYS subtracts shipping, inconsistent
+
+3. cat -n app/api/shipping/rates/route.ts
+   - Note the Promise.all pattern — we will ADD EasyPost as third source
+   - Note the dedupe logic — EasyPost rates will merge naturally
+
+4. cat -n lib/shipping/shipengine-ltl.ts
+   - Full ShipEngine/ShipStation LTL integration
+   - Check the rate request format and error handling
+
+5. cat -n lib/shipping/fedex-ltl.ts
+   - Full FedEx LTL freight integration
+   - Known issue: ACCOUNT.NUMBER.MISMATCH on sandbox
+
+6. cat -n app/api/shipping/ltl-quote/route.ts
+   - Full LTL quote endpoint
+   - Check how ShipEngine + FedEx LTL + Shippo fallback are called
+
+7. Check env:
+   grep 'EASYPOST' .env | sed 's/=.*/=SET/'
+   grep 'SHIPENGINE' .env | sed 's/=.*/=SET/'
+   grep 'FEDEX_LTL' .env | sed 's/=.*/=SET/'
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PART B — FIX NET PROFIT ACCURACY
+
+================================================================================
+
+--- B1: Add listingPrice + shippingPreference to shipping center API ---
+
+FILE: app/api/shipping/center/route.ts
+
+In the `base` object (starts around line 181), find the line:
+
+        saleMethod: (item as any).saleMethod ?? null,
+
+ADD these two lines IMMEDIATELY AFTER (inside the base object):
+
+        listingPrice: (item as any).listingPrice ?? null,
+        shippingPreference: (item as any).shippingPreference ?? "BUYER_PAYS",
+
+This ensures BOTH preSale and readyToShip items get these fields.
+
+--- B2: Fix the per-row Net Profit formula ---
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+FIND the per-row net profit calculation (around lines 1594-1596):
+
+                    const val = item.valuationMid ?? 0;
+                    const shipCost = item.shippingPreference === "SPLIT_COST" ? c.price / 2 : item.shippingPreference === "FREE_SHIPPING" ? c.price : 0;
+                    const net = val > 0 ? Math.round((val - shipCost - val * 0.05 - val * 0.0175) * 100) / 100 : null;
+
+REPLACE WITH:
+
+                    const val = item.listingPrice || item.soldPrice || item.valuationMid || 0;
+                    const shipCost = item.shippingPreference === "SPLIT_COST" ? c.price / 2 : item.shippingPreference === "BUYER_PAYS" ? 0 : c.price;
+                    // 8% commission (Starter tier default) + 1.75% seller processing = 9.75%
+                    // TODO: Pull actual user tier commission rate when available
+                    const net = val > 0 ? Math.round((val - shipCost - val * 0.08 - val * 0.0175) * 100) / 100 : null;
+
+--- B3: Fix the "Best profit" footer to match ---
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+FIND the "Best profit" footer (around lines 1640-1653):
+
+                {carriers.length > 0 && (() => {
+                  const val = item.valuationMid ?? 0;
+                  if (val <= 0) return null;
+                  const bestCarrier = carriers.reduce((best: any, c: any) => {
+                    const net = val - c.price - val * 0.05 - val * 0.0175;
+                    return (!best || net > best.net) ? { ...c, net } : best;
+                  }, null);
+                  if (!bestCarrier) return null;
+                  return (
+                    <div style={{ marginTop: "0.35rem", padding: "0.35rem 0.6rem", borderRadius: "0.35rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.12)", fontSize: "0.62rem", color: "#4caf50", fontWeight: 600 }}>
+                      {"\u{1F4B0}"} Best profit: {bestCarrier.carrier} {"\u2014"} ${bestCarrier.net.toFixed(0)} net after shipping + 6.75% fees
+                    </div>
+                  );
+                })()}
+
+REPLACE WITH:
+
+                {carriers.length > 0 && (() => {
+                  const val = item.listingPrice || item.soldPrice || item.valuationMid || 0;
+                  if (val <= 0) return null;
+                  const pref = item.shippingPreference || "BUYER_PAYS";
+                  const bestCarrier = carriers.reduce((best: any, c: any) => {
+                    const sc = pref === "SPLIT_COST" ? c.price / 2 : pref === "BUYER_PAYS" ? 0 : c.price;
+                    const net = val - sc - val * 0.08 - val * 0.0175;
+                    return (!best || net > best.net) ? { ...c, net } : best;
+                  }, null);
+                  if (!bestCarrier) return null;
+                  const feeLabel = pref === "BUYER_PAYS" ? "after 9.75% fees" : "after shipping + 9.75% fees";
+                  return (
+                    <div style={{ marginTop: "0.35rem", padding: "0.35rem 0.6rem", borderRadius: "0.35rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.12)", fontSize: "0.62rem", color: "#4caf50", fontWeight: 600 }}>
+                      {"\u{1F4B0}"} Best profit: {bestCarrier.carrier} {"\u2014"} ${bestCarrier.net.toFixed(0)} net {feeLabel}
+                    </div>
+                  );
+                })()}
+
+================================================================================
+
+PART C — CREATE EASYPOST INTEGRATION
+
+================================================================================
+
+--- C1: Install EasyPost npm package ---
+
+Run: npm install @easypost/api
+
+If the package cannot be installed (sandbox/network restrictions), use
+the EasyPost REST API directly via fetch (same pattern as fedex-parcel.ts).
+
+--- C2: Create lib/shipping/easypost.ts ---
+
+CREATE the file lib/shipping/easypost.ts with the following content:
+
+```typescript
+/**
+ * EasyPost Integration — Address Verification + Backup Carrier Rates
+ *
+ * EasyPost provides:
+ *   1. Address verification (deliverability, residential detection)
+ *   2. Backup carrier rate shopping (USPS, UPS, FedEx)
+ *
+ * Used as a SUPPLEMENT to Shippo — not a replacement.
+ * Shippo = primary carrier rates
+ * EasyPost = address verification + backup rate source if Shippo fails
+ */
+
+const EASYPOST_API_KEY = process.env.EASYPOST_TEST_API_KEY || process.env.EASYPOST_API_KEY || "";
+const EASYPOST_BASE = "https://api.easypost.com/v2";
+
+type AddressVerificationResult = {
+  verified: boolean;
+  residential: boolean | null;
+  correctedZip: string | null;
+  correctedCity: string | null;
+  correctedState: string | null;
+  correctedStreet: string | null;
+  message: string;
+};
+
+type EasyPostRate = {
+  carrier: string;
+  service: string;
+  rate: number;
+  currency: string;
+  estimatedDays: number;
+  isLive: boolean;
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function authHeaders(): Record<string, string> {
+  return {
+    Authorization: `Basic ${Buffer.from(EASYPOST_API_KEY + ":").toString("base64")}`,
+    "Content-Type": "application/json",
+  };
+}
+
+function isConfigured(): boolean {
+  return !!EASYPOST_API_KEY && EASYPOST_API_KEY !== "your_easypost_api_key_here";
+}
+
+// ─── Address Verification ─────────────────────────────────────────────────────
+
+/**
+ * Verify a shipping address using EasyPost.
+ * Returns verification status, residential flag, and corrected fields.
+ */
+export async function verifyAddress(
+  street1: string,
+  city: string,
+  state: string,
+  zip: string,
+  street2?: string,
+  country?: string
+): Promise<AddressVerificationResult> {
+  if (!isConfigured()) {
+    console.log("[easypost] Address verification skipped — no API key configured");
+    return { verified: false, residential: null, correctedZip: null, correctedCity: null, correctedState: null, correctedStreet: null, message: "EasyPost not configured" };
+  }
+
+  try {
+    const res = await fetch(`${EASYPOST_BASE}/addresses`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        address: {
+          street1,
+          street2: street2 || "",
+          city,
+          state,
+          zip,
+          country: country || "US",
+          verify: ["delivery"],
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("[easypost] Address verification failed:", res.status, errText.slice(0, 300));
+      return { verified: false, residential: null, correctedZip: null, correctedCity: null, correctedState: null, correctedStreet: null, message: `API error: ${res.status}` };
+    }
+
+    const data = await res.json();
+    const verifications = data.verifications?.delivery;
+    const isVerified = verifications?.success === true;
+    const isResidential = data.residential ?? null;
+
+    console.log(`[easypost] Address verified: ${isVerified} | Residential: ${isResidential} | ${data.street1}, ${data.city} ${data.state} ${data.zip}`);
+
+    return {
+      verified: isVerified,
+      residential: isResidential,
+      correctedZip: data.zip || null,
+      correctedCity: data.city || null,
+      correctedState: data.state || null,
+      correctedStreet: data.street1 || null,
+      message: isVerified ? "Address verified" : (verifications?.errors?.[0]?.message || "Verification failed"),
+    };
+  } catch (err) {
+    console.error("[easypost] Address verification exception:", err);
+    return { verified: false, residential: null, correctedZip: null, correctedCity: null, correctedState: null, correctedStreet: null, message: "Exception during verification" };
+  }
+}
+
+// ─── Backup Carrier Rates ─────────────────────────────────────────────────────
+
+/**
+ * Get shipping rates from EasyPost as a backup source.
+ * Returns rates from all available carriers (USPS, UPS, FedEx, etc.)
+ */
+export async function getEasyPostRates(
+  fromZip: string,
+  toZip: string,
+  weightLbs: number,
+  lengthIn: number,
+  widthIn: number,
+  heightIn: number
+): Promise<EasyPostRate[]> {
+  if (!isConfigured()) {
+    console.log("[easypost] Rate request skipped — no API key configured");
+    return [];
+  }
+
+  try {
+    const res = await fetch(`${EASYPOST_BASE}/shipments`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        shipment: {
+          from_address: {
+            zip: fromZip,
+            country: "US",
+          },
+          to_address: {
+            zip: toZip,
+            country: "US",
+          },
+          parcel: {
+            length: lengthIn,
+            width: widthIn,
+            height: heightIn,
+            weight: weightLbs * 16, // EasyPost uses ounces
+          },
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error("[easypost] Rate request failed:", res.status, errText.slice(0, 300));
+      return [];
+    }
+
+    const data = await res.json();
+    const rates = data.rates || [];
+
+    const ALLOWED_CARRIERS = ["usps", "ups", "fedex", "upsdap"];
+
+    const mapped: EasyPostRate[] = rates
+      .filter((r: any) => ALLOWED_CARRIERS.includes(r.carrier?.toLowerCase()))
+      .map((r: any) => ({
+        carrier: r.carrier === "UPSDAP" ? "UPS" : r.carrier,
+        service: r.service || "Standard",
+        rate: parseFloat(r.rate) || 0,
+        currency: r.currency || "USD",
+        estimatedDays: r.est_delivery_days || r.delivery_days || 5,
+        isLive: true,
+      }))
+      .filter((r: EasyPostRate) => r.rate > 0)
+      .sort((a: EasyPostRate, b: EasyPostRate) => a.rate - b.rate);
+
+    console.log(`[easypost] ${mapped.length} backup rates: ${mapped.map(r => `${r.carrier} ${r.service} $${r.rate}`).join(" | ")}`);
+
+    return mapped;
+  } catch (err) {
+    console.error("[easypost] Rate request exception:", err);
+    return [];
+  }
+}
+
+// ─── Address Verification with Rate Optimization ──────────────────────────────
+
+/**
+ * Verify an address and return whether it's residential.
+ * Useful before rate shopping — residential addresses get different rates.
+ */
+export async function checkResidential(zip: string): Promise<boolean | null> {
+  if (!isConfigured()) return null;
+  try {
+    const result = await verifyAddress("", "", "", zip);
+    return result.residential;
+  } catch {
+    return null;
+  }
+}
+
+export { isConfigured as isEasyPostConfigured };
+```
+
+================================================================================
+
+PART D — WIRE EASYPOST INTO PARCEL RATE PIPELINE
+
+================================================================================
+
+FILE: app/api/shipping/rates/route.ts
+
+This file currently calls Shippo + FedEx Parcel in parallel. We add
+EasyPost as a THIRD source — backup carrier layer.
+
+FIND the existing import block at the top:
+
+import { authAdapter } from "@/lib/adapters/auth";
+import { getShippingRates } from "@/lib/shipping/shippo";
+import { getFedExParcelRates } from "@/lib/shipping/fedex-parcel";
+
+REPLACE WITH:
+
+import { authAdapter } from "@/lib/adapters/auth";
+import { getShippingRates } from "@/lib/shipping/shippo";
+import { getFedExParcelRates } from "@/lib/shipping/fedex-parcel";
+import { getEasyPostRates } from "@/lib/shipping/easypost";
+
+FIND the Promise.all block (around lines 17-27):
+
+  // Run Shippo + FedEx Parcel in parallel
+  const [shippoResult, fedexRates] = await Promise.all([
+    getShippingRates(
+      { zip: String(fromZip) },
+      { zip: String(toZip) },
+      { length: Number(length), width: Number(width), height: Number(height), weight: Number(weight) },
+    ).catch(() => ({ rates: [] as any[], isDemo: true })),
+    getFedExParcelRates(
+      String(fromZip), String(toZip),
+      Number(weight), Number(length), Number(width), Number(height),
+    ).catch(() => []),
+  ]);
+
+REPLACE WITH:
+
+  // Run Shippo + FedEx Parcel + EasyPost in parallel
+  const [shippoResult, fedexRates, easypostRates] = await Promise.all([
+    getShippingRates(
+      { zip: String(fromZip) },
+      { zip: String(toZip) },
+      { length: Number(length), width: Number(width), height: Number(height), weight: Number(weight) },
+    ).catch(() => ({ rates: [] as any[], isDemo: true })),
+    getFedExParcelRates(
+      String(fromZip), String(toZip),
+      Number(weight), Number(length), Number(width), Number(height),
+    ).catch(() => []),
+    getEasyPostRates(
+      String(fromZip), String(toZip),
+      Number(weight), Number(length), Number(width), Number(height),
+    ).catch(() => []),
+  ]);
+
+FIND the allRates merge block (around lines 30-44):
+
+  // Merge rates — Shippo + FedEx direct
+  const allRates = [
+    ...shippoResult.rates.map((r: any) => ({
+      ...r,
+      source: shippoResult.isDemo ? "demo" : "shippo",
+    })),
+    ...fedexRates.map((r) => ({
+      provider: r.carrier,
+      servicelevel_name: r.service,
+      amount: String(r.rate),
+      estimated_days: r.estimatedDays,
+      currency: r.currency,
+      source: "fedex",
+      isLive: r.isLive,
+    })),
+  ];
+
+REPLACE WITH:
+
+  // Merge rates — Shippo + FedEx direct + EasyPost backup
+  const allRates = [
+    ...shippoResult.rates.map((r: any) => ({
+      ...r,
+      source: shippoResult.isDemo ? "demo" : "shippo",
+    })),
+    ...fedexRates.map((r) => ({
+      provider: r.carrier,
+      servicelevel_name: r.service,
+      amount: String(r.rate),
+      estimated_days: r.estimatedDays,
+      currency: r.currency,
+      source: "fedex",
+      isLive: r.isLive,
+    })),
+    ...easypostRates.map((r) => ({
+      provider: r.carrier,
+      servicelevel_name: r.service,
+      amount: String(r.rate),
+      estimated_days: r.estimatedDays,
+      currency: r.currency,
+      source: "easypost",
+      isLive: r.isLive,
+    })),
+  ];
+
+FIND the logging line (around line 68):
+
+  console.log(`[shipping/rates] ${deduped.length} rates → UI: Shippo(${shippoResult.rates.length}) + FedEx-direct(${fedexRates.length}) → deduped(${deduped.length})`);
+
+REPLACE WITH:
+
+  console.log(`[shipping/rates] ${deduped.length} rates → UI: Shippo(${shippoResult.rates.length}) + FedEx-direct(${fedexRates.length}) + EasyPost(${easypostRates.length}) → deduped(${deduped.length})`);
+
+FIND the return block (around lines 70-76):
+
+  return Response.json({
+    rates: deduped,
+    isDemo: shippoResult.isDemo && fedexRates.length === 0,
+    isMock: shippoResult.isDemo && fedexRates.length === 0,
+    rateSource: fedexRates.length > 0 ? "shippo+fedex" : shippoResult.isDemo ? "demo" : "shippo",
+    fedexLive: fedexRates.length > 0,
+  });
+
+REPLACE WITH:
+
+  return Response.json({
+    rates: deduped,
+    isDemo: shippoResult.isDemo && fedexRates.length === 0 && easypostRates.length === 0,
+    isMock: shippoResult.isDemo && fedexRates.length === 0 && easypostRates.length === 0,
+    rateSource: [
+      shippoResult.isDemo ? "demo" : "shippo",
+      fedexRates.length > 0 ? "fedex" : null,
+      easypostRates.length > 0 ? "easypost" : null,
+    ].filter(Boolean).join("+"),
+    fedexLive: fedexRates.length > 0,
+    easypostLive: easypostRates.length > 0,
+  });
+
+NOTE: The existing dedupe logic at lines 47-64 uses carrier+service key.
+EasyPost rates with the same carrier+service as a Shippo rate will be
+deduped — Shippo's rate wins (it was seen first). EasyPost only supplements
+with services Shippo didn't return. This is the correct behavior.
+
+================================================================================
+
+PART E — VERIFY + FIX LTL FREIGHT
+
+================================================================================
+
+--- E1: Run LTL diagnostic ---
+
+Create file: scripts/test-ltl.ts
+
+```typescript
+/**
+ * LTL Freight Diagnostic Test
+ * Run with: npx tsx scripts/test-ltl.ts
+ * DELETE THIS FILE after running.
+ */
+import "dotenv/config";
+
+const SHIPENGINE_KEY = process.env.SHIPENGINE_API_KEY || "";
+const SHIPENGINE_URL = process.env.SHIPENGINE_BASE_URL || "https://api.shipengine.com";
+const FEDEX_LTL_KEY = process.env.FEDEX_LTL_API_KEY || "";
+const FEDEX_LTL_SECRET = process.env.FEDEX_LTL_SECRET_KEY || "";
+const FEDEX_LTL_URL = process.env.FEDEX_LTL_URL || "https://apis-sandbox.fedex.com";
+const FEDEX_ACCOUNT = process.env.FEDEX_ACCOUNT_NUMBER || "";
+
+async function testShipEngine() {
+  console.log("=== SHIPENGINE LTL DIAGNOSTIC ===");
+  console.log("API Key:", SHIPENGINE_KEY ? `SET (${SHIPENGINE_KEY.length} chars, starts with ${SHIPENGINE_KEY.slice(0, 10)}...)` : "MISSING");
+  console.log("Base URL:", SHIPENGINE_URL);
+
+  if (!SHIPENGINE_KEY) {
+    console.log("SKIP — no ShipEngine key");
+    return;
+  }
+
+  // First: list connected carriers
+  try {
+    const carriersRes = await fetch(`${SHIPENGINE_URL}/v1/carriers`, {
+      headers: { "API-Key": SHIPENGINE_KEY, "Content-Type": "application/json" },
+    });
+    if (carriersRes.ok) {
+      const data = await carriersRes.json();
+      console.log(`Connected carriers: ${data.carriers?.length || 0}`);
+      for (const c of (data.carriers || [])) {
+        console.log(`  - ${c.friendly_name || c.carrier_id} (${c.carrier_id})`);
+      }
+    } else {
+      console.log("List carriers failed:", carriersRes.status, await carriersRes.text().then(t => t.slice(0, 200)));
+    }
+  } catch (e) {
+    console.log("List carriers exception:", e);
+  }
+
+  // Second: try a rate estimate
+  try {
+    const rateRes = await fetch(`${SHIPENGINE_URL}/v1/rates/estimate`, {
+      method: "POST",
+      headers: { "API-Key": SHIPENGINE_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        carrier_ids: [],
+        from_country_code: "US",
+        from_postal_code: "04901",
+        to_country_code: "US",
+        to_postal_code: "10001",
+        weight: { value: 200, unit: "pound" },
+        dimensions: { length: 48, width: 40, height: 36, unit: "inch" },
+        confirmation: "none",
+        ship_date: new Date().toISOString().slice(0, 10),
+      }),
+    });
+
+    const rateBody = await rateRes.text();
+    console.log("Rate estimate status:", rateRes.status);
+
+    if (rateRes.ok) {
+      const rates = JSON.parse(rateBody);
+      console.log(`Rate estimates: ${Array.isArray(rates) ? rates.length : "N/A"}`);
+      if (Array.isArray(rates)) {
+        for (const r of rates.slice(0, 10)) {
+          console.log(`  $${r.shipping_amount?.amount || "?"} — ${r.carrier_friendly_name || r.carrier_id} ${r.service_type || ""} (${r.delivery_days || "?"} days)`);
+        }
+      } else {
+        console.log("Response:", JSON.stringify(rates).slice(0, 500));
+      }
+    } else {
+      console.log("Rate estimate failed:", rateBody.slice(0, 500));
+    }
+  } catch (e) {
+    console.log("Rate estimate exception:", e);
+  }
+  console.log("");
+}
+
+async function testFedExLTL() {
+  console.log("=== FEDEX LTL DIAGNOSTIC ===");
+  console.log("API Key:", FEDEX_LTL_KEY ? `SET (${FEDEX_LTL_KEY.length} chars)` : "MISSING");
+  console.log("Secret:", FEDEX_LTL_SECRET ? `SET (${FEDEX_LTL_SECRET.length} chars)` : "MISSING");
+  console.log("URL:", FEDEX_LTL_URL);
+  console.log("Account:", FEDEX_ACCOUNT || "MISSING");
+
+  if (!FEDEX_LTL_KEY || !FEDEX_LTL_SECRET) {
+    console.log("SKIP — no FedEx LTL credentials");
+    return;
+  }
+
+  // Auth
+  let token = "";
+  try {
+    const authRes = await fetch(`${FEDEX_LTL_URL}/oauth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: FEDEX_LTL_KEY,
+        client_secret: FEDEX_LTL_SECRET,
+      }),
+    });
+    if (authRes.ok) {
+      const authData = await authRes.json();
+      token = authData.access_token;
+      console.log("Auth: SUCCESS (token length:", token.length + ")");
+    } else {
+      const body = await authRes.text();
+      console.log("Auth: FAILED —", authRes.status, body.slice(0, 300));
+      return;
+    }
+  } catch (e) {
+    console.log("Auth exception:", e);
+    return;
+  }
+
+  // LTL Rate request
+  const reqBody = {
+    accountNumber: { value: FEDEX_ACCOUNT },
+    requestedShipment: {
+      shipper: { address: { postalCode: "04901", countryCode: "US" } },
+      recipient: { address: { postalCode: "10001", countryCode: "US", residential: true } },
+      pickupType: "USE_SCHEDULED_PICKUP",
+      rateRequestType: ["LIST", "ACCOUNT"],
+      shippingChargesPayment: {
+        paymentType: "SENDER",
+        payor: { responsibleParty: { accountNumber: { value: FEDEX_ACCOUNT } } },
+      },
+      freightShipmentDetail: {
+        fedExFreightBillingContactAndAddress: {
+          address: { postalCode: "04901", countryCode: "US" },
+        },
+        lineItems: [{
+          freightClass: "CLASS_100",
+          weight: { units: "LB", value: 200 },
+          dimensions: { length: 48, width: 40, height: 36, units: "IN" },
+          pieces: 1,
+          description: "General merchandise",
+        }],
+      },
+    },
+  };
+
+  try {
+    const rateRes = await fetch(`${FEDEX_LTL_URL}/rate/v1/rates/quotes`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "X-locale": "en_US",
+      },
+      body: JSON.stringify(reqBody),
+    });
+
+    const rateBody = await rateRes.text();
+    console.log("Rate status:", rateRes.status);
+
+    if (rateRes.ok) {
+      const rateData = JSON.parse(rateBody);
+      const details = rateData.output?.rateReplyDetails || [];
+      console.log(`Rate: SUCCESS — ${details.length} services returned`);
+      for (const d of details) {
+        const charge = d.ratedShipmentDetails?.[0]?.totalNetCharge ?? d.ratedShipmentDetails?.[0]?.totalNetFedExCharge ?? 0;
+        const days = d.commit?.dateDetail?.dayCount || d.commit?.transitDays?.amount || "?";
+        console.log(`  $${charge} — ${d.serviceType} (${days} days)`);
+      }
+    } else {
+      console.log("Rate: FAILED");
+      console.log("ERROR:", rateBody.slice(0, 500));
+    }
+  } catch (e) {
+    console.log("Rate exception:", e);
+  }
+  console.log("");
+}
+
+async function main() {
+  console.log("========================================");
+  console.log("LEGACYLOOP LTL FREIGHT DIAGNOSTIC");
+  console.log("Test route: Waterville ME 04901 → New York NY 10001");
+  console.log("Test freight: 200 lbs, 48×40×36 in, Class 100");
+  console.log("========================================\n");
+
+  await testShipEngine();
+  await testFedExLTL();
+
+  console.log("========================================");
+  console.log("LTL DIAGNOSTIC COMPLETE");
+  console.log("========================================");
+}
+
+main();
+```
+
+Create scripts/ if needed: mkdir -p scripts
+Run: npx tsx scripts/test-ltl.ts
+PRINT THE FULL OUTPUT. This tells us what's working.
+After printing, DELETE: rm scripts/test-ltl.ts && rmdir scripts 2>/dev/null
+
+--- E2: If ShipEngine returns carriers/rates — LTL is working, no changes needed.
+--- E3: If ShipEngine returns 0 carriers — the sandbox may not have carriers connected.
+        The fallback demo carriers (XPO, Estes, Old Dominion, SAIA) will handle it.
+        Report this in the output and note "works with production key."
+--- E4: If FedEx LTL returns ACCOUNT.NUMBER.MISMATCH — expected, same sandbox issue.
+        The fallback demo carriers handle this too.
+        Report this and note "works with production credentials."
+
+--- E5: Verify LTL quote endpoint handles all three sources ---
+
+READ app/api/shipping/ltl-quote/route.ts and verify it:
+  1. Calls ShipEngine (getShipEngineRateEstimate)
+  2. Calls FedEx LTL (getFedExLTLQuote)
+  3. Falls back to Shippo demo freight (getLTLFreightQuotes)
+  4. Returns combined results with source tags
+
+If it does all four — report "LTL pipeline verified" and move on.
+If any wiring is missing — fix it within this command.
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+3. Net Profit price source changed from valuationMid to listingPrice: yes / no
+4. Net Profit commission changed from 5% to 8%: yes / no
+5. Net Profit footer formula consistent with per-row: yes / no
+6. listingPrice + shippingPreference added to center API base: yes / no
+7. EasyPost lib created (lib/shipping/easypost.ts): yes / no
+8. EasyPost wired into rates/route.ts: yes / no
+9. @easypost/api package installed OR fetch-based approach used: yes / no
+10. LTL diagnostic script created, run, output printed: yes / no
+11. LTL diagnostic script deleted: yes / no
+12. LTL pipeline verified (ShipEngine + FedEx + fallback): yes / no
+13. All locked files untouched: yes / no
+14. inline style={{}} throughout — no Tailwind, no className: yes / no
+15. Always-dark panels use hardcoded colors: yes / no
+16. Theme-aware surfaces use CSS variables: yes / no
+17. Light mode tested — no broken contrast: yes / no
+18. Dark mode tested — all elements visible: yes / no
+19. npx tsc --noEmit: 0 errors
+20. npm run build: pass
+21. CHECKPOINT post-change: pass
+22. Dev server: localhost:3000
+
+MANUAL TESTS:
+23. Start dev server, open any item, trigger shipping estimate
+24. Check terminal for [easypost] backup rate count
+25. Check terminal for [shipping/rates] showing 3 sources
+26. Verify Net Profit shows realistic numbers (not same as item price)
+27. Open Freight/LTL tab, submit a freight quote
+28. Verify freight tab shows carriers with source badges
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+NET PROFIT FIX:
+- Price source: valuationMid → listingPrice || soldPrice || valuationMid: [yes / no]
+- Commission: 5% → 8%: [yes / no]
+- Footer formula matches per-row: [yes / no]
+- listingPrice added to center API: [yes / no]
+- shippingPreference added to center API: [yes / no]
+
+EASYPOST INTEGRATION:
+- lib/shipping/easypost.ts created: [yes / no]
+- Functions: verifyAddress, getEasyPostRates, checkResidential: [yes / no]
+- Wired into rates/route.ts as third source: [yes / no]
+- npm package installed: [yes / npm not available — using fetch]
+- Test result: [X rates returned / API error / not configured]
+
+LTL FREIGHT DIAGNOSTIC:
+[Paste the COMPLETE output of npx tsx scripts/test-ltl.ts here]
+
+SHIPENGINE STATUS:
+- Connected carriers: [count + list]
+- Rate estimate: [success with X rates / failed / 0 carriers]
+- Conclusion: [working / sandbox limitation / needs production key]
+
+FEDEX LTL STATUS:
+- Auth: [pass / fail]
+- Rate request: [pass / fail / error code]
+- Conclusion: [working / ACCOUNT.NUMBER.MISMATCH / needs production credentials]
+
+LTL PIPELINE:
+- ltl-quote route calls ShipEngine: [yes / no]
+- ltl-quote route calls FedEx LTL: [yes / no]
+- ltl-quote route calls Shippo fallback: [yes / no]
+- Pipeline verified: [yes / needs fix]
+
+LOGGING:
+- easypost.ts: [yes / no]
+- rates/route.ts updated: [yes / no]
+
+LIGHT MODE: [clean / issues found]
+DARK MODE: [clean / issues found]
+ALWAYS-DARK PANELS: [hardcoded colors used / issues]
+
+EXISTING LOGIC UNTOUCHED:
+— [List every locked file verified as untouched]
+
+FLAGS FROM CLAUDE CODE:
+— [All gaps, risks, missed data collection, out-of-scope items]
+— [EasyPost test token behavior]
+— [ShipEngine sandbox limitations]
+— [FedEx LTL sandbox limitations]
+— [Any new carry-forward items]
+
+Files modified: [list all — exact paths]
+New files created: [list all or 'none']
+Schema changes needed: [list or 'none']
+Build: [pass / fail]
+TypeScript: [0 errors / list all errors]
+
+CHECKPOINT after: [pass / issue]
+Dev server: localhost:3000
+
+IF POST-CHECKPOINT FAILS:
+REVERT IMMEDIATELY.
+Report exactly what broke and what was touched.
+Do NOT proceed until clean.
+
+Command Template v11 | LegacyLoop | March 24, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command | Paste in full — never abbreviate

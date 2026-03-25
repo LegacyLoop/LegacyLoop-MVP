@@ -89,7 +89,7 @@ async function fetchShippoRates(
 
   const ALLOWED_CARRIERS = ["usps", "ups", "fedex"];
 
-  return (data.rates || [])
+  const mapped = (data.rates || [])
     .filter((r: any) => ALLOWED_CARRIERS.includes(r.provider?.toLowerCase()))
     .map((r: any) => ({
       carrier: r.provider,
@@ -98,7 +98,11 @@ async function fetchShippoRates(
       currency: r.currency || "USD",
       estimatedDays: r.estimated_days || r.days || 5,
     }))
+    .filter((r: ShippingRate) => r.rate > 0)
     .sort((a: ShippingRate, b: ShippingRate) => a.rate - b.rate);
+
+  console.log(`[shippo] ${mapped.length} live rates:`, mapped.map((r: ShippingRate) => `${r.carrier} ${r.service} $${r.rate}`).join(" | "));
+  return mapped;
 }
 
 // ─── Demo rates ─────────────────────────────────────────────────────────────
@@ -128,39 +132,57 @@ function getDemoRates(
   const rates: ShippingRate[] = [];
 
   if (isSmall) {
-    // Small items
+    // Small items — 14 services across USPS/UPS/FedEx
     const base = 6 + w * 1.5;
     rates.push(
-      { carrier: "USPS", service: "Priority Mail", rate: round(base * 1.4 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 2 : 3, isDemo: true },
       { carrier: "USPS", service: "Ground Advantage", rate: round(base * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+      { carrier: "USPS", service: "First Class Package", rate: round(base * 0.85 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+      { carrier: "USPS", service: "Priority Mail", rate: round(base * 1.4 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 2 : 3, isDemo: true },
+      { carrier: "USPS", service: "Priority Mail Express", rate: round(base * 3.0 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
       { carrier: "UPS", service: "Ground", rate: round(base * 1.6 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "UPS", service: "3 Day Select", rate: round(base * 2.2 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "UPS", service: "2nd Day Air", rate: round(base * 2.5 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "UPS", service: "Next Day Air Saver", rate: round(base * 3.4 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+      { carrier: "UPS", service: "Next Day Air", rate: round(base * 4.0 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
       { carrier: "FedEx", service: "Ground", rate: round(base * 1.7 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "FedEx", service: "Home Delivery", rate: round(base * 1.8 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+      { carrier: "FedEx", service: "Express Saver", rate: round(base * 2.3 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "FedEx", service: "2Day", rate: round(base * 2.8 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "FedEx", service: "Standard Overnight", rate: round(base * 3.8 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
     );
   } else if (isLarge) {
-    // Large/furniture items — no USPS Priority
+    // Large/furniture items — 11 services across USPS/UPS/FedEx
     const base = 15 + w * 0.8;
     rates.push(
       { carrier: "USPS", service: "Parcel Select Ground", rate: round(base * 1.1 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 5 : dist < 300 ? 7 : 10, isDemo: true },
+      { carrier: "USPS", service: "Priority Mail", rate: round(base * 1.5 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 2 : 3, isDemo: true },
       { carrier: "UPS", service: "Ground", rate: round(base * 1.3 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 4 : dist < 300 ? 6 : 8, isDemo: true },
       { carrier: "UPS", service: "3 Day Select", rate: round(base * 2.0 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "UPS", service: "2nd Day Air", rate: round(base * 2.5 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "UPS", service: "Next Day Air Saver", rate: round(base * 3.5 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
       { carrier: "FedEx", service: "Ground", rate: round(base * 1.35 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 4 : dist < 300 ? 6 : 8, isDemo: true },
       { carrier: "FedEx", service: "Home Delivery", rate: round(base * 1.45 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+      { carrier: "FedEx", service: "Express Saver", rate: round(base * 2.8 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "FedEx", service: "2Day", rate: round(base * 2.8 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "FedEx", service: "Standard Overnight", rate: round(base * 3.8 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
     );
-    if (distFactor < 1.5) {
-      rates.push(
-        { carrier: "FedEx", service: "Express Saver", rate: round(base * 2.8 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
-      );
-    }
   } else {
-    // Medium items
+    // Medium items — 13 services across USPS/UPS/FedEx
     const base = 10 + w * 1.0;
     rates.push(
-      { carrier: "USPS", service: "Priority Mail", rate: round(base * 1.2 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 2 : 3, isDemo: true },
       { carrier: "USPS", service: "Ground Advantage", rate: round(base * 0.85 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "USPS", service: "Priority Mail", rate: round(base * 1.2 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 2 : 3, isDemo: true },
+      { carrier: "USPS", service: "Priority Mail Express", rate: round(base * 2.8 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
       { carrier: "UPS", service: "Ground", rate: round(base * 1.4 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
       { carrier: "UPS", service: "3 Day Select", rate: round(base * 2.1 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "UPS", service: "2nd Day Air", rate: round(base * 2.4 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "UPS", service: "Next Day Air Saver", rate: round(base * 3.2 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+      { carrier: "UPS", service: "Next Day Air", rate: round(base * 3.8 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
       { carrier: "FedEx", service: "Ground", rate: round(base * 1.45 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
       { carrier: "FedEx", service: "Home Delivery", rate: round(base * 1.55 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+      { carrier: "FedEx", service: "Express Saver", rate: round(base * 2.3 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "FedEx", service: "2Day", rate: round(base * 2.6 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "FedEx", service: "Standard Overnight", rate: round(base * 3.5 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
     );
   }
 
@@ -227,24 +249,56 @@ export function getLTLFreightQuotes(
 // ─── Public API ─────────────────────────────────────────────────────────────
 
 /**
- * Get shipping rates. Uses Shippo API if configured, otherwise demo rates.
+ * Get shipping rates. Uses Shippo API if configured, supplemented
+ * with demo rates for any carrier+service combos Shippo didn't cover.
+ * This ensures users always see comprehensive carrier options (11-14 services)
+ * with real prices where available and smart estimates for the rest.
  */
 export async function getShippingRates(
   from: ShippingAddress,
   to: ShippingAddress,
   parcel: Parcel
 ): Promise<{ rates: ShippingRate[]; isDemo: boolean }> {
+  // Always generate demo rates — used as supplement or standalone fallback
+  const demoRates = getDemoRates(from, to, parcel);
+
   if (SHIPPO_TOKEN && SHIPPO_TOKEN !== "your_shippo_api_token_here") {
     try {
-      const rates = await fetchShippoRates(from, to, parcel);
-      console.log(`[shippo] Got ${rates.length} rates from Shippo API (${from.zip} → ${to.zip}, ${parcel.weight}lbs)`);
-      return { rates, isDemo: false };
+      const liveRates = await fetchShippoRates(from, to, parcel);
+      console.log(`[shippo] Got ${liveRates.length} live rates from Shippo API (${from.zip} → ${to.zip}, ${parcel.weight}lbs)`);
+
+      if (liveRates.length === 0) {
+        console.log("[shippo] Shippo returned 0 rates — using full demo set");
+        return { rates: demoRates, isDemo: true };
+      }
+
+      // Build a set of carrier+service keys from live rates
+      const liveKeys = new Set(
+        liveRates.map((r) => `${r.carrier.toLowerCase()}_${r.service.toLowerCase()}`)
+      );
+
+      // Supplement: add demo rates for any service NOT covered by live rates
+      const supplemental = demoRates.filter(
+        (d) => !liveKeys.has(`${d.carrier.toLowerCase()}_${d.service.toLowerCase()}`)
+      );
+
+      const combined = [
+        ...liveRates,         // Real prices — no isDemo flag
+        ...supplemental,      // Estimated prices — already have isDemo: true
+      ].sort((a, b) => a.rate - b.rate);
+
+      console.log(
+        `[shippo] Hybrid rates: ${liveRates.length} live + ${supplemental.length} estimated = ${combined.length} total`
+      );
+
+      // isDemo: false when we have ANY live rates (hybrid mode)
+      return { rates: combined, isDemo: false };
     } catch (err) {
       console.error("[shippo] Shippo API failed, falling back to demo rates:", err);
-      return { rates: getDemoRates(from, to, parcel), isDemo: true };
+      return { rates: demoRates, isDemo: true };
     }
   }
 
   console.log("[shippo] Using demo rates — Shippo API token not configured");
-  return { rates: getDemoRates(from, to, parcel), isDemo: true };
+  return { rates: demoRates, isDemo: true };
 }

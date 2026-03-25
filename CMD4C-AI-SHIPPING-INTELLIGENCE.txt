@@ -1,0 +1,1169 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 24, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts — LOCKED (but READ its output schema carefully — it defines the AI shipping fields)
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping —
+✓ lib/shipping/shippo.ts — LOCKED
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/easypost.ts — LOCKED
+✓ lib/shipping/freight-estimates.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+✓ lib/shipping/saved-quotes.ts — LOCKED (created by CMD4B if run first)
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/user-events.ts
+
+— Enrichment —
+✓ lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— eBay Adapter (when created) —
+✓ lib/adapters/ebay.ts — LOCKED after creation
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/analyze/[itemId]/route.ts — EXTEND for shipping intelligence population
+✓ EXCEPTION: app/api/shipping/** — READ + EXTEND for shipping work
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED except surgical unlocks for bot upgrades
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — EXTEND ONLY for new shipping fields
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - prisma/schema.prisma (ADD 5 AI shipping intelligence fields to Item model — no removal, no renaming)
+  - lib/data/populate-intelligence.ts (EXTEND populateFromAnalysis to extract and save AI shipping data)
+  - app/api/analyze/[itemId]/route.ts (ADD shipping intelligence population after AI analysis — lines 349-362 area)
+  - lib/shipping/package-suggestions.ts (EXTEND suggestPackage to use AI shipping_difficulty for fragility, EXTEND suggestShippingMethod to use AI difficulty)
+  - lib/enrichment/item-context.ts (ADD shipping intelligence fields to enrichment context)
+  - app/items/[id]/ShippingPanel.tsx (ADD AI Shipping Intelligence card — display shipping_difficulty, shipping_notes, packing tips, confidence)
+  - app/shipping/ShippingCenterClient.tsx (ADD AI shipping difficulty badge on item cards, ADD packing guidance display, EXTEND freight tab auto-fill from AI dims)
+  - app/api/shipping/center/route.ts (EXTEND item enrichment to include AI shipping intelligence fields)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+Data collection for this command:
+  - Log AI shipping intelligence extraction: weight, dims, difficulty, notes
+  - Log fragility auto-detection decisions
+  - Log shipping method recommendations with AI reasoning
+  - Console.log pattern for all
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+This command follows build pattern EXACTLY:
+  1. Database: Add AI shipping fields to Item schema
+  2. API: Extend analyze route to populate fields
+  3. Enrichment: Add shipping intelligence to enrichment context
+  4. UI: Display AI shipping intelligence in ShippingPanel + ShippingCenter
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• AI analysis via lib/adapters/ai.ts returns: weight_estimate_lbs, shipping_difficulty, shipping_notes, dimensions_estimate
+• These AI fields are currently stored ONLY in aiResult.rawJson — never persisted to Item model
+• populateFromAnalysis() in populate-intelligence.ts saves category, brand, era, material, maker — but NOTHING shipping-related
+• prisma/schema.prisma Item model HAS: shippingWeight, shippingLength, shippingWidth, shippingHeight, isFragile, shippingPreference
+• But NONE of these are populated from AI analysis — they are user-entered only
+• suggestPackage() uses AI data as FALLBACK when reading from rawJson on-demand
+• suggestShippingMethod() uses category + weight heuristics — IGNORES AI shipping_difficulty
+• Shipping Center API (/api/shipping/center) enriches items with aiBox, aiBoxLabel, aiBoxDims, aiEstWeight, aiPackingTips
+• ShipBot exists (app/bots/shipbot/) but is a manual tool, not an automated pipeline
+
+AI SHIPPING INTELLIGENCE GAP ANALYSIS:
+
+The AI generates 4 shipping-relevant fields during item analysis:
+
+1. weight_estimate_lbs (number | null)
+   - AI's best guess at item weight in pounds
+   - Currently: stored in rawJson, used as FALLBACK in estimate API
+   - Problem: never saved to Item.shippingWeight, so every request must re-parse rawJson
+   - Fix: Persist to new Item.aiWeightLbs field
+
+2. shipping_difficulty (string | null) — "Easy", "Moderate", "Difficult", "Freight only"
+   - AI's assessment of how hard this item is to ship
+   - Currently: COMPLETELY UNUSED. Stored in rawJson, never read, never displayed
+   - Problem: This is the most valuable AI shipping signal and we throw it away
+   - Fix: Persist to new Item.aiShippingDifficulty field, use for fragility, method routing, UI badges
+
+3. shipping_notes (string | null)
+   - Specific packing and shipping advice from AI
+   - Examples: "Ship on edge", "Drain fuel before shipping", "Wrap each piece individually"
+   - Currently: COMPLETELY UNUSED in UI. Stored in rawJson, sometimes passed to suggestPackage but never displayed
+   - Problem: This is personalized packing intelligence that goes to waste
+   - Fix: Persist to new Item.aiShippingNotes field, display prominently in ShippingPanel
+
+4. dimensions_estimate (string)
+   - AI's dimension estimate as text: "34 x 24 x 30"
+   - Currently: Stored in rawJson, parsed on-demand by parseDimensions()
+   - Problem: Re-parsed every request, never split into L/W/H fields
+   - Fix: Parse once in analyze route, persist to Item.aiDimsEstimate as text + parsed into shippingLength/Width/Height if empty
+
+WHAT THIS COMMAND ACHIEVES:
+After this command, every item that goes through AI analysis will have its shipping
+intelligence automatically extracted and persisted. The UI will display this intelligence.
+The shipping method recommendation will be smarter. Fragility will be AI-driven.
+Packing guidance will be visible. The shipping system goes from "category heuristics"
+to "AI-informed shipping intelligence."
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Add new fields to prisma schema (Item model only, 5 fields max)
+— Extend populateFromAnalysis with shipping extraction
+— Add shipping fields to enrichment context
+— Display AI shipping intelligence in UI (cards, badges, tips)
+— Use AI shipping_difficulty to improve fragility detection
+— Use AI shipping_difficulty to improve shipping method recommendation
+— Auto-fill freight form fields from AI dimensions
+— Add subtle animations for AI intelligence indicators
+— Add console.log for shipping intelligence data collection
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Modify the AI adapter output schema (lib/adapters/ai.ts is LOCKED)
+— Change how AI analysis is triggered
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic (except ADD-ONLY to megabot prompts if needed)
+— Deviate from inline style={{}}
+— Change business or pricing logic
+— Remove or rebuild existing functionality
+— Add new npm dependencies
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+No new env variables in this command. AI keys already configured.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+YES — New fields on Item model. After adding fields to schema.prisma:
+
+npx prisma db push
+
+This is a NON-DESTRUCTIVE additive migration. New nullable fields only.
+No data loss. No column removal. Safe on existing data.
+
+IMPORTANT: Run `npx prisma db push` AFTER modifying schema.prisma.
+Then run `npx prisma generate` to update the Prisma client.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+Shipping Center has 5 tabs: preSale (Estimates), readyToShip (Ready to Ship),
+shipped (Tracking), freight (Freight/LTL), pickup (Local Pickup).
+
+Item Dashboard ShippingPanel has:
+  - Ship It tab (parcel + freight) vs Local Pickup tab
+  - Pre-sale mode: rates, carrier selection, freight quotes
+  - Post-sale mode: PostSaleWizard (parcel), LtlCompletionFlow, PickupCompletionFlow
+
+AI SHIPPING INTELLIGENCE DISPLAY STRATEGY:
+
+The goal is NOT to add more noise. The goal is to surface AI intelligence WHERE
+it matters, WHEN it matters, in a way that helps the user make better decisions.
+
+WHERE to show AI shipping intelligence:
+
+1. ShippingPanel (Item Dashboard) — "AI Shipping Brief" card
+   - Shows ABOVE the rate cards, BELOW the package suggestion
+   - Compact: one card with difficulty badge + weight estimate + packing notes
+   - Only visible when AI data exists (progressive disclosure)
+   - Senior-friendly: clear labels, big enough text, obvious meaning
+
+2. Shipping Center — difficulty badge on item cards
+   - Each item in Estimates/Ready to Ship gets a small badge: "Easy" / "Moderate" / "Difficult" / "Freight"
+   - Color-coded: Easy=green, Moderate=amber, Difficult=red, Freight=purple
+   - Helps operators quickly triage which items need attention
+
+3. Freight tab — auto-fill weight + dimensions from AI
+   - When user opens freight quote form, pre-fill from AI if no user-entered values
+   - Saves time, reduces errors, especially for seniors who may not know item weight
+
+4. Packing guidance — visible alongside package suggestion
+   - AI shipping_notes displayed as bullet points
+   - Combined with existing aiPackingTips from suggestPackage()
+   - Shown in a clean "AI Packing Guide" mini-section
+
+DESIGN RULES:
+- AI intelligence indicators use 🤖 icon (already used in freight class calculator)
+- Difficulty badges: same size/style as existing badges (0.5rem, bold, pill shape)
+- Easy = rgba(76,175,80,0.15) / #4caf50
+- Moderate = rgba(255,152,0,0.15) / #ff9800
+- Difficult = rgba(244,67,54,0.15) / #f44336
+- Freight Only = rgba(156,39,176,0.15) / #9c27b0
+- Packing notes: var(--text-muted), 0.72rem, bullet list, max 4 items shown
+- AI confidence: shown as small indicator (High/Medium/Low) — only if confidence < 0.7
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — AI SHIPPING INTELLIGENCE: PERSIST, ENRICH, DISPLAY
+
+================================================================================
+
+This command does FIVE things. Strategic. Tactical. Foundational.
+
+TASK 1 — ADD AI SHIPPING FIELDS TO ITEM MODEL (prisma/schema.prisma)
+  Add 5 new nullable fields to the Item model:
+    aiWeightLbs          Float?    // AI-estimated weight in pounds
+    aiDimsEstimate       String?   // Raw dimension text from AI: "34 x 24 x 30"
+    aiShippingDifficulty String?   // "Easy", "Moderate", "Difficult", "Freight only"
+    aiShippingNotes      String?   // Packing and shipping guidance from AI
+    aiShippingConfidence Float?    // Confidence score for shipping estimates (0.0-1.0)
+
+  IMPORTANT: Add these AFTER the existing isFragile and shippingPreference fields.
+  These are nullable, additive only. No renames, no removals.
+
+  After adding: run `npx prisma db push` and `npx prisma generate`.
+
+TASK 2 — PERSIST AI SHIPPING DATA AFTER ANALYSIS (populate-intelligence.ts + analyze route)
+
+  A) In lib/data/populate-intelligence.ts — EXTEND populateFromAnalysis():
+
+  After the existing field extraction (category, brand, era, material, etc.),
+  ADD shipping intelligence extraction:
+
+  // ─── Shipping Intelligence ───────────────────────────────────────
+  const shippingUpdates: Record<string, any> = {};
+
+  // Weight estimate
+  const aiWeight = analysis.weight_estimate_lbs;
+  if (aiWeight && typeof aiWeight === "number" && aiWeight > 0) {
+    shippingUpdates.aiWeightLbs = Math.round(aiWeight * 10) / 10;
+    // Also populate shippingWeight if user hasn't set it
+    const existing = await prisma.item.findUnique({ where: { id: itemId }, select: { shippingWeight: true } });
+    if (!existing?.shippingWeight) {
+      shippingUpdates.shippingWeight = shippingUpdates.aiWeightLbs;
+    }
+  }
+
+  // Dimensions estimate
+  const aiDims = analysis.dimensions_estimate;
+  if (aiDims && typeof aiDims === "string") {
+    shippingUpdates.aiDimsEstimate = aiDims;
+    // Parse into L/W/H if user hasn't set them
+    const dimMatch = aiDims.match(/(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)/);
+    if (dimMatch) {
+      const existing = await prisma.item.findUnique({
+        where: { id: itemId },
+        select: { shippingLength: true, shippingWidth: true, shippingHeight: true },
+      });
+      if (!existing?.shippingLength) shippingUpdates.shippingLength = parseFloat(dimMatch[1]);
+      if (!existing?.shippingWidth) shippingUpdates.shippingWidth = parseFloat(dimMatch[2]);
+      if (!existing?.shippingHeight) shippingUpdates.shippingHeight = parseFloat(dimMatch[3]);
+    }
+  }
+
+  // Shipping difficulty
+  const aiDifficulty = analysis.shipping_difficulty;
+  if (aiDifficulty && typeof aiDifficulty === "string") {
+    shippingUpdates.aiShippingDifficulty = aiDifficulty;
+    // Auto-set isFragile if AI says Difficult and not already set
+    if (aiDifficulty === "Difficult") {
+      const existing = await prisma.item.findUnique({ where: { id: itemId }, select: { isFragile: true } });
+      if (!existing?.isFragile) shippingUpdates.isFragile = true;
+    }
+  }
+
+  // Shipping notes
+  const aiNotes = analysis.shipping_notes;
+  if (aiNotes && typeof aiNotes === "string" && aiNotes.length > 3) {
+    shippingUpdates.aiShippingNotes = aiNotes;
+  }
+
+  // Confidence
+  const confidence = analysis.confidence;
+  if (confidence && typeof confidence === "number") {
+    shippingUpdates.aiShippingConfidence = Math.round(confidence * 100) / 100;
+  }
+
+  // Persist shipping intelligence
+  if (Object.keys(shippingUpdates).length > 0) {
+    await prisma.item.update({
+      where: { id: itemId },
+      data: shippingUpdates,
+    });
+    console.log(`[shipping-intel] Persisted for ${itemId}:`,
+      Object.entries(shippingUpdates).map(([k, v]) => `${k}=${v}`).join(", ")
+    );
+  }
+
+  B) In app/api/analyze/[itemId]/route.ts — NO CODE CHANGE NEEDED.
+  populateFromAnalysis() is already called at line 185. The extended function
+  will automatically extract and save shipping intelligence.
+  BUT: Read this file to confirm the call exists and verify the analysis object
+  structure matches what we're extracting.
+
+TASK 3 — ADD SHIPPING INTELLIGENCE TO ENRICHMENT CONTEXT (item-context.ts)
+
+  In lib/enrichment/item-context.ts:
+
+  A) Find the ItemEnrichmentContext interface (or equivalent type).
+  ADD shipping intelligence fields:
+
+  // Shipping Intelligence
+  aiShippingDifficulty?: string | null;
+  aiShippingNotes?: string | null;
+  aiWeightLbs?: number | null;
+  aiDimsEstimate?: string | null;
+  aiShippingConfidence?: number | null;
+  isFragile?: boolean;
+
+  B) Find where the context is built from Item data.
+  ADD extraction of the new fields:
+
+  aiShippingDifficulty: item.aiShippingDifficulty ?? null,
+  aiShippingNotes: item.aiShippingNotes ?? null,
+  aiWeightLbs: item.aiWeightLbs ?? null,
+  aiDimsEstimate: item.aiDimsEstimate ?? null,
+  aiShippingConfidence: item.aiShippingConfidence ?? null,
+  isFragile: item.isFragile ?? false,
+
+  C) Find the Prisma select/include for item fetching.
+  ADD the new fields to the select:
+
+  aiWeightLbs: true,
+  aiDimsEstimate: true,
+  aiShippingDifficulty: true,
+  aiShippingNotes: true,
+  aiShippingConfidence: true,
+  isFragile: true,
+
+TASK 4 — UPGRADE PACKAGE SUGGESTIONS WITH AI INTELLIGENCE (package-suggestions.ts)
+
+  A) In suggestPackage() — use AI shipping_difficulty for fragility:
+
+  FIND where isLikelyFragile() is called (around line 206):
+    const fragile = template.isFragile || isLikelyFragile(cat, material);
+
+  REPLACE with:
+    const aiDifficult = shippingNotes?.toLowerCase().includes("fragile") ||
+      shippingNotes?.toLowerCase().includes("careful") ||
+      shippingNotes?.toLowerCase().includes("delicate");
+    const fragile = template.isFragile || isLikelyFragile(cat, material) || aiDifficult;
+
+  NOTE: We can't pass shipping_difficulty directly to suggestPackage() without
+  changing its signature. Instead, we use the existing shippingNotes parameter
+  (5th argument) which DOES get passed. The AI shipping_notes often contains
+  keywords like "fragile", "handle with care", "delicate" that we can detect.
+
+  B) In suggestShippingMethod() — use weight from AI:
+
+  FIND the weight thresholds (around lines 268-275):
+    if (weight > 150) return "local_recommended"
+    if (weight > 70 || maxDimension > 48) return "freight"
+
+  These already work with weight. No change needed IF the weight is populated
+  from AI (which Task 2 handles by persisting to shippingWeight).
+
+  The improvement is UPSTREAM: Task 2 ensures weight is populated from AI
+  so suggestShippingMethod receives accurate data instead of category defaults.
+
+TASK 5 — DISPLAY AI SHIPPING INTELLIGENCE IN UI
+
+  A) ShippingPanel.tsx — "AI Shipping Brief" card
+
+  This is the flagship display of AI shipping intelligence.
+  Position: ABOVE the carrier rate cards, BELOW any existing package suggestion display.
+
+  The card shows:
+  1. Difficulty badge (colored pill)
+  2. AI weight estimate with confidence
+  3. AI dimension estimate
+  4. Packing notes (from aiShippingNotes)
+  5. Combined with existing aiPackingTips
+
+  FIND where the ShippingPanel receives its props or data.
+  The panel receives item data including new AI fields.
+
+  FIND where the panel renders the pre-sale shipping view (before rate cards).
+
+  INSERT the AI Shipping Brief card:
+
+  {/* AI Shipping Intelligence */}
+  {(item.aiShippingDifficulty || item.aiShippingNotes || item.aiWeightLbs) && (
+    <div style={{
+      marginBottom: "0.75rem", borderRadius: "0.75rem",
+      background: "rgba(0,188,212,0.03)", border: "1px solid rgba(0,188,212,0.12)",
+      padding: "0.75rem 0.85rem",
+    }}>
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        marginBottom: "0.5rem",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+          <span style={{ fontSize: "0.85rem" }}>🤖</span>
+          <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)" }}>
+            AI Shipping Brief
+          </span>
+        </div>
+        {item.aiShippingDifficulty && (() => {
+          const d = item.aiShippingDifficulty;
+          const colors: Record<string, { bg: string; text: string }> = {
+            "Easy": { bg: "rgba(76,175,80,0.15)", text: "#4caf50" },
+            "Moderate": { bg: "rgba(255,152,0,0.15)", text: "#ff9800" },
+            "Difficult": { bg: "rgba(244,67,54,0.15)", text: "#f44336" },
+            "Freight only": { bg: "rgba(156,39,176,0.15)", text: "#9c27b0" },
+          };
+          const c = colors[d] || colors["Moderate"];
+          return (
+            <span style={{
+              fontSize: "0.55rem", fontWeight: 700, padding: "2px 8px",
+              borderRadius: "9999px", background: c.bg, color: c.text,
+              textTransform: "uppercase", letterSpacing: "0.04em",
+            }}>
+              {d === "Freight only" ? "FREIGHT ONLY" : d.toUpperCase()}
+            </span>
+          );
+        })()}
+      </div>
+
+      {/* Quick stats row */}
+      <div style={{ display: "flex", gap: "1rem", marginBottom: "0.4rem", flexWrap: "wrap" }}>
+        {item.aiWeightLbs && (
+          <div>
+            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Est. Weight</div>
+            <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>
+              {item.aiWeightLbs} lbs
+              {item.aiShippingConfidence && item.aiShippingConfidence < 0.7 && (
+                <span style={{ fontSize: "0.5rem", color: "#ff9800", marginLeft: "0.2rem" }}>~est</span>
+              )}
+            </div>
+          </div>
+        )}
+        {item.aiDimsEstimate && (
+          <div>
+            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Est. Dimensions</div>
+            <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>
+              {item.aiDimsEstimate}
+            </div>
+          </div>
+        )}
+        {item.isFragile && (
+          <div>
+            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Handling</div>
+            <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#f44336" }}>
+              ⚠️ FRAGILE
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Packing notes */}
+      {item.aiShippingNotes && (
+        <div style={{
+          padding: "0.4rem 0.6rem", borderRadius: "0.4rem",
+          background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.08)",
+          fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5,
+        }}>
+          <span style={{ fontWeight: 600, color: "var(--accent)", fontSize: "0.65rem" }}>PACKING: </span>
+          {item.aiShippingNotes}
+        </div>
+      )}
+    </div>
+  )}
+
+  NOTE: The data for these fields comes through the item data passed to ShippingPanel.
+  You need to verify HOW ShippingPanel gets item data:
+  - It likely comes from ItemDashboardPanels.tsx which fetches item data
+  - The API route that fetches item data needs to include the new fields
+  - Check what Prisma select is used and add the new fields
+
+  B) ShippingCenterClient.tsx — Difficulty badges on item cards
+
+  In the Shipping Center, items appear as cards in the Estimates and Ready to Ship tabs.
+
+  FIND where item cards are rendered in PreSaleTab and ReadyToShipTab.
+  Each card shows item name, weight, dimensions, etc.
+
+  ADD a difficulty badge after the item name:
+
+  {item.aiShippingDifficulty && (() => {
+    const d = item.aiShippingDifficulty;
+    const colors: Record<string, { bg: string; text: string }> = {
+      "Easy": { bg: "rgba(76,175,80,0.12)", text: "#4caf50" },
+      "Moderate": { bg: "rgba(255,152,0,0.12)", text: "#ff9800" },
+      "Difficult": { bg: "rgba(244,67,54,0.12)", text: "#f44336" },
+      "Freight only": { bg: "rgba(156,39,176,0.12)", text: "#9c27b0" },
+    };
+    const c = colors[d] || colors["Moderate"];
+    return (
+      <span style={{
+        fontSize: "0.48rem", fontWeight: 700, padding: "1px 5px",
+        borderRadius: "9999px", background: c.bg, color: c.text,
+      }}>
+        {d === "Freight only" ? "FREIGHT" : d.toUpperCase()}
+      </span>
+    );
+  })()}
+
+  C) ShippingCenterClient.tsx — Freight tab auto-fill from AI
+
+  In FreightTab, the form fields default to:
+    weight: heavyItem?.weight ? String(heavyItem.weight) : ""
+    length: "48", width: "40", height: "36" (hardcoded defaults)
+
+  IMPROVE: If AI data exists, use it:
+
+  weight: heavyItem?.weight ? String(heavyItem.weight) :
+    (heavyItem?.aiWeightLbs ? String(heavyItem.aiWeightLbs) : ""),
+  length: heavyItem?.length ? String(heavyItem.length) :
+    (heavyItem?.aiDimsEstimate ? parseDimsFromAI(heavyItem.aiDimsEstimate, "length") : "48"),
+  width: heavyItem?.width ? String(heavyItem.width) :
+    (heavyItem?.aiDimsEstimate ? parseDimsFromAI(heavyItem.aiDimsEstimate, "width") : "40"),
+  height: heavyItem?.height ? String(heavyItem.height) :
+    (heavyItem?.aiDimsEstimate ? parseDimsFromAI(heavyItem.aiDimsEstimate, "height") : "36"),
+
+  ADD a helper function in FreightTab:
+
+  function parseDimsFromAI(dims: string, part: "length" | "width" | "height"): string {
+    const match = dims.match(/(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)/);
+    if (!match) return part === "length" ? "48" : part === "width" ? "40" : "36";
+    return part === "length" ? match[1] : part === "width" ? match[2] : match[3];
+  }
+
+  If AI data pre-fills the form, show a small indicator:
+
+  {heavyItem?.aiDimsEstimate && !heavyItem?.length && (
+    <div style={{
+      fontSize: "0.6rem", color: "var(--accent)", fontStyle: "italic", marginBottom: "0.3rem",
+    }}>
+      🤖 Dimensions auto-filled from AI analysis. Verify before quoting.
+    </div>
+  )}
+
+  D) Shipping Center API — Include AI fields in enrichment
+
+  In app/api/shipping/center/route.ts:
+
+  FIND the Prisma query that fetches items for the Shipping Center.
+  ADD the new fields to the select/include:
+
+  aiWeightLbs: true,
+  aiDimsEstimate: true,
+  aiShippingDifficulty: true,
+  aiShippingNotes: true,
+  aiShippingConfidence: true,
+  isFragile: true,
+
+  FIND where the enriched item object is built for the response.
+  ADD:
+
+  aiShippingDifficulty: (item as any).aiShippingDifficulty ?? null,
+  aiShippingNotes: (item as any).aiShippingNotes ?? null,
+  aiWeightLbs: (item as any).aiWeightLbs ?? null,
+  aiDimsEstimate: (item as any).aiDimsEstimate ?? null,
+
+Files modified:
+  - prisma/schema.prisma (5 new fields on Item)
+  - lib/data/populate-intelligence.ts (shipping intelligence extraction)
+  - lib/enrichment/item-context.ts (shipping fields in enrichment context)
+  - lib/shipping/package-suggestions.ts (AI-driven fragility improvement)
+  - app/api/shipping/center/route.ts (include AI fields in enrichment response)
+  - app/items/[id]/ShippingPanel.tsx (AI Shipping Brief card)
+  - app/shipping/ShippingCenterClient.tsx (difficulty badges + freight auto-fill)
+
+Expected output:
+  - New Item fields: aiWeightLbs, aiDimsEstimate, aiShippingDifficulty, aiShippingNotes, aiShippingConfidence
+  - After ANY item is analyzed: AI shipping data automatically persisted
+  - shippingWeight auto-populated from AI if user hasn't entered it
+  - shippingLength/Width/Height auto-populated from AI dimensions if empty
+  - isFragile auto-set when AI says "Difficult"
+  - Enrichment context includes shipping intelligence for downstream bots
+  - ShippingPanel shows "AI Shipping Brief" card with difficulty, weight, dims, packing notes
+  - Shipping Center shows difficulty badges on item cards
+  - Freight tab auto-fills weight + dims from AI data
+  - All existing functionality preserved — AI data is additive, never overrides user-entered data
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n prisma/schema.prisma | grep -A3 'isFragile\|shippingPreference\|shippingWeight\|shippingLength'
+   Focus: Where the new fields should be added. Find exact line numbers.
+
+2. cat -n lib/adapters/ai.ts | sed -n '90,115p'
+   Focus: The AI output schema — confirm field names: weight_estimate_lbs, shipping_difficulty, shipping_notes, dimensions_estimate
+
+3. cat -n lib/data/populate-intelligence.ts | sed -n '1,60p'
+   Focus: Existing populateFromAnalysis function — where to add shipping extraction.
+
+4. cat -n lib/enrichment/item-context.ts | sed -n '30,70p'
+   Focus: ItemEnrichmentContext interface — where to add shipping fields.
+
+5. cat -n lib/enrichment/item-context.ts | sed -n '75,100p'
+   Focus: Prisma select and context building — where new fields go.
+
+6. cat -n lib/shipping/package-suggestions.ts | sed -n '200,230p'
+   Focus: suggestPackage fragility logic — where to add AI-driven improvement.
+
+7. cat -n app/api/shipping/center/route.ts | sed -n '30,60p'
+   Focus: Prisma query for items — where to add new field selects.
+
+8. cat -n app/api/shipping/center/route.ts | sed -n '180,210p'
+   Focus: Enriched item object — where to add AI fields to response.
+
+9. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '55,85p'
+   Focus: Props and data — how item data reaches ShippingPanel.
+
+10. cat -n app/items/[id]/ItemDashboardPanels.tsx | sed -n '3100,3140p'
+    Focus: How item data is fetched and passed to ShippingPanel.
+
+11. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '3005,3020p'
+    Focus: FreightTab form defaults — where to add AI auto-fill.
+
+12. cat -n app/api/analyze/[itemId]/route.ts | sed -n '178,195p'
+    Focus: populateFromAnalysis call — confirm it exists and analysis object is passed.
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PART B — SCHEMA + MIGRATION
+
+================================================================================
+
+FILE: prisma/schema.prisma
+
+--- B1: Add AI shipping intelligence fields to Item model ---
+
+FIND the isFragile and shippingPreference fields in the Item model.
+They should be around line 325-326:
+
+  isFragile          Boolean   @default(false)
+  shippingPreference String    @default("BUYER_PAYS")
+
+ADD AFTER shippingPreference:
+
+  // AI Shipping Intelligence (populated by analyze route)
+  aiWeightLbs            Float?    // AI-estimated weight in pounds
+  aiDimsEstimate         String?   // Raw AI dimension text: "34 x 24 x 30"
+  aiShippingDifficulty   String?   // "Easy", "Moderate", "Difficult", "Freight only"
+  aiShippingNotes        String?   // AI packing and shipping guidance
+  aiShippingConfidence   Float?    // AI confidence for shipping estimates (0.0-1.0)
+
+--- B2: Run migration ---
+
+npx prisma db push
+npx prisma generate
+
+Verify output shows 5 new columns added.
+
+================================================================================
+
+PART C — SHIPPING INTELLIGENCE EXTRACTION
+
+================================================================================
+
+FILE: lib/data/populate-intelligence.ts
+
+--- C1: Extend populateFromAnalysis ---
+
+FIND the populateFromAnalysis function. It should look like:
+
+export async function populateFromAnalysis(
+  itemId: string,
+  analysis: Record<string, unknown>,
+): Promise<void> {
+
+FIND the end of the existing field extraction logic (where it does
+prisma.item.update for category, brand, era, etc.).
+
+ADD AFTER the existing update (or merge into the same update call):
+
+  // ─── AI Shipping Intelligence ───────────────────────────────────
+  const shippingUpdates: Record<string, unknown> = {};
+
+  // Weight estimate
+  const aiWeight = analysis.weight_estimate_lbs;
+  if (aiWeight && typeof aiWeight === "number" && aiWeight > 0) {
+    shippingUpdates.aiWeightLbs = Math.round((aiWeight as number) * 10) / 10;
+  }
+
+  // Dimensions estimate
+  const aiDims = analysis.dimensions_estimate;
+  if (aiDims && typeof aiDims === "string" && (aiDims as string).length > 2) {
+    shippingUpdates.aiDimsEstimate = aiDims as string;
+    // Parse into L/W/H
+    const dimMatch = (aiDims as string).match(/(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)/);
+    if (dimMatch) {
+      shippingUpdates.shippingLength = parseFloat(dimMatch[1]);
+      shippingUpdates.shippingWidth = parseFloat(dimMatch[2]);
+      shippingUpdates.shippingHeight = parseFloat(dimMatch[3]);
+    }
+  }
+
+  // Shipping difficulty
+  const aiDifficulty = analysis.shipping_difficulty;
+  if (aiDifficulty && typeof aiDifficulty === "string") {
+    shippingUpdates.aiShippingDifficulty = aiDifficulty as string;
+    // Auto-flag fragile items
+    if (aiDifficulty === "Difficult") {
+      shippingUpdates.isFragile = true;
+    }
+  }
+
+  // Shipping notes
+  const aiNotes = analysis.shipping_notes;
+  if (aiNotes && typeof aiNotes === "string" && (aiNotes as string).length > 3) {
+    shippingUpdates.aiShippingNotes = aiNotes as string;
+  }
+
+  // Confidence
+  const confidence = analysis.confidence;
+  if (confidence && typeof confidence === "number") {
+    shippingUpdates.aiShippingConfidence = Math.round((confidence as number) * 100) / 100;
+  }
+
+  // Persist — only if we have data, and only fill empty fields (don't override user data)
+  if (Object.keys(shippingUpdates).length > 0) {
+    // Fetch existing to avoid overriding user-entered data
+    const existing = await prisma.item.findUnique({
+      where: { id: itemId },
+      select: {
+        shippingWeight: true,
+        shippingLength: true,
+        shippingWidth: true,
+        shippingHeight: true,
+        isFragile: true,
+      },
+    });
+
+    // Only set user-visible fields if they're currently empty
+    if (existing?.shippingWeight && shippingUpdates.aiWeightLbs) {
+      // User already entered weight — keep AI estimate but don't override
+      delete shippingUpdates.shippingWeight;
+    } else if (shippingUpdates.aiWeightLbs) {
+      shippingUpdates.shippingWeight = shippingUpdates.aiWeightLbs;
+    }
+
+    if (existing?.shippingLength) {
+      delete shippingUpdates.shippingLength;
+      delete shippingUpdates.shippingWidth;
+      delete shippingUpdates.shippingHeight;
+    }
+
+    if (existing?.isFragile && shippingUpdates.isFragile) {
+      delete shippingUpdates.isFragile; // Already flagged, don't re-set
+    }
+
+    await prisma.item.update({
+      where: { id: itemId },
+      data: shippingUpdates,
+    });
+
+    console.log(`[shipping-intel] Persisted for ${itemId}:`,
+      Object.entries(shippingUpdates).map(([k, v]) => `${k}=${v}`).join(", ")
+    );
+  }
+
+IMPORTANT: The existing populateFromAnalysis likely does ONE prisma.item.update.
+You can EITHER merge the shipping fields into that same update call, OR do a
+separate update. Separate is safer (won't break existing logic if shipping fields
+have issues). Use your judgment based on what the code looks like.
+
+================================================================================
+
+PART D — ENRICHMENT CONTEXT
+
+================================================================================
+
+FILE: lib/enrichment/item-context.ts
+
+--- D1: Add shipping fields to interface ---
+
+FIND the interface/type that defines the enrichment context.
+ADD shipping intelligence fields to it.
+
+--- D2: Add fields to Prisma select ---
+
+FIND where Prisma fetches item data for enrichment context.
+ADD: aiWeightLbs, aiDimsEstimate, aiShippingDifficulty, aiShippingNotes, aiShippingConfidence, isFragile
+
+--- D3: Add fields to context builder ---
+
+FIND where the enrichment context object is constructed from item data.
+ADD the new fields (see Task 3 in OBJECTIVE section for exact code).
+
+================================================================================
+
+PART E — PACKAGE SUGGESTIONS IMPROVEMENT
+
+================================================================================
+
+FILE: lib/shipping/package-suggestions.ts
+
+--- E1: Improve fragility detection with AI shipping notes ---
+
+FIND the fragility logic in suggestPackage (around line 206):
+  const fragile = template.isFragile || isLikelyFragile(cat, material);
+
+REPLACE with:
+  const aiHintFragile = (shippingNotes || "").toLowerCase().match(/fragile|careful|delicate|handle.with.care|wrap.individually|bubble.wrap|double.box/);
+  const fragile = template.isFragile || isLikelyFragile(cat, material) || !!aiHintFragile;
+
+This uses the existing shippingNotes parameter (5th argument to suggestPackage)
+to detect fragility hints from AI. No signature change needed.
+
+================================================================================
+
+PART F — SHIPPING CENTER API ENRICHMENT
+
+================================================================================
+
+FILE: app/api/shipping/center/route.ts
+
+--- F1: Include AI shipping fields in Prisma query ---
+
+FIND the Prisma query that fetches items (select or include).
+ADD: aiWeightLbs: true, aiDimsEstimate: true, aiShippingDifficulty: true, aiShippingNotes: true, aiShippingConfidence: true, isFragile: true
+
+--- F2: Include AI fields in enriched response ---
+
+FIND where the enriched item object is built for the API response.
+ADD:
+
+aiShippingDifficulty: (item as any).aiShippingDifficulty ?? null,
+aiShippingNotes: (item as any).aiShippingNotes ?? null,
+aiWeightLbs: (item as any).aiWeightLbs ?? null,
+aiDimsEstimate: (item as any).aiDimsEstimate ?? null,
+aiShippingConfidence: (item as any).aiShippingConfidence ?? null,
+
+================================================================================
+
+PART G — UI: AI SHIPPING BRIEF IN SHIPPING PANEL
+
+================================================================================
+
+FILE: app/items/[id]/ShippingPanel.tsx
+
+--- G1: Verify data pipeline ---
+
+READ the file to confirm how item data reaches ShippingPanel.
+It likely comes through props from ItemDashboardPanels.tsx.
+Check if the data includes the new AI shipping fields.
+
+If ItemDashboardPanels.tsx fetches item data via an API call, the new fields
+should already be included (since we're adding them to the Prisma query).
+
+If it passes selected fields, we may need to add the new fields to the pass-through.
+
+--- G2: Add AI Shipping Brief card ---
+
+FIND the pre-sale shipping view, ABOVE where carrier rate cards are displayed.
+BELOW any existing package suggestion display.
+
+INSERT the AI Shipping Brief card (see Task 5A in OBJECTIVE section for complete JSX).
+
+The card renders conditionally — only when at least one AI shipping field exists:
+  {(item.aiShippingDifficulty || item.aiShippingNotes || item.aiWeightLbs) && ( ... )}
+
+This ensures no empty card for items without AI analysis.
+
+================================================================================
+
+PART H — UI: SHIPPING CENTER BADGES + AUTO-FILL
+
+================================================================================
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+--- H1: Difficulty badges on item cards ---
+
+FIND where item cards render in PreSaleTab and/or ReadyToShipTab.
+After the item name/title, ADD the difficulty badge (see Task 5B in OBJECTIVE section).
+
+--- H2: Freight tab auto-fill from AI ---
+
+FIND FreightTab form state initialization (line ~3008-3019):
+  const [form, setForm] = useState({
+    weight: heavyItem?.weight ? String(heavyItem.weight) : "",
+    length: heavyItem?.length ? String(heavyItem.length) : "48",
+    width: heavyItem?.width ? String(heavyItem.width) : "40",
+    height: heavyItem?.height ? String(heavyItem.height) : "36",
+    ...
+  });
+
+REPLACE the form initialization to use AI data as fallback (see Task 5C in OBJECTIVE section).
+
+ADD the parseDimsFromAI helper function inside FreightTab.
+
+ADD the "AI auto-filled" indicator note below the form if AI data was used.
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+3. prisma/schema.prisma: 5 new fields added to Item: yes / no
+4. npx prisma db push: success / fail
+5. npx prisma generate: success / fail
+6. populateFromAnalysis extended with shipping extraction: yes / no
+7. AI weight persisted to aiWeightLbs: yes / no
+8. AI weight auto-populates shippingWeight if empty: yes / no
+9. AI dimensions parsed into L/W/H if empty: yes / no
+10. AI shipping_difficulty persisted to aiShippingDifficulty: yes / no
+11. AI shipping_notes persisted to aiShippingNotes: yes / no
+12. isFragile auto-set when difficulty="Difficult": yes / no
+13. User-entered data NEVER overridden by AI: yes / no
+14. Enrichment context includes shipping intelligence fields: yes / no
+15. Package suggestions use AI shipping notes for fragility: yes / no
+16. Shipping Center API includes AI fields in response: yes / no
+17. ShippingPanel shows "AI Shipping Brief" card: yes / no
+18. Brief card shows: difficulty badge, weight, dims, packing notes: yes / no
+19. Brief card hidden when no AI data: yes / no
+20. Shipping Center item cards show difficulty badges: yes / no
+21. Badge colors correct: Easy=green, Moderate=amber, Difficult=red, Freight=purple: yes / no
+22. Freight tab auto-fills from AI when user data empty: yes / no
+23. "AI auto-filled" indicator shows when applicable: yes / no
+24. parseDimsFromAI helper works correctly: yes / no
+25. All locked files untouched: yes / no
+26. inline style={{}} throughout — no Tailwind, no className: yes / no
+27. Theme-aware surfaces use CSS variables: yes / no
+28. Light mode tested — no broken contrast: yes / no
+29. Dark mode tested — all elements visible: yes / no
+30. npx tsc --noEmit: 0 errors
+31. npm run build: pass
+32. CHECKPOINT post-change: pass
+33. Dev server: localhost:3000
+
+MANUAL TESTS:
+34. Upload a new item → run AI analysis → check that AI shipping fields populate in DB
+35. Verify: item with no user-entered weight now shows AI weight in ShippingPanel
+36. Verify: "AI Shipping Brief" card appears with difficulty, weight, dims
+37. Verify: fragile items auto-detected from AI difficulty rating
+38. Go to Shipping Center → verify difficulty badges on item cards
+39. Go to Freight tab → verify form auto-fills from AI dims for analyzed items
+40. Re-analyze an item → verify shipping intelligence updates (not duplicated)
+41. Enter manual weight on an item → re-analyze → verify AI doesn't override manual weight
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+SCHEMA:
+- 5 fields added to Item: [yes / no]
+- npx prisma db push: [pass / fail]
+- npx prisma generate: [pass / fail]
+- Fields: aiWeightLbs, aiDimsEstimate, aiShippingDifficulty, aiShippingNotes, aiShippingConfidence
+
+INTELLIGENCE EXTRACTION:
+- populateFromAnalysis extended: [yes / no]
+- Weight extraction: [yes / no]
+- Dimensions parsing: [yes / no]
+- Difficulty extraction: [yes / no]
+- Notes extraction: [yes / no]
+- Fragility auto-set: [yes / no]
+- User data protection: [yes / no] (AI never overrides user-entered)
+- Console log: [yes / no]
+
+ENRICHMENT:
+- Shipping fields in enrichment context: [yes / no]
+- Prisma select updated: [yes / no]
+
+PACKAGE SUGGESTIONS:
+- AI-driven fragility improvement: [yes / no]
+
+SHIPPING CENTER API:
+- AI fields in Prisma query: [yes / no]
+- AI fields in enriched response: [yes / no]
+
+UI — SHIPPING PANEL:
+- AI Shipping Brief card visible: [yes / no]
+- Difficulty badge: [yes / no]
+- Weight estimate: [yes / no]
+- Dimensions estimate: [yes / no]
+- Packing notes: [yes / no]
+- Hidden when no AI data: [yes / no]
+
+UI — SHIPPING CENTER:
+- Difficulty badges on cards: [yes / no]
+- Badge colors correct: [yes / no]
+- Freight tab auto-fill: [yes / no]
+- "AI auto-filled" indicator: [yes / no]
+- parseDimsFromAI helper: [yes / no]
+
+BUILD:
+- npx tsc --noEmit: [# errors]
+- npm run build: [pass / fail]
+- CHECKPOINT post-change: [pass / fail]
+- Dev server confirms at localhost:3000: [yes / no]
+
+Files modified:
+  - prisma/schema.prisma
+  - lib/data/populate-intelligence.ts
+  - lib/enrichment/item-context.ts
+  - lib/shipping/package-suggestions.ts
+  - app/api/shipping/center/route.ts
+  - app/items/[id]/ShippingPanel.tsx
+  - app/shipping/ShippingCenterClient.tsx
+
+Lines changed: ~[count]
+
+LOCKED FILE INTEGRITY:
+  - lib/adapters/ai.ts: [untouched]
+  - lib/shipping/shippo.ts: [untouched]
+  - lib/shipping/easypost.ts: [untouched]
+  - lib/shipping/freight-estimates.ts: [untouched]
+  - lib/shipping/shipengine-ltl.ts: [untouched]
+  - lib/constants/pricing.ts: [untouched]
+  - lib/credits.ts: [untouched]
+
+INTELLIGENCE TEST:
+- Analyzed item with AI data: [item title]
+- AI weight extracted: [value]
+- AI difficulty extracted: [value]
+- AI notes extracted: [first 50 chars]
+- AI dims parsed into L/W/H: [values]
+- Fragility auto-detected: [yes/no]
+
+END OF COMMAND 4C

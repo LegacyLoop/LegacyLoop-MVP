@@ -1,0 +1,264 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║  LEGACYLOOP — v11 COMMAND TEMPLATE                                      ║
+║  SHIPPING RATE SUPPLEMENT FIX                                           ║
+║  Date: 2026-03-24                                                       ║
+║  Priority: CRITICAL                                                     ║
+║  Mode: POLISH — Surgical fix, no overhaul                               ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+CONTEXT FOR CLAUDE CODE:
+────────────────────────
+The Shippo test token returns only ~4 unique service types per route
+(UPS Ground Saver, USPS Ground Advantage, USPS Priority Mail, USPS
+Priority Mail Express). The code treats ANY live Shippo result as
+complete and never supplements with demo rates for missing services.
+
+We already have comprehensive demo rates built into getDemoRates()
+(11-14 services across USPS/UPS/FedEx including overnight, 2-day,
+3-day, express, ground). These never get used because Shippo
+"succeeds" with its limited 4.
+
+ROOT CAUSE: getShippingRates() in lib/shipping/shippo.ts returns
+ONLY live rates when Shippo API succeeds, even if only 4 services
+are returned. The 11-14 demo services are abandoned.
+
+FIX: Make getShippingRates() a HYBRID — real Shippo prices where
+available, supplemented with demo/estimated rates for every
+carrier+service combo Shippo didn't cover.
+
+This single fix flows through to BOTH:
+  - /api/shipping/rates/route.ts (used by ShippingCenterClient + ShippingPanel)
+  - /api/shipping/estimate/route.ts (used by Item Dashboard)
+No frontend changes needed — both already render all rates with no cap.
+
+IMPORTANT CONSTRAINTS:
+  - ALL styles must be inline style={{}} — NO Tailwind, NO className for styling
+  - Do NOT change any frontend components
+  - Do NOT change rates/route.ts or estimate/route.ts
+  - ONLY modify lib/shipping/shippo.ts
+  - Preserve ALL existing types, exports, and function signatures
+  - Keep the existing demo rate logic exactly as-is
+  - Keep the existing fetchShippoRates logic exactly as-is
+
+══════════════════════════════════════════════════════════════════════
+SECTION 1 — FILE UNLOCK
+══════════════════════════════════════════════════════════════════════
+
+Unlock for editing:
+  lib/shipping/shippo.ts
+
+══════════════════════════════════════════════════════════════════════
+SECTION 2 — MODIFY: lib/shipping/shippo.ts → getShippingRates()
+══════════════════════════════════════════════════════════════════════
+
+REPLACE the entire getShippingRates function (lines 254-272) with
+the following. Keep everything else in the file EXACTLY as-is —
+do NOT touch the types, fetchShippoRates, getDemoRates, round,
+getLTLFreightQuotes, or zipDistance functions.
+
+Find this block:
+```typescript
+/**
+ * Get shipping rates. Uses Shippo API if configured, otherwise demo rates.
+ */
+export async function getShippingRates(
+  from: ShippingAddress,
+  to: ShippingAddress,
+  parcel: Parcel
+): Promise<{ rates: ShippingRate[]; isDemo: boolean }> {
+  if (SHIPPO_TOKEN && SHIPPO_TOKEN !== "your_shippo_api_token_here") {
+    try {
+      const rates = await fetchShippoRates(from, to, parcel);
+      console.log(`[shippo] Got ${rates.length} rates from Shippo API (${from.zip} → ${to.zip}, ${parcel.weight}lbs)`);
+      return { rates, isDemo: false };
+    } catch (err) {
+      console.error("[shippo] Shippo API failed, falling back to demo rates:", err);
+      return { rates: getDemoRates(from, to, parcel), isDemo: true };
+    }
+  }
+
+  console.log("[shippo] Using demo rates — Shippo API token not configured");
+  return { rates: getDemoRates(from, to, parcel), isDemo: true };
+}
+```
+
+Replace with:
+```typescript
+/**
+ * Get shipping rates. Uses Shippo API if configured, supplemented
+ * with demo rates for any carrier+service combos Shippo didn't cover.
+ * This ensures users always see comprehensive carrier options (11-14 services)
+ * with real prices where available and smart estimates for the rest.
+ */
+export async function getShippingRates(
+  from: ShippingAddress,
+  to: ShippingAddress,
+  parcel: Parcel
+): Promise<{ rates: ShippingRate[]; isDemo: boolean }> {
+  // Always generate demo rates — used as supplement or standalone fallback
+  const demoRates = getDemoRates(from, to, parcel);
+
+  if (SHIPPO_TOKEN && SHIPPO_TOKEN !== "your_shippo_api_token_here") {
+    try {
+      const liveRates = await fetchShippoRates(from, to, parcel);
+      console.log(`[shippo] Got ${liveRates.length} live rates from Shippo API (${from.zip} → ${to.zip}, ${parcel.weight}lbs)`);
+
+      if (liveRates.length === 0) {
+        console.log("[shippo] Shippo returned 0 rates — using full demo set");
+        return { rates: demoRates, isDemo: true };
+      }
+
+      // Build a set of carrier+service keys from live rates
+      const liveKeys = new Set(
+        liveRates.map((r) => `${r.carrier.toLowerCase()}_${r.service.toLowerCase()}`)
+      );
+
+      // Supplement: add demo rates for any service NOT covered by live rates
+      const supplemental = demoRates.filter(
+        (d) => !liveKeys.has(`${d.carrier.toLowerCase()}_${d.service.toLowerCase()}`)
+      );
+
+      const combined = [
+        ...liveRates,         // Real prices — no isDemo flag
+        ...supplemental,      // Estimated prices — already have isDemo: true
+      ].sort((a, b) => a.rate - b.rate);
+
+      console.log(
+        `[shippo] Hybrid rates: ${liveRates.length} live + ${supplemental.length} estimated = ${combined.length} total`
+      );
+
+      // isDemo: false when we have ANY live rates (hybrid mode)
+      return { rates: combined, isDemo: false };
+    } catch (err) {
+      console.error("[shippo] Shippo API failed, falling back to demo rates:", err);
+      return { rates: demoRates, isDemo: true };
+    }
+  }
+
+  console.log("[shippo] Using demo rates — Shippo API token not configured");
+  return { rates: demoRates, isDemo: true };
+}
+```
+
+══════════════════════════════════════════════════════════════════════
+SECTION 3 — VERIFICATION CHECKPOINT 1: TypeScript Build
+══════════════════════════════════════════════════════════════════════
+
+Run:
+  npx tsc --noEmit 2>&1 | head -30
+
+Expected: 0 errors related to lib/shipping/shippo.ts
+If errors found: fix them before proceeding.
+
+══════════════════════════════════════════════════════════════════════
+SECTION 4 — VERIFICATION CHECKPOINT 2: API Test
+══════════════════════════════════════════════════════════════════════
+
+Run a diagnostic that calls getShippingRates directly to verify
+the hybrid supplementation works:
+
+```bash
+npx tsx -e "
+const { getShippingRates } = require('./lib/shipping/shippo');
+
+async function test() {
+  const result = await getShippingRates(
+    { zip: '04901' },
+    { zip: '10001' },
+    { length: 14, width: 12, height: 8, weight: 5 }
+  );
+
+  console.log('');
+  console.log('=== SHIPPING RATE SUPPLEMENT TEST ===');
+  console.log('Total rates returned:', result.rates.length);
+  console.log('isDemo:', result.isDemo);
+  console.log('');
+
+  // Count live vs estimated
+  const live = result.rates.filter(r => !r.isDemo);
+  const estimated = result.rates.filter(r => r.isDemo);
+  console.log('Live (Shippo) rates:', live.length);
+  console.log('Estimated (demo) rates:', estimated.length);
+  console.log('');
+
+  // Group by carrier
+  const byCarrier = {};
+  for (const r of result.rates) {
+    const key = r.carrier;
+    if (!byCarrier[key]) byCarrier[key] = [];
+    byCarrier[key].push(r);
+  }
+
+  for (const [carrier, rates] of Object.entries(byCarrier)) {
+    console.log(carrier + ':');
+    for (const r of rates) {
+      const tag = r.isDemo ? '[EST]' : '[LIVE]';
+      console.log('  ' + tag + ' ' + r.service + ' — $' + r.rate.toFixed(2) + ' (' + r.estimatedDays + ' days)');
+    }
+  }
+
+  // Verify we have all three carriers
+  const carriers = new Set(result.rates.map(r => r.carrier.toUpperCase()));
+  console.log('');
+  console.log('Carriers present:', [...carriers].join(', '));
+  console.log('Has USPS:', carriers.has('USPS'));
+  console.log('Has UPS:', carriers.has('UPS'));
+  console.log('Has FEDEX:', carriers.has('FEDEX'));
+  console.log('');
+
+  if (result.rates.length >= 10) {
+    console.log('✅ PASS — ' + result.rates.length + ' rates (10+ expected)');
+  } else {
+    console.log('❌ FAIL — only ' + result.rates.length + ' rates');
+  }
+}
+
+test().catch(e => console.error('Test error:', e));
+"
+```
+
+Expected output:
+  - Total rates: 11-14+
+  - Live (Shippo) rates: 3-6 (what Shippo test returns)
+  - Estimated (demo) rates: 8-11 (supplemental)
+  - All three carriers: USPS ✅, UPS ✅, FedEx ✅
+  - PASS — 10+ rates
+
+══════════════════════════════════════════════════════════════════════
+SECTION 5 — VERIFICATION CHECKPOINT 3: Full Build
+══════════════════════════════════════════════════════════════════════
+
+Run:
+  npm run build 2>&1 | tail -20
+
+Expected: Build succeeds with 0 errors.
+
+══════════════════════════════════════════════════════════════════════
+SECTION 6 — DONE
+══════════════════════════════════════════════════════════════════════
+
+Summary of what this command does:
+  1. ONLY modifies getShippingRates() in lib/shipping/shippo.ts
+  2. Makes it a HYBRID: real Shippo prices where available,
+     supplemented with demo/estimated rates for missing services
+  3. Users will now see 11-14 carrier options on EVERY shipping quote:
+     - USPS: Ground Advantage, Priority Mail, Priority Mail Express, First Class
+     - UPS: Ground, 3 Day Select, 2nd Day Air, Next Day Air Saver, Next Day Air
+     - FedEx: Ground, Home Delivery, Express Saver, 2Day, Standard Overnight
+  4. Live Shippo rates show real prices (no isDemo flag)
+  5. Supplemental rates show estimated prices (isDemo: true flag)
+  6. Flows through to BOTH Item Dashboard and Shipping Center automatically
+  7. Zero frontend changes — both already render all rates with no cap
+
+What DOES NOT change:
+  - No frontend files modified
+  - No API route files modified
+  - No types changed
+  - No other shipping files changed
+  - fetchShippoRates() untouched
+  - getDemoRates() untouched
+  - getLTLFreightQuotes() untouched
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  END OF COMMAND                                                         ║
+╚══════════════════════════════════════════════════════════════════════════╝

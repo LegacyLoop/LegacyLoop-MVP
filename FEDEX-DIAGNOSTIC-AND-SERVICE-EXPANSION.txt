@@ -1,0 +1,855 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 24, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping —
+✓ lib/shipping/package-suggestions.ts
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/populate-intelligence.ts
+✓ lib/data/project-rollup.ts
+✓ lib/data/user-events.ts
+
+— Enrichment —
+✓ lib/enrichment/item-context.ts
+✓ lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— eBay Adapter (when created) —
+✓ lib/adapters/ebay.ts — LOCKED after creation
+
+— FedEx LTL (when created) —
+✓ lib/shipping/fedex-ltl.ts — LOCKED after creation
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/** — READ + EXTEND for shipping work
+✓ EXCEPTION: app/api/ebay/** — READ + EXTEND for eBay work
+✓ EXCEPTION: app/api/bots/** — READ for bot page data sync work
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED except surgical unlocks for bot upgrades
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/shipping/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — READ ONLY
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - lib/shipping/shippo.ts
+  - lib/shipping/fedex-parcel.ts
+  - app/api/shipping/rates/route.ts
+  - app/api/shipping/estimate/route.ts
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• Shippo API key is SET and LIVE (test token configured in .env).
+• Shippo is our PRIMARY parcel carrier aggregator — returns USPS, UPS, FedEx.
+• FedEx direct API is reserved for LTL FREIGHT only (not parcel).
+• We need MAXIMUM carrier options and service tiers visible to users.
+• Current problem: users see only 3-4 services. Should see 10-15.
+
+ARCHITECTURE DECISION (approved by Ryan):
+  - Shippo = ALL parcel shipping (USPS, UPS, FedEx parcel, all tiers)
+  - FedEx Direct API = LTL freight ONLY
+  - Do NOT overcomplicate. Shippo handles parcel, FedEx handles freight.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Add defensive error handling within scope
+— Improve logging to diagnose rate issues
+— Expand service coverage within existing carrier integrations
+— Add Elon-standard polish within scope
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Add unapproved npm packages
+— Change business or pricing logic
+— Do any "while I'm in here" fixes beyond scope
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+Variable                 Status       Notes
+SHIPPO_API_KEY           SET          Live test token configured
+FEDEX_ACCOUNT_NUMBER     SET          210749015
+FEDEX_PARCEL_API_KEY     SET          Sandbox credentials
+FEDEX_PARCEL_SECRET_KEY  SET          Sandbox credentials
+FEDEX_PARCEL_URL         SET          https://apis-sandbox.fedex.com
+FEDEX_LTL_API_KEY        SET          Sandbox credentials
+FEDEX_LTL_SECRET_KEY     SET          Sandbox credentials
+FEDEX_LTL_URL            SET          https://apis-sandbox.fedex.com
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+See v11 master template. No schema changes in this command.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+See v11 master template. This command focuses on backend shipping rate APIs
+and carrier coverage, not UI components.
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — SHIPPING RATE DIAGNOSTIC + SERVICE EXPANSION
+
+================================================================================
+
+This command does FOUR things. All surgical. No overhauls.
+
+TASK 1 — DIAGNOSE what Shippo is actually returning (and what FedEx direct returns)
+
+Create a one-time diagnostic script that:
+  1. Calls Shippo API directly with test params and prints EVERY rate returned
+  2. Calls FedEx Parcel API directly and prints success or full error
+  3. Prints carrier + service + price for every rate from both sources
+  4. Run it, print the FULL output in the report, then DELETE the script
+
+This tells us exactly what we're getting vs what we're showing.
+
+TASK 2 — REMOVE the rate cap that's cutting off services
+
+Line 118 of app/api/shipping/estimate/route.ts has .slice(0, 6) which
+caps Shippo rates to 6. This is cutting off premium tiers (overnight,
+2-day, express). REMOVE this cap.
+
+TASK 3 — EXPAND demo fallback rates to include ALL service tiers
+
+When Shippo live API is unavailable, the demo fallback in shippo.ts
+only returns 4-6 ground-level services. Expand to include:
+
+USPS: Priority Mail, Priority Mail Express, Ground Advantage, First Class
+UPS: Ground, 3 Day Select, 2nd Day Air, Next Day Air Saver, Next Day Air
+FedEx: Ground, Home Delivery, Express Saver, 2Day, Standard Overnight
+
+Every item size category (small, medium, large) should have 10-15 options.
+
+TASK 4 — ADD diagnostic logging to ALL shipping API routes
+
+Make Shippo and FedEx results visible in terminal so we can see exactly
+what rates are being returned, deduped, and sent to the UI.
+
+Files touched:
+  - lib/shipping/shippo.ts (SURGICAL UNLOCK)
+  - lib/shipping/fedex-parcel.ts (SURGICAL UNLOCK)
+  - app/api/shipping/rates/route.ts (SURGICAL UNLOCK)
+  - app/api/shipping/estimate/route.ts (SURGICAL UNLOCK)
+  - scripts/test-shipping.ts (CREATE, RUN, then DELETE)
+
+Expected output:
+  - Terminal shows exactly what Shippo returns (carrier + service + price)
+  - Terminal shows FedEx direct status (success with rates, or specific error)
+  - Rate cap removed — all Shippo service tiers flow through
+  - Demo fallback includes 10-15 services per item size
+  - Users see overnight, 2-day, 3-day, ground, express, priority — everything
+  - No UI changes needed — UI already displays whatever rates the API returns
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n lib/shipping/shippo.ts
+   - Line 44: SHIPPO_TOKEN configuration
+   - Line 90: ALLOWED_CARRIERS filter
+   - Lines 92-101: Rate filtering/mapping from Shippo API
+   - Lines 112-168: Demo rates — what services are included per size category
+   - Lines 232-249: getShippingRates public function
+   - Note: Does Shippo test token actually make live API calls, or does Shippo
+     return demo data for test tokens?
+
+2. cat -n lib/shipping/fedex-parcel.ts
+   - Confirm shippingChargesPayment block is present (~lines 135-142)
+   - Confirm FEDEX_ACCOUNT reads from env (~line 19)
+   - Note all error handling — where errors are silently caught
+
+3. cat -n app/api/shipping/rates/route.ts
+   - Note how Shippo and FedEx rates are merged
+   - Note dedupe logic — is it accidentally removing services?
+
+4. cat -n app/api/shipping/estimate/route.ts
+   - LINE 118: Find .slice(0, 6) — THIS IS CAPPING RATES TO 6
+   - Note how rates are deduped and returned
+
+5. Check env:
+   grep 'SHIPPO' .env | sed 's/=.*/=SET/'
+   grep 'FEDEX' .env | sed 's/=.*/=SET/'
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PART B — CREATE AND RUN DIAGNOSTIC SCRIPT
+
+================================================================================
+
+Create file: scripts/test-shipping.ts
+
+This script tests BOTH Shippo and FedEx APIs directly.
+
+```typescript
+/**
+ * Shipping API Diagnostic Test
+ * Run with: npx tsx scripts/test-shipping.ts
+ * DELETE THIS FILE after running.
+ */
+import * as dotenv from "dotenv";
+dotenv.config();
+
+const SHIPPO_TOKEN = process.env.SHIPPO_API_KEY || process.env.SHIPPO_API_TOKEN || "";
+const FEDEX_API_KEY = process.env.FEDEX_PARCEL_API_KEY || "";
+const FEDEX_SECRET = process.env.FEDEX_PARCEL_SECRET_KEY || "";
+const FEDEX_URL = process.env.FEDEX_PARCEL_URL || "https://apis-sandbox.fedex.com";
+const FEDEX_ACCOUNT = process.env.FEDEX_ACCOUNT_NUMBER || "";
+
+async function testShippo() {
+  console.log("=== SHIPPO DIAGNOSTIC ===");
+  console.log("Token:", SHIPPO_TOKEN ? `SET (${SHIPPO_TOKEN.length} chars, starts with ${SHIPPO_TOKEN.slice(0, 12)}...)` : "MISSING");
+
+  if (!SHIPPO_TOKEN) {
+    console.log("SKIP — no Shippo token configured");
+    return;
+  }
+
+  try {
+    const res = await fetch("https://api.goshippo.com/shipments", {
+      method: "POST",
+      headers: {
+        Authorization: `ShippoToken ${SHIPPO_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        address_from: {
+          street1: "123 Main St",
+          city: "Waterville",
+          state: "ME",
+          zip: "04901",
+          country: "US",
+        },
+        address_to: {
+          street1: "456 Buyer St",
+          city: "New York",
+          state: "NY",
+          zip: "10001",
+          country: "US",
+        },
+        parcels: [{
+          length: "12",
+          width: "10",
+          height: "6",
+          distance_unit: "in",
+          weight: "5",
+          mass_unit: "lb",
+        }],
+        async: false,
+      }),
+    });
+
+    console.log("Shippo status:", res.status);
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.log("Shippo FAILED:", errText.slice(0, 500));
+      return;
+    }
+
+    const data = await res.json();
+    const rates = data.rates || [];
+    console.log(`Shippo returned ${rates.length} total rates`);
+    console.log("");
+
+    // Group by carrier
+    const byCarrier: Record<string, any[]> = {};
+    for (const r of rates) {
+      const carrier = r.provider || "Unknown";
+      if (!byCarrier[carrier]) byCarrier[carrier] = [];
+      byCarrier[carrier].push(r);
+    }
+
+    for (const [carrier, carrierRates] of Object.entries(byCarrier)) {
+      console.log(`--- ${carrier} (${carrierRates.length} services) ---`);
+      for (const r of carrierRates.sort((a: any, b: any) => parseFloat(a.amount) - parseFloat(b.amount))) {
+        const service = r.servicelevel?.name || r.servicelevel?.token || "Unknown";
+        console.log(`  $${parseFloat(r.amount).toFixed(2)} — ${service} (${r.estimated_days || "?"} days) [token: ${r.servicelevel?.token || "n/a"}]`);
+      }
+    }
+
+    // Show any carriers NOT in our ALLOWED list
+    const allowed = ["usps", "ups", "fedex"];
+    const excluded = rates.filter((r: any) => !allowed.includes(r.provider?.toLowerCase()));
+    if (excluded.length > 0) {
+      console.log("");
+      console.log(`--- EXCLUDED carriers (${excluded.length} rates not shown to users) ---`);
+      for (const r of excluded) {
+        console.log(`  ${r.provider} — ${r.servicelevel?.name} $${r.amount}`);
+      }
+    }
+  } catch (e) {
+    console.log("Shippo EXCEPTION:", e);
+  }
+  console.log("");
+}
+
+async function testFedEx() {
+  console.log("=== FEDEX DIRECT API DIAGNOSTIC ===");
+  console.log("API Key:", FEDEX_API_KEY ? `SET (${FEDEX_API_KEY.length} chars)` : "MISSING");
+  console.log("Secret:", FEDEX_SECRET ? `SET (${FEDEX_SECRET.length} chars)` : "MISSING");
+  console.log("URL:", FEDEX_URL);
+  console.log("Account:", FEDEX_ACCOUNT || "MISSING");
+
+  if (!FEDEX_API_KEY || !FEDEX_SECRET) {
+    console.log("SKIP — no FedEx credentials");
+    return;
+  }
+
+  // Auth
+  let token = "";
+  try {
+    const authRes = await fetch(`${FEDEX_URL}/oauth/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+        client_id: FEDEX_API_KEY,
+        client_secret: FEDEX_SECRET,
+      }),
+    });
+    if (authRes.ok) {
+      const authData = await authRes.json();
+      token = authData.access_token;
+      console.log("Auth: SUCCESS (token length:", token.length + ")");
+    } else {
+      const body = await authRes.text();
+      console.log("Auth: FAILED — status:", authRes.status, "body:", body.slice(0, 300));
+      return;
+    }
+  } catch (e) {
+    console.log("Auth EXCEPTION:", e);
+    return;
+  }
+
+  // Rate request
+  const reqBody = {
+    accountNumber: { value: FEDEX_ACCOUNT },
+    requestedShipment: {
+      shipper: { address: { postalCode: "04901", countryCode: "US" } },
+      recipient: { address: { postalCode: "10001", countryCode: "US", residential: true } },
+      pickupType: "DROPOFF_AT_FEDEX_LOCATION",
+      rateRequestType: ["LIST", "ACCOUNT"],
+      shippingChargesPayment: {
+        paymentType: "SENDER",
+        payor: {
+          responsibleParty: {
+            accountNumber: { value: FEDEX_ACCOUNT },
+          },
+        },
+      },
+      requestedPackageLineItems: [{
+        weight: { units: "LB", value: 5 },
+        dimensions: { length: 12, width: 10, height: 6, units: "IN" },
+      }],
+    },
+  };
+
+  try {
+    const rateRes = await fetch(`${FEDEX_URL}/rate/v1/rates/quotes`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "X-locale": "en_US",
+      },
+      body: JSON.stringify(reqBody),
+    });
+
+    const rateBody = await rateRes.text();
+    console.log("Rate status:", rateRes.status);
+
+    if (rateRes.ok) {
+      const rateData = JSON.parse(rateBody);
+      const details = rateData.output?.rateReplyDetails || [];
+      console.log(`Rate: SUCCESS — ${details.length} services returned`);
+      for (const d of details) {
+        const charge = d.ratedShipmentDetails?.[0]?.totalNetCharge ?? d.ratedShipmentDetails?.[0]?.totalNetFedExCharge ?? 0;
+        const days = d.commit?.dateDetail?.dayCount || d.commit?.transitDays?.amount || "?";
+        console.log(`  $${charge} — ${d.serviceType} (${days} days)`);
+      }
+    } else {
+      console.log("Rate: FAILED");
+      console.log("FULL ERROR RESPONSE:");
+      console.log(rateBody);
+    }
+  } catch (e) {
+    console.log("Rate EXCEPTION:", e);
+  }
+  console.log("");
+}
+
+async function main() {
+  console.log("========================================");
+  console.log("LEGACYLOOP SHIPPING DIAGNOSTIC");
+  console.log("Test route: Waterville ME 04901 → New York NY 10001");
+  console.log("Test parcel: 5 lbs, 12×10×6 in");
+  console.log("========================================");
+  console.log("");
+
+  await testShippo();
+  await testFedEx();
+
+  console.log("========================================");
+  console.log("DIAGNOSTIC COMPLETE");
+  console.log("========================================");
+}
+
+main();
+```
+
+Create the scripts/ directory if it doesn't exist: mkdir -p scripts
+
+Run: npx tsx scripts/test-shipping.ts
+
+PRINT THE FULL OUTPUT. This is the most critical part of the entire command.
+
+After printing, DELETE the script: rm scripts/test-shipping.ts
+(If the scripts/ directory is now empty, remove it too: rmdir scripts 2>/dev/null)
+
+================================================================================
+
+PART C — REMOVE RATE CAP in app/api/shipping/estimate/route.ts
+
+================================================================================
+
+FIND line 118:
+
+        for (const r of shippoResult.rates.slice(0, 6)) {
+
+CHANGE TO:
+
+        for (const r of shippoResult.rates) {
+
+This was artificially capping Shippo to 6 rates. We want ALL services.
+
+================================================================================
+
+PART D — EXPAND DEMO FALLBACK RATES in lib/shipping/shippo.ts
+
+================================================================================
+
+The demo rates function (getDemoRates, lines 112-168) only returns 4-6
+ground-level services per item size. We need overnight, 2-day, express, and
+priority tiers for EVERY item size so even in demo mode users see full coverage.
+
+TARGET: 10-15 services per size category covering:
+  - USPS: Priority Mail, Priority Mail Express, Ground Advantage, First Class (small only)
+  - UPS: Ground, 3 Day Select, 2nd Day Air, Next Day Air Saver, Next Day Air
+  - FedEx: Ground, Home Delivery, Express Saver, 2Day, Standard Overnight
+
+--- SMALL ITEMS (lines 130-138) ---
+
+FIND the existing rates.push block for small items:
+
+    rates.push(
+      { carrier: "USPS", service: "Priority Mail", rate: round(base * 1.4 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 2 : 3, isDemo: true },
+      { carrier: "USPS", service: "Ground Advantage", rate: round(base * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+      { carrier: "UPS", service: "Ground", rate: round(base * 1.6 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "FedEx", service: "Ground", rate: round(base * 1.7 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+    );
+
+REPLACE WITH:
+
+    rates.push(
+      { carrier: "USPS", service: "Ground Advantage", rate: round(base * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+      { carrier: "USPS", service: "First Class Package", rate: round(base * 0.85 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+      { carrier: "USPS", service: "Priority Mail", rate: round(base * 1.4 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 2 : 3, isDemo: true },
+      { carrier: "USPS", service: "Priority Mail Express", rate: round(base * 3.0 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+      { carrier: "UPS", service: "Ground", rate: round(base * 1.6 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "UPS", service: "3 Day Select", rate: round(base * 2.2 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "UPS", service: "2nd Day Air", rate: round(base * 2.5 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "UPS", service: "Next Day Air Saver", rate: round(base * 3.4 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+      { carrier: "UPS", service: "Next Day Air", rate: round(base * 4.0 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+      { carrier: "FedEx", service: "Ground", rate: round(base * 1.7 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "FedEx", service: "Home Delivery", rate: round(base * 1.8 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+      { carrier: "FedEx", service: "Express Saver", rate: round(base * 2.3 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "FedEx", service: "2Day", rate: round(base * 2.8 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "FedEx", service: "Standard Overnight", rate: round(base * 3.8 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+    );
+
+--- MEDIUM ITEMS (lines 154-165) ---
+
+FIND the existing rates.push block for medium items (the else { section):
+
+    rates.push(
+      { carrier: "USPS", service: "Priority Mail", rate: round(base * 1.2 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 2 : 3, isDemo: true },
+      { carrier: "USPS", service: "Ground Advantage", rate: round(base * 0.85 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "UPS", service: "Ground", rate: round(base * 1.4 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "UPS", service: "3 Day Select", rate: round(base * 2.1 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "FedEx", service: "Ground", rate: round(base * 1.45 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "FedEx", service: "Home Delivery", rate: round(base * 1.55 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+    );
+
+REPLACE WITH:
+
+    rates.push(
+      { carrier: "USPS", service: "Ground Advantage", rate: round(base * 0.85 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "USPS", service: "Priority Mail", rate: round(base * 1.2 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 2 : 3, isDemo: true },
+      { carrier: "USPS", service: "Priority Mail Express", rate: round(base * 2.8 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+      { carrier: "UPS", service: "Ground", rate: round(base * 1.4 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "UPS", service: "3 Day Select", rate: round(base * 2.1 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "UPS", service: "2nd Day Air", rate: round(base * 2.4 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "UPS", service: "Next Day Air Saver", rate: round(base * 3.2 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+      { carrier: "UPS", service: "Next Day Air", rate: round(base * 3.8 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+      { carrier: "FedEx", service: "Ground", rate: round(base * 1.45 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : dist < 300 ? 5 : 7, isDemo: true },
+      { carrier: "FedEx", service: "Home Delivery", rate: round(base * 1.55 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+      { carrier: "FedEx", service: "Express Saver", rate: round(base * 2.3 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "FedEx", service: "2Day", rate: round(base * 2.6 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "FedEx", service: "Standard Overnight", rate: round(base * 3.5 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+    );
+
+--- LARGE ITEMS (lines 139-153) ---
+
+FIND the existing rates.push block for large items (isLarge section):
+
+    rates.push(
+      { carrier: "USPS", service: "Parcel Select Ground", rate: round(base * 1.1 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 5 : dist < 300 ? 7 : 10, isDemo: true },
+      { carrier: "UPS", service: "Ground", rate: round(base * 1.3 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 4 : dist < 300 ? 6 : 8, isDemo: true },
+      { carrier: "UPS", service: "3 Day Select", rate: round(base * 2.0 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "FedEx", service: "Ground", rate: round(base * 1.35 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 4 : dist < 300 ? 6 : 8, isDemo: true },
+      { carrier: "FedEx", service: "Home Delivery", rate: round(base * 1.45 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+    );
+    if (distFactor < 1.5) {
+      rates.push(
+        { carrier: "FedEx", service: "Express Saver", rate: round(base * 2.8 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      );
+    }
+
+REPLACE WITH:
+
+    rates.push(
+      { carrier: "USPS", service: "Parcel Select Ground", rate: round(base * 1.1 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 5 : dist < 300 ? 7 : 10, isDemo: true },
+      { carrier: "USPS", service: "Priority Mail", rate: round(base * 1.5 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 2 : 3, isDemo: true },
+      { carrier: "UPS", service: "Ground", rate: round(base * 1.3 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 4 : dist < 300 ? 6 : 8, isDemo: true },
+      { carrier: "UPS", service: "3 Day Select", rate: round(base * 2.0 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "UPS", service: "2nd Day Air", rate: round(base * 2.5 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "UPS", service: "Next Day Air Saver", rate: round(base * 3.5 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+      { carrier: "FedEx", service: "Ground", rate: round(base * 1.35 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 4 : dist < 300 ? 6 : 8, isDemo: true },
+      { carrier: "FedEx", service: "Home Delivery", rate: round(base * 1.45 * distFactor), currency: "USD", estimatedDays: dist < 100 ? 3 : 5, isDemo: true },
+      { carrier: "FedEx", service: "Express Saver", rate: round(base * 2.8 * distFactor), currency: "USD", estimatedDays: 3, isDemo: true },
+      { carrier: "FedEx", service: "2Day", rate: round(base * 2.8 * distFactor), currency: "USD", estimatedDays: 2, isDemo: true },
+      { carrier: "FedEx", service: "Standard Overnight", rate: round(base * 3.8 * distFactor), currency: "USD", estimatedDays: 1, isDemo: true },
+    );
+
+(Remove the old if (distFactor < 1.5) block — Express Saver is now always included.)
+
+================================================================================
+
+PART E — ADD DIAGNOSTIC LOGGING
+
+================================================================================
+
+--- In lib/shipping/shippo.ts ---
+
+FIND (lines 92-101, the return statement in fetchShippoRates):
+
+  return (data.rates || [])
+    .filter((r: any) => ALLOWED_CARRIERS.includes(r.provider?.toLowerCase()))
+    .map((r: any) => ({
+      carrier: r.provider,
+      service: r.servicelevel?.name || r.servicelevel?.token || "Standard",
+      rate: parseFloat(r.amount),
+      currency: r.currency || "USD",
+      estimatedDays: r.estimated_days || r.days || 5,
+    }))
+    .sort((a: ShippingRate, b: ShippingRate) => a.rate - b.rate);
+
+REPLACE WITH:
+
+  const mapped = (data.rates || [])
+    .filter((r: any) => ALLOWED_CARRIERS.includes(r.provider?.toLowerCase()))
+    .map((r: any) => ({
+      carrier: r.provider,
+      service: r.servicelevel?.name || r.servicelevel?.token || "Standard",
+      rate: parseFloat(r.amount),
+      currency: r.currency || "USD",
+      estimatedDays: r.estimated_days || r.days || 5,
+    }))
+    .filter((r: ShippingRate) => r.rate > 0)
+    .sort((a: ShippingRate, b: ShippingRate) => a.rate - b.rate);
+
+  console.log(`[shippo] ${mapped.length} live rates:`, mapped.map(r => `${r.carrier} ${r.service} $${r.rate}`).join(" | "));
+  return mapped;
+
+--- In lib/shipping/fedex-parcel.ts ---
+
+After the existing console.error for rate failures (the if (!res.ok) block),
+ADD a visible warning line:
+
+    console.warn("⚠️  [FedEx Parcel] RATE REQUEST FAILED — see error above. Shippo covers FedEx parcel rates as fallback.");
+
+--- In app/api/shipping/rates/route.ts ---
+
+BEFORE the return Response.json line (around line 68), ADD:
+
+  console.log(`[shipping/rates] ${deduped.length} rates → UI: Shippo(${shippoResult.rates.length}) + FedEx-direct(${fedexRates.length}) → deduped(${deduped.length})`);
+
+--- In app/api/shipping/estimate/route.ts ---
+
+After the deduped array is built (around line 148), ADD:
+
+  console.log(`[shipping/estimate] ${deduped.length} rates for item ${itemId}: ${deduped.map(r => `${r.carrier} ${r.service} $${r.price}`).join(" | ")}`);
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+3. Diagnostic script created and run: yes / no
+4. Diagnostic output printed in FULL: yes / no
+5. Diagnostic script deleted: yes / no
+6. Rate cap .slice(0, 6) removed from estimate route: yes / no
+7. Small item demo rates expanded to 14 services: yes / no
+8. Medium item demo rates expanded to 13 services: yes / no
+9. Large item demo rates expanded to 11 services: yes / no
+10. Shippo rate logging added: yes / no
+11. FedEx failure warning added: yes / no
+12. Rates API logging added: yes / no
+13. Estimate API logging added: yes / no
+14. All locked files untouched: yes / no
+15. inline style={{}} throughout — no Tailwind, no className: yes / no
+16. Always-dark panels use hardcoded colors: yes / no
+17. Theme-aware surfaces use CSS variables: yes / no
+18. Light mode tested — no broken contrast: yes / no
+19. Dark mode tested — all elements visible: yes / no
+20. npx tsc --noEmit: 0 errors
+21. npm run build: pass
+22. CHECKPOINT post-change: pass
+23. Dev server: localhost:3000
+
+MANUAL TESTS:
+24. Start dev server, open any item, trigger shipping estimate
+25. Check terminal for [shippo] rate count and service breakdown
+26. Check terminal for [FedEx Parcel] status
+27. Check terminal for [shipping/rates] deduped count
+28. Count visible services in UI — target: 10-15 per item
+29. Verify overnight, 2-day, and express options appear
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+DIAGNOSTIC OUTPUT:
+[Paste the COMPLETE output of npx tsx scripts/test-shipping.ts here]
+
+SHIPPO STATUS:
+- Token configured: [yes / no]
+- API call result: [success with X rates / failed / error]
+- Carriers returned: [list]
+- Services per carrier: [list]
+- Any excluded carriers: [list or none]
+
+FEDEX DIRECT STATUS:
+- Auth: [pass / fail]
+- Rate request: [pass / fail / error code + message]
+- Services returned: [list or error details]
+- Conclusion: [working / not working / sandbox limitation]
+
+RATE CAP FIX:
+- .slice(0, 6) removed: [yes / no]
+- Line modified: [number]
+
+DEMO RATE EXPANSION:
+- Small items: [count] services
+- Medium items: [count] services
+- Large items: [count] services
+- Services now include overnight/2-day/express: [yes / no]
+
+LOGGING ADDED:
+- shippo.ts: [yes / no]
+- fedex-parcel.ts: [yes / no]
+- rates/route.ts: [yes / no]
+- estimate/route.ts: [yes / no]
+
+LIGHT MODE: [clean / issues found]
+DARK MODE: [clean / issues found]
+
+ALWAYS-DARK PANELS: [hardcoded colors used / issues]
+
+EXISTING LOGIC UNTOUCHED:
+— [List every locked file verified as untouched]
+
+FLAGS FROM CLAUDE CODE:
+— [All gaps, risks, missed data collection, out-of-scope items]
+— [Shippo test vs live token behavior]
+— [FedEx sandbox limitations discovered]
+— [Any new carry-forward items identified]
+
+Files modified: [list all — exact paths]
+New files created: [list all or 'none']
+Schema changes needed: [list or 'none']
+Build: [pass / fail]
+TypeScript: [0 errors / list all errors]
+
+CHECKPOINT after: [pass / issue]
+Dev server: localhost:3000
+
+IF POST-CHECKPOINT FAILS:
+REVERT IMMEDIATELY.
+Report exactly what broke and what was touched.
+Do NOT proceed until clean.
+
+Command Template v11 | LegacyLoop | March 24, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command | Paste in full — never abbreviate

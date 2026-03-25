@@ -325,6 +325,13 @@ model Item {
   isFragile      Boolean @default(false)
   shippingPreference String @default("BUYER_PAYS") // BUYER_PAYS | FREE_SHIPPING | LOCAL_ONLY
 
+  // AI Shipping Intelligence (populated by analyze route)
+  aiWeightLbs            Float?
+  aiDimsEstimate         String?
+  aiShippingDifficulty   String?
+  aiShippingNotes        String?
+  aiShippingConfidence   Float?
+
   // Post-sale pickup/meetup tracking
   pickupStatus        String?  // INVITE_SENT | CONFIRMED | EN_ROUTE | HANDED_OFF | COMPLETED
   pickupConfirmedAt   DateTime?

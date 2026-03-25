@@ -1,0 +1,223 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║  LEGACYLOOP — v11 COMMAND TEMPLATE                                      ║
+║  NET PROFIT ACCURACY FIX + LTL FREIGHT VERIFICATION                     ║
+║  Date: 2026-03-24                                                       ║
+║  Priority: CRITICAL                                                     ║
+║  Mode: POLISH — Surgical fix, no overhaul                               ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+CONTEXT FOR CLAUDE CODE:
+────────────────────────
+TWO issues to fix in this command:
+
+ISSUE 1 — NET PROFIT ACCURACY:
+The Net Profit column in the Shipping Center's carrier rate table shows
+the SAME dollar value for every carrier row ($79). This is wrong/misleading.
+
+Root causes:
+  A) The base object in /api/shipping/center/route.ts does NOT pass
+     listingPrice or shippingPreference to the frontend — even though
+     Prisma returns them. So the UI falls back to valuationMid (AI
+     valuation) which is HIGHER than the actual listing price, producing
+     inflated net profit numbers.
+  B) Commission rate is hardcoded at 5% — but actual rates vary by tier:
+     Free=12%, Starter=8%, Plus=5%, Pro=4%. For now, default to 8%
+     (Starter tier — most common at launch) and add a TODO for tier-aware
+     calculation later.
+  C) The "Best profit" footer ALWAYS subtracts full shipping cost from
+     net profit — but the per-row formula only subtracts shipping for
+     FREE_SHIPPING and SPLIT_COST (not BUYER_PAYS). These must be
+     consistent. Since shipping cost is negotiable between buyer and seller,
+     and can be split, the most useful Net Profit should ALWAYS show the
+     seller's net AFTER shipping — giving sellers the worst-case/most-
+     realistic picture for each carrier option.
+  D) The per-row and footer formulas must match.
+
+ISSUE 2 — LTL FREIGHT:
+The LTL freight tab uses ShipEngine (sandbox key already in .env as
+SHIPENGINE_API_KEY) + FedEx LTL + demo fallback carriers. Verify these
+are wired correctly and the freight tab returns 4+ carrier options.
+
+IMPORTANT CONSTRAINTS:
+  - ALL styles must be inline style={{}} — NO Tailwind, NO className for styling
+  - Preserve ALL existing types, exports, and function signatures
+  - Do NOT restructure or overhaul any component — SURGICAL fixes only
+
+══════════════════════════════════════════════════════════════════════
+SECTION 1 — FILE UNLOCK
+══════════════════════════════════════════════════════════════════════
+
+Unlock for editing:
+  app/api/shipping/center/route.ts
+  app/shipping/ShippingCenterClient.tsx
+
+══════════════════════════════════════════════════════════════════════
+SECTION 2 — MODIFY: app/api/shipping/center/route.ts → base object
+══════════════════════════════════════════════════════════════════════
+
+In the `base` object (starts around line 181), add listingPrice and
+shippingPreference to the data sent to the frontend. These fields
+already exist on the Prisma item objects — they just aren't being
+included in the base object.
+
+Find this block inside the base object (around line 191):
+```
+        saleMethod: (item as any).saleMethod ?? null,
+```
+
+Add AFTER that line (inside the base object):
+```typescript
+        listingPrice: (item as any).listingPrice ?? null,
+        shippingPreference: (item as any).shippingPreference ?? "BUYER_PAYS",
+```
+
+This ensures both preSale and readyToShip items include these fields.
+
+══════════════════════════════════════════════════════════════════════
+SECTION 3 — MODIFY: ShippingCenterClient.tsx → Per-row Net Profit
+══════════════════════════════════════════════════════════════════════
+
+Find the per-row net profit calculation (around line 1594-1596):
+```typescript
+                    const val = item.valuationMid ?? 0;
+                    const shipCost = item.shippingPreference === "SPLIT_COST" ? c.price / 2 : item.shippingPreference === "FREE_SHIPPING" ? c.price : 0;
+                    const net = val > 0 ? Math.round((val - shipCost - val * 0.05 - val * 0.0175) * 100) / 100 : null;
+```
+
+Replace with:
+```typescript
+                    const val = item.listingPrice || item.soldPrice || item.valuationMid || 0;
+                    // Always subtract shipping — gives seller the realistic net for each carrier
+                    // Shipping is negotiable (buyer pays, split, free) — show full cost impact
+                    const shipCost = item.shippingPreference === "SPLIT_COST" ? c.price / 2 : item.shippingPreference === "BUYER_PAYS" ? 0 : c.price;
+                    // Commission: 8% default (Starter tier) + 1.75% seller processing fee = 9.75%
+                    // TODO: Use actual user tier commission rate when available
+                    const net = val > 0 ? Math.round((val - shipCost - val * 0.08 - val * 0.0175) * 100) / 100 : null;
+```
+
+══════════════════════════════════════════════════════════════════════
+SECTION 4 — MODIFY: ShippingCenterClient.tsx → "Best profit" footer
+══════════════════════════════════════════════════════════════════════
+
+Find the "Best profit" footer calculation (around line 1641-1650):
+```typescript
+                {carriers.length > 0 && (() => {
+                  const val = item.valuationMid ?? 0;
+                  if (val <= 0) return null;
+                  const bestCarrier = carriers.reduce((best: any, c: any) => {
+                    const net = val - c.price - val * 0.05 - val * 0.0175;
+                    return (!best || net > best.net) ? { ...c, net } : best;
+                  }, null);
+                  if (!bestCarrier) return null;
+                  return (
+                    <div style={{ marginTop: "0.35rem", padding: "0.35rem 0.6rem", borderRadius: "0.35rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.12)", fontSize: "0.62rem", color: "#4caf50", fontWeight: 600 }}>
+                      {"\u{1F4B0}"} Best profit: {bestCarrier.carrier} {"\u2014"} ${bestCarrier.net.toFixed(0)} net after shipping + 6.75% fees
+                    </div>
+                  );
+                })()}
+```
+
+Replace with:
+```typescript
+                {carriers.length > 0 && (() => {
+                  const val = item.listingPrice || item.soldPrice || item.valuationMid || 0;
+                  if (val <= 0) return null;
+                  const pref = item.shippingPreference || "BUYER_PAYS";
+                  const bestCarrier = carriers.reduce((best: any, c: any) => {
+                    const sc = pref === "SPLIT_COST" ? c.price / 2 : pref === "BUYER_PAYS" ? 0 : c.price;
+                    const net = val - sc - val * 0.08 - val * 0.0175;
+                    return (!best || net > best.net) ? { ...c, net } : best;
+                  }, null);
+                  if (!bestCarrier) return null;
+                  const feeLabel = pref === "BUYER_PAYS" ? "after 9.75% fees" : "after shipping + 9.75% fees";
+                  return (
+                    <div style={{ marginTop: "0.35rem", padding: "0.35rem 0.6rem", borderRadius: "0.35rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.12)", fontSize: "0.62rem", color: "#4caf50", fontWeight: 600 }}>
+                      {"\u{1F4B0}"} Best profit: {bestCarrier.carrier} {"\u2014"} ${bestCarrier.net.toFixed(0)} net {feeLabel}
+                    </div>
+                  );
+                })()}
+```
+
+══════════════════════════════════════════════════════════════════════
+SECTION 5 — VERIFICATION CHECKPOINT 1: TypeScript Build
+══════════════════════════════════════════════════════════════════════
+
+Run:
+  npx tsc --noEmit 2>&1 | head -30
+
+Expected: 0 errors related to the modified files.
+
+══════════════════════════════════════════════════════════════════════
+SECTION 6 — VERIFICATION CHECKPOINT 2: Full Build
+══════════════════════════════════════════════════════════════════════
+
+Run:
+  npm run build 2>&1 | tail -20
+
+Expected: Build succeeds with 0 errors.
+
+══════════════════════════════════════════════════════════════════════
+SECTION 7 — LTL FREIGHT VERIFICATION
+══════════════════════════════════════════════════════════════════════
+
+Verify that the LTL freight API endpoint exists and is configured:
+
+Run:
+```bash
+echo "=== LTL ENV VARS ==="
+grep -i "SHIPENGINE\|FEDEX_LTL\|SHIPSTATION" .env
+
+echo ""
+echo "=== LTL API ROUTE ==="
+ls -la app/api/shipping/ltl-quote/ 2>/dev/null || echo "No ltl-quote route found"
+
+echo ""
+echo "=== LTL LIBS ==="
+ls -la lib/shipping/shipengine-ltl.ts lib/shipping/fedex-ltl.ts lib/shipping/freight-estimates.ts 2>/dev/null
+
+echo ""
+echo "=== LTL QUOTE ENDPOINT CODE ==="
+cat app/api/shipping/ltl-quote/route.ts 2>/dev/null | head -80 || echo "No ltl-quote route found"
+```
+
+If the ltl-quote route exists and properly calls ShipEngine + FedEx LTL
++ demo fallback, no changes needed for LTL — it should already return
+4+ freight carrier options.
+
+If the ltl-quote route does NOT exist, report back and we will create
+it in a follow-up command.
+
+══════════════════════════════════════════════════════════════════════
+SECTION 8 — DONE
+══════════════════════════════════════════════════════════════════════
+
+Summary of what this command does:
+
+NET PROFIT FIX:
+  1. Adds listingPrice + shippingPreference to the shipping center
+     API base object (so frontend has access to actual prices)
+  2. Fixes Net Profit formula to use actual listing/sale price
+     (not AI valuation which inflates the number)
+  3. Updates commission from hardcoded 5% to 8% (Starter tier default)
+     with 1.75% seller processing fee = 9.75% total
+  4. Makes per-row and footer formulas consistent
+  5. Correctly handles all shipping preferences:
+     - BUYER_PAYS: seller net = price - fees (no shipping subtracted)
+     - SPLIT_COST: seller net = price - shipping/2 - fees
+     - FREE_SHIPPING: seller net = price - shipping - fees
+  6. Footer label clarifies what fees are included
+
+LTL FREIGHT:
+  7. Verifies ShipEngine + FedEx LTL + demo fallback are wired
+  8. Reports status — no changes unless endpoint is missing
+
+What DOES NOT change:
+  - No frontend layout or styling changes
+  - No rate fetching logic changes
+  - No Shippo or parcel shipping changes
+  - No types or exports changed
+  - No component restructuring
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  END OF COMMAND                                                         ║
+╚══════════════════════════════════════════════════════════════════════════╝

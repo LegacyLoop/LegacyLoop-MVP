@@ -9,6 +9,7 @@ import { searchCities } from "@/lib/shipping/city-lookup";
 import type { CityEntry } from "@/lib/shipping/city-lookup";
 import { getFreightEstimates } from "@/lib/shipping/freight-estimates";
 import type { FreightEstimate } from "@/lib/shipping/freight-estimates";
+import { saveQuote, getAllSavedQuotes, deleteQuote, isQuoteSaved } from "@/lib/shipping/saved-quotes";
 
 type Tab = "preSale" | "readyToShip" | "shipped" | "freight" | "pickup";
 
@@ -685,6 +686,9 @@ function ShipProfile({ item }: { item: any }) {
         {item.isPremium && (
           <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "linear-gradient(90deg, rgba(255,215,0,0.15), rgba(255,152,0,0.12))", color: "#f59e0b" }}>{"\u2B50"} PREMIUM</span>
         )}
+        {(item.isPremium || (item.isHighValue && item.isAntique) || (item.isHighValue && item.isFragile)) && (
+          <span style={{ fontSize: "0.45rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "linear-gradient(90deg, rgba(255,215,0,0.1), rgba(255,152,0,0.08))", color: "#f59e0b", border: "1px solid rgba(255,215,0,0.12)" }}>{"\u{1F3DB}\uFE0F"} ARTA</span>
+        )}
         {item.conditionScore != null && item.conditionScore <= 4 && (
           <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(239,68,68,0.12)", color: "#ef4444" }}>{"\u26A0\uFE0F"} FRAGILE COND.</span>
         )}
@@ -762,9 +766,26 @@ function ItemRow({ item, children }: { item: any; children?: React.ReactNode }) 
         <div style={{ width: 56, height: 56, borderRadius: "0.4rem", background: "var(--ghost-bg)", flexShrink: 0 }} />
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <Link href={`/items/${item.id}`} style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text-primary)", textDecoration: "none" }}>
-          {item.title}
-        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexWrap: "wrap" }}>
+          <Link href={`/items/${item.id}`} style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text-primary)", textDecoration: "none" }}>
+            {item.title}
+          </Link>
+          {item.aiShippingDifficulty && (() => {
+            const d = item.aiShippingDifficulty;
+            const colors: Record<string, { bg: string; text: string }> = {
+              "Easy": { bg: "rgba(76,175,80,0.12)", text: "#4caf50" },
+              "Moderate": { bg: "rgba(255,152,0,0.12)", text: "#ff9800" },
+              "Difficult": { bg: "rgba(244,67,54,0.12)", text: "#f44336" },
+              "Freight only": { bg: "rgba(156,39,176,0.12)", text: "#9c27b0" },
+            };
+            const c = colors[d] || colors["Moderate"];
+            return (
+              <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: c.bg, color: c.text }}>
+                {d === "Freight only" ? "FREIGHT" : d.toUpperCase()}
+              </span>
+            );
+          })()}
+        </div>
         <ShipProfile item={item} />
       </div>
       {children}
@@ -1591,9 +1612,11 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                       c.service === fastestCarrier.service &&
                       !isBest;
                     const isSelectedRow = selectedCarrierMap[item.id]?.carrier === c.carrier && selectedCarrierMap[item.id]?.service === c.service;
-                    const val = item.valuationMid ?? 0;
-                    const shipCost = item.shippingPreference === "SPLIT_COST" ? c.price / 2 : item.shippingPreference === "FREE_SHIPPING" ? c.price : 0;
-                    const net = val > 0 ? Math.round((val - shipCost - val * 0.05 - val * 0.0175) * 100) / 100 : null;
+                    const val = item.listingPrice || item.soldPrice || item.valuationMid || 0;
+                    const shipCost = item.shippingPreference === "SPLIT_COST" ? c.price / 2 : item.shippingPreference === "BUYER_PAYS" ? 0 : c.price;
+                    // 8% commission (Starter tier default) + 1.75% seller processing = 9.75%
+                    // TODO: Pull actual user tier commission rate when available
+                    const net = val > 0 ? Math.round((val - shipCost - val * 0.08 - val * 0.0175) * 100) / 100 : null;
                     const pct = val > 0 ? Math.round((c.price / val) * 100) : 0;
                     return (
                       <div
@@ -1638,16 +1661,19 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                 </div>
                 {/* Best profit summary */}
                 {carriers.length > 0 && (() => {
-                  const val = item.valuationMid ?? 0;
+                  const val = item.listingPrice || item.soldPrice || item.valuationMid || 0;
                   if (val <= 0) return null;
+                  const pref = item.shippingPreference || "BUYER_PAYS";
                   const bestCarrier = carriers.reduce((best: any, c: any) => {
-                    const net = val - c.price - val * 0.05 - val * 0.0175;
+                    const sc = pref === "SPLIT_COST" ? c.price / 2 : pref === "BUYER_PAYS" ? 0 : c.price;
+                    const net = val - sc - val * 0.08 - val * 0.0175;
                     return (!best || net > best.net) ? { ...c, net } : best;
                   }, null);
                   if (!bestCarrier) return null;
+                  const feeLabel = pref === "BUYER_PAYS" ? "after 9.75% fees" : "after shipping + 9.75% fees";
                   return (
                     <div style={{ marginTop: "0.35rem", padding: "0.35rem 0.6rem", borderRadius: "0.35rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.12)", fontSize: "0.62rem", color: "#4caf50", fontWeight: 600 }}>
-                      {"\u{1F4B0}"} Best profit: {bestCarrier.carrier} {"\u2014"} ${bestCarrier.net.toFixed(0)} net after shipping + 6.75% fees
+                      {"\u{1F4B0}"} Best profit: {bestCarrier.carrier} {"\u2014"} ${bestCarrier.net.toFixed(0)} net {feeLabel}
                     </div>
                   );
                 })()}
@@ -2538,28 +2564,33 @@ function ReadyToShipTab({
                           {"\u{1F4CB}"} Copy Tracking #
                         </button>
                       </div>
-                      <button
-                        onClick={() => {
-                          setWizardItem(null);
-                          setGeneratedLabel(null);
-                          onRefresh();
-                          // Navigate to tracking tab
-                          const event = new CustomEvent("shipping-tab-change", { detail: "shipped" });
-                          window.dispatchEvent(event);
-                        }}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          padding: "0.3rem 0",
-                          fontSize: "0.68rem",
-                          color: "var(--accent)",
-                          cursor: "pointer",
-                          textAlign: "left",
-                          fontWeight: 600,
-                        }}
-                      >
-                        View in Tracking Board {"\u2192"}
-                      </button>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+                        <button
+                          onClick={() => {
+                            setWizardItem(null);
+                            setGeneratedLabel(null);
+                            onRefresh();
+                            const event = new CustomEvent("shipping-tab-change", { detail: "shipped" });
+                            window.dispatchEvent(event);
+                          }}
+                          style={{
+                            background: "none", border: "none", padding: "0.3rem 0",
+                            fontSize: "0.68rem", color: "var(--accent)", cursor: "pointer",
+                            textAlign: "left", fontWeight: 600,
+                          }}
+                        >
+                          View in Tracking Board {"\u2192"}
+                        </button>
+                        <a
+                          href={`/items/${item.id}`}
+                          style={{
+                            fontSize: "0.68rem", color: "var(--text-muted)", textDecoration: "none",
+                            padding: "0.3rem 0", fontWeight: 600,
+                          }}
+                        >
+                          {"\u{1F4E6}"} View Item Dashboard {"\u2192"}
+                        </a>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -2615,6 +2646,15 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
     setCopied(tn);
     setTimeout(() => setCopied(null), 2000);
   }
+
+  const getTrackingUrl = (carrier: string, tracking: string): string | null => {
+    const c = (carrier || "").toLowerCase();
+    if (c.includes("usps")) return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${tracking}`;
+    if (c.includes("ups")) return `https://www.ups.com/track?tracknum=${tracking}`;
+    if (c.includes("fedex")) return `https://www.fedex.com/fedextrack/?trknbr=${tracking}`;
+    if (c.includes("dhl")) return `https://www.dhl.com/us-en/home/tracking.html?tracking-id=${tracking}`;
+    return null;
+  };
 
   async function closeSale(itemId: string) {
     setClosingSale(itemId);
@@ -2698,20 +2738,35 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
             )}
           </div>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.2rem", flexShrink: 0 }}>
-            <button
-              onClick={() => copyTracking(tn)}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "0.68rem",
-                color: copied === tn ? "#4caf50" : "var(--accent)",
-                fontFamily: "monospace",
-                textAlign: "right" as const,
-              }}
-            >
-              {tn} {copied === tn ? "\u2713" : "\u{1F4CB}"}
-            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              {(() => {
+                const trackUrl = getTrackingUrl(item.carrier, tn);
+                return trackUrl ? (
+                  <a
+                    href={trackUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ fontFamily: "monospace", fontSize: "0.68rem", color: "var(--accent)", textDecoration: "underline", textUnderlineOffset: "2px" }}
+                    onClick={() => console.log("[tracking] Clicked:", item.carrier, tn)}
+                  >
+                    {tn} {"\u2197"}
+                  </a>
+                ) : (
+                  <span style={{ fontFamily: "monospace", fontSize: "0.68rem", color: "var(--text-primary)" }}>
+                    {tn}
+                  </span>
+                );
+              })()}
+              <button
+                onClick={() => copyTracking(tn)}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  fontSize: "0.62rem", color: copied === tn ? "#4caf50" : "var(--text-muted)", padding: 0,
+                }}
+              >
+                {copied === tn ? "\u2713" : "\u{1F4CB}"}
+              </button>
+            </div>
             <button
               onClick={() => setExpandedLabel(isExpanded ? null : item.id)}
               style={{
@@ -2725,6 +2780,23 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
             >
               {isExpanded ? "\u25B2 Hide Label" : "\u25BC Show Label"}
             </button>
+            {(() => {
+              const trackUrl = getTrackingUrl(item.carrier, tn);
+              if (!trackUrl) return null;
+              const cUp = (item.carrier || "").toUpperCase();
+              const tColor = cUp.includes("USPS") ? "#333366" : cUp.includes("UPS") ? "#351c15" : cUp.includes("FEDEX") ? "#4d148c" : "var(--accent)";
+              return (
+                <a
+                  href={trackUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => console.log("[tracking] Link clicked:", item.carrier, tn)}
+                  style={{ fontSize: "0.6rem", fontWeight: 600, color: tColor, textDecoration: "none", padding: 0 }}
+                >
+                  Track on {(item.carrier || "Carrier").split(" ")[0]} {"\u2197"}
+                </a>
+              );
+            })()}
           </div>
         </div>
         {/* Progress bar */}
@@ -3002,15 +3074,29 @@ function calcFreightClass(w: number, l: number, wi: number, h: number): string {
 
 function FreightTab({ items }: { items: any[] }) {
   const heavyItem = items?.find((i) => (i.weight || 0) > 40);
-  const [form, setForm] = useState({
-    weight: heavyItem?.weight ? String(heavyItem.weight) : "",
-    length: heavyItem?.length ? String(heavyItem.length) : "48",
-    width: heavyItem?.width ? String(heavyItem.width) : "40",
-    height: heavyItem?.height ? String(heavyItem.height) : "36",
-    fromZip: "04901",
-    toZip: "",
-    accessNotes: "",
-    packaging: "palletized",
+  const aiAutoFilled = !!(heavyItem?.aiWeightLbs && !heavyItem?.weight) || !!(heavyItem?.aiDimsEstimate && !heavyItem?.length);
+  const [form, setForm] = useState(() => {
+    // Parse AI dims if available: "34 x 24 x 30" → { l, w, h }
+    const parseDim = (dims: string | null | undefined, part: "l" | "w" | "h"): string => {
+      if (!dims) return part === "l" ? "48" : part === "w" ? "40" : "36";
+      const m = dims.match(/(\d+(?:\.\d+)?)\s*[x\u00D7X]\s*(\d+(?:\.\d+)?)\s*[x\u00D7X]\s*(\d+(?:\.\d+)?)/);
+      if (!m) return part === "l" ? "48" : part === "w" ? "40" : "36";
+      return part === "l" ? m[1] : part === "w" ? m[2] : m[3];
+    };
+    return {
+      weight: heavyItem?.weight ? String(heavyItem.weight)
+        : heavyItem?.aiWeightLbs ? String(heavyItem.aiWeightLbs) : "",
+      length: heavyItem?.length ? String(heavyItem.length)
+        : heavyItem?.aiDimsEstimate ? parseDim(heavyItem.aiDimsEstimate, "l") : "48",
+      width: heavyItem?.width ? String(heavyItem.width)
+        : heavyItem?.aiDimsEstimate ? parseDim(heavyItem.aiDimsEstimate, "w") : "40",
+      height: heavyItem?.height ? String(heavyItem.height)
+        : heavyItem?.aiDimsEstimate ? parseDim(heavyItem.aiDimsEstimate, "h") : "36",
+      fromZip: "04901",
+      toZip: "",
+      accessNotes: "",
+      packaging: "palletized",
+    };
   });
   const [quote, setQuote] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -3203,8 +3289,84 @@ function FreightTab({ items }: { items: any[] }) {
   }) ?? [];
   const fastestFreight = byTransit[0];
 
+  const [freightQuoteVer, setFreightQuoteVer] = useState(0);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      {/* Saved Freight Quotes */}
+      {(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        freightQuoteVer; // trigger re-render on delete
+        const allSaved = getAllSavedQuotes();
+        const ltlQuotes = allSaved.flatMap(({ itemId, quotes }) =>
+          quotes.filter(q => q.type === "ltl").map(q => ({ ...q, itemId }))
+        );
+        if (ltlQuotes.length === 0) return null;
+        return (
+          <div style={{
+            borderRadius: "0.75rem",
+            background: "rgba(156,39,176,0.03)", border: "1px solid rgba(156,39,176,0.12)",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              padding: "0.6rem 0.85rem", display: "flex", alignItems: "center",
+              justifyContent: "space-between",
+            }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                {"\u{1F4BE}"} Saved Freight Quotes ({ltlQuotes.length})
+              </span>
+            </div>
+            <div style={{ padding: "0 0.85rem 0.75rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              {ltlQuotes.map((q: any) => (
+                <div
+                  key={`${q.itemId}-${q.quoteKey}`}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "0.5rem 0.65rem", borderRadius: "0.4rem",
+                    background: "var(--bg-card)", border: "1px solid var(--border-default)",
+                    borderLeft: "3px solid #9c27b0",
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                      <span style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-primary)" }}>{q.carrier}</span>
+                      {q.isLive && <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(76,175,80,0.12)", color: "#4caf50" }}>LIVE</span>}
+                    </div>
+                    <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+                      {q.itemTitle || q.itemId.slice(0, 8)} {"\u00B7"} {q.service} {"\u00B7"} {q.transit}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+                    <span style={{ fontSize: "0.88rem", fontWeight: 800, color: "#4caf50" }}>${Number(q.amount).toFixed(2)}</span>
+                    <a
+                      href={`/items/${q.itemId}`}
+                      style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}
+                    >
+                      Use {"\u2192"}
+                    </a>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteQuote(q.itemId, q.quoteKey);
+                        setFreightQuoteVer(v => v + 1);
+                      }}
+                      style={{
+                        background: "none", border: "none", cursor: "pointer",
+                        fontSize: "0.72rem", color: "var(--text-muted)", padding: "0.15rem 0.3rem",
+                        borderRadius: "0.25rem", lineHeight: 1,
+                      }}
+                      title="Remove saved quote"
+                    >
+                      {"\u2715"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       <div
         style={{
           background: "rgba(156,39,176,0.06)",
@@ -3238,6 +3400,11 @@ function FreightTab({ items }: { items: any[] }) {
             </div>
           ))}
         </div>
+        {aiAutoFilled && (
+          <div style={{ fontSize: "0.62rem", color: "var(--accent)", fontStyle: "italic", marginBottom: "0.3rem" }}>
+            {"\u{1F916}"} Dimensions auto-filled from AI analysis. Verify before quoting.
+          </div>
+        )}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.6rem", marginBottom: "0.6rem" }}>
           <div>
             <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginBottom: "0.2rem" }}>From ZIP</div>
@@ -3343,7 +3510,22 @@ function FreightTab({ items }: { items: any[] }) {
               return (
                 <button
                   key={`${c.carrier}-${i}`}
-                  onClick={() => setSelectedFreight(c)}
+                  onClick={() => {
+                    setSelectedFreight(c);
+                    const fItemId = (heavyItem || items[0])?.id;
+                    if (fItemId) {
+                      saveQuote(fItemId, {
+                        type: "ltl",
+                        carrier: c.carrier,
+                        service: c.service || "LTL",
+                        amount: c.price,
+                        transit: c.transit || "5-10 days",
+                        source: c.source || "demo",
+                        isLive: !!c.isLive,
+                        itemTitle: (heavyItem || items[0])?.title || "",
+                      });
+                    }
+                  }}
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -3358,6 +3540,7 @@ function FreightTab({ items }: { items: any[] }) {
                       : isFedEx ? "rgba(77,20,140,0.03)" : "var(--bg-card)",
                     cursor: "pointer",
                     textAlign: "left" as const,
+                    borderLeft: (() => { const fId = (heavyItem || items[0])?.id; return fId && isQuoteSaved(fId, c.carrier, c.service || "LTL", "ltl") ? "3px solid #4caf50" : undefined; })(),
                   }}
                 >
                   <div>
@@ -3369,6 +3552,7 @@ function FreightTab({ items }: { items: any[] }) {
                       {isFedEx && !c.isLive && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800" }}>FEDEX ESTIMATED</span>}
                       {isShipEngine && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>SHIPENGINE</span>}
                       {isDemo && !isFedEx && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800" }}>ESTIMATED</span>}
+                      {(() => { const fId = (heavyItem || items[0])?.id; return fId && isQuoteSaved(fId, c.carrier, c.service || "LTL", "ltl") ? <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>SAVED</span> : null; })()}
                     </div>
                     <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
                       {c.service} {"\u00B7"} {c.transit}
@@ -3379,6 +3563,10 @@ function FreightTab({ items }: { items: any[] }) {
                 </button>
               );
             })}
+          </div>
+          <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", borderRadius: "0.5rem", background: "rgba(77,20,140,0.06)", border: "1px solid rgba(77,20,140,0.15)", fontSize: "0.72rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(77,20,140,0.12)", color: "#4D148C" }}>FEDEX</span>
+            <span>FedEx Freight Economy rates available with production credentials. Currently showing estimate.</span>
           </div>
           {selectedFreight && (
             <div style={{ marginTop: "0.75rem" }}>
@@ -3426,10 +3614,58 @@ function FreightTab({ items }: { items: any[] }) {
                 {scheduling ? "Scheduling..." : `Schedule ${selectedFreight.carrier} Pickup`}
               </button>
               </div>
+              {/* Link to dashboard for full freight booking flow */}
+              <div style={{ marginTop: "0.5rem", textAlign: "center" }}>
+                <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>
+                  Complete freight booking with BOL generation on the item dashboard
+                </div>
+                <a
+                  href="/dashboard"
+                  style={{
+                    fontSize: "0.72rem", fontWeight: 600, color: "var(--accent)",
+                    textDecoration: "none", cursor: "pointer",
+                  }}
+                >
+                  {"\u{1F4CB}"} Proceed to Freight Booking {"\u2192"}
+                </a>
+              </div>
             </div>
           )}
         </div>
       )}
+
+      {/* Arta White-Glove Option */}
+      {(() => {
+        const artaItem = heavyItem || items[0];
+        const artaOk = artaItem && (artaItem.isPremium || (artaItem.isHighValue && artaItem.isAntique) || (artaItem.isHighValue && artaItem.isFragile));
+        if (!artaOk) return null;
+        return (
+          <div style={{
+            borderRadius: "0.75rem",
+            background: "linear-gradient(135deg, rgba(255,215,0,0.04), rgba(255,152,0,0.03))",
+            border: "1px solid rgba(255,215,0,0.15)",
+            padding: "0.85rem",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem" }}>
+              <span style={{ fontSize: "1rem" }}>{"\u{1F3DB}\uFE0F"}</span>
+              <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#f59e0b" }}>Arta White-Glove Shipping</span>
+              <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,215,0,0.1)", color: "#f59e0b", border: "1px solid rgba(255,215,0,0.2)" }}>PREMIUM</span>
+            </div>
+            <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "0.5rem", lineHeight: 1.5 }}>
+              This item qualifies for museum-grade shipping by Arta — custom crating, climate control, white-glove delivery, and full insurance coverage.
+            </div>
+            <a
+              href={`/items/${artaItem.id}`}
+              style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", fontSize: "0.68rem", fontWeight: 700, padding: "4px 12px", borderRadius: "0.4rem", background: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff", textDecoration: "none" }}
+            >
+              Get Arta Quote on Item Dashboard {"\u2192"}
+            </a>
+            <div style={{ marginTop: "0.4rem", fontSize: "0.48rem", color: "var(--text-muted)", fontStyle: "italic" }}>
+              Powered by Arta {"\u00B7"} Test Mode
+            </div>
+          </div>
+        );
+      })()}
 
       {confirmation && !showQuoteUpload && !showBOL && !bolGenerated && (
         <div style={{ background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.2)", borderRadius: "1rem", padding: "1.25rem" }}>
@@ -4076,6 +4312,7 @@ function LocalPickupTab({ data }: { data: ShipData }) {
   const [inviteForm, setInviteForm] = useState<string | null>(null);
   const [inviteData, setInviteData] = useState<any>({});
   const [tipsOpen, setTipsOpen] = useState(false);
+  const [inviteConfirm, setInviteConfirm] = useState<string | null>(null);
 
   const allItems = [...data.preSale, ...data.readyToShip];
   const pickupItems = allItems.filter((i) =>
@@ -4192,6 +4429,17 @@ function LocalPickupTab({ data }: { data: ShipData }) {
 
         {/* Status-specific content */}
         <div style={{ padding: "0.5rem 0.85rem 0.85rem" }}>
+          {/* Invite confirmation banner */}
+          {inviteConfirm === item.id && (
+            <div style={{
+              padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginBottom: "0.5rem",
+              background: "rgba(76,175,80,0.08)", border: "1px solid rgba(76,175,80,0.2)",
+              display: "flex", alignItems: "center", gap: "0.3rem",
+              fontSize: "0.75rem", fontWeight: 600, color: "#4caf50",
+            }}>
+              {"\u2705"} Invite sent to buyer
+            </div>
+          )}
           {/* PENDING — no status yet */}
           {!status && inviteForm !== item.id && (
             <button
@@ -4253,13 +4501,18 @@ function LocalPickupTab({ data }: { data: ShipData }) {
                   Cancel
                 </button>
                 <button
-                  onClick={() => advancePickup(item.id, {
-                    location: inviteData.location,
-                    timeSlots: inviteData.timeSlots,
-                    contactMethod: inviteData.contactMethod,
-                    paymentMethod: inviteData.paymentMethod,
-                    notes: inviteData.notes,
-                  })}
+                  onClick={async () => {
+                    await advancePickup(item.id, {
+                      location: inviteData.location,
+                      timeSlots: inviteData.timeSlots,
+                      contactMethod: inviteData.contactMethod,
+                      paymentMethod: inviteData.paymentMethod,
+                      notes: inviteData.notes,
+                    });
+                    setInviteConfirm(item.id);
+                    console.log("[pickup] Invite sent for item:", item.id);
+                    setTimeout(() => setInviteConfirm(null), 3000);
+                  }}
                   disabled={advancing === item.id}
                   style={{ padding: "0.35rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #a855f7, #7c3aed)", color: "#fff", cursor: advancing === item.id ? "wait" : "pointer", opacity: advancing === item.id ? 0.6 : 1 }}
                 >
@@ -4779,6 +5032,20 @@ export default function ShippingCenterClient() {
               }}
             >
               <span style={{ fontSize: isActive ? "0.9rem" : "0.8rem" }}>{t.icon}</span> {t.label}
+              {t.key === "freight" && (() => {
+                try {
+                  const raw = localStorage.getItem("ll_saved_quotes");
+                  if (!raw) return null;
+                  const store = JSON.parse(raw);
+                  let sc = 0;
+                  for (const qs of Object.values(store)) { sc += (qs as any[]).filter((q: any) => q.type === "ltl").length; }
+                  return sc > 0 ? (
+                    <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>
+                      {"\u{1F4BE}"}{sc}
+                    </span>
+                  ) : null;
+                } catch { return null; }
+              })()}
               {count != null && count > 0 && (
                 <span
                   style={{

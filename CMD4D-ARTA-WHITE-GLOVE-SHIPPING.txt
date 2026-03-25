@@ -1,0 +1,1273 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 24, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+REAL TECH MANDATE: Minimize demo/mock data. Use real API integrations
+wherever possible. Arta API is LIVE with test key — use real API calls.
+Label test results as "TEST MODE" not "demo".
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep 'ARTA_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ARTA_API_BASE_URL' .env
+grep 'ARTA_MODE' .env
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts — LOCKED
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping (MOST LOCKED) —
+✓ lib/shipping/shippo.ts — LOCKED
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/easypost.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+✓ lib/shipping/saved-quotes.ts — LOCKED (created by CMD4B)
+✓ lib/shipping/freight-estimates.ts — LOCKED (updated by CMD4C)
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/user-events.ts
+✓ lib/data/populate-intelligence.ts — LOCKED (updated by CMD4C)
+
+— Enrichment —
+✓ lib/addons/enrich-item-context.ts
+✓ lib/enrichment/item-context.ts — LOCKED (updated by CMD4C)
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/arta-quote/route.ts — NEW FILE (create)
+✓ EXCEPTION: app/api/webhooks/arta/route.ts — NEW FILE (create)
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ EXCEPTION: app/items/[id]/ShippingPanel.tsx — ADD Arta quote section for premium/antique items
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — LOCKED (do NOT modify schema in this command)
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - lib/shipping/arta.ts (NEW FILE — Arta API client)
+  - app/api/shipping/arta-quote/route.ts (NEW FILE — Arta quote API route)
+  - app/api/webhooks/arta/route.ts (NEW FILE — Arta webhook handler)
+  - app/items/[id]/ShippingPanel.tsx (ADD Arta white-glove quote section for qualifying items)
+  - app/shipping/ShippingCenterClient.tsx (ADD Arta quote option in freight tab for qualifying items)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+Data collection for this command:
+  - Log all Arta API requests: endpoint, payload size, response status, timing
+  - Log Arta quote results: quote_id, service_type, total, carrier, transit
+  - Log Arta errors: error code, message, request context
+  - Log which items trigger Arta eligibility (antique, high-value, premium)
+  - Console.log pattern for all
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+This command follows build pattern:
+  1. Lib: Create Arta API client (lib/shipping/arta.ts)
+  2. API: Create Arta quote route + webhook handler
+  3. UI: Add Arta quote sections to ShippingPanel + ShippingCenter
+  4. No schema changes needed — quotes stored in localStorage like other shipping quotes
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• Arta API: https://api.arta.io — test mode active
+• Auth: Authorization header with "ARTA_APIKey <token>"
+• API version header: Arta-API-Version: 2021-01-01
+• Arta handles: fine art, antiques, collectibles, high-value furniture, fragile items
+• Arta services: premium (white glove), select (curated carriers), parcel (small valuables)
+• Arta provides: real-time quotes, booking, tracking, insurance, custom crating
+
+ARTA ELIGIBILITY — Which items qualify for Arta quotes:
+  An item qualifies if ANY of these are true:
+  - isPremium (value > $2,000)
+  - isHighValue (value > $500) AND isAntique
+  - isHighValue AND isFragile
+  - isHighValue AND aiShippingDifficulty === "Difficult" or "Freight only"
+  - Category is "Art" or "Antique" or "Collectible" (from AI analysis)
+
+  This is NOT for everyday items. This is Christie's/Sotheby's level shipping
+  for items that deserve museum-grade handling.
+
+ARTA API — KEY ENDPOINTS:
+
+  1. POST /requests — Create a quote request
+     Returns multiple service options (premium, select, parcel)
+     Each option has: price, carrier, transit time, insurance included
+
+  2. POST /shipments — Book a shipment from a quote
+     Creates the actual shipment, returns tracking
+
+  3. GET /requests/{id} — Get quote details
+     Check status, get updated pricing
+
+  4. Webhooks — Status updates
+     Arta sends: quote.ready, shipment.created, shipment.in_transit,
+     shipment.delivered, shipment.exception
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Create lib/shipping/arta.ts as new Arta API client
+— Create app/api/shipping/arta-quote/route.ts as new API route
+— Create app/api/webhooks/arta/route.ts as new webhook handler
+— Add Arta quote section to ShippingPanel for qualifying items
+— Add Arta quote option to ShippingCenterClient freight tab
+— Use localStorage for Arta quote storage (same pattern as saved-quotes.ts)
+— Add console.log for data collection
+— Add "Powered by Arta" attribution where required by Arta API terms
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Modify the prisma schema (no new models in this command)
+— Change how AI analysis works
+— Remove or modify existing shipping integrations (Shippo, FedEx, ShipEngine)
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Change business or pricing logic
+— Remove or rebuild existing functionality
+— Add new npm dependencies (use native fetch for Arta API calls)
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+No new env variables needed. Arta config already in .env:
+  ARTA_API_KEY=ARTA_APIKey s0e1t2e3c4a5s6t7r8o9n10o11m12y
+  ARTA_API_BASE_URL=https://api.arta.io
+  ARTA_API_VERSION=2021-01-01
+  ARTA_MODE=test
+  ARTA_QUOTE_TIMEOUT_MS=6000
+  ARTA_WEBHOOK_URL=https://legacy-loop.com/api/webhooks/arta
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+NO — No schema changes in this command. Arta quotes use localStorage
+like other saved quotes. Arta booking/tracking will be a future command
+when we move to production Arta credentials.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+Shipping Center has 5 tabs: preSale (Estimates), readyToShip (Ready to Ship),
+shipped (Tracking), freight (Freight/LTL), pickup (Local Pickup).
+
+Item Dashboard ShippingPanel has:
+  - Ship It tab (parcel + freight) vs Local Pickup tab
+  - Pre-sale mode: rates, carrier selection, freight quotes
+  - Post-sale mode: PostSaleWizard (parcel), LtlCompletionFlow, PickupCompletionFlow
+  - CMD4B added: saved quotes utility, click-to-save on LTL cards
+  - CMD4A added: pre-sale LTL save + carry-over, tracking links
+  - CMD4C added: AI Shipping Brief, freight estimate engine, AI intelligence
+
+Arta integration adds a NEW section for qualifying items — it does NOT replace
+existing shipping options. Users can compare standard freight quotes alongside
+Arta white-glove quotes and choose what fits their item and budget.
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — ARTA WHITE-GLOVE SHIPPING INTEGRATION
+
+================================================================================
+
+This command does FOUR things. Real API. Real tech. Christie's level.
+
+TASK 1 — CREATE ARTA API CLIENT (lib/shipping/arta.ts)
+
+  Build a clean, typed Arta API client using native fetch.
+  No new dependencies. Professional error handling. Full logging.
+
+TASK 2 — CREATE ARTA QUOTE API ROUTE (app/api/shipping/arta-quote/route.ts)
+
+  POST endpoint that accepts item details, checks Arta eligibility,
+  calls Arta API, returns quote options. Includes timeout handling
+  and graceful fallback.
+
+TASK 3 — CREATE ARTA WEBHOOK HANDLER (app/api/webhooks/arta/route.ts)
+
+  POST endpoint to receive Arta status webhooks.
+  Logs all events. Future: update shipment status in DB.
+
+TASK 4 — ADD ARTA UI TO SHIPPING PANEL + SHIPPING CENTER
+
+  For qualifying items (premium, antique, high-value + fragile),
+  show an "Arta White-Glove" quote section with real API results.
+  Gold/premium styling. "Powered by Arta" attribution.
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat .env | grep ARTA
+   Focus: Verify all Arta env vars are present.
+
+2. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2855,2870p'
+   Focus: Where white glove checkbox and freight state lives.
+
+3. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3540,3575p'
+   Focus: White glove accessorial checkbox and cost calculation.
+
+4. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '255,265p'
+   Focus: Where isPremium and white glove hints are shown.
+
+5. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '680,695p'
+   Focus: Where isHighValue/isPremium flags drive shipping hints.
+
+6. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1540,1560p'
+   Focus: Premium/antique shipping badges in freight tab.
+
+7. cat -n app/api/shipping/center/route.ts | sed -n '175,225p'
+   Focus: How isPremium and isHighValue are computed (valMid > 2000, > 500).
+
+8. cat -n lib/shipping/saved-quotes.ts
+   Focus: Full file — understand the saved quote pattern we'll follow for Arta.
+
+9. ls lib/shipping/
+   Focus: Verify no existing arta.ts file.
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PART B — ARTA API CLIENT
+
+================================================================================
+
+FILE: lib/shipping/arta.ts (NEW FILE)
+
+Create a clean Arta API client:
+
+/**
+ * Arta API Client — White-Glove Shipping for High-Value Items
+ *
+ * Arta provides museum-grade shipping services used by Christie's,
+ * Sotheby's, and major galleries. LegacyLoop integrates Arta for
+ * premium, antique, and high-value items.
+ *
+ * API: https://api.arta.io
+ * Auth: ARTA_APIKey <token>
+ * Docs: https://developers.arta.io
+ */
+
+const ARTA_BASE = process.env.ARTA_API_BASE_URL || "https://api.arta.io";
+const ARTA_KEY = process.env.ARTA_API_KEY || "";
+const ARTA_VERSION = process.env.ARTA_API_VERSION || "2021-01-01";
+const ARTA_TIMEOUT = Number(process.env.ARTA_QUOTE_TIMEOUT_MS) || 6000;
+
+// ─── Types ──────────────────────────────────────────────────────
+
+export interface ArtaObject {
+  /** Human-readable description */
+  subtype: string;
+  /** Width in inches */
+  width: number;
+  /** Height in inches */
+  height: number;
+  /** Depth in inches */
+  depth: number;
+  /** Weight in pounds */
+  weight: number;
+  /** Weight unit */
+  weight_unit: string;
+  /** Estimated value in USD (string per Arta API) */
+  value: string;
+  /** Currency */
+  value_currency: string;
+  /** Unit of measurement for dimensions */
+  unit_of_measurement: string;
+  /** Current packing state */
+  current_packing?: string[];
+  /** Item details */
+  details?: {
+    title?: string;
+    is_fragile?: boolean;
+    notes?: string;
+    creator?: string;
+    creation_date?: string;
+    materials?: string[];
+  };
+}
+
+export interface ArtaLocation {
+  /** Address line */
+  address_line_1?: string;
+  /** City */
+  city?: string;
+  /** Region/state (2-letter code) */
+  region?: string;
+  /** Postal code */
+  postal_code: string;
+  /** Country (2-letter ISO) */
+  country: string;
+  /** Contact info */
+  contacts?: { name: string; email_address?: string; phone_number?: string }[];
+}
+
+export interface ArtaQuoteRequest {
+  origin: ArtaLocation;
+  destination: ArtaLocation;
+  objects: ArtaObject[];
+  /** Internal reference */
+  internal_reference?: string;
+  /** Whether to include insurance quote */
+  insurance?: string; // "arta_transit_insurance"
+  /** Preferred quote types to return */
+  preferred_quote_types?: string[]; // ["premium", "select", "parcel"]
+  /** Quoting strategy */
+  quoting_strategy?: string; // "best_rate" | "all"
+  /** Shipping notes */
+  shipping_notes?: string;
+}
+
+export interface ArtaServiceOption {
+  quote_type: string; // "premium" | "select" | "parcel"
+  total: number;
+  total_currency: string;
+  included_services: string[];
+  included_insurance_policy?: {
+    amount: number;
+    amount_currency: string;
+    id: string;
+  } | null;
+  is_estimated: boolean;
+  /** Optional carrier/service details */
+  detail?: string;
+}
+
+export interface ArtaQuoteResponse {
+  id: string;
+  status: string; // "quoted" | "pending" | "expired" | "cancelled"
+  created_at: string;
+  updated_at: string;
+  quote_type?: string;
+  quotes: ArtaServiceOption[];
+  shortcode?: string;
+  /** URL for Arta hosted checkout */
+  hosted_session_url?: string;
+  /** Expiration */
+  expires_at?: string;
+}
+
+export interface ArtaError {
+  errors: { detail: string }[];
+}
+
+// ─── API Helpers ────────────────────────────────────────────────
+
+async function artaFetch<T>(
+  endpoint: string,
+  options: { method?: string; body?: unknown } = {}
+): Promise<{ data: T | null; error: string | null; status: number }> {
+  const { method = "GET", body } = options;
+
+  if (!ARTA_KEY) {
+    console.error("[arta] No ARTA_API_KEY configured");
+    return { data: null, error: "Arta API key not configured", status: 0 };
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), ARTA_TIMEOUT);
+
+  const startTime = Date.now();
+
+  try {
+    const res = await fetch(`${ARTA_BASE}${endpoint}`, {
+      method,
+      headers: {
+        "Authorization": `ARTA_APIKey ${ARTA_KEY}`,
+        "Content-Type": "application/json",
+        "Arta-API-Version": ARTA_VERSION,
+        "Arta-Quote-Timeout": String(ARTA_TIMEOUT),
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    });
+
+    const elapsed = Date.now() - startTime;
+    const json = await res.json();
+
+    console.log(`[arta] ${method} ${endpoint} → ${res.status} (${elapsed}ms)`);
+
+    if (!res.ok) {
+      const errMsg = (json as ArtaError)?.errors?.[0]?.detail || `HTTP ${res.status}`;
+      console.error(`[arta] Error: ${errMsg}`, JSON.stringify(json).slice(0, 500));
+      return { data: null, error: errMsg, status: res.status };
+    }
+
+    return { data: json as T, error: null, status: res.status };
+  } catch (err: unknown) {
+    const elapsed = Date.now() - startTime;
+    if ((err as Error).name === "AbortError") {
+      console.error(`[arta] Request timed out after ${ARTA_TIMEOUT}ms`);
+      return { data: null, error: `Arta request timed out (${ARTA_TIMEOUT}ms)`, status: 0 };
+    }
+    console.error(`[arta] Fetch error (${elapsed}ms):`, (err as Error).message);
+    return { data: null, error: (err as Error).message, status: 0 };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// ─── Public API ─────────────────────────────────────────────────
+
+/**
+ * Request quotes from Arta for a high-value item.
+ *
+ * Returns multiple service tiers: premium (white glove), select, parcel.
+ * Each tier includes pricing, insurance options, and service details.
+ */
+export async function getArtaQuote(
+  request: ArtaQuoteRequest
+): Promise<{ quotes: ArtaServiceOption[]; requestId: string | null; error: string | null; hosted_session_url?: string }> {
+  console.log(`[arta] Requesting quote for ${request.objects.length} object(s)`,
+    `${request.origin.postal_code} → ${request.destination.postal_code}`);
+
+  const { data, error, status } = await artaFetch<ArtaQuoteResponse>("/requests", {
+    method: "POST",
+    body: { request },
+  });
+
+  if (error || !data) {
+    return { quotes: [], requestId: null, error: error || "No response from Arta" };
+  }
+
+  console.log(`[arta] Quote ${data.id}: ${data.status}, ${data.quotes?.length || 0} options`,
+    data.quotes?.map(q => `${q.quote_type}=$${q.total}`).join(", "));
+
+  return {
+    quotes: data.quotes || [],
+    requestId: data.id,
+    error: null,
+    hosted_session_url: data.hosted_session_url,
+  };
+}
+
+/**
+ * Get an existing quote request by ID.
+ */
+export async function getArtaRequest(requestId: string): Promise<{
+  data: ArtaQuoteResponse | null;
+  error: string | null;
+}> {
+  const { data, error } = await artaFetch<ArtaQuoteResponse>(`/requests/${requestId}`);
+  return { data, error };
+}
+
+/**
+ * Check if an item qualifies for Arta white-glove shipping.
+ *
+ * Eligibility criteria:
+ * - Premium items (value > $2,000)
+ * - High-value antiques (value > $500 AND is antique)
+ * - High-value fragile items (value > $500 AND is fragile)
+ * - Difficult shipping items (value > $500 AND AI says Difficult/Freight only)
+ * - Art, Antique, or Collectible categories
+ */
+export function isArtaEligible(item: {
+  valueLow?: number | null;
+  valueHigh?: number | null;
+  isFragile?: boolean;
+  aiShippingDifficulty?: string | null;
+  category?: string | null;
+  isAntique?: boolean;
+}): boolean {
+  const valMid = ((item.valueLow || 0) + (item.valueHigh || 0)) / 2;
+  const isPremium = valMid > 2000;
+  const isHighValue = valMid > 500;
+
+  // Premium items always qualify
+  if (isPremium) return true;
+
+  // High-value antiques
+  if (isHighValue && item.isAntique) return true;
+
+  // High-value fragile items
+  if (isHighValue && item.isFragile) return true;
+
+  // High-value difficult shipping
+  if (isHighValue && (item.aiShippingDifficulty === "Difficult" || item.aiShippingDifficulty === "Freight only")) return true;
+
+  // Art, antique, or collectible categories
+  const artCategories = ["art", "antique", "collectible", "fine art", "sculpture", "painting"];
+  if (isHighValue && item.category && artCategories.includes(item.category.toLowerCase())) return true;
+
+  return false;
+}
+
+/**
+ * Build an Arta quote request from LegacyLoop item data.
+ */
+export function buildArtaRequest(item: {
+  title?: string;
+  category?: string | null;
+  aiWeightLbs?: number | null;
+  shippingWeight?: number | null;
+  aiDimsEstimate?: string | null;
+  shippingLength?: number | null;
+  shippingWidth?: number | null;
+  shippingHeight?: number | null;
+  valueLow?: number | null;
+  valueHigh?: number | null;
+  isFragile?: boolean;
+  aiShippingNotes?: string | null;
+  id?: string;
+}, origin: { zip: string }, destination: { zip: string }): ArtaQuoteRequest {
+  // Weight: prefer user-entered, fall back to AI estimate
+  const weight = item.shippingWeight || item.aiWeightLbs || 20;
+
+  // Dimensions: prefer user-entered, fall back to AI, then defaults
+  let length = item.shippingLength || 24;
+  let width = item.shippingWidth || 18;
+  let height = item.shippingHeight || 18;
+
+  if (!item.shippingLength && item.aiDimsEstimate) {
+    const match = item.aiDimsEstimate.match(/(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)/);
+    if (match) {
+      length = parseFloat(match[1]);
+      width = parseFloat(match[2]);
+      height = parseFloat(match[3]);
+    }
+  }
+
+  const valMid = ((item.valueLow || 0) + (item.valueHigh || 0)) / 2;
+
+  return {
+    origin: {
+      postal_code: origin.zip,
+      country: "US",
+    },
+    destination: {
+      postal_code: destination.zip,
+      country: "US",
+    },
+    objects: [{
+      subtype: item.title || item.category || "Antique / Collectible",
+      width,
+      height,
+      depth: length,
+      weight,
+      weight_unit: "lb",
+      value: String(Math.round(valMid * 100) / 100),
+      value_currency: "USD",
+      unit_of_measurement: "in",
+      current_packing: ["no_packing"],
+      details: {
+        title: item.title || "Item",
+        is_fragile: item.isFragile || false,
+        notes: item.aiShippingNotes || undefined,
+      },
+    }],
+    internal_reference: item.id || undefined,
+    insurance: "arta_transit_insurance",
+    preferred_quote_types: ["premium", "select", "parcel"],
+    quoting_strategy: "best_rate",
+    shipping_notes: item.aiShippingNotes || "LegacyLoop item — handle with care",
+  };
+}
+
+================================================================================
+
+PART C — ARTA QUOTE API ROUTE
+
+================================================================================
+
+FILE: app/api/shipping/arta-quote/route.ts (NEW FILE)
+
+import { NextRequest, NextResponse } from "next/server";
+import { authAdapter } from "@/lib/adapters/auth";
+import { getArtaQuote, buildArtaRequest, isArtaEligible } from "@/lib/shipping/arta";
+
+/**
+ * POST /api/shipping/arta-quote
+ * Get white-glove shipping quotes from Arta for qualifying items.
+ *
+ * Body: { item: { title, category, valueLow, valueHigh, shippingWeight, aiWeightLbs,
+ *          shippingLength, shippingWidth, shippingHeight, aiDimsEstimate,
+ *          isFragile, aiShippingDifficulty, isAntique, id },
+ *         fromZip, toZip }
+ */
+export async function POST(req: NextRequest) {
+  const user = await authAdapter.getSession();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  try {
+    const body = await req.json();
+    const { item, fromZip, toZip } = body;
+
+    if (!toZip) {
+      return NextResponse.json({ error: "Destination zip required" }, { status: 400 });
+    }
+
+    // Check eligibility
+    if (!isArtaEligible(item)) {
+      console.log(`[arta-quote] Item ${item?.id} not eligible for Arta`);
+      return NextResponse.json({
+        eligible: false,
+        quotes: [],
+        message: "Item does not meet Arta white-glove eligibility criteria",
+      });
+    }
+
+    // Build and send request
+    const artaReq = buildArtaRequest(
+      item,
+      { zip: fromZip || "04901" },
+      { zip: toZip }
+    );
+
+    console.log(`[arta-quote] Requesting for item ${item?.id}:`,
+      `$${artaReq.objects[0]?.value} value,`,
+      `${artaReq.objects[0]?.weight}lbs,`,
+      `${fromZip || "04901"} → ${toZip}`);
+
+    const result = await getArtaQuote(artaReq);
+
+    if (result.error) {
+      console.error(`[arta-quote] Error: ${result.error}`);
+      return NextResponse.json({
+        eligible: true,
+        quotes: [],
+        error: result.error,
+        requestId: result.requestId,
+        source: "arta",
+        isLive: false,
+      });
+    }
+
+    // Format quotes for frontend
+    const formattedQuotes = result.quotes.map(q => ({
+      quote_type: q.quote_type,
+      total: q.total,
+      currency: q.total_currency || "USD",
+      services: q.included_services || [],
+      insurance: q.included_insurance_policy || null,
+      is_estimated: q.is_estimated,
+      detail: q.detail || null,
+      source: "arta",
+      isLive: true,
+    }));
+
+    console.log(`[arta-quote] Success: ${formattedQuotes.length} options`,
+      formattedQuotes.map(q => `${q.quote_type}=$${q.total}`).join(", "));
+
+    return NextResponse.json({
+      eligible: true,
+      quotes: formattedQuotes,
+      requestId: result.requestId,
+      hosted_session_url: result.hosted_session_url || null,
+      source: "arta",
+      isLive: true,
+      artaMode: process.env.ARTA_MODE || "test",
+    });
+  } catch (err: unknown) {
+    console.error("[arta-quote] Unhandled error:", (err as Error).message);
+    return NextResponse.json(
+      { error: "Failed to get Arta quote", detail: (err as Error).message },
+      { status: 500 }
+    );
+  }
+}
+
+================================================================================
+
+PART D — ARTA WEBHOOK HANDLER
+
+================================================================================
+
+FILE: app/api/webhooks/arta/route.ts (NEW FILE)
+
+import { NextRequest, NextResponse } from "next/server";
+
+/**
+ * POST /api/webhooks/arta
+ * Receives webhook events from Arta.
+ *
+ * Events: quote.ready, shipment.created, shipment.collected,
+ *         shipment.in_transit, shipment.delivered, shipment.exception
+ *
+ * For now: log all events. Future: update shipment status in DB.
+ */
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const event = body?.event_type || body?.type || "unknown";
+    const resourceId = body?.resource?.id || body?.data?.id || "unknown";
+
+    console.log(`[arta-webhook] Event: ${event}`, JSON.stringify({
+      resource_id: resourceId,
+      status: body?.resource?.status || body?.data?.status,
+      timestamp: new Date().toISOString(),
+    }));
+
+    // TODO: When Arta goes production, update shipment tracking in DB
+    // For now, log and acknowledge
+    switch (event) {
+      case "quote.ready":
+        console.log(`[arta-webhook] Quote ready: ${resourceId}`);
+        break;
+      case "shipment.created":
+        console.log(`[arta-webhook] Shipment created: ${resourceId}`);
+        break;
+      case "shipment.collected":
+        console.log(`[arta-webhook] Shipment collected: ${resourceId}`);
+        break;
+      case "shipment.in_transit":
+        console.log(`[arta-webhook] Shipment in transit: ${resourceId}`);
+        break;
+      case "shipment.delivered":
+        console.log(`[arta-webhook] Shipment delivered: ${resourceId}`);
+        break;
+      case "shipment.exception":
+        console.error(`[arta-webhook] Shipment exception: ${resourceId}`, body);
+        break;
+      default:
+        console.log(`[arta-webhook] Unhandled event: ${event}`);
+    }
+
+    return NextResponse.json({ received: true });
+  } catch (err: unknown) {
+    console.error("[arta-webhook] Parse error:", (err as Error).message);
+    return NextResponse.json({ received: true }, { status: 200 }); // Always 200 to Arta
+  }
+}
+
+================================================================================
+
+PART E — ARTA UI IN SHIPPING PANEL (ShippingPanel.tsx)
+
+================================================================================
+
+FILE: app/items/[id]/ShippingPanel.tsx
+
+Add an "Arta White-Glove Shipping" section for qualifying items.
+This goes BELOW the freight quotes section, ABOVE the saved quotes section.
+Only renders when the item meets Arta eligibility criteria.
+
+STEP 1: Add state variables near the existing freight state (~line 2860):
+
+  const [artaLoading, setArtaLoading] = useState(false);
+  const [artaQuotes, setArtaQuotes] = useState<any[]>([]);
+  const [artaError, setArtaError] = useState<string | null>(null);
+  const [artaRequestId, setArtaRequestId] = useState<string | null>(null);
+  const [artaHostedUrl, setArtaHostedUrl] = useState<string | null>(null);
+
+STEP 2: Add eligibility check (use the same logic from arta.ts but client-side):
+
+  const artaEligible = useMemo(() => {
+    if (!suggestion) return false;
+    const valMid = ((suggestion.valueLow || 0) + (suggestion.valueHigh || 0)) / 2;
+    const isPremium = valMid > 2000;
+    const isHighValue = valMid > 500;
+    if (isPremium) return true;
+    if (isHighValue && suggestion.isAntique) return true;
+    if (isHighValue && suggestion.isFragile) return true;
+    if (isHighValue && suggestion.aiShippingDifficulty === "Difficult") return true;
+    if (isHighValue && suggestion.aiShippingDifficulty === "Freight only") return true;
+    const artCats = ["art", "antique", "collectible", "fine art", "sculpture", "painting"];
+    if (isHighValue && suggestion.category && artCats.includes(suggestion.category.toLowerCase())) return true;
+    return false;
+  }, [suggestion]);
+
+NOTE: Adjust based on what props/data is actually available in ShippingPanel.
+Read Part A findings to determine the exact data shape. The eligibility check
+must use whatever item data is accessible in this component's scope.
+
+STEP 3: Add fetch function:
+
+  const fetchArtaQuotes = async () => {
+    setArtaLoading(true);
+    setArtaError(null);
+    try {
+      const res = await fetch("/api/shipping/arta-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          item: {
+            id: itemId,
+            title: suggestion?.label || "",
+            category: suggestion?.category || "",
+            valueLow: suggestion?.valueLow || 0,
+            valueHigh: suggestion?.valueHigh || 0,
+            shippingWeight: suggestion?.shippingWeight || null,
+            aiWeightLbs: suggestion?.aiWeightLbs || null,
+            shippingLength: suggestion?.shippingLength || null,
+            shippingWidth: suggestion?.shippingWidth || null,
+            shippingHeight: suggestion?.shippingHeight || null,
+            aiDimsEstimate: suggestion?.aiDimsEstimate || null,
+            isFragile: suggestion?.isFragile || false,
+            aiShippingDifficulty: suggestion?.aiShippingDifficulty || null,
+            isAntique: suggestion?.isAntique || false,
+          },
+          fromZip: "04901",
+          toZip: recipientZip || "",
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setArtaError(data.error);
+      } else {
+        setArtaQuotes(data.quotes || []);
+        setArtaRequestId(data.requestId || null);
+        setArtaHostedUrl(data.hosted_session_url || null);
+      }
+    } catch (err: unknown) {
+      setArtaError("Failed to get Arta quotes");
+    } finally {
+      setArtaLoading(false);
+    }
+  };
+
+NOTE: Adjust field names based on actual data available in ShippingPanel.
+recipientZip may need to come from the freight quote form's toZip field
+or a separate input. Read the Part A findings to determine the right source.
+
+STEP 4: Render the Arta section (BELOW freight quotes, only for eligible items):
+
+{artaEligible && (
+  <div style={{
+    marginTop: "1rem", borderRadius: "0.75rem",
+    background: "linear-gradient(135deg, rgba(255,215,0,0.04), rgba(255,152,0,0.03))",
+    border: "1px solid rgba(255,215,0,0.15)",
+    padding: "0.85rem",
+  }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.6rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+        <span style={{ fontSize: "1rem" }}>🏛️</span>
+        <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#f59e0b" }}>Arta White-Glove Shipping</span>
+        <span style={{
+          fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px",
+          background: "rgba(255,215,0,0.1)", color: "#f59e0b",
+          border: "1px solid rgba(255,215,0,0.2)",
+        }}>PREMIUM</span>
+      </div>
+      {!artaQuotes.length && !artaLoading && (
+        <button
+          onClick={fetchArtaQuotes}
+          style={{
+            fontSize: "0.68rem", fontWeight: 700, padding: "4px 12px", borderRadius: "0.4rem",
+            background: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff",
+            border: "none", cursor: "pointer",
+          }}
+        >
+          Get Arta Quote
+        </button>
+      )}
+    </div>
+
+    <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "0.5rem", lineHeight: 1.5 }}>
+      Museum-grade shipping by Arta — used by Christie's & Sotheby's.
+      Custom crating, climate control, white-glove delivery, full insurance.
+    </div>
+
+    {artaLoading && (
+      <div style={{
+        padding: "1rem", textAlign: "center", fontSize: "0.72rem",
+        color: "#f59e0b", fontStyle: "italic",
+      }}>
+        Requesting Arta quote...
+      </div>
+    )}
+
+    {artaError && (
+      <div style={{
+        padding: "0.5rem 0.75rem", borderRadius: "0.4rem",
+        background: "rgba(244,67,54,0.08)", border: "1px solid rgba(244,67,54,0.15)",
+        fontSize: "0.65rem", color: "#f44336",
+      }}>
+        {artaError}
+        <button
+          onClick={fetchArtaQuotes}
+          style={{
+            marginLeft: "0.5rem", fontSize: "0.6rem", color: "#f59e0b",
+            background: "none", border: "none", cursor: "pointer",
+            textDecoration: "underline",
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    )}
+
+    {artaQuotes.length > 0 && (
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        {artaQuotes.map((q: any, idx: number) => {
+          const typeLabels: Record<string, { label: string; desc: string; icon: string }> = {
+            premium: { label: "White Glove", desc: "Custom crating, climate transport, white-glove delivery", icon: "🏛️" },
+            select: { label: "Select Carrier", desc: "Vetted fine art carriers, professional packing", icon: "🎨" },
+            parcel: { label: "Specialty Parcel", desc: "Insured specialty parcel for smaller valuables", icon: "📦" },
+          };
+          const typeInfo = typeLabels[q.quote_type] || typeLabels.premium;
+
+          return (
+            <div key={idx} style={{
+              padding: "0.65rem 0.75rem", borderRadius: "0.5rem",
+              background: "rgba(255,215,0,0.03)",
+              border: q.quote_type === "premium"
+                ? "1px solid rgba(255,215,0,0.25)"
+                : "1px solid rgba(255,255,255,0.06)",
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                    <span style={{ fontSize: "0.75rem" }}>{typeInfo.icon}</span>
+                    <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                      {typeInfo.label}
+                    </span>
+                    {q.quote_type === "premium" && (
+                      <span style={{
+                        fontSize: "0.42rem", fontWeight: 700, padding: "1px 5px",
+                        borderRadius: "9999px", background: "rgba(255,215,0,0.12)",
+                        color: "#f59e0b", textTransform: "uppercase",
+                      }}>RECOMMENDED</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginTop: "2px" }}>
+                    {typeInfo.desc}
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: "1rem", fontWeight: 800, color: "#f59e0b" }}>
+                    ${q.total?.toLocaleString() || "—"}
+                  </div>
+                  <div style={{ fontSize: "0.48rem", color: "var(--text-muted)" }}>
+                    {q.is_estimated ? "ESTIMATED" : "LIVE"} • {q.currency || "USD"}
+                  </div>
+                </div>
+              </div>
+              {q.insurance && (
+                <div style={{
+                  marginTop: "0.3rem", fontSize: "0.55rem", color: "var(--accent)",
+                  display: "flex", alignItems: "center", gap: "0.25rem",
+                }}>
+                  🛡️ Insurance included: ${q.insurance.amount?.toLocaleString()} coverage
+                </div>
+              )}
+              {q.services && q.services.length > 0 && (
+                <div style={{ marginTop: "0.3rem", fontSize: "0.52rem", color: "var(--text-secondary)" }}>
+                  {q.services.slice(0, 4).join(" • ")}
+                  {q.services.length > 4 && ` +${q.services.length - 4} more`}
+                </div>
+              )}
+            </div>
+          );
+        })}
+
+        {artaHostedUrl && (
+          <a
+            href={artaHostedUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "block", textAlign: "center", padding: "0.5rem",
+              fontSize: "0.65rem", fontWeight: 700, color: "#f59e0b",
+              textDecoration: "none", borderRadius: "0.4rem",
+              border: "1px solid rgba(255,215,0,0.2)",
+              marginTop: "0.25rem",
+            }}
+          >
+            Book via Arta Checkout →
+          </a>
+        )}
+      </div>
+    )}
+
+    <div style={{
+      marginTop: "0.5rem", fontSize: "0.48rem", color: "var(--text-muted)",
+      textAlign: "right", fontStyle: "italic",
+    }}>
+      Powered by Arta • {process.env.NEXT_PUBLIC_ARTA_MODE === "test" ? "Test Mode" : ""}
+    </div>
+  </div>
+)}
+
+================================================================================
+
+PART F — ARTA UI IN SHIPPING CENTER (ShippingCenterClient.tsx)
+
+================================================================================
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+Add Arta quote option in the Freight/LTL tab for qualifying items.
+This goes BELOW the existing freight quote results section.
+
+Similar pattern to ShippingPanel but adapted for the Shipping Center context:
+- Item data comes from the shipping center API (which includes isPremium, isHighValue, isAntique)
+- Show "Get Arta White-Glove Quote" button for qualifying items
+- Same gold/premium styling
+- Same quote display cards
+
+The implementation should follow the EXACT same pattern as Part E but use
+the Shipping Center's item data structure and state management.
+
+KEY DIFFERENCE: In ShippingCenter, the heavy item selected for freight
+quoting is tracked differently. Find where the freight form renders and
+where the selected item's data is available. Add the Arta section below
+the freight results for that item, using the same eligibility check.
+
+ALSO ADD: In the PreSaleTab and ReadyToShipTab item cards, if an item
+is Arta-eligible, show a small gold badge:
+
+{artaEligible && (
+  <span style={{
+    fontSize: "0.45rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px",
+    background: "linear-gradient(90deg, rgba(255,215,0,0.1), rgba(255,152,0,0.08))",
+    color: "#f59e0b", border: "1px solid rgba(255,215,0,0.12)",
+  }}>
+    🏛️ ARTA
+  </span>
+)}
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+
+ARTA CLIENT:
+3. lib/shipping/arta.ts created: yes / no
+4. artaFetch helper with timeout + error handling: yes / no
+5. getArtaQuote function: yes / no
+6. isArtaEligible function: yes / no
+7. buildArtaRequest function: yes / no
+8. All console.log for data collection: yes / no
+
+ARTA QUOTE ROUTE:
+9. app/api/shipping/arta-quote/route.ts created: yes / no
+10. Auth check: yes / no
+11. Eligibility check before API call: yes / no
+12. Proper error handling + timeout: yes / no
+13. Response includes: eligible, quotes, requestId, source, artaMode: yes / no
+
+WEBHOOK HANDLER:
+14. app/api/webhooks/arta/route.ts created: yes / no
+15. Handles all event types: yes / no
+16. Always returns 200: yes / no
+17. Full event logging: yes / no
+
+SHIPPING PANEL UI:
+18. Arta section added to ShippingPanel: yes / no
+19. Only shows for eligible items: yes / no
+20. "Get Arta Quote" button: yes / no
+21. Loading state: yes / no
+22. Error state with retry: yes / no
+23. Quote cards with tier labels (Premium/Select/Parcel): yes / no
+24. Insurance display: yes / no
+25. Hosted checkout link: yes / no
+26. "Powered by Arta" attribution: yes / no
+27. Gold/premium styling throughout: yes / no
+
+SHIPPING CENTER UI:
+28. Arta section in freight tab: yes / no
+29. Arta eligibility badge on item cards: yes / no
+30. Only shows for qualifying items: yes / no
+
+BUILD:
+31. All locked files untouched: yes / no
+32. inline style={{}} throughout: yes / no
+33. npx tsc --noEmit: 0 errors
+34. npm run build: pass
+35. CHECKPOINT post-change: pass
+36. Dev server: localhost:3000
+
+MANUAL TESTS:
+37. Premium item ($2K+): Arta section appears: yes / no
+38. Low-value item: Arta section hidden: yes / no
+39. Click "Get Arta Quote": API call fires, results or error displayed: yes / no
+40. Arta quotes display with pricing, services, insurance: yes / no
+41. Arta eligibility badge on qualifying items in Shipping Center: yes / no
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+ARTA CLIENT:
+- lib/shipping/arta.ts created: [yes / no]
+- Functions: getArtaQuote, getArtaRequest, isArtaEligible, buildArtaRequest: [yes / no]
+- Timeout handling: [yes / no]
+
+ARTA QUOTE ROUTE:
+- app/api/shipping/arta-quote/route.ts created: [yes / no]
+- Test: POST /api/shipping/arta-quote with premium item
+  → Response status: [status]
+  → Quotes returned: [count] or error: [message]
+  → artaMode: [test / production]
+
+WEBHOOK:
+- app/api/webhooks/arta/route.ts created: [yes / no]
+
+UI:
+- ShippingPanel Arta section: [yes / no]
+- ShippingCenter Arta section: [yes / no]
+- Eligibility badges: [yes / no]
+- Gold styling: [yes / no]
+
+BUILD:
+- npx tsc --noEmit: [# errors]
+- npm run build: [pass / fail]
+- Dev server: localhost:3000
+
+Files created:
+  - lib/shipping/arta.ts (NEW)
+  - app/api/shipping/arta-quote/route.ts (NEW)
+  - app/api/webhooks/arta/route.ts (NEW)
+
+Files modified:
+  - app/items/[id]/ShippingPanel.tsx
+  - app/shipping/ShippingCenterClient.tsx
+
+LOCKED FILE INTEGRITY:
+  - lib/shipping/shippo.ts: [untouched]
+  - lib/shipping/fedex-parcel.ts: [untouched]
+  - lib/shipping/fedex-ltl.ts: [untouched]
+  - lib/shipping/easypost.ts: [untouched]
+  - lib/shipping/shipengine-ltl.ts: [untouched]
+  - lib/shipping/freight-estimates.ts: [untouched]
+  - lib/shipping/saved-quotes.ts: [untouched]
+  - lib/adapters/ai.ts: [untouched]
+  - prisma/schema.prisma: [untouched]
+
+END OF COMMAND 4D

@@ -1,0 +1,990 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 24, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping —
+✓ lib/shipping/package-suggestions.ts
+✓ lib/shipping/shippo.ts — LOCKED
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/easypost.ts — LOCKED
+✓ lib/shipping/freight-estimates.ts — LOCKED
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/populate-intelligence.ts
+✓ lib/data/project-rollup.ts
+✓ lib/data/user-events.ts
+
+— Enrichment —
+✓ lib/enrichment/item-context.ts
+✓ lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— eBay Adapter (when created) —
+✓ lib/adapters/ebay.ts — LOCKED after creation
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/** — READ + EXTEND for shipping work
+✓ EXCEPTION: app/api/ebay/** — READ + EXTEND for eBay work
+✓ EXCEPTION: app/api/bots/** — READ for bot page data sync work
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED except surgical unlocks for bot upgrades
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — READ ONLY
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - app/items/[id]/ShippingPanel.tsx (FIX pre-sale LTL dead end — add action button after carrier selection + persist selection to localStorage for post-sale carry-over)
+  - app/shipping/ShippingCenterClient.tsx (ADD View Item link after label creation + ADD freight tab proceed-to-booking button + SMOOTH shipped tab with carrier tracking links)
+  - lib/shipping/shipengine-ltl.ts (WIRE listCarriers into rate request — use connected carrier IDs instead of empty array)
+  - app/api/shipping/ltl-quote/route.ts (ADD ShipEngine carrier discovery — call listCarriers() if carrier_ids empty)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+Data collection for this command:
+  - Log pre-sale LTL carrier selections (carrier, quote_id, amount) to console
+  - Log ShipEngine connected carriers on first ltl-quote request
+  - Log carrier tracking link clicks
+  - All via existing console.log pattern
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• Shipping system has 3 views: Item Dashboard ShippingPanel, Shipping Center, Shipping Label view
+• All carrier rates WORKING: Shippo + EasyPost + demo fallback (13-20+ rates per item)
+• LTL freight: demo estimates from 6 carriers (XPO, Old Dominion, R+L, Estes, SAIA, FedEx Freight)
+• FedEx LTL direct: ACCOUNT.NUMBER.MISMATCH on sandbox (code correct, portal config pending)
+• ShipEngine LTL: passes carrier_ids: [] (empty) — NEEDS FIX
+• ShipEngine has listCarriers() function ready but NEVER CALLED
+• ShipEngine sandbox carrier: se-1115747 available
+
+FLOW DEAD ENDS IDENTIFIED (this command fixes them):
+
+1. PRE-SALE LTL CARRIER SELECTION (ShippingPanel line 3617):
+   User clicks a freight carrier quote card → selectedLtlCarrier state updates →
+   BUT NO ACTION BUTTON EXISTS. No "Proceed", no "Save Quote", nothing.
+   The user selects a carrier and then... nothing happens.
+   FIX: Add "Save Freight Quote" button that persists selection to localStorage
+   and shows confirmation banner with next steps.
+
+2. PRE-SALE TO POST-SALE CARRY-OVER:
+   selectedLtlCarrier lives in React state only — lost on navigation.
+   Post-sale LtlCompletionFlow (line 2048) defaults to "XPO Logistics".
+   FIX: Save pre-sale selection to localStorage key: ll_ltl_quote_{itemId}
+   LtlCompletionFlow reads from localStorage on mount and pre-populates.
+
+3. SHIPPING CENTER → ITEM DASHBOARD:
+   Item Dashboard can link TO Shipping Center (line 640: href=/shipping?itemId=)
+   But Shipping Center has NO link back to Item Dashboard.
+   FIX: Add "View Item →" link in wizard after label creation (line 2485 area)
+   and in shipped tab item cards.
+
+4. SHIPENGINE EMPTY CARRIER_IDS:
+   shipengine-ltl.ts line 90: carrier_ids: [] — asks for all carriers but
+   ShipEngine may require at least one. listCarriers() exists at line 150
+   but is never called.
+   FIX: Call listCarriers() first, use returned IDs in rate request.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Add action buttons to resolve dead ends
+— Add localStorage persistence for quote selections
+— Add navigation links between views
+— Wire existing unused functions (listCarriers)
+— Add carrier tracking URL generation
+— Improve button styling with Elon-standard polish
+— Add confirmation banners/toasts
+— Add console.log for data collection
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Change business or pricing logic
+— Remove or rebuild existing functionality
+— Add new npm dependencies
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+Variable                   Status       Notes
+SHIPENGINE_API_KEY         SET          ShipStation LTL sandbox key
+SHIPENGINE_BASE_URL        SET          https://api.shipengine.com
+SHIPENGINE_ENV             SET          sandbox
+No new env variables in this command.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No schema changes in this command.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+Shipping Center has 5 tabs: preSale (Estimates), readyToShip (Ready to Ship),
+shipped (Tracking), freight (Freight/LTL), pickup (Local Pickup).
+
+Item Dashboard ShippingPanel has:
+  - Ship It tab (parcel + freight) vs Local Pickup tab
+  - Pre-sale mode: rates, carrier selection, freight quotes
+  - Post-sale mode: PostSaleWizard (parcel), LtlCompletionFlow, PickupCompletionFlow
+
+KEY FLOW POINTS:
+  - ShippingPanel line 3617: selectedLtlCarrier set on click — NO follow-up action
+  - ShippingPanel line 3646: End of live LTL quotes display — DEAD END
+  - ShippingPanel line 2048: LtlCompletionFlow defaults selectedCarrier to "XPO Logistics"
+  - ShippingCenterClient line 2485: Post-label actions — has "Mark as Shipped", "Print", "Copy Tracking"
+  - ShippingCenterClient line 2546: "View in Tracking Board" link exists (good)
+  - ShippingCenterClient line 2582: ShippedTab starts — NO carrier tracking links
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — SHIPPING FLOW CONNECTIONS: FIX DEAD ENDS + WIRE SHIPENGINE
+
+================================================================================
+
+This command does FOUR things. All surgical. Smoothing flows.
+
+TASK 1 — FIX PRE-SALE LTL DEAD END (ShippingPanel.tsx)
+  After user selects a freight carrier from live quotes:
+  - ADD "Save Freight Quote" action button below the carrier cards
+  - Button saves selection to localStorage: ll_ltl_quote_{itemId}
+  - Show confirmation banner: "✅ Freight quote saved — [carrier] at $[amount]"
+  - Add "→ View in Shipping Center" link
+  - Add "→ Request Manual Quote for Better Rate" link
+  - This connects the pre-sale selection to a clear next step
+
+TASK 2 — PRE-SALE TO POST-SALE LTL CARRY-OVER (ShippingPanel.tsx)
+  LtlCompletionFlow currently defaults carrier to "XPO Logistics" (line 2048)
+  - On mount: Read localStorage ll_ltl_quote_{itemId}
+  - If saved quote exists: pre-populate selectedCarrier with saved carrier name
+  - Show banner: "Pre-selected from your saved quote: [carrier] — $[amount]"
+  - User can still change carrier in the dropdown
+  - This eliminates the frustration of re-selecting after sale
+
+TASK 3 — WIRE SHIPENGINE CONNECTED CARRIERS (shipengine-ltl.ts + ltl-quote route)
+  listCarriers() at line 150 is ready but never called.
+  - In shipengine-ltl.ts: Before rate request, call listCarriers()
+  - Cache the result (module-level variable, refresh every 5 minutes)
+  - Use returned carrier IDs in carrier_ids array
+  - If listCarriers() returns empty: fall through to existing demo behavior
+  - Log: "[ShipEngine] Connected carriers: [list]"
+  - This may unlock LIVE LTL rates from ShipEngine
+
+TASK 4 — ADD NAVIGATION LINKS + CARRIER TRACKING URLS (ShippingCenterClient.tsx)
+  A) After label creation (line 2485 area):
+     ADD "📦 View Item Dashboard →" link: href="/items/{itemId}"
+  B) In ShippedTab carrier cards:
+     ADD carrier tracking URL link based on carrier name:
+     - USPS: https://tools.usps.com/go/TrackConfirmAction?tLabels={tracking}
+     - UPS: https://www.ups.com/track?tracknum={tracking}
+     - FedEx: https://www.fedex.com/fedextrack/?trknbr={tracking}
+     - Generic: "Track on carrier website" text with no link
+     Opens in new tab (target="_blank")
+  C) In freight tab after carrier selection:
+     ADD "Proceed to Booking →" button that links to item dashboard freight completion
+
+Files modified:
+  - app/items/[id]/ShippingPanel.tsx (pre-sale LTL action + post-sale carry-over)
+  - app/shipping/ShippingCenterClient.tsx (nav links + tracking URLs + freight proceed)
+  - lib/shipping/shipengine-ltl.ts (carrier discovery + caching)
+  - app/api/shipping/ltl-quote/route.ts (log connected carriers)
+
+Expected output:
+  - Pre-sale LTL: User selects carrier → "Save Freight Quote" button appears → saves to localStorage → confirmation shown
+  - Post-sale LTL: Opens with pre-saved carrier name pre-populated
+  - Shipping Center: "View Item Dashboard" link after label creation
+  - Shipped tab: Clickable carrier tracking links (USPS, UPS, FedEx)
+  - ShipEngine: Queries connected carriers before requesting rates
+  - Freight tab: "Proceed to Booking" connects to item dashboard
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3607,3700p'
+   Focus: Live LTL quote cards + the dead end after line 3646.
+   This is where the action button needs to go.
+
+2. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2035,2070p'
+   Focus: LtlCompletionFlow mount + selectedCarrier default "XPO Logistics".
+   This is where localStorage carry-over loads.
+
+3. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2220,2260p'
+   Focus: LtlCompletionFlow carrier dropdown — what carriers are in the list.
+
+4. cat -n lib/shipping/shipengine-ltl.ts | sed -n '78,110p'
+   Focus: getShipEngineRateEstimate — carrier_ids: [] at line 90.
+
+5. cat -n lib/shipping/shipengine-ltl.ts | sed -n '148,166p'
+   Focus: listCarriers() and trackShipment() — ready to use.
+
+6. cat -n app/api/shipping/ltl-quote/route.ts | sed -n '28,65p'
+   Focus: How ShipEngine is called in the LTL quote route.
+
+7. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2462,2570p'
+   Focus: Post-label actions — where to add "View Item Dashboard" link.
+
+8. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2580,2650p'
+   Focus: ShippedTab — where to add carrier tracking links.
+
+9. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '3318,3400p'
+   Focus: Freight tab carrier cards — where to add "Proceed to Booking".
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PART B — FIX PRE-SALE LTL DEAD END
+
+================================================================================
+
+FILE: app/items/[id]/ShippingPanel.tsx
+
+--- B1: Add action button after LTL carrier selection ---
+
+FIND the end of the live LTL quotes card list (around line 3644-3646):
+
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Secondary: Manual quote request */}
+
+INSERT BETWEEN the closing of the live quotes section and the manual quote request:
+
+                  {/* Action buttons after carrier selection */}
+                  {selectedLtlCarrier && (
+                    <div style={{ marginTop: "0.5rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                      {/* Confirmation banner */}
+                      <div style={{
+                        padding: "0.5rem 0.75rem", borderRadius: "0.5rem",
+                        background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.2)",
+                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                      }}>
+                        <div>
+                          <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#4caf50" }}>
+                            ✅ {selectedLtlCarrier.carrier} — ${(selectedLtlCarrier.total_amount || 0).toFixed(2)}
+                          </div>
+                          <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+                            {selectedLtlCarrier.service} · {selectedLtlCarrier.transit_days} days
+                            {selectedLtlCarrier.isLive ? " · Live rate" : " · Estimated"}
+                          </div>
+                        </div>
+                        <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>SELECTED</span>
+                      </div>
+                      {/* Save & proceed button */}
+                      <button
+                        onClick={() => {
+                          try {
+                            localStorage.setItem(`ll_ltl_quote_${itemId}`, JSON.stringify({
+                              carrier: selectedLtlCarrier.carrier,
+                              service: selectedLtlCarrier.service,
+                              amount: selectedLtlCarrier.total_amount,
+                              transit_days: selectedLtlCarrier.transit_days,
+                              quote_id: selectedLtlCarrier.quote_id,
+                              source: selectedLtlCarrier.source,
+                              isLive: selectedLtlCarrier.isLive,
+                              savedAt: new Date().toISOString(),
+                            }));
+                            console.log("[shipping] LTL quote saved:", selectedLtlCarrier.carrier, "$" + selectedLtlCarrier.total_amount);
+                          } catch {}
+                        }}
+                        style={{
+                          width: "100%", padding: "0.6rem 1rem", fontSize: "0.82rem", fontWeight: 700,
+                          borderRadius: "0.5rem", border: "none",
+                          background: "linear-gradient(135deg, #4caf50, #2e7d32)",
+                          color: "#fff", cursor: "pointer",
+                          boxShadow: "0 2px 8px rgba(76,175,80,0.25)",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        💾 Save Freight Quote — {selectedLtlCarrier.carrier} ${(selectedLtlCarrier.total_amount || 0).toFixed(2)}
+                      </button>
+                      {/* Secondary actions */}
+                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <a
+                          href={`/shipping?itemId=${itemId}&tab=freight`}
+                          style={{
+                            flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.3rem",
+                            padding: "0.4rem 0.5rem", fontSize: "0.72rem", fontWeight: 600,
+                            borderRadius: "0.4rem", border: "1px solid var(--border-default)",
+                            color: "var(--accent)", textDecoration: "none", cursor: "pointer",
+                            background: "rgba(0,188,212,0.04)",
+                          }}
+                        >
+                          🚛 Shipping Center →
+                        </a>
+                        <button
+                          onClick={() => setShowLtlQuoteForm(true)}
+                          style={{
+                            flex: 1, padding: "0.4rem 0.5rem", fontSize: "0.72rem", fontWeight: 600,
+                            borderRadius: "0.4rem", border: "1px solid var(--border-default)",
+                            color: "var(--text-muted)", cursor: "pointer",
+                            background: "transparent",
+                          }}
+                        >
+                          📋 Request Better Quote
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+NOTE: This INSERTS new JSX between the live quotes section and the manual
+quote section. It does NOT replace anything. The existing manual quote
+form remains untouched below this new block.
+
+================================================================================
+
+PART C — PRE-SALE TO POST-SALE LTL CARRY-OVER
+
+================================================================================
+
+FILE: app/items/[id]/ShippingPanel.tsx
+
+--- C1: Load saved quote on LtlCompletionFlow mount ---
+
+FIND the LtlCompletionFlow useEffect mount (around lines 2047-2064):
+
+  // Form fields for QUOTE_ACCEPTED step
+  const [selectedCarrier, setSelectedCarrier] = useState("XPO Logistics");
+  const [scheduledPickupDate, setScheduledPickupDate] = useState("");
+
+  useEffect(() => {
+    fetch(`/api/shipping/ltl/${itemId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.error) {
+          setStatus(data.status);
+          setCarrier(data.carrier);
+          setTrackingNumber(data.trackingNumber);
+          setBolNumber(data.bolNumber);
+          setPickupDate(data.pickupDate);
+          setDeliveryDate(data.deliveryDate);
+          setQuote(data.quote);
+          if (data.carrier) setSelectedCarrier(data.carrier);
+        }
+
+REPLACE WITH:
+
+  // Form fields for QUOTE_ACCEPTED step
+  const [selectedCarrier, setSelectedCarrier] = useState("XPO Logistics");
+  const [scheduledPickupDate, setScheduledPickupDate] = useState("");
+  const [savedQuoteBanner, setSavedQuoteBanner] = useState<{ carrier: string; amount: number } | null>(null);
+
+  useEffect(() => {
+    // Check for pre-sale saved LTL quote
+    try {
+      const saved = localStorage.getItem(`ll_ltl_quote_${itemId}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.carrier) {
+          setSelectedCarrier(parsed.carrier);
+          setSavedQuoteBanner({ carrier: parsed.carrier, amount: parsed.amount || 0 });
+          console.log("[shipping] Loaded pre-sale LTL quote:", parsed.carrier, "$" + parsed.amount);
+        }
+      }
+    } catch {}
+    fetch(`/api/shipping/ltl/${itemId}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!data.error) {
+          setStatus(data.status);
+          setCarrier(data.carrier);
+          setTrackingNumber(data.trackingNumber);
+          setBolNumber(data.bolNumber);
+          setPickupDate(data.pickupDate);
+          setDeliveryDate(data.deliveryDate);
+          setQuote(data.quote);
+          if (data.carrier) setSelectedCarrier(data.carrier);
+        }
+
+--- C2: Show saved quote banner in QUOTE_ACCEPTED step ---
+
+FIND the QUOTE_ACCEPTED step UI. Look for the carrier dropdown in
+LtlCompletionFlow (around where selectedCarrier is used in a <select>).
+It should be near where the user picks their carrier for BOL generation.
+
+ADD a banner ABOVE the carrier dropdown:
+
+{savedQuoteBanner && !carrier && (
+  <div style={{
+    padding: "0.4rem 0.65rem", borderRadius: "0.4rem", marginBottom: "0.5rem",
+    background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.15)",
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+  }}>
+    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+      <span style={{ fontWeight: 600, color: "var(--accent)" }}>Pre-selected:</span> {savedQuoteBanner.carrier} — ${savedQuoteBanner.amount.toFixed(2)}
+    </div>
+    <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>SAVED QUOTE</span>
+  </div>
+)}
+
+NOTE: banner only shows when (a) saved quote exists AND (b) no carrier already
+set from API (meaning the post-sale flow hasn't started yet). Once user
+advances to PICKUP_SCHEDULED, the banner hides because carrier is set.
+
+================================================================================
+
+PART D — WIRE SHIPENGINE CONNECTED CARRIERS
+
+================================================================================
+
+FILE: lib/shipping/shipengine-ltl.ts
+
+--- D1: Add carrier caching and auto-discovery ---
+
+FIND the top of the file (module-level constants, around lines 1-15):
+
+Look for the existing module-level variables (SHIPENGINE_KEY, etc.).
+
+ADD after the existing module-level variables:
+
+// ─── Carrier ID Cache ───────────────────────────────────────────────────────
+let cachedCarrierIds: string[] | null = null;
+let carrierCacheTime = 0;
+const CARRIER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+async function getConnectedCarrierIds(): Promise<string[]> {
+  if (cachedCarrierIds && Date.now() - carrierCacheTime < CARRIER_CACHE_TTL) {
+    return cachedCarrierIds;
+  }
+  try {
+    const carriers = await listCarriers();
+    const ids = carriers.map((c: any) => c.carrier_id).filter(Boolean);
+    if (ids.length > 0) {
+      cachedCarrierIds = ids;
+      carrierCacheTime = Date.now();
+      console.log(`[ShipEngine] Connected carriers cached: ${ids.length} carriers — ${carriers.map((c: any) => c.friendly_name || c.carrier_id).join(", ")}`);
+    }
+    return ids;
+  } catch {
+    return [];
+  }
+}
+
+--- D2: Use discovered carrier IDs in rate request ---
+
+FIND the carrier_ids line in getShipEngineRateEstimate (line 90):
+
+    const rateReq = {
+      rate_options: {
+        carrier_ids: [] as string[], // empty = all connected carriers
+      },
+
+REPLACE WITH:
+
+    const connectedIds = await getConnectedCarrierIds();
+    const rateReq = {
+      rate_options: {
+        carrier_ids: connectedIds.length > 0 ? connectedIds : ([] as string[]),
+      },
+
+NOTE: If getConnectedCarrierIds returns empty (no carriers connected or
+sandbox limitation), it falls back to empty array — same behavior as before.
+This is a SAFE upgrade. Worst case: same as current. Best case: live LTL rates.
+
+================================================================================
+
+PART E — NAVIGATION LINKS + CARRIER TRACKING URLS
+
+================================================================================
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+--- E1: Add "View Item Dashboard" link after label creation ---
+
+FIND the post-label actions section (around line 2546-2567):
+
+                      <button
+                        onClick={() => {
+                          setWizardItem(null);
+                          setGeneratedLabel(null);
+                          onRefresh();
+                          // Navigate to tracking tab
+                          const event = new CustomEvent("shipping-tab-change", { detail: "shipped" });
+                          window.dispatchEvent(event);
+                        }}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          padding: "0.3rem 0",
+                          fontSize: "0.68rem",
+                          color: "var(--accent)",
+                          cursor: "pointer",
+                          textAlign: "left",
+                          fontWeight: 600,
+                        }}
+                      >
+                        View in Tracking Board {"\u2192"}
+                      </button>
+
+REPLACE WITH:
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+                        <button
+                          onClick={() => {
+                            setWizardItem(null);
+                            setGeneratedLabel(null);
+                            onRefresh();
+                            const event = new CustomEvent("shipping-tab-change", { detail: "shipped" });
+                            window.dispatchEvent(event);
+                          }}
+                          style={{
+                            background: "none", border: "none", padding: "0.3rem 0",
+                            fontSize: "0.68rem", color: "var(--accent)", cursor: "pointer",
+                            textAlign: "left", fontWeight: 600,
+                          }}
+                        >
+                          View in Tracking Board →
+                        </button>
+                        <a
+                          href={`/items/${item.id}`}
+                          style={{
+                            fontSize: "0.68rem", color: "var(--text-muted)", textDecoration: "none",
+                            padding: "0.3rem 0", fontWeight: 600,
+                          }}
+                        >
+                          📦 View Item Dashboard →
+                        </a>
+                      </div>
+
+--- E2: Add carrier tracking links in ShippedTab ---
+
+FIND the ShippedTab component where tracking number is displayed.
+Look for the tracking number display (around line 2583+). It should
+show carrier name and tracking number for each shipped item.
+
+After reading in Part A, find the exact line where tracking number is rendered.
+
+ADD a helper function at the top of ShippedTab (inside the component):
+
+  const getTrackingUrl = (carrier: string, tracking: string): string | null => {
+    const c = (carrier || "").toLowerCase();
+    if (c.includes("usps")) return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${tracking}`;
+    if (c.includes("ups")) return `https://www.ups.com/track?tracknum=${tracking}`;
+    if (c.includes("fedex")) return `https://www.fedex.com/fedextrack/?trknbr=${tracking}`;
+    if (c.includes("dhl")) return `https://www.dhl.com/us-en/home/tracking.html?tracking-id=${tracking}`;
+    return null;
+  };
+
+Then, wherever the tracking number is displayed, WRAP it with a link:
+
+Instead of just showing the tracking number text, make it clickable:
+
+{(() => {
+  const trackUrl = getTrackingUrl(label.carrier, label.trackingNumber);
+  return trackUrl ? (
+    <a href={trackUrl} target="_blank" rel="noopener noreferrer"
+      style={{ fontFamily: "monospace", fontSize: "0.72rem", color: "var(--accent)", textDecoration: "underline", textUnderlineOffset: "2px" }}
+      onClick={() => console.log("[tracking] Clicked:", label.carrier, label.trackingNumber)}
+    >
+      {label.trackingNumber} ↗
+    </a>
+  ) : (
+    <span style={{ fontFamily: "monospace", fontSize: "0.72rem", color: "var(--text-primary)" }}>
+      {label.trackingNumber}
+    </span>
+  );
+})()}
+
+NOTE: Use Part A reads to find the EXACT location of tracking number display
+in ShippedTab. The pattern is: find where label.trackingNumber is rendered,
+replace the plain text with the clickable link above.
+
+--- E3: Add "Proceed to Booking" in freight tab ---
+
+FIND the freight tab carrier selection area. After the user selects a freight
+carrier (selectedFreight state), there should be action buttons.
+
+ADD after the freight carrier selection (look for selectedFreight usage):
+
+{selectedFreight && (
+  <div style={{ marginTop: "0.5rem" }}>
+    <a
+      href={`/items/${(heavyItem || items[0])?.id}`}
+      style={{
+        display: "flex", alignItems: "center", justifyContent: "center", gap: "0.3rem",
+        width: "100%", padding: "0.55rem 1rem", fontSize: "0.82rem", fontWeight: 700,
+        borderRadius: "0.5rem", border: "none", textDecoration: "none",
+        background: "linear-gradient(135deg, #00bcd4, #009688)",
+        color: "#fff", cursor: "pointer",
+        boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+      }}
+    >
+      📋 Proceed to Freight Booking →
+    </a>
+    <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", textAlign: "center", marginTop: "0.25rem" }}>
+      Opens item dashboard for BOL generation and pickup scheduling
+    </div>
+  </div>
+)}
+
+NOTE: This links to the item dashboard where LtlCompletionFlow handles
+the full freight booking flow (BOL → pickup → transit → delivery).
+
+================================================================================
+
+PART F — DIAGNOSTIC: SHIPENGINE CARRIER DISCOVERY
+
+================================================================================
+
+Create a diagnostic script to test ShipEngine carrier discovery.
+
+Create: scripts/test-shipengine-carriers.ts
+
+```typescript
+/**
+ * ShipEngine Carrier Discovery Diagnostic
+ * Run: npx tsx scripts/test-shipengine-carriers.ts
+ * DELETE after running.
+ */
+require("dotenv").config();
+
+const KEY = process.env.SHIPENGINE_API_KEY || "";
+const BASE = process.env.SHIPENGINE_BASE_URL || "https://api.shipengine.com";
+
+async function main() {
+  console.log("========================================");
+  console.log("SHIPENGINE CARRIER DISCOVERY");
+  console.log("========================================\n");
+  console.log("API Key:", KEY ? `SET (${KEY.length} chars, starts with ${KEY.slice(0, 10)}...)` : "MISSING");
+  console.log("Base URL:", BASE);
+
+  if (!KEY) {
+    console.log("\nSKIP — no ShipEngine key configured");
+    return;
+  }
+
+  // List carriers
+  console.log("\n--- Connected Carriers ---");
+  try {
+    const res = await fetch(`${BASE}/v1/carriers`, {
+      headers: { "API-Key": KEY, "Content-Type": "application/json" },
+    });
+    console.log("Status:", res.status);
+    if (!res.ok) {
+      console.log("FAILED:", (await res.text()).slice(0, 300));
+      return;
+    }
+    const data = await res.json();
+    const carriers = data.carriers || [];
+    console.log(`Total carriers: ${carriers.length}`);
+    for (const c of carriers) {
+      console.log(`  ${c.carrier_id} — ${c.friendly_name || c.nickname || "unnamed"} (${c.carrier_code || "no-code"})`);
+      if (c.services) {
+        for (const s of c.services.slice(0, 5)) {
+          console.log(`    → ${s.service_code}: ${s.name}`);
+        }
+        if (c.services.length > 5) console.log(`    → ... and ${c.services.length - 5} more services`);
+      }
+    }
+
+    if (carriers.length === 0) {
+      console.log("⚠️  0 carriers connected. Add carriers in ShipEngine dashboard.");
+      console.log("   For sandbox: use carrier_id se-1115747");
+    }
+
+    // Try a rate estimate with discovered carriers
+    if (carriers.length > 0) {
+      console.log("\n--- LTL Rate Estimate Test ---");
+      const carrierIds = carriers.map((c: any) => c.carrier_id);
+      console.log("Using carrier IDs:", carrierIds.join(", "));
+
+      const rateRes = await fetch(`${BASE}/v1/rates/estimate`, {
+        method: "POST",
+        headers: { "API-Key": KEY, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rate_options: { carrier_ids: carrierIds },
+          shipment: {
+            ship_from: { name: "LegacyLoop", address_line1: "123 Main St", city_locality: "Portland", state_province: "ME", postal_code: "04101", country_code: "US" },
+            ship_to: { name: "Buyer", address_line1: "456 Oak Ave", city_locality: "New York", state_province: "NY", postal_code: "10001", country_code: "US" },
+            packages: [{ weight: { value: 200, unit: "pound" }, dimensions: { length: 48, width: 40, height: 36, unit: "inch" } }],
+          },
+        }),
+      });
+      console.log("Rate estimate status:", rateRes.status);
+      if (rateRes.ok) {
+        const rateData = await rateRes.json();
+        const rates = Array.isArray(rateData) ? rateData : [];
+        console.log(`Rates returned: ${rates.length}`);
+        for (const r of rates.slice(0, 10)) {
+          console.log(`  $${r.shipping_amount?.amount || "?"} — ${r.carrier_friendly_name || "?"} ${r.service_type || ""} (${r.delivery_days || "?"} days)`);
+        }
+      } else {
+        console.log("Rate estimate failed:", (await rateRes.text()).slice(0, 300));
+      }
+    }
+
+    console.log("\n✅ Carrier discovery complete");
+  } catch (e) {
+    console.log("Exception:", e);
+  }
+}
+
+main();
+```
+
+Run: npx tsx scripts/test-shipengine-carriers.ts
+PRINT THE FULL OUTPUT IN THE REPORT.
+After printing, DELETE: rm scripts/test-shipengine-carriers.ts && rmdir scripts 2>/dev/null
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+3. Pre-sale LTL "Save Freight Quote" button added: yes / no
+4. Button saves to localStorage ll_ltl_quote_{itemId}: yes / no
+5. Confirmation banner shows carrier + amount: yes / no
+6. "Shipping Center" and "Request Better Quote" links added: yes / no
+7. LtlCompletionFlow reads localStorage on mount: yes / no
+8. Saved quote pre-populates selectedCarrier: yes / no
+9. Saved quote banner visible in QUOTE_ACCEPTED step: yes / no
+10. getConnectedCarrierIds function added to shipengine-ltl.ts: yes / no
+11. Carrier cache with 5-min TTL: yes / no
+12. Rate request uses discovered carrier IDs: yes / no
+13. Fallback to empty array if no carriers: yes / no
+14. "View Item Dashboard" link added after label creation: yes / no
+15. getTrackingUrl helper added to ShippedTab: yes / no
+16. Tracking numbers clickable with carrier URLs: yes / no
+17. USPS/UPS/FedEx/DHL URLs correct: yes / no
+18. "Proceed to Freight Booking" link in freight tab: yes / no
+19. ShipEngine diagnostic script run and output printed: yes / no
+20. Diagnostic script deleted: yes / no
+21. All locked files untouched: yes / no
+22. inline style={{}} throughout — no Tailwind, no className: yes / no
+23. Theme-aware surfaces use CSS variables: yes / no
+24. Light mode tested — no broken contrast: yes / no
+25. Dark mode tested — all elements visible: yes / no
+26. npx tsc --noEmit: 0 errors
+27. npm run build: pass
+28. CHECKPOINT post-change: pass
+29. Dev server: localhost:3000
+
+MANUAL TESTS:
+30. Open a large item → get LTL quotes → select carrier → verify "Save Freight Quote" button appears
+31. Click save → verify localStorage has ll_ltl_quote_{itemId}
+32. Navigate to post-sale view (if item is sold) → verify carrier pre-populated from saved quote
+33. Ship a parcel item in Shipping Center → verify "View Item Dashboard" link after label
+34. Check Shipped tab → verify tracking numbers are clickable links
+35. Check freight tab → verify "Proceed to Freight Booking" link after carrier selection
+36. Check terminal for ShipEngine carrier discovery log
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+PRE-SALE LTL FIX:
+- "Save Freight Quote" button added: [yes / no]
+- localStorage save working: [yes / no]
+- Confirmation banner displays: [yes / no]
+- "Shipping Center" link: [yes / no]
+- "Request Better Quote" link: [yes / no]
+
+POST-SALE CARRY-OVER:
+- localStorage read on LtlCompletionFlow mount: [yes / no]
+- selectedCarrier pre-populated from saved quote: [yes / no]
+- Saved quote banner in QUOTE_ACCEPTED step: [yes / no]
+- User can still change carrier: [yes / no]
+
+SHIPENGINE CARRIERS:
+- getConnectedCarrierIds function added: [yes / no]
+- Cache with TTL: [yes / no]
+- Rate request uses discovered IDs: [yes / no]
+- Fallback to empty array: [yes / no]
+
+SHIPENGINE DIAGNOSTIC:
+[Paste COMPLETE output here]
+- Connected carriers found: [count]
+- Carrier names: [list]
+- LTL rate estimate: [working / failed / 0 rates]
+
+NAVIGATION LINKS:
+- "View Item Dashboard" after label: [yes / no]
+- Tracking URLs in ShippedTab: [yes / no]
+- USPS tracking URL format: [correct / issue]
+- UPS tracking URL format: [correct / issue]
+- FedEx tracking URL format: [correct / issue]
+- "Proceed to Freight Booking" in freight tab: [yes / no]
+
+LIGHT MODE: [clean / issues found]
+DARK MODE: [clean / issues found]
+
+EXISTING LOGIC UNTOUCHED:
+— [List every locked file verified as untouched]
+
+FLAGS FROM CLAUDE CODE:
+— [ShipEngine carrier discovery results — what carriers are connected]
+— [Any rate estimate results from ShipEngine]
+— [localStorage persistence edge cases]
+— [New carry-forward items]
+
+Files modified: [list all — exact paths]
+New files created: [list or 'none']
+Schema changes needed: [list or 'none']
+Build: [pass / fail]
+TypeScript: [0 errors / list all errors]
+
+CHECKPOINT after: [pass / issue]
+Dev server: localhost:3000
+
+IF POST-CHECKPOINT FAILS:
+REVERT IMMEDIATELY.
+Report exactly what broke and what was touched.
+Do NOT proceed until clean.
+
+Command Template v11 | LegacyLoop | March 24, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command | Paste in full — never abbreviate

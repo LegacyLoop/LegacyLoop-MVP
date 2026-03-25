@@ -1,0 +1,688 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 24, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping —
+✓ lib/shipping/package-suggestions.ts
+✓ lib/shipping/shippo.ts
+✓ lib/shipping/fedex-parcel.ts
+✓ lib/shipping/fedex-ltl.ts
+✓ lib/shipping/shipengine-ltl.ts
+✓ lib/shipping/freight-estimates.ts
+✓ lib/shipping/easypost.ts
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/populate-intelligence.ts
+✓ lib/data/project-rollup.ts
+✓ lib/data/user-events.ts
+
+— Enrichment —
+✓ lib/enrichment/item-context.ts
+✓ lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— eBay Adapter (when created) —
+✓ lib/adapters/ebay.ts — LOCKED after creation
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/** — READ + EXTEND for shipping work
+✓ EXCEPTION: app/api/ebay/** — READ + EXTEND for eBay work
+✓ EXCEPTION: app/api/bots/** — READ for bot page data sync work
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED except surgical unlocks for bot upgrades
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — READ ONLY
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - lib/adapters/ai.ts (LINE 40 ONLY — expand category list to include Outdoor/Garden Equipment)
+  - app/api/analyze/[itemId]/route.ts (LINES 375-399 ONLY — refine vehicle detection regex + add garden equipment exclusion)
+  - lib/blur-plate.ts (ADD license plate detection guard — skip blur if no plate-like region detected)
+  - lib/shipping/package-suggestions.ts (ADD garden/outdoor equipment entries + refine vehicle routing)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+Data collection for this command:
+  - Log every vehicle detection decision (isVehicle true/false, reason, category used)
+  - Log every blur action (attempted, skipped, reason)
+  - All via existing console.log pattern — already partially in place
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• AI analysis uses multi-model rotation (OpenAI, Anthropic, Gemini, xAI).
+• AI returns category, subcategory, brand, model, condition, etc.
+• Current category list (line 40 of ai.ts): Furniture, Electronics, Jewelry,
+  Art, Kitchenware, Clothing, Tools, Toys, Books, Sports,
+  Musical Instruments, Collectibles, Vehicles, Vehicle Parts, Other
+• PROBLEM: No "Outdoor Equipment" or "Garden Equipment" category.
+  Lawn mowers, garden tractors, power tools → AI picks "Vehicles" or "Tools"
+  because there's no better match.
+
+VEHICLE DETECTION CHAIN (current — broken for lawn equipment):
+  1. AI returns category = "Vehicles" for a John Deere lawn tractor
+  2. analyze route (line 383): regex matches "tractor" in category → isVehicle = true
+  3. blur-plate.ts fires → blurs bottom 25% of image (hardcoded zones)
+  4. package-suggestions.ts: "vehicle" → local_only, weight 3500 lbs
+  5. ShippingPanel: isVehicle → "LOCAL PICKUP ONLY" banner
+
+  Result: Lawn mower gets classified as vehicle, blurred in wrong spot,
+  marked local-only at 3500 lbs, can't get shipping quotes. ALL WRONG.
+
+WHAT SHOULD HAPPEN:
+  1. AI returns category = "Outdoor Equipment" (subcategory "Riding Lawn Mower")
+  2. Vehicle regex does NOT match (lawn equipment excluded)
+  3. No blur fires (no license plate on a lawn mower)
+  4. package-suggestions: "outdoor equipment" → freight shipping at ~400 lbs
+  5. ShippingPanel: shows LTL freight + local pickup options
+  6. User can ship or do local pickup — their choice
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Add defensive error handling within scope
+— Improve logging to diagnose classification issues
+— Add Elon-standard polish within scope
+— Add new category entries to package-suggestions map
+— Refine regex patterns for better accuracy
+— Add exclusion patterns for garden/outdoor equipment
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic (except the category list expansion)
+— Deviate from inline style={{}}
+— Change business or pricing logic
+— Do any "while I'm in here" fixes beyond scope
+— Modify the core AI analysis schema beyond adding categories
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+No new environment variables in this command.
+All existing AI keys (OpenAI, Anthropic, Gemini, xAI) remain as-is.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No schema changes in this command.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+Not directly relevant to this command. This command fixes AI classification
+accuracy, which feeds INTO the shipping system. The shipping system itself
+is not modified.
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — AI CLASSIFICATION ACCURACY: VEHICLE VS OUTDOOR EQUIPMENT
+
+================================================================================
+
+This command does FOUR things. All surgical. No overhauls.
+
+THE PROBLEM:
+A John Deere riding lawn mower gets classified as a "Vehicle" by the AI.
+This triggers license plate blur (wrong — no plate), marks it local-only
+(wrong — it can be freight shipped), and sets weight to 3500 lbs (wrong —
+it's ~400 lbs). This is because the AI category list has no "Outdoor Equipment"
+option, and the vehicle detection regex includes "tractor" with no exceptions.
+
+TASK 1 — EXPAND AI CATEGORY LIST
+  File: lib/adapters/ai.ts (LINE 40 ONLY)
+  Add "Outdoor Equipment" to the category list
+  This gives the AI a proper bucket for lawn mowers, garden tools, power
+  equipment, tractors (non-vehicle), pressure washers, snow blowers, etc.
+
+TASK 2 — REFINE VEHICLE DETECTION REGEX
+  File: app/api/analyze/[itemId]/route.ts (LINES 375-399 ONLY)
+  Problem: regex includes "tractor" → matches "lawn tractor"
+  Fix: Exclude garden/outdoor equipment from vehicle detection
+  Add: Category-based exclusion BEFORE the regex check
+  Add: Subcategory check — "riding lawn mower" ≠ vehicle
+
+TASK 3 — ADD BLUR GUARD
+  File: lib/blur-plate.ts
+  Problem: Blurs hardcoded zones with no plate detection check
+  Fix: Add a lightweight guard — skip blur if category is outdoor equipment
+  The guard reads the item's category from DB before blurring
+  If category matches garden/outdoor/lawn patterns → skip blur, log why
+
+TASK 4 — ADD OUTDOOR EQUIPMENT TO PACKAGE SUGGESTIONS
+  File: lib/shipping/package-suggestions.ts
+  Add entries for common outdoor equipment items:
+    - riding lawn mower (freight, ~400 lbs)
+    - push lawn mower (~80 lbs, large box)
+    - chainsaw, leaf blower, pressure washer (medium box)
+    - garden tractor (freight, ~500 lbs)
+    - snow blower (large/freight, ~200 lbs)
+  Refine vehicle routing: "outdoor equipment" → "freight" not "local_only"
+
+Files modified:
+  - lib/adapters/ai.ts (line 40 — category list expansion)
+  - app/api/analyze/[itemId]/route.ts (lines 375-399 — vehicle detection refinement)
+  - lib/blur-plate.ts (add category guard before blurring)
+  - lib/shipping/package-suggestions.ts (add outdoor equipment entries + refine routing)
+
+Expected output:
+  - Lawn mowers → "Outdoor Equipment" category, NOT "Vehicles"
+  - No license plate blur on outdoor equipment
+  - Freight shipping offered for heavy outdoor equipment (not local-only)
+  - Realistic weight estimates (400 lbs for riding mower, not 3500 lbs)
+  - Actual vehicles (cars, trucks, boats) still detected correctly
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n lib/adapters/ai.ts | sed -n '38,42p'
+   Focus on line 40: the category list string.
+   Confirm "Vehicles" is there but no "Outdoor Equipment".
+
+2. cat -n app/api/analyze/[itemId]/route.ts | sed -n '364,400p'
+   Focus on lines 375-386: the vehicle detection logic.
+   Note the regex on lines 383-386 that includes "tractor".
+
+3. cat -n lib/blur-plate.ts
+   Full file. Understand the blur zone logic.
+   Note: No category check, no plate detection. Just hardcoded zones.
+
+4. cat -n lib/shipping/package-suggestions.ts | sed -n '57,62p'
+   Focus on vehicle/boat entries and their weight estimates.
+
+5. cat -n lib/shipping/package-suggestions.ts | sed -n '236,245p'
+   Focus on the suggestShippingMethod function — vehicle routing logic.
+
+6. grep -n 'category' lib/adapters/ai.ts | head -5
+   Confirm the category field definition.
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PART B — EXPAND AI CATEGORY LIST
+
+================================================================================
+
+FILE: lib/adapters/ai.ts
+
+--- B1: Add Outdoor Equipment to category list ---
+
+FIND (line 40):
+
+    category: { type: "string", description: "Primary category (Furniture, Electronics, Jewelry, Art, Kitchenware, Clothing, Tools, Toys, Books, Sports, Musical Instruments, Collectibles, Vehicles, Vehicle Parts, Other)" },
+
+REPLACE WITH:
+
+    category: { type: "string", description: "Primary category (Furniture, Electronics, Jewelry, Art, Kitchenware, Clothing, Tools, Toys, Books, Sports, Musical Instruments, Collectibles, Outdoor Equipment, Vehicles, Vehicle Parts, Other). IMPORTANT: Lawn mowers, garden tractors, riding mowers, chainsaws, leaf blowers, pressure washers, snow blowers, and other garden/lawn/outdoor power equipment belong in 'Outdoor Equipment' — NOT 'Vehicles'. Only road-legal motor vehicles (cars, trucks, motorcycles, boats, ATVs, RVs) belong in 'Vehicles'." },
+
+NOTE: This is the ONLY change to ai.ts. Do not touch any other line.
+The expanded description gives the AI explicit guidance to distinguish
+outdoor equipment from vehicles. The "IMPORTANT" note is deliberate —
+it prevents the AI from defaulting to "Vehicles" for anything with an engine.
+
+================================================================================
+
+PART C — REFINE VEHICLE DETECTION REGEX
+
+================================================================================
+
+FILE: app/api/analyze/[itemId]/route.ts
+
+--- C1: Add outdoor equipment exclusion before vehicle check ---
+
+FIND (around lines 375-399):
+
+  const isVehicle = !!(
+    a.is_vehicle === true ||
+    a.isVehicle === true ||
+    a.vehicle_type != null ||
+    a.vehicleType != null ||
+    a.vehicle_make != null ||
+    a.vehicle_model != null ||
+    a.vehicle_year != null ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.category ?? "")) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.item_type ?? "")) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.itemType ?? "")) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|tractor|trailer|minivan|lorry)\b/i.test(String(a.type ?? ""))
+  );
+  console.log("=== VEHICLE CHECK RESULT:", isVehicle, "===");
+
+  if (isVehicle) {
+    console.log("[analyze] Vehicle confirmed — triggering automatic plate blur for item:", item.id);
+    try {
+      const { blurredCount } = await blurPlatesForItem(item.id);
+      console.log("[analyze] Auto plate blur complete —", blurredCount, "photos blurred");
+    } catch (blurErr: any) {
+      console.error("[analyze] Auto plate blur failed (non-fatal):", blurErr?.message);
+    }
+  } else {
+    console.log("[analyze] Not a vehicle — skipping plate blur");
+  }
+
+REPLACE WITH:
+
+  // ── Outdoor equipment exclusion — lawn mowers, garden tractors, etc. are NOT vehicles ──
+  const categoryStr = String(a.category ?? "").toLowerCase();
+  const subcategoryStr = String(a.subcategory ?? "").toLowerCase();
+  const itemNameStr = String(a.item_name ?? a.itemName ?? "").toLowerCase();
+  const isOutdoorEquipment = (
+    categoryStr.includes("outdoor") ||
+    categoryStr.includes("garden") ||
+    /\b(lawn\s*mower|riding\s*mower|push\s*mower|garden\s*tractor|lawn\s*tractor|chainsaw|leaf\s*blower|pressure\s*washer|snow\s*blower|weed\s*(eater|trimmer|whacker)|hedge\s*trimmer|rototiller|log\s*splitter|wood\s*chipper|generator|power\s*washer)\b/i.test(itemNameStr) ||
+    /\b(lawn\s*mower|riding\s*mower|push\s*mower|garden\s*tractor|lawn\s*tractor|chainsaw|leaf\s*blower|pressure\s*washer|snow\s*blower)\b/i.test(subcategoryStr)
+  );
+
+  if (isOutdoorEquipment) {
+    console.log("[analyze] Outdoor equipment detected — NOT a vehicle. Category:", categoryStr, "| Name:", itemNameStr.slice(0, 60));
+  }
+
+  const isVehicle = !isOutdoorEquipment && !!(
+    a.is_vehicle === true ||
+    a.isVehicle === true ||
+    a.vehicle_type != null ||
+    a.vehicleType != null ||
+    a.vehicle_make != null ||
+    a.vehicle_model != null ||
+    a.vehicle_year != null ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|trailer|minivan|lorry)\b/i.test(categoryStr) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|trailer|minivan|lorry)\b/i.test(String(a.item_type ?? "").toLowerCase()) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|trailer|minivan|lorry)\b/i.test(String(a.itemType ?? "").toLowerCase()) ||
+    /\b(car|vehicle|truck|van|suv|motorcycle|auto|automobile|pickup|sedan|coupe|convertible|rv|boat|trailer|minivan|lorry)\b/i.test(String(a.type ?? "").toLowerCase())
+  );
+  console.log("=== VEHICLE CHECK RESULT:", isVehicle, "| Outdoor equipment:", isOutdoorEquipment, "===");
+
+  if (isVehicle) {
+    console.log("[analyze] Vehicle confirmed — triggering automatic plate blur for item:", item.id);
+    try {
+      const { blurredCount } = await blurPlatesForItem(item.id);
+      console.log("[analyze] Auto plate blur complete —", blurredCount, "photos blurred");
+    } catch (blurErr: any) {
+      console.error("[analyze] Auto plate blur failed (non-fatal):", blurErr?.message);
+    }
+  } else {
+    console.log("[analyze] Not a vehicle — skipping plate blur");
+  }
+
+KEY CHANGES:
+1. Added isOutdoorEquipment check BEFORE isVehicle — catches lawn mowers etc.
+2. isVehicle now requires !isOutdoorEquipment — outdoor equipment can never be a vehicle
+3. REMOVED "tractor" from the vehicle regex — it was causing false positives
+   Real tractors (farm equipment) are outdoor equipment, not road vehicles
+4. Added detailed logging: shows why something was/wasn't classified as vehicle
+
+================================================================================
+
+PART D — ADD BLUR GUARD
+
+================================================================================
+
+FILE: lib/blur-plate.ts
+
+--- D1: Add category-based blur guard ---
+
+FIND the beginning of blurPlatesForItem function (around lines 11-20):
+
+export async function blurPlatesForItem(itemId: string): Promise<{ blurredCount: number }> {
+  // Delete any previous blur-done marker so re-analysis can re-blur
+  await prisma.eventLog.deleteMany({
+    where: { itemId, eventType: "PLATE_BLUR_DONE" },
+  });
+  console.log("[blur-plate] Starting blur for item:", itemId);
+
+  const photos = await prisma.itemPhoto.findMany({ where: { itemId } });
+
+REPLACE WITH:
+
+export async function blurPlatesForItem(itemId: string): Promise<{ blurredCount: number }> {
+  // Guard: Check if item is actually a road vehicle before blurring
+  // Outdoor equipment (lawn mowers, garden tractors) should NOT be blurred
+  const item = await prisma.item.findUnique({
+    where: { id: itemId },
+    select: { category: true, subcategory: true, aiTitle: true },
+  });
+  const cat = (item?.category ?? "").toLowerCase();
+  const subcat = (item?.subcategory ?? "").toLowerCase();
+  const title = (item?.aiTitle ?? "").toLowerCase();
+
+  const isOutdoorEquipment = (
+    cat.includes("outdoor") ||
+    cat.includes("garden") ||
+    /\b(lawn|mower|chainsaw|leaf blower|pressure washer|snow blower|garden tractor|lawn tractor|riding mower|push mower)\b/i.test(title) ||
+    /\b(lawn|mower|chainsaw|leaf blower|pressure washer|snow blower)\b/i.test(subcat)
+  );
+
+  if (isOutdoorEquipment) {
+    console.log("[blur-plate] SKIPPED — item is outdoor equipment, not a road vehicle. Category:", cat, "| Title:", title.slice(0, 60));
+    return { blurredCount: 0 };
+  }
+
+  // Delete any previous blur-done marker so re-analysis can re-blur
+  await prisma.eventLog.deleteMany({
+    where: { itemId, eventType: "PLATE_BLUR_DONE" },
+  });
+  console.log("[blur-plate] Starting blur for item:", itemId);
+
+  const photos = await prisma.itemPhoto.findMany({ where: { itemId } });
+
+NOTE: This is a GUARD — an early return before any blurring happens.
+The rest of the blur logic stays EXACTLY as-is. The guard:
+1. Reads the item's category from DB (cheap — already indexed)
+2. Checks for outdoor equipment patterns
+3. If outdoor equipment → skip blur entirely, log why, return 0
+4. If NOT outdoor equipment → continue with existing blur logic unchanged
+
+This means the vehicle detection in analyze route AND the blur function
+both have outdoor equipment guards. Double protection.
+
+================================================================================
+
+PART E — ADD OUTDOOR EQUIPMENT TO PACKAGE SUGGESTIONS
+
+================================================================================
+
+FILE: lib/shipping/package-suggestions.ts
+
+--- E1: Add outdoor equipment entries to the suggestions map ---
+
+FIND the motorcycle entry (around line 60):
+
+  motorcycle: { boxSize: "freight", label: "Motorcycle (Freight)", length: 84, width: 36, height: 48, weightEstimate: 450, isFragile: false, notes: ["Requires freight shipping or local pickup", "Drain fluids before transport", "Secure all loose parts"] },
+
+After this line, INSERT the outdoor equipment entries:
+
+  // Outdoor / Garden Equipment — NOT vehicles, can be freight shipped
+  "riding lawn mower": { boxSize: "freight", label: "Riding Lawn Mower (Freight)", length: 62, width: 42, height: 32, weightEstimate: 400, isFragile: false, notes: ["Drain fuel and oil before shipping", "Disconnect battery", "Secure deck and steering wheel", "Lower mowing deck fully", "Ship on pallet — strap securely"] },
+  "lawn mower": { boxSize: "freight", label: "Riding Lawn Mower (Freight)", length: 62, width: 42, height: 32, weightEstimate: 400, isFragile: false, notes: ["Drain fuel and oil before shipping", "Disconnect battery", "Secure deck and steering wheel"] },
+  "push mower": { boxSize: "large", label: "Push Mower Box", length: 30, width: 22, height: 20, weightEstimate: 75, isFragile: false, notes: ["Drain fuel completely", "Fold handle down", "Secure blade cover"] },
+  "garden tractor": { boxSize: "freight", label: "Garden Tractor (Freight)", length: 72, width: 48, height: 42, weightEstimate: 500, isFragile: false, notes: ["Drain all fluids", "Disconnect battery", "Palletize and strap securely", "Freight carrier required"] },
+  "lawn tractor": { boxSize: "freight", label: "Lawn Tractor (Freight)", length: 62, width: 42, height: 32, weightEstimate: 400, isFragile: false, notes: ["Drain fuel and oil", "Disconnect battery", "Ship on pallet"] },
+  chainsaw: { boxSize: "medium", label: "Power Tool Box", length: 20, width: 12, height: 10, weightEstimate: 12, isFragile: false, notes: ["Drain fuel completely", "Install bar cover", "Secure chain brake", "Ship with blade guard on"] },
+  "leaf blower": { boxSize: "medium", label: "Power Tool Box", length: 20, width: 14, height: 10, weightEstimate: 10, isFragile: false, notes: ["Drain fuel if gas-powered", "Remove battery if cordless"] },
+  "pressure washer": { boxSize: "large", label: "Equipment Box", length: 24, width: 20, height: 22, weightEstimate: 45, isFragile: false, notes: ["Drain all water and fuel", "Disconnect hose and wand", "Secure pump"] },
+  "snow blower": { boxSize: "freight", label: "Snow Blower (Freight)", length: 36, width: 28, height: 36, weightEstimate: 200, isFragile: false, notes: ["Drain fuel and oil", "Fold handle if possible", "Ship on pallet for heavy models"] },
+  "weed trimmer": { boxSize: "medium", label: "Power Tool Box", length: 48, width: 10, height: 8, weightEstimate: 10, isFragile: false, notes: ["Drain fuel if gas-powered", "Remove cutting line guard"] },
+  generator: { boxSize: "freight", label: "Generator (Freight)", length: 28, width: 22, height: 24, weightEstimate: 150, isFragile: false, notes: ["Drain ALL fuel — carriers will reject fuel-filled units", "Ship upright", "Secure on pallet"] },
+  "outdoor equipment": { boxSize: "freight", label: "Outdoor Equipment (Freight)", length: 48, width: 36, height: 36, weightEstimate: 200, isFragile: false, notes: ["Drain all fluids before shipping", "Palletize and strap securely", "Freight carrier recommended for heavy items"] },
+
+--- E2: Refine vehicle routing to exclude outdoor equipment ---
+
+FIND the vehicle routing logic (around line 239-242):
+
+  // Vehicles, boats, etc. — local only
+  if (cat.includes("vehicle") || cat.includes("boat")) {
+    return "local_only";
+  }
+
+REPLACE WITH:
+
+  // Outdoor / Garden equipment — freight shipping (NOT local-only)
+  if (cat.includes("outdoor") || cat.includes("garden")) {
+    return "freight";
+  }
+
+  // Vehicles, boats, etc. — local only (but NOT outdoor equipment)
+  if (cat.includes("vehicle") || cat.includes("boat")) {
+    return "local_only";
+  }
+
+NOTE: The outdoor equipment check goes BEFORE the vehicle check.
+This ensures that even if "outdoor" and "vehicle" both appear somehow,
+outdoor wins and the item gets freight shipping instead of local-only.
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+3. AI category list expanded with "Outdoor Equipment": yes / no
+4. AI category description includes classification guidance: yes / no
+5. Only line 40 of ai.ts modified: yes / no
+6. isOutdoorEquipment check added BEFORE isVehicle in analyze route: yes / no
+7. "tractor" REMOVED from vehicle regex: yes / no
+8. isVehicle requires !isOutdoorEquipment: yes / no
+9. Detailed logging added for both checks: yes / no
+10. blur-plate.ts guard added — reads item category from DB: yes / no
+11. blur-plate.ts skips blur for outdoor equipment: yes / no
+12. blur-plate.ts logs skip reason: yes / no
+13. Existing blur logic for actual vehicles unchanged: yes / no
+14. package-suggestions.ts has outdoor equipment entries: yes / no
+15. Riding lawn mower: freight, 400 lbs: yes / no
+16. Push mower: large box, 75 lbs: yes / no
+17. Garden tractor: freight, 500 lbs: yes / no
+18. Outdoor equipment routing → "freight" not "local_only": yes / no
+19. Vehicle routing still → "local_only": yes / no
+20. All locked files untouched: yes / no
+21. inline style={{}} throughout — no Tailwind, no className: yes / no
+22. npx tsc --noEmit: 0 errors
+23. npm run build: pass
+24. CHECKPOINT post-change: pass
+25. Dev server: localhost:3000
+
+MANUAL TESTS:
+26. Re-analyze the John Deere lawn mower item (if it exists in the DB)
+    OR create a test with a lawn mower photo
+    → Should classify as "Outdoor Equipment" NOT "Vehicles"
+    → Should NOT trigger blur
+    → Should offer freight shipping, not local-only
+27. Verify an actual vehicle (car/truck photo) still triggers vehicle detection + blur
+28. Check terminal logs for outdoor equipment exclusion messages
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+AI CATEGORY LIST:
+- "Outdoor Equipment" added to category list: [yes / no]
+- Classification guidance added: [yes / no]
+- Only line 40 modified in ai.ts: [yes / no]
+- Other lines in ai.ts verified untouched: [yes / no]
+
+VEHICLE DETECTION REFINEMENT:
+- isOutdoorEquipment check added: [yes / no]
+- Patterns covered: [list patterns]
+- "tractor" removed from vehicle regex: [yes / no]
+- isVehicle now excludes outdoor equipment: [yes / no]
+- Logging shows outdoor vs vehicle decision: [yes / no]
+
+BLUR GUARD:
+- Category check added to blur-plate.ts: [yes / no]
+- Reads category from DB: [yes / no]
+- Skips blur for outdoor equipment: [yes / no]
+- Logs skip reason: [yes / no]
+- Existing blur zones for vehicles unchanged: [yes / no]
+
+PACKAGE SUGGESTIONS:
+- Outdoor equipment entries added: [count]
+- Entries: [list item → boxSize, weight]
+- Outdoor routing → "freight": [yes / no]
+- Vehicle routing → "local_only" (unchanged): [yes / no]
+
+CLASSIFICATION TEST (if possible):
+- Lawn mower item re-analyzed: [yes / no / no item to test]
+- Category assigned: [expected: "Outdoor Equipment"]
+- isVehicle: [expected: false]
+- Blur triggered: [expected: no]
+- Shipping method: [expected: "freight"]
+
+LIGHT MODE: [clean / issues found / N/A — no UI changes]
+DARK MODE: [clean / issues found / N/A — no UI changes]
+ALWAYS-DARK PANELS: [N/A — no UI changes]
+
+EXISTING LOGIC UNTOUCHED:
+— [List every locked file verified as untouched]
+
+FLAGS FROM CLAUDE CODE:
+— [All gaps, risks, out-of-scope items]
+— [Any other categories that might need expansion]
+— [Edge cases discovered (e.g., ATV — vehicle or equipment?)]
+— [Items that straddle vehicle/equipment boundary]
+— [New carry-forward items]
+
+Files modified: [list all — exact paths]
+New files created: [list or 'none']
+Schema changes needed: [list or 'none']
+Build: [pass / fail]
+TypeScript: [0 errors / list all errors]
+
+CHECKPOINT after: [pass / issue]
+Dev server: localhost:3000
+
+IF POST-CHECKPOINT FAILS:
+REVERT IMMEDIATELY.
+Report exactly what broke and what was touched.
+Do NOT proceed until clean.
+
+Command Template v11 | LegacyLoop | March 24, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command | Paste in full — never abbreviate

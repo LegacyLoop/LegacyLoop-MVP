@@ -3,6 +3,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { getShippingRates } from "@/lib/shipping/shippo";
 import { getFedExParcelRates } from "@/lib/shipping/fedex-parcel";
+import { getEasyPostRates } from "@/lib/shipping/easypost";
 
 type CarrierEstimate = {
   carrier: string;
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
     let carriers: CarrierEstimate[];
     let isLiveRates = false;
     try {
-      const [shippoResult, fedexRates] = await Promise.all([
+      const [shippoResult, fedexRates, easypostRates] = await Promise.all([
         getShippingRates(
           { zip: fromZip },
           { zip: toZip },
@@ -109,13 +110,16 @@ export async function POST(req: NextRequest) {
         isLTL ? Promise.resolve([]) : getFedExParcelRates(
           fromZip, toZip, weight, box.length, box.width, box.height,
         ).catch(() => []),
+        isLTL ? Promise.resolve([]) : getEasyPostRates(
+          fromZip, toZip, weight, box.length, box.width, box.height,
+        ).catch(() => []),
       ]);
 
       const allRates: CarrierEstimate[] = [];
 
       // Add Shippo rates
       if (shippoResult.rates.length > 0) {
-        for (const r of shippoResult.rates.slice(0, 6)) {
+        for (const r of shippoResult.rates) {
           allRates.push({
             carrier: r.carrier,
             service: r.service,
@@ -137,6 +141,17 @@ export async function POST(req: NextRequest) {
         isLiveRates = true;
       }
 
+      // Add EasyPost backup rates
+      for (const r of easypostRates) {
+        allRates.push({
+          carrier: r.carrier,
+          service: r.service,
+          price: r.rate,
+          days: r.estimatedDays ? `${r.estimatedDays}` : "3-7",
+        });
+        if (r.isLive) isLiveRates = true;
+      }
+
       // Dedupe — prefer FedEx direct over Shippo's FedEx rates
       const seen = new Map<string, CarrierEstimate>();
       for (const r of allRates) {
@@ -146,6 +161,8 @@ export async function POST(req: NextRequest) {
         }
       }
       const deduped = Array.from(seen.values()).sort((a, b) => a.price - b.price);
+
+      console.log(`[shipping/estimate] ${deduped.length} rates for item ${itemId}: ${deduped.map(r => `${r.carrier} ${r.service} $${r.price}`).join(" | ")}`);
 
       carriers = deduped.length > 0 ? deduped : getCarrierEstimates(weight);
     } catch {

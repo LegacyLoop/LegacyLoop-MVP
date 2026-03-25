@@ -1,0 +1,912 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 24, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping —
+✓ lib/shipping/package-suggestions.ts
+✓ lib/shipping/shippo.ts — LOCKED (recently modified, stable)
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/populate-intelligence.ts
+✓ lib/data/project-rollup.ts
+✓ lib/data/user-events.ts
+
+— Enrichment —
+✓ lib/enrichment/item-context.ts
+✓ lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— eBay Adapter (when created) —
+✓ lib/adapters/ebay.ts — LOCKED after creation
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/** — READ + EXTEND for shipping work
+✓ EXCEPTION: app/api/ebay/** — READ + EXTEND for eBay work
+✓ EXCEPTION: app/api/bots/** — READ for bot page data sync work
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED except surgical unlocks for bot upgrades
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — READ ONLY
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - lib/shipping/easypost.ts (FIX carrier name normalization — add FedExDefault mapping)
+  - lib/shipping/freight-estimates.ts (ADD Estes + SAIA carriers, ADD FedEx Freight placeholder)
+  - app/items/[id]/ShippingPanel.tsx (SMOOTH LTL section — fix hardcoded toZip, improve UX flow, add buyer ZIP usage)
+  - app/shipping/ShippingCenterClient.tsx (SMOOTH freight tab — improve quote display, add FedEx Freight visibility)
+  - app/api/shipping/rates/route.ts (TWEAK dedupe — handle EasyPost carrier name variants)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+Data collection for this command:
+  - Log every LTL quote result with source (live/demo) and carrier
+  - Log buyer ZIP usage in freight quotes
+  - All via existing console.log pattern — EventLog persistence can be added later
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• Shippo API key is SET and LIVE (test token configured in .env).
+• Shippo is our PRIMARY parcel carrier aggregator — returns USPS, UPS, FedEx.
+• Hybrid rate system: live Shippo rates supplemented with demo estimates. WORKING.
+• EasyPost is BACKUP parcel carrier + address verification. WORKING.
+• EasyPost returns "FedExDefault" as carrier name — NOT normalized to "FedEx" yet.
+• FedEx direct parcel API fails on sandbox (ACCOUNT.NUMBER.MISMATCH). Expected.
+• FedEx LTL same sandbox issue — auth succeeds, rate requests fail. Expected.
+• ShipEngine LTL passes empty carrier_ids — sandbox limitation.
+• LTL live quotes currently return demo fallback (Estes, SAIA, XPO, Old Dominion).
+• Manual quote request flow (shipping@legacy-loop.com) IS built and working.
+• BOL generation IS built in Shipping Center freight tab.
+
+CURRENT PARCEL RATE PIPELINE (working):
+  1. Shippo → live USPS + UPS rates (~4 unique services)
+  2. FedEx Parcel → 0 rates (sandbox ACCOUNT.NUMBER.MISMATCH)
+  3. EasyPost → 19 backup rates (USPS, FedEx, UPS)
+  4. Shippo hybrid → supplements with demo rates for missing services
+  5. Dedupe by carrier+service key
+  6. Returns 15-20+ carrier options to UI
+
+KNOWN ISSUE: EasyPost returns "FedExDefault" as carrier. Shippo returns "FedEx".
+Dedupe key: "fedexdefault_ground" vs "fedex_ground" — DOES NOT MATCH.
+Result: Duplicate FedEx rows in carrier table. Fix is in this command.
+
+CURRENT LTL PIPELINE (partially working):
+  1. ShipEngine → 0 rates (empty carrier_ids, sandbox limitation)
+  2. FedEx LTL → 0 rates (ACCOUNT.NUMBER.MISMATCH)
+  3. Demo fallback → 4 carriers (Estes, SAIA, XPO, Old Dominion)
+
+LTL DISPLAY (Item Dashboard):
+  - Static table: freight-estimates.ts → 3 carriers (XPO, Old Dominion, R+L)
+  - Live quotes: ltl-quote API → 4 carriers (Estes, SAIA, XPO, Old Dominion)
+  - FedEx Freight visible in live quotes IF it returns data (currently doesn't in sandbox)
+  - Buyer ZIP hardcoded to "10001" in fetchLiveLtlQuotes — should use actual buyer ZIP
+
+LTL DISPLAY (Shipping Center):
+  - Freight tab fully built with dimension inputs, freight class calc, quote fetch
+  - BOL generation, carrier selection, schedule pickup — all built
+  - Carrier badges show LIVE RATES / ESTIMATED / FEDEX LIVE / SHIPENGINE
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Add defensive error handling within scope
+— Improve logging to diagnose issues
+— Add Elon-standard polish within scope
+— Add carrier name normalization for cleaner dedupe
+— Improve LTL section UX flow and readability
+— Add FedEx Freight and Estes/SAIA to static estimate tables
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Change business or pricing logic
+— Do any "while I'm in here" fixes beyond scope
+— Remove or rebuild existing LTL functionality — SMOOTH and UPGRADE only
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+Variable                   Status       Notes
+SHIPPO_API_KEY             SET          Live test token configured
+FEDEX_ACCOUNT_NUMBER       SET          210749015
+FEDEX_PARCEL_API_KEY       SET          Sandbox credentials
+FEDEX_PARCEL_SECRET_KEY    SET          Sandbox credentials
+FEDEX_PARCEL_URL           SET          https://apis-sandbox.fedex.com
+FEDEX_LTL_API_KEY          SET          Sandbox credentials
+FEDEX_LTL_SECRET_KEY       SET          Sandbox credentials
+FEDEX_LTL_URL              SET          https://apis-sandbox.fedex.com
+SHIPENGINE_API_KEY         SET          ShipStation LTL sandbox key
+SHIPENGINE_BASE_URL        SET          https://api.shipengine.com
+SHIPENGINE_ENV             SET          sandbox
+EASYPOST_TEST_API_KEY      SET          EasyPost test key (starts with EZTK)
+ARTA_API_KEY               SET          Arta test key (not used in this command)
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No schema changes in this command.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+The Shipping Center (app/shipping/ShippingCenterClient.tsx) is ~4,855 lines.
+It has 5 tabs: Items, Wizard, Freight/LTL, Tracking, Pickups.
+
+PARCEL RATES: WORKING. 15-20+ carrier options per item (but with FedEx duplicates).
+NET PROFIT: FIXED (Command 1). Using actual listing price + 9.75% fees.
+LTL FREIGHT: PARTIALLY WORKING. Demo quotes return. Live quotes return 0 (sandbox).
+BOL: BUILT. Working in Shipping Center freight tab.
+MANUAL QUOTE: BUILT. Emails shipping@legacy-loop.com via SendGrid.
+
+The Item Dashboard ShippingPanel (app/items/[id]/ShippingPanel.tsx) is ~4,089 lines.
+It has a freight section (Section D, starting line 3489) with:
+  - Accessorial toggles (liftgate, residential, notify, blanket, inside, white glove)
+  - Static freight estimate table (3 carriers from freight-estimates.ts)
+  - "Get Live LTL Quotes" button → calls /api/shipping/ltl-quote
+  - Live quote result cards with badges (BEST RATE, FASTEST, FEDEX LIVE, etc.)
+  - Manual "Request Manual Quote" form → calls /api/shipping/ltl-quote-request
+  - All data is properly logged and emailed.
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — SHIPPING DEDUPE FIX + LTL FREIGHT SMOOTHING
+
+================================================================================
+
+This command does FIVE things. All surgical. No overhauls. Smooth and upgrade.
+
+TASK 1 — FIX EasyPost carrier name normalization (eliminates duplicate FedEx rows)
+  File: lib/shipping/easypost.ts
+  Add "FedExDefault" → "FedEx" to CARRIER_MAP
+  Add "fedexdefault" to ALLOWED_CARRIERS
+  This ONE change eliminates all duplicate FedEx rates in the UI
+
+TASK 2 — IMPROVE dedupe logic to handle EasyPost edge cases
+  File: app/api/shipping/rates/route.ts
+  Add service name normalization (EasyPost uses different service names than Shippo)
+  Example: EasyPost "FEDEX_GROUND" vs Shippo "Ground" — normalize both to lowercase
+
+TASK 3 — ADD Estes + SAIA + FedEx Freight to static freight estimates
+  File: lib/shipping/freight-estimates.ts
+  Currently only 3 carriers (XPO, Old Dominion, R+L)
+  Add: Estes Express, SAIA, FedEx Freight Economy
+  This makes the static table match what live quotes return
+
+TASK 4 — SMOOTH Item Dashboard LTL section
+  File: app/items/[id]/ShippingPanel.tsx
+  Fix: buyerZip hardcoded to "10001" in fetchLiveLtlQuotes (line 2864)
+       → Use buyerZip from the buyer address fields if available, else "10001"
+  Improve: Add FedEx Freight placeholder row in static table header
+  Improve: Better spacing/polish on the LTL section
+  Improve: Make "Get Live LTL Quotes" button more prominent
+  Keep: Everything else in the freight section as-is — it works
+
+TASK 5 — SMOOTH Shipping Center freight tab
+  File: app/shipping/ShippingCenterClient.tsx
+  Improve: Add "FedEx Freight" badge visibility even when sandbox returns 0
+  Improve: Add note about FedEx Freight coming soon with production credentials
+  Improve: Better carrier card styling — more Tesla-like
+  Keep: All existing functionality — BOL, pickup scheduling, quote request
+
+Files modified:
+  - lib/shipping/easypost.ts (carrier name normalization)
+  - lib/shipping/freight-estimates.ts (add 3 carriers)
+  - app/api/shipping/rates/route.ts (service name normalization in dedupe)
+  - app/items/[id]/ShippingPanel.tsx (buyer ZIP fix + LTL polish)
+  - app/shipping/ShippingCenterClient.tsx (freight tab polish)
+
+Expected output:
+  - Zero duplicate FedEx rows in parcel carrier table
+  - 6 carriers in static freight estimate table (was 3)
+  - LTL quotes use actual buyer ZIP when available
+  - Freight sections look more polished and professional
+  - FedEx Freight presence visible even in sandbox mode
+  - All existing functionality preserved
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n lib/shipping/easypost.ts
+   Focus on lines 219-227: CARRIER_MAP and ALLOWED_CARRIERS
+   This is where the FedExDefault normalization is missing.
+
+2. cat -n app/api/shipping/rates/route.ts
+   Focus on lines 60-78: Dedupe logic
+   Note how the key is built: carrier_service lowercase
+   EasyPost service names differ from Shippo — needs normalization.
+
+3. cat -n lib/shipping/freight-estimates.ts
+   Full file — 127 lines. Currently 3 carriers.
+   Understand the CarrierProfile structure to add 3 more.
+
+4. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2843,2881p'
+   Focus on fetchLiveLtlQuotes function
+   Line 2864: toZip hardcoded to "10001" — this is the bug.
+
+5. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3489,3700p'
+   Focus on Section D — Freight Shipping
+   Map the full LTL UI: static table, live quotes, manual form.
+
+6. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '3140,3210p'
+   Focus on freight tab quote fetch and carrier display logic.
+
+7. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '3318,3400p'
+   Focus on freight carrier card display and badges.
+
+8. grep -n 'buyerZip\|buyerStreet\|buyerCity\|buyerState' app/items/[id]/ShippingPanel.tsx | head -10
+   Confirm the buyer address fields exist and what state they're in.
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PART B — FIX EASYPOST CARRIER NORMALIZATION
+
+================================================================================
+
+FILE: lib/shipping/easypost.ts
+
+--- B1: Fix CARRIER_MAP ---
+
+FIND (around line 220-225):
+
+    const CARRIER_MAP: Record<string, string> = {
+      UPSDAP: "UPS",
+      USPSFirst: "USPS",
+      USPSParcelSelect: "USPS",
+      USPSPriorityMail: "USPS",
+    };
+
+REPLACE WITH:
+
+    const CARRIER_MAP: Record<string, string> = {
+      UPSDAP: "UPS",
+      USPSFirst: "USPS",
+      USPSParcelSelect: "USPS",
+      USPSPriorityMail: "USPS",
+      FedExDefault: "FedEx",
+      FedExSmartPost: "FedEx",
+    };
+
+--- B2: Fix ALLOWED_CARRIERS ---
+
+FIND (around line 227):
+
+    const ALLOWED_CARRIERS = ["usps", "ups", "fedex", "upsdap"];
+
+REPLACE WITH:
+
+    const ALLOWED_CARRIERS = ["usps", "ups", "fedex", "upsdap", "fedexdefault", "fedexsmartpost"];
+
+NOTE: After this fix, EasyPost's "FedExDefault" carrier will normalize to "FedEx"
+and the dedupe key will match Shippo's "FedEx" — eliminating duplicate rows.
+
+================================================================================
+
+PART C — IMPROVE DEDUPE SERVICE NAME NORMALIZATION
+
+================================================================================
+
+FILE: app/api/shipping/rates/route.ts
+
+--- C1: Add service name normalization helper ---
+
+FIND the dedupe section (around line 60):
+
+  // Dedupe — prefer FedEx direct over Shippo's FedEx rates, keep cheapest per carrier+service
+  const seen = new Map<string, any>();
+  for (const r of allRates) {
+    const key = `${(r.provider || r.carrier || "").toLowerCase()}_${(r.servicelevel_name || r.service || "").toLowerCase()}`;
+
+REPLACE WITH:
+
+  // Normalize service names across providers for clean dedupe
+  const normalizeService = (svc: string): string => {
+    const s = (svc || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    // Map EasyPost/FedEx service variants to canonical names
+    const MAP: Record<string, string> = {
+      fedexground: "ground",
+      fedex_ground: "ground",
+      ground: "ground",
+      homedelivery: "homedelivery",
+      fedexhomedelivery: "homedelivery",
+      fedex2day: "2day",
+      "2day": "2day",
+      fedexexpresssaver: "expresssaver",
+      expresssaver: "expresssaver",
+      fedexstandardovernight: "standardovernight",
+      standardovernight: "standardovernight",
+      fedexpriority: "priority",
+      priorityovernight: "priorityovernight",
+      fedexfirstovernight: "firstovernight",
+      firstovernight: "firstovernight",
+      smartpost: "smartpost",
+      fedex_smart_post: "smartpost",
+      upsground: "ground",
+      upssaver: "saver",
+      upsgroundsaver: "groundsaver",
+      ups3dayselect: "3dayselect",
+      "3dayselect": "3dayselect",
+      ups2nddayair: "2nddayair",
+      "2nddayair": "2nddayair",
+      upsnextdayair: "nextdayair",
+      nextdayair: "nextdayair",
+      upsnextdayairsaver: "nextdayairsaver",
+      nextdayairsaver: "nextdayairsaver",
+      upsnextdayairearly: "nextdayairearly",
+      upsnextdayairearlyam: "nextdayairearlyam",
+      nextdayairearlyam: "nextdayairearlyam",
+      parcelselect: "parcelselect",
+      groundadvantage: "groundadvantage",
+      priority: "priority",
+      prioritymail: "priority",
+      express: "express",
+      prioritymailexpress: "express",
+      firstclass: "firstclass",
+      first: "firstclass",
+    };
+    return MAP[s] || s;
+  };
+
+  // Dedupe — prefer FedEx direct over Shippo's FedEx rates, keep cheapest per carrier+service
+  const seen = new Map<string, any>();
+  for (const r of allRates) {
+    const carrier = (r.provider || r.carrier || "").toLowerCase();
+    const service = normalizeService(r.servicelevel_name || r.service || "");
+    const key = `${carrier}_${service}`;
+
+NOTE: The rest of the dedupe logic (lines 64-78) stays EXACTLY as-is.
+Only the key generation changes to use normalized service names.
+This ensures "FedEx Ground" from Shippo and "FEDEX_GROUND" from EasyPost
+dedupe to the same key: "fedex_ground".
+
+================================================================================
+
+PART D — ADD CARRIERS TO STATIC FREIGHT ESTIMATES
+
+================================================================================
+
+FILE: lib/shipping/freight-estimates.ts
+
+--- D1: Add 3 new carrier profiles ---
+
+FIND the closing of the R+L Carriers profile (around line 83-85):
+
+  {
+    name: "R+L Carriers",
+    service: "LTL Value",
+    baseCost: 139,
+    perLbOverThreshold: 0.32,
+    threshold: 100,
+    residentialSurcharge: 55,
+    liftgateSurcharge: 75,
+    deliveryNotification: 10,
+    transitMin: 7,
+    transitMax: 14,
+  },
+];
+
+REPLACE WITH:
+
+  {
+    name: "R+L Carriers",
+    service: "LTL Value",
+    baseCost: 139,
+    perLbOverThreshold: 0.32,
+    threshold: 100,
+    residentialSurcharge: 55,
+    liftgateSurcharge: 75,
+    deliveryNotification: 10,
+    transitMin: 7,
+    transitMax: 14,
+  },
+  {
+    name: "Estes Express",
+    service: "LTL Standard",
+    baseCost: 169,
+    perLbOverThreshold: 0.40,
+    threshold: 100,
+    residentialSurcharge: 65,
+    liftgateSurcharge: 85,
+    deliveryNotification: 12,
+    transitMin: 4,
+    transitMax: 8,
+  },
+  {
+    name: "SAIA",
+    service: "LTL Standard",
+    baseCost: 175,
+    perLbOverThreshold: 0.42,
+    threshold: 100,
+    residentialSurcharge: 70,
+    liftgateSurcharge: 90,
+    deliveryNotification: 12,
+    transitMin: 5,
+    transitMax: 9,
+  },
+  {
+    name: "FedEx Freight",
+    service: "FedEx Freight Economy",
+    baseCost: 199,
+    perLbOverThreshold: 0.48,
+    threshold: 100,
+    residentialSurcharge: 80,
+    liftgateSurcharge: 95,
+    deliveryNotification: 15,
+    transitMin: 3,
+    transitMax: 7,
+  },
+];
+
+NOTE: FedEx Freight is added with realistic pricing benchmarks.
+When production FedEx credentials activate, the live quote from
+fedex-ltl.ts will override this estimate in the ltl-quote route.
+The static table provides visibility that FedEx Freight exists as an option.
+
+================================================================================
+
+PART E — SMOOTH ITEM DASHBOARD LTL SECTION
+
+================================================================================
+
+FILE: app/items/[id]/ShippingPanel.tsx
+
+--- E1: Fix hardcoded toZip in fetchLiveLtlQuotes ---
+
+FIND (around line 2843-2881):
+
+  const fetchLiveLtlQuotes = async () => {
+    setLtlQuoteLoading(true);
+    try {
+      const fc = (() => {
+        const cubicFt = (length * width * height) / 1728;
+        const density = cubicFt > 0 ? weight / cubicFt : 0;
+        if (density >= 50) return "50";
+        if (density >= 35) return "55";
+        if (density >= 22.5) return "65";
+        if (density >= 15) return "70";
+        if (density >= 12) return "85";
+        if (density >= 9) return "100";
+        if (density >= 6) return "150";
+        if (density >= 4) return "200";
+        return "250";
+      })();
+      const res = await fetch("/api/shipping/ltl-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fromZip: fromZip || "04901",
+          toZip: "10001",
+          weight,
+          length,
+          width,
+          height,
+          freightClass: fc,
+          description: suggestion?.label || "Household goods",
+          packaging: "palletized",
+        }),
+      });
+      const data = await res.json();
+      if (data.quotes && data.quotes.length > 0) {
+        setLiveLtlQuotes(data.quotes);
+        setLtlQuoteSource(data.source || "demo");
+      }
+    } catch { /* ignore */ }
+    setLtlQuoteLoading(false);
+  };
+
+REPLACE WITH:
+
+  const fetchLiveLtlQuotes = async () => {
+    setLtlQuoteLoading(true);
+    try {
+      const cubicFt = (length * width * height) / 1728;
+      const density = cubicFt > 0 ? weight / cubicFt : 0;
+      const fc = (() => {
+        if (density >= 50) return "50";
+        if (density >= 35) return "55";
+        if (density >= 22.5) return "65";
+        if (density >= 15) return "70";
+        if (density >= 12) return "85";
+        if (density >= 9) return "100";
+        if (density >= 6) return "150";
+        if (density >= 4) return "200";
+        return "250";
+      })();
+      // Use buyer ZIP if available, otherwise default to NYC for estimate
+      const destZip = buyerZip || "10001";
+      const res = await fetch("/api/shipping/ltl-quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fromZip: fromZip || "04901",
+          toZip: destZip,
+          weight,
+          length,
+          width,
+          height,
+          freightClass: fc,
+          description: suggestion?.label || "Household goods",
+          packaging: "palletized",
+        }),
+      });
+      const data = await res.json();
+      if (data.quotes && data.quotes.length > 0) {
+        setLiveLtlQuotes(data.quotes);
+        setLtlQuoteSource(data.source || "demo");
+      }
+    } catch { /* ignore */ }
+    setLtlQuoteLoading(false);
+  };
+
+NOTE: buyerZip is already defined in ShippingPanel (see buyer address fields
+around lines 218-222). This just uses it instead of the hardcoded "10001".
+
+--- E2: Improve "Get Live LTL Quotes" button prominence ---
+
+FIND (around line 3566-3577):
+
+                  {!liveLtlQuotes && (
+                    <button
+                      onClick={fetchLiveLtlQuotes}
+                      disabled={ltlQuoteLoading}
+                      style={{
+                        padding: "0.5rem 1.25rem", fontSize: "0.82rem", fontWeight: 700, borderRadius: "0.5rem",
+                        border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
+                        cursor: ltlQuoteLoading ? "wait" : "pointer", opacity: ltlQuoteLoading ? 0.6 : 1,
+                      }}
+                    >
+                      {ltlQuoteLoading ? "Getting Quotes..." : "\u{1F4E1} Get Live LTL Quotes"}
+                    </button>
+                  )}
+
+REPLACE WITH:
+
+                  {!liveLtlQuotes && (
+                    <button
+                      onClick={fetchLiveLtlQuotes}
+                      disabled={ltlQuoteLoading}
+                      style={{
+                        width: "100%", padding: "0.65rem 1.25rem", fontSize: "0.85rem", fontWeight: 700,
+                        borderRadius: "0.5rem", border: "none",
+                        background: "linear-gradient(135deg, #00bcd4, #009688)",
+                        color: "#fff", cursor: ltlQuoteLoading ? "wait" : "pointer",
+                        opacity: ltlQuoteLoading ? 0.6 : 1,
+                        boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+                        transition: "all 0.2s ease",
+                        letterSpacing: "0.02em",
+                      }}
+                    >
+                      {ltlQuoteLoading ? "⏳ Getting Live Quotes..." : "📡 Get Live LTL Quotes"}
+                    </button>
+                  )}
+
+--- E3: Improve static freight table header ---
+
+FIND (around line 3559-3561):
+
+                <div style={{ marginTop: "0.75rem", fontSize: "0.75rem", color: "var(--text-muted)", padding: "0.5rem 0.75rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "0.5rem" }}>
+                  Estimates only — official quote coming. Toggles update in real-time.
+                </div>
+
+REPLACE WITH:
+
+                <div style={{ marginTop: "0.75rem", fontSize: "0.75rem", color: "var(--text-muted)", padding: "0.5rem 0.75rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "0.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span>Estimates only — official quotes below. Toggles update in real-time.</span>
+                  <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800" }}>ESTIMATED</span>
+                </div>
+
+================================================================================
+
+PART F — SMOOTH SHIPPING CENTER FREIGHT TAB
+
+================================================================================
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+--- F1: Add FedEx Freight note in freight tab ---
+
+FIND the freight quote results display. After the carriers are rendered,
+find the section that shows the source badge (around where the quote
+results display, after the carrier list). Look for the pattern where
+quote.isLive is checked.
+
+After the carrier quote list section, ADD a note about FedEx Freight:
+
+Look for the pattern near where quote results end (after carrier cards).
+Find a suitable location after the sorted carrier list display and BEFORE
+the accessorial options section.
+
+INSERT (after the carrier list, before accessorials) a FedEx Freight notice:
+
+This is a TARGETED insertion. Find the exact location by reading the file
+in Part A. The note should say:
+
+<div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", borderRadius: "0.5rem", background: "rgba(77,20,140,0.06)", border: "1px solid rgba(77,20,140,0.15)", fontSize: "0.72rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+  <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(77,20,140,0.12)", color: "#4D148C" }}>FEDEX</span>
+  <span>FedEx Freight Economy rates available with production credentials. Currently showing estimate.</span>
+</div>
+
+NOTE: Use Part A reads to find the EXACT insertion point. Do not guess.
+This note is informational only — tells the user FedEx Freight is coming.
+The purple FedEx color (#4D148C) matches the existing FEDEX LIVE badge.
+
+--- F2: Improve carrier card badge styling ---
+
+This is a POLISH task. When reading the freight carrier cards in Part A,
+look for the badge elements (BEST RATE, FASTEST, ESTIMATED, LIVE RATES).
+If they are inconsistent with the Item Dashboard badges, align them.
+
+The goal is CONSISTENCY between the two views:
+  - BEST RATE → green badge: rgba(76,175,80,0.15) / #4caf50
+  - FASTEST → blue badge: rgba(59,130,246,0.15) / #3b82f6
+  - FEDEX LIVE → purple badge: rgba(77,20,140,0.15) / #4D148C
+  - SHIPENGINE → teal badge: rgba(0,188,212,0.12) / #00bcd4
+  - ESTIMATED → amber badge: rgba(255,152,0,0.12) / #ff9800
+  - LIVE RATES → teal badge: rgba(0,188,212,0.12) / #00bcd4
+
+If they already match — report as "already consistent" and skip.
+Only fix if there's a visible difference.
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+3. EasyPost CARRIER_MAP updated with FedExDefault: yes / no
+4. EasyPost ALLOWED_CARRIERS updated: yes / no
+5. Dedupe normalizeService helper added to rates/route.ts: yes / no
+6. Dedupe key generation uses normalizeService: yes / no
+7. Rest of dedupe logic unchanged: yes / no
+8. freight-estimates.ts has 6 carriers (was 3): yes / no
+9. New carriers: Estes Express, SAIA, FedEx Freight: yes / no
+10. CarrierProfile structure matches existing format: yes / no
+11. ShippingPanel fetchLiveLtlQuotes uses buyerZip: yes / no
+12. Hardcoded "10001" replaced with buyerZip || "10001": yes / no
+13. "Get Live LTL Quotes" button upgraded (full width, shadow): yes / no
+14. Static freight table ESTIMATED badge added: yes / no
+15. ShippingCenterClient freight tab FedEx note added: yes / no
+16. Badge styling consistent between Item Dashboard and Shipping Center: yes / no
+17. All locked files untouched: yes / no
+18. inline style={{}} throughout — no Tailwind, no className: yes / no
+19. Always-dark panels use hardcoded colors: yes / no
+20. Theme-aware surfaces use CSS variables: yes / no
+21. Light mode tested — no broken contrast: yes / no
+22. Dark mode tested — all elements visible: yes / no
+23. npx tsc --noEmit: 0 errors
+24. npm run build: pass
+25. CHECKPOINT post-change: pass
+26. Dev server: localhost:3000
+
+MANUAL TESTS:
+27. Open any item with parcel rates → verify NO duplicate FedEx rows
+28. Open a large/heavy item → verify freight section shows 6 carriers in static table
+29. Click "Get Live LTL Quotes" → verify quotes load with proper badges
+30. Check Shipping Center freight tab → verify FedEx Freight note visible
+31. Compare Item Dashboard LTL badges with Shipping Center LTL badges → consistent
+32. Check parcel carrier table count — should be fewer rows after dedupe fix (no FedEx duplicates)
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+EASYPOST NORMALIZATION:
+- CARRIER_MAP updated: [yes / no]
+- FedExDefault → FedEx mapping: [yes / no]
+- FedExSmartPost → FedEx mapping: [yes / no]
+- ALLOWED_CARRIERS includes fedexdefault: [yes / no]
+- ALLOWED_CARRIERS includes fedexsmartpost: [yes / no]
+
+DEDUPE FIX:
+- normalizeService helper added: [yes / no]
+- Service name map covers USPS/UPS/FedEx variants: [yes / no]
+- Dedupe key uses normalized service: [yes / no]
+- Existing dedupe priority logic unchanged: [yes / no]
+- Expected duplicate reduction: [count before → count after]
+
+FREIGHT ESTIMATES:
+- freight-estimates.ts carrier count: [3 → 6]
+- New carriers added: [Estes / SAIA / FedEx Freight]
+- CarrierProfile format matches existing: [yes / no]
+- Pricing realistic and benchmarked: [yes / no]
+
+ITEM DASHBOARD LTL:
+- buyerZip used in fetchLiveLtlQuotes: [yes / no]
+- Fallback "10001" still present: [yes / no]
+- Button upgraded (full width, shadow): [yes / no]
+- ESTIMATED badge on static table: [yes / no]
+- Existing accessorial toggles unchanged: [yes / no]
+- Existing manual quote form unchanged: [yes / no]
+
+SHIPPING CENTER FREIGHT TAB:
+- FedEx Freight note added: [yes / no]
+- Badge styling consistent: [yes / no / already consistent]
+- Existing BOL generation unchanged: [yes / no]
+- Existing pickup scheduling unchanged: [yes / no]
+- Existing carrier selection unchanged: [yes / no]
+
+LIGHT MODE: [clean / issues found]
+DARK MODE: [clean / issues found]
+ALWAYS-DARK PANELS: [hardcoded colors used / issues]
+
+EXISTING LOGIC UNTOUCHED:
+— [List every locked file verified as untouched]
+
+FLAGS FROM CLAUDE CODE:
+— [All gaps, risks, missed data collection, out-of-scope items]
+— [Duplicate FedEx row count before/after fix]
+— [Any service name collisions discovered]
+— [New carry-forward items]
+
+Files modified: [list all — exact paths]
+New files created: [list or 'none']
+Schema changes needed: [list or 'none']
+Build: [pass / fail]
+TypeScript: [0 errors / list all errors]
+
+CHECKPOINT after: [pass / issue]
+Dev server: localhost:3000
+
+IF POST-CHECKPOINT FAILS:
+REVERT IMMEDIATELY.
+Report exactly what broke and what was touched.
+Do NOT proceed until clean.
+
+Command Template v11 | LegacyLoop | March 24, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command | Paste in full — never abbreviate

@@ -1,0 +1,1143 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 24, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+SENIOR-FRIENDLY MANDATE: No extra noise. No clutter. Every element earns
+its place. Older users must be able to understand what's happening at a
+glance. Clean, big enough text, obvious actions, minimal confusion.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping —
+✓ lib/shipping/package-suggestions.ts
+✓ lib/shipping/shippo.ts — LOCKED
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/easypost.ts — LOCKED
+✓ lib/shipping/freight-estimates.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/populate-intelligence.ts
+✓ lib/data/project-rollup.ts
+✓ lib/data/user-events.ts
+
+— Enrichment —
+✓ lib/enrichment/item-context.ts
+✓ lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— eBay Adapter (when created) —
+✓ lib/adapters/ebay.ts — LOCKED after creation
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/** — READ + EXTEND for shipping work
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED except surgical unlocks for bot upgrades
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — READ ONLY
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - app/items/[id]/ShippingPanel.tsx (ADD unified Saved Quotes section for LTL + parcel — click-to-save pattern, clean display, senior-friendly)
+  - app/shipping/ShippingCenterClient.tsx (ADD Saved Quotes section in freight tab — click-to-save on LTL quotes, carrier tracking links in shipped tab, pickup flow polish with real invite confirmation)
+  - lib/shipping/saved-quotes.ts (CREATE — shared quote storage helper using localStorage with clean get/save/delete API)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+Data collection for this command:
+  - Log every saved quote (type, carrier, amount, itemId) to console
+  - Log quote deletions
+  - Log pickup invite sends
+  - Log carrier tracking link clicks
+  - All via existing console.log pattern
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• Shipping system has 3 views: Item Dashboard ShippingPanel, Shipping Center, Shipping Label view
+• All carrier rates WORKING: Shippo + EasyPost + demo fallback (13-20+ rates per item)
+• LTL freight: demo estimates from 6 carriers (XPO, Old Dominion, R+L, Estes, SAIA, FedEx Freight)
+• FedEx LTL: ACCOUNT.NUMBER.MISMATCH on sandbox (code correct, portal config pending)
+• ShipEngine: carrier discovery fix in CMD4A (listCarriers wiring)
+• CMD4A adds: pre-sale LTL save button, localStorage carry-over, ShipEngine wiring, nav links
+
+QUOTE MANAGEMENT PROBLEM (this command fixes it):
+
+Current state: Quote saving is fragmented and noisy.
+- Parcel quotes: User gets live rates, selects carrier → jumps to label wizard. No persistent "saved quotes" view.
+- LTL quotes: CMD4A adds a save button, but it's a standalone green button + confirmation banner + two secondary links. Too much noise for seniors.
+- No unified place to see "my saved quotes" across parcel and LTL.
+- Older users especially won't tolerate cluttered UIs with banners, modals, and too many CTAs.
+
+Design principle: Click the quote card → it saves (subtle checkmark). Access saved quotes from a clean collapsible section. Delete with one tap. Use saved quote with one tap. That's it.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Create a shared quote storage utility (lib/shipping/saved-quotes.ts)
+— Add click-to-save behavior on LTL quote cards in both views
+— Add a clean "Saved Quotes" collapsible section in ShippingPanel and ShippingCenterClient
+— Add carrier tracking URL links in shipped tab
+— Polish pickup invite confirmation flow
+— Add subtle save animations (checkmark fade, border highlight)
+— Add console.log for data collection
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Change business or pricing logic
+— Remove or rebuild existing functionality
+— Add new npm dependencies
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+No new env variables in this command.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+No schema changes in this command.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+Shipping Center has 5 tabs: preSale (Estimates), readyToShip (Ready to Ship),
+shipped (Tracking), freight (Freight/LTL), pickup (Local Pickup).
+
+Item Dashboard ShippingPanel has:
+  - Ship It tab (parcel + freight) vs Local Pickup tab
+  - Pre-sale mode: rates, carrier selection, freight quotes
+  - Post-sale mode: PostSaleWizard (parcel), LtlCompletionFlow, PickupCompletionFlow
+
+KEY QUOTE INTERACTION POINTS:
+
+1. ITEM DASHBOARD — ShippingPanel.tsx:
+   - Parcel rates displayed as cards (line ~3500 area) — user clicks to select carrier
+   - LTL quotes displayed as cards (line ~3607 area) — user clicks to select carrier
+   - CMD4A adds: "Save Freight Quote" button after selection (this is what we're replacing with cleaner pattern)
+   - NEED: Click on any quote card (parcel OR LTL) → silently saves → shows checkmark
+   - NEED: "Saved Quotes" collapsible section showing all saved quotes for this item
+
+2. SHIPPING CENTER — ShippingCenterClient.tsx:
+   - Freight tab (line 3008): Quote results with carrier selection (line 3340)
+   - User clicks carrier card → selectedFreight state updates
+   - Then has "Upload Official Quote" and "Create BOL" buttons
+   - NEED: Same click-to-save pattern on freight carrier cards
+   - NEED: "Saved Quotes" section in freight tab
+   - ShippedTab (line 2582): Tracking cards — NO carrier tracking links yet
+   - NEED: Clickable tracking links (USPS, UPS, FedEx URLs)
+
+3. LOCAL PICKUP — LocalPickupTab (line 4078):
+   - Full invite flow works: Send → Confirmed → Handoff → Complete
+   - advancePickup function handles progression
+   - sendInvite in LocalPickupPanel.tsx has TODO stub
+   - NEED: Better confirmation messaging after invite send
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — CLEAN SAVED QUOTES + TRACKING LINKS + PICKUP POLISH
+
+================================================================================
+
+This command does FOUR things. All surgical. Senior-friendly. Clean.
+
+TASK 1 — CREATE SHARED SAVED QUOTES UTILITY (lib/shipping/saved-quotes.ts)
+  A simple, clean localStorage-based quote storage system.
+  - saveQuote(itemId, quote): Save a quote (parcel or LTL)
+  - getQuotes(itemId): Get all saved quotes for an item
+  - deleteQuote(itemId, quoteKey): Delete a specific saved quote
+  - getAllSavedQuotes(): Get all saved quotes across all items
+  - Quote structure: { type: "parcel"|"ltl", carrier, service, amount, transit, source, savedAt, quoteKey }
+  - localStorage key: ll_saved_quotes (single key, JSON object keyed by itemId)
+  - Max 10 saved quotes per item (auto-prune oldest)
+  - Console log every save/delete for data collection
+
+TASK 2 — CLICK-TO-SAVE ON QUOTE CARDS (ShippingPanel.tsx + ShippingCenterClient.tsx)
+  Make LTL quote cards clickable with a save action — same feel as parcel.
+
+  In ShippingPanel.tsx:
+  - LTL carrier quote cards (line ~3607): On click, save to saved-quotes utility
+  - Show subtle checkmark overlay on saved cards (not a big banner)
+  - Small teal border-left highlight on saved cards
+  - If CMD4A's "Save Freight Quote" button exists, REPLACE it with this cleaner pattern
+
+  In ShippingCenterClient.tsx freight tab:
+  - Freight carrier cards (line ~3340): On click, already sets selectedFreight — ALSO save to quotes
+  - Show same checkmark pattern
+  - Saved state persists on page refresh via localStorage
+
+TASK 3 — SAVED QUOTES DISPLAY SECTION (Both views)
+  Add a clean, collapsible "Saved Quotes" section.
+
+  In ShippingPanel.tsx (above the carrier rate cards):
+  - Collapsible section: "💾 Saved Quotes (N)" header
+  - Default collapsed if 0 quotes, expanded if quotes exist
+  - Each saved quote = compact card: carrier name | price | transit | type badge (PARCEL/LTL)
+  - "Use This Quote" button → jumps to appropriate flow (label wizard for parcel, LTL completion for freight)
+  - "✕" delete button (small, right side) — one tap remove
+  - Clean, minimal, no clutter. Senior-friendly font sizes (0.78rem+ for key info)
+
+  In ShippingCenterClient.tsx freight tab (above the quote form):
+  - Same pattern — "Saved Freight Quotes (N)" collapsible
+  - Shows saved LTL quotes for all items
+  - Each card: item name | carrier | price | transit
+  - "Use Quote →" links to item dashboard
+  - "✕" delete
+
+  DESIGN RULES FOR SAVED QUOTES:
+  - Background: rgba(0,188,212,0.03) with 1px solid rgba(0,188,212,0.12) border
+  - Cards: var(--bg-card) background, subtle left border (teal for parcel, purple for LTL)
+  - No gradients on the section itself — keep it flat and clean
+  - Font sizes: carrier name 0.82rem bold, price 0.88rem bold green, transit 0.72rem muted
+  - Delete button: 0.6rem, var(--text-muted), hover → red
+  - Collapse arrow: simple ▼/▲ toggle, 0.65rem
+  - Empty state: "No saved quotes yet. Click any carrier quote to save it."
+
+TASK 4 — SHIPPED TAB TRACKING LINKS + PICKUP INVITE POLISH (ShippingCenterClient.tsx)
+
+  A) Carrier tracking links in ShippedTab:
+  - Add getTrackingUrl helper inside ShippedTab:
+    USPS: https://tools.usps.com/go/TrackConfirmAction?tLabels={tracking}
+    UPS: https://www.ups.com/track?tracknum={tracking}
+    FedEx: https://www.fedex.com/fedextrack/?trknbr={tracking}
+    DHL: https://www.dhl.com/us-en/home/tracking.html?tracking-id={tracking}
+  - Tracking number becomes a clickable link (opens new tab)
+  - Add "Track on [Carrier] →" text link below tracking number
+  - Carrier-colored link text: USPS=#333366, UPS=#351c15, FedEx=#4d148c
+  - Console log tracking link clicks
+
+  B) Pickup invite send confirmation:
+  - In LocalPickupTab, after advancePickup succeeds for invite send:
+  - Show clean confirmation: "✅ Invite sent to buyer" (not a big modal)
+  - Auto-dismiss after 3 seconds
+  - Update pickup card to show "INVITE SENT" status immediately
+
+Files modified:
+  - lib/shipping/saved-quotes.ts (CREATE — shared quote storage utility)
+  - app/items/[id]/ShippingPanel.tsx (click-to-save on LTL + Saved Quotes section)
+  - app/shipping/ShippingCenterClient.tsx (click-to-save on freight + Saved Quotes + tracking links + pickup polish)
+
+Expected output:
+  - Saved Quotes utility: clean get/save/delete API via localStorage
+  - LTL quote cards: click to save with checkmark, no noisy banners
+  - Saved Quotes section: clean collapsible in both Item Dashboard and Shipping Center
+  - Each saved quote: carrier, price, transit, type badge, "Use" button, delete "✕"
+  - Shipped tab: tracking numbers are clickable carrier-specific links
+  - Pickup tab: clean invite confirmation after send
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3590,3660p'
+   Focus: LTL carrier quote cards — where click-to-save goes.
+   Look for the quote card rendering and selectedLtlCarrier handling.
+
+2. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3480,3530p'
+   Focus: Parcel carrier rate cards — study the existing click pattern.
+   We want LTL to feel the same.
+
+3. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3460,3490p'
+   Focus: Where to insert the Saved Quotes section — above the rates.
+
+4. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '3320,3400p'
+   Focus: Freight tab carrier selection cards — where to add click-to-save.
+
+5. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '3005,3025p'
+   Focus: FreightTab function start — where to add Saved Quotes section.
+
+6. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2610,2730p'
+   Focus: ShippedTab tracking number display — where to add carrier links.
+
+7. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '4200,4280p'
+   Focus: LocalPickupTab invite send — where to add confirmation polish.
+
+8. ls lib/shipping/
+   Focus: Verify saved-quotes.ts doesn't exist yet.
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PART B — CREATE SAVED QUOTES UTILITY
+
+================================================================================
+
+CREATE FILE: lib/shipping/saved-quotes.ts
+
+```typescript
+/**
+ * Saved Quotes — Clean localStorage-based quote storage
+ *
+ * Unified storage for both parcel and LTL quotes.
+ * Senior-friendly: click to save, one place to view, one tap to use or delete.
+ */
+
+export interface SavedQuote {
+  quoteKey: string;       // Unique key: "{carrier}-{service}-{type}"
+  type: "parcel" | "ltl";
+  carrier: string;
+  service: string;
+  amount: number;
+  transit: string;        // e.g. "3-5 days" or "5 days"
+  source: string;         // "shippo" | "easypost" | "fedex" | "shipengine" | "demo"
+  isLive: boolean;
+  savedAt: string;        // ISO timestamp
+  itemId: string;
+  itemTitle?: string;
+}
+
+const STORAGE_KEY = "ll_saved_quotes";
+const MAX_QUOTES_PER_ITEM = 10;
+
+function readStore(): Record<string, SavedQuote[]> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeStore(store: Record<string, SavedQuote[]>): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+  } catch {}
+}
+
+/**
+ * Save a quote for an item. Auto-dedupes by quoteKey.
+ * Returns true if saved, false if already existed.
+ */
+export function saveQuote(itemId: string, quote: Omit<SavedQuote, "quoteKey" | "savedAt" | "itemId">): boolean {
+  const store = readStore();
+  const quotes = store[itemId] || [];
+  const quoteKey = `${quote.carrier}-${quote.service}-${quote.type}`.toLowerCase().replace(/[^a-z0-9-]/g, "");
+
+  // Check for existing
+  const existingIdx = quotes.findIndex(q => q.quoteKey === quoteKey);
+  if (existingIdx >= 0) {
+    // Update existing quote with new amount/data
+    quotes[existingIdx] = {
+      ...quotes[existingIdx],
+      ...quote,
+      quoteKey,
+      savedAt: new Date().toISOString(),
+      itemId,
+    };
+  } else {
+    // Add new
+    quotes.unshift({
+      ...quote,
+      quoteKey,
+      savedAt: new Date().toISOString(),
+      itemId,
+    });
+    // Prune to max
+    if (quotes.length > MAX_QUOTES_PER_ITEM) {
+      quotes.splice(MAX_QUOTES_PER_ITEM);
+    }
+  }
+
+  store[itemId] = quotes;
+  writeStore(store);
+  console.log(`[quotes] Saved ${quote.type} quote:`, quote.carrier, "$" + quote.amount, "for item", itemId);
+  return existingIdx < 0; // true if new
+}
+
+/**
+ * Get all saved quotes for an item.
+ */
+export function getQuotes(itemId: string): SavedQuote[] {
+  const store = readStore();
+  return store[itemId] || [];
+}
+
+/**
+ * Delete a specific saved quote.
+ */
+export function deleteQuote(itemId: string, quoteKey: string): void {
+  const store = readStore();
+  const quotes = store[itemId] || [];
+  store[itemId] = quotes.filter(q => q.quoteKey !== quoteKey);
+  if (store[itemId].length === 0) delete store[itemId];
+  writeStore(store);
+  console.log(`[quotes] Deleted quote:`, quoteKey, "for item", itemId);
+}
+
+/**
+ * Check if a specific quote is saved.
+ */
+export function isQuoteSaved(itemId: string, carrier: string, service: string, type: "parcel" | "ltl"): boolean {
+  const quoteKey = `${carrier}-${service}-${type}`.toLowerCase().replace(/[^a-z0-9-]/g, "");
+  const quotes = getQuotes(itemId);
+  return quotes.some(q => q.quoteKey === quoteKey);
+}
+
+/**
+ * Get all saved quotes across all items (for Shipping Center view).
+ */
+export function getAllSavedQuotes(): { itemId: string; quotes: SavedQuote[] }[] {
+  const store = readStore();
+  return Object.entries(store)
+    .filter(([, quotes]) => quotes.length > 0)
+    .map(([itemId, quotes]) => ({ itemId, quotes }));
+}
+
+/**
+ * Get count of saved quotes for an item.
+ */
+export function getQuoteCount(itemId: string): number {
+  return getQuotes(itemId).length;
+}
+```
+
+================================================================================
+
+PART C — CLICK-TO-SAVE ON LTL QUOTE CARDS
+
+================================================================================
+
+FILE: app/items/[id]/ShippingPanel.tsx
+
+--- C1: Add import for saved-quotes utility ---
+
+FIND the imports at the top of ShippingPanel.tsx.
+Look for existing shipping-related imports.
+
+ADD after the last shipping import:
+
+import { saveQuote, getQuotes, deleteQuote, isQuoteSaved } from "@/lib/shipping/saved-quotes";
+
+--- C2: Add saved quotes state ---
+
+FIND the component's state declarations (near the top of the main component).
+Look for where useState hooks are declared for shipping-related state.
+
+ADD a new state hook for saved quotes:
+
+const [savedQuotes, setSavedQuotes] = useState<any[]>([]);
+const [justSaved, setJustSaved] = useState<string | null>(null);
+
+// Load saved quotes on mount
+useEffect(() => {
+  if (itemId) setSavedQuotes(getQuotes(itemId));
+}, [itemId]);
+
+--- C3: Modify LTL quote card click behavior ---
+
+FIND the LTL carrier quote cards (around line 3607-3645).
+Each card currently sets selectedLtlCarrier on click.
+
+MODIFY the onClick of each LTL quote card to ALSO save the quote:
+
+On the existing onClick that does setSelectedLtlCarrier(carrier),
+ADD immediately after that line:
+
+saveQuote(itemId, {
+  type: "ltl",
+  carrier: carrier.carrier_name || carrier.carrier,
+  service: carrier.service || "LTL",
+  amount: carrier.total_amount || carrier.price || 0,
+  transit: carrier.transit_days ? `${carrier.transit_days} days` : "5-10 days",
+  source: carrier.source || "demo",
+  isLive: !!carrier.isLive,
+  itemTitle: item?.title || "",
+});
+setSavedQuotes(getQuotes(itemId));
+setJustSaved(carrier.carrier_name || carrier.carrier);
+setTimeout(() => setJustSaved(null), 2000);
+
+--- C4: Add visual save indicator on LTL cards ---
+
+On each LTL quote card, ADD a conditional checkmark indicator.
+
+FIND the carrier name display inside the LTL card.
+After the carrier name text, ADD:
+
+{isQuoteSaved(itemId, carrier.carrier_name || carrier.carrier, carrier.service || "LTL", "ltl") && (
+  <span style={{
+    fontSize: "0.55rem", fontWeight: 700, padding: "1px 5px",
+    borderRadius: "9999px", background: "rgba(76,175,80,0.15)",
+    color: "#4caf50", marginLeft: "0.3rem",
+  }}>
+    {justSaved === (carrier.carrier_name || carrier.carrier) ? "✓ SAVED" : "SAVED"}
+  </span>
+)}
+
+Also ADD a left border highlight on saved cards:
+
+On the card's style object, add:
+borderLeft: isQuoteSaved(itemId, carrier.carrier_name || carrier.carrier, carrier.service || "LTL", "ltl")
+  ? "3px solid #4caf50" : undefined,
+
+--- C5: If CMD4A's "Save Freight Quote" button block exists, SIMPLIFY it ---
+
+CMD4A may have added a block after selectedLtlCarrier that includes:
+- A green "Save Freight Quote" button
+- A confirmation banner
+- "Shipping Center" and "Request Better Quote" links
+
+If this block exists, REPLACE the entire block with just the two secondary links:
+
+{selectedLtlCarrier && (
+  <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+    <a
+      href={`/shipping?itemId=${itemId}&tab=freight`}
+      style={{
+        flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.3rem",
+        padding: "0.4rem 0.5rem", fontSize: "0.72rem", fontWeight: 600,
+        borderRadius: "0.4rem", border: "1px solid var(--border-default)",
+        color: "var(--accent)", textDecoration: "none",
+        background: "rgba(0,188,212,0.04)",
+      }}
+    >
+      🚛 View in Shipping Center →
+    </a>
+    <a
+      href={`/shipping?itemId=${itemId}&tab=freight`}
+      style={{
+        flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "0.4rem 0.5rem", fontSize: "0.72rem", fontWeight: 600,
+        borderRadius: "0.4rem", border: "1px solid var(--border-default)",
+        color: "var(--text-muted)", textDecoration: "none",
+      }}
+    >
+      📋 Request Better Quote
+    </a>
+  </div>
+)}
+
+The save now happens on CLICK of the card itself (C3). No separate save button needed.
+
+================================================================================
+
+PART D — SAVED QUOTES DISPLAY SECTION (ShippingPanel.tsx)
+
+================================================================================
+
+FILE: app/items/[id]/ShippingPanel.tsx
+
+--- D1: Add collapsible Saved Quotes section ---
+
+FIND the area just ABOVE where carrier rate cards are displayed.
+This is in the pre-sale shipping view, before the live rates section.
+Look for where the rates section starts (around line 3460-3490).
+
+INSERT a Saved Quotes section ABOVE the rates:
+
+{(() => {
+  const sq = savedQuotes;
+  if (!sq || sq.length === 0) return null;
+  return (
+    <div style={{
+      marginBottom: "0.75rem", borderRadius: "0.75rem",
+      background: "rgba(0,188,212,0.03)", border: "1px solid rgba(0,188,212,0.12)",
+      overflow: "hidden",
+    }}>
+      <button
+        onClick={() => {/* toggle collapse state */}}
+        style={{
+          width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "0.6rem 0.85rem", background: "none", border: "none", cursor: "pointer",
+        }}
+      >
+        <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>
+          💾 Saved Quotes ({sq.length})
+        </span>
+        <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>▼</span>
+      </button>
+      <div style={{ padding: "0 0.85rem 0.75rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+        {sq.map((q: any) => (
+          <div
+            key={q.quoteKey}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "0.5rem 0.65rem", borderRadius: "0.4rem",
+              background: "var(--bg-card)", border: "1px solid var(--border-default)",
+              borderLeft: q.type === "ltl" ? "3px solid #9c27b0" : "3px solid #00bcd4",
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                <span style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-primary)" }}>{q.carrier}</span>
+                <span style={{
+                  fontSize: "0.48rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px",
+                  background: q.type === "ltl" ? "rgba(156,39,176,0.12)" : "rgba(0,188,212,0.12)",
+                  color: q.type === "ltl" ? "#9c27b0" : "#00bcd4",
+                }}>
+                  {q.type === "ltl" ? "LTL" : "PARCEL"}
+                </span>
+                {q.isLive && (
+                  <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(76,175,80,0.12)", color: "#4caf50" }}>LIVE</span>
+                )}
+              </div>
+              <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+                {q.service} · {q.transit}
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+              <span style={{ fontSize: "0.88rem", fontWeight: 800, color: "#4caf50" }}>${Number(q.amount).toFixed(2)}</span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteQuote(itemId, q.quoteKey);
+                  setSavedQuotes(getQuotes(itemId));
+                }}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  fontSize: "0.72rem", color: "var(--text-muted)", padding: "0.15rem 0.3rem",
+                  borderRadius: "0.25rem", lineHeight: 1,
+                }}
+                title="Remove saved quote"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+})()}
+
+NOTE: Add a useState for collapse state:
+const [savedQuotesOpen, setSavedQuotesOpen] = useState(true);
+
+Wire the toggle button onClick to: setSavedQuotesOpen(p => !p)
+Conditionally show the quotes list based on savedQuotesOpen.
+Change the arrow text: savedQuotesOpen ? "▲" : "▼"
+
+================================================================================
+
+PART E — CLICK-TO-SAVE + SAVED QUOTES IN SHIPPING CENTER
+
+================================================================================
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+--- E1: Add import for saved-quotes utility ---
+
+FIND the imports at the top.
+
+ADD:
+
+import { saveQuote, getQuotes, deleteQuote, isQuoteSaved, getAllSavedQuotes } from "@/lib/shipping/saved-quotes";
+
+--- E2: Add save behavior on freight tab carrier cards ---
+
+FIND the FreightTab function (line 3008).
+FIND the freight carrier cards onClick (around line 3351):
+  onClick={() => setSelectedFreight(c)}
+
+REPLACE with:
+
+onClick={() => {
+  setSelectedFreight(c);
+  // Auto-save on selection
+  const itemId = (heavyItem || items[0])?.id;
+  if (itemId) {
+    saveQuote(itemId, {
+      type: "ltl",
+      carrier: c.carrier,
+      service: c.service || "LTL",
+      amount: c.price,
+      transit: c.transit || "5-10 days",
+      source: c.source || "demo",
+      isLive: !!c.isLive,
+      itemTitle: (heavyItem || items[0])?.title || "",
+    });
+  }
+}}
+
+--- E3: Add visual save indicator on freight cards ---
+
+Same pattern as Part C4 — add a "SAVED" badge after carrier name.
+
+FIND the carrier name span inside the freight card (around line 3370):
+  <span style={{ fontWeight: 600, fontSize: "0.85rem", ... }}>{c.carrier}</span>
+
+After that span, ADD:
+
+{(() => {
+  const itemId = (heavyItem || items[0])?.id;
+  return itemId && isQuoteSaved(itemId, c.carrier, c.service || "LTL", "ltl") ? (
+    <span style={{
+      fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px",
+      borderRadius: "9999px", background: "rgba(76,175,80,0.15)",
+      color: "#4caf50",
+    }}>SAVED</span>
+  ) : null;
+})()}
+
+--- E4: Add Saved Freight Quotes section above quote form ---
+
+FIND the FreightTab return statement (around line 3211).
+FIND the first child element (the "LTL Freight Shipping" info banner).
+
+INSERT BEFORE that banner:
+
+{(() => {
+  const allSaved = getAllSavedQuotes();
+  const ltlQuotes = allSaved.flatMap(({ itemId, quotes }) =>
+    quotes.filter(q => q.type === "ltl").map(q => ({ ...q, itemId }))
+  );
+  if (ltlQuotes.length === 0) return null;
+  return (
+    <div style={{
+      marginBottom: "0.75rem", borderRadius: "0.75rem",
+      background: "rgba(156,39,176,0.03)", border: "1px solid rgba(156,39,176,0.12)",
+      overflow: "hidden",
+    }}>
+      <div style={{
+        padding: "0.6rem 0.85rem", display: "flex", alignItems: "center",
+        justifyContent: "space-between",
+      }}>
+        <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>
+          💾 Saved Freight Quotes ({ltlQuotes.length})
+        </span>
+      </div>
+      <div style={{ padding: "0 0.85rem 0.75rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+        {ltlQuotes.map((q: any) => (
+          <div
+            key={`${q.itemId}-${q.quoteKey}`}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "0.5rem 0.65rem", borderRadius: "0.4rem",
+              background: "var(--bg-card)", border: "1px solid var(--border-default)",
+              borderLeft: "3px solid #9c27b0",
+            }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                <span style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-primary)" }}>{q.carrier}</span>
+                {q.isLive && <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(76,175,80,0.12)", color: "#4caf50" }}>LIVE</span>}
+              </div>
+              <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+                {q.itemTitle || q.itemId} · {q.service} · {q.transit}
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+              <span style={{ fontSize: "0.88rem", fontWeight: 800, color: "#4caf50" }}>${Number(q.amount).toFixed(2)}</span>
+              <a
+                href={`/items/${q.itemId}`}
+                style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}
+              >
+                Use →
+              </a>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteQuote(q.itemId, q.quoteKey);
+                  // Force re-render — this is inside an IIFE so we can't
+                  // easily setState. Use a forceUpdate pattern or key change.
+                }}
+                style={{
+                  background: "none", border: "none", cursor: "pointer",
+                  fontSize: "0.72rem", color: "var(--text-muted)", padding: "0.15rem 0.3rem",
+                  borderRadius: "0.25rem", lineHeight: 1,
+                }}
+                title="Remove saved quote"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+})()}
+
+NOTE: To handle re-rendering after delete, add a state counter to FreightTab:
+const [quoteVersion, setQuoteVersion] = useState(0);
+On delete: setQuoteVersion(v => v + 1);
+Add quoteVersion as a dependency so the section re-renders.
+
+================================================================================
+
+PART F — CARRIER TRACKING LINKS IN SHIPPED TAB
+
+================================================================================
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+--- F1: Add getTrackingUrl helper inside ShippedTab ---
+
+FIND the ShippedTab function (line 2582).
+ADD this helper function at the top of the component (after state declarations):
+
+const getTrackingUrl = (carrier: string, tracking: string): string | null => {
+  const c = (carrier || "").toLowerCase();
+  if (c.includes("usps")) return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${tracking}`;
+  if (c.includes("ups") && !c.includes("usps")) return `https://www.ups.com/track?tracknum=${tracking}`;
+  if (c.includes("fedex")) return `https://www.fedex.com/fedextrack/?trknbr=${tracking}`;
+  if (c.includes("dhl")) return `https://www.dhl.com/us-en/home/tracking.html?tracking-id=${tracking}`;
+  return null;
+};
+
+const carrierTrackColor = (carrier: string): string => {
+  const c = (carrier || "").toUpperCase();
+  if (c.includes("USPS")) return "#333366";
+  if (c.includes("UPS")) return "#351c15";
+  if (c.includes("FEDEX")) return "#4d148c";
+  return "var(--accent)";
+};
+
+--- F2: Make tracking numbers clickable ---
+
+FIND where the tracking number is displayed in renderShippedCard.
+Look for the button that calls copyTracking(tn) (around line 2706-2719).
+
+BELOW that copy button, ADD a carrier tracking link:
+
+{(() => {
+  const trackUrl = getTrackingUrl(item.carrier, tn);
+  if (!trackUrl) return null;
+  return (
+    <a
+      href={trackUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => console.log("[tracking] Clicked:", item.carrier, tn)}
+      style={{
+        fontSize: "0.6rem", fontWeight: 600,
+        color: carrierTrackColor(item.carrier),
+        textDecoration: "none", padding: 0,
+      }}
+    >
+      Track on {item.carrier?.split(" ")[0] || "Carrier"} ↗
+    </a>
+  );
+})()}
+
+This adds a small tracking link BELOW the copy button in each shipped card.
+It opens the carrier's tracking page in a new tab.
+
+================================================================================
+
+PART G — PICKUP INVITE CONFIRMATION POLISH
+
+================================================================================
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+--- G1: Add invite confirmation state ---
+
+FIND the LocalPickupTab function (line 4078).
+FIND the state declarations.
+
+ADD:
+
+const [inviteConfirm, setInviteConfirm] = useState<string | null>(null);
+
+--- G2: Show confirmation after invite send ---
+
+FIND the advancePickup function call for invite sending (around line 4265).
+In the invite form's "Send Invite" button onClick:
+
+  onClick={() => advancePickup(item.id, { ... })
+
+WRAP this so that after advancePickup completes, we show confirmation:
+
+onClick={async () => {
+  await advancePickup(item.id, {
+    location: inviteData.location,
+    timeSlots: inviteData.timeSlots,
+    contactMethod: inviteData.contactMethod,
+    paymentMethod: inviteData.paymentMethod,
+    notes: inviteData.notes,
+  });
+  setInviteConfirm(item.id);
+  setTimeout(() => setInviteConfirm(null), 3000);
+}}
+
+--- G3: Add confirmation banner display ---
+
+FIND the INVITE_SENT status display in the pickup card.
+After the status becomes INVITE_SENT, the card already updates.
+
+ADD a temporary confirmation banner:
+
+{inviteConfirm === item.id && (
+  <div style={{
+    padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginBottom: "0.5rem",
+    background: "rgba(76,175,80,0.08)", border: "1px solid rgba(76,175,80,0.2)",
+    display: "flex", alignItems: "center", gap: "0.3rem",
+    fontSize: "0.75rem", fontWeight: 600, color: "#4caf50",
+    animation: "fadeIn 0.3s ease",
+  }}>
+    ✅ Invite sent to buyer
+  </div>
+)}
+
+Place this at the top of the pickup card's status-specific content area,
+before the existing status-specific rendering.
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+3. lib/shipping/saved-quotes.ts created: yes / no
+4. saveQuote/getQuotes/deleteQuote/isQuoteSaved functions work: yes / no
+5. localStorage key "ll_saved_quotes" structure correct: yes / no
+6. Max 10 quotes per item enforced: yes / no
+7. ShippingPanel imports saved-quotes: yes / no
+8. LTL quote card click saves to saved-quotes: yes / no
+9. "SAVED" badge appears on saved LTL cards: yes / no
+10. Saved Quotes section appears in ShippingPanel: yes / no
+11. Saved Quotes collapsible with count: yes / no
+12. Each saved quote shows: carrier, price, transit, type badge: yes / no
+13. Delete (✕) removes quote from saved-quotes and UI: yes / no
+14. ShippingCenterClient imports saved-quotes: yes / no
+15. Freight tab carrier card click saves to saved-quotes: yes / no
+16. "SAVED" badge on freight cards: yes / no
+17. Saved Freight Quotes section in freight tab: yes / no
+18. "Use →" link navigates to item dashboard: yes / no
+19. getTrackingUrl helper added to ShippedTab: yes / no
+20. Tracking numbers have carrier-specific clickable links: yes / no
+21. USPS/UPS/FedEx/DHL URLs correct: yes / no
+22. Carrier-colored link text: yes / no
+23. Tracking link clicks logged to console: yes / no
+24. Pickup invite confirmation banner shows after send: yes / no
+25. Confirmation auto-dismisses after 3 seconds: yes / no
+26. All locked files untouched: yes / no
+27. inline style={{}} throughout — no Tailwind, no className: yes / no
+28. Theme-aware surfaces use CSS variables: yes / no
+29. Light mode tested — no broken contrast: yes / no
+30. Dark mode tested — all elements visible: yes / no
+31. Font sizes 0.78rem+ for key info (senior-friendly): yes / no
+32. npx tsc --noEmit: 0 errors
+33. npm run build: pass
+34. CHECKPOINT post-change: pass
+35. Dev server: localhost:3000
+
+MANUAL TESTS:
+36. Open any item → go to shipping → check for Saved Quotes section
+37. Get LTL quotes → click a carrier card → verify "SAVED" badge appears
+38. Check localStorage for ll_saved_quotes key with correct structure
+39. Refresh page → verify saved quotes persist in Saved Quotes section
+40. Delete a saved quote → verify it removes from UI and localStorage
+41. Go to Shipping Center → Freight tab → verify Saved Freight Quotes section
+42. Get freight quotes → click carrier → verify "SAVED" badge and quote saved
+43. Go to Tracking tab → verify tracking numbers have carrier-specific links
+44. Click a tracking link → verify correct carrier URL opens in new tab
+45. Send a pickup invite → verify "Invite sent" confirmation shows and auto-dismisses
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+SAVED QUOTES UTILITY:
+- lib/shipping/saved-quotes.ts created: [yes / no]
+- saveQuote function tested: [yes / no]
+- getQuotes function tested: [yes / no]
+- deleteQuote function tested: [yes / no]
+
+ITEM DASHBOARD (ShippingPanel):
+- LTL click-to-save working: [yes / no]
+- "SAVED" badge on cards: [yes / no]
+- Saved Quotes section visible: [yes / no]
+- Quote count correct: [yes / no]
+- Delete working: [yes / no]
+
+SHIPPING CENTER:
+- Freight card click-to-save: [yes / no]
+- "SAVED" badge on freight cards: [yes / no]
+- Saved Freight Quotes section: [yes / no]
+- "Use →" link correct: [yes / no]
+- Delete working: [yes / no]
+
+TRACKING LINKS:
+- getTrackingUrl helper: [yes / no]
+- USPS link correct: [yes / no]
+- UPS link correct: [yes / no]
+- FedEx link correct: [yes / no]
+- Links open in new tab: [yes / no]
+- Carrier-colored text: [yes / no]
+
+PICKUP POLISH:
+- Invite confirmation banner: [yes / no]
+- Auto-dismiss after 3s: [yes / no]
+
+BUILD:
+- npx tsc --noEmit: [# errors]
+- npm run build: [pass / fail]
+- CHECKPOINT post-change: [pass / fail]
+- Dev server confirms at localhost:3000: [yes / no]
+
+Files created:
+  - lib/shipping/saved-quotes.ts
+
+Files modified:
+  - app/items/[id]/ShippingPanel.tsx
+  - app/shipping/ShippingCenterClient.tsx
+
+Lines changed: ~[count]
+
+Screenshots: [describe what was verified visually]
+
+LOCKED FILE INTEGRITY:
+  - lib/shipping/shippo.ts: [untouched]
+  - lib/shipping/fedex-parcel.ts: [untouched]
+  - lib/shipping/easypost.ts: [untouched]
+  - lib/shipping/freight-estimates.ts: [untouched]
+  - lib/shipping/shipengine-ltl.ts: [untouched]
+  - lib/adapters/ai.ts: [untouched]
+  - lib/constants/pricing.ts: [untouched]
+
+END OF COMMAND 4B

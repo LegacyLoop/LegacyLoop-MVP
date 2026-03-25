@@ -58,6 +58,19 @@ const CATEGORY_MAP: Record<string, PackageTemplate> = {
   vehicles: { boxSize: "freight", label: "Vehicle (Local Only)", length: 0, width: 0, height: 0, weightEstimate: 3500, isFragile: false, notes: ["Local pickup or professional transport only", "Cannot be shipped via standard carriers"] },
   boat: { boxSize: "freight", label: "Boat (Local Only)", length: 0, width: 0, height: 0, weightEstimate: 0, isFragile: false, notes: ["Local pickup or professional transport only"] },
   motorcycle: { boxSize: "freight", label: "Motorcycle (Freight)", length: 84, width: 36, height: 48, weightEstimate: 450, isFragile: false, notes: ["Requires freight shipping or local pickup", "Drain fluids before transport", "Secure all loose parts"] },
+  // Outdoor / Garden Equipment — NOT vehicles, can be freight shipped
+  "riding lawn mower": { boxSize: "freight", label: "Riding Lawn Mower (Freight)", length: 62, width: 42, height: 32, weightEstimate: 400, isFragile: false, notes: ["Drain fuel and oil before shipping", "Disconnect battery", "Secure deck and steering wheel", "Lower mowing deck fully", "Ship on pallet — strap securely"] },
+  "lawn mower": { boxSize: "freight", label: "Riding Lawn Mower (Freight)", length: 62, width: 42, height: 32, weightEstimate: 400, isFragile: false, notes: ["Drain fuel and oil before shipping", "Disconnect battery", "Secure deck and steering wheel"] },
+  "push mower": { boxSize: "large", label: "Push Mower Box", length: 30, width: 22, height: 20, weightEstimate: 75, isFragile: false, notes: ["Drain fuel completely", "Fold handle down", "Secure blade cover"] },
+  "garden tractor": { boxSize: "freight", label: "Garden Tractor (Freight)", length: 72, width: 48, height: 42, weightEstimate: 500, isFragile: false, notes: ["Drain all fluids", "Disconnect battery", "Palletize and strap securely", "Freight carrier required"] },
+  "lawn tractor": { boxSize: "freight", label: "Lawn Tractor (Freight)", length: 62, width: 42, height: 32, weightEstimate: 400, isFragile: false, notes: ["Drain fuel and oil", "Disconnect battery", "Ship on pallet"] },
+  chainsaw: { boxSize: "medium", label: "Power Tool Box", length: 20, width: 12, height: 10, weightEstimate: 12, isFragile: false, notes: ["Drain fuel completely", "Install bar cover", "Secure chain brake", "Ship with blade guard on"] },
+  "leaf blower": { boxSize: "medium", label: "Power Tool Box", length: 20, width: 14, height: 10, weightEstimate: 10, isFragile: false, notes: ["Drain fuel if gas-powered", "Remove battery if cordless"] },
+  "pressure washer": { boxSize: "large", label: "Equipment Box", length: 24, width: 20, height: 22, weightEstimate: 45, isFragile: false, notes: ["Drain all water and fuel", "Disconnect hose and wand", "Secure pump"] },
+  "snow blower": { boxSize: "freight", label: "Snow Blower (Freight)", length: 36, width: 28, height: 36, weightEstimate: 200, isFragile: false, notes: ["Drain fuel and oil", "Fold handle if possible", "Ship on pallet for heavy models"] },
+  "weed trimmer": { boxSize: "medium", label: "Power Tool Box", length: 48, width: 10, height: 8, weightEstimate: 10, isFragile: false, notes: ["Drain fuel if gas-powered", "Remove cutting line guard"] },
+  generator: { boxSize: "freight", label: "Generator (Freight)", length: 28, width: 22, height: 24, weightEstimate: 150, isFragile: false, notes: ["Drain ALL fuel — carriers will reject fuel-filled units", "Ship upright", "Secure on pallet"] },
+  "outdoor equipment": { boxSize: "freight", label: "Outdoor Equipment (Freight)", length: 48, width: 36, height: 36, weightEstimate: 200, isFragile: false, notes: ["Drain all fluids before shipping", "Palletize and strap securely", "Freight carrier recommended for heavy items"] },
   appliance: { boxSize: "freight", label: "Large Appliance", length: 36, width: 30, height: 36, weightEstimate: 80, isFragile: false, notes: ["Secure doors with tape or straps", "Keep upright — do not lay on side", "Consider freight for heavy units"] },
   piano: { boxSize: "freight", label: "Piano (Freight)", length: 60, width: 30, height: 48, weightEstimate: 500, isFragile: true, notes: ["Requires professional piano movers", "Never lay a piano on its side", "Lock keyboard lid securely"] },
 };
@@ -236,7 +249,12 @@ export function suggestShippingMethod(
 ): ShippingMethodSuggestion {
   const cat = (category ?? "").toLowerCase();
 
-  // Vehicles, boats, etc. — local only
+  // Outdoor / Garden equipment — freight shipping (NOT local-only)
+  if (cat.includes("outdoor") || cat.includes("garden")) {
+    return "freight";
+  }
+
+  // Vehicles, boats, etc. — local only (but NOT outdoor equipment)
   if (cat.includes("vehicle") || cat.includes("boat")) {
     return "local_only";
   }

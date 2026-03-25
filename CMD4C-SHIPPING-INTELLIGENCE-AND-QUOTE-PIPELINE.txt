@@ -1,0 +1,1016 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 24, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+Copy this entire template into every Claude Code command. Fill in OBJECTIVE and PARTS for your specific task. Never skip sections.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+REAL TECH MANDATE: Minimize demo/mock data. Use real API integrations
+wherever possible. When estimates are used, label them honestly as
+"ESTIMATED" — not "demo". The freight estimate engine uses real carrier
+pricing formulas and real accessorial surcharge data — it's a calculated
+estimate, not a mock. Treat it as professional-grade estimate data.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts — LOCKED (READ its output schema — it defines AI shipping fields)
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping (MOST LOCKED) —
+✓ lib/shipping/shippo.ts — LOCKED
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/easypost.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+✓ lib/shipping/saved-quotes.ts — LOCKED (created by CMD4B)
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/user-events.ts
+
+— Enrichment —
+✓ lib/addons/enrich-item-context.ts
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/ltl-quote/route.ts — EXTEND to use freight-estimates engine
+✓ EXCEPTION: app/api/shipping/center/route.ts — EXTEND to include AI shipping fields
+✓ EXCEPTION: app/api/analyze/[itemId]/route.ts — READ ONLY (verify populateFromAnalysis call)
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Commerce + Pages —
+✓ app/subscription/**
+✓ app/credits/**
+✓ app/marketplace/**
+✓ app/bundles/**
+✓ app/pricing/**
+✓ app/projects/**
+✓ app/offers/**
+
+— Always-Dark Overlays —
+✓ app/components/ItemActionPanel.tsx
+✓ app/components/billing/CancelFlowModal.tsx
+✓ app/components/billing/UpgradeFlowModal.tsx
+✓ app/components/TradeProposalModal.tsx
+
+— Messaging System — ALL LOCKED —
+✓ app/messages/** — ALL LOCKED
+✓ app/components/messaging/** — ALL LOCKED
+
+— Add-On Tools — ALL LOCKED —
+✓ app/addons/** — ALL LOCKED
+
+— Onboarding —
+✓ app/onboarding/** — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — EXTEND ONLY for new AI shipping fields
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - prisma/schema.prisma (ADD 5 AI shipping intelligence fields to Item model)
+  - lib/data/populate-intelligence.ts (EXTEND populateFromAnalysis to save AI shipping data)
+  - lib/shipping/freight-estimates.ts (ADD midpoint estimate function for API use — getFreightQuoteMidpoints())
+  - app/api/shipping/ltl-quote/route.ts (REPLACE Shippo demo fallback with freight-estimates engine — all 6 carriers including FedEx Freight)
+  - app/api/shipping/center/route.ts (ADD AI shipping fields to enrichment response)
+  - lib/enrichment/item-context.ts (ADD shipping intelligence to enrichment context)
+  - app/items/[id]/ShippingPanel.tsx (ADD AI Shipping Brief card)
+  - app/shipping/ShippingCenterClient.tsx (ADD difficulty badges + saved quote tab badge + freight auto-fill from AI)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+See v11 template for full list. We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Flag all missed data collection opportunities. We decide together.
+
+Data collection for this command:
+  - Log AI shipping intelligence extraction: weight, dims, difficulty, notes
+  - Log freight estimate calculations (carrier, weight, total)
+  - Log which quote source returned results (shipengine/fedex/estimates)
+  - Console.log pattern for all
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+This command follows build pattern EXACTLY:
+  1. Database: Add AI shipping fields to Item schema
+  2. API: Fix LTL quote pipeline + extend analyze route
+  3. Enrichment: Add shipping intelligence to enrichment context
+  4. UI: Display AI shipping intelligence + fix quote visibility
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• AI analysis via lib/adapters/ai.ts returns: weight_estimate_lbs, shipping_difficulty, shipping_notes, dimensions_estimate, confidence
+• These AI fields are currently stored ONLY in aiResult.rawJson — never persisted to Item model
+• populateFromAnalysis() saves category, brand, era, material — but NOTHING shipping-related
+• freight-estimates.ts has 6 carriers with real pricing formulas — but is NEVER called from the API
+• The LTL quote API (/api/shipping/ltl-quote) falls back to Shippo getLTLFreightQuotes which only returns 4 hardcoded carriers (NO FedEx Freight)
+
+LTL QUOTE PIPELINE — CURRENT STATE:
+
+  Source 1: ShipEngine → getShipEngineRateEstimate()
+    Status: Connected. Found 2 carriers (Stamps.com, UPS) — PARCEL only, no LTL freight carriers.
+    CMD4A wired listCarriers() with caching. Working but returns parcel carriers.
+    For real LTL: need freight carriers connected in ShipEngine dashboard.
+
+  Source 2: FedEx LTL → getFedExLTLQuote()
+    Status: Auth succeeds, rate request fails with ACCOUNT.NUMBER.MISMATCH on sandbox.
+    Code is correct. Needs production credentials or FedEx portal config.
+    Returns null → skipped.
+
+  Source 3: Shippo fallback → getLTLFreightQuotes() from shippo.ts
+    Status: Returns 4 hardcoded carriers (XPO, Estes, OD, SAIA). No FedEx Freight.
+    This is the ONLY source that actually returns data right now.
+
+  MISSING: freight-estimates.ts has 6 carriers including FedEx Freight with
+    real pricing formulas but is NEVER called from the API route.
+
+LTL QUOTE PIPELINE — AFTER THIS COMMAND:
+
+  Source 1: ShipEngine → same as before (live when freight carriers connected)
+  Source 2: FedEx LTL → same as before (live when credentials work)
+  Source 3: Freight Estimate Engine → getFreightQuoteMidpoints() from freight-estimates.ts
+    NEW: Replaces Shippo fallback. Returns all 6 carriers including FedEx Freight.
+    Uses real freight pricing formulas based on weight, dimensions, distance.
+    Labeled as "ESTIMATED" (honest), not "demo".
+    ALWAYS returns data — serves as baseline that live quotes layer on top of.
+
+  The architecture becomes: live quotes FIRST (ShipEngine + FedEx API),
+  then SUPPLEMENT with estimate engine for any carriers not covered by live.
+  FedEx Freight appears from EITHER the live API OR the estimate engine.
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Add new fields to prisma schema (Item model only, 5 fields max)
+— Add getFreightQuoteMidpoints() to freight-estimates.ts (new export)
+— Replace Shippo fallback with freight-estimates engine in ltl-quote route
+— Merge live + estimated quotes with proper deduplication
+— Extend populateFromAnalysis with shipping extraction
+— Add shipping fields to enrichment context
+— Display AI shipping intelligence in UI (cards, badges, tips)
+— Add saved quote count badge on Freight/LTL tab
+— Auto-fill freight form from AI data
+— Add console.log for data collection
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Modify the AI adapter output schema (lib/adapters/ai.ts is LOCKED)
+— Change how AI analysis is triggered
+— Remove or modify existing ShipEngine or FedEx LTL integration code
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Change business or pricing logic
+— Remove or rebuild existing functionality
+— Add new npm dependencies
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+No new env variables in this command. AI keys already configured.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+YES — New fields on Item model. After adding fields to schema.prisma:
+
+npx prisma db push
+npx prisma generate
+
+This is a NON-DESTRUCTIVE additive migration. New nullable fields only.
+No data loss. No column removal. Safe on existing data.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+Shipping Center has 5 tabs: preSale (Estimates), readyToShip (Ready to Ship),
+shipped (Tracking), freight (Freight/LTL), pickup (Local Pickup).
+
+Item Dashboard ShippingPanel has:
+  - Ship It tab (parcel + freight) vs Local Pickup tab
+  - Pre-sale mode: rates, carrier selection, freight quotes
+  - Post-sale mode: PostSaleWizard (parcel), LtlCompletionFlow, PickupCompletionFlow
+  - CMD4B added: saved quotes utility, click-to-save on LTL cards, Saved Quotes section
+  - CMD4A added: pre-sale LTL save + carry-over, tracking links, navigation links
+
+SECTIONS 13-17 — See v11 master template. Not directly relevant to this command.
+
+================================================================================
+
+OBJECTIVE — FIX LTL QUOTE PIPELINE + AI SHIPPING INTELLIGENCE
+
+================================================================================
+
+This command does SIX things. Real tech. Real results.
+
+TASK 1 — FIX LTL QUOTE PIPELINE: FEDEX FREIGHT + ALL 6 CARRIERS (freight-estimates.ts + ltl-quote route)
+
+  ROOT CAUSE: The LTL quote API (/api/shipping/ltl-quote) falls back to
+  Shippo's getLTLFreightQuotes() which only has 4 hardcoded carriers and
+  NO FedEx Freight. Meanwhile freight-estimates.ts has all 6 carriers with
+  real pricing formulas but is never called from the API.
+
+  THE FIX (two parts):
+
+  A) In freight-estimates.ts — ADD a new export function: getFreightQuoteMidpoints()
+
+  This converts the existing low/high range estimates into single-price quotes
+  that the API can return in the same format as live quotes:
+
+  export function getFreightQuoteMidpoints(input: FreightInput): {
+    carrier: string;
+    service: string;
+    total_amount: number;
+    transit_days: number;
+    accessorials: { residential: number; liftgate: number; notification: number };
+    isLive: false;
+    source: "estimate";
+  }[] {
+    const estimates = getFreightEstimates(input);
+    return estimates.map(est => ({
+      carrier: est.carrier,
+      service: est.service,
+      total_amount: Math.round((est.totalLow + est.totalHigh) / 2 * 100) / 100,
+      transit_days: Math.round((est.transitDays.min + est.transitDays.max) / 2),
+      accessorials: {
+        residential: est.residentialSurcharge,
+        liftgate: est.liftgateSurcharge,
+        notification: est.deliveryNotification,
+      },
+      isLive: false as const,
+      source: "estimate" as const,
+    }));
+  }
+
+  B) In app/api/shipping/ltl-quote/route.ts — REPLACE Shippo fallback with freight-estimates engine.
+
+  CURRENT CODE (lines 119-143):
+    // 3. Fallback to demo estimates
+    const demoQuotes = getLTLFreightQuotes(...)
+    return NextResponse.json({ quotes: demoQuotes.map(...), source: "demo", isLive: false });
+
+  NEW ARCHITECTURE:
+    - ALWAYS call getFreightQuoteMidpoints() for baseline estimates
+    - MERGE live quotes (ShipEngine/FedEx) with estimates
+    - DEDUPLICATE: if a carrier has a live quote AND an estimate, keep the live one
+    - This ensures FedEx Freight ALWAYS appears (from estimate engine if not from live API)
+
+  REPLACE the entire fallback section AND the early return with:
+
+  // 3. Get baseline estimates from freight estimate engine (all 6 carriers)
+  const { getFreightQuoteMidpoints } = await import("@/lib/shipping/freight-estimates");
+  const estimateQuotes = getFreightQuoteMidpoints({
+    weight: Number(weight) || 100,
+    lengthIn: Number(length) || 48,
+    widthIn: Number(width) || 40,
+    heightIn: Number(height) || 36,
+    fromZip: fromZip || "04901",
+    toZip: toZip,
+    residential: packaging === "residential" || false,
+    liftgate: false,
+  });
+
+  // Merge: live quotes take priority over estimates for same carrier
+  const liveCarriers = new Set(allQuotes.map(q => q.carrier.toLowerCase()));
+  for (const eq of estimateQuotes) {
+    if (!liveCarriers.has(eq.carrier.toLowerCase())) {
+      allQuotes.push({
+        quote_id: `est-${eq.carrier.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
+        carrier: eq.carrier,
+        service: eq.service,
+        total_amount: eq.total_amount,
+        currency: "USD",
+        transit_days: eq.transit_days,
+        valid_until: new Date(Date.now() + 86400000 * 7).toISOString(),
+        charges: [
+          { description: "Freight", amount: eq.total_amount },
+          ...(eq.accessorials.residential > 0 ? [{ description: "Residential", amount: eq.accessorials.residential }] : []),
+          ...(eq.accessorials.liftgate > 0 ? [{ description: "Liftgate", amount: eq.accessorials.liftgate }] : []),
+        ],
+        isLive: false,
+        source: "estimate",
+      });
+    }
+  }
+
+  console.log(`[ltl-quote] Returning ${allQuotes.length} quotes: ${allQuotes.filter(q => q.isLive).length} live, ${allQuotes.filter(q => !q.isLive).length} estimated`);
+
+  return NextResponse.json({
+    quotes: allQuotes.sort((a, b) => (a.total_amount || 0) - (b.total_amount || 0)),
+    source: hasLive ? "live" : "estimated",
+    isLive: hasLive,
+    liveCount: allQuotes.filter(q => q.isLive).length,
+    estimatedCount: allQuotes.filter(q => !q.isLive).length,
+  });
+
+  IMPORTANT: REMOVE the old imports of getLTLFreightQuotes from shippo.ts.
+  REMOVE the old early return at line 111-117 that skipped estimates when live quotes exist.
+  Live quotes AND estimates should BOTH be in the response — live takes priority per carrier.
+
+  ALSO REMOVE the old "demo" source label. Use "estimate" instead. This is NOT demo data.
+
+TASK 2 — ADD AI SHIPPING FIELDS TO ITEM MODEL (prisma/schema.prisma)
+
+  Add 5 new nullable fields to the Item model:
+    aiWeightLbs            Float?    // AI-estimated weight in pounds
+    aiDimsEstimate         String?   // Raw AI dimension text: "34 x 24 x 30"
+    aiShippingDifficulty   String?   // "Easy", "Moderate", "Difficult", "Freight only"
+    aiShippingNotes        String?   // AI packing and shipping guidance
+    aiShippingConfidence   Float?    // Confidence score (0.0-1.0)
+
+  Add AFTER the existing isFragile and shippingPreference fields.
+  All nullable. Additive only.
+
+  After adding: npx prisma db push && npx prisma generate
+
+TASK 3 — PERSIST AI SHIPPING DATA AFTER ANALYSIS (populate-intelligence.ts)
+
+  In populateFromAnalysis(), AFTER the existing field extraction, ADD:
+
+  // ─── AI Shipping Intelligence ───────────────────────────────────
+  const shippingUpdates: Record<string, unknown> = {};
+
+  const aiWeight = analysis.weight_estimate_lbs;
+  if (aiWeight && typeof aiWeight === "number" && aiWeight > 0) {
+    shippingUpdates.aiWeightLbs = Math.round((aiWeight as number) * 10) / 10;
+  }
+
+  const aiDims = analysis.dimensions_estimate;
+  if (aiDims && typeof aiDims === "string" && (aiDims as string).length > 2) {
+    shippingUpdates.aiDimsEstimate = aiDims as string;
+    const dimMatch = (aiDims as string).match(/(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)/);
+    if (dimMatch) {
+      shippingUpdates.shippingLength = parseFloat(dimMatch[1]);
+      shippingUpdates.shippingWidth = parseFloat(dimMatch[2]);
+      shippingUpdates.shippingHeight = parseFloat(dimMatch[3]);
+    }
+  }
+
+  const aiDifficulty = analysis.shipping_difficulty;
+  if (aiDifficulty && typeof aiDifficulty === "string") {
+    shippingUpdates.aiShippingDifficulty = aiDifficulty as string;
+    if (aiDifficulty === "Difficult") shippingUpdates.isFragile = true;
+  }
+
+  const aiNotes = analysis.shipping_notes;
+  if (aiNotes && typeof aiNotes === "string" && (aiNotes as string).length > 3) {
+    shippingUpdates.aiShippingNotes = aiNotes as string;
+  }
+
+  const confidence = analysis.confidence;
+  if (confidence && typeof confidence === "number") {
+    shippingUpdates.aiShippingConfidence = Math.round((confidence as number) * 100) / 100;
+  }
+
+  // Only fill empty fields — NEVER override user-entered data
+  if (Object.keys(shippingUpdates).length > 0) {
+    const existing = await prisma.item.findUnique({
+      where: { id: itemId },
+      select: { shippingWeight: true, shippingLength: true, isFragile: true },
+    });
+    if (shippingUpdates.aiWeightLbs && !existing?.shippingWeight) {
+      shippingUpdates.shippingWeight = shippingUpdates.aiWeightLbs;
+    }
+    if (existing?.shippingLength) {
+      delete shippingUpdates.shippingLength;
+      delete shippingUpdates.shippingWidth;
+      delete shippingUpdates.shippingHeight;
+    }
+    if (existing?.isFragile) delete shippingUpdates.isFragile;
+
+    await prisma.item.update({ where: { id: itemId }, data: shippingUpdates });
+    console.log(`[shipping-intel] Persisted for ${itemId}:`,
+      Object.entries(shippingUpdates).map(([k, v]) => `${k}=${v}`).join(", "));
+  }
+
+TASK 4 — ADD AI FIELDS TO ENRICHMENT + SHIPPING CENTER API
+
+  A) lib/enrichment/item-context.ts:
+  - Add shipping fields to interface
+  - Add to Prisma select
+  - Add to context builder
+
+  B) app/api/shipping/center/route.ts:
+  - Add AI fields to Prisma select: aiWeightLbs, aiDimsEstimate, aiShippingDifficulty, aiShippingNotes, aiShippingConfidence, isFragile
+  - Add AI fields to enriched response object
+
+TASK 5 — AI SHIPPING BRIEF CARD IN ITEM DASHBOARD (ShippingPanel.tsx)
+
+  Add a compact "AI Shipping Brief" card ABOVE the carrier rate cards.
+  Only shows when AI shipping data exists. Contains:
+  - Difficulty badge (Easy=green, Moderate=amber, Difficult=red, Freight=purple)
+  - AI weight estimate with confidence indicator
+  - AI dimension estimate
+  - Packing notes from AI
+
+  See PART G below for exact JSX.
+
+TASK 6 — SHIPPING CENTER IMPROVEMENTS (ShippingCenterClient.tsx)
+
+  A) Difficulty badges on item cards in Estimates and Ready to Ship tabs
+  B) Saved quote count badge on Freight/LTL tab label: "Freight / LTL 💾1"
+  C) Freight tab auto-fill from AI dimensions when user data is empty
+  D) "🤖 Dimensions auto-filled from AI analysis" indicator when applicable
+
+Files modified:
+  - prisma/schema.prisma (5 new Item fields)
+  - lib/data/populate-intelligence.ts (AI shipping extraction)
+  - lib/shipping/freight-estimates.ts (ADD getFreightQuoteMidpoints export)
+  - app/api/shipping/ltl-quote/route.ts (REPLACE Shippo fallback with estimates engine)
+  - app/api/shipping/center/route.ts (ADD AI fields to enrichment)
+  - lib/enrichment/item-context.ts (ADD shipping fields to context)
+  - app/items/[id]/ShippingPanel.tsx (ADD AI Shipping Brief card)
+  - app/shipping/ShippingCenterClient.tsx (ADD badges + auto-fill + saved quote indicator)
+
+Expected output:
+  - LTL quotes ALWAYS return 6 carriers including FedEx Freight
+  - Live API quotes take priority, estimates fill gaps
+  - "ESTIMATED" label on formula-based quotes, "LIVE" on API-sourced
+  - No more "demo" labeling — replaced with "estimate"
+  - AI shipping intelligence auto-persisted on every analysis
+  - AI Shipping Brief card visible in Item Dashboard
+  - Difficulty badges in Shipping Center
+  - Freight form auto-fills from AI data
+  - Saved quote badge on Freight tab
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n lib/shipping/freight-estimates.ts
+   Focus: Full file — understand the estimate engine, CARRIERS array, getFreightEstimates function.
+
+2. cat -n app/api/shipping/ltl-quote/route.ts
+   Focus: Full file — understand the 3-source pipeline and where to replace the Shippo fallback.
+
+3. cat -n lib/shipping/shippo.ts | grep -n 'getLTLFreightQuotes\|function getLTL' | head -5
+   Focus: Find the old demo function we're replacing in the import.
+
+4. cat -n prisma/schema.prisma | grep -n 'isFragile\|shippingPreference\|shippingWeight\|shippingLength'
+   Focus: Where to add new fields.
+
+5. cat -n lib/data/populate-intelligence.ts
+   Focus: Full file — understand populateFromAnalysis function structure.
+
+6. cat -n lib/adapters/ai.ts | sed -n '38,50p'
+   Focus: AI output schema — confirm field names: weight_estimate_lbs, shipping_difficulty, shipping_notes, dimensions_estimate, confidence.
+
+7. cat -n lib/enrichment/item-context.ts | sed -n '1,80p'
+   Focus: Interface definition and Prisma select.
+
+8. cat -n app/api/shipping/center/route.ts | sed -n '30,60p'
+   Focus: Prisma query for items.
+
+9. cat -n app/api/shipping/center/route.ts | sed -n '175,210p'
+   Focus: Enriched item object — where to add AI fields.
+
+10. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '55,85p'
+    Focus: Props/data pipeline — how item data reaches ShippingPanel.
+
+11. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '20,30p'
+    Focus: TABS array — where to add saved quote badge.
+
+12. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '3008,3020p'
+    Focus: FreightTab form defaults — where to add AI auto-fill.
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PART B — FIX LTL QUOTE PIPELINE
+
+================================================================================
+
+FILE: lib/shipping/freight-estimates.ts
+
+--- B1: Add getFreightQuoteMidpoints export ---
+
+ADD at the BOTTOM of the file (after getFreightEstimates function):
+
+/**
+ * Get midpoint freight estimates formatted for the LTL quote API.
+ * Returns single-price quotes from all 6 carriers.
+ * These are calculated estimates based on real carrier pricing formulas.
+ */
+export function getFreightQuoteMidpoints(input: FreightInput): {
+  carrier: string;
+  service: string;
+  total_amount: number;
+  transit_days: number;
+  accessorials: { residential: number; liftgate: number; notification: number };
+  isLive: false;
+  source: "estimate";
+}[] {
+  const estimates = getFreightEstimates(input);
+  return estimates.map(est => ({
+    carrier: est.carrier,
+    service: est.service,
+    total_amount: Math.round((est.totalLow + est.totalHigh) / 2 * 100) / 100,
+    transit_days: Math.round((est.transitDays.min + est.transitDays.max) / 2),
+    accessorials: {
+      residential: est.residentialSurcharge,
+      liftgate: est.liftgateSurcharge,
+      notification: est.deliveryNotification,
+    },
+    isLive: false as const,
+    source: "estimate" as const,
+  }));
+}
+
+--- B2: Replace Shippo fallback in LTL quote route ---
+
+FILE: app/api/shipping/ltl-quote/route.ts
+
+STEP 1: CHANGE the import at line 5.
+REMOVE: import { getLTLFreightQuotes } from "@/lib/shipping/shippo";
+ADD: import { getFreightQuoteMidpoints } from "@/lib/shipping/freight-estimates";
+
+STEP 2: REMOVE the early return at lines 110-117:
+  // If we got live quotes, return them
+  if (allQuotes.length > 0) { ... }
+
+STEP 3: REPLACE lines 119-143 (the entire Shippo fallback section) with:
+
+  // 3. Supplement with freight estimate engine (all 6 carriers incl FedEx Freight)
+  const estimateQuotes = getFreightQuoteMidpoints({
+    weight: Number(weight) || 100,
+    lengthIn: Number(length) || 48,
+    widthIn: Number(width) || 40,
+    heightIn: Number(height) || 36,
+    fromZip: fromZip || "04901",
+    toZip: toZip,
+    residential: false,
+    liftgate: false,
+  });
+
+  // Merge: live quotes take priority over estimates for same carrier
+  const liveCarriers = new Set(allQuotes.map(q => (q.carrier || "").toLowerCase()));
+  for (const eq of estimateQuotes) {
+    if (!liveCarriers.has(eq.carrier.toLowerCase())) {
+      allQuotes.push({
+        quote_id: `est-${eq.carrier.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
+        carrier: eq.carrier,
+        service: eq.service,
+        total_amount: eq.total_amount,
+        currency: "USD",
+        transit_days: eq.transit_days,
+        valid_until: new Date(Date.now() + 86400000 * 7).toISOString(),
+        charges: [
+          { description: "Freight", amount: eq.total_amount },
+          ...(eq.accessorials.residential > 0 ? [{ description: "Residential Surcharge", amount: eq.accessorials.residential }] : []),
+          ...(eq.accessorials.liftgate > 0 ? [{ description: "Liftgate Surcharge", amount: eq.accessorials.liftgate }] : []),
+        ],
+        isLive: false,
+        source: "estimate",
+      });
+    }
+  }
+
+  console.log(`[ltl-quote] Returning ${allQuotes.length} quotes: ${allQuotes.filter(q => q.isLive).length} live, ${allQuotes.filter(q => !q.isLive).length} estimated`);
+
+  return NextResponse.json({
+    quotes: allQuotes.sort((a, b) => (a.total_amount || 0) - (b.total_amount || 0)),
+    source: hasLive ? "live" : "estimated",
+    isLive: hasLive,
+    liveCount: allQuotes.filter(q => q.isLive).length,
+    estimatedCount: allQuotes.filter(q => !q.isLive).length,
+  });
+
+FINAL FILE should be ~90 lines. The old early return and Shippo fallback are GONE.
+
+================================================================================
+
+PART C — SCHEMA + MIGRATION
+
+================================================================================
+
+FILE: prisma/schema.prisma
+
+FIND isFragile and shippingPreference fields in the Item model.
+
+ADD AFTER shippingPreference:
+
+  // AI Shipping Intelligence (populated by analyze route)
+  aiWeightLbs            Float?
+  aiDimsEstimate         String?
+  aiShippingDifficulty   String?
+  aiShippingNotes        String?
+  aiShippingConfidence   Float?
+
+Then run:
+  npx prisma db push
+  npx prisma generate
+
+================================================================================
+
+PART D — AI SHIPPING INTELLIGENCE EXTRACTION
+
+================================================================================
+
+FILE: lib/data/populate-intelligence.ts
+
+See TASK 3 in OBJECTIVE section for the complete code to add.
+Add it AFTER the existing prisma.item.update call in populateFromAnalysis().
+Use a SEPARATE prisma.item.update for the shipping fields — safer, won't
+break existing logic if shipping fields have issues.
+
+================================================================================
+
+PART E — ENRICHMENT + SHIPPING CENTER API
+
+================================================================================
+
+FILE: lib/enrichment/item-context.ts
+  - Add shipping fields to interface
+  - Add to Prisma select
+  - Add to context builder
+  (See TASK 4A)
+
+FILE: app/api/shipping/center/route.ts
+  - Add AI fields to Prisma select
+  - Add to enriched response
+  (See TASK 4B)
+
+================================================================================
+
+PART F — AI SHIPPING BRIEF CARD (ShippingPanel.tsx)
+
+================================================================================
+
+FILE: app/items/[id]/ShippingPanel.tsx
+
+Add a compact "AI Shipping Brief" card in the pre-sale shipping view,
+ABOVE the carrier rate cards. Only renders when AI data exists.
+
+{(item?.aiShippingDifficulty || item?.aiShippingNotes || item?.aiWeightLbs) && (
+  <div style={{
+    marginBottom: "0.75rem", borderRadius: "0.75rem",
+    background: "rgba(0,188,212,0.03)", border: "1px solid rgba(0,188,212,0.12)",
+    padding: "0.75rem 0.85rem",
+  }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+        <span style={{ fontSize: "0.85rem" }}>🤖</span>
+        <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)" }}>AI Shipping Brief</span>
+      </div>
+      {item?.aiShippingDifficulty && (() => {
+        const d = item.aiShippingDifficulty;
+        const colors: Record<string, { bg: string; text: string }> = {
+          "Easy": { bg: "rgba(76,175,80,0.15)", text: "#4caf50" },
+          "Moderate": { bg: "rgba(255,152,0,0.15)", text: "#ff9800" },
+          "Difficult": { bg: "rgba(244,67,54,0.15)", text: "#f44336" },
+          "Freight only": { bg: "rgba(156,39,176,0.15)", text: "#9c27b0" },
+        };
+        const c = colors[d] || colors["Moderate"];
+        return (
+          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "2px 8px", borderRadius: "9999px", background: c.bg, color: c.text, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            {d === "Freight only" ? "FREIGHT ONLY" : d.toUpperCase()}
+          </span>
+        );
+      })()}
+    </div>
+    <div style={{ display: "flex", gap: "1rem", marginBottom: "0.4rem", flexWrap: "wrap" }}>
+      {item?.aiWeightLbs && (
+        <div>
+          <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Est. Weight</div>
+          <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{item.aiWeightLbs} lbs</div>
+        </div>
+      )}
+      {item?.aiDimsEstimate && (
+        <div>
+          <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Est. Dimensions</div>
+          <div style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{item.aiDimsEstimate}</div>
+        </div>
+      )}
+      {item?.isFragile && (
+        <div>
+          <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Handling</div>
+          <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#f44336" }}>⚠️ FRAGILE</div>
+        </div>
+      )}
+    </div>
+    {item?.aiShippingNotes && (
+      <div style={{ padding: "0.4rem 0.6rem", borderRadius: "0.4rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.08)", fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+        <span style={{ fontWeight: 600, color: "var(--accent)", fontSize: "0.65rem" }}>PACKING: </span>
+        {item.aiShippingNotes}
+      </div>
+    )}
+  </div>
+)}
+
+NOTE: Verify how item data reaches ShippingPanel. If the data comes through
+props from ItemDashboardPanels.tsx, the Prisma query there needs to include
+the new fields. Check and add them if missing.
+
+================================================================================
+
+PART G — SHIPPING CENTER IMPROVEMENTS
+
+================================================================================
+
+FILE: app/shipping/ShippingCenterClient.tsx
+
+--- G1: Saved quote badge on Freight/LTL tab ---
+
+FIND the TABS array (line ~21-27):
+  { key: "freight", label: "Freight / LTL", icon: "🚛" },
+
+The tab label is static. We need to show a saved quote count dynamically.
+
+In the main component (where tabs are rendered), ADD a computed value:
+
+const savedFreightCount = useMemo(() => {
+  try {
+    const raw = localStorage.getItem("ll_saved_quotes");
+    if (!raw) return 0;
+    const store = JSON.parse(raw);
+    let count = 0;
+    for (const quotes of Object.values(store)) {
+      count += (quotes as any[]).filter((q: any) => q.type === "ltl").length;
+    }
+    return count;
+  } catch { return 0; }
+}, []);
+
+FIND where tab labels are rendered and ADD a badge conditionally:
+
+When rendering the freight tab label, add:
+  {savedFreightCount > 0 && (
+    <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50", marginLeft: "0.25rem" }}>
+      💾{savedFreightCount}
+    </span>
+  )}
+
+--- G2: Difficulty badges on item cards ---
+
+FIND where item cards render in PreSaleTab and/or ReadyToShipTab.
+After each item title, ADD:
+
+{item.aiShippingDifficulty && (() => {
+  const d = item.aiShippingDifficulty;
+  const colors: Record<string, { bg: string; text: string }> = {
+    "Easy": { bg: "rgba(76,175,80,0.12)", text: "#4caf50" },
+    "Moderate": { bg: "rgba(255,152,0,0.12)", text: "#ff9800" },
+    "Difficult": { bg: "rgba(244,67,54,0.12)", text: "#f44336" },
+    "Freight only": { bg: "rgba(156,39,176,0.12)", text: "#9c27b0" },
+  };
+  const c = colors[d] || colors["Moderate"];
+  return (
+    <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: c.bg, color: c.text }}>
+      {d === "Freight only" ? "FREIGHT" : d.toUpperCase()}
+    </span>
+  );
+})()}
+
+--- G3: Freight tab auto-fill from AI ---
+
+FIND FreightTab form state initialization (line ~3008-3019).
+IMPROVE defaults to use AI data when user data is empty:
+
+function parseDimsFromAI(dims: string, part: "length" | "width" | "height"): string {
+  const match = dims.match(/(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)/);
+  if (!match) return part === "length" ? "48" : part === "width" ? "40" : "36";
+  return part === "length" ? match[1] : part === "width" ? match[2] : match[3];
+}
+
+Then update form defaults:
+  weight: heavyItem?.weight ? String(heavyItem.weight) :
+    (heavyItem?.aiWeightLbs ? String(heavyItem.aiWeightLbs) : ""),
+  length: heavyItem?.length ? String(heavyItem.length) :
+    (heavyItem?.aiDimsEstimate ? parseDimsFromAI(heavyItem.aiDimsEstimate, "length") : "48"),
+  // ... same pattern for width, height
+
+ADD indicator below form if AI data was used:
+
+{heavyItem?.aiDimsEstimate && !heavyItem?.length && (
+  <div style={{ fontSize: "0.62rem", color: "var(--accent)", fontStyle: "italic", marginBottom: "0.3rem" }}>
+    🤖 Dimensions auto-filled from AI analysis. Verify before quoting.
+  </div>
+)}
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+
+LTL QUOTE PIPELINE:
+3. getFreightQuoteMidpoints() added to freight-estimates.ts: yes / no
+4. Shippo getLTLFreightQuotes import REMOVED from ltl-quote route: yes / no
+5. Freight estimate engine wired into ltl-quote route: yes / no
+6. Live quotes + estimates merge with carrier deduplication: yes / no
+7. FedEx Freight appears in LTL quote results: yes / no
+8. All 6 carriers appear (XPO, OD, R+L, Estes, SAIA, FedEx Freight): yes / no
+9. Source labels: "estimate" not "demo": yes / no
+10. Response includes liveCount + estimatedCount: yes / no
+
+SCHEMA:
+11. 5 new fields added to Item: yes / no
+12. npx prisma db push: success / fail
+13. npx prisma generate: success / fail
+
+AI INTELLIGENCE:
+14. populateFromAnalysis extended: yes / no
+15. Weight, dims, difficulty, notes extracted: yes / no
+16. shippingWeight auto-populated if empty: yes / no
+17. L/W/H auto-populated if empty: yes / no
+18. isFragile auto-set on "Difficult": yes / no
+19. User data NEVER overridden: yes / no
+
+ENRICHMENT + API:
+20. Shipping fields in enrichment context: yes / no
+21. AI fields in Shipping Center API response: yes / no
+
+UI:
+22. AI Shipping Brief card in ShippingPanel: yes / no
+23. Brief shows: difficulty badge, weight, dims, notes: yes / no
+24. Hidden when no AI data: yes / no
+25. Difficulty badges on Shipping Center item cards: yes / no
+26. Saved quote badge on Freight tab: yes / no
+27. Freight form auto-fills from AI: yes / no
+28. "AI auto-filled" indicator when used: yes / no
+
+BUILD:
+29. All locked files untouched: yes / no
+30. inline style={{}} throughout: yes / no
+31. npx tsc --noEmit: 0 errors
+32. npm run build: pass
+33. CHECKPOINT post-change: pass
+34. Dev server: localhost:3000
+
+MANUAL TESTS:
+35. Get LTL quotes → verify FedEx Freight appears: yes / no
+36. Get LTL quotes → verify all 6 carriers returned: yes / no
+37. Verify "ESTIMATED" badge on formula-based quotes: yes / no
+38. Upload item → analyze → verify AI shipping fields populated in DB
+39. Verify AI Shipping Brief card shows in Item Dashboard
+40. Verify difficulty badges in Shipping Center
+41. Verify freight form auto-fills from AI dims
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+LTL QUOTE PIPELINE:
+- getFreightQuoteMidpoints added: [yes / no]
+- Shippo fallback replaced: [yes / no]
+- FedEx Freight in results: [yes / no]
+- Total carriers: [count]
+- Source label: [estimate / demo]
+- Test: curl or fetch /api/shipping/ltl-quote with toZip=78704, weight=400
+  → carriers returned: [list]
+  → FedEx Freight present: [yes / no]
+
+SCHEMA:
+- npx prisma db push: [pass / fail]
+- npx prisma generate: [pass / fail]
+
+AI INTELLIGENCE:
+- populateFromAnalysis extended: [yes / no]
+- Fields extracted: [list]
+- User data protection: [yes / no]
+
+ENRICHMENT:
+- item-context.ts updated: [yes / no]
+- center API updated: [yes / no]
+
+UI:
+- AI Shipping Brief: [yes / no]
+- Difficulty badges: [yes / no]
+- Saved quote badge: [yes / no]
+- Freight auto-fill: [yes / no]
+
+BUILD:
+- npx tsc --noEmit: [# errors]
+- npm run build: [pass / fail]
+- Dev server: localhost:3000
+
+Files modified:
+  - prisma/schema.prisma
+  - lib/data/populate-intelligence.ts
+  - lib/shipping/freight-estimates.ts
+  - app/api/shipping/ltl-quote/route.ts
+  - app/api/shipping/center/route.ts
+  - lib/enrichment/item-context.ts
+  - app/items/[id]/ShippingPanel.tsx
+  - app/shipping/ShippingCenterClient.tsx
+
+LOCKED FILE INTEGRITY:
+  - lib/shipping/shippo.ts: [untouched]
+  - lib/shipping/fedex-parcel.ts: [untouched]
+  - lib/shipping/fedex-ltl.ts: [untouched]
+  - lib/shipping/easypost.ts: [untouched]
+  - lib/shipping/shipengine-ltl.ts: [untouched]
+  - lib/adapters/ai.ts: [untouched]
+
+END OF COMMAND 4C

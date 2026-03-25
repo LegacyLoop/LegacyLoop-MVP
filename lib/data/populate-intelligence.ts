@@ -48,6 +48,62 @@ export async function populateFromAnalysis(
       await prisma.item.update({ where: { id: itemId }, data: updates });
       console.log(`[populate] Updated ${Object.keys(updates).length} intelligence fields for item ${itemId}`);
     }
+
+    // ─── AI Shipping Intelligence ───────────────────────────────────
+    const shippingUpdates: Record<string, unknown> = {};
+
+    const aiWeight = aiResult.weight_estimate_lbs;
+    if (aiWeight && typeof aiWeight === "number" && (aiWeight as number) > 0) {
+      shippingUpdates.aiWeightLbs = Math.round((aiWeight as number) * 10) / 10;
+    }
+
+    const aiDims = aiResult.dimensions_estimate;
+    if (aiDims && typeof aiDims === "string" && (aiDims as string).length > 2) {
+      shippingUpdates.aiDimsEstimate = aiDims as string;
+      const dimMatch = (aiDims as string).match(/(\d+(?:\.\d+)?)\s*[x\u00D7X]\s*(\d+(?:\.\d+)?)\s*[x\u00D7X]\s*(\d+(?:\.\d+)?)/);
+      if (dimMatch) {
+        shippingUpdates.shippingLength = parseFloat(dimMatch[1]);
+        shippingUpdates.shippingWidth = parseFloat(dimMatch[2]);
+        shippingUpdates.shippingHeight = parseFloat(dimMatch[3]);
+      }
+    }
+
+    const aiDifficulty = aiResult.shipping_difficulty;
+    if (aiDifficulty && typeof aiDifficulty === "string") {
+      shippingUpdates.aiShippingDifficulty = aiDifficulty as string;
+      if (aiDifficulty === "Difficult") shippingUpdates.isFragile = true;
+    }
+
+    const aiNotes = aiResult.shipping_notes;
+    if (aiNotes && typeof aiNotes === "string" && (aiNotes as string).length > 3) {
+      shippingUpdates.aiShippingNotes = aiNotes as string;
+    }
+
+    const confidence = aiResult.confidence;
+    if (confidence && typeof confidence === "number") {
+      shippingUpdates.aiShippingConfidence = Math.round((confidence as number) * 100) / 100;
+    }
+
+    // Only fill empty fields — NEVER override user-entered data
+    if (Object.keys(shippingUpdates).length > 0) {
+      const existing = await prisma.item.findUnique({
+        where: { id: itemId },
+        select: { shippingWeight: true, shippingLength: true, isFragile: true },
+      });
+      if (shippingUpdates.aiWeightLbs && !existing?.shippingWeight) {
+        shippingUpdates.shippingWeight = shippingUpdates.aiWeightLbs;
+      }
+      if (existing?.shippingLength) {
+        delete shippingUpdates.shippingLength;
+        delete shippingUpdates.shippingWidth;
+        delete shippingUpdates.shippingHeight;
+      }
+      if (existing?.isFragile) delete shippingUpdates.isFragile;
+
+      await prisma.item.update({ where: { id: itemId }, data: shippingUpdates });
+      console.log(`[shipping-intel] Persisted for ${itemId}:`,
+        Object.entries(shippingUpdates).map(([k, v]) => `${k}=${v}`).join(", "));
+    }
   } catch (err: any) {
     console.error(`[populate] populateFromAnalysis failed for ${itemId}:`, err.message || err);
   }

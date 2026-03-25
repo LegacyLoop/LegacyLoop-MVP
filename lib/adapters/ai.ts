@@ -37,7 +37,7 @@ const ANALYSIS_SCHEMA = {
       description:
         "Highly specific identification. BAD: 'wooden chair'. GOOD: 'American oak Windsor-style spindle-back side chair, circa 1920s-1940s'",
     },
-    category: { type: "string", description: "Primary category (Furniture, Electronics, Jewelry, Art, Kitchenware, Clothing, Tools, Toys, Books, Sports, Musical Instruments, Collectibles, Vehicles, Vehicle Parts, Other)" },
+    category: { type: "string", description: "Primary category (Furniture, Electronics, Jewelry, Art, Kitchenware, Clothing, Tools, Toys, Books, Sports, Musical Instruments, Collectibles, Outdoor Equipment, Vehicles, Vehicle Parts, Other). IMPORTANT: Lawn mowers, garden tractors, riding mowers, chainsaws, leaf blowers, pressure washers, snow blowers, and other garden/lawn/outdoor power equipment belong in 'Outdoor Equipment' — NOT 'Vehicles'. Only road-legal motor vehicles (cars, trucks, motorcycles, boats, ATVs, RVs) belong in 'Vehicles'." },
     subcategory: { type: ["string", "null"], description: "Subcategory for more specificity (e.g. 'Side Chair' under Furniture, 'Wristwatch' under Jewelry). null if not applicable." },
     brand: { type: ["string", "null"], description: "Brand, maker, or manufacturer if identifiable. null if truly unknown." },
     model: { type: ["string", "null"], description: "Specific model name/number if visible or identifiable. null if unknown." },
