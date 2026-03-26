@@ -1,0 +1,754 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 25, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+REAL TECH MANDATE: Minimize demo/mock data. Use real API integrations
+wherever possible. Estimates labeled as "ESTIMATED" not "demo".
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts — LOCKED
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping (MOST LOCKED) —
+✓ lib/shipping/shippo.ts — LOCKED
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/easypost.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+✓ lib/shipping/freight-estimates.ts — LOCKED (updated by CMD4C)
+✓ lib/shipping/arta.ts — LOCKED (created by CMD4D)
+✓ lib/shipping/metro-estimates.ts — LOCKED
+✓ lib/shipping/city-lookup.ts — LOCKED
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/user-events.ts
+✓ lib/data/populate-intelligence.ts — LOCKED (updated by CMD4C)
+
+— Enrichment —
+✓ lib/addons/enrich-item-context.ts
+✓ lib/enrichment/item-context.ts — LOCKED
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/estimate/route.ts — ADD category guard
+✓ EXCEPTION: app/api/shipping/rates/route.ts — ADD category guard
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Always-Dark Overlays — ALL LOCKED
+— Messaging System — ALL LOCKED
+— Add-On Tools — ALL LOCKED
+— Onboarding — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — LOCKED
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - lib/shipping/package-suggestions.ts (FIX suggestShippingMethod to catch all oversized/vehicle items)
+  - lib/shipping/saved-quotes.ts (EXTEND with storage event listener + parcel quote support)
+  - app/items/[id]/ShippingPanel.tsx (FIX vehicle/local-only gate, hide parcel quotes, add cross-view sync, add Shipping Center link)
+  - app/shipping/ShippingCenterClient.tsx (FIX quote sync, add storage listener, add deep linking, fix item panel actions)
+  - app/api/shipping/estimate/route.ts (ADD category guard — skip parcel quotes for vehicles/oversized)
+  - app/api/shipping/rates/route.ts (ADD category guard — skip parcel quotes for vehicles/oversized)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+
+Data collection for this command:
+  - Log when shipping method overrides parcel (category → local_only/freight)
+  - Log cross-view sync events (storage listener fires)
+  - Log deep link navigation (tab + itemId params)
+  - Console.log pattern for all
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+This command follows:
+  1. Lib: Fix shipping method detection + extend saved quotes
+  2. API: Add category guards to rate/estimate routes
+  3. UI: Fix ShippingPanel gating + add cross-view sync to both views
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• suggestShippingMethod() at lib/shipping/package-suggestions.ts line 244 determines parcel vs freight vs local_only
+• ShippingPanel uses shippingMethod + isVehicle to control what renders
+• Shipping Center uses /api/shipping/center response data
+• THREE localStorage keys exist for quotes:
+  - ll_quote_{itemId} — parcel quotes (used by both views)
+  - ll_ltl_quote_{itemId} — LTL carry-over from CMD4A
+  - ll_saved_quotes — unified saved quotes from CMD4B (used by ShippingPanel LTL section only)
+
+CURRENT BUGS:
+
+1. suggestShippingMethod() line 258 only checks "vehicle" and "boat"
+   — misses: mower, lawn mower, riding mower, tractor, ATV, motorcycle, go-kart,
+     snowmobile, jet ski, trailer, RV, large appliance, piano, hot tub, pool table
+   — These items get "parcel" or "freight" instead of "local_only" or "freight"
+   — Result: USPS $9.99 quote for a 400lb riding mower
+
+2. ShippingPanel line 3034: isVehicle requires shippingMethod === "local_only"
+   — If suggestShippingMethod returns wrong value, isVehicle is false
+   — Carrier rates section renders at line 3502 because !isVehicle is true
+   — Auto-fetch at line 2827 fires for ALL pre-sale items, no guard
+
+3. Saved quotes don't sync between views
+   — ShippingPanel reads localStorage on mount only (no listener)
+   — ShippingCenter reads API data, ignores ll_saved_quotes for display
+   — No storage event listener in either view
+   — Label generation in one view doesn't refresh the other
+
+4. No cross-view navigation
+   — No link from ShippingPanel back to Shipping Center
+   — No deep linking support (?tab=freight&itemId=xxx)
+   — Shipping Center doesn't auto-refresh when returning from Item Dashboard
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Fix suggestShippingMethod with expanded category detection
+— Add LOCAL_ONLY_CATEGORIES constant for reuse
+— Fix isVehicle / isOversized gate in ShippingPanel
+— Hide parcel rate section entirely for local-only and freight-only items
+— Skip parcel rate auto-fetch for local-only items
+— Add storage event listener to both views for cross-view sync
+— Add "View in Shipping Center" link to ShippingPanel
+— Add ?tab and ?itemId deep link support to Shipping Center
+— Extend saved-quotes.ts with parcel quote support and storage event helper
+— Add category guard to estimate and rates API routes
+— Add console.log for data collection
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Modify the prisma schema
+— Change how AI analysis or classification works (lib/adapters/ai.ts is LOCKED)
+— Remove or modify existing shipping integrations
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Change business or pricing logic
+— Remove or rebuild existing functionality
+— Add new npm dependencies
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+No new env variables needed.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+NO — No schema changes in this command.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+Shipping Center has 5 tabs: preSale (Estimates), readyToShip (Ready to Ship),
+shipped (Tracking), freight (Freight/LTL), pickup (Local Pickup).
+
+CMD5A added: Priority Action Banner, Quote Display Overhaul, Saved Quotes Redesign, Batch Pickup API
+CMD5B added: Airport-style Tracking Board with status filters and auto-refresh
+CMD5C added: Section headers in ShippingPanel, Arta inline quotes in FreightTab
+
+SECTIONS 13-17 — See v11 master template.
+
+================================================================================
+
+OBJECTIVE — FIX SHIPPING INTELLIGENCE, CROSS-VIEW SYNC, AND FLOW
+
+================================================================================
+
+This command does FIVE things. Fixes the real bugs. Makes both views talk to each other.
+
+TASK 1 — FIX SHIPPING METHOD DETECTION (package-suggestions.ts)
+
+  ROOT CAUSE: suggestShippingMethod() only checks for "vehicle" and "boat".
+  Items like riding mowers, ATVs, pianos, hot tubs get "parcel" instead of "local_only".
+
+  FIX: Add comprehensive LOCAL_ONLY and FREIGHT_ONLY category lists.
+
+  FILE: lib/shipping/package-suggestions.ts
+
+  ADD at the top of the file (after imports, before any functions):
+
+  /** Items that MUST be local pickup — too large/heavy/regulated for any carrier */
+  const LOCAL_ONLY_CATEGORIES = [
+    "vehicle", "vehicles", "car", "truck", "suv", "van",
+    "boat", "boats", "watercraft", "jet ski", "kayak", "canoe",
+    "motorcycle", "atv", "utv", "dirt bike", "scooter", "go-kart",
+    "riding mower", "lawn mower", "mower", "lawn tractor", "zero turn",
+    "tractor", "snowmobile", "snowblower",
+    "trailer", "rv", "camper",
+    "hot tub", "spa", "jacuzzi",
+    "pool table", "billiard",
+    "piano", "grand piano", "upright piano", "organ",
+    "playground", "swing set", "trampoline",
+    "shed", "gazebo", "greenhouse",
+  ];
+
+  /** Items that need freight/LTL — too big for parcel but shippable */
+  const FREIGHT_CATEGORIES = [
+    "furniture", "sofa", "couch", "sectional", "armoire", "wardrobe",
+    "dresser", "hutch", "china cabinet", "bookcase", "desk",
+    "dining table", "table", "bed frame", "mattress",
+    "appliance", "refrigerator", "washer", "dryer", "dishwasher",
+    "stove", "oven", "range",
+    "outdoor equipment", "garden equipment",
+    "exercise equipment", "treadmill", "elliptical", "weight bench",
+    "safe", "gun safe",
+    "statue", "sculpture",
+    "large", "oversized", "heavy",
+  ];
+
+  THEN UPDATE suggestShippingMethod() function (~line 244):
+
+  FIND the existing vehicle/boat check (line 258):
+    if (cat.includes("vehicle") || cat.includes("boat")) {
+      return "local_only";
+    }
+
+  REPLACE WITH:
+    // Check LOCAL_ONLY categories
+    if (LOCAL_ONLY_CATEGORIES.some(term => cat.includes(term))) {
+      console.log(`[shipping-method] "${cat}" matches local_only category`);
+      return "local_only";
+    }
+
+    // Check FREIGHT categories
+    if (FREIGHT_CATEGORIES.some(term => cat.includes(term))) {
+      console.log(`[shipping-method] "${cat}" matches freight category`);
+      return "freight";
+    }
+
+  ALSO: The existing weight/dimension checks (lines 272-275) should remain as fallback:
+    if (weight > 70 || maxDim > 48) return "freight";
+
+  The function should now flow:
+    1. Check LOCAL_ONLY_CATEGORIES → return "local_only"
+    2. Check FREIGHT_CATEGORIES → return "freight"
+    3. Check weight > 70 or maxDim > 48 → return "freight"
+    4. Check saleMethod === "local_only" → return "local_only"
+    5. Default → return "parcel"
+
+TASK 2 — FIX SHIPPING PANEL GATING (ShippingPanel.tsx)
+
+  ROOT CAUSE: isVehicle check is too narrow. Parcel quotes auto-fetch for all items.
+  Carrier rates section shows even when item is local-only.
+
+  FIXES:
+
+  A) REPLACE the isVehicle check at line 3034 with a broader gate:
+
+  FIND:
+    const isVehicle = shippingMethod === "local_only" &&
+                      suggestion?.boxSize === "freight" &&
+                      (suggestion?.label?.toLowerCase().includes("vehicle") ||
+                       suggestion?.label?.toLowerCase().includes("boat"));
+
+  REPLACE WITH:
+    // Gate: items that should NOT show parcel carrier rates
+    const isLocalOnly = shippingMethod === "local_only";
+    const isFreightOnly = shippingMethod === "freight" &&
+      (suggestion?.weightEstimate ? suggestion.weightEstimate > 70 : false);
+    const hideParcelRates = isLocalOnly || isFreightOnly;
+
+  B) UPDATE the carrier rates section condition at line 3502:
+
+  FIND:
+    {preference !== "LOCAL_ONLY" && !isVehicle && shippingTab === "ship" && (
+
+  REPLACE WITH:
+    {preference !== "LOCAL_ONLY" && !hideParcelRates && shippingTab === "ship" && (
+
+  C) GUARD the auto-fetch at line 2827-2832:
+
+  FIND:
+    useEffect(() => {
+      if (mode === "pre-sale") {
+        fetchPreSaleRates();
+      }
+    }, []);
+
+  REPLACE WITH:
+    useEffect(() => {
+      if (mode === "pre-sale" && !hideParcelRates) {
+        fetchPreSaleRates();
+      }
+    }, [hideParcelRates]);
+
+  NOTE: hideParcelRates depends on shippingMethod which comes from props.
+  Make sure the dependency is correct. If shippingMethod might be undefined on first
+  render and then populated, the guard should handle that:
+
+    useEffect(() => {
+      if (mode === "pre-sale" && shippingMethod && !hideParcelRates) {
+        fetchPreSaleRates();
+      }
+    }, [shippingMethod, hideParcelRates]);
+
+  D) UPDATE the LOCAL PICKUP ONLY banner to use the same gate:
+
+  FIND wherever the "LOCAL PICKUP ONLY" banner renders and ensure it shows
+  for ALL isLocalOnly items, not just "vehicle" or "boat" matches.
+
+  E) For freight-only items (isFreightOnly but NOT isLocalOnly):
+  Show the freight/LTL section prominently instead of parcel rates.
+  The freight section should auto-expand when the item is freight-only.
+
+  F) Also update all references to the old `isVehicle` variable throughout
+  the file. Search for "isVehicle" and replace with appropriate new variable:
+  - Where it meant "hide parcel rates" → use hideParcelRates
+  - Where it meant "local pickup only" → use isLocalOnly
+
+TASK 3 — ADD CATEGORY GUARDS TO API ROUTES
+
+  FILE: app/api/shipping/estimate/route.ts
+  FILE: app/api/shipping/rates/route.ts
+
+  Both routes fetch parcel rates without checking if the item category is local-only.
+  Add a guard at the top of the POST handler (after auth check, before fetching rates):
+
+  // Skip parcel rates for local-only categories
+  const LOCAL_ONLY = ["vehicle", "boat", "motorcycle", "atv", "mower",
+    "tractor", "trailer", "rv", "hot tub", "piano", "pool table",
+    "riding mower", "lawn mower", "snowmobile", "jet ski"];
+  const category = (body.category || "").toLowerCase();
+  if (LOCAL_ONLY.some(term => category.includes(term))) {
+    console.log(`[shipping-rates] Skipping parcel rates for local-only category: ${category}`);
+    return NextResponse.json({
+      rates: [],
+      localOnly: true,
+      message: "This item is recommended for local pickup only. Too large or heavy for parcel carriers.",
+      category,
+    });
+  }
+
+  This prevents the API from even calling Shippo/FedEx/EasyPost for vehicles.
+
+TASK 4 — CROSS-VIEW QUOTE SYNC
+
+  Make saved quotes and shipping actions sync between Item Dashboard and Shipping Center.
+
+  A) ADD storage event listener to ShippingPanel.tsx:
+
+  Near the existing useEffect that loads saved quotes on mount, ADD:
+
+  // Cross-view sync: listen for localStorage changes from Shipping Center
+  useEffect(() => {
+    function handleStorageChange(e: StorageEvent) {
+      if (e.key === "ll_saved_quotes" && itemId) {
+        setLtlSavedQuotes(getQuotes(itemId));
+        console.log("[shipping-sync] Saved quotes updated from another view");
+      }
+      if (e.key === `ll_quote_${itemId}`) {
+        // Parcel quote updated in other view — could trigger rate refresh
+        console.log("[shipping-sync] Parcel quote updated from another view");
+      }
+    }
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [itemId]);
+
+  B) ADD storage event listener to ShippingCenterClient.tsx:
+
+  In the main ShippingCenterClient component, near other useEffects, ADD:
+
+  // Cross-view sync: listen for localStorage changes from Item Dashboard
+  useEffect(() => {
+    function handleStorageChange(e: StorageEvent) {
+      if (e.key?.startsWith("ll_quote_") || e.key === "ll_saved_quotes") {
+        // Quote data changed in Item Dashboard — update our saved quote count
+        try {
+          const raw = localStorage.getItem("ll_saved_quotes");
+          if (raw) {
+            const store = JSON.parse(raw);
+            let sc = 0;
+            for (const qs of Object.values(store)) {
+              sc += (qs as any[]).filter((q: any) => q.type === "ltl").length;
+            }
+            setSavedFreightCount(sc);
+          }
+        } catch { /* ignore */ }
+        console.log("[shipping-sync] Quote data updated from Item Dashboard");
+      }
+    }
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  C) ADD "View in Shipping Center" link to ShippingPanel.tsx:
+
+  Near the top of the shipping panel content (after the AI Shipping Brief section),
+  ADD a navigation link:
+
+  <div style={{
+    display: "flex", justifyContent: "flex-end", marginBottom: "0.3rem",
+  }}>
+    <a
+      href={`/shipping?itemId=${itemId}&tab=preSale`}
+      style={{
+        fontSize: "0.6rem", fontWeight: 600, color: "var(--accent)",
+        textDecoration: "none", display: "flex", alignItems: "center", gap: "0.25rem",
+      }}
+    >
+      Open in Shipping Center ↗
+    </a>
+  </div>
+
+  D) ADD deep link support to ShippingCenterClient.tsx:
+
+  The component already reads ?itemId from searchParams (line 5617).
+  EXTEND it to also read ?tab parameter:
+
+  FIND the initial tab state:
+    const [tab, setTab] = useState<Tab>(itemIdParam ? "readyToShip" : "preSale");
+
+  REPLACE WITH:
+    const tabParam = searchParams.get("tab");
+    const validTabs: Tab[] = ["preSale", "readyToShip", "shipped", "freight", "pickup"];
+    const initialTab = validTabs.includes(tabParam as Tab) ? (tabParam as Tab) :
+      (itemIdParam ? "readyToShip" : "preSale");
+    const [tab, setTab] = useState<Tab>(initialTab);
+
+  This enables deep links like: /shipping?tab=freight&itemId=xxx
+
+TASK 5 — SHIPPING CENTER ITEM PANEL REFINEMENT
+
+  The PreSaleTab item panel needs to clearly communicate what shipping options
+  are available for each item type.
+
+  A) ADD shipping method indicator on each item card in PreSaleTab:
+
+  After the existing AI shipping difficulty badge, ADD:
+
+  {item.shippingMethod && (() => {
+    const methods: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+      "local_only": { label: "LOCAL PICKUP", color: "#ff9800", bg: "rgba(255,152,0,0.12)", icon: "🤝" },
+      "freight": { label: "FREIGHT/LTL", color: "#9c27b0", bg: "rgba(156,39,176,0.12)", icon: "🚛" },
+      "parcel": { label: "PARCEL", color: "#00bcd4", bg: "rgba(0,188,212,0.12)", icon: "📦" },
+    };
+    const m = methods[item.shippingMethod] || methods.parcel;
+    return (
+      <span style={{
+        fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px",
+        background: m.bg, color: m.color, display: "inline-flex", alignItems: "center", gap: "0.2rem",
+      }}>
+        {m.icon} {m.label}
+      </span>
+    );
+  })()}
+
+  NOTE: This requires the /api/shipping/center route to include shippingMethod
+  in the item response. The suggestShippingMethod function should be called
+  server-side in the center API and included in the enriched item data.
+
+  B) EXTEND app/api/shipping/center/route.ts (ALREADY unlocked via rates/estimate exception):
+
+  Actually — this file is locked. Instead, compute shippingMethod client-side in
+  ShippingCenterClient.tsx using the item data already available:
+
+  Add a helper function at the top of ShippingCenterClient.tsx:
+
+  function getShippingMethod(item: any): "local_only" | "freight" | "parcel" {
+    const cat = (item.category || "").toLowerCase();
+    const LOCAL_ONLY = ["vehicle", "boat", "motorcycle", "atv", "mower",
+      "tractor", "trailer", "rv", "hot tub", "piano", "pool table",
+      "riding mower", "lawn mower", "snowmobile", "jet ski",
+      "riding lawn mower", "go-kart", "snowblower"];
+    const FREIGHT = ["furniture", "sofa", "couch", "armoire", "dresser",
+      "china cabinet", "appliance", "refrigerator", "washer", "dryer",
+      "treadmill", "elliptical", "safe", "gun safe", "statue"];
+    if (LOCAL_ONLY.some(t => cat.includes(t))) return "local_only";
+    if (FREIGHT.some(t => cat.includes(t))) return "freight";
+    const weight = item.aiEstWeight || item.weight || 0;
+    const maxDim = Math.max(item.aiBoxDims?.[0] || 0, item.aiBoxDims?.[1] || 0, item.aiBoxDims?.[2] || 0);
+    if (weight > 70 || maxDim > 48) return "freight";
+    return "parcel";
+  }
+
+  C) For LOCAL_ONLY items in PreSaleTab, hide the "Get Quote" button for parcel
+  and show "Set Up Pickup" instead. For FREIGHT items, show "Get Freight Quote"
+  prominently.
+
+  D) For LOCAL_ONLY items in the item panel expansion:
+  - Do NOT show parcel carrier rates
+  - Show "This item is recommended for local pickup" message
+  - Show "Set Up Pickup →" action button
+  - Still show freight options (some local items CAN be freight shipped if buyer arranges)
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n lib/shipping/package-suggestions.ts | sed -n '244,280p'
+   Focus: suggestShippingMethod function — current category checks
+
+2. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3030,3040p'
+   Focus: isVehicle check
+
+3. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3498,3510p'
+   Focus: Carrier rates section condition
+
+4. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2825,2835p'
+   Focus: Auto-fetch rates useEffect
+
+5. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2970,2985p'
+   Focus: Saved quotes loading useEffect
+
+6. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '5610,5640p'
+   Focus: searchParams and initial tab state
+
+7. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1060,1090p'
+   Focus: PreSaleTab quote save and item actions
+
+8. cat -n app/api/shipping/estimate/route.ts | sed -n '1,30p'
+   Focus: Route handler start — where to add category guard
+
+9. cat -n app/api/shipping/rates/route.ts | sed -n '1,30p'
+   Focus: Route handler start — where to add category guard
+
+10. grep -n "isVehicle" app/items/[id]/ShippingPanel.tsx | head -20
+    Focus: All references to isVehicle that need updating
+
+11. grep -n "LOCAL_PICKUP\|local_only\|LOCAL_ONLY" app/items/[id]/ShippingPanel.tsx | head -20
+    Focus: Where local pickup logic lives
+
+12. grep -n "ll_quote_\|ll_saved\|ll_ltl" app/items/[id]/ShippingPanel.tsx | head -20
+    Focus: All localStorage key references
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PARTS B-F — BUILD INSTRUCTIONS
+
+================================================================================
+
+Follow TASK 1 through TASK 5 in the OBJECTIVE section above.
+Each task maps to a Part:
+
+Part B = Task 1 (package-suggestions.ts — shipping method fix)
+Part C = Task 2 (ShippingPanel.tsx — gating fix)
+Part D = Task 3 (API route guards)
+Part E = Task 4 (Cross-view sync)
+Part F = Task 5 (Shipping Center item panel refinement)
+
+Build in order. Test after each part.
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+SHIPPING METHOD DETECTION:
+1. suggestShippingMethod("riding lawn mower", ...) returns "local_only": yes / no
+2. suggestShippingMethod("vehicle", ...) returns "local_only": yes / no
+3. suggestShippingMethod("piano", ...) returns "local_only": yes / no
+4. suggestShippingMethod("hot tub", ...) returns "local_only": yes / no
+5. suggestShippingMethod("sofa", ...) returns "freight": yes / no
+6. suggestShippingMethod("vintage lamp", ...) returns "parcel": yes / no
+7. LOCAL_ONLY_CATEGORIES constant exported: yes / no
+8. FREIGHT_CATEGORIES constant exported: yes / no
+
+SHIPPING PANEL GATING:
+9. hideParcelRates true for local_only items: yes / no
+10. hideParcelRates true for heavy freight items: yes / no
+11. Carrier rates section hidden for local_only items: yes / no
+12. Auto-fetch skipped for local_only items: yes / no
+13. LOCAL PICKUP ONLY banner shows for all local_only items: yes / no
+14. Freight section auto-expands for freight-only items: yes / no
+15. All isVehicle references replaced: yes / no
+
+API GUARDS:
+16. /api/shipping/estimate returns localOnly:true for vehicles: yes / no
+17. /api/shipping/rates returns localOnly:true for vehicles: yes / no
+18. No Shippo/FedEx/EasyPost calls for local-only categories: yes / no
+
+CROSS-VIEW SYNC:
+19. Storage event listener in ShippingPanel: yes / no
+20. Storage event listener in ShippingCenterClient: yes / no
+21. "View in Shipping Center" link in ShippingPanel: yes / no
+22. Deep link ?tab support in ShippingCenter: yes / no
+23. Saved quote changes in one view update the other: yes / no
+
+SHIPPING CENTER ITEM PANEL:
+24. Shipping method badge on PreSaleTab item cards: yes / no
+25. Local-only items show "Set Up Pickup" instead of "Get Quote": yes / no
+26. Freight items show "Get Freight Quote" prominently: yes / no
+27. getShippingMethod helper function works: yes / no
+
+BUILD:
+28. All locked files untouched: yes / no
+29. inline style={{}} throughout: yes / no
+30. npx tsc --noEmit: 0 errors
+31. npm run build: pass
+32. CHECKPOINT post-change: pass
+33. Dev server: localhost:3000
+
+MANUAL TESTS:
+34. Old John Deere Rider: NO parcel quotes, shows LOCAL PICKUP ONLY: yes / no
+35. Small parcel item: still shows USPS/UPS rates normally: yes / no
+36. Freight item (furniture): shows freight quotes, no USPS rates: yes / no
+37. Navigate /shipping?tab=freight → lands on Freight tab: yes / no
+38. "View in Shipping Center" link works from Item Dashboard: yes / no
+
+================================================================================
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+SHIPPING METHOD:
+- LOCAL_ONLY_CATEGORIES: [count] items
+- FREIGHT_CATEGORIES: [count] items
+- "riding lawn mower" → [result]
+- "piano" → [result]
+- "vintage lamp" → [result]
+
+PANEL GATING:
+- hideParcelRates replaces isVehicle: [yes / no]
+- Carrier section hidden for local-only: [yes / no]
+- Auto-fetch guarded: [yes / no]
+- isVehicle references updated: [count] replaced
+
+API GUARDS:
+- estimate route guarded: [yes / no]
+- rates route guarded: [yes / no]
+
+CROSS-VIEW SYNC:
+- Storage listeners: [count] added
+- Deep link support: [yes / no]
+- "View in Shipping Center" link: [yes / no]
+
+ITEM PANEL:
+- Shipping method badges: [yes / no]
+- Action buttons adapted per method: [yes / no]
+
+BUILD:
+- npx tsc --noEmit: [# errors]
+- npm run build: [pass / fail]
+- Dev server: localhost:3000
+
+Files modified:
+  - lib/shipping/package-suggestions.ts
+  - lib/shipping/saved-quotes.ts
+  - app/items/[id]/ShippingPanel.tsx
+  - app/shipping/ShippingCenterClient.tsx
+  - app/api/shipping/estimate/route.ts
+  - app/api/shipping/rates/route.ts
+
+LOCKED FILE INTEGRITY:
+  - lib/shipping/shippo.ts: [untouched]
+  - lib/shipping/fedex-parcel.ts: [untouched]
+  - lib/shipping/easypost.ts: [untouched]
+  - lib/shipping/shipengine-ltl.ts: [untouched]
+  - lib/shipping/freight-estimates.ts: [untouched]
+  - lib/shipping/arta.ts: [untouched]
+  - lib/adapters/ai.ts: [untouched]
+  - prisma/schema.prisma: [untouched]
+
+END OF COMMAND 5D

@@ -11,6 +11,7 @@ import { computeCollectiblesScore } from "@/lib/collectibles-score";
 import { detectCollectible } from "@/lib/collectible-detect";
 import AmazonPriceBadge from "./AmazonPriceBadge";
 import SoldPriceWidget from "./SoldPriceWidget";
+import SaleCongratsBar from "./SaleCongratsBar";
 
 type Params = Promise<{ id: string }>;
 
@@ -348,6 +349,16 @@ export default async function ItemPage({ params }: { params: Params }) {
         </div>
       )}
 
+      {/* ═══ Sale Congrats Bar ═══ */}
+      {item.status === "SOLD" && (
+        <div style={{ marginTop: "1rem" }}>
+          <SaleCongratsBar
+            saleMethod={(item as any).saleMethod || "BOTH"}
+            itemId={item.id}
+          />
+        </div>
+      )}
+
       {/* ═══ Sold Price Capture ═══ */}
       <div style={{ marginTop: "1rem" }}>
         <SoldPriceWidget
@@ -415,6 +426,19 @@ export default async function ItemPage({ params }: { params: Params }) {
           listingPrice={(item as any).listingPrice ?? null}
           authenticityScore={authenticityScore}
           collectiblesScore={collectiblesScore}
+          shippingData={{
+            weight: (item as any).shippingWeight ?? null,
+            length: (item as any).shippingLength ?? null,
+            width: (item as any).shippingWidth ?? null,
+            height: (item as any).shippingHeight ?? null,
+            isFragile: (item as any).isFragile ?? false,
+            preference: (item as any).shippingPreference ?? "BUYER_PAYS",
+            aiWeightLbs: (item as any).aiWeightLbs ?? null,
+            aiDimsEstimate: (item as any).aiDimsEstimate ?? null,
+            aiShippingDifficulty: (item as any).aiShippingDifficulty ?? null,
+            aiShippingNotes: (item as any).aiShippingNotes ?? null,
+            aiShippingConfidence: (item as any).aiShippingConfidence ?? null,
+          }}
         />
       </div>
 

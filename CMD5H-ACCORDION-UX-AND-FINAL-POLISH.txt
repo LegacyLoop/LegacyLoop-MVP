@@ -1,0 +1,936 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 25, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+================================================================================
+CMD5H — ACCORDION UX, AI DATA FIX, BUTTON UPGRADE & SHIPPING CENTER POLISH
+================================================================================
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+REAL TECH MANDATE: Minimize demo/mock data. Use real API integrations
+wherever possible. Estimates labeled as "ESTIMATED" not "demo".
+
+BUTTON DESIGN STANDARD (NEW — applies to ALL buttons in this command):
+
+  EVERY button a user can click MUST follow this hierarchy:
+
+  PRIMARY ACTION buttons (Save Quote, Ship Now, Get Rates, Use This Quote):
+    style={{
+      padding: "0.6rem 1.2rem",
+      fontSize: "0.82rem",
+      fontWeight: 700,
+      borderRadius: "0.6rem",
+      border: "none",
+      cursor: "pointer",
+      background: "linear-gradient(135deg, #00bcd4, #009688)",
+      color: "#fff",
+      boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+      transition: "all 0.2s ease",
+      letterSpacing: "0.02em",
+      minHeight: "44px",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "0.4rem",
+    }}
+    onMouseEnter: boxShadow to "0 4px 16px rgba(0,188,212,0.35)", transform: "translateY(-1px)"
+    onMouseLeave: reset to base
+
+  SECONDARY ACTION buttons (Change Carrier, Get Fresh Rates, Edit Dims):
+    style={{
+      padding: "0.5rem 0.9rem",
+      fontSize: "0.72rem",
+      fontWeight: 600,
+      borderRadius: "0.5rem",
+      border: "1.5px solid var(--accent, #00bcd4)",
+      background: "rgba(0,188,212,0.06)",
+      color: "var(--accent, #00bcd4)",
+      cursor: "pointer",
+      transition: "all 0.2s ease",
+      minHeight: "38px",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "0.3rem",
+    }}
+    onMouseEnter: background to "rgba(0,188,212,0.12)"
+    onMouseLeave: reset
+
+  TERTIARY/GHOST buttons (toggle text links like "Show Details"):
+    These are REPLACED by AccordionHeader in this command.
+    Any remaining text-only toggles should become proper buttons:
+    style={{
+      padding: "0.35rem 0.65rem",
+      fontSize: "0.62rem",
+      fontWeight: 600,
+      borderRadius: "0.4rem",
+      border: "1px solid var(--border-default, rgba(255,255,255,0.08))",
+      background: "var(--ghost-bg, rgba(0,0,0,0.04))",
+      color: "var(--text-secondary, #94a3b8)",
+      cursor: "pointer",
+      transition: "all 0.15s ease",
+      minHeight: "32px",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "0.25rem",
+    }}
+
+  DANGER buttons (Delete, Remove):
+    Same as secondary but with red: border "#ef4444", color "#ef4444",
+    hover background "rgba(239,68,68,0.08)"
+
+  DISABLED state (for all button types):
+    opacity: 0.5, cursor: "not-allowed", pointerEvents: "none"
+
+  ACCESSIBILITY:
+    - Minimum touch target: 44px height (primary), 38px (secondary), 32px (tertiary)
+    - Clear contrast ratios (all buttons have visible borders or backgrounds)
+    - Obvious clickability (no flat text-only links for actions)
+    - Hover state must be visually distinct
+
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+(Full locked list same as CMD5F/5G — all lib/**, all app/api/**, all bots, etc.)
+
+! SURGICAL UNLOCK for THIS command ONLY:
+
+  FILE 1: app/items/[id]/ShippingPanel.tsx
+    TASKS: 1, 2, 3, 4, 7
+    FIXES:
+      1. Update banner text (buyer pays for freight)
+      2. Add "Split Shipping" to preference options
+      3. Smooth scroll on Freight Options click
+      4. Convert ALL shipping sections into collapsible accordion panels
+         (Apple/Mac style — compact headers, expand on click, collapse when done)
+      7. Upgrade ALL buttons to world-class button design standard
+
+  FILE 2: app/api/shipping/center/route.ts
+    TASK: 5
+    FIX:
+      5. Fix aiEstWeight field priority — AI analysis weight (aiWeightLbs)
+         MUST take priority over category default (pkgSuggestion.weightEstimate)
+      5. Add aiRealDims field for real AI dimensions
+
+  FILE 3: app/shipping/ShippingCenterClient.tsx
+    TASKS: 5, 6, 7
+    FIXES:
+      5. Fix weightStr(), dimStr(), getShippingMethod() field priorities
+      5. Fix all weight/dim displays to prioritize AI analysis over category defaults
+      5. Add SPLIT_SHIPPING to Policy chip
+      6. Mac accordion for "Show Quote Details" section
+      6. Mac accordion for "Edit Shipping Details" section
+      6. Mac accordion for "Shipping Control Center" section (upgrade existing toggle)
+      6. Mac accordion for Saved Quote banner section
+      7. Upgrade ALL buttons to world-class button design standard
+
+All unlocked files return to LOCKED after approval.
+
+
+SECTION 4-11 — Same as prior commands.
+
+
+SECTION 7 — PLATFORM CONTEXT
+
+=== ShippingPanel.tsx (~4,500+ lines) ===
+
+Major sections that need accordion treatment:
+  1. AI Shipping Brief (~line 3773+)
+  2. Shipping Policy buttons (~line after CMD5F preference editor)
+  3. Package Details / Box Presets (~line 3200+)
+  4. Carrier Rates / Quote comparison (~line 3490+)
+  5. Freight / LTL section (~line 3772+)
+  6. Arta White-Glove section (~line after freight)
+  7. Saved Quotes (~line after Arta)
+  8. Metro Estimates (~line after saved quotes)
+  9. Vehicle/Local Pickup section (~line 3756+)
+
+The panel has section headers from CMD5C ("① AI SHIPPING BRIEF" etc.)
+These are NOT collapsible. Ryan wants Apple/Mac accordion style.
+
+
+=== ShippingCenterClient.tsx (~5,700+ lines) ===
+
+Expandable sections in PreSaleTab that need Mac accordion:
+  - "▶ Show Quote Details" toggle (line ~1991) — plain text button, not premium
+  - "▶ Edit Shipping Details" toggle (line ~2291) — plain text button, not premium
+  - "📋 SHIPPING CONTROL CENTER" toggle (line ~1593) — basic button, needs upgrade
+  - Saved Quote banner (line ~1946) — not collapsible, always visible
+
+Key data functions:
+  - getShippingMethod() at line 157-175 — weight field priority wrong
+  - weightStr() at line 41-45 — missing aiWeightLbs
+  - dimStr() at line 32-40 — missing aiDimsEstimate fallback
+  - ShipProfile at line 743+ — uses weightStr()
+
+
+=== center/route.ts (264 lines) ===
+
+  - Line 205: aiEstWeight = pkgSuggestion.weightEstimate (CATEGORY DEFAULT!)
+  - Line 186: weight = user-entered shippingWeight (correct)
+  - Line 191: aiWeightLbs = AI analysis weight from Prisma (correct but bypassed)
+
+THE BUG: aiEstWeight uses CATEGORY DEFAULTS from package-suggestions.ts
+  - "electronics" = 3 lbs → Fender amp (real ~45 lbs) shows as "3 lbs"
+  - "instrument" = 12 lbs → Uzi pedal (real ~2 lbs) shows as "12 lbs"
+
+
+=== FUTURE NOTE (NOT THIS COMMAND) ===
+
+After CMD5H passes, the NEXT phase is:
+  - Apply Mac accordion treatment to ALL bot panels (Valuation, Antique,
+    Market Comps, Photo Analysis, etc.) in ItemDashboardPanels.tsx
+  - Apply world-class button standard to all bot panels
+  - Tighten/tune AI bots for better analysis results
+  - Polish each bot page individually
+This is a SEPARATE audit. Do NOT touch bot panels in this command.
+
+
+================================================================================
+
+OBJECTIVE — 7 TASKS
+
+  Task 1: Banner text fix ("pays for it")
+  Task 2: Split Shipping preference option
+  Task 3: Smooth scroll to freight section
+  Task 4: Accordion sections in ShippingPanel.tsx (8 sections)
+  Task 5: AI data accuracy fix (3 files)
+  Task 6: Mac accordion for Shipping Center expandable sections
+  Task 7: World-class button upgrade across all shipping panels
+
+================================================================================
+
+
+TASK 1 — FIX BANNER TEXT
+FILE: app/items/[id]/ShippingPanel.tsx
+
+  FIND the banner text for local_only at ~line 3057:
+    "...if the buyer arranges it."
+
+  CHANGE TO:
+    "...if the buyer pays for it."
+
+  Simple text swap. Verify no other instances of "arranges it" in the file.
+
+
+TASK 2 — ADD "SPLIT SHIPPING" TO PREFERENCE OPTIONS
+FILE: app/items/[id]/ShippingPanel.tsx
+
+  FIND the shipping preference editor (added by CMD5E, ~3 buttons):
+    { value: "BUYER_PAYS", label: "Buyer Pays", icon: "💰" },
+    { value: "FREE_SHIPPING", label: "Free Shipping", icon: "🆓" },
+    { value: "LOCAL_ONLY", label: "Local Only", icon: "📍" },
+
+  ADD a 4th option after "Local Only":
+    { value: "SPLIT_SHIPPING", label: "Split Shipping", icon: "🤝" },
+
+  SPLIT_SHIPPING does NOT trigger any special gating behavior.
+  It's purely informational — "shipping cost negotiated between buyer and seller."
+
+  Where preference is displayed elsewhere in this file, handle the new value:
+    "SPLIT_SHIPPING" → "Split (Negotiated)"
+
+
+TASK 3 — SMOOTH SCROLL ON FREIGHT OPTIONS CLICK
+FILE: app/items/[id]/ShippingPanel.tsx
+
+  FIND "Freight Options" tab button in the Ship/Pickup toggle.
+  When clicked, ADD after the tab switch state setter:
+    setTimeout(() => {
+      document.getElementById("shipping-freight-section")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+
+  Make sure the freight section div has id="shipping-freight-section".
+
+  ALSO: Any "Freight Options" button in the banner area should do the same:
+    onClick={() => {
+      setShippingTab("ship");
+      setTimeout(() => {
+        document.getElementById("shipping-freight-section")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }}
+
+
+TASK 4 — CONVERT SECTIONS TO COLLAPSIBLE ACCORDION
+FILE: app/items/[id]/ShippingPanel.tsx
+
+  A) CREATE accordion state manager at top of ShippingPanel component:
+
+    const [openSections, setOpenSections] = useState<Set<string>>(() => {
+      const defaults = new Set<string>(["ai-brief"]);
+      if (shippingMethod === "freight" || shippingMethod === "local_only") {
+        defaults.add("freight");
+      }
+      if (shippingMethod === "parcel") {
+        defaults.add("carrier-rates");
+      }
+      return defaults;
+    });
+
+    const toggleSection = (id: string) => {
+      setOpenSections(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+    };
+
+  B) CREATE AccordionHeader component (DEFINE ONCE, reuse in Tasks 4 AND 6):
+
+    Define ABOVE ShippingPanel (not inside it) so it's reusable.
+    Also export-ready for ShippingCenterClient.tsx to define its own copy.
+
+    function AccordionHeader({
+      id, icon, title, subtitle, isOpen, onToggle, accentColor, badge,
+    }: {
+      id: string; icon: string; title: string; subtitle?: string;
+      isOpen: boolean; onToggle: (id: string) => void;
+      accentColor?: string; badge?: string;
+    }) {
+      return (
+        <button
+          onClick={() => onToggle(id)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            background: isOpen ? "rgba(0,188,212,0.02)" : "none",
+            border: "none",
+            borderBottom: isOpen
+              ? "1px solid var(--border, rgba(255,255,255,0.06))"
+              : "1px solid transparent",
+            padding: "0.6rem 0.4rem",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            borderRadius: isOpen ? "0.4rem 0.4rem 0 0" : "0.4rem",
+            minHeight: "38px",
+          }}
+          onMouseEnter={(e) => {
+            if (!isOpen) (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,188,212,0.03)";
+          }}
+          onMouseLeave={(e) => {
+            if (!isOpen) (e.currentTarget as HTMLButtonElement).style.background = "none";
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <span style={{ fontSize: "0.9rem" }}>{icon}</span>
+            <span style={{
+              fontSize: "0.62rem",
+              fontWeight: 700,
+              color: accentColor || "var(--text-secondary, #94a3b8)",
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+            }}>
+              {title}
+            </span>
+            {badge && (
+              <span style={{
+                fontSize: "0.48rem", fontWeight: 700,
+                padding: "2px 6px", borderRadius: "6px",
+                background: `${accentColor || "#00bcd4"}18`,
+                color: accentColor || "#00bcd4",
+              }}>
+                {badge}
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+            {subtitle && !isOpen && (
+              <span style={{
+                fontSize: "0.52rem", color: "var(--text-muted, #64748b)",
+                maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis",
+                whiteSpace: "nowrap", fontWeight: 500,
+              }}>
+                {subtitle}
+              </span>
+            )}
+            <span style={{
+              fontSize: "0.5rem",
+              color: "var(--text-muted, #64748b)",
+              transition: "transform 0.25s ease",
+              transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "18px",
+              height: "18px",
+              borderRadius: "50%",
+              background: isOpen ? "rgba(0,188,212,0.08)" : "transparent",
+            }}>
+              ▼
+            </span>
+          </div>
+        </button>
+      );
+    }
+
+  C) WRAP each section. Replace header + content with accordion pattern:
+
+    <div style={{ marginBottom: "0.3rem" }}>
+      <AccordionHeader
+        id="section-id"
+        icon="🤖"
+        title="SECTION TITLE"
+        subtitle="collapsed preview text"
+        isOpen={openSections.has("section-id")}
+        onToggle={toggleSection}
+        accentColor="#00bcd4"
+      />
+      {openSections.has("section-id") && (
+        <div style={{ padding: "0.5rem 0.2rem" }}>
+          {/* ... existing section content, UNCHANGED ... */}
+        </div>
+      )}
+    </div>
+
+  APPLY to these 8 sections:
+
+  1. AI SHIPPING BRIEF
+     id: "ai-brief" | icon: "🤖" | color: "#00bcd4" | DEFAULT: OPEN
+     subtitle: `${difficulty} · ~${weight} lbs · ${method}`
+
+  2. PACKAGE DETAILS
+     id: "package-details" | icon: "📦" | color: "#00bcd4" | DEFAULT: CLOSED
+     subtitle: `${boxLabel} · ${dims} · ${weight} lbs`
+     (Open if user hasn't saved dims yet)
+
+  3. CARRIER RATES
+     id: "carrier-rates" | icon: "📊" | color: "#00bcd4"
+     DEFAULT: OPEN for parcel, CLOSED for freight/local_only
+     subtitle: `Best: ${carrier} $${price} · ${count} carriers`
+     Keep existing !hideParcelRates gate.
+
+  4. FREIGHT / LTL SHIPPING
+     id: "freight" | icon: "🚛" | color: "#9c27b0"
+     DEFAULT: OPEN for freight/local_only, CLOSED for parcel
+     subtitle: `${count} carriers · Est. $${range}` or "Get freight quotes"
+     ADD id="shipping-freight-section" to wrapper div
+
+  5. WHITE-GLOVE SHIPPING (ARTA)
+     id: "arta" | icon: "🏛️" | color: "#ff9800" | DEFAULT: CLOSED
+     subtitle: "Premium handling for high-value items"
+     Keep existing Arta-eligibility gate.
+
+  6. SAVED QUOTES
+     id: "saved-quotes" | icon: "💾" | color: "#00bcd4" | DEFAULT: CLOSED
+     subtitle: `${count} saved quotes`
+
+  7. METRO ESTIMATES
+     id: "metro" | icon: "🏙️" | color: "#00bcd4" | DEFAULT: CLOSED
+     subtitle: `${count} nearby cities`
+
+  8. LOCAL PICKUP
+     id: "pickup" | icon: "🤝" | color: "#ff9800"
+     DEFAULT: OPEN for local_only
+     subtitle: "Meetup location & details"
+     ADD id="shipping-pickup-section" to wrapper div
+
+  D) AUTO-OPEN behavior:
+
+  "Freight Options" click → auto-open freight accordion + scroll:
+    setShippingTab("ship");
+    setOpenSections(prev => { const n = new Set(prev); n.add("freight"); return n; });
+    setTimeout(() => {
+      document.getElementById("shipping-freight-section")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+
+  "Set Up Pickup" click → auto-open pickup accordion + scroll
+  "Compare Rates" click → auto-open carrier-rates accordion + scroll
+
+  CRITICAL: Do NOT remove any existing section content. Only wrap headers.
+
+
+TASK 5 — FIX AI DATA ACCURACY IN SHIPPING CENTER
+
+  === 5A: center/route.ts — Fix aiEstWeight field priority ===
+  LINE: ~205
+
+  FIND:
+    aiEstWeight: pkgSuggestion?.weightEstimate ?? aiShipping?.weight ?? null,
+
+  CHANGE TO:
+    aiEstWeight: (item as any).aiWeightLbs ?? aiShipping?.weight ?? pkgSuggestion?.weightEstimate ?? null,
+
+  ALSO after aiBoxDims line (~204), ADD:
+    aiRealDims: aiShipping
+      ? { length: aiShipping.length || 0, width: aiShipping.width || 0, height: aiShipping.height || 0 }
+      : null,
+
+
+  === 5B: ShippingCenterClient.tsx — Fix weightStr() ===
+  LINES: 41-45
+
+  CHANGE TO:
+    function weightStr(item: any): string {
+      if (item.weight) return `${item.weight} lbs`;
+      if (item.aiWeightLbs) return `~${item.aiWeightLbs} lbs`;
+      if (item.aiEstWeight) return `~${item.aiEstWeight} lbs`;
+      if (item.aiShipping?.weight) return `~${item.aiShipping.weight} lbs`;
+      return "";
+    }
+
+
+  === 5C: ShippingCenterClient.tsx — Fix dimStr() ===
+  LINES: 32-40
+
+  CHANGE TO:
+    function dimStr(item: any): string {
+      if (item.length && item.width && item.height)
+        return `${item.length}×${item.width}×${item.height} in`;
+      if (item.aiRealDims?.length && item.aiRealDims?.width && item.aiRealDims?.height)
+        return `${item.aiRealDims.length}×${item.aiRealDims.width}×${item.aiRealDims.height} in`;
+      if (item.aiShipping) {
+        const a = item.aiShipping;
+        if (a.length && a.width && a.height) return `${a.length}×${a.width}×${a.height} in`;
+        if (typeof a === "string") return a;
+      }
+      if (item.aiDimsEstimate) return item.aiDimsEstimate;
+      return "";
+    }
+
+
+  === 5D: ShippingCenterClient.tsx — Fix getShippingMethod() ===
+  LINE: 171
+
+  FIND:
+    const weight = item.aiEstWeight || item.weight || 0;
+  CHANGE TO:
+    const weight = item.aiWeightLbs || item.aiEstWeight || item.weight || 0;
+
+  LINE: 172
+
+  FIND:
+    const maxDim = Math.max(item.aiBoxDims?.[0] || 0, item.aiBoxDims?.[1] || 0, item.aiBoxDims?.[2] || 0);
+  CHANGE TO:
+    const maxDim = Math.max(
+      item.aiRealDims?.length || item.aiBoxDims?.length || 0,
+      item.aiRealDims?.width || item.aiBoxDims?.width || 0,
+      item.aiRealDims?.height || item.aiBoxDims?.height || 0,
+    );
+
+  NOTE: aiBoxDims is an OBJECT { length, width, height } not an array.
+  The [0], [1], [2] indexing was silently returning 0, making the >48"
+  freight check never trigger from dimensions. MUST fix to object keys.
+
+
+  === 5E-5F: VERIFY displays (no change needed) ===
+  Item card weight (line ~1564): item.weight || item.aiWeightLbs || item.aiEstWeight ✓
+  Control Center chip (line ~1651): item.weight || item.aiWeightLbs || item.aiEstWeight ✓
+  These are correct priority order. Fix 5A will make the data right.
+
+
+  === 5G: Fix all rate-fetcher weight references ===
+  Add item.aiWeightLbs to priority chain at these locations:
+
+  LINE ~1237:
+    weight: item.weight || item.aiWeightLbs || item.aiEstWeight || ...
+
+  LINE ~1296:
+    const w = item?.weight || item?.aiWeightLbs || item?.aiEstWeight || ...
+
+  LINE ~2194:
+    const w = item.weight || item.aiWeightLbs || item.aiEstWeight || 5;
+
+  LINE ~2508:
+    const w = item.weight || item.aiWeightLbs || item.aiEstWeight || 5;
+
+  LINE ~2539:
+    const w = item.weight || item.aiWeightLbs || item.aiEstWeight || 5;
+
+  LINE ~2559:
+    weight: est?.weight ?? item.weight ?? item.aiWeightLbs ?? item.aiEstWeight ?? 5,
+
+
+  === 5H: Add SPLIT_SHIPPING to Policy chip ===
+  Find the Policy info chip in Control Center (~line 1660).
+  Add handling:
+    item.shippingPreference === "SPLIT_SHIPPING" ? "Split Ship" : ...
+
+
+TASK 6 — MAC ACCORDION FOR SHIPPING CENTER EXPANDABLE SECTIONS
+FILE: app/shipping/ShippingCenterClient.tsx
+
+  Define a copy of AccordionHeader in this file (same component as Task 4).
+  Place it near the top with the other helper components (~after line 200).
+
+  === 6A: Convert "Show Quote Details" to Accordion ===
+  CURRENTLY (line ~1989-1998):
+    A plain text button: "▶ Show Quote Details · 5 carriers"
+    Toggles detailOpen[item.id] to show QuoteDetailPanel.
+
+  REPLACE with AccordionHeader:
+    <AccordionHeader
+      id={`quote-${item.id}`}
+      icon="📊"
+      title="CARRIER RATES & QUOTES"
+      subtitle={`${item.lastQuote?.carriers?.length || 0} carriers · Best: $${best?.price?.toFixed(2) || "—"}`}
+      isOpen={!!detailOpen[item.id]}
+      onToggle={() => setDetailOpen(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+      accentColor="#00bcd4"
+    />
+    {detailOpen[item.id] && item.lastQuote && !isVehicle && !isFreight && (
+      <QuoteDetailPanel ... />
+    )}
+
+  Keep the existing !isVehicle && !isFreight gate on showing this section.
+
+
+  === 6B: Convert "Edit Shipping Details" to Accordion ===
+  CURRENTLY (line ~2289-2293):
+    A plain text button: "▶ Edit Shipping Details"
+    Toggles editingItem === item.id
+
+  REPLACE with AccordionHeader:
+    <AccordionHeader
+      id={`edit-${item.id}`}
+      icon="✏️"
+      title="SHIPPING DETAILS"
+      subtitle={`${dimStr(item) || "No dims"} · ${weightStr(item) || "No weight"}`}
+      isOpen={editingItem === item.id}
+      onToggle={() => openEditor(editingItem === item.id ? null : item)}
+      accentColor="#00bcd4"
+    />
+    {editingItem === item.id && (
+      <div style={{ ... }}> {/* existing editor content */ } </div>
+    )}
+
+
+  === 6C: Upgrade "Shipping Control Center" toggle ===
+  CURRENTLY (line ~1593-1604):
+    Basic button: "📋 SHIPPING CONTROL CENTER ▼"
+
+  REPLACE with AccordionHeader:
+    <AccordionHeader
+      id={`cc-${item.id}`}
+      icon="📋"
+      title="SHIPPING CONTROL CENTER"
+      subtitle="Dims · Weight · Policy · Services"
+      isOpen={controlCenterOpen === item.id}
+      onToggle={() => setControlCenterOpen(controlCenterOpen === item.id ? null : item.id)}
+      accentColor="#00bcd4"
+    />
+    {controlCenterOpen === item.id && (
+      <div style={{ ... }}> {/* existing Control Center content */ } </div>
+    )}
+
+
+  === 6D: Wrap Saved Quote banner in accordion context ===
+  CURRENTLY (line ~1946-1987):
+    Saved quote from Item Dashboard always shows as a full banner.
+
+  WRAP in an AccordionHeader:
+    IF savedQuoteFullData[item.id] exists AND !isVehicle AND !isFreight:
+    <AccordionHeader
+      id={`saved-${item.id}`}
+      icon="📋"
+      title="SAVED QUOTE"
+      subtitle={`${carrier} ${service} $${price} · ${freshness}`}
+      isOpen={/* default open if fresh, closed if expired */}
+      onToggle={...}
+      accentColor="#22c55e"
+      badge={isFresh ? "FRESH" : isExpiring ? "EXPIRING" : "EXPIRED"}
+    />
+
+  DEFAULT: OPEN if fresh or expiring, CLOSED if expired.
+  Add a state variable for this: savedQuoteOpen: Record<string, boolean>
+
+
+TASK 7 — WORLD-CLASS BUTTON UPGRADE
+FILES: app/items/[id]/ShippingPanel.tsx AND app/shipping/ShippingCenterClient.tsx
+
+  Apply the BUTTON DESIGN STANDARD from Section 1 to every button.
+
+  === 7A: ShippingPanel.tsx buttons to upgrade ===
+
+  1. Preference editor buttons (Buyer Pays, Free, Local Only, Split Shipping):
+     These are selection buttons. Style the ACTIVE one as PRIMARY, rest as SECONDARY.
+     Active = full gradient + white text
+     Inactive = outlined with accent border + accent text
+
+  2. "Get Rates" / "Refresh Rates" button → PRIMARY
+  3. "Save Dimensions" button → PRIMARY
+  4. Any "View" / "Details" toggle → AccordionHeader (Task 4 handles this)
+  5. "Generate Label" / "Ship Now" type buttons → PRIMARY with green gradient:
+     background: "linear-gradient(135deg, #4caf50, #2e7d32)"
+  6. Freight quote request buttons → SECONDARY with purple accent (#9c27b0)
+  7. Arta request buttons → SECONDARY with gold accent (#ff9800)
+
+  ADD hover handlers to ALL primary and secondary buttons:
+    onMouseEnter={(e) => {
+      (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 16px rgba(0,188,212,0.35)";
+      (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
+    }}
+    onMouseLeave={(e) => {
+      (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 8px rgba(0,188,212,0.25)";
+      (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
+    }}
+
+  === 7B: ShippingCenterClient.tsx buttons to upgrade ===
+
+  1. "Use This Quote →" button (line ~1968) → PRIMARY
+  2. "🔄 Get Fresh Rates" button (line ~1975) → SECONDARY
+  3. "Change carrier" text link (line ~2310) → SECONDARY (not a text link)
+  4. Save Quote full-width button (line ~2395-2407) → PRIMARY (already close, verify)
+  5. Carrier row click targets (line ~2334) → add clearer hover state + cursor
+  6. "Get Estimate" button in editor → PRIMARY
+  7. "Save Dims" in editor → PRIMARY
+  8. All inline text toggle buttons → REPLACED by AccordionHeader (Task 6)
+  9. Quick Action buttons in Control Center → SECONDARY with icon emphasis
+
+  IMPORTANT: When upgrading buttons, do NOT change their onClick logic.
+  Only change the style props and add hover handlers.
+  The functionality must remain identical.
+
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+--- ShippingPanel.tsx reads (Tasks 1-4, 7A) ---
+
+1. grep -n "① \|② \|③ \|④ \|⑤ \|⑥ \|⑦ \|SECTION.*HEADER" app/items/[id]/ShippingPanel.tsx | head -20
+   → Find ALL section headers and line numbers
+
+2. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3055,3070p'
+   → Banner text to fix
+
+3. grep -n "BUYER_PAYS\|FREE_SHIPPING\|LOCAL_ONLY\|preference.*value" app/items/[id]/ShippingPanel.tsx | head -20
+   → Preference editor location
+
+4. grep -n "shippingTab.*ship\|setShippingTab\|Freight Options\|freight.*click" app/items/[id]/ShippingPanel.tsx | head -20
+   → Freight Options click handlers
+
+5. grep -n "shipping-freight-section\|shipping-pickup-section" app/items/[id]/ShippingPanel.tsx | head -10
+   → Check if section IDs exist
+
+6. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2646,2670p'
+   → Component start — where to add accordion state
+
+7. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3770,3800p'
+   → Freight section start
+
+8. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3490,3520p'
+   → Carrier rates section
+
+9. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3200,3230p'
+   → Package details section
+
+10. grep -n "SAVED QUOTES\|METRO\|ARTA\|arta\|white.*glove\|VEHICLE\|PickupCompletion" app/items/[id]/ShippingPanel.tsx | head -20
+    → Remaining section locations
+
+11. grep -n "button\|Button\|onClick.*=.*{" app/items/[id]/ShippingPanel.tsx | head -40
+    → ALL buttons to upgrade
+
+--- center/route.ts reads (Task 5A) ---
+
+12. cat -n app/api/shipping/center/route.ts | sed -n '198,210p'
+    → aiEstWeight and aiBoxDims lines
+
+--- ShippingCenterClient.tsx reads (Tasks 5-7) ---
+
+13. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '30,48p'
+    → dimStr() and weightStr()
+
+14. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '157,176p'
+    → getShippingMethod()
+
+15. grep -n "item.weight || item.aiEstWeight\|item\.aiWeightLbs\|item\.aiEstWeight" app/shipping/ShippingCenterClient.tsx | head -30
+    → ALL weight references to audit
+
+16. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1985,2000p'
+    → "Show Quote Details" toggle
+
+17. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2285,2300p'
+    → "Edit Shipping Details" toggle
+
+18. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1588,1610p'
+    → Control Center toggle
+
+19. grep -n "shippingPreference.*==\|BUYER_PAYS\|FREE_SHIPPING\|LOCAL_ONLY" app/shipping/ShippingCenterClient.tsx | head -15
+    → Policy chip handling
+
+20. grep -n "style.*cursor.*pointer\|style.*background.*gradient\|style.*border.*none" app/shipping/ShippingCenterClient.tsx | head -40
+    → ALL button styles to audit
+
+Print ALL findings with exact line numbers. Then build.
+
+
+================================================================================
+
+BUILD ORDER
+
+================================================================================
+
+Build in this order for maximum quality:
+
+  Part B = Task 5 (AI data fix — do FIRST so all other tasks see correct data)
+  Part C = Task 1 (Banner text — 1 minute)
+  Part D = Task 2 (Split Shipping — 2 minutes)
+  Part E = Task 3 (Smooth scroll — 3 minutes)
+  Part F = Task 6 (Mac accordion for Shipping Center — 8 minutes)
+  Part G = Task 4 (Accordion for ShippingPanel — 15 minutes)
+  Part H = Task 7 (Button upgrade — 10 minutes)
+
+After EACH part: run npx tsc --noEmit to catch errors early.
+
+IMPORTANT FOR PARTS F & G (accordion conversion):
+- Work section by section. Do ONE accordion conversion at a time.
+- Most common mistake: mismatched braces. Be extremely careful.
+- If a section has complex conditional rendering, wrap ENTIRE section
+  content in one div and put the accordion gate around that one div.
+- Test TypeScript after EACH section conversion.
+
+IMPORTANT FOR PART H (button upgrade):
+- Do NOT change any onClick logic. Only style changes + hover handlers.
+- Work through buttons systematically: primary first, then secondary.
+- Test after each batch of button upgrades.
+
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+BANNER & TEXT:
+1. Banner says "...if the buyer pays for it": yes / no
+2. Banner does NOT say "arranges it": yes / no
+
+SPLIT SHIPPING:
+3. 4 preference buttons visible: yes / no
+4. Split Shipping selectable, doesn't hide rates: yes / no
+
+SMOOTH SCROLL:
+5. Freight Options click scrolls to freight section: yes / no
+6. Scroll is smooth animation: yes / no
+
+ACCORDION — ShippingPanel.tsx (Task 4):
+7. AI Brief has collapsible header with preview: yes / no
+8. Package Details has collapsible header: yes / no
+9. Carrier Rates has collapsible header (parcel only): yes / no
+10. Freight has collapsible header, auto-opens for freight items: yes / no
+11. Arta has collapsible header (eligible only): yes / no
+12. Saved Quotes has collapsible header: yes / no
+13. Metro Estimates has collapsible header: yes / no
+14. Local Pickup has collapsible header, auto-opens for local_only: yes / no
+15. Multiple sections can be open at once: yes / no
+16. Collapsed sections show preview/subtitle: yes / no
+17. Arrow indicator rotates on open/close: yes / no
+18. Freight Options click auto-opens freight accordion: yes / no
+
+AI DATA ACCURACY (Task 5):
+19. center/route.ts aiEstWeight uses aiWeightLbs FIRST: yes / no
+20. aiRealDims field added to API response: yes / no
+21. weightStr() includes aiWeightLbs: yes / no
+22. dimStr() includes aiRealDims and aiDimsEstimate: yes / no
+23. getShippingMethod() uses aiWeightLbs + object keys for dims: yes / no
+24. All 6 rate-fetcher weight refs include aiWeightLbs: yes / no
+25. Policy chip handles SPLIT_SHIPPING: yes / no
+
+ACCORDION — ShippingCenterClient.tsx (Task 6):
+26. "Show Quote Details" is now AccordionHeader: yes / no
+27. "Edit Shipping Details" is now AccordionHeader: yes / no
+28. "Shipping Control Center" toggle upgraded to AccordionHeader: yes / no
+29. Saved Quote banner wrapped in accordion: yes / no
+30. All accordions show subtitle preview when collapsed: yes / no
+
+BUTTONS (Task 7):
+31. Primary buttons have gradient + shadow + 44px min-height: yes / no
+32. Secondary buttons have accent border + 38px min-height: yes / no
+33. All buttons have hover state (lift + shadow): yes / no
+34. No flat text-only links remain for action buttons: yes / no
+35. Preference selector buttons have active/inactive visual states: yes / no
+36. Buttons feel obvious and clickable for senior users: yes / no
+
+REGRESSIONS:
+37. All forms still work inside accordion sections: yes / no
+38. Save dims/weight still works: yes / no
+39. Get rates still works: yes / no
+40. Freight quote form still works: yes / no
+41. Pickup form still works: yes / no
+42. Carrier row selection still works: yes / no
+43. No TypeScript errors: npx tsc --noEmit passes: yes / no
+
+
+SECTION 19 — FINAL REPORT
+
+When done, output:
+
+CMD5H REPORT — ACCORDION UX, AI DATA FIX, BUTTON UPGRADE & SHIPPING CENTER POLISH
+=====================================================================================
+Tasks: 7
+Pass/Fail per task:
+  Task 1 (Banner text fix): ___
+  Task 2 (Split Shipping preference): ___
+  Task 3 (Smooth scroll): ___
+  Task 4 (Accordion — ShippingPanel, 8 sections): ___
+  Task 5 (AI data accuracy fix): ___
+  Task 6 (Accordion — ShippingCenter, 4 sections): ___
+  Task 7 (Button upgrade): ___
+
+TypeScript: npx tsc --noEmit → ___ errors
+Build: npm run build → pass / fail
+Time: ___
+
+Files modified:
+  - app/items/[id]/ShippingPanel.tsx (Tasks 1-4, 7A)
+  - app/api/shipping/center/route.ts (Task 5A)
+  - app/shipping/ShippingCenterClient.tsx (Tasks 5B-5H, 6, 7B)
+
+Accordion sections converted:
+  ShippingPanel.tsx: ___/8
+  ShippingCenterClient.tsx: ___/4
+Buttons upgraded: ___
+AI weight fixes: ___/6 rate locations
+
+Summary: ___
+
+NEXT PHASE NOTE:
+  After CMD5H approval, the next audit covers:
+  - All bot panels (Valuation, Antique, Market Comps, Photo, etc.)
+  - Apply Mac accordion + button standard to ItemDashboardPanels.tsx
+  - Tighten AI bot accuracy + task completion
+  - Polish each bot page individually

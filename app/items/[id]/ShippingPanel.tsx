@@ -34,6 +34,75 @@ const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
   </div>
 );
 
+// ─── Accordion Header (Apple/Mac style collapsible section) ──────────────────
+function AccordionHeader({
+  id, icon, title, subtitle, isOpen, onToggle, accentColor, badge,
+}: {
+  id: string; icon: string; title: string; subtitle?: string;
+  isOpen: boolean; onToggle: (id: string) => void;
+  accentColor?: string; badge?: string;
+}) {
+  return (
+    <button
+      onClick={() => onToggle(id)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        width: "100%",
+        background: isOpen ? "rgba(0,188,212,0.02)" : "transparent",
+        border: "none",
+        borderBottom: isOpen ? "1px solid var(--border, rgba(255,255,255,0.06))" : "1px solid transparent",
+        padding: "0.6rem 0.4rem",
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        borderRadius: isOpen ? "0.4rem 0.4rem 0 0" : "0.4rem",
+        minHeight: "38px",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+        <span style={{ fontSize: "0.9rem" }}>{icon}</span>
+        <span style={{
+          fontSize: "0.62rem", fontWeight: 700,
+          color: accentColor || "var(--text-secondary, #94a3b8)",
+          letterSpacing: "0.05em", textTransform: "uppercase" as const,
+        }}>
+          {title}
+        </span>
+        {badge && (
+          <span style={{
+            fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px",
+            background: `${accentColor || "#00bcd4"}18`, color: accentColor || "#00bcd4",
+          }}>
+            {badge}
+          </span>
+        )}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        {subtitle && !isOpen && (
+          <span style={{
+            fontSize: "0.52rem", color: "var(--text-muted, #64748b)",
+            maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis",
+            whiteSpace: "nowrap" as const, fontWeight: 500,
+          }}>
+            {subtitle}
+          </span>
+        )}
+        <span style={{
+          fontSize: "0.5rem", color: "var(--text-muted, #64748b)",
+          transition: "transform 0.25s ease",
+          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: "20px", height: "20px", borderRadius: "50%",
+          background: isOpen ? "rgba(0,188,212,0.08)" : "transparent",
+        }}>
+          ▼
+        </span>
+      </div>
+    </button>
+  );
+}
+
 type ShippingRate = {
   object_id: string;
   provider: string;
@@ -251,6 +320,35 @@ function PostSaleWizard({
   const [creating, setCreating] = useState(false);
   const [label, setLabel] = useState<ShipmentLabelData | null>(existingLabel);
   const [error, setError] = useState("");
+  // Address verification
+  const [addressVerifying, setAddressVerifying] = useState(false);
+  const [addressVerified, setAddressVerified] = useState<{
+    verified: boolean; residential: boolean | null;
+    correctedZip: string | null; correctedCity: string | null;
+    correctedState: string | null; correctedStreet: string | null;
+    message: string;
+  } | null>(null);
+
+  const verifyBuyerAddress = async () => {
+    setAddressVerifying(true);
+    setAddressVerified(null);
+    try {
+      const res = await fetch("/api/shipping/verify-address", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ street1: buyerStreet, city: buyerCity, state: buyerState, zip: buyerZip, country: "US" }),
+      });
+      const data = await res.json();
+      setAddressVerified(data);
+      if (data.verified && data.correctedZip) setBuyerZip(data.correctedZip);
+      if (data.verified && data.correctedCity) setBuyerCity(data.correctedCity);
+      if (data.verified && data.correctedState) setBuyerState(data.correctedState);
+      if (data.verified && data.correctedStreet) setBuyerStreet(data.correctedStreet);
+    } catch {
+      setAddressVerified({ verified: false, residential: null, correctedZip: null, correctedCity: null, correctedState: null, correctedStreet: null, message: "Could not verify address. You can still proceed." });
+    }
+    setAddressVerifying(false);
+  };
 
   // Step 0: Saved quote state
   const [savedQuote, setSavedQuote] = useState<any>(null);
@@ -619,6 +717,46 @@ function PostSaleWizard({
               <input className="input" value={buyerState} onChange={(e) => setBuyerState(e.target.value)} placeholder="NY" maxLength={2} />
             </div>
           </div>
+
+          {/* Address Verification */}
+          <button
+            onClick={verifyBuyerAddress}
+            disabled={addressVerifying || !buyerZip || !buyerStreet}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "0.3rem",
+              padding: "0.4rem 0.8rem", fontSize: "0.6rem", fontWeight: 600,
+              background: addressVerified?.verified ? "rgba(34,197,94,0.1)" : "rgba(0,188,212,0.08)",
+              color: addressVerified?.verified ? "#22c55e" : "#00bcd4",
+              border: `1px solid ${addressVerified?.verified ? "rgba(34,197,94,0.25)" : "rgba(0,188,212,0.2)"}`,
+              borderRadius: "0.4rem", cursor: "pointer", transition: "all 0.15s ease",
+              opacity: addressVerifying || !buyerZip || !buyerStreet ? 0.5 : 1,
+              marginTop: "0.4rem", marginBottom: "0.3rem",
+            }}
+          >
+            {addressVerifying ? "⏳ Verifying..." : addressVerified?.verified ? "✅ Address Verified" : "📍 Verify Address"}
+          </button>
+
+          {addressVerified && (
+            <div style={{
+              padding: "0.4rem 0.6rem", borderRadius: "0.4rem", fontSize: "0.55rem",
+              marginBottom: "0.4rem",
+              background: addressVerified.verified ? "rgba(34,197,94,0.06)" : "rgba(245,158,11,0.06)",
+              border: `1px solid ${addressVerified.verified ? "rgba(34,197,94,0.15)" : "rgba(245,158,11,0.15)"}`,
+              color: "var(--text-secondary)",
+            }}>
+              <div style={{ fontWeight: 600, marginBottom: "0.15rem",
+                color: addressVerified.verified ? "#22c55e" : "#f59e0b" }}>
+                {addressVerified.verified ? "✅ Address confirmed" : "⚠️ Could not verify"}
+              </div>
+              <div>{addressVerified.message}</div>
+              {addressVerified.residential !== null && (
+                <div style={{ marginTop: "0.15rem", fontSize: "0.5rem", color: "var(--text-muted)" }}>
+                  {addressVerified.residential ? "🏠 Residential address" : "🏢 Commercial address"}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex gap-2">
             <button className="btn-ghost" onClick={() => setStep(1)} style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>Back</button>
             <button className="btn-primary" onClick={() => { fetchRates(); setStep(3); }} disabled={!buyerZip || buyerZip.length < 5} style={{ padding: "0.5rem 1.25rem", fontSize: "0.85rem" }}>
@@ -2704,6 +2842,27 @@ export default function ShippingPanel({
     shippingMethod === "local_only" ? "pickup" : "ship"
   );
 
+  // Accordion state
+  const [openSections, setOpenSections] = useState<Set<string>>(() => {
+    const defaults = new Set<string>(["ai-brief"]);
+    if (shippingMethod === "freight" || shippingMethod === "local_only") {
+      defaults.add("freight");
+      defaults.add("pickup");
+    }
+    if (shippingMethod === "parcel") {
+      defaults.add("carrier-rates");
+    }
+    return defaults;
+  });
+  const toggleSection = (id: string) => {
+    setOpenSections(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   // Pre-sale carrier rates
   const [rates, setRates] = useState<ShippingRate[]>([]);
   const [loadingRates, setLoadingRates] = useState(false);
@@ -2823,13 +2982,13 @@ export default function ShippingPanel({
     setLoadingRates(false);
   };
 
-  // Auto-fetch on mount for pre-sale
+  // Auto-fetch on mount for pre-sale (skip for local-only / freight-only items)
   useEffect(() => {
-    if (mode === "pre-sale") {
+    if (mode === "pre-sale" && shippingMethod && shippingMethod !== "local_only" && shippingMethod !== "freight") {
       fetchPreSaleRates();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [shippingMethod]);
 
   // Handle box preset change
   const handleBoxPreset = (preset: string) => {
@@ -2892,7 +3051,7 @@ export default function ShippingPanel({
     null;
 
   // Freight estimates for large items
-  const showFreight = shippingMethod === "freight" || shippingMethod === "local_recommended" || needsFreight;
+  const showFreight = shippingMethod === "freight" || shippingMethod === "local_only" || shippingMethod === "local_recommended" || needsFreight;
   const [showFreightManual, setShowFreightManual] = useState(false);
   const [residential, setResidential] = useState(true);
   const [liftgate, setLiftgate] = useState(true);
@@ -2976,6 +3135,21 @@ export default function ShippingPanel({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (itemId) setLtlSavedQuotes(getQuotes(itemId)); }, [itemId]);
 
+  // Cross-view sync: listen for localStorage changes from Shipping Center
+  useEffect(() => {
+    function handleStorageChange(e: StorageEvent) {
+      if (e.key === "ll_saved_quotes" && itemId) {
+        setLtlSavedQuotes(getQuotes(itemId));
+        console.log("[shipping-sync] Saved quotes updated from another view");
+      }
+      if (e.key === `ll_quote_${itemId}`) {
+        console.log("[shipping-sync] Parcel quote updated from another view");
+      }
+    }
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [itemId]);
+
   const fetchLiveLtlQuotes = async () => {
     setLtlQuoteLoading(true);
     try {
@@ -3031,12 +3205,16 @@ export default function ShippingPanel({
     });
   }, [showFreight, weight, length, width, height, fromZip, residential, liftgate]);
 
-  const isVehicle = shippingMethod === "local_only" && suggestion?.boxSize === "freight" && (suggestion?.label?.toLowerCase().includes("vehicle") || suggestion?.label?.toLowerCase().includes("boat"));
+  // Gate: items that should NOT show parcel carrier rates
+  const isLocalOnly = shippingMethod === "local_only" || preference === "LOCAL_ONLY";
+  const isFreightOnly = shippingMethod === "freight" &&
+    (suggestion?.weightEstimate ? suggestion.weightEstimate > 70 : false);
+  const hideParcelRates = isLocalOnly || isFreightOnly;
   // Recommendation banner config
   const bannerConfig: Record<string, { text: string; bg: string; border: string; color: string } | null> = {
     local_only: {
-      text: isVehicle ? "🚗 LOCAL PICKUP ONLY — Vehicles must be picked up in person" : "This item is best suited for local pickup only",
-      bg: isVehicle ? "rgba(234,179,8,0.12)" : "rgba(234,179,8,0.08)",
+      text: "🚗 LOCAL PICKUP RECOMMENDED — This item is large/heavy. We recommend local pickup, but freight shipping may be available if the buyer pays for it.",
+      bg: "rgba(234,179,8,0.12)",
       border: "rgba(234,179,8,0.3)",
       color: "var(--warning-text, #b45309)",
     },
@@ -3105,10 +3283,18 @@ export default function ShippingPanel({
       ) : (
         <>
           {/* ── Tab Toggle: Ship It / Local Pickup ── */}
-          {!isVehicle && (
-            <div style={{ display: "flex", gap: "0.25rem", marginTop: "0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", padding: "0.2rem", border: "1px solid var(--border-default)" }}>
+          <div style={{ display: "flex", gap: "0.25rem", marginTop: "0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", padding: "0.2rem", border: "1px solid var(--border-default)" }}>
               <button
-                onClick={() => setShippingTab("ship")}
+                onClick={() => {
+                  setShippingTab("ship");
+                  if (isLocalOnly) {
+                    setOpenSections(prev => { const n = new Set(prev); n.add("freight"); return n; });
+                    setTimeout(() => {
+                      document.getElementById("shipping-freight-section")
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }, 150);
+                  }
+                }}
                 style={{
                   flex: 1, padding: "0.5rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.82rem", fontWeight: 600,
                   background: shippingTab === "ship" ? "rgba(0,188,212,0.12)" : "transparent",
@@ -3117,7 +3303,7 @@ export default function ShippingPanel({
                   cursor: "pointer",
                 }}
               >
-                📦 Ship It
+                {isLocalOnly ? "🚛 Freight Options" : "📦 Ship It"}
               </button>
               <button
                 onClick={() => setShippingTab("pickup")}
@@ -3132,7 +3318,6 @@ export default function ShippingPanel({
                 🤝 Local Pickup
               </button>
             </div>
-          )}
 
           {/* ── Oversized Auto-Suggest Banner ── */}
           {shippingTab === "ship" && needsFreight && mode === "pre-sale" && (
@@ -3216,13 +3401,92 @@ export default function ShippingPanel({
             </div>
           )}
 
+          {/* ── Open in Shipping Center link ── */}
+          <div style={{
+            display: "flex", justifyContent: "flex-end", marginBottom: "0.3rem",
+          }}>
+            <a
+              href={`/shipping?itemId=${itemId}&tab=preSale`}
+              style={{
+                fontSize: "0.6rem", fontWeight: 600, color: "var(--accent)",
+                textDecoration: "none", display: "flex", alignItems: "center", gap: "0.25rem",
+              }}
+            >
+              Open in Shipping Center ↗
+            </a>
+          </div>
+
+          {/* ── Shipping Policy Selector (pre-sale only) ── */}
+          {mode === "pre-sale" && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: "0.5rem",
+              padding: "0.5rem 0.75rem", marginBottom: "0.5rem",
+              background: "var(--bg-card, rgba(0,0,0,0.2))",
+              borderRadius: "10px", border: "1px solid var(--border-default, rgba(255,255,255,0.06))",
+            }}>
+              <span style={{ fontSize: "0.55rem", color: "var(--text-secondary, #94a3b8)", fontWeight: 600 }}>
+                Shipping Policy:
+              </span>
+              {[
+                { value: "BUYER_PAYS", label: "Buyer Pays", icon: "💰" },
+                { value: "FREE_SHIPPING", label: "Free Shipping", icon: "🆓" },
+                { value: "LOCAL_ONLY", label: "Local Only", icon: "📍" },
+                { value: "SPLIT_SHIPPING", label: "Split Shipping", icon: "🤝" },
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={async () => {
+                    setPreference(opt.value);
+                    try {
+                      await fetch(`/api/items/update/${itemId}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ shippingPreference: opt.value }),
+                      });
+                      console.log(`[shipping-pref] Updated to ${opt.value}`);
+                    } catch (err) {
+                      console.error("[shipping-pref] Save failed:", err);
+                    }
+                  }}
+                  style={{
+                    padding: "0.4rem 0.75rem", fontSize: "0.6rem", fontWeight: 700,
+                    borderRadius: "0.5rem", cursor: "pointer",
+                    background: preference === opt.value
+                      ? "linear-gradient(135deg, #00bcd4, #009688)"
+                      : "var(--ghost-bg, rgba(0,0,0,0.04))",
+                    color: preference === opt.value ? "#fff" : "var(--text-secondary, #94a3b8)",
+                    border: preference === opt.value
+                      ? "2px solid #00bcd4"
+                      : "1.5px solid var(--border-default, rgba(255,255,255,0.08))",
+                    boxShadow: preference === opt.value ? "0 2px 8px rgba(0,188,212,0.3)" : "none",
+                    transition: "all 0.2s ease",
+                    minHeight: "36px",
+                    display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                  }}
+                >
+                  {opt.icon} {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* ── AI Shipping Brief (visible in both pre-sale and post-sale) ── */}
           {aiShipBrief && shippingTab === "ship" && (
             <div style={{ marginTop: "0.75rem" }}>
-              <SectionHeader icon={"\u{1F916}"} title="AI Shipping Brief" />
+              <AccordionHeader
+                id="ai-brief"
+                icon="🤖"
+                title="AI SHIPPING BRIEF"
+                subtitle={`${aiShipBrief.difficulty} · ${aiShipBrief.weightLbs ? `~${aiShipBrief.weightLbs} lbs` : ""} · ${shippingMethod}`}
+                isOpen={openSections.has("ai-brief")}
+                onToggle={toggleSection}
+                accentColor="#00bcd4"
+              />
+              {openSections.has("ai-brief") && (
               <div style={{
-                borderRadius: "0.75rem",
+                borderRadius: "0 0 0.75rem 0.75rem",
                 background: "rgba(0,188,212,0.03)", border: "1px solid rgba(0,188,212,0.12)",
+                borderTop: "none",
                 padding: "0.75rem 0.85rem",
               }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
@@ -3273,13 +3537,25 @@ export default function ShippingPanel({
                   </div>
                 )}
               </div>
+              )}
             </div>
           )}
 
           {/* ── PRE-SALE: Section A — Package Details ── */}
           <div className="mt-4 space-y-4">
-            {!isVehicle && shippingTab === "ship" && <div>
-              <SectionHeader icon={"\u{1F4D0}"} title="Package Details" />
+            {!hideParcelRates && shippingTab === "ship" && <div>
+              <AccordionHeader
+                id="package-details"
+                icon="📦"
+                title="PACKAGE DETAILS"
+                subtitle={`${weight} lbs · ${length}×${width}×${height} in`}
+                isOpen={openSections.has("package-details")}
+                onToggle={toggleSection}
+                accentColor="#00bcd4"
+                badge={isFromAI ? "AI SUGGESTED" : undefined}
+              />
+              {openSections.has("package-details") && (
+              <div style={{ padding: "0.3rem 0" }}>
               <div className="flex items-center gap-2 mb-2">
                 <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", display: "none" }}>
                   Package Details
@@ -3379,7 +3655,7 @@ export default function ShippingPanel({
                 </label>
 
                 <div className="flex items-center gap-2" style={{ flexWrap: "wrap" }}>
-                  {(["BUYER_PAYS", "FREE_SHIPPING", "SPLIT_COST", "LOCAL_ONLY"] as const).map((p) => (
+                  {(["BUYER_PAYS", "FREE_SHIPPING", "SPLIT_COST", "LOCAL_ONLY", "SPLIT_SHIPPING"] as const).map((p) => (
                     <label
                       key={p}
                       style={{
@@ -3392,7 +3668,7 @@ export default function ShippingPanel({
                       }}
                     >
                       <input type="radio" name="shippref" checked={preference === p} onChange={() => setPreference(p)} style={{ accentColor: "var(--accent)" }} />
-                      {p === "BUYER_PAYS" ? "Buyer pays" : p === "FREE_SHIPPING" ? "Free shipping" : p === "SPLIT_COST" ? "Split cost" : "Local only"}
+                      {p === "BUYER_PAYS" ? "Buyer pays" : p === "FREE_SHIPPING" ? "Free shipping" : p === "SPLIT_COST" ? "Split cost" : p === "SPLIT_SHIPPING" ? "Split (Negotiated)" : "Local only"}
                     </label>
                   ))}
                 </div>
@@ -3441,14 +3717,28 @@ export default function ShippingPanel({
 
               {/* Save button */}
               <div className="mt-3">
-                <button className="btn-ghost" onClick={saveShipping} disabled={saving} style={{ padding: "0.4rem 1rem", fontSize: "0.82rem" }}>
-                  {saving ? "Saving..." : saved ? "Saved!" : "Save Shipping Details"}
+                <button
+                  onClick={saveShipping}
+                  disabled={saving}
+                  style={{
+                    padding: "0.6rem 1.2rem", fontSize: "0.82rem", fontWeight: 700,
+                    borderRadius: "0.6rem", border: "none", cursor: saving ? "wait" : "pointer",
+                    background: saved ? "linear-gradient(135deg, #4caf50, #2e7d32)" : "linear-gradient(135deg, #00bcd4, #009688)",
+                    color: "#fff", boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+                    transition: "all 0.2s ease", minHeight: "44px",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
+                    opacity: saving ? 0.6 : 1,
+                  }}
+                >
+                  {saving ? "Saving..." : saved ? "✅ Saved!" : "💾 Save Shipping Details"}
                 </button>
               </div>
+            </div>
+            )}
             </div>}
 
             {/* ── Large Item Routing Banner ── */}
-            {shippingTab === "ship" && !isVehicle && routingLevel && (
+            {shippingTab === "ship" && !hideParcelRates && routingLevel && (
               <div style={{
                 padding: "0.75rem",
                 borderRadius: "0.6rem",
@@ -3472,7 +3762,8 @@ export default function ShippingPanel({
                   <button
                     onClick={() => {
                       setShowFreightManual(true);
-                      setTimeout(() => document.getElementById("freight-section")?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+                      setOpenSections(prev => { const n = new Set(prev); n.add("freight"); return n; });
+                      setTimeout(() => document.getElementById("shipping-freight-section")?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
                     }}
                     style={{
                       padding: "0.6rem 0.75rem", borderRadius: "0.5rem", cursor: "pointer",
@@ -3499,9 +3790,20 @@ export default function ShippingPanel({
             )}
 
             {/* ── Section B — Carrier Comparison ── */}
-            {preference !== "LOCAL_ONLY" && !isVehicle && shippingTab === "ship" && (
+            {preference !== "LOCAL_ONLY" && !hideParcelRates && shippingTab === "ship" && (
               <div>
-                <SectionHeader icon={"\u{1F4CA}"} title="Carrier Rates" />
+                <AccordionHeader
+                  id="carrier-rates"
+                  icon="📊"
+                  title="CARRIER RATES"
+                  subtitle={rates.length > 0 ? `Best: ${rates.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount))[0]?.provider} $${parseFloat(rates[0]?.amount || "0").toFixed(2)} · ${rates.length} carriers` : "Get quotes from USPS, UPS, FedEx"}
+                  isOpen={openSections.has("carrier-rates")}
+                  onToggle={toggleSection}
+                  accentColor="#00bcd4"
+                  badge={rates.length > 0 ? `${rates.length} QUOTES` : undefined}
+                />
+                {openSections.has("carrier-rates") && (
+                <div style={{ padding: "0.3rem 0" }}>
                 <div className="flex items-center gap-2 mb-2">
                   <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                     Carrier Rates
@@ -3516,11 +3818,17 @@ export default function ShippingPanel({
                       maxLength={5}
                     />
                     <button
-                      className="btn-ghost"
                       onClick={() => fetchPreSaleRates(buyerZip || undefined)}
-                      style={{ padding: "0.25rem 0.5rem", fontSize: "0.75rem" }}
+                      style={{
+                        padding: "0.4rem 0.75rem", fontSize: "0.72rem", fontWeight: 600,
+                        borderRadius: "0.4rem", cursor: "pointer",
+                        border: "1.5px solid var(--accent, #00bcd4)",
+                        background: "rgba(0,188,212,0.06)", color: "var(--accent, #00bcd4)",
+                        transition: "all 0.2s ease", minHeight: "34px",
+                        display: "inline-flex", alignItems: "center",
+                      }}
                     >
-                      Update
+                      Get Rates
                     </button>
                   </div>
                 </div>
@@ -3649,6 +3957,30 @@ export default function ShippingPanel({
                                   ageHrs: 0,
                                 });
                               } catch { /* ignore */ }
+                              // Bridge: persist quote to EventLog for Shipping Center sync
+                              try {
+                                fetch("/api/shipping/quote-event", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({
+                                    itemId,
+                                    eventType: "SHIPPING_QUOTED",
+                                    payload: {
+                                      cheapest: {
+                                        carrier: rates[0]?.provider || "Unknown",
+                                        service: rates[0]?.servicelevel_name || "Standard",
+                                        price: parseFloat(rates[0]?.amount || "0"),
+                                      },
+                                      carriers: rates.slice(0, 6).map((r: ShippingRate) => ({
+                                        carrier: r.provider, service: r.servicelevel_name,
+                                        price: parseFloat(r.amount), days: r.estimated_days,
+                                      })),
+                                      weight,
+                                      box: `${length}x${width}x${height}`,
+                                    },
+                                  }),
+                                }).catch(() => {});
+                              } catch { /* fire-and-forget */ }
                               setPreSaleQuoteSaved(true);
                               setTimeout(() => setPreSaleQuoteSaved(false), 3000);
                             }}
@@ -3668,16 +4000,18 @@ export default function ShippingPanel({
                   </div>
                 ) : null}
               </div>
+              )}
+              </div>
             )}
 
             {/* ── Section C — Local Pickup ── */}
-            {(shippingTab === "pickup" || isVehicle) && (
+            {(shippingTab === "pickup" || isLocalOnly) && (
               <div>
                 <LocalPickupPanel
                   itemId={itemId}
                   saleZip={fromZip}
                   saleRadius={saleRadius ?? 25}
-                  isVehicle={isVehicle}
+                  isVehicle={isLocalOnly}
                   itemWeight={weight}
                   isFragile={fragile}
                   isAntique={suggestion?.packagingNotes?.some((n: string) => n.toLowerCase().includes("antique"))}
@@ -3687,8 +4021,37 @@ export default function ShippingPanel({
             )}
 
             {/* ── Section D — Freight Shipping ── */}
-            {(showFreight || showFreightManual) && !isVehicle && shippingTab === "ship" && (
-              <div id="freight-section">
+            {(showFreight || showFreightManual || isFreightOnly || isLocalOnly) && shippingTab === "ship" && (
+              <div id="shipping-freight-section">
+                <AccordionHeader
+                  id="freight"
+                  icon="🚛"
+                  title="FREIGHT / LTL SHIPPING"
+                  subtitle={isLocalOnly ? "Freight available if buyer pays" : "Get freight quotes for large items"}
+                  isOpen={openSections.has("freight")}
+                  onToggle={toggleSection}
+                  accentColor="#9c27b0"
+                />
+                {openSections.has("freight") && (<div style={{ padding: "0.3rem 0" }}>
+                {isLocalOnly && (
+                  <div style={{
+                    padding: "0.5rem 0.75rem",
+                    background: "rgba(156,39,176,0.06)",
+                    border: "1px solid rgba(156,39,176,0.15)",
+                    borderRadius: "10px",
+                    marginBottom: "0.75rem",
+                    fontSize: "0.75rem",
+                    color: "var(--text-muted)",
+                    lineHeight: 1.5,
+                  }}>
+                    <span style={{ fontWeight: 700, color: "#9c27b0" }}>🚛 Freight Option Available</span>
+                    <br />
+                    This item is oversized and best handled through local pickup. However,
+                    if the buyer is willing to arrange and pay for freight/LTL shipping,
+                    you can get quotes below. Freight shipping for oversized items typically
+                    requires special handling and a loading dock or liftgate.
+                  </div>
+                )}
                 <SectionHeader icon={"\u{1F69B}"} title="Freight Shipping (LTL)" />
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
                   <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", display: "none" }}>
@@ -3779,9 +4142,16 @@ export default function ShippingPanel({
                       {!artaQuotes.length && !artaLoading && (
                         <button
                           onClick={fetchArtaQuotes}
-                          style={{ fontSize: "0.68rem", fontWeight: 700, padding: "4px 12px", borderRadius: "0.4rem", background: "linear-gradient(135deg, #f59e0b, #d97706)", color: "#fff", border: "none", cursor: "pointer" }}
+                          style={{
+                            padding: "0.5rem 1rem", fontSize: "0.72rem", fontWeight: 700,
+                            borderRadius: "0.5rem", border: "none", cursor: "pointer",
+                            background: "linear-gradient(135deg, #ff9800, #f57c00)", color: "#fff",
+                            boxShadow: "0 2px 8px rgba(255,152,0,0.25)",
+                            transition: "all 0.2s ease", minHeight: "38px",
+                            display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                          }}
                         >
-                          Get Arta Quote
+                          🏛️ Get Arta Quote
                         </button>
                       )}
                     </div>
@@ -4109,10 +4479,12 @@ export default function ShippingPanel({
                   )}
                 </div>
               </div>
+              )}
+              </div>
             )}
 
             {/* Show freight link for non-freight items */}
-            {!showFreight && !showFreightManual && !isVehicle && shippingTab === "ship" && (
+            {!showFreight && !showFreightManual && !isFreightOnly && !isLocalOnly && shippingTab === "ship" && (
               <button
                 onClick={() => setShowFreightManual(true)}
                 style={{ fontSize: "0.72rem", color: "var(--text-muted)", background: "transparent", border: "none", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: "2px", padding: "0.2rem 0" }}
@@ -4124,7 +4496,17 @@ export default function ShippingPanel({
             {/* ── Section E — Metro Estimates ── */}
             {preference !== "LOCAL_ONLY" && shippingTab === "ship" && metroEstimates.length > 0 && (
               <div>
-                <SectionHeader icon={"\u{1F30E}"} title="Metro Estimates" />
+                <AccordionHeader
+                  id="metro"
+                  icon="🏙️"
+                  title="METRO ESTIMATES"
+                  subtitle={`${metroEstimates.length} nearby cities`}
+                  isOpen={openSections.has("metro")}
+                  onToggle={toggleSection}
+                  accentColor="#00bcd4"
+                />
+                {openSections.has("metro") && (
+                <div style={{ padding: "0.3rem 0" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
                   <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                     Estimated Shipping to Major Cities
@@ -4178,6 +4560,8 @@ export default function ShippingPanel({
                     </div>
                   ))}
                 </div>
+              </div>
+              )}
               </div>
             )}
           </div>

@@ -68,6 +68,26 @@ export async function POST(req: NextRequest) {
     const aiData = item.aiResult?.rawJson ? (() => { try { return JSON.parse(item.aiResult!.rawJson); } catch { return null; } })() : null;
     const category = aiData?.category || (item as any).category || "general";
 
+    // Skip parcel rates for local-only categories
+    const LOCAL_ONLY = ["vehicle", "boat", "motorcycle", "atv", "mower",
+      "tractor", "trailer", "rv", "hot tub", "piano", "pool table",
+      "riding mower", "lawn mower", "snowmobile", "jet ski",
+      "go-kart", "snowblower", "camper", "kayak", "canoe"];
+    const catLower = category.toLowerCase();
+    if (LOCAL_ONLY.some((term: string) => catLower.includes(term))) {
+      console.log(`[shipping-estimate] Skipping parcel rates for local-only category: ${category}`);
+      return NextResponse.json({
+        carriers: [],
+        localOnly: true,
+        message: "This item is recommended for local pickup only. Too large or heavy for parcel carriers.",
+        category,
+        weight: 0,
+        box: null,
+        isLTL: false,
+        isLiveRates: false,
+      });
+    }
+
     // Use item's actual dimensions → AI fallback → category estimate
     const itemWeight = (item as any).shippingWeight;
     const itemLength = (item as any).shippingLength;

@@ -118,6 +118,27 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "pricebot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
+    // ── AMAZON ENRICHMENT FROM RAINFOREST ──
+    let amazonContext = "";
+    try {
+      const rainforestLog = await prisma.eventLog.findFirst({
+        where: { itemId: item.id, eventType: "RAINFOREST_RESULT" },
+        orderBy: { createdAt: "desc" },
+        select: { payload: true },
+      });
+      if (rainforestLog?.payload) {
+        const amazon = JSON.parse(rainforestLog.payload);
+        const topProducts = (amazon.products || amazon.topProducts || []).slice(0, 3);
+        amazonContext = `\n\nAMAZON MARKET DATA (from Rainforest API — real data):
+Search term: ${amazon.searchTerm || "N/A"}
+Results found: ${amazon.resultCount || amazon.result_count || 0}
+New retail price range: $${amazon.priceLow ?? amazon.price_low ?? "?"} — $${amazon.priceHigh ?? amazon.price_high ?? "?"}
+Average retail: $${amazon.priceAvg ?? amazon.price_avg ?? "?"}
+${topProducts.map((p: any, i: number) => `Product ${i + 1}: ${p.title || p.name || "N/A"} — $${p.price ?? "?"} (${p.rating ?? "?"} stars, ${p.reviews ?? "?"} reviews)`).join("\n")}
+NOTE: These are NEW retail prices. Used/secondhand items typically sell for 30-70% of retail depending on condition. Use this Amazon data as an ANCHOR for bounding the used price.`;
+      }
+    } catch { /* non-critical */ }
+
     // ── PRICEBOT PROMPT ──
     const systemPrompt = enrichmentPrefix + `You are a world-class resale pricing analyst and market researcher with 20 years of experience in antiques, collectibles, electronics, furniture, and general resale. You have been given an item that has ALREADY been identified by another AI. Your ONLY job is pricing — go as deep as possible.
 
@@ -230,7 +251,19 @@ ${isAntique ? "- This IS an antique: consider auction houses, specialty dealers,
 - If uncertain: say so. Don't fabricate sales.
 - All prices in USD, realistic for 2024-2025 US resale market.
 - Provide 5-12 comparable sales.
-- pricing_rationale from general analysis: "${pricingRationale}"`;
+- pricing_rationale from general analysis: "${pricingRationale}"
+${amazonContext}
+
+WEB SEARCH INSTRUCTIONS:
+If you have web search capability, USE IT to find REAL pricing data:
+1. Search eBay for "${itemName} sold" to find actual completed sales
+2. Search "${itemName} price" to find current market listings
+3. Search Facebook Marketplace, Poshmark, Mercari for active listings
+4. Search auction results if the item appears antique or collectible
+For EVERY comparable sale, include the source platform and whether it was "sold" or "listed" (active/asking price).
+If you cannot find real comparables via search, provide your best AI estimate and note lower confidence.
+
+Include a "web_sources" array in your response with objects like {"url": "...", "title": "..."} for pages you found during research. If no web search was performed, return an empty array.`;
 
     let pricebotResult: any;
 
@@ -250,6 +283,7 @@ ${isAntique ? "- This IS an antique: consider auction houses, specialty dealers,
           model: "gpt-4o-mini",
           instructions: systemPrompt,
           input: `Analyze the pricing for this item in detail. Item photos available: ${photoContent.join(", ")}. Return ONLY valid JSON.`,
+          tools: [{ type: "web_search_preview" as any }],
         }, { signal: controller.signal });
 
         const text = typeof response.output === "string"
@@ -262,6 +296,38 @@ ${isAntique ? "- This IS an antique: consider auction houses, specialty dealers,
           pricebotResult = JSON.parse(jsonMatch[0]);
         } else {
           throw new Error("No JSON in response");
+        }
+
+        // Extract web search citations from response output
+        const webSources: Array<{ url: string; title: string }> = [];
+        try {
+          const outputArr = Array.isArray(response.output) ? response.output : [];
+          for (const outItem of outputArr) {
+            // Check for web_search_call results
+            if ((outItem as any).type === "web_search_call" && Array.isArray((outItem as any).results)) {
+              for (const r of (outItem as any).results) {
+                if (r.url && r.title) webSources.push({ url: r.url, title: r.title });
+              }
+            }
+            // Also check message content for URL annotations
+            if ((outItem as any).type === "message" && Array.isArray((outItem as any).content)) {
+              for (const c of (outItem as any).content) {
+                if (c.annotations) {
+                  for (const ann of c.annotations) {
+                    if (ann.type === "url_citation" && ann.url) {
+                      webSources.push({ url: ann.url, title: ann.title || ann.url });
+                    }
+                  }
+                }
+              }
+            }
+          }
+        } catch { /* citation extraction non-critical */ }
+
+        // Add web sources to result
+        if (!pricebotResult.web_sources) pricebotResult.web_sources = [];
+        if (webSources.length > 0) {
+          pricebotResult.web_sources = [...webSources, ...(pricebotResult.web_sources || [])];
         }
       } catch (aiErr: any) {
         console.error("[pricebot] OpenAI error:", aiErr);

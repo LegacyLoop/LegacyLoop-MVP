@@ -65,6 +65,19 @@ type Props = {
       total: number;
     };
   } | null;
+  shippingData?: {
+    weight: number | null;
+    length: number | null;
+    width: number | null;
+    height: number | null;
+    isFragile: boolean;
+    preference: string;
+    aiWeightLbs: number | null;
+    aiDimsEstimate: string | null;
+    aiShippingDifficulty: string | null;
+    aiShippingNotes: string | null;
+    aiShippingConfidence: number | null;
+  };
 };
 
 /* ═══════════════════════════════════════════
@@ -90,6 +103,31 @@ function safeFmtPrice(v: any): string { const n = safeExtractPrice(v); return n 
 /* ═══════════════════════════════════════════
    Shared Components
    ═══════════════════════════════════════════ */
+
+function AccordionHeader({ id, icon, title, subtitle, isOpen, onToggle, accentColor, badge }: {
+  id: string; icon: string; title: string; subtitle?: string;
+  isOpen: boolean; onToggle: (id: string) => void; accentColor?: string; badge?: string;
+}) {
+  return (
+    <button onClick={() => onToggle(id)} style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      width: "100%", background: isOpen ? "rgba(0,188,212,0.02)" : "transparent",
+      border: "none", borderBottom: isOpen ? "1px solid var(--border-default)" : "1px solid transparent",
+      padding: "0.55rem 0.4rem", cursor: "pointer", transition: "all 0.2s ease",
+      borderRadius: isOpen ? "0.35rem 0.35rem 0 0" : "0.35rem", minHeight: "36px",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        <span style={{ fontSize: "0.85rem" }}>{icon}</span>
+        <span style={{ fontSize: "0.58rem", fontWeight: 700, color: accentColor || "var(--text-secondary)", letterSpacing: "0.05em", textTransform: "uppercase" as const }}>{title}</span>
+        {badge && <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px", background: `${accentColor || "#00bcd4"}18`, color: accentColor || "#00bcd4" }}>{badge}</span>}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+        {subtitle && !isOpen && <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontWeight: 500 }}>{subtitle}</span>}
+        <span style={{ fontSize: "0.48rem", color: "var(--text-muted)", transition: "transform 0.25s ease", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", display: "inline-flex", alignItems: "center", justifyContent: "center", width: "20px", height: "20px", borderRadius: "50%", background: isOpen ? "rgba(0,188,212,0.08)" : "transparent" }}>▼</span>
+      </div>
+    </button>
+  );
+}
 
 function GlassCard({ children, premium, fullWidth }: {
   children: React.ReactNode;
@@ -2341,6 +2379,8 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
   const [analyzing, setAnalyzing] = useState(false);
   const [showJson, setShowJson] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aiOpenSections, setAiOpenSections] = useState<Set<string>>(new Set(["ai-summary", "ai-condition", "ai-pricing"]));
+  const toggleAiSection = (id: string) => { setAiOpenSections(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; }); };
   const hasData = !!aiData;
   const isDraft = status === "DRAFT";
 
@@ -2408,7 +2448,22 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
           /* ── AFTER ANALYSIS — Rich Display ── */
           <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
 
+            {/* Expand All / Collapse All */}
+            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "-0.5rem" }}>
+              <button
+                onClick={() => {
+                  const allIds = ["ai-summary", "ai-condition", "ai-pricing", "ai-listing", "ai-shipping", "ai-photos", "ai-keywords"];
+                  setAiOpenSections(prev => prev.size >= allIds.length ? new Set() : new Set(allIds));
+                }}
+                style={{ fontSize: "0.5rem", fontWeight: 600, color: "var(--text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: "0.2rem 0.4rem", borderRadius: "0.25rem" }}
+              >
+                {aiOpenSections.size >= 7 ? "▲ Collapse All" : "▼ Expand All"}
+              </button>
+            </div>
+
             {/* ── SECTION A: IDENTIFICATION ── */}
+            <AccordionHeader id="ai-summary" icon="🔍" title="ITEM IDENTIFICATION" subtitle={aiData?.item_name || ""} isOpen={aiOpenSections.has("ai-summary")} onToggle={toggleAiSection} accentColor="#00bcd4" badge={aiData?.category || ""} />
+            {aiOpenSections.has("ai-summary") && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
               {[
                 { label: "Item", value: aiData.item_name },
@@ -2432,9 +2487,11 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
                 </div>
               ))}
             </div>
+            )}
 
             {/* ── SECTION B: CONDITION ASSESSMENT ── */}
-            {(aiData.condition_score != null || aiData.condition_cosmetic != null || aiData.condition_functional != null) && (
+            <AccordionHeader id="ai-condition" icon="📋" title="CONDITION" subtitle={`${aiData?.condition_score ?? "?"}/10 · ${aiData?.condition_guess ?? ""}`} isOpen={aiOpenSections.has("ai-condition")} onToggle={toggleAiSection} accentColor={(() => { const s = aiData?.condition_score ?? 5; return s >= 7 ? "#22c55e" : s >= 4 ? "#f59e0b" : "#ef4444"; })()} />
+            {aiOpenSections.has("ai-condition") && (aiData.condition_score != null || aiData.condition_cosmetic != null || aiData.condition_functional != null) && (
               <div>
                 <div style={{ display: "flex", justifyContent: "center", gap: "1.5rem", padding: "0.25rem 0" }}>
                   {aiData.condition_score != null && <ScoreCircle label="Overall" score={aiData.condition_score} />}
@@ -2482,6 +2539,9 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
               </div>
             )}
 
+            {/* ── SECTION: PRICING & VALUATION ── */}
+            <AccordionHeader id="ai-pricing" icon="💰" title="PRICING & CONFIDENCE" subtitle={aiData?.confidence != null ? `${Math.round(Math.min(100, (aiData.confidence || 0) * 100))}% confident` : ""} isOpen={aiOpenSections.has("ai-pricing")} onToggle={toggleAiSection} accentColor="#00bcd4" />
+            {aiOpenSections.has("ai-pricing") && (<>
             {/* Confidence bar */}
             {aiData.confidence != null && (() => {
               const confPct = Math.round(Math.min(100, (aiData.confidence || 0) * 100));
@@ -2517,6 +2577,8 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
                 )}
               </div>
             )}
+
+            </>)}
 
             {/* ── SECTION D: ANTIQUE INDICATORS ── */}
             {(aiData.is_antique || (aiData.estimated_age_years && aiData.estimated_age_years > 50) || (Array.isArray(aiData.antique_markers) && aiData.antique_markers.length > 0)) && (
@@ -2554,7 +2616,8 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
             )}
 
             {/* ── SECTION E: LISTING SUGGESTIONS ── */}
-            {(aiData.recommended_title || aiData.recommended_description || (Array.isArray(aiData.keywords) && aiData.keywords.length > 0)) && (
+            <AccordionHeader id="ai-listing" icon="📝" title="LISTING SUGGESTIONS" subtitle={aiData?.recommended_title || ""} isOpen={aiOpenSections.has("ai-listing")} onToggle={toggleAiSection} />
+            {aiOpenSections.has("ai-listing") && (aiData.recommended_title || aiData.recommended_description || (Array.isArray(aiData.keywords) && aiData.keywords.length > 0)) && (
               <div>
                 <div style={{ fontSize: "0.58rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", fontWeight: 700, marginBottom: "0.4rem" }}>
                   Listing Preview
@@ -2611,7 +2674,8 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
             )}
 
             {/* ── SECTION F: PHOTO QUALITY ── */}
-            {aiData.photo_quality_score != null && (
+            <AccordionHeader id="ai-photos" icon="📸" title="PHOTO QUALITY" subtitle={aiData?.photo_quality_score != null ? `${aiData.photo_quality_score}/10` : ""} isOpen={aiOpenSections.has("ai-photos")} onToggle={toggleAiSection} badge={(() => { const s = aiData?.photo_quality_score ?? 5; return s >= 7 ? "GOOD" : s >= 4 ? "OK" : "NEEDS WORK"; })()} />
+            {aiOpenSections.has("ai-photos") && aiData.photo_quality_score != null && (
               <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
                 <ScoreCircle label="Photos" score={aiData.photo_quality_score} size={38} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -2634,6 +2698,44 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
               </div>
             )}
 
+            {/* ── SECTION: SHIPPING PROFILE ── */}
+            <AccordionHeader id="ai-shipping" icon="📦" title="SHIPPING PROFILE" subtitle={`${aiData?.weight_estimate_lbs ?? "?"} lbs · ${aiData?.shipping_difficulty ?? ""}`} isOpen={aiOpenSections.has("ai-shipping")} onToggle={toggleAiSection} />
+            {aiOpenSections.has("ai-shipping") && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem", marginBottom: "0.25rem" }}>
+                <div style={{ textAlign: "center", padding: "0.4rem", background: "var(--ghost-bg)", borderRadius: "0.35rem" }}>
+                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>⚖️ WEIGHT</div>
+                  <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)" }}>{aiData?.weight_estimate_lbs ?? "—"} lbs</div>
+                </div>
+                <div style={{ textAlign: "center", padding: "0.4rem", background: "var(--ghost-bg)", borderRadius: "0.35rem" }}>
+                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>📐 DIMS</div>
+                  <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)" }}>{aiData?.dimensions_estimate ?? "—"}</div>
+                </div>
+                <div style={{ textAlign: "center", padding: "0.4rem", background: "var(--ghost-bg)", borderRadius: "0.35rem" }}>
+                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>🚚 DIFFICULTY</div>
+                  <div style={{ fontSize: "0.8rem", fontWeight: 700, color: aiData?.shipping_difficulty === "Easy" ? "#22c55e" : aiData?.shipping_difficulty === "Moderate" ? "#f59e0b" : "#ef4444" }}>{aiData?.shipping_difficulty ?? "—"}</div>
+                </div>
+              </div>
+            )}
+            {aiOpenSections.has("ai-shipping") && aiData?.shipping_notes && (
+              <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", lineHeight: 1.6, padding: "0.35rem 0.5rem", background: "rgba(0,188,212,0.04)", borderRadius: "0.35rem", borderLeft: "3px solid #00bcd4", marginBottom: "0.25rem" }}>
+                📋 {aiData.shipping_notes}
+              </div>
+            )}
+
+            {/* ── SECTION: KEYWORDS ── */}
+            {Array.isArray(aiData?.keywords) && aiData.keywords.length > 0 && (
+              <>
+                <AccordionHeader id="ai-keywords" icon="🏷️" title="KEYWORDS" subtitle={`${aiData.keywords.length} terms`} isOpen={aiOpenSections.has("ai-keywords")} onToggle={toggleAiSection} />
+                {aiOpenSections.has("ai-keywords") && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginBottom: "0.25rem" }}>
+                    {aiData.keywords.slice(0, 15).map((k: string) => (
+                      <span key={k} style={{ fontSize: "0.58rem", padding: "0.15rem 0.5rem", borderRadius: "9999px", background: "rgba(0,188,212,0.08)", color: "var(--accent)", fontWeight: 600 }}>{k}</span>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
             {/* ── SECTION G: RAW DATA TOGGLE ── */}
             <button onClick={() => setShowJson(!showJson)} style={{
               alignSelf: "flex-start", padding: "0.25rem 0.65rem", fontSize: "0.68rem", fontWeight: 600,
@@ -2650,7 +2752,37 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
 
             {/* ── SECTION H: MEGABOT RESULTS ── */}
             {boosted && boostResult && (
-              <MegaBotBoostResults botType="analysis" result={boostResult} aiData={aiData} />
+              <>
+                <div style={{
+                  marginTop: "0.75rem", marginBottom: "0.5rem", paddingTop: "0.5rem",
+                  borderTop: "2px solid rgba(139,92,246,0.15)",
+                  display: "flex", alignItems: "center", gap: "0.4rem",
+                }}>
+                  <span style={{ fontSize: "0.9rem" }}>⚡</span>
+                  <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "#8b5cf6", letterSpacing: "0.05em", textTransform: "uppercase" as const }}>MEGABOT MULTI-AI ANALYSIS</span>
+                  {boostResult?.agreementScore != null && (
+                    <span style={{
+                      fontSize: "0.5rem", fontWeight: 700, padding: "2px 8px", borderRadius: "6px",
+                      background: boostResult.agreementScore >= 70 ? "rgba(34,197,94,0.1)" : boostResult.agreementScore >= 40 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)",
+                      color: boostResult.agreementScore >= 70 ? "#22c55e" : boostResult.agreementScore >= 40 ? "#f59e0b" : "#ef4444",
+                    }}>{boostResult.agreementScore}% Agreement</span>
+                  )}
+                </div>
+                <MegaBotBoostResults botType="analysis" result={boostResult} aiData={aiData} />
+              </>
+            )}
+            {!boosted && !boosting && hasData && (
+              <div style={{
+                padding: "0.75rem", textAlign: "center", background: "rgba(139,92,246,0.04)",
+                borderRadius: "0.5rem", border: "1px dashed rgba(139,92,246,0.2)", marginTop: "0.5rem",
+              }}>
+                <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "#8b5cf6", marginBottom: "0.25rem" }}>
+                  ⚡ Upgrade to MegaBot Analysis
+                </div>
+                <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>
+                  4 AI engines analyze your item in parallel — 50x deeper than single AI
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -3091,7 +3223,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
    PANEL 3: Shipping (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, category, onSuperBoost, boosting, boosted, boostResult, collapsed, onToggle }: {
+function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, category, onSuperBoost, boosting, boosted, boostResult, collapsed, onToggle, shippingData }: {
   itemId: string;
   aiData: any;
   saleZip: string | null;
@@ -3104,6 +3236,7 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
   boostResult: any;
   collapsed?: boolean;
   onToggle?: () => void;
+  shippingData?: Props["shippingData"];
 }) {
   const hasAnalysis = !!aiData;
 
@@ -3168,6 +3301,96 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
         {!hasAnalysis ? (
           <EmptyState message="Run analysis for shipping estimates." />
         ) : (
+          <>
+          {/* AI Shipping Recommendation Card */}
+          {shippingMethod && shippingData?.aiShippingDifficulty && (
+            <div style={{
+              background: shippingMethod === "local_only" ? "rgba(255,152,0,0.06)"
+                : shippingMethod === "freight" ? "rgba(156,39,176,0.06)" : "rgba(0,188,212,0.06)",
+              border: `1px solid ${shippingMethod === "local_only" ? "rgba(255,152,0,0.2)"
+                : shippingMethod === "freight" ? "rgba(156,39,176,0.2)" : "rgba(0,188,212,0.2)"}`,
+              borderRadius: "12px",
+              padding: "0.75rem 1rem",
+              marginBottom: "0.75rem",
+            }}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem",
+              }}>
+                <span style={{ fontSize: "1.1rem" }}>
+                  {shippingMethod === "local_only" ? "🤝" : shippingMethod === "freight" ? "🚛" : "📦"}
+                </span>
+                <span style={{
+                  fontSize: "0.7rem", fontWeight: 700,
+                  color: shippingMethod === "local_only" ? "#ff9800"
+                       : shippingMethod === "freight" ? "#9c27b0" : "#00bcd4",
+                }}>
+                  AI RECOMMENDATION: {shippingMethod === "local_only" ? "LOCAL PICKUP"
+                    : shippingMethod === "freight" ? "FREIGHT / LTL SHIPPING"
+                    : "STANDARD PARCEL SHIPPING"}
+                </span>
+              </div>
+
+              <div style={{
+                fontSize: "0.6rem", color: "var(--text-secondary, #94a3b8)",
+                lineHeight: 1.5, marginBottom: "0.4rem",
+              }}>
+                {shippingMethod === "local_only" && (
+                  <>This item is best handled through <strong style={{ color: "var(--text-primary, #e2e8f0)" }}>local pickup</strong>. Too large, heavy, or specialized for standard carriers. Coordinate a buyer meetup or arrange local delivery.</>
+                )}
+                {shippingMethod === "freight" && (
+                  <>This item requires <strong style={{ color: "var(--text-primary, #e2e8f0)" }}>freight / LTL shipping</strong>. Too large for parcel carriers but shippable via freight truck. Offer local pickup as an alternative.</>
+                )}
+                {shippingMethod === "parcel" && (
+                  <>Ships via <strong style={{ color: "var(--text-primary, #e2e8f0)" }}>standard parcel carriers</strong> (USPS, UPS, FedEx). Compare rates below to find the best option.</>
+                )}
+              </div>
+
+              {/* AI details chips */}
+              <div style={{
+                display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "0.4rem",
+              }}>
+                {shippingData.aiWeightLbs != null && (
+                  <span style={{
+                    fontSize: "0.52rem", padding: "2px 8px", borderRadius: "6px",
+                    background: "rgba(0,188,212,0.08)", color: "var(--text-secondary, #94a3b8)",
+                  }}>
+                    ⚖️ AI Est: {shippingData.aiWeightLbs} lbs
+                  </span>
+                )}
+                <span style={{
+                  fontSize: "0.52rem", padding: "2px 8px", borderRadius: "6px",
+                  background: shippingData.aiShippingDifficulty === "Easy" ? "rgba(76,175,80,0.1)"
+                             : shippingData.aiShippingDifficulty === "Moderate" ? "rgba(255,152,0,0.1)"
+                             : "rgba(244,67,54,0.1)",
+                  color: shippingData.aiShippingDifficulty === "Easy" ? "#4caf50"
+                        : shippingData.aiShippingDifficulty === "Moderate" ? "#ff9800" : "#f44336",
+                }}>
+                  {shippingData.aiShippingDifficulty === "Easy" ? "✅" : shippingData.aiShippingDifficulty === "Moderate" ? "⚠️" : "🔴"} {shippingData.aiShippingDifficulty}
+                </span>
+                {shippingData.aiShippingConfidence != null && (
+                  <span style={{
+                    fontSize: "0.52rem", padding: "2px 8px", borderRadius: "6px",
+                    background: "rgba(0,188,212,0.08)", color: "var(--text-secondary, #94a3b8)",
+                  }}>
+                    🎯 Confidence: {Math.round(shippingData.aiShippingConfidence * 100)}%
+                  </span>
+                )}
+              </div>
+
+              {/* AI shipping notes */}
+              {shippingData.aiShippingNotes && (
+                <div style={{
+                  marginTop: "0.5rem", padding: "0.4rem 0.6rem",
+                  background: "rgba(0,0,0,0.15)", borderRadius: "8px",
+                  fontSize: "0.55rem", color: "var(--text-secondary, #94a3b8)",
+                  fontStyle: "italic", lineHeight: 1.4,
+                }}>
+                  💡 {shippingData.aiShippingNotes}
+                </div>
+              )}
+            </div>
+          )}
+
           <RealShippingPanel
             itemId={itemId}
             mode={mode}
@@ -3175,12 +3398,12 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
             suggestion={suggestion}
             metroEstimates={metroEstimates}
             savedShipping={{
-              weight: null,
-              length: null,
-              width: null,
-              height: null,
-              isFragile: false,
-              preference: "BUYER_PAYS",
+              weight: shippingData?.weight ?? null,
+              length: shippingData?.length ?? null,
+              width: shippingData?.width ?? null,
+              height: shippingData?.height ?? null,
+              isFragile: shippingData?.isFragile ?? false,
+              preference: shippingData?.preference || "BUYER_PAYS",
             }}
             itemStatus={status}
             existingLabel={null}
@@ -3188,6 +3411,7 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
             shippingMethod={shippingMethod}
             saleRadius={25}
           />
+          </>
         )}
 
         {boosted && boostResult && <MegaBotBoostResults botType="shipping" result={boostResult} aiData={aiData} />}
@@ -7086,7 +7310,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
    ═══════════════════════════════════════════ */
 
 export default function ItemDashboardPanels({
-  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore,
+  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData,
 }: Props) {
   // Track which bots have been enhanced with MegaBot
   const [boostedBots, setBoostedBots] = useState<Set<string>>(new Set());
@@ -7873,6 +8097,7 @@ export default function ItemDashboardPanels({
           boostResult={boostResults.shipping}
           collapsed={collapsed.shipping}
           onToggle={() => togglePanel("shipping")}
+          shippingData={shippingData}
         />
 
         {/* Photo Quality */}

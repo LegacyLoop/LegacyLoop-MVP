@@ -1,0 +1,518 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 25, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+REAL TECH MANDATE: Minimize demo/mock data. Use real API integrations
+wherever possible. Estimates labeled as "ESTIMATED" not "demo".
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+(Same full locked list as CMD5F — all lib/**, all app/api/**, all bots, etc.)
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - app/shipping/ShippingCenterClient.tsx
+    ADD: Item Control Center panel inside PreSaleTab expanded area.
+    KEEP: Everything from CMD5A-5F intact. Add ON TOP.
+    DO NOT remove or restructure existing elements.
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4-11 — Same as CMD5F (no changes needed).
+
+================================================================================
+
+OBJECTIVE — SHIPPING ITEM CONTROL CENTER
+
+================================================================================
+
+ADD an "Item Control Center" section to the Master Item Panel in
+ShippingCenterClient.tsx's PreSaleTab expanded item area.
+
+This goes AFTER the existing options grid (Freight/Pickup cards at ~line 1465)
+and AFTER the Item Details Row (~line 1585), but BEFORE the valuation/action
+buttons on the right side.
+
+KEEP everything that exists. This is ADDITIVE ONLY.
+
+The Item Control Center is a compact, sleek action bar + info strip that gives
+sellers instant access to everything shipping-related for that specific item,
+right from within the Shipping Center.
+
+TASK 1 — ITEM SHIPPING CONTROL CENTER COMPONENT
+
+Build an inline component or JSX block called ShippingControlCenter.
+Render it inside each expanded PreSaleTab item card.
+
+STRUCTURE:
+
+┌─────────────────────────────────────────────────────────┐
+│  📋 SHIPPING CONTROL CENTER                             │
+│                                                          │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  │
+│  │ 📦 Dims  │  │ ⚖️ Weight│  │ 📍 ZIP   │  │🔒 Pref │  │
+│  │ 60x30x40 │  │ ~400 lbs │  │ 04901    │  │Buyer $ │  │
+│  │ AI Est.  │  │ AI Est.  │  │ Origin   │  │        │  │
+│  └──────────┘  └──────────┘  └──────────┘  └────────┘  │
+│                                                          │
+│  ── Quick Actions ──────────────────────────────────     │
+│  [✏️ Edit Dims]  [📊 Run Bots]  [🏷️ Mark Sold]         │
+│  [📋 View Analysis]  [💬 Messages]  [🔗 Share]          │
+│                                                          │
+│  ── Shipping Status ────────────────────────────────     │
+│  Stage: PRE-SALE · No label · No tracking                │
+│  Next: Get freight quote or set up local pickup          │
+│                                                          │
+│  ── Connected Services ─────────────────────────────     │
+│  Shippo ✓  ShipEngine ✓  Arta ○  EasyPost ✓             │
+└─────────────────────────────────────────────────────────┘
+
+A) INFO CHIPS ROW — 4 compact chips showing key shipping data at a glance:
+
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr 1fr",
+    gap: "0.35rem",
+    marginTop: "0.5rem",
+    marginBottom: "0.5rem",
+  }}>
+    {/* Dimensions chip */}
+    <div style={{
+      padding: "0.4rem 0.5rem",
+      background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+      borderRadius: "8px",
+      textAlign: "center",
+    }}>
+      <div style={{ fontSize: "0.45rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+        📦 DIMENSIONS
+      </div>
+      <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-primary, #e2e8f0)" }}>
+        {item.aiDimsEstimate || item.dimensions || "—"}
+      </div>
+      <div style={{ fontSize: "0.4rem", color: "var(--text-muted)" }}>
+        {item.userLength ? "Confirmed" : item.aiDimsEstimate ? "AI Estimate" : "Not set"}
+      </div>
+    </div>
+
+    {/* Weight chip */}
+    <div style={{
+      padding: "0.4rem 0.5rem",
+      background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+      borderRadius: "8px",
+      textAlign: "center",
+    }}>
+      <div style={{ fontSize: "0.45rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+        ⚖️ WEIGHT
+      </div>
+      <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-primary, #e2e8f0)" }}>
+        {item.weight || item.aiWeightLbs || item.aiEstWeight
+          ? `${Math.round(item.weight || item.aiWeightLbs || item.aiEstWeight)} lbs`
+          : "—"}
+      </div>
+      <div style={{ fontSize: "0.4rem", color: "var(--text-muted)" }}>
+        {item.weight ? "Confirmed" : item.aiWeightLbs ? "AI Estimate" : "Not set"}
+      </div>
+    </div>
+
+    {/* Origin ZIP chip */}
+    <div style={{
+      padding: "0.4rem 0.5rem",
+      background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+      borderRadius: "8px",
+      textAlign: "center",
+    }}>
+      <div style={{ fontSize: "0.45rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+        📍 ORIGIN
+      </div>
+      <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-primary, #e2e8f0)" }}>
+        {item.saleZip || "—"}
+      </div>
+      <div style={{ fontSize: "0.4rem", color: "var(--text-muted)" }}>
+        Ship-from ZIP
+      </div>
+    </div>
+
+    {/* Shipping Preference chip */}
+    <div style={{
+      padding: "0.4rem 0.5rem",
+      background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+      borderRadius: "8px",
+      textAlign: "center",
+    }}>
+      <div style={{ fontSize: "0.45rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+        🏷️ POLICY
+      </div>
+      <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-primary, #e2e8f0)" }}>
+        {item.shippingPreference === "FREE_SHIPPING" ? "Free Ship"
+          : item.shippingPreference === "LOCAL_ONLY" ? "Local Only"
+          : "Buyer Pays"}
+      </div>
+      <div style={{ fontSize: "0.4rem", color: "var(--text-muted)" }}>
+        Shipping policy
+      </div>
+    </div>
+  </div>
+
+
+B) QUICK ACTIONS BAR — Row of compact action buttons:
+
+  <div style={{
+    marginBottom: "0.5rem",
+  }}>
+    <div style={{
+      fontSize: "0.5rem", fontWeight: 700, color: "var(--text-muted)",
+      marginBottom: "0.3rem", letterSpacing: "0.05em",
+      borderBottom: "1px solid var(--border-default, rgba(255,255,255,0.06))",
+      paddingBottom: "0.2rem",
+    }}>
+      ⚡ QUICK ACTIONS
+    </div>
+    <div style={{
+      display: "flex", flexWrap: "wrap", gap: "0.3rem",
+    }}>
+      {/* Edit Dimensions — opens Item Dashboard shipping panel */}
+      <a
+        href={`/items/${item.id}#shipping-panel`}
+        target="_blank"
+        rel="noopener"
+        style={{
+          display: "inline-flex", alignItems: "center", gap: "0.2rem",
+          padding: "0.25rem 0.5rem", fontSize: "0.5rem", fontWeight: 600,
+          borderRadius: "6px", textDecoration: "none",
+          background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+          color: "var(--text-secondary, #94a3b8)",
+          border: "1px solid var(--border-default, rgba(255,255,255,0.06))",
+          cursor: "pointer", transition: "all 0.15s",
+        }}
+      >
+        ✏️ Edit Dims & Weight
+      </a>
+
+      {/* View Full Analysis */}
+      <a
+        href={`/items/${item.id}`}
+        target="_blank"
+        rel="noopener"
+        style={{
+          display: "inline-flex", alignItems: "center", gap: "0.2rem",
+          padding: "0.25rem 0.5rem", fontSize: "0.5rem", fontWeight: 600,
+          borderRadius: "6px", textDecoration: "none",
+          background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+          color: "var(--text-secondary, #94a3b8)",
+          border: "1px solid var(--border-default, rgba(255,255,255,0.06))",
+          cursor: "pointer", transition: "all 0.15s",
+        }}
+      >
+        📊 Full Analysis
+      </a>
+
+      {/* Bot Dashboard */}
+      <a
+        href={`/items/${item.id}#bot-dashboard`}
+        target="_blank"
+        rel="noopener"
+        style={{
+          display: "inline-flex", alignItems: "center", gap: "0.2rem",
+          padding: "0.25rem 0.5rem", fontSize: "0.5rem", fontWeight: 600,
+          borderRadius: "6px", textDecoration: "none",
+          background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+          color: "var(--text-secondary, #94a3b8)",
+          border: "1px solid var(--border-default, rgba(255,255,255,0.06))",
+          cursor: "pointer", transition: "all 0.15s",
+        }}
+      >
+        🤖 Bot Dashboard
+      </a>
+
+      {/* Messages */}
+      <a
+        href={`/messages?item=${item.id}`}
+        style={{
+          display: "inline-flex", alignItems: "center", gap: "0.2rem",
+          padding: "0.25rem 0.5rem", fontSize: "0.5rem", fontWeight: 600,
+          borderRadius: "6px", textDecoration: "none",
+          background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+          color: "var(--text-secondary, #94a3b8)",
+          border: "1px solid var(--border-default, rgba(255,255,255,0.06))",
+          cursor: "pointer", transition: "all 0.15s",
+        }}
+      >
+        💬 Messages
+      </a>
+
+      {/* Mark Sold — only for LISTED/INTERESTED items */}
+      {(item.status === "LISTED" || item.status === "INTERESTED") && (
+        <a
+          href={`/items/${item.id}#sold-price`}
+          target="_blank"
+          rel="noopener"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: "0.2rem",
+            padding: "0.25rem 0.5rem", fontSize: "0.5rem", fontWeight: 600,
+            borderRadius: "6px", textDecoration: "none",
+            background: "rgba(76,175,80,0.08)",
+            color: "#4caf50",
+            border: "1px solid rgba(76,175,80,0.15)",
+            cursor: "pointer", transition: "all 0.15s",
+          }}
+        >
+          💰 Mark Sold
+        </a>
+      )}
+    </div>
+  </div>
+
+
+C) SHIPPING STATUS STRIP — Compact status summary:
+
+  <div style={{
+    padding: "0.4rem 0.6rem",
+    background: "var(--ghost-bg, rgba(0,0,0,0.06))",
+    borderRadius: "8px",
+    marginBottom: "0.4rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: "0.3rem",
+  }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+      <span style={{
+        fontSize: "0.48rem", fontWeight: 700,
+        color: "var(--text-muted)",
+        letterSpacing: "0.04em",
+      }}>
+        STATUS:
+      </span>
+      <span style={{
+        fontSize: "0.5rem", fontWeight: 700,
+        padding: "2px 6px", borderRadius: "4px",
+        background: item.status === "ANALYZED" ? "rgba(0,188,212,0.1)"
+                  : item.status === "LISTED" ? "rgba(76,175,80,0.1)"
+                  : item.status === "INTERESTED" ? "rgba(59,130,246,0.1)"
+                  : "rgba(120,113,108,0.1)",
+        color: item.status === "ANALYZED" ? "#00bcd4"
+              : item.status === "LISTED" ? "#4caf50"
+              : item.status === "INTERESTED" ? "#3b82f6"
+              : "#a8a29e",
+      }}>
+        {item.status}
+      </span>
+      <span style={{ fontSize: "0.12rem", color: "var(--text-muted)" }}>·</span>
+      <span style={{ fontSize: "0.48rem", color: "var(--text-muted)" }}>
+        {est ? `${carriers.length} carrier quote${carriers.length !== 1 ? "s" : ""}` : "No quotes yet"}
+      </span>
+      <span style={{ fontSize: "0.12rem", color: "var(--text-muted)" }}>·</span>
+      <span style={{ fontSize: "0.48rem", color: "var(--text-muted)" }}>
+        No label · No tracking
+      </span>
+    </div>
+
+    {/* Next Step Hint */}
+    <div style={{
+      fontSize: "0.48rem", fontWeight: 600,
+      color: "#00bcd4",
+      fontStyle: "italic",
+    }}>
+      {isVehicle
+        ? "Next: Set up local pickup or explore freight"
+        : isFreight
+        ? "Next: Get freight quote"
+        : est && carriers.length > 0
+        ? "Next: Save a quote & list the item"
+        : "Next: Get carrier rates"}
+    </div>
+  </div>
+
+
+D) CONNECTED SERVICES STRIP — Shows which shipping APIs are available:
+
+  <div style={{
+    display: "flex", alignItems: "center", gap: "0.5rem",
+    padding: "0.3rem 0.6rem",
+    fontSize: "0.45rem", color: "var(--text-muted)",
+  }}>
+    <span style={{ fontWeight: 700, letterSpacing: "0.04em" }}>SERVICES:</span>
+    <span style={{ color: "#4caf50" }}>Shippo ✓</span>
+    <span style={{ color: "#4caf50" }}>ShipEngine ✓</span>
+    <span style={{ color: "#4caf50" }}>EasyPost ✓</span>
+    <span style={{ color: "#4caf50" }}>FedEx ✓</span>
+    {(item.isPremium || item.isArtaEligible) ? (
+      <span style={{ color: "#4caf50" }}>Arta ✓</span>
+    ) : (
+      <span style={{ opacity: 0.5 }}>Arta ○</span>
+    )}
+  </div>
+
+
+TASK 2 — INSERT THE CONTROL CENTER INTO PRESALETAB
+
+FIND the existing Item Details Row at ~line 1554-1585.
+The Control Center goes AFTER the Item Details Row.
+
+INSERT the complete ShippingControlCenter block (Info Chips + Quick Actions
++ Status Strip + Connected Services) after line ~1585, BEFORE the valuation
+display and action buttons at line ~1587.
+
+The layout order in the expanded item should be:
+  1. Shipping Readiness Stepper (existing — line 1366)
+  2. ShippingRecommendation (existing — line 1396)
+  3. ShippingAIPanel (existing — line 1397)
+  4. Shipping Options Grid (existing — line 1398-1465 for vehicle/freight, 1466-1553 for parcel)
+  5. Item Details Row (existing — line 1554-1585)
+  6. ▶ SHIPPING CONTROL CENTER (NEW — this command) ◀
+  7. Valuation + Action Buttons (existing — line 1587+)
+
+
+TASK 3 — MAKE IT COLLAPSIBLE
+
+The Control Center should be collapsible so it doesn't overwhelm.
+Default state: EXPANDED on first render.
+
+Add a local state toggle:
+
+  const [showControlCenter, setShowControlCenter] = useState(true);
+
+  <button
+    onClick={() => setShowControlCenter(!showControlCenter)}
+    style={{
+      display: "flex", alignItems: "center", gap: "0.3rem",
+      background: "none", border: "none", cursor: "pointer",
+      fontSize: "0.5rem", fontWeight: 700, color: "var(--text-muted)",
+      padding: "0.2rem 0", marginTop: "0.4rem",
+      letterSpacing: "0.05em",
+    }}
+  >
+    📋 SHIPPING CONTROL CENTER
+    <span style={{ fontSize: "0.45rem" }}>{showControlCenter ? "▲" : "▼"}</span>
+  </button>
+
+  {showControlCenter && (
+    // All 4 sections: Info Chips, Quick Actions, Status Strip, Connected Services
+  )}
+
+NOTE: Since this is inside a .map() render, the state management for
+showControlCenter should be handled by checking if item.id is in a Set,
+or use a simple expandedControlCenter state variable:
+
+  const [controlCenterOpen, setControlCenterOpen] = useState<string | null>(null);
+
+  Then in the map:
+    const showCC = controlCenterOpen === item.id;
+    onClick={() => setControlCenterOpen(showCC ? null : item.id)
+
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+1. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1554,1600p'
+   Focus: Item Details Row and what comes after it — where to insert
+
+2. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1180,1200p'
+   Focus: PreSaleTab state variables — where to add controlCenterOpen
+
+3. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1320,1340p'
+   Focus: items.map start — verify access to item fields
+
+4. grep -n "useState" app/shipping/ShippingCenterClient.tsx | head -30
+   Focus: Find existing useState declarations in PreSaleTab
+
+5. grep -n "isPremium\|isArtaEligible\|saleZip\|shippingPreference" app/shipping/ShippingCenterClient.tsx | head -20
+   Focus: Verify these fields exist on item objects
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PARTS B-C — BUILD INSTRUCTIONS
+
+================================================================================
+
+Part B = Task 1 + Task 2 (Build Control Center and insert it)
+Part C = Task 3 (Make it collapsible with state management)
+
+Build in order. Test after each part.
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. Control Center renders inside expanded item in PreSaleTab: yes / no
+2. Info Chips show dimensions, weight, origin ZIP, policy: yes / no
+3. Dimensions show "AI Estimate" or "Confirmed" label: yes / no
+4. Weight shows "AI Estimate" or "Confirmed" label: yes / no
+5. Quick Actions bar shows all buttons: yes / no
+6. "Edit Dims & Weight" links to item dashboard: yes / no
+7. "Full Analysis" links to item page: yes / no
+8. "Bot Dashboard" links to item bots section: yes / no
+9. "Messages" links to messages with item filter: yes / no
+10. "Mark Sold" only shows for LISTED/INTERESTED items: yes / no
+11. Status strip shows item status badge: yes / no
+12. Status strip shows carrier quote count: yes / no
+13. "Next step" hint is contextual (vehicle vs freight vs parcel): yes / no
+14. Connected Services strip shows available APIs: yes / no
+15. Arta shows ✓ for premium items, ○ for others: yes / no
+16. Collapse/expand toggle works: yes / no
+17. Only one item's Control Center open at a time: yes / no
+18. Existing features unchanged (stepper, options grid, etc.): yes / no
+19. No TypeScript errors: npx tsc --noEmit passes: yes / no
+
+SECTION 19 — FINAL REPORT
+
+When done, output:
+
+CMD5G REPORT — SHIPPING ITEM CONTROL CENTER
+=============================================
+Tasks: 3
+Pass/Fail per task:
+  Task 1 (Control Center component): ___
+  Task 2 (Insert into PreSaleTab): ___
+  Task 3 (Collapsible state): ___
+
+TypeScript: npx tsc --noEmit → ___ errors
+Build: npm run build → pass / fail
+Time: ___
+
+Files modified:
+  - app/shipping/ShippingCenterClient.tsx
+
+Summary: ___

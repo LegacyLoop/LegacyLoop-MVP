@@ -3,8 +3,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { runStandardAnalysis } from "@/lib/agents/runner";
-import type { AgentResult } from "@/lib/agents/runner";
 import { searchCities } from "@/lib/shipping/city-lookup";
 import type { CityEntry } from "@/lib/shipping/city-lookup";
 import { getFreightEstimates } from "@/lib/shipping/freight-estimates";
@@ -27,24 +25,104 @@ const TABS: { key: Tab; label: string; icon: string }[] = [
   { key: "pickup", label: "Local Pickup", icon: "\u{1F91D}" },
 ];
 
+// ─── Accordion Header (Apple/Mac style) ──────────────────────────────────────
+function AccordionHeader({
+  id, icon, title, subtitle, isOpen, onToggle, accentColor, badge,
+}: {
+  id: string; icon: string; title: string; subtitle?: string;
+  isOpen: boolean; onToggle: (id: string) => void;
+  accentColor?: string; badge?: string;
+}) {
+  return (
+    <button
+      onClick={() => onToggle(id)}
+      style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        width: "100%", background: isOpen ? "rgba(0,188,212,0.02)" : "transparent",
+        border: "none", borderBottom: isOpen ? "1px solid var(--border-default)" : "1px solid transparent",
+        padding: "0.6rem 0.4rem", cursor: "pointer", transition: "all 0.2s ease",
+        borderRadius: isOpen ? "0.4rem 0.4rem 0 0" : "0.4rem", minHeight: "38px",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+        <span style={{ fontSize: "0.9rem" }}>{icon}</span>
+        <span style={{
+          fontSize: "0.62rem", fontWeight: 700,
+          color: accentColor || "var(--text-secondary)", letterSpacing: "0.05em",
+          textTransform: "uppercase" as const,
+        }}>{title}</span>
+        {badge && (
+          <span style={{
+            fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px",
+            background: `${accentColor || "#00bcd4"}18`, color: accentColor || "#00bcd4",
+          }}>{badge}</span>
+        )}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        {subtitle && !isOpen && (
+          <span style={{
+            fontSize: "0.52rem", color: "var(--text-muted)", maxWidth: "220px",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontWeight: 500,
+          }}>{subtitle}</span>
+        )}
+        <span style={{
+          fontSize: "0.5rem", color: "var(--text-muted)", transition: "transform 0.25s ease",
+          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          width: "20px", height: "20px", borderRadius: "50%",
+          background: isOpen ? "rgba(0,188,212,0.08)" : "transparent",
+        }}>▼</span>
+      </div>
+    </button>
+  );
+}
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function dimStr(item: any): string {
-  if (item.length && item.width && item.height) return `${item.length}\u00D7${item.width}\u00D7${item.height} in`;
+  if (item.length && item.width && item.height)
+    return `${item.length}\u00D7${item.width}\u00D7${item.height} in`;
+  if (item.aiRealDims?.length && item.aiRealDims?.width && item.aiRealDims?.height)
+    return `${item.aiRealDims.length}\u00D7${item.aiRealDims.width}\u00D7${item.aiRealDims.height} in`;
   if (item.aiShipping) {
     const a = item.aiShipping;
     if (a.length && a.width && a.height) return `${a.length}\u00D7${a.width}\u00D7${a.height} in`;
     if (typeof a === "string") return a;
   }
+  if (item.aiDimsEstimate) return item.aiDimsEstimate;
   return "";
 }
 function weightStr(item: any): string {
   if (item.weight) return `${item.weight} lbs`;
+  if (item.aiRawWeight) return `~${item.aiRawWeight} lbs`;
+  if (item.aiWeightLbs) return `~${item.aiWeightLbs} lbs`;
+  if (item.aiEstWeight) return `~${item.aiEstWeight} lbs`;
   if (item.aiShipping?.weight) return `~${item.aiShipping.weight} lbs`;
   return "";
 }
 function hasDims(item: any): boolean {
   return !!(item.weight || item.length || item.aiShipping);
+}
+
+function getRateBadges(rates: any[], rate: any): { badge: string; color: string; savings: string | null }[] {
+  if (!rates.length) return [];
+  const badges: { badge: string; color: string; savings: string | null }[] = [];
+  const sorted = [...rates].sort((a, b) => (a.price || 0) - (b.price || 0));
+  const fastest = [...rates].sort((a, b) => (parseInt(a.days) || 99) - (parseInt(b.days) || 99));
+  const isCheapest = sorted[0] && rate.carrier === sorted[0].carrier && rate.service === sorted[0].service;
+  const isFastest = fastest[0] && rate.carrier === fastest[0].carrier && rate.service === fastest[0].service;
+  const mostExpensive = sorted[sorted.length - 1];
+  const savings = mostExpensive && rate.price ? (mostExpensive.price - rate.price) : 0;
+  if (isCheapest && isFastest) {
+    badges.push({ badge: "🏆 Best Overall", color: "#00bcd4", savings: null });
+  } else {
+    if (isCheapest) badges.push({ badge: "💚 Best Value", color: "#22c55e", savings: null });
+    if (isFastest) badges.push({ badge: "⚡ Fastest", color: "#3b82f6", savings: null });
+  }
+  if (savings > 0.5 && !isCheapest) {
+    badges.push({ badge: "", color: "", savings: `Save $${savings.toFixed(2)}` });
+  }
+  return badges;
 }
 
 // ─── Shared Rate Fetcher (Shippo first, estimate fallback) ──────────────────
@@ -154,6 +232,132 @@ function getCategoryDefaults(category: string) {
   return key ? CATEGORY_DEFAULTS[key] : { l: 18, w: 14, h: 8, weight: 5, packaging: "box", fragile: false };
 }
 
+function getShippingMethod(item: any): "local_only" | "freight" | "parcel" {
+  const cat = (item.category || "").toLowerCase();
+  const LOCAL_ONLY = ["vehicle", "boat", "motorcycle", "atv", "mower",
+    "tractor", "trailer", "rv", "hot tub", "piano", "pool table",
+    "riding mower", "lawn mower", "snowmobile", "jet ski",
+    "riding lawn mower", "go-kart", "snowblower", "kayak", "canoe",
+    "camper", "spa", "jacuzzi", "trampoline", "shed", "gazebo"];
+  const FREIGHT = ["furniture", "sofa", "couch", "armoire", "dresser",
+    "china cabinet", "appliance", "refrigerator", "washer", "dryer",
+    "treadmill", "elliptical", "safe", "gun safe", "statue",
+    "sectional", "wardrobe", "hutch", "bookcase", "desk",
+    "dining table", "bed frame", "mattress", "stove", "oven"];
+  if (LOCAL_ONLY.some(t => cat.includes(t))) return "local_only";
+  if (FREIGHT.some(t => cat.includes(t))) return "freight";
+  const weight = item.weight || item.aiRawWeight || item.aiWeightLbs || item.aiEstWeight || 0;
+  const maxDim = Math.max(
+    item.aiRealDims?.length || item.aiBoxDims?.length || 0,
+    item.aiRealDims?.width || item.aiBoxDims?.width || 0,
+    item.aiRealDims?.height || item.aiBoxDims?.height || 0,
+  );
+  if (weight > 70 || maxDim > 48) return "freight";
+  return "parcel";
+}
+
+// ─── AI Shipping Recommendation Component ───────────────────────────────────
+
+function ShippingRecommendation({ item }: { item: any }) {
+  const method = getShippingMethod(item);
+  const methodConfig: Record<string, { icon: string; label: string; color: string; bg: string; border: string; desc: string }> = {
+    local_only: {
+      icon: "🤝", label: "LOCAL PICKUP RECOMMENDED", color: "#ff9800",
+      bg: "rgba(255,152,0,0.08)", border: "rgba(255,152,0,0.2)",
+      desc: "This item is too large or specialized for carriers. Best handled through local pickup or buyer-arranged freight.",
+    },
+    freight: {
+      icon: "🚛", label: "FREIGHT / LTL SHIPPING", color: "#9c27b0",
+      bg: "rgba(156,39,176,0.08)", border: "rgba(156,39,176,0.2)",
+      desc: "This item needs freight shipping. Too large for parcel, but shippable via LTL carriers. Also consider offering local pickup.",
+    },
+    parcel: {
+      icon: "📦", label: "STANDARD PARCEL", color: "#00bcd4",
+      bg: "rgba(0,188,212,0.08)", border: "rgba(0,188,212,0.2)",
+      desc: "Ships via standard carriers (USPS, UPS, FedEx). Compare rates to find the best deal for your customer.",
+    },
+  };
+  const cfg = methodConfig[method] || methodConfig.parcel;
+
+  return (
+    <div style={{
+      background: cfg.bg, border: `1px solid ${cfg.border}`,
+      borderRadius: "10px", padding: "0.65rem 0.85rem", marginBottom: "0.6rem",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.35rem" }}>
+        <span style={{ fontSize: "1rem" }}>{cfg.icon}</span>
+        <span style={{ fontSize: "0.6rem", fontWeight: 700, color: cfg.color, letterSpacing: "0.03em" }}>
+          {cfg.label}
+        </span>
+      </div>
+      <div style={{ fontSize: "0.55rem", color: "#94a3b8", lineHeight: 1.45 }}>
+        {cfg.desc}
+      </div>
+
+      {/* AI Intelligence Row */}
+      <div style={{
+        display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.4rem",
+      }}>
+        {item.aiShippingDifficulty && (
+          <span style={{
+            fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
+            background: item.aiShippingDifficulty === "Easy" ? "rgba(76,175,80,0.1)"
+                       : item.aiShippingDifficulty === "Moderate" ? "rgba(255,152,0,0.1)"
+                       : "rgba(244,67,54,0.1)",
+            color: item.aiShippingDifficulty === "Easy" ? "#4caf50"
+                  : item.aiShippingDifficulty === "Moderate" ? "#ff9800" : "#f44336",
+          }}>
+            {item.aiShippingDifficulty === "Easy" ? "✅" : item.aiShippingDifficulty === "Moderate" ? "⚠️" : "🔴"} {item.aiShippingDifficulty}
+          </span>
+        )}
+        {(item.aiWeightLbs || item.userWeight || item.weight) && (
+          <span style={{
+            fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
+            background: "rgba(0,188,212,0.08)", color: "#94a3b8",
+          }}>
+            ⚖️ {item.weight ? `${item.weight} lbs (confirmed)` : item.aiWeightLbs ? `~${item.aiWeightLbs} lbs (AI est.)` : `~${item.aiEstWeight} lbs`}
+          </span>
+        )}
+        {item.aiShippingConfidence != null && (
+          <span style={{
+            fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
+            background: "rgba(0,188,212,0.08)", color: "#94a3b8",
+          }}>
+            🎯 {Math.round(item.aiShippingConfidence * 100)}%
+          </span>
+        )}
+        {item.isFragile && (
+          <span style={{
+            fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
+            background: "rgba(244,67,54,0.08)", color: "#f44336",
+          }}>
+            ⚠️ FRAGILE
+          </span>
+        )}
+        {item.shippingPreference && item.shippingPreference !== "BUYER_PAYS" && (
+          <span style={{
+            fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
+            background: "rgba(76,175,80,0.08)", color: "#4caf50",
+          }}>
+            {item.shippingPreference === "FREE_SHIPPING" ? "🆓 Free Shipping" : item.shippingPreference === "LOCAL_ONLY" ? "📍 Local Only" : item.shippingPreference === "SPLIT_SHIPPING" ? "🤝 Split Shipping" : item.shippingPreference}
+          </span>
+        )}
+      </div>
+
+      {/* AI Notes */}
+      {item.aiShippingNotes && (
+        <div style={{
+          marginTop: "0.4rem", padding: "0.35rem 0.5rem",
+          background: "rgba(0,0,0,0.12)", borderRadius: "6px",
+          fontSize: "0.5rem", color: "#94a3b8", fontStyle: "italic",
+        }}>
+          💡 {item.aiShippingNotes}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── City Search Component ──────────────────────────────────────────────────
 
 function CitySearch({ value, onChange, placeholder }: { value: string; onChange: (zip: string) => void; placeholder?: string }) {
@@ -201,23 +405,55 @@ function CitySearch({ value, onChange, placeholder }: { value: string; onChange:
 // ─── Shipping AI Panel ──────────────────────────────────────────────────────
 
 function ShippingAIPanel({ item }: { item: any }) {
-  const aiInsight = useMemo<AgentResult | null>(() => {
-    if (!item.category && !item.title) return null;
-    try {
-      return runStandardAnalysis(item.id, "shipping", {
-        name: item.title || "Item",
-        category: item.category || "General",
-        priceMid: item.valuationMid || item.soldPrice || 50,
-      });
-    } catch { return null; }
-  }, [item.id, item.title, item.category, item.valuationMid, item.soldPrice]);
+  const aiInsight = useMemo(() => {
+    const weight = item.aiRawWeight || item.aiWeightLbs || item.aiEstWeight || item.weight;
+    const dims = item.aiRealDims || item.aiBoxDims;
+    const difficulty = item.aiShippingDifficulty || "Unknown";
+    const notesRaw = item.aiShippingNotes || "";
+    const confidence = item.aiShippingConfidence || (weight && dims ? 0.85 : weight ? 0.65 : 0.40);
+    const aiTips = item.aiPackingTips || [];
+    const isHeavy = (weight || 0) > 30;
+    const isOversized = dims && (dims.length > 36 || dims.width > 24 || dims.height > 24);
+    const val = item.valuationMid || item.soldPrice || item.listingPrice || 0;
+
+    const strategyNotes: string[] = [];
+    if (notesRaw) strategyNotes.push(notesRaw);
+    if (!notesRaw && difficulty === "Easy") strategyNotes.push("Standard parcel shipping — straightforward");
+    if (!notesRaw && difficulty === "Moderate") strategyNotes.push("Requires careful packing — use quality materials");
+    if (!notesRaw && difficulty === "Difficult") strategyNotes.push("Professional packing recommended — consider double-boxing");
+    if (!notesRaw && difficulty === "Freight only") strategyNotes.push("Too large for parcel — use freight or local pickup");
+    if (val > 500) strategyNotes.push(`High-value item ($${Math.round(val)}) — insure for full declared value`);
+    if (val > 2000) strategyNotes.push("Consider white-glove shipping via Arta for premium protection");
+    if (item.isFragile) strategyNotes.push("⚠️ Fragile — double-box with 2-3 inches of cushioning on all sides");
+    if (item.isAntique) strategyNotes.push("🏛️ Antique — use acid-free tissue, avoid ground shipping vibration");
+    if (isHeavy) strategyNotes.push(`Heavy item (${Math.round(weight)} lbs) — reinforce bottom of box, use heavy-duty tape`);
+    if (isOversized) strategyNotes.push("Oversized package — may incur dimensional weight surcharges");
+
+    const packTips: string[] = [];
+    if (aiTips.length > 0) { packTips.push(...aiTips); }
+    else {
+      if (item.isFragile || difficulty === "Difficult") { packTips.push("Wrap item in bubble wrap — minimum 2 layers"); packTips.push("Use corner protectors if available"); packTips.push("Fill ALL void space with packing material"); }
+      if (isHeavy) packTips.push("Use double-wall corrugated box rated for this weight");
+      if (item.isAntique) packTips.push("Use acid-free tissue paper against surfaces");
+      if (!item.isFragile && !isHeavy && packTips.length === 0) { packTips.push("Standard box with adequate cushioning"); packTips.push("Tape all seams with quality packing tape"); }
+    }
+
+    let keyInsight = "";
+    if (difficulty === "Easy" && !item.isFragile) keyInsight = `Standard ${weight ? Math.round(weight) + " lb" : ""} parcel — ship with any major carrier`;
+    else if (difficulty === "Moderate") keyInsight = `${weight ? Math.round(weight) + " lb " : ""}${item.category || "item"} needs careful packing`;
+    else if (difficulty === "Difficult") keyInsight = `Difficult to ship — ${item.isFragile ? "fragile, " : ""}${isHeavy ? "heavy, " : ""}professional packing recommended`;
+    else if (difficulty === "Freight only") keyInsight = `${weight ? Math.round(weight) + " lb " : ""}${item.category || "item"} — freight or local pickup only`;
+    else keyInsight = `${item.category || "Item"} shipping profile`;
+
+    return { keyInsight, confidence: Math.round(confidence * 100), data: { shippingNotes: strategyNotes, packagingTips: packTips } };
+  }, [item]);
 
   const [expanded, setExpanded] = useState(false);
   if (!aiInsight?.data) return null;
 
   const tips = aiInsight.data.packagingTips ?? [];
   const notes = aiInsight.data.shippingNotes ?? [];
-  const conf = Math.round(aiInsight.confidence * 100);
+  const conf = aiInsight.confidence;
 
   return (
     <div style={{ marginTop: "0.5rem", borderLeft: "3px solid #00bcd4", borderRadius: "0 0.5rem 0.5rem 0", background: "rgba(0,188,212,0.03)", border: "1px solid rgba(0,188,212,0.12)", padding: "0.6rem 0.75rem" }}>
@@ -704,11 +940,31 @@ function ShipProfile({ item }: { item: any }) {
           <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(239,68,68,0.12)", color: "#ef4444" }}>{"\u274C"} Quote Expired</span>
         )}
       </div>
-      {item.lastQuote && (
-        <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
-          {"\u{1F4CB}"} Quoted: {item.lastQuote.cheapest?.carrier ?? "?"} {"\u2014"} ${item.lastQuote.cheapest?.price?.toFixed(2) ?? "?"}
-        </div>
-      )}
+      {(() => {
+        const method = getShippingMethod(item);
+        if (method === "local_only") {
+          return (
+            <div style={{ fontSize: "0.6rem", color: "#ff9800", marginTop: "0.15rem", fontWeight: 600 }}>
+              📍 Local Pickup Recommended
+            </div>
+          );
+        }
+        if (method === "freight") {
+          return (
+            <div style={{ fontSize: "0.6rem", color: "#9c27b0", marginTop: "0.15rem", fontWeight: 600 }}>
+              🚛 Freight Shipping
+            </div>
+          );
+        }
+        if (item.lastQuote) {
+          return (
+            <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
+              {"\u{1F4CB}"} Quoted: {item.lastQuote.cheapest?.carrier ?? "?"} {"\u2014"} ${item.lastQuote.cheapest?.price?.toFixed(2) ?? "?"}
+            </div>
+          );
+        }
+        return null;
+      })()}
       {tips.length > 0 && (
         <div style={{ marginTop: "0.2rem" }}>
           <button
@@ -1026,10 +1282,19 @@ function AddressDisplay({ label, address }: { label: string; address: any }) {
 
 // ─── G) Pre-Sale Tab ─────────────────────────────────────────────────────────
 
-function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[]; estimates: Record<string, any>; onEstimate: (id: string, est: any) => void; onSwitchTab?: (tab: string) => void }) {
+function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { items: any[]; estimates: Record<string, any>; onEstimate: (id: string, est: any) => void; onSwitchTab?: (tab: string) => void; onRefresh?: () => void }) {
   const [estimating, setEstimating] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [editDims, setEditDims] = useState<Record<string, any>>({});
+  // Inline ship profile editor
+  const [editingShipProfile, setEditingShipProfile] = useState<string | null>(null);
+  const [editWeight, setEditWeight] = useState<number>(0);
+  const [editLength, setEditLength] = useState<number>(0);
+  const [editWidth, setEditWidth] = useState<number>(0);
+  const [editHeight, setEditHeight] = useState<number>(0);
+  const [editFragile, setEditFragile] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editSaved, setEditSaved] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
   const [selectedCarrierMap, setSelectedCarrierMap] = useState<Record<string, any>>({});
@@ -1040,6 +1305,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
   const [savedQuotes, setSavedQuotes] = useState<Record<string, "fresh" | "expiring" | "expired">>({});
   const [savedQuoteFullData, setSavedQuoteFullData] = useState<Record<string, any>>({});
   const [detailOpen, setDetailOpen] = useState<Record<string, boolean>>({});
+  const [controlCenterOpen, setControlCenterOpen] = useState<string | null>(null);
 
   // Auto-expand quote details for items that have quotes
   useEffect(() => {
@@ -1091,7 +1357,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
       // Auto-populate from category defaults when no saved dims
       const catDefaults = item.category ? getCategoryDefaults(item.category) : null;
       setEditDims({
-        weight: item.weight || item.aiEstWeight || (catDefaults?.weight ? String(catDefaults.weight) : "5"),
+        weight: item.weight || item.aiWeightLbs || item.aiEstWeight || (catDefaults?.weight ? String(catDefaults.weight) : "5"),
         length: item.length || item.aiBoxDims?.length || preset?.l || (catDefaults?.l ? String(catDefaults.l) : ""),
         width: item.width || item.aiBoxDims?.width || preset?.w || (catDefaults?.w ? String(catDefaults.w) : ""),
         height: item.height || item.aiBoxDims?.height || preset?.h || (catDefaults?.h ? String(catDefaults.h) : ""),
@@ -1150,7 +1416,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
     setEstimating(itemId);
     const item = items.find(i => i.id === itemId);
     const destZip = editDims.destZip || "";
-    const w = item?.weight || item?.aiEstWeight || Number(editDims.weight) || 5;
+    const w = item?.weight || item?.aiWeightLbs || item?.aiEstWeight || Number(editDims.weight) || 5;
     const l = item?.length || item?.aiBoxDims?.length || Number(editDims.length) || 14;
     const wi = item?.width || item?.aiBoxDims?.width || Number(editDims.width) || 12;
     const h = item?.height || item?.aiBoxDims?.height || Number(editDims.height) || 8;
@@ -1185,7 +1451,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
           return aDays - bDays;
         }) ?? [];
         const fastestCarrier = bySpeed[0];
-        const isVehicle = (item.aiBox === "freight" && (item.category || "").toLowerCase().match(/vehicle|boat|car|truck|motorcycle/)) || false;
+        const itemShipMethod = getShippingMethod(item);
+        const isVehicle = itemShipMethod === "local_only";
+        const isFreight = itemShipMethod === "freight";
         return (
           <div key={item.id} style={{ borderRadius: "0.75rem", border: "1px solid var(--border-default)", background: "var(--bg-card)", overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.85rem" }}>
@@ -1200,9 +1468,27 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                   {item.title}
                 </Link>
                 <ShipProfile item={item} />
+                {/* Shipping method badge */}
+                {(() => {
+                  const methods: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+                    "local_only": { label: "LOCAL PICKUP", color: "#ff9800", bg: "rgba(255,152,0,0.12)", icon: "🤝" },
+                    "freight": { label: "FREIGHT/LTL", color: "#9c27b0", bg: "rgba(156,39,176,0.12)", icon: "🚛" },
+                    "parcel": { label: "PARCEL", color: "#00bcd4", bg: "rgba(0,188,212,0.12)", icon: "📦" },
+                  };
+                  const m = methods[itemShipMethod] || methods.parcel;
+                  return (
+                    <span style={{
+                      fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px",
+                      background: m.bg, color: m.color, display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                      marginTop: "0.2rem",
+                    }}>
+                      {m.icon} {m.label}
+                    </span>
+                  );
+                })()}
                 {/* Shipping Readiness Stepper */}
                 {!isVehicle && (() => {
-                  const hasProfile = !!(item.aiBox || item.weight || item.aiEstWeight);
+                  const hasProfile = !!(item.aiBox || item.weight || item.aiWeightLbs || item.aiEstWeight);
                   const hasQuote = !!(est && carriers.length > 0);
                   const hasSaved = savedQuotes[item.id] === "fresh" || savedQuotes[item.id] === "expiring" || savedQuotes[item.id] === "expired";
                   const steps = [
@@ -1224,28 +1510,581 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                           }}>
                             {s.done ? "\u2713" : s.icon} {s.label}
                           </div>
-                          {i < steps.length - 1 && <span style={{ fontSize: "0.4rem", color: "var(--text-muted)" }}>{"\u203A"}</span>}
+                          {i < steps.length - 1 && <span style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{"\u203A"}</span>}
                         </div>
                       ))}
                       {hasSaved && <span style={{ fontSize: "0.45rem", fontWeight: 700, color: "#22c55e", marginLeft: "0.2rem" }}>{"\u2705"} Ready</span>}
                     </div>
                   );
                 })()}
+                <ShippingRecommendation item={item} />
                 <ShippingAIPanel item={item} />
-                {isVehicle && (
-                  <div style={{ padding: "0.75rem", borderRadius: "0.5rem", background: "rgba(168,85,247,0.06)", border: "1px solid rgba(168,85,247,0.15)", marginTop: "0.5rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.3rem" }}>
-                      <span style={{ fontSize: "1rem" }}>{"\u{1F697}"}</span>
-                      <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#a855f7" }}>LOCAL PICKUP ONLY</span>
+                {/* ── Shipping Options Grid (Master Panel) ── */}
+                {(isVehicle || isFreight) && (
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "0.5rem",
+                    marginTop: "0.5rem",
+                    marginBottom: "0.5rem",
+                  }}>
+                    {/* Freight / LTL Card */}
+                    <div style={{
+                      padding: "0.6rem", borderRadius: "10px",
+                      background: "rgba(156,39,176,0.05)",
+                      border: isFreight ? "2px solid rgba(156,39,176,0.3)" : "1px solid rgba(156,39,176,0.15)",
+                    }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#9c27b0", marginBottom: "0.3rem" }}>
+                        🚛 Freight / LTL
+                      </div>
+                      <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginBottom: "0.4rem", lineHeight: 1.4 }}>
+                        {isVehicle
+                          ? "Available if buyer arranges freight"
+                          : "Recommended for this item size/weight"}
+                      </div>
+                      <button
+                        onClick={() => onSwitchTab?.("freight")}
+                        style={{
+                          marginTop: "0.15rem", padding: "0.3rem 0.65rem", fontSize: "0.62rem",
+                          fontWeight: 700, background: "rgba(156,39,176,0.12)", color: "#9c27b0",
+                          border: "1px solid rgba(156,39,176,0.25)", borderRadius: "6px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Get Freight Quote →
+                      </button>
                     </div>
-                    <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", lineHeight: 1.4, marginBottom: "0.4rem" }}>
-                      Vehicles cannot be shipped via parcel or freight carriers. Set up local pickup for this item.
+                    {/* Local Pickup Card */}
+                    <div style={{
+                      padding: "0.6rem", borderRadius: "10px",
+                      background: isVehicle ? "rgba(255,152,0,0.08)" : "rgba(255,152,0,0.04)",
+                      border: isVehicle ? "2px solid rgba(255,152,0,0.3)" : "1px solid rgba(255,152,0,0.12)",
+                    }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#ff9800", marginBottom: "0.3rem" }}>
+                        🤝 Local Pickup
+                        {isVehicle && (
+                          <span style={{
+                            marginLeft: "0.3rem", fontSize: "0.5rem", padding: "1px 5px",
+                            borderRadius: "4px", background: "rgba(255,152,0,0.15)",
+                            color: "#ff9800", fontWeight: 700,
+                          }}>RECOMMENDED</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginBottom: "0.4rem", lineHeight: 1.4 }}>
+                        Buyer picks up — no shipping cost
+                      </div>
+                      <button
+                        onClick={() => onSwitchTab?.("pickup")}
+                        style={{
+                          marginTop: "0.15rem", padding: "0.3rem 0.65rem", fontSize: "0.62rem",
+                          fontWeight: 700, background: "rgba(255,152,0,0.12)", color: "#ff9800",
+                          border: "1px solid rgba(255,152,0,0.25)", borderRadius: "6px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Set Up Pickup →
+                      </button>
                     </div>
-                    <button onClick={() => onSwitchTab?.("pickup")} style={{ padding: "0.3rem 0.75rem", fontSize: "0.68rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #a855f7, #7c3aed)", color: "#fff", cursor: "pointer" }}>
-                      {"\u{1F91D}"} Set Up Pickup {"\u2192"}
-                    </button>
                   </div>
                 )}
+                {/* 3-card grid for parcel items */}
+                {!isVehicle && !isFreight && est && carriers.length > 0 && (
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: "0.5rem",
+                    marginTop: "0.5rem",
+                    marginBottom: "0.5rem",
+                  }}>
+                    {/* Parcel Card */}
+                    <div style={{
+                      padding: "0.6rem", borderRadius: "10px",
+                      background: "rgba(0,188,212,0.05)",
+                      border: "1px solid rgba(0,188,212,0.15)",
+                    }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#00bcd4", marginBottom: "0.3rem" }}>
+                        📦 Parcel
+                      </div>
+                      <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>
+                        USPS, UPS, FedEx
+                      </div>
+                      {carriers[0] && (
+                        <div style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-primary)" }}>
+                          Best: {carriers[0].carrier} ${carriers[0].price?.toFixed(2)}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => window.open(`/items/${item.id}#shipping-carrier-rates`, "_blank")}
+                        style={{
+                          marginTop: "0.3rem", padding: "0.25rem 0.5rem", fontSize: "0.55rem",
+                          fontWeight: 600, background: "rgba(0,188,212,0.12)", color: "#00bcd4",
+                          border: "1px solid rgba(0,188,212,0.25)", borderRadius: "6px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Compare Rates →
+                      </button>
+                    </div>
+                    {/* Freight Card */}
+                    <div style={{
+                      padding: "0.6rem", borderRadius: "10px",
+                      background: "rgba(156,39,176,0.05)",
+                      border: "1px solid rgba(156,39,176,0.15)",
+                    }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#9c27b0", marginBottom: "0.3rem" }}>
+                        🚛 Freight
+                      </div>
+                      <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>
+                        LTL for large items
+                      </div>
+                      <button
+                        onClick={() => onSwitchTab?.("freight")}
+                        style={{
+                          marginTop: "0.3rem", padding: "0.25rem 0.5rem", fontSize: "0.55rem",
+                          fontWeight: 600, background: "rgba(156,39,176,0.12)", color: "#9c27b0",
+                          border: "1px solid rgba(156,39,176,0.25)", borderRadius: "6px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Get Quote →
+                      </button>
+                    </div>
+                    {/* Local Pickup Card */}
+                    <div style={{
+                      padding: "0.6rem", borderRadius: "10px",
+                      background: "rgba(255,152,0,0.04)",
+                      border: "1px solid rgba(255,152,0,0.12)",
+                    }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#ff9800", marginBottom: "0.3rem" }}>
+                        🤝 Pickup
+                      </div>
+                      <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>
+                        No shipping cost
+                      </div>
+                      <button
+                        onClick={() => onSwitchTab?.("pickup")}
+                        style={{
+                          marginTop: "0.3rem", padding: "0.25rem 0.5rem", fontSize: "0.55rem",
+                          fontWeight: 600, background: "rgba(255,152,0,0.12)", color: "#ff9800",
+                          border: "1px solid rgba(255,152,0,0.25)", borderRadius: "6px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Set Up →
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {/* Item Details Row */}
+                <div style={{
+                  display: "flex", gap: "0.5rem", flexWrap: "wrap",
+                  padding: "0.4rem 0.6rem",
+                  background: "var(--ghost-bg)",
+                  borderRadius: "8px",
+                  fontSize: "0.7rem", color: "var(--text-muted)",
+                  marginTop: "0.25rem",
+                }}>
+                  {(item.weight || item.aiRawWeight || item.aiWeightLbs || item.aiEstWeight) && (
+                    <span>⚖️ {item.weight || item.aiRawWeight || item.aiWeightLbs || item.aiEstWeight} lbs</span>
+                  )}
+                  {(dimStr(item) || item.aiDimsEstimate) && (
+                    <span>📐 {dimStr(item) || item.aiDimsEstimate}</span>
+                  )}
+                  {item.aiShippingDifficulty && (
+                    <span style={{
+                      color: item.aiShippingDifficulty === "Easy" ? "#4caf50"
+                            : item.aiShippingDifficulty === "Moderate" ? "#ff9800" : "#f44336",
+                    }}>
+                      {item.aiShippingDifficulty === "Easy" ? "✅" : "⚠️"} {item.aiShippingDifficulty}
+                    </span>
+                  )}
+                  <a
+                    href={`/items/${item.id}`}
+                    target="_blank"
+                    rel="noopener"
+                    style={{ color: "#00bcd4", fontWeight: 600, textDecoration: "none" }}
+                  >
+                    Open Item Dashboard ↗
+                  </a>
+                </div>
+
+                {/* ── Shipping Control Center ── */}
+                {(() => {
+                  const showCC = controlCenterOpen === item.id;
+                  return (
+                    <div style={{ marginTop: "0.4rem" }}>
+                      <AccordionHeader
+                        id={`cc-${item.id}`}
+                        icon="📋"
+                        title="SHIPPING CONTROL CENTER"
+                        subtitle="Dims · Weight · Policy · Services"
+                        isOpen={showCC}
+                        onToggle={() => setControlCenterOpen(showCC ? null : item.id)}
+                        accentColor="#00bcd4"
+                      />
+
+                      {showCC && (
+                        <div style={{
+                          padding: "0.5rem",
+                          background: "var(--bg-card)",
+                          border: "1px solid var(--border-default)",
+                          borderRadius: "10px",
+                          marginTop: "0.25rem",
+                        }}>
+                          {/* A) Info Chips Row */}
+                          <div style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 1fr 1fr 1fr",
+                            gap: "0.35rem",
+                            marginBottom: "0.5rem",
+                          }}>
+                            {/* Dimensions chip */}
+                            <div style={{
+                              padding: "0.4rem 0.5rem",
+                              background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+                              borderRadius: "8px",
+                              textAlign: "center",
+                            }}>
+                              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+                                📦 DIMENSIONS
+                              </div>
+                              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                                {dimStr(item) || item.aiDimsEstimate || "—"}
+                              </div>
+                              <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>
+                                {item.aiDimsSource === "user" ? "Confirmed"
+                                  : item.aiDimsSource === "ai_analysis" ? "AI Analysis"
+                                  : item.aiDimsSource === "category_default" ? "Category Est."
+                                  : "Not set"}
+                              </div>
+                            </div>
+
+                            {/* Weight chip */}
+                            <div style={{
+                              padding: "0.4rem 0.5rem",
+                              background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+                              borderRadius: "8px",
+                              textAlign: "center",
+                            }}>
+                              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+                                ⚖️ WEIGHT
+                              </div>
+                              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                                {(() => {
+                                  const w = item.weight || item.aiRawWeight || item.aiWeightLbs || item.aiEstWeight;
+                                  return w ? `${Math.round(w)} lbs` : "—";
+                                })()}
+                              </div>
+                              <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>
+                                {item.aiWeightSource === "user" ? "Confirmed"
+                                  : item.aiWeightSource === "ai_analysis" || item.aiWeightSource === "ai_saved" ? "AI Analysis"
+                                  : item.aiWeightSource === "category_default" ? "Category Est."
+                                  : "Not set"}
+                              </div>
+                            </div>
+
+                            {/* Origin ZIP chip */}
+                            <div style={{
+                              padding: "0.4rem 0.5rem",
+                              background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+                              borderRadius: "8px",
+                              textAlign: "center",
+                            }}>
+                              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+                                📍 ORIGIN
+                              </div>
+                              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                                {item.saleZip || "—"}
+                              </div>
+                              <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>
+                                Ship-from ZIP
+                              </div>
+                            </div>
+
+                            {/* Shipping Preference chip */}
+                            <div style={{
+                              padding: "0.4rem 0.5rem",
+                              background: "var(--ghost-bg, rgba(0,0,0,0.08))",
+                              borderRadius: "8px",
+                              textAlign: "center",
+                            }}>
+                              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+                                🏷️ POLICY
+                              </div>
+                              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                                {item.shippingPreference === "FREE_SHIPPING" ? "Free Ship"
+                                  : item.shippingPreference === "LOCAL_ONLY" ? "Local Only"
+                                  : item.shippingPreference === "SPLIT_SHIPPING" ? "Split Ship"
+                                  : "Buyer Pays"}
+                              </div>
+                              <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>
+                                Shipping policy
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Inline Ship Profile Editor */}
+                          {editingShipProfile === item.id && (
+                            <div style={{
+                              padding: "0.5rem", marginBottom: "0.5rem",
+                              background: "rgba(0,188,212,0.03)",
+                              border: "1px solid rgba(0,188,212,0.12)",
+                              borderRadius: "8px",
+                            }}>
+                              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.4rem", marginBottom: "0.4rem" }}>
+                                {[
+                                  { label: "Length (in)", val: editLength, set: setEditLength },
+                                  { label: "Width (in)", val: editWidth, set: setEditWidth },
+                                  { label: "Height (in)", val: editHeight, set: setEditHeight },
+                                  { label: "Weight (lbs)", val: editWeight, set: setEditWeight },
+                                ].map(f => (
+                                  <div key={f.label}>
+                                    <div style={{ fontSize: "0.45rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "2px" }}>{f.label}</div>
+                                    <input
+                                      type="number"
+                                      value={f.val || ""}
+                                      onChange={e => f.set(Number(e.target.value) || 0)}
+                                      style={{
+                                        width: "100%", padding: "0.3rem 0.4rem", fontSize: "0.6rem",
+                                        border: "1px solid var(--border-default)", borderRadius: "6px",
+                                        textAlign: "center", background: "var(--bg-card)",
+                                        color: "var(--text-primary)", outline: "none",
+                                      }}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                                <label style={{ display: "flex", alignItems: "center", gap: "0.2rem", fontSize: "0.5rem", color: "var(--text-muted)", cursor: "pointer" }}>
+                                  <input type="checkbox" checked={editFragile} onChange={e => setEditFragile(e.target.checked)} style={{ accentColor: "#00bcd4" }} />
+                                  Fragile
+                                </label>
+                                <button
+                                  onClick={async () => {
+                                    setEditSaving(true);
+                                    try {
+                                      await fetch(`/api/items/update/${item.id}`, {
+                                        method: "PATCH",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                          shippingWeight: editWeight || undefined,
+                                          shippingLength: editLength || undefined,
+                                          shippingWidth: editWidth || undefined,
+                                          shippingHeight: editHeight || undefined,
+                                          isFragile: editFragile,
+                                        }),
+                                      });
+                                      setEditSaved(true);
+                                      setTimeout(() => { setEditSaved(false); setEditingShipProfile(null); }, 1200);
+                                      if (onRefresh) onRefresh();
+                                    } catch { /* silent */ }
+                                    setEditSaving(false);
+                                  }}
+                                  disabled={editSaving}
+                                  style={{
+                                    padding: "0.35rem 0.75rem", fontSize: "0.55rem", fontWeight: 700,
+                                    borderRadius: "0.35rem", border: "none", cursor: "pointer",
+                                    background: editSaved ? "linear-gradient(135deg, #4caf50, #2e7d32)" : "linear-gradient(135deg, #00bcd4, #00acc1)",
+                                    color: "#fff", transition: "all 0.2s", minHeight: "30px",
+                                    display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                                    opacity: editSaving ? 0.6 : 1,
+                                  }}
+                                >
+                                  {editSaving ? "Saving..." : editSaved ? "✅ Saved" : "💾 Save"}
+                                </button>
+                                <a
+                                  href={`/items/${item.id}#shipping-panel`}
+                                  target="_blank"
+                                  rel="noopener"
+                                  style={{ fontSize: "0.48rem", color: "var(--text-muted)", textDecoration: "none" }}
+                                >
+                                  Open Full Editor ↗
+                                </a>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* B) Quick Actions Bar */}
+                          <div style={{ marginBottom: "0.5rem" }}>
+                            <div style={{
+                              fontSize: "0.5rem", fontWeight: 700, color: "var(--text-muted)",
+                              marginBottom: "0.3rem", letterSpacing: "0.05em",
+                              borderBottom: "1px solid var(--border-default)",
+                              paddingBottom: "0.2rem",
+                            }}>
+                              ⚡ QUICK ACTIONS
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
+                              <button
+                                onClick={() => {
+                                  if (editingShipProfile === item.id) {
+                                    setEditingShipProfile(null);
+                                  } else {
+                                    setEditingShipProfile(item.id);
+                                    setEditWeight(item.weight || item.aiRawWeight || item.aiWeightLbs || item.aiEstWeight || 0);
+                                    const dims = item.aiRealDims || item.aiBoxDims || {};
+                                    setEditLength(item.length || dims.length || 0);
+                                    setEditWidth(item.width || dims.width || 0);
+                                    setEditHeight(item.height || dims.height || 0);
+                                    setEditFragile(item.isFragile || false);
+                                    setEditSaved(false);
+                                  }
+                                }}
+                                style={{
+                                  display: "inline-flex", alignItems: "center", gap: "0.25rem",
+                                  padding: "0.35rem 0.65rem", fontSize: "0.55rem", fontWeight: 600,
+                                  borderRadius: "0.4rem",
+                                  background: editingShipProfile === item.id ? "rgba(0,188,212,0.12)" : "rgba(0,188,212,0.04)",
+                                  color: "#00bcd4",
+                                  border: "1.5px solid rgba(0,188,212,0.25)",
+                                  cursor: "pointer", transition: "all 0.15s ease",
+                                  minHeight: "32px",
+                                }}
+                              >
+                                {editingShipProfile === item.id ? "✕ Cancel Edit" : "✏️ Edit Dims & Weight"}
+                              </button>
+                              <a
+                                href={`/items/${item.id}`}
+                                target="_blank"
+                                rel="noopener"
+                                style={{
+                                  display: "inline-flex", alignItems: "center", gap: "0.25rem",
+                                  padding: "0.35rem 0.65rem", fontSize: "0.55rem", fontWeight: 600,
+                                  borderRadius: "0.4rem", textDecoration: "none",
+                                  background: "rgba(0,188,212,0.04)",
+                                  color: "var(--text-secondary)",
+                                  border: "1.5px solid var(--border-default)",
+                                  cursor: "pointer", transition: "all 0.15s ease",
+                                  minHeight: "32px",
+                                }}
+                              >
+                                📊 Full Analysis
+                              </a>
+                              <a
+                                href={`/items/${item.id}#bot-dashboard`}
+                                target="_blank"
+                                rel="noopener"
+                                style={{
+                                  display: "inline-flex", alignItems: "center", gap: "0.25rem",
+                                  padding: "0.35rem 0.65rem", fontSize: "0.55rem", fontWeight: 600,
+                                  borderRadius: "0.4rem", textDecoration: "none",
+                                  background: "rgba(0,188,212,0.04)",
+                                  color: "var(--text-secondary)",
+                                  border: "1.5px solid var(--border-default)",
+                                  cursor: "pointer", transition: "all 0.15s ease",
+                                  minHeight: "32px",
+                                }}
+                              >
+                                🤖 Bot Dashboard
+                              </a>
+                              <a
+                                href={`/messages?item=${item.id}`}
+                                style={{
+                                  display: "inline-flex", alignItems: "center", gap: "0.25rem",
+                                  padding: "0.35rem 0.65rem", fontSize: "0.55rem", fontWeight: 600,
+                                  borderRadius: "0.4rem", textDecoration: "none",
+                                  background: "rgba(0,188,212,0.04)",
+                                  color: "var(--text-secondary)",
+                                  border: "1.5px solid var(--border-default)",
+                                  cursor: "pointer", transition: "all 0.15s ease",
+                                  minHeight: "32px",
+                                }}
+                              >
+                                💬 Messages
+                              </a>
+                              {(item.status === "LISTED" || item.status === "INTERESTED") && (
+                                <a
+                                  href={`/items/${item.id}#sold-price`}
+                                  target="_blank"
+                                  rel="noopener"
+                                  style={{
+                                    display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                                    padding: "0.25rem 0.5rem", fontSize: "0.5rem", fontWeight: 600,
+                                    borderRadius: "6px", textDecoration: "none",
+                                    background: "rgba(76,175,80,0.08)",
+                                    color: "#4caf50",
+                                    border: "1px solid rgba(76,175,80,0.15)",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  💰 Mark Sold
+                                </a>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* C) Shipping Status Strip */}
+                          <div style={{
+                            padding: "0.4rem 0.6rem",
+                            background: "var(--ghost-bg, rgba(0,0,0,0.06))",
+                            borderRadius: "8px",
+                            marginBottom: "0.4rem",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            flexWrap: "wrap",
+                            gap: "0.3rem",
+                          }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+                              <span style={{ fontSize: "0.48rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.04em" }}>
+                                STATUS:
+                              </span>
+                              <span style={{
+                                fontSize: "0.5rem", fontWeight: 700,
+                                padding: "2px 6px", borderRadius: "4px",
+                                background: item.status === "ANALYZED" ? "rgba(0,188,212,0.1)"
+                                          : item.status === "LISTED" ? "rgba(76,175,80,0.1)"
+                                          : item.status === "INTERESTED" ? "rgba(59,130,246,0.1)"
+                                          : "rgba(120,113,108,0.1)",
+                                color: item.status === "ANALYZED" ? "#00bcd4"
+                                      : item.status === "LISTED" ? "#4caf50"
+                                      : item.status === "INTERESTED" ? "#3b82f6"
+                                      : "#a8a29e",
+                              }}>
+                                {item.status}
+                              </span>
+                              <span style={{ fontSize: "0.3rem", color: "var(--text-muted)" }}>·</span>
+                              <span style={{ fontSize: "0.48rem", color: "var(--text-muted)" }}>
+                                {est ? `${carriers.length} carrier quote${carriers.length !== 1 ? "s" : ""}` : "No quotes yet"}
+                              </span>
+                              <span style={{ fontSize: "0.3rem", color: "var(--text-muted)" }}>·</span>
+                              <span style={{ fontSize: "0.48rem", color: "var(--text-muted)" }}>
+                                No label · No tracking
+                              </span>
+                            </div>
+                            <div style={{ fontSize: "0.48rem", fontWeight: 600, color: "#00bcd4", fontStyle: "italic" }}>
+                              {isVehicle
+                                ? "Next: Set up local pickup or explore freight"
+                                : isFreight
+                                ? "Next: Get freight quote"
+                                : est && carriers.length > 0
+                                ? "Next: Save a quote & list the item"
+                                : "Next: Get carrier rates"}
+                            </div>
+                          </div>
+
+                          {/* D) Connected Services Strip */}
+                          <div style={{
+                            display: "flex", alignItems: "center", gap: "0.5rem",
+                            padding: "0.2rem 0.6rem",
+                            fontSize: "0.45rem", color: "var(--text-muted)",
+                          }}>
+                            <span style={{ fontWeight: 700, letterSpacing: "0.04em" }}>SERVICES:</span>
+                            <span style={{ color: "#4caf50" }}>Shippo ✓</span>
+                            <span style={{ color: "#4caf50" }}>ShipEngine ✓</span>
+                            <span style={{ color: "#4caf50" }}>EasyPost ✓</span>
+                            <span style={{ color: "#4caf50" }}>FedEx ✓</span>
+                            {(item.isPremium || item.isArtaEligible) ? (
+                              <span style={{ color: "#4caf50" }}>Arta ✓</span>
+                            ) : (
+                              <span style={{ opacity: 0.5 }}>Arta ○</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
                 {item.valuationLow != null && (
@@ -1256,22 +2095,21 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                     <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>Est. value</div>
                   </div>
                 )}
-                {!isVehicle && !est && (
+                {!isVehicle && !isFreight && !est && (
                   <button
                     onClick={() => getEstimate(item.id)}
                     disabled={estimating === item.id}
                     style={{
-                      padding: "0.35rem 0.85rem",
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                      borderRadius: "0.5rem",
-                      border: "1px solid var(--accent)",
-                      background: "transparent",
-                      color: "var(--accent)",
-                      cursor: "pointer",
+                      padding: "0.5rem 1rem", fontSize: "0.75rem", fontWeight: 700,
+                      borderRadius: "0.5rem", border: "none", cursor: "pointer",
+                      background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
+                      boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+                      transition: "all 0.2s ease", minHeight: "38px",
+                      display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                      opacity: estimating === item.id ? 0.5 : 1,
                     }}
                   >
-                    {estimating === item.id ? "Quoting..." : "Get Quote"}
+                    {estimating === item.id ? "Quoting..." : "📊 Get Quote"}
                   </button>
                 )}
                 {est && (
@@ -1327,8 +2165,8 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                 )}
               </div>
             </div>
-            {/* Saved Quote from Item Dashboard (localStorage) */}
-            {savedQuoteFullData[item.id] && savedQuoteFullData[item.id].carrier && !selectedCarrierMap[item.id] && (() => {
+            {/* Saved Quote from Item Dashboard (localStorage) — hide parcel quotes for local_only/freight items */}
+            {savedQuoteFullData[item.id] && savedQuoteFullData[item.id].carrier && !selectedCarrierMap[item.id] && !isVehicle && !isFreight && (() => {
               const sq = savedQuoteFullData[item.id];
               const c = sq.carrier;
               const status = savedQuotes[item.id];
@@ -1349,14 +2187,29 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                     <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
                       <button
                         onClick={() => { setSelectedCarrierMap((prev) => ({ ...prev, [item.id]: c })); saveQuote(item.id, c); }}
-                        style={{ padding: "0.25rem 0.6rem", fontSize: "0.6rem", fontWeight: 700, borderRadius: "0.35rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer" }}
+                        style={{
+                          padding: "0.5rem 1rem", fontSize: "0.72rem", fontWeight: 700,
+                          borderRadius: "0.5rem", border: "none", cursor: "pointer",
+                          background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
+                          boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+                          transition: "all 0.2s ease", minHeight: "38px",
+                          display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                        }}
                       >
                         Use This Quote {"\u2192"}
                       </button>
                       <button
                         onClick={() => getEstimate(item.id)}
                         disabled={estimating === item.id}
-                        style={{ padding: "0.25rem 0.5rem", fontSize: "0.6rem", fontWeight: 600, borderRadius: "0.35rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}
+                        style={{
+                          padding: "0.4rem 0.75rem", fontSize: "0.62rem", fontWeight: 600,
+                          borderRadius: "0.4rem", cursor: "pointer",
+                          border: "1.5px solid var(--accent, #00bcd4)",
+                          background: "rgba(0,188,212,0.06)", color: "var(--accent, #00bcd4)",
+                          transition: "all 0.2s ease", minHeight: "34px",
+                          display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                          opacity: estimating === item.id ? 0.5 : 1,
+                        }}
                       >
                         {estimating === item.id ? "..." : "\u{1F504} Get Fresh Rates"}
                       </button>
@@ -1369,16 +2222,23 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                 </div>
               );
             })()}
-            {/* Quote detail toggle */}
-            {item.lastQuote && (
+            {/* Quote detail toggle — hide for local_only/freight (parcel quotes are irrelevant) */}
+            {item.lastQuote && !isVehicle && !isFreight && (
               <div style={{ padding: "0 0.85rem" }}>
-                <button onClick={() => setDetailOpen(prev => ({ ...prev, [item.id]: !prev[item.id] }))} style={{ fontSize: "0.58rem", fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: "0.2rem 0" }}>
-                  {detailOpen[item.id] ? "\u25BC Hide Quote Details" : "\u25B6 Show Quote Details"} {"\u00B7"} {item.lastQuote.carriers?.length || 0} carriers
-                </button>
+                <AccordionHeader
+                  id={`quote-${item.id}`}
+                  icon="📊"
+                  title="CARRIER RATES & QUOTES"
+                  subtitle={`${item.lastQuote?.carriers?.length || 0} carriers · Best: $${((item.lastQuote?.carriers || []).filter((c:any) => c.price > 0).sort((a:any,b:any) => a.price - b.price)[0])?.price?.toFixed(2) || "—"}`}
+                  isOpen={!!detailOpen[item.id]}
+                  onToggle={() => setDetailOpen(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                  accentColor="#00bcd4"
+                  badge={`${item.lastQuote?.carriers?.length || 0}`}
+                />
               </div>
             )}
             {/* Expandable quote detail */}
-            {detailOpen[item.id] && item.lastQuote && (
+            {detailOpen[item.id] && item.lastQuote && !isVehicle && !isFreight && (
               <QuoteDetailPanel item={item} quote={item.lastQuote} onRefresh={() => getEstimate(item.id)} />
             )}
             {/* Shipping Details Editor */}
@@ -1575,7 +2435,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                               { city: "Chicago", zip: "60601" },
                               { city: "Houston", zip: "77001" },
                             ];
-                            const w = item.weight || item.aiEstWeight || 5;
+                            const w = item.weight || item.aiWeightLbs || item.aiEstWeight || 5;
                             const l = item.length || item.aiBoxDims?.length || 14;
                             const wi = item.width || item.aiBoxDims?.width || 12;
                             const h = item.height || item.aiBoxDims?.height || 8;
@@ -1672,9 +2532,15 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                 )}
                 {/* Shipping Details Editor Toggle */}
                 <div style={{ marginBottom: "0.35rem" }}>
-                  <button onClick={() => openEditor(item)} style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                    {editingItem === item.id ? "\u25BC Hide Shipping Details" : "\u25B6 Edit Shipping Details"}
-                  </button>
+                  <AccordionHeader
+                    id={`edit-${item.id}`}
+                    icon="✏️"
+                    title="SHIPPING DETAILS"
+                    subtitle={`${dimStr(item) || "No dims"} · ${weightStr(item) || "No weight"}`}
+                    isOpen={editingItem === item.id}
+                    onToggle={() => openEditor(item)}
+                    accentColor="#00bcd4"
+                  />
                 </div>
                 {/* Hint + Table Header */}
                 {!selectedCarrierMap[item.id] && (
@@ -1791,6 +2657,18 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab }: { items: any[
                     <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", textAlign: "center", marginTop: "0.2rem" }}>Lock in this rate for your shipment</div>
                   </div>
                 )}
+                {/* Open in Item Dashboard link */}
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.4rem" }}>
+                  <Link
+                    href={`/items/${item.id}`}
+                    style={{
+                      fontSize: "0.55rem", fontWeight: 600, color: "var(--accent)",
+                      textDecoration: "none", display: "flex", alignItems: "center", gap: "0.2rem",
+                    }}
+                  >
+                    Open in Item Dashboard ↗
+                  </Link>
+                </div>
               </div>
             )}
           </div>
@@ -1877,7 +2755,7 @@ function ReadyToShipTab({
         const sq = savedQuotes[item.id];
         if (sq?.toZip) {
           // Has a saved route — fetch live rates for that route
-          const w = item.weight || item.aiEstWeight || 5;
+          const w = item.weight || item.aiWeightLbs || item.aiEstWeight || 5;
           const l = item.length || item.aiBoxDims?.length || 14;
           const wi = item.width || item.aiBoxDims?.width || 12;
           const h = item.height || item.aiBoxDims?.height || 8;
@@ -1900,7 +2778,7 @@ function ReadyToShipTab({
 
     // Determine starting step based on available data
     let startStep = 1;
-    if (est || item.weight || item.aiEstWeight) startStep = 2;
+    if (est || item.weight || item.aiWeightLbs || item.aiEstWeight) startStep = 2;
     if (fromSavedQuote && sq && sqCarrier) {
       setSelectedCarrier(sqCarrier);
       // Fresh/expiring quote → skip to confirm (step 4); expired → carrier select (step 3)
@@ -1908,7 +2786,7 @@ function ReadyToShipTab({
       if (sq.isExpired) {
         setRefreshingQuote(item.id);
         // Auto-refresh expired quote with live Shippo rates
-        const w = item.weight || item.aiEstWeight || 5;
+        const w = item.weight || item.aiWeightLbs || item.aiEstWeight || 5;
         const l = item.length || item.aiBoxDims?.length || 14;
         const wi = item.width || item.aiBoxDims?.width || 12;
         const h = item.height || item.aiBoxDims?.height || 8;
@@ -1928,7 +2806,7 @@ function ReadyToShipTab({
 
     setWizardStep(startStep);
     setWizardData({
-      weight: est?.weight ?? item.weight ?? item.aiEstWeight ?? 5,
+      weight: est?.weight ?? item.weight ?? item.aiWeightLbs ?? item.aiEstWeight ?? 5,
       length: est?.box?.length ?? item.length ?? item.aiBoxDims?.length ?? "",
       width: est?.box?.width ?? item.width ?? item.aiBoxDims?.width ?? "",
       height: est?.box?.height ?? item.height ?? item.aiBoxDims?.height ?? "",
@@ -3105,6 +3983,48 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
             {/* Status badge */}
             <StatusBadge status={row.status} />
 
+            {/* Demo: Advance status button */}
+            {process.env.NEXT_PUBLIC_DEMO_MODE === "true" && !row.isDelivered && (() => {
+              const nextMap: Record<string, string> = {
+                "CREATED": "IN_TRANSIT", "PICKED_UP": "IN_TRANSIT",
+                "IN_TRANSIT": "OUT_FOR_DELIVERY", "OUT_FOR_DELIVERY": "DELIVERED",
+                "BOL_CREATED": "IN_TRANSIT", "PICKUP_SCHEDULED": "PICKED_UP",
+                "INVITE_SENT": "CONFIRMED", "CONFIRMED": "EN_ROUTE",
+                "EN_ROUTE": "HANDED_OFF", "HANDED_OFF": "COMPLETED",
+              };
+              const next = nextMap[row.status];
+              if (!next) return null;
+              return (
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    try {
+                      if (row.type === "parcel" && row.raw?.labelId) {
+                        await fetch(`/api/shipping/tracking/${row.raw.labelId}`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ status: next }),
+                        });
+                      }
+                      console.log(`[tracking-advance] ${row.id}: ${row.status} → ${next}`);
+                      window.location.reload();
+                    } catch (err) {
+                      console.error("[tracking-advance] Failed:", err);
+                    }
+                  }}
+                  style={{
+                    padding: "3px 8px", fontSize: "0.45rem", fontWeight: 600,
+                    background: "rgba(0,188,212,0.1)", color: "#00bcd4",
+                    border: "1px solid rgba(0,188,212,0.2)", borderRadius: "6px",
+                    cursor: "pointer", flexShrink: 0,
+                  }}
+                  title={`Advance to ${next} (demo)`}
+                >
+                  ⏭ Advance
+                </button>
+              );
+            })()}
+
             {/* ETA */}
             <div style={{
               fontSize: "0.75rem", fontWeight: 600,
@@ -3410,7 +4330,10 @@ function calcFreightClass(w: number, l: number, wi: number, h: number): string {
 }
 
 function FreightTab({ items }: { items: any[] }) {
-  const heavyItem = items?.find((i) => (i.weight || 0) > 40);
+  const heavyItem = items?.find((i) => {
+    const w = i.weight || i.aiWeightLbs || i.aiEstWeight || 0;
+    return w > 40 || getShippingMethod(i) === "freight" || getShippingMethod(i) === "local_only";
+  });
   const aiAutoFilled = !!(heavyItem?.aiWeightLbs && !heavyItem?.weight) || !!(heavyItem?.aiDimsEstimate && !heavyItem?.length);
   const [form, setForm] = useState(() => {
     // Parse AI dims if available: "34 x 24 x 30" → { l, w, h }
@@ -3812,6 +4735,104 @@ function FreightTab({ items }: { items: any[] }) {
         );
       })()}
 
+      {/* ── Freight-Eligible Items List ── */}
+      {(() => {
+        const freightItems = (items || []).filter(i => {
+          const method = getShippingMethod(i);
+          return method === "freight" || method === "local_only";
+        });
+        if (freightItems.length === 0) return null;
+        return (
+          <div style={{
+            marginBottom: "0.25rem",
+            padding: "0.75rem",
+            background: "rgba(156,39,176,0.04)",
+            border: "1px solid rgba(156,39,176,0.12)",
+            borderRadius: "12px",
+          }}>
+            <div style={{
+              fontSize: "0.72rem", fontWeight: 700,
+              color: "#9c27b0", marginBottom: "0.5rem",
+              display: "flex", alignItems: "center", gap: "0.4rem",
+            }}>
+              🚛 Items That May Need Freight ({freightItems.length})
+            </div>
+            {freightItems.map(fi => {
+              const method = getShippingMethod(fi);
+              const w = fi.weight || fi.aiWeightLbs || fi.aiEstWeight || 0;
+              const dims = fi.aiDimsEstimate || fi.dimensions || "";
+              return (
+                <div
+                  key={fi.id}
+                  onClick={() => {
+                    // Auto-fill freight form with this item's data
+                    const parseDim = (d: string, part: "l" | "w" | "h"): string => {
+                      if (!d) return "";
+                      const m = d.match(/(\d+(?:\.\d+)?)\s*[x\u00D7X]\s*(\d+(?:\.\d+)?)\s*[x\u00D7X]\s*(\d+(?:\.\d+)?)/);
+                      if (!m) return "";
+                      return part === "l" ? m[1] : part === "w" ? m[2] : m[3];
+                    };
+                    setForm(prev => ({
+                      ...prev,
+                      weight: fi.weight ? String(fi.weight) : fi.aiWeightLbs ? String(fi.aiWeightLbs) : fi.aiEstWeight ? String(fi.aiEstWeight) : prev.weight,
+                      length: fi.length ? String(fi.length) : parseDim(dims, "l") || prev.length,
+                      width: fi.width ? String(fi.width) : parseDim(dims, "w") || prev.width,
+                      height: fi.height ? String(fi.height) : parseDim(dims, "h") || prev.height,
+                    }));
+                    console.log("[freight-tab] Selected item for freight:", fi.id, fi.title);
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "0.5rem",
+                    padding: "0.4rem 0.6rem", marginBottom: "0.25rem",
+                    borderRadius: "8px", cursor: "pointer",
+                    border: "1px solid var(--border-default)",
+                    background: "var(--bg-card)",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {fi.photo && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={fi.photo} style={{
+                      width: 32, height: 32, borderRadius: "6px", objectFit: "cover",
+                    }} alt="" />
+                  )}
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontSize: "0.72rem", fontWeight: 600,
+                      color: "var(--text-primary)",
+                    }}>
+                      {fi.title || "Untitled Item"}
+                    </div>
+                    <div style={{
+                      fontSize: "0.6rem",
+                      color: "var(--text-muted)",
+                    }}>
+                      {w > 0 ? `~${Math.round(w)} lbs` : "Weight TBD"}
+                      {dims ? ` · ${dims}` : ""}
+                      {" · "}
+                      <span style={{
+                        color: method === "local_only" ? "#ff9800"
+                              : method === "freight" ? "#9c27b0" : "#00bcd4",
+                        fontWeight: 600,
+                      }}>
+                        {method === "local_only" ? "Local Pickup (freight possible)"
+                         : method === "freight" ? "Freight Required"
+                         : "Freight Recommended"}
+                      </span>
+                    </div>
+                  </div>
+                  <span style={{
+                    fontSize: "0.6rem", color: "#00bcd4", fontWeight: 600,
+                  }}>
+                    Select →
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
+
       <div
         style={{
           background: "rgba(156,39,176,0.06)",
@@ -3827,7 +4848,7 @@ function FreightTab({ items }: { items: any[] }) {
         <div>
           <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "#ce93d8" }}>LTL Freight Shipping</div>
           <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
-            For furniture, appliances, and items over 40 lbs.{heavyItem ? ` Pre-filled from "${heavyItem.title}".` : ""}
+            For furniture, appliances, vehicles, and items too large for parcel carriers.{heavyItem ? ` Pre-filled from "${heavyItem.title}".` : ""}
           </div>
         </div>
       </div>
@@ -5260,7 +6281,11 @@ export default function ShippingCenterClient() {
   const searchParams = useSearchParams();
   const itemIdParam = searchParams.get("itemId");
 
-  const [tab, setTab] = useState<Tab>(itemIdParam ? "readyToShip" : "preSale");
+  const tabParam = searchParams.get("tab");
+  const validTabs: Tab[] = ["preSale", "readyToShip", "shipped", "freight", "pickup"];
+  const initialTab = validTabs.includes(tabParam as Tab) ? (tabParam as Tab) :
+    (itemIdParam ? "readyToShip" : "preSale");
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [data, setData] = useState<ShipData | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
@@ -5280,6 +6305,28 @@ export default function ShippingCenterClient() {
       for (const qs of Object.values(store)) { sc += (qs as any[]).filter((q: any) => q.type === "ltl").length; }
       setSavedFreightCount(sc);
     } catch { /* ignore */ }
+  }, []);
+
+  // Cross-view sync: listen for localStorage changes from Item Dashboard
+  useEffect(() => {
+    function handleStorageChange(e: StorageEvent) {
+      if (e.key?.startsWith("ll_quote_") || e.key === "ll_saved_quotes") {
+        try {
+          const raw = localStorage.getItem("ll_saved_quotes");
+          if (raw) {
+            const store = JSON.parse(raw);
+            let sc = 0;
+            for (const qs of Object.values(store)) {
+              sc += (qs as any[]).filter((q: any) => q.type === "ltl").length;
+            }
+            setSavedFreightCount(sc);
+          }
+        } catch { /* ignore */ }
+        console.log("[shipping-sync] Quote data updated from Item Dashboard");
+      }
+    }
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   // Listen for tab-change events from child components (e.g., "View in Tracking Board")
@@ -5672,7 +6719,7 @@ export default function ShippingCenterClient() {
         </div>
       ) : (
         <>
-          {tab === "preSale" && <PreSaleTab items={data.preSale} estimates={allEstimates} onEstimate={handleEstimate} onSwitchTab={(t) => setTab(t as Tab)} />}
+          {tab === "preSale" && <PreSaleTab items={data.preSale} estimates={allEstimates} onEstimate={handleEstimate} onSwitchTab={(t) => setTab(t as Tab)} onRefresh={fetchData} />}
           {tab === "readyToShip" && (
             <ReadyToShipTab items={data.readyToShip} estimates={allEstimates} onEstimate={handleEstimate} onRefresh={fetchData} highlightId={itemIdParam} />
           )}

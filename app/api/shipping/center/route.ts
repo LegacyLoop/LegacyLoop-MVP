@@ -202,7 +202,20 @@ export async function GET() {
         aiBox: pkgSuggestion?.boxSize ?? null,
         aiBoxLabel: pkgSuggestion?.label ?? null,
         aiBoxDims: pkgSuggestion ? { length: pkgSuggestion.length, width: pkgSuggestion.width, height: pkgSuggestion.height } : null,
-        aiEstWeight: pkgSuggestion?.weightEstimate ?? aiShipping?.weight ?? null,
+        aiRealDims: aiShipping ? { length: aiShipping.length || 0, width: aiShipping.width || 0, height: aiShipping.height || 0 } : null,
+        aiEstWeight: (item as any).aiWeightLbs ?? ai?.weight_estimate_lbs ?? aiShipping?.weight ?? pkgSuggestion?.weightEstimate ?? null,
+        aiRawWeight: ai?.weight_estimate_lbs ?? aiShipping?.weight ?? null,
+        aiWeightSource: (item as any).shippingWeight ? "user"
+          : (item as any).aiWeightLbs ? "ai_saved"
+          : ai?.weight_estimate_lbs ? "ai_analysis"
+          : aiShipping?.weight ? "ai_analysis"
+          : pkgSuggestion?.weightEstimate ? "category_default"
+          : "none",
+        aiDimsSource: (item as any).shippingLength ? "user"
+          : ai?.dimensions_estimate ? "ai_analysis"
+          : aiShipping?.length ? "ai_analysis"
+          : pkgSuggestion ? "category_default"
+          : "none",
         aiPackingTips: pkgSuggestion?.notes ?? [],
         selectedQuote: selectedMap.get(item.id) ?? null,
         // Shipping intelligence

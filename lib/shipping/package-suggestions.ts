@@ -237,6 +237,35 @@ export function suggestPackage(
 
 export type ShippingMethodSuggestion = "parcel" | "freight" | "local_only" | "local_recommended";
 
+/** Items that MUST be local pickup — too large/heavy/regulated for any carrier */
+export const LOCAL_ONLY_CATEGORIES = [
+  "vehicle", "vehicles", "car", "truck", "suv", "van",
+  "boat", "boats", "watercraft", "jet ski", "kayak", "canoe",
+  "motorcycle", "atv", "utv", "dirt bike", "scooter", "go-kart",
+  "riding mower", "lawn mower", "mower", "lawn tractor", "zero turn",
+  "tractor", "snowmobile", "snowblower",
+  "trailer", "rv", "camper",
+  "hot tub", "spa", "jacuzzi",
+  "pool table", "billiard",
+  "piano", "grand piano", "upright piano", "organ",
+  "playground", "swing set", "trampoline",
+  "shed", "gazebo", "greenhouse",
+];
+
+/** Items that need freight/LTL — too big for parcel but shippable */
+export const FREIGHT_CATEGORIES = [
+  "furniture", "sofa", "couch", "sectional", "armoire", "wardrobe",
+  "dresser", "hutch", "china cabinet", "bookcase", "desk",
+  "dining table", "table", "bed frame", "mattress",
+  "appliance", "refrigerator", "washer", "dryer", "dishwasher",
+  "stove", "oven", "range",
+  "outdoor equipment", "garden equipment",
+  "exercise equipment", "treadmill", "elliptical", "weight bench",
+  "safe", "gun safe",
+  "statue", "sculpture",
+  "large", "oversized", "heavy",
+];
+
 /**
  * Suggest the best shipping method based on item category, weight,
  * max dimension, and the seller's chosen sale method.
@@ -249,14 +278,16 @@ export function suggestShippingMethod(
 ): ShippingMethodSuggestion {
   const cat = (category ?? "").toLowerCase();
 
-  // Outdoor / Garden equipment — freight shipping (NOT local-only)
-  if (cat.includes("outdoor") || cat.includes("garden")) {
-    return "freight";
+  // Check LOCAL_ONLY categories first
+  if (LOCAL_ONLY_CATEGORIES.some(term => cat.includes(term))) {
+    console.log(`[shipping-method] "${cat}" matches local_only category`);
+    return "local_only";
   }
 
-  // Vehicles, boats, etc. — local only (but NOT outdoor equipment)
-  if (cat.includes("vehicle") || cat.includes("boat")) {
-    return "local_only";
+  // Check FREIGHT categories
+  if (FREIGHT_CATEGORIES.some(term => cat.includes(term))) {
+    console.log(`[shipping-method] "${cat}" matches freight category`);
+    return "freight";
   }
 
   // Seller chose local pickup only

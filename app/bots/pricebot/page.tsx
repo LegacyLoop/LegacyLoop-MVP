@@ -20,9 +20,10 @@ export default async function PriceBotPage() {
       valuation: true,
       antiqueCheck: true,
       eventLogs: {
-        where: { eventType: "PRICEBOT_RESULT" },
+        where: { eventType: { in: ["PRICEBOT_RESULT", "PRICEBOT_RUN", "MEGABOT_PRICEBOT", "RAINFOREST_RESULT"] } },
         orderBy: { createdAt: "desc" },
-        take: 1,
+        take: 10,
+        select: { id: true, eventType: true, payload: true, createdAt: true },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -35,8 +36,33 @@ export default async function PriceBotPage() {
     photo: item.photos[0]?.filePath ?? null,
     hasAnalysis: !!item.valuation,
     aiResult: item.aiResult?.rawJson ?? null,
-    priceBotResult: item.eventLogs[0]?.payload ?? null,
-    priceBotRunAt: item.eventLogs[0]?.createdAt?.toISOString() ?? null,
+    priceBotResult: (() => {
+      const evt = item.eventLogs.find((ev: any) => ev.eventType === "PRICEBOT_RESULT" || ev.eventType === "MEGABOT_PRICEBOT");
+      return evt?.payload ?? null;
+    })(),
+    priceBotRunAt: (() => {
+      const evt = item.eventLogs.find((ev: any) => ev.eventType === "PRICEBOT_RESULT" || ev.eventType === "MEGABOT_PRICEBOT");
+      return evt?.createdAt?.toISOString() ?? null;
+    })(),
+    pricingHistory: item.eventLogs
+      .filter((ev: any) => ["PRICEBOT_RESULT", "PRICEBOT_RUN", "MEGABOT_PRICEBOT"].includes(ev.eventType))
+      .map((ev: any) => ({
+        id: ev.id, type: ev.eventType, createdAt: ev.createdAt.toISOString(),
+        payload: (() => { try { return JSON.parse(ev.payload ?? "{}"); } catch { return null; } })(),
+      })),
+    lastPricedAt: (() => {
+      const evt = item.eventLogs.find((ev: any) => ["PRICEBOT_RESULT", "MEGABOT_PRICEBOT"].includes(ev.eventType));
+      return evt?.createdAt?.toISOString() ?? null;
+    })(),
+    amazonData: (() => {
+      const evt = item.eventLogs.find((ev: any) => ev.eventType === "RAINFOREST_RESULT");
+      if (!evt) return null;
+      try { return JSON.parse(evt.payload ?? "{}"); } catch { return null; }
+    })(),
+    analyzeBasePricing: item.valuation ? {
+      low: item.valuation.low, mid: Math.round(((item.valuation.low ?? 0) + (item.valuation.high ?? 0)) / 2),
+      high: item.valuation.high, confidence: item.valuation.confidence, source: item.valuation.source,
+    } : null,
     valuation: item.valuation ? {
       low: item.valuation.low,
       mid: item.valuation.mid,

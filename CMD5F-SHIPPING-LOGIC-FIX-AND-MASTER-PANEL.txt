@@ -1,0 +1,796 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 25, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+REAL TECH MANDATE: Minimize demo/mock data. Use real API integrations
+wherever possible. When estimates are used, label them honestly as
+"ESTIMATED" — not "demo". The freight estimate engine uses real carrier
+pricing formulas and real accessorial surcharge data — it's a calculated
+estimate, not a mock. Treat it as professional-grade estimate data.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts — LOCKED
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping (MOST LOCKED) —
+✓ lib/shipping/shippo.ts — LOCKED
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/easypost.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+✓ lib/shipping/freight-estimates.ts — LOCKED
+✓ lib/shipping/arta.ts — LOCKED
+✓ lib/shipping/metro-estimates.ts — LOCKED
+✓ lib/shipping/city-lookup.ts — LOCKED
+✓ lib/shipping/package-suggestions.ts — LOCKED
+✓ lib/shipping/saved-quotes.ts — LOCKED
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/user-events.ts
+✓ lib/data/populate-intelligence.ts — LOCKED
+
+— Enrichment —
+✓ lib/addons/enrich-item-context.ts
+✓ lib/enrichment/item-context.ts — LOCKED
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ EXCEPTION: See surgical unlock below
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Always-Dark Overlays — ALL LOCKED
+— Messaging System — ALL LOCKED
+— Add-On Tools — ALL LOCKED
+— Onboarding — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — LOCKED
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - app/items/[id]/ShippingPanel.tsx
+    FIXES: Change local_only from WALL to RECOMMENDATION.
+    Show freight section for local_only items with "buyer arranges" note.
+    Hide/purge stale parcel quotes for oversized items.
+    Keep Ship/Pickup toggle visible for all items.
+  - app/shipping/ShippingCenterClient.tsx
+    FIXES: Fix FreightTab item detection to use AI weight + getShippingMethod().
+    Rebuild Master Item Panel with real controls.
+    Filter stale parcel quotes in PreSaleTab.
+    Add freight-eligible item list to FreightTab.
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+
+Data collection for this command:
+  - Log when AI recommendation overridden by user (chose freight for local_only item)
+  - Log freight tab item detection hits
+  - Log stale quote purge events
+
+SECTION 6 — BUILD PATTERN
+
+UI Logic Fix → Quote Filtering → Freight Tab Fix → Master Panel Upgrade
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true
+• suggestShippingMethod() returns: "local_only" | "freight" | "parcel" | "local_recommended"
+• local_only = vehicles, boats, motorcycles, pianos, pool tables, etc.
+• freight = furniture, appliances, large items 70+ lbs or 48"+ dimension
+• local_recommended = items 150+ lbs (recommend local but allow shipping)
+• parcel = everything else
+
+CRITICAL PHILOSOPHY FIX:
+
+  "local_only" should be a STRONG RECOMMENDATION, not an absolute wall.
+
+  Ryan's exact words: "If someone wants something bad enough and needs to
+  ship it LTL and is willing to pay, our AI needs to give our customer
+  suggestions on how to handle this."
+
+  CURRENT BROKEN BEHAVIOR:
+  - ShippingPanel line 3772: freight section has !isLocalOnly → BLOCKS freight entirely
+  - ShippingPanel line 3127: !isLocalOnly → HIDES Ship/Pickup tab toggle
+  - ShippingPanel line 3050: isLocalOnly gates hide everything except pickup UI
+  - BUT old USPS $9.99 quotes still show through saved quotes / quote history
+  - Result: User sees "LOCAL PICKUP ONLY" banner AND stale USPS $9.99 quote
+  - Result: User cannot access freight quotes for oversized items
+  - Result: Freight tab in Shipping Center doesn't find items (wrong weight field)
+
+  CORRECT BEHAVIOR AFTER THIS FIX:
+  - AI RECOMMENDS local pickup prominently with clear reasoning
+  - Parcel rates are HIDDEN (no USPS/UPS/FedEx for a riding mower)
+  - Stale parcel quotes are FILTERED OUT of saved quotes display
+  - Freight/LTL section IS VISIBLE with a note: "Freight shipping available if buyer arranges"
+  - Ship/Pickup toggle remains visible so user can explore freight
+  - FreightTab in Shipping Center shows all items that AI flags as freight OR local_only
+  - Master Item Panel gives full control: recommendation + freight access + pickup setup
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Change isLocalOnly gates to allow freight access while still hiding parcel
+— Show freight section for local_only items with buyer-arranges note
+— Keep Ship/Pickup tab toggle visible for all items
+— Filter saved parcel quotes for oversized/local_only items
+— Fix FreightTab item detection to use aiWeightLbs and getShippingMethod()
+— Add freight-eligible item selector to FreightTab
+— Rebuild Master Item Panel in PreSaleTab with better controls
+— Add smooth scroll anchors to section IDs
+— Add console.log for data collection
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Change suggestShippingMethod() logic (package-suggestions.ts is LOCKED)
+— Modify any API routes
+— Change how AI analysis works
+— Remove existing functionality
+— Add new npm dependencies
+— Deviate from inline style={{}}
+— Change business or pricing logic
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env.
+Admin: never locked out. No credits deducted. Full platform access.
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+No new env variables needed.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+NO — No schema changes.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+5 tabs: preSale (Estimates), readyToShip, shipped (Tracking), freight, pickup.
+FreightTab currently finds heavy items by: items.find(i => (i.weight || 0) > 40)
+This misses items where weight is in aiWeightLbs or aiEstWeight fields.
+getShippingMethod() exists at line ~157 and correctly categorizes items.
+
+================================================================================
+
+OBJECTIVE — FIX SHIPPING LOGIC, FREIGHT ACCESS, AND MASTER PANEL
+
+================================================================================
+
+TASK 1 — CHANGE LOCAL_ONLY FROM WALL TO RECOMMENDATION (ShippingPanel.tsx)
+
+  The most important fix. local_only currently blocks freight access entirely.
+
+  A) KEEP the "LOCAL PICKUP RECOMMENDED" banner — it's good UX.
+     But change its text from "LOCAL PICKUP ONLY" to "LOCAL PICKUP RECOMMENDED".
+     The banner should say:
+       "🚗 LOCAL PICKUP RECOMMENDED — This item is large/heavy. We recommend
+        local pickup, but freight shipping may be available if the buyer arranges it."
+
+  B) KEEP parcel rates hidden for local_only items. That's correct —
+     no USPS/UPS/FedEx parcel for a riding mower.
+     The hideParcelRates gate stays: isLocalOnly || isFreightOnly.
+
+  C) CHANGE the freight section gate.
+
+     FIND line ~3772 where freight section renders:
+       {(showFreight || showFreightManual || isFreightOnly) && !isLocalOnly && shippingTab === "ship" && (
+
+     CHANGE TO:
+       {(showFreight || showFreightManual || isFreightOnly || isLocalOnly) && shippingTab === "ship" && (
+
+     This allows freight to show for local_only items.
+     Add a note above the freight form when isLocalOnly:
+
+     {isLocalOnly && (
+       <div style={{
+         padding: "0.5rem 0.75rem",
+         background: "var(--card-bg, rgba(156,39,176,0.06))",
+         border: "1px solid var(--border, rgba(156,39,176,0.15))",
+         borderRadius: "10px",
+         marginBottom: "0.75rem",
+         fontSize: "0.6rem",
+         color: "var(--text-secondary, #94a3b8)",
+         lineHeight: 1.5,
+       }}>
+         <span style={{ fontWeight: 700, color: "#9c27b0" }}>🚛 Freight Option Available</span>
+         <br />
+         This item is oversized and best handled through local pickup. However,
+         if the buyer is willing to arrange and pay for freight/LTL shipping,
+         you can get quotes below. Freight shipping for oversized items typically
+         requires special handling and a loading dock or liftgate.
+       </div>
+     )}
+
+  D) KEEP the Ship/Pickup tab toggle visible for ALL items.
+
+     FIND line ~3127:
+       {!isLocalOnly && (
+         <div>Ship It / Local Pickup tabs</div>
+       )}
+
+     CHANGE TO (remove the !isLocalOnly gate):
+       {(
+         <div>Ship It / Local Pickup tabs</div>
+       )}
+
+     Or simply remove the conditional wrapper entirely.
+
+  E) FIX the showFreight variable to include local_only:
+
+     FIND line ~2895:
+       const showFreight = shippingMethod === "freight" || shippingMethod === "local_recommended" || needsFreight;
+
+     CHANGE TO:
+       const showFreight = shippingMethod === "freight" || shippingMethod === "local_only" || shippingMethod === "local_recommended" || needsFreight;
+
+  F) DEFAULT tab for local_only items should be "pickup" but allow switching:
+
+     FIND line ~2704 where shippingTab is initialized:
+       shippingMethod === "local_only" ? "pickup" : "ship"
+
+     KEEP THIS — default to pickup tab. But now the user CAN switch to "ship"
+     tab because the toggle is visible (from step D).
+
+
+TASK 2 — FILTER STALE PARCEL QUOTES (ShippingPanel.tsx + ShippingCenterClient.tsx)
+
+  Old USPS $9.99 quotes are cached in localStorage and still display for
+  items that should never show parcel rates.
+
+  A) IN ShippingPanel.tsx — where saved quotes / quote history renders,
+     ADD a filter that excludes parcel carrier quotes when hideParcelRates is true.
+
+     FIND where carrier rates or saved quotes display. Look for the section
+     that shows "BEST RATE: USPS First Class Package $9.99".
+
+     WRAP the entire carrier rates section with:
+       {!hideParcelRates && (
+         // ... existing carrier rates display ...
+       )}
+
+     This is in ADDITION to the existing gate. The point is:
+     - isLocalOnly items: hideParcelRates = true → no carrier rates shown
+     - freight items: hideParcelRates = true → no carrier rates shown
+     - parcel items: hideParcelRates = false → carrier rates shown normally
+
+     ALSO: Find where quote history renders. If it shows old parcel quotes
+     for an item that's now local_only, filter them:
+
+     Filter saved quotes: quotes.filter(q => {
+       if (hideParcelRates && ["USPS", "UPS", "FedEx"].some(c => q.carrier?.includes(c))) return false;
+       return true;
+     })
+
+  B) IN ShippingCenterClient.tsx — in the PreSaleTab expanded panel,
+     when showing quote details for an item, check getShippingMethod():
+
+     If method === "local_only" or method === "freight":
+       - Do NOT show "BEST RATE: USPS..." section
+       - Do NOT show parcel carrier quotes
+       - Show instead: "Parcel shipping not recommended for this item"
+       - Show freight and pickup options
+
+     FIND the quote display section in PreSaleTab (around line 1063 or wherever
+     "BEST RATE" or "Quoted:" appears in the item card).
+
+     ADD a check:
+       const method = getShippingMethod(item);
+       const showParcelQuotes = method === "parcel" || method === "local_recommended";
+
+     Use showParcelQuotes to gate the carrier quote display.
+
+     For the item card subtitle that shows "Quoted: USPS — $9.99":
+       Replace with method-appropriate text:
+       - local_only: "📍 Local Pickup Recommended"
+       - freight: "🚛 Freight Shipping"
+       - parcel: Keep existing "Quoted: USPS — $9.99"
+
+
+TASK 3 — FIX FREIGHT TAB ITEM DETECTION (ShippingCenterClient.tsx)
+
+  The FreightTab currently only auto-fills from items with weight > 40 lbs
+  using the `weight` field. Most items have weight in `aiWeightLbs` or
+  `aiEstWeight` instead. The tab also doesn't show which items NEED freight.
+
+  A) FIX the heavy item detection in FreightTab.
+
+     FIND line ~3624:
+       const heavyItem = items?.find((i) => (i.weight || 0) > 40);
+
+     CHANGE TO:
+       const heavyItem = items?.find((i) => {
+         const w = i.weight || i.aiWeightLbs || i.aiEstWeight || 0;
+         return w > 40;
+       });
+
+  B) ADD a freight-eligible item list at the top of FreightTab.
+
+     Before the LTL Freight Shipping form, add a section that lists all
+     items that need freight or are local_only (could use freight if buyer arranges).
+
+     Build the list using getShippingMethod():
+
+     const freightItems = (items || []).filter(i => {
+       const method = getShippingMethod(i);
+       return method === "freight" || method === "local_only" || method === "local_recommended";
+     });
+
+     Render as a selectable list:
+
+     {freightItems.length > 0 && (
+       <div style={{
+         marginBottom: "1rem",
+         padding: "0.75rem",
+         background: "var(--card-bg, rgba(156,39,176,0.04))",
+         border: "1px solid var(--border, rgba(156,39,176,0.12))",
+         borderRadius: "12px",
+       }}>
+         <div style={{
+           fontSize: "0.65rem", fontWeight: 700,
+           color: "#9c27b0", marginBottom: "0.5rem",
+           display: "flex", alignItems: "center", gap: "0.4rem",
+         }}>
+           🚛 Items That May Need Freight ({freightItems.length})
+         </div>
+
+         {freightItems.map(item => {
+           const method = getShippingMethod(item);
+           const weight = item.weight || item.aiWeightLbs || item.aiEstWeight || 0;
+           const dims = item.aiDimsEstimate || item.dimensions || "";
+           return (
+             <div
+               key={item.id}
+               onClick={() => {
+                 // Auto-fill the freight form with this item's data
+                 // Set length/width/height from item dims
+                 // Set weight from item weight
+                 // This requires setting the form state — use existing state setters
+               }}
+               style={{
+                 display: "flex", alignItems: "center", gap: "0.5rem",
+                 padding: "0.4rem 0.6rem", marginBottom: "0.25rem",
+                 borderRadius: "8px", cursor: "pointer",
+                 border: "1px solid var(--border, rgba(255,255,255,0.06))",
+                 background: "var(--card-bg, rgba(0,0,0,0.1))",
+                 transition: "all 0.2s",
+               }}
+             >
+               {item.photo && (
+                 <img src={item.photo} style={{
+                   width: 32, height: 32, borderRadius: "6px", objectFit: "cover",
+                 }} alt="" />
+               )}
+               <div style={{ flex: 1 }}>
+                 <div style={{
+                   fontSize: "0.55rem", fontWeight: 600,
+                   color: "var(--text, #e2e8f0)",
+                 }}>
+                   {item.title || item.name || "Untitled Item"}
+                 </div>
+                 <div style={{
+                   fontSize: "0.48rem",
+                   color: "var(--text-secondary, #94a3b8)",
+                 }}>
+                   {weight > 0 ? `~${Math.round(weight)} lbs` : "Weight TBD"}
+                   {dims ? ` · ${dims}` : ""}
+                   {" · "}
+                   <span style={{
+                     color: method === "local_only" ? "#ff9800"
+                           : method === "freight" ? "#9c27b0" : "#00bcd4",
+                     fontWeight: 600,
+                   }}>
+                     {method === "local_only" ? "Local Pickup (freight possible)"
+                      : method === "freight" ? "Freight Required"
+                      : "Freight Recommended"}
+                   </span>
+                 </div>
+               </div>
+               <span style={{
+                 fontSize: "0.48rem", color: "#00bcd4", fontWeight: 600,
+               }}>
+                 Select →
+               </span>
+             </div>
+           );
+         })}
+       </div>
+     )}
+
+     When user clicks an item, auto-fill the freight form fields:
+     - Length/Width/Height from item.aiDimsEstimate (parse) or item dimensions
+     - Weight from item.weight || item.aiWeightLbs || item.aiEstWeight
+     - Populate the "item" context so the quote is linked to that item
+
+  C) Also fix the FreightTab heading to be more descriptive:
+
+     Change "LTL Freight Shipping" subtitle to:
+     "For furniture, appliances, vehicles, and items too large for parcel carriers."
+
+     This makes it clear that vehicles/oversized items belong here.
+
+
+TASK 4 — UPGRADE MASTER ITEM PANEL (ShippingCenterClient.tsx)
+
+  The expanded item panel in PreSaleTab needs to be a real command center.
+
+  FIND the PreSaleTab expanded item section. When a user clicks an item,
+  the expanded section should show:
+
+  A) AI SHIPPING INTELLIGENCE HEADER — Already added by CMD5E (ShippingRecommendation
+     component). Verify it works. If the data isn't flowing (missing fields),
+     check that the API response includes the needed fields.
+
+  B) SHIPPING OPTIONS GRID — 3 cards based on shipping method:
+
+     const method = getShippingMethod(item);
+
+     <div style={{
+       display: "grid",
+       gridTemplateColumns: method === "parcel" ? "1fr 1fr 1fr" : "1fr 1fr",
+       gap: "0.5rem",
+       marginBottom: "0.75rem",
+     }}>
+
+       {/* Card 1: Parcel (only for parcel/local_recommended items) */}
+       {(method === "parcel" || method === "local_recommended") && (
+         <div style={{
+           padding: "0.6rem", borderRadius: "10px",
+           background: "var(--card-bg, rgba(0,188,212,0.05))",
+           border: "1px solid var(--border, rgba(0,188,212,0.15))",
+         }}>
+           <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "#00bcd4", marginBottom: "0.3rem" }}>
+             📦 Parcel Shipping
+           </div>
+           <div style={{ fontSize: "0.5rem", color: "var(--text-secondary, #94a3b8)", marginBottom: "0.4rem" }}>
+             USPS, UPS, FedEx — standard carriers
+           </div>
+           {/* Show best quote if exists */}
+           {item.bestQuote && (
+             <div style={{ fontSize: "0.55rem", fontWeight: 600, color: "var(--text, #e2e8f0)" }}>
+               Best: {item.bestQuote.carrier} ${item.bestQuote.rate}
+             </div>
+           )}
+           <button
+             onClick={() => window.open(`/items/${item.id}#shipping-carrier-rates`, "_blank")}
+             style={{
+               marginTop: "0.3rem", padding: "4px 10px", fontSize: "0.48rem",
+               fontWeight: 600, background: "rgba(0,188,212,0.12)", color: "#00bcd4",
+               border: "1px solid rgba(0,188,212,0.25)", borderRadius: "6px",
+               cursor: "pointer",
+             }}
+           >
+             Compare Rates →
+           </button>
+         </div>
+       )}
+
+       {/* Card 2: Freight/LTL (for freight, local_only, local_recommended) */}
+       {(method === "freight" || method === "local_only" || method === "local_recommended") && (
+         <div style={{
+           padding: "0.6rem", borderRadius: "10px",
+           background: "var(--card-bg, rgba(156,39,176,0.05))",
+           border: method === "freight" ? "2px solid rgba(156,39,176,0.3)" : "1px solid var(--border, rgba(156,39,176,0.15))",
+         }}>
+           <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "#9c27b0", marginBottom: "0.3rem" }}>
+             🚛 Freight / LTL
+           </div>
+           <div style={{ fontSize: "0.5rem", color: "var(--text-secondary, #94a3b8)", marginBottom: "0.4rem" }}>
+             {method === "local_only"
+               ? "Available if buyer arranges freight"
+               : "Recommended for this item size/weight"}
+           </div>
+           <button
+             onClick={() => {
+               // Switch to freight tab and auto-select this item
+               onSwitchTab?.("freight");
+             }}
+             style={{
+               marginTop: "0.3rem", padding: "4px 10px", fontSize: "0.48rem",
+               fontWeight: 600, background: "rgba(156,39,176,0.12)", color: "#9c27b0",
+               border: "1px solid rgba(156,39,176,0.25)", borderRadius: "6px",
+               cursor: "pointer",
+             }}
+           >
+             Get Freight Quote →
+           </button>
+         </div>
+       )}
+
+       {/* Card 3: Local Pickup (always available) */}
+       <div style={{
+         padding: "0.6rem", borderRadius: "10px",
+         background: method === "local_only"
+           ? "var(--card-bg, rgba(255,152,0,0.08))"
+           : "var(--card-bg, rgba(255,152,0,0.04))",
+         border: method === "local_only"
+           ? "2px solid rgba(255,152,0,0.3)"
+           : "1px solid var(--border, rgba(255,152,0,0.12))",
+       }}>
+         <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "#ff9800", marginBottom: "0.3rem" }}>
+           🤝 Local Pickup
+           {method === "local_only" && (
+             <span style={{
+               marginLeft: "0.3rem", fontSize: "0.45rem", padding: "1px 5px",
+               borderRadius: "4px", background: "rgba(255,152,0,0.15)",
+               color: "#ff9800", fontWeight: 700,
+             }}>RECOMMENDED</span>
+           )}
+         </div>
+         <div style={{ fontSize: "0.5rem", color: "var(--text-secondary, #94a3b8)", marginBottom: "0.4rem" }}>
+           Buyer picks up — no shipping cost
+         </div>
+         <button
+           onClick={() => onSwitchTab?.("pickup")}
+           style={{
+             marginTop: "0.3rem", padding: "4px 10px", fontSize: "0.48rem",
+             fontWeight: 600, background: "rgba(255,152,0,0.12)", color: "#ff9800",
+             border: "1px solid rgba(255,152,0,0.25)", borderRadius: "6px",
+             cursor: "pointer",
+           }}
+         >
+           Set Up Pickup →
+         </button>
+       </div>
+     </div>
+
+  C) ITEM DETAILS ROW — below the options grid:
+
+     <div style={{
+       display: "flex", gap: "0.5rem", flexWrap: "wrap",
+       padding: "0.4rem 0.6rem",
+       background: "var(--card-bg, rgba(0,0,0,0.08))",
+       borderRadius: "8px",
+       fontSize: "0.5rem", color: "var(--text-secondary, #94a3b8)",
+     }}>
+       {(item.weight || item.aiWeightLbs || item.aiEstWeight) && (
+         <span>⚖️ {item.weight || item.aiWeightLbs || item.aiEstWeight} lbs</span>
+       )}
+       {(item.aiDimsEstimate || item.dimensions) && (
+         <span>📐 {item.aiDimsEstimate || item.dimensions}</span>
+       )}
+       {item.aiShippingDifficulty && (
+         <span style={{
+           color: item.aiShippingDifficulty === "Easy" ? "#4caf50"
+                 : item.aiShippingDifficulty === "Moderate" ? "#ff9800" : "#f44336",
+         }}>
+           {item.aiShippingDifficulty === "Easy" ? "✅" : "⚠️"} {item.aiShippingDifficulty}
+         </span>
+       )}
+       <a
+         href={`/items/${item.id}`}
+         target="_blank"
+         rel="noopener"
+         style={{ color: "#00bcd4", fontWeight: 600, textDecoration: "none" }}
+       >
+         Open Item Dashboard ↗
+       </a>
+     </div>
+
+  D) REPLACE the old expanded item content with this new layout.
+     The ShippingRecommendation component from CMD5E should render first,
+     then the options grid, then the item details row.
+     Remove or replace the flat "Quoted: USPS — $9.99" display for non-parcel items.
+
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3045,3060p'
+   Focus: isLocalOnly definition, hideParcelRates
+
+2. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3120,3135p'
+   Focus: Ship/Pickup tab toggle with !isLocalOnly gate
+
+3. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3765,3785p'
+   Focus: freight section render condition with !isLocalOnly
+
+4. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2890,2900p'
+   Focus: showFreight variable definition
+
+5. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2700,2710p'
+   Focus: shippingTab initialization (default pickup for local_only)
+
+6. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3055,3080p'
+   Focus: banner config and rendering
+
+7. grep -n "BEST RATE\|bestQuote\|carrier.*rate\|Quoted:" app/items/[id]/ShippingPanel.tsx | head -20
+   Focus: Where parcel quotes display — these need hideParcelRates gate
+
+8. grep -n "BEST RATE\|bestQuote\|Quoted:\|carrier.*rate" app/shipping/ShippingCenterClient.tsx | head -20
+   Focus: Where parcel quotes display in Shipping Center
+
+9. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '3620,3640p'
+   Focus: FreightTab heavyItem detection
+
+10. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '5910,5925p'
+    Focus: FreightTab items prop — what items are passed
+
+11. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1300,1420p'
+    Focus: PreSaleTab item card — expanded content, quote display
+
+12. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '155,180p'
+    Focus: getShippingMethod() function definition
+
+13. grep -n "onSwitchTab\|switchTab\|setTab" app/shipping/ShippingCenterClient.tsx | head -15
+    Focus: Tab switching mechanism for freight redirect
+
+14. grep -n "isVehicle\|isFreight\|showParcel\|hideParcel" app/shipping/ShippingCenterClient.tsx | head -20
+    Focus: Existing parcel/freight gates in Shipping Center
+
+15. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3490,3520p'
+    Focus: Carrier rates section — the existing gate condition
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PARTS B-E — BUILD INSTRUCTIONS
+
+================================================================================
+
+Part B = Task 1 (Fix local_only gates in ShippingPanel.tsx)
+Part C = Task 2 (Filter stale parcel quotes in both files)
+Part D = Task 3 (Fix FreightTab item detection in ShippingCenterClient.tsx)
+Part E = Task 4 (Upgrade Master Item Panel in ShippingCenterClient.tsx)
+
+Build in order. Test after each part.
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+ITEM DASHBOARD — SHIPPING PANEL:
+1. John Deere Rider (local_only) shows "LOCAL PICKUP RECOMMENDED" banner: yes / no
+2. John Deere Rider shows Ship/Pickup tab toggle (can switch): yes / no
+3. John Deere Rider "Ship It" tab shows freight section with buyer-arranges note: yes / no
+4. John Deere Rider does NOT show USPS/UPS/FedEx parcel rates: yes / no
+5. John Deere Rider does NOT show stale $9.99 USPS quote: yes / no
+6. Normal parcel items still show carrier rates normally: yes / no
+7. Furniture items show freight section without local_only note: yes / no
+
+SHIPPING CENTER — FREIGHT TAB:
+8. FreightTab shows "Items That May Need Freight" list: yes / no
+9. John Deere Rider appears in freight-eligible items list: yes / no
+10. Clicking item auto-fills freight form with dimensions/weight: yes / no
+11. FreightTab detects items using aiWeightLbs (not just weight): yes / no
+12. Heavy items with only AI weight show up correctly: yes / no
+
+SHIPPING CENTER — PRESALE TAB:
+13. Local_only items do NOT show "Quoted: USPS — $9.99": yes / no
+14. Local_only items show "📍 Local Pickup Recommended" instead: yes / no
+15. Freight items show "🚛 Freight Shipping" label: yes / no
+16. Parcel items still show carrier quote normally: yes / no
+
+MASTER ITEM PANEL:
+17. Expanded local_only item shows 2-card grid (Freight + Pickup): yes / no
+18. Expanded freight item shows 2-card grid (Freight highlighted + Pickup): yes / no
+19. Expanded parcel item shows 3-card grid (Parcel + Freight + Pickup): yes / no
+20. "Get Freight Quote →" button switches to freight tab: yes / no
+21. "Set Up Pickup →" button switches to pickup tab: yes / no
+22. Item details row shows weight, dims, difficulty: yes / no
+23. "Open Item Dashboard ↗" link works: yes / no
+
+REGRESSIONS:
+24. Airport tracking board still works: yes / no
+25. Saved freight quotes still display: yes / no
+26. Pickup tab still works: yes / no
+27. AI Recommendation cards still render: yes / no
+28. No TypeScript errors: npx tsc --noEmit passes: yes / no
+
+SECTION 19 — FINAL REPORT
+
+When done, output:
+
+CMD5F REPORT — SHIPPING LOGIC FIX & MASTER PANEL
+===================================================
+Tasks: 4
+Pass/Fail per task:
+  Task 1 (local_only → recommendation): ___
+  Task 2 (stale quote filtering): ___
+  Task 3 (FreightTab item detection): ___
+  Task 4 (Master Item Panel upgrade): ___
+
+TypeScript: npx tsc --noEmit → ___ errors
+Build: npm run build → pass / fail
+Time: ___
+
+Files modified:
+  - app/items/[id]/ShippingPanel.tsx
+  - app/shipping/ShippingCenterClient.tsx
+
+Summary: ___

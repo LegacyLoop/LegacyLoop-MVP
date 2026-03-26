@@ -39,10 +39,10 @@ type Props = {
 };
 
 const PROVIDERS = [
-  { key: "openai", name: "OpenAI GPT-4", color: "#10b981", icon: "O" },
-  { key: "claude", name: "Claude", color: "#8b5cf6", icon: "C" },
-  { key: "gemini", name: "Gemini", color: "#3b82f6", icon: "G" },
-  { key: "grok", name: "Grok (xAI)", color: "#00DC82", icon: "X" },
+  { key: "openai", name: "OpenAI GPT-4", color: "#10b981", icon: "O", specialty: "Balanced & Data-Driven" },
+  { key: "claude", name: "Claude", color: "#8b5cf6", icon: "C", specialty: "Craftsmanship & History" },
+  { key: "gemini", name: "Gemini", color: "#3b82f6", icon: "G", specialty: "Market & Demand" },
+  { key: "grok", name: "Grok (xAI)", color: "#00DC82", icon: "X", specialty: "Trends & Social" },
 ] as const;
 
 /* ── Scanning animation phases ── */
@@ -165,6 +165,9 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
                   <div style={{ fontSize: "0.65rem", color: done ? "var(--text-secondary)" : "var(--text-muted)", marginTop: "0.15rem" }}>
                     {done ? "Complete" : "Analyzing..."}
                   </div>
+                  <div style={{ fontSize: "0.5rem", color: "rgba(255,255,255,0.35)", marginTop: "0.1rem", fontStyle: "italic" }}>
+                    {p.specialty}
+                  </div>
                 </div>
               );
             })}
@@ -186,10 +189,11 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
       ) : !result ? (
         <button onClick={runMegabot} style={{
           display: "inline-flex", alignItems: "center", gap: "0.5rem",
-          padding: "0.75rem 1.5rem", borderRadius: "0.75rem",
+          padding: "0.85rem 1.75rem", borderRadius: "0.75rem",
           background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", color: "#fff",
-          fontWeight: 700, fontSize: "0.92rem", border: "none", cursor: "pointer",
+          fontWeight: 700, fontSize: "1rem", border: "none", cursor: "pointer",
           boxShadow: "0 4px 20px rgba(139,92,246,0.45)", transition: "all 0.2s ease",
+          minHeight: "48px",
         }}>
           Run MegaBot Analysis
         </button>
@@ -246,9 +250,12 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
                     const pCfg = PROVIDERS.find((pr) => pr.key === p.provider)!;
                     return (
                       <th key={p.provider} style={{ textAlign: "center", padding: "0.5rem 0.6rem", borderBottom: "1px solid var(--border-default)" }}>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.35rem" }}>
-                          <span style={{ width: 8, height: 8, borderRadius: "50%", background: pCfg.color, display: "inline-block" }} />
-                          <span style={{ color: pCfg.color, fontWeight: 700, fontSize: "0.7rem" }}>{pCfg.name}</span>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.1rem" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: pCfg.color, display: "inline-block" }} />
+                            <span style={{ color: pCfg.color, fontWeight: 700, fontSize: "0.7rem" }}>{pCfg.name}</span>
+                          </div>
+                          <div style={{ fontSize: "0.48rem", color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>{pCfg.specialty}</div>
                         </div>
                       </th>
                     );
@@ -272,6 +279,30 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
                   </td>
                 </tr>
 
+                {/* Category */}
+                <tr>
+                  <td style={{ padding: "0.5rem 0.6rem", color: "rgba(255,255,255,0.6)", fontWeight: 500, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>Category</td>
+                  {result.providers.map((p) => (
+                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", fontSize: "0.72rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                      {p.category ?? "—"}
+                    </td>
+                  ))}
+                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(0,188,212,0.05)" }}>
+                    {result.consensus.category ?? "—"}
+                  </td>
+                </tr>
+                {/* Era */}
+                <tr>
+                  <td style={{ padding: "0.5rem 0.6rem", color: "rgba(255,255,255,0.6)", fontWeight: 500, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>Era</td>
+                  {result.providers.map((p) => (
+                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#fff", fontSize: "0.72rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                      {p.era ?? "—"}
+                    </td>
+                  ))}
+                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "#22d3ee", fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(0,188,212,0.05)" }}>
+                    {result.consensus.era ?? "—"}
+                  </td>
+                </tr>
                 {/* Condition */}
                 <tr>
                   <td style={{ padding: "0.5rem 0.6rem", color: "var(--text-secondary)", fontWeight: 500, borderBottom: "1px solid var(--border-default)" }}>Condition</td>
@@ -345,6 +376,21 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
                     </span>
                   </td>
                 </tr>
+                {/* Response Time */}
+                <tr>
+                  <td style={{ padding: "0.5rem 0.6rem", color: "rgba(255,255,255,0.6)", fontWeight: 500 }}>Response Time</td>
+                  {result.providers.map((p) => (
+                    <td key={p.provider} style={{ padding: "0.5rem 0.6rem", textAlign: "center", fontSize: "0.72rem", color: "rgba(255,255,255,0.5)" }}>
+                      {p.durationMs ? `${(p.durationMs / 1000).toFixed(1)}s` : "—"}
+                    </td>
+                  ))}
+                  <td style={{ padding: "0.5rem 0.6rem", textAlign: "center", color: "rgba(0,188,212,0.6)", fontSize: "0.72rem", background: "rgba(0,188,212,0.05)" }}>
+                    {(() => {
+                      const durations = result.providers.filter(p => p.durationMs).map(p => p.durationMs);
+                      return durations.length ? `${(Math.max(...durations) / 1000).toFixed(1)}s total` : "—";
+                    })()}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -367,6 +413,26 @@ export default function MegaBotPanel({ itemId, megabotData, originalEstimate }: 
               </div>
             </div>
           )}
+
+          {/* What This Means */}
+          <div style={{
+            padding: "0.875rem 1rem", borderRadius: "0.75rem",
+            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+            marginBottom: "1rem",
+          }}>
+            <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "0.08em", textTransform: "uppercase" as const, marginBottom: "0.4rem" }}>
+              📋 WHAT THIS MEANS FOR YOU
+            </div>
+            <div style={{ fontSize: "0.82rem", color: "#e2e8f0", lineHeight: 1.7 }}>
+              {result.agreementScore >= 70 ? (
+                <>All 4 AI engines agree on this item. You can confidently price it at <strong style={{ color: "#22d3ee" }}>${result.consensus.price_fair ?? "the suggested price"}</strong> and expect strong results.</>
+              ) : result.agreementScore >= 40 ? (
+                <>The AI engines have some disagreement. Review the comparison above — the <strong style={{ color: "#22d3ee" }}>Consensus</strong> column shows the best average. Consider a professional appraisal for high-value items.</>
+              ) : (
+                <>The AI engines significantly disagree. This usually means a rare or unusual item. We recommend a professional appraisal before pricing.</>
+              )}
+            </div>
+          </div>
 
           {/* ── Per-Provider Detail Cards ── */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem", marginBottom: "1.25rem" }}>

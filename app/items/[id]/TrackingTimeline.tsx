@@ -43,6 +43,15 @@ const CARRIER_COLORS: Record<string, { primary: string; secondary: string; bg: s
   USPS:   { primary: "#333366", secondary: "#CC0000", bg: "rgba(51,51,102,0.08)" },
 };
 
+function getCarrierTrackingUrl(carrier: string, trackingNumber: string): string | null {
+  const c = carrier.toLowerCase();
+  if (c.includes("usps")) return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${trackingNumber}`;
+  if (c.includes("ups")) return `https://www.ups.com/track?tracknum=${trackingNumber}`;
+  if (c.includes("fedex")) return `https://www.fedex.com/fedextrack/?trknbr=${trackingNumber}`;
+  if (c.includes("dhl")) return `https://www.dhl.com/us-en/home/tracking.html?tracking-id=${trackingNumber}`;
+  return null;
+}
+
 function getCarrierTheme(carrier: string) {
   const key = carrier.toUpperCase().replace(/\s+/g, "");
   if (key.includes("FEDEX")) return CARRIER_COLORS.FEDEX;
@@ -164,12 +173,12 @@ export default function TrackingTimeline({
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.1rem" }}>
               <code style={{
-                fontSize: "0.72rem",
+                fontSize: "0.82rem",
                 color: carrierTheme.primary,
                 background: carrierTheme.bg,
-                padding: "0.1rem 0.4rem",
+                padding: "0.15rem 0.5rem",
                 borderRadius: "4px",
-                fontWeight: 600,
+                fontWeight: 700,
                 letterSpacing: "0.03em",
               }}>
                 {trackingNumber}
@@ -177,16 +186,38 @@ export default function TrackingTimeline({
               <button
                 onClick={copyTracking}
                 style={{
-                  fontSize: "0.62rem",
+                  fontSize: "0.65rem",
                   color: "var(--accent)",
-                  background: "transparent",
-                  border: "none",
+                  background: "rgba(0,188,212,0.06)",
+                  border: "1px solid rgba(0,188,212,0.15)",
+                  borderRadius: "0.3rem",
                   cursor: "pointer",
                   fontWeight: 600,
+                  padding: "0.25rem 0.5rem",
                 }}
               >
-                {copied ? "Copied!" : "Copy"}
+                {copied ? "✅ Copied!" : "📋 Copy"}
               </button>
+              {(() => {
+                const trackUrl = getCarrierTrackingUrl(carrier, trackingNumber);
+                return trackUrl ? (
+                  <a
+                    href={trackUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                      fontSize: "0.62rem", fontWeight: 600, color: "#00bcd4",
+                      textDecoration: "none", padding: "0.25rem 0.5rem",
+                      borderRadius: "0.3rem", border: "1px solid rgba(0,188,212,0.2)",
+                      background: "rgba(0,188,212,0.04)", transition: "all 0.15s ease",
+                      marginLeft: "0.2rem",
+                    }}
+                  >
+                    🔗 Track on {carrier} ↗
+                  </a>
+                ) : null;
+              })()}
             </div>
           </div>
         </div>

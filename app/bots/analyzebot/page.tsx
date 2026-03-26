@@ -18,6 +18,12 @@ export default async function AnalyzeBotPage() {
       aiResult: true,
       valuation: true,
       antiqueCheck: true,
+      eventLogs: {
+        where: { eventType: { in: ["ANALYZED", "ANALYZED_FORCE", "MEGABOT_ANALYZEBOT"] } },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: { id: true, eventType: true, payload: true, createdAt: true },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -36,11 +42,26 @@ export default async function AnalyzeBotPage() {
         high: item.valuation.high,
         confidence: item.valuation.confidence,
       } : null,
+      valuationMid: item.valuation ? Math.round((item.valuation.low + item.valuation.high) / 2) : null,
+      valuationRationale: item.valuation?.onlineRationale ?? null,
+      valuationSource: item.valuation?.source ?? null,
       antique: item.antiqueCheck ? {
         isAntique: item.antiqueCheck.isAntique,
         auctionLow: item.antiqueCheck.auctionLow,
         auctionHigh: item.antiqueCheck.auctionHigh,
       } : null,
+      isAntique: item.antiqueCheck?.isAntique ?? false,
+      auctionLow: item.antiqueCheck?.auctionLow ?? null,
+      auctionHigh: item.antiqueCheck?.auctionHigh ?? null,
+      antiqueScore: (() => { try { const r = JSON.parse(item.antiqueCheck?.reason ?? "{}"); return r.score ?? null; } catch { return null; } })(),
+      antiqueMarkers: (() => { try { const r = JSON.parse(item.antiqueCheck?.reason ?? "{}"); return r.markers ?? []; } catch { return []; } })(),
+      analysisHistory: item.eventLogs.map((ev: any) => ({
+        id: ev.id,
+        type: ev.eventType,
+        createdAt: ev.createdAt.toISOString(),
+        payload: (() => { try { return JSON.parse(ev.payload ?? "{}"); } catch { return null; } })(),
+      })),
+      lastAnalyzedAt: item.eventLogs[0]?.createdAt?.toISOString() ?? null,
     };
   });
 

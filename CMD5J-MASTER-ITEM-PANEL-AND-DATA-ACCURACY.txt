@@ -1,0 +1,431 @@
+LEGACYLOOP — COMMAND TEMPLATE v11 UPDATED
+Master Template for Every Claude Code Command — v12 Passoff Edition
+March 25, 2026 | Ryan Hallee | Paste at top of EVERY Claude Code command
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+READ BEFORE MAKING ANY CHANGES:
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+LIGHT MODE RULE: Theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba/hex on theme-aware surfaces.
+ALWAYS-DARK PANELS: Modals/overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark — they invert in light mode.
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'GEMINI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'XAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'SENDGRID_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+grep -n 'checkCredits|deductCredits' lib/credits.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+Standard locked file list applies (Command Template v11 Updated, all sections).
+See full list in LegacyLoop_Command_Template_v11_Updated.pdf.
+
+! SURGICAL UNLOCK FOR CMD5J:
+  1. app/shipping/ShippingCenterClient.tsx — UNLOCKED for this command
+  2. app/api/shipping/center/route.ts — UNLOCKED for this command
+  3. app/items/[id]/ShippingPanel.tsx — UNLOCKED for this command
+All 3 files return to LOCKED after Ryan approves CMD5J.
+
+SECTION 4-9 — Standard sections apply per Command Template v11 Updated.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OBJECTIVE — CMD5J: MASTER ITEM PANEL DATA ACCURACY + INLINE EDIT + QUOTE BRIDGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PROBLEM SUMMARY:
+The Shipping Center Master Item Panel shows WRONG weights and dims for most items.
+The Fender Princeton Amp shows 3 lbs (should be ~50 lbs). The Uzi pedal shows 12 lbs
+(should be ~1-2 lbs). The root cause is a data priority chain mismatch between the API
+route and the frontend display components.
+
+Additionally:
+- "Edit Dims & Weight" button sends users away to a different page (bad for seniors)
+- Control Center Dims chip reads raw string field instead of structured AI dims
+- Pre-sale quotes from Item Dashboard are stored in localStorage but Shipping Center
+  reads quotes from EventLog — they never sync
+- No inline weight/dims editing capability in the Shipping Center
+
+THIS COMMAND FIXES ALL OF THESE.
+
+FILES TO MODIFY:
+1. app/api/shipping/center/route.ts (265 lines) — fix weight priority + add AI raw weight field
+2. app/shipping/ShippingCenterClient.tsx (6,573 lines) — 6 targeted fixes
+3. app/items/[id]/ShippingPanel.tsx (4,810 lines) — add EventLog quote persistence
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART A — MANDATORY FULL READ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+Read these files fully and print findings with exact line numbers:
+
+1. app/api/shipping/center/route.ts — ALL 265 lines
+   FIND: line 206 where aiEstWeight is assigned
+   FIND: line 79 where aiShipping is extracted from rawJson
+   FIND: line 205 where aiRealDims is built
+
+2. app/shipping/ShippingCenterClient.tsx — ALL 6,573 lines
+   FIND: lines 84-103 — dimStr() and weightStr() helper functions
+   FIND: lines 215-237 — getShippingMethod() function
+   FIND: lines 805-900 — ShipProfile component
+   FIND: lines 1617-1648 — Item Details Row (dims/weight display)
+   FIND: lines 1673-1756 — Control Center Info Chips (dims/weight/origin/policy)
+   FIND: lines 1769-1785 — "Edit Dims & Weight" button
+   FIND: lines 1708-1716 — Weight chip display logic
+
+3. app/items/[id]/ShippingPanel.tsx — ALL 4,810 lines
+   FIND: lines 2884-2914 — fetchPreSaleRates() function
+   FIND: lines 3850-3906 — quote save to localStorage
+   FIND: lines 2937-2956 — saveShipping() function (item update API)
+
+Print ALL injection points with exact line numbers before building.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART B — API ROUTE FIX: WEIGHT DATA ACCURACY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/api/shipping/center/route.ts
+
+TASK B1: Add separate AI raw weight field to API response.
+Currently line 206 sets aiEstWeight with a merged priority chain that hides the
+source. We need the frontend to know WHICH source the weight came from.
+
+At line 206, KEEP the existing aiEstWeight line as-is.
+ADD a new field immediately after line 206:
+
+  aiRawWeight: aiShipping?.weight ?? null,
+
+This gives the frontend the ACTUAL AI-analyzed weight from the shipping_profile,
+separate from the category default that pkgSuggestion?.weightEstimate provides.
+
+TASK B2: Add aiWeightSource field to help UI show accurate labels.
+After the new aiRawWeight line, add:
+
+  aiWeightSource: (item as any).shippingWeight ? "user"
+    : (item as any).aiWeightLbs ? "ai_saved"
+    : aiShipping?.weight ? "ai_analysis"
+    : pkgSuggestion?.weightEstimate ? "category_default"
+    : "none",
+
+TASK B3: Add aiDimsSource field similarly:
+After aiWeightSource, add:
+
+  aiDimsSource: (item as any).shippingLength ? "user"
+    : aiShipping?.length ? "ai_analysis"
+    : pkgSuggestion ? "category_default"
+    : "none",
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART C — SHIPPING CENTER: FIX WEIGHT DISPLAY PRIORITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+
+TASK C1: Fix weightStr() function (lines 97-103).
+The priority chain should be:
+  1. item.weight (user-entered, confirmed)
+  2. item.aiRawWeight (AI analysis from shipping_profile — NEW field from Part B)
+  3. item.aiWeightLbs (AI weight saved to Item record)
+  4. item.aiEstWeight (merged estimate — may be category default)
+  5. item.aiShipping?.weight (direct from AI raw JSON)
+
+Replace lines 97-103 with:
+
+function weightStr(item: any): string {
+  if (item.weight) return `${item.weight} lbs`;
+  if (item.aiRawWeight) return `~${item.aiRawWeight} lbs`;
+  if (item.aiWeightLbs) return `~${item.aiWeightLbs} lbs`;
+  if (item.aiEstWeight) return `~${item.aiEstWeight} lbs`;
+  if (item.aiShipping?.weight) return `~${item.aiShipping.weight} lbs`;
+  return "";
+}
+
+TASK C2: Fix dimStr() function (lines 84-96).
+Add aiRealDims as SECOND priority (after user-entered). Currently it's there
+but verify the priority is: user-entered > aiRealDims > aiShipping > aiDimsEstimate.
+The existing code at lines 84-96 looks correct. Verify and leave if so.
+
+TASK C3: Fix Control Center DIMENSIONS chip (line 1691).
+CURRENT (broken): {item.aiDimsEstimate || item.dimensions || "—"}
+This reads a raw string field and misses the structured aiRealDims.
+
+REPLACE line 1691 content with:
+  {dimStr(item) || item.aiDimsEstimate || "—"}
+
+This uses the same priority chain as everywhere else.
+
+TASK C4: Fix Control Center WEIGHT chip (lines 1708-1716).
+CURRENT: Shows Math.round(item.weight || item.aiWeightLbs || item.aiEstWeight)
+This misses aiRawWeight (the actual AI analysis weight).
+
+REPLACE the weight value line (1710) with:
+  {(() => {
+    const w = item.weight || item.aiRawWeight || item.aiWeightLbs || item.aiEstWeight;
+    return w ? `${Math.round(w)} lbs` : "—";
+  })()}
+
+REPLACE the label line (1714) with:
+  {item.aiWeightSource === "user" ? "Confirmed"
+    : item.aiWeightSource === "ai_analysis" || item.aiWeightSource === "ai_saved" ? "AI Analysis"
+    : item.aiWeightSource === "category_default" ? "Category Est."
+    : "Not set"}
+
+TASK C5: Fix Item Details Row weight display (line 1627).
+CURRENT: {item.weight || item.aiWeightLbs || item.aiEstWeight} lbs
+REPLACE with: {item.weight || item.aiRawWeight || item.aiWeightLbs || item.aiEstWeight} lbs
+
+TASK C6: Fix Item Details Row dims display (line 1630).
+CURRENT: {item.aiDimsEstimate || item.dimensions}
+REPLACE with: {dimStr(item) || item.aiDimsEstimate || ""}
+
+TASK C7: Fix getShippingMethod() weight reading (line 229).
+CURRENT: const weight = item.aiWeightLbs || item.aiEstWeight || item.weight || 0;
+REPLACE with: const weight = item.weight || item.aiRawWeight || item.aiWeightLbs || item.aiEstWeight || 0;
+(User-entered weight should be highest priority for routing decisions)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART D — SHIPPING CENTER: INLINE EDIT CAPABILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+
+TASK D1: Replace the "Edit Dims & Weight" button (lines 1769-1785) with an
+inline edit toggle. When clicked, the 4 Info Chips (Dims, Weight, Origin, Policy)
+should transform into editable inputs IN PLACE — no page navigation needed.
+
+Add state near the top of the main component (find the component function,
+add near other useState declarations):
+
+  const [editingShipProfile, setEditingShipProfile] = useState<string | null>(null);
+  const [editWeight, setEditWeight] = useState<number>(0);
+  const [editLength, setEditLength] = useState<number>(0);
+  const [editWidth, setEditWidth] = useState<number>(0);
+  const [editHeight, setEditHeight] = useState<number>(0);
+  const [editFragile, setEditFragile] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
+
+TASK D2: Replace the "Edit Dims & Weight" button with a toggle button:
+
+  <button
+    onClick={() => {
+      if (editingShipProfile === item.id) {
+        setEditingShipProfile(null);
+      } else {
+        setEditingShipProfile(item.id);
+        setEditWeight(item.weight || item.aiRawWeight || item.aiWeightLbs || item.aiEstWeight || 0);
+        const d = item.aiRealDims || item.aiBoxDims || {};
+        setEditLength(item.length || d.length || 0);
+        setEditWidth(item.width || d.width || 0);
+        setEditHeight(item.height || d.height || 0);
+        setEditFragile(item.isFragile || false);
+      }
+    }}
+    style={{
+      display: "inline-flex", alignItems: "center", gap: "0.25rem",
+      padding: "0.35rem 0.65rem", fontSize: "0.55rem", fontWeight: 600,
+      background: editingShipProfile === item.id ? "rgba(0,188,212,0.12)" : "transparent",
+      color: "#00bcd4", border: "1px solid rgba(0,188,212,0.25)",
+      borderRadius: "0.35rem", cursor: "pointer", transition: "all 0.15s ease",
+    }}
+  >
+    {editingShipProfile === item.id ? "✕ Cancel Edit" : "✏️ Edit Dims & Weight"}
+  </button>
+
+TASK D3: When editingShipProfile === item.id, render an inline edit form
+ABOVE the Quick Actions bar (between the Info Chips and Quick Actions).
+
+The form should have:
+- 4 number inputs in a row: Length, Width, Height, Weight (all inline style={{}})
+- A "Fragile" toggle checkbox
+- A "💾 Save" button (PRIMARY teal gradient) that calls:
+  POST /api/items/update/{item.id} with JSON body:
+  { shippingWeight, shippingLength, shippingWidth, shippingHeight, isFragile }
+- On save success: refetch the shipping center data (call the existing fetch function),
+  close the edit form, show a brief "✅ Saved" indicator
+
+Style the inputs: inline style={{}}, fontSize 0.6rem, padding 0.3rem, width 60px,
+border: "1px solid var(--border-default)", borderRadius 6px, textAlign center.
+Labels above each input in 0.45rem font.
+Save button: inline-flex, teal gradient, white text, 0.55rem font.
+
+TASK D4: Keep the old "Edit Dims & Weight" link as a SECONDARY option below:
+  <a href={`/items/${item.id}#shipping-panel`} target="_blank" style={{...}}>
+    Open Full Editor ↗
+  </a>
+Small, subtle, fontSize 0.48rem, color var(--text-muted).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART E — QUOTE BRIDGE: SHIPPINGPANEL → EVENTLOG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/items/[id]/ShippingPanel.tsx
+
+TASK E1: When ShippingPanel saves a quote to localStorage (around line 3861),
+ALSO fire a POST to log it to EventLog so the Shipping Center can see it.
+
+After the localStorage.setItem line, add:
+
+  // Bridge: persist quote to EventLog for Shipping Center sync
+  try {
+    fetch("/api/shipping/quote-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        itemId,
+        eventType: "SHIPPING_QUOTED",
+        payload: {
+          cheapest: { carrier: bestRate.provider, service: bestRate.servicelevel_name, price: parseFloat(bestRate.amount) },
+          carriers: rates.map((r: any) => ({ carrier: r.provider, service: r.servicelevel_name, price: parseFloat(r.amount), days: r.estimated_days })),
+          weight,
+          box: `${length}x${width}x${height}`,
+          toZip: buyerZip || "10001",
+          fromZip: fromZip || "04901",
+        },
+      }),
+    }).catch(() => {}); // fire-and-forget
+  } catch {}
+
+TASK E2: Create the API route for this bridge.
+File: app/api/shipping/quote-event/route.ts (NEW FILE)
+
+  import { NextResponse } from "next/server";
+  import { authAdapter } from "@/lib/adapters/auth";
+  import { prisma } from "@/lib/db";
+
+  export async function POST(req: Request) {
+    try {
+      const user = await authAdapter.getSession();
+      if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      const body = await req.json();
+      const { itemId, eventType, payload } = body;
+      if (!itemId || !eventType) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+
+      // Verify item belongs to user
+      const item = await prisma.item.findFirst({ where: { id: itemId, userId: user.id } });
+      if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
+
+      await prisma.eventLog.create({
+        data: {
+          eventType,
+          itemId,
+          payload: JSON.stringify(payload),
+        },
+      });
+
+      return NextResponse.json({ ok: true });
+    } catch (e) {
+      console.error("[quote-event] error:", e);
+      return NextResponse.json({ error: "Failed" }, { status: 500 });
+    }
+  }
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PART F — CONTROL CENTER DIMS CHIP: SOURCE INDICATOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+File: app/shipping/ShippingCenterClient.tsx
+
+TASK F1: Update the Dimensions chip label (line 1694) to show data source:
+REPLACE: {item.userLength ? "Confirmed" : item.aiDimsEstimate ? "AI Estimate" : "Not set"}
+WITH: {item.aiDimsSource === "user" ? "Confirmed"
+  : item.aiDimsSource === "ai_analysis" ? "AI Analysis"
+  : item.aiDimsSource === "category_default" ? "Category Est."
+  : "Not set"}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+1. CHECKPOINT baseline: pass
+2. Part A reads completed and printed: yes / no
+3. Weight accuracy: Fender Amp must show ~50 lbs (not 3): yes / no
+4. Weight accuracy: Uzi Pedal must show ~1-2 lbs (not 12): yes / no
+5. Weight accuracy: Hockey Card must show < 1 lb (not 3): yes / no
+6. Dims accuracy: Control Center chips use dimStr() not raw string: yes / no
+7. Weight source labels: "AI Analysis" vs "Category Est." vs "Confirmed": yes / no
+8. Inline edit: Dims & Weight editable in Shipping Center without leaving page: yes / no
+9. Inline edit: Save calls POST /api/items/update/{id} successfully: yes / no
+10. Inline edit: Data refreshes after save: yes / no
+11. Quote bridge: ShippingPanel quote save → EventLog → Shipping Center sees it: yes / no
+12. All locked files untouched: yes / no
+13. inline style={{}} throughout — no Tailwind, no className: yes / no
+14. Always-dark panels use hardcoded colors: yes / no
+15. Theme-aware surfaces use CSS variables: yes / no
+16. Light mode tested — no broken contrast: yes / no
+17. Dark mode tested — all elements visible: yes / no
+18. npx tsc --noEmit: 0 errors
+19. npm run build: pass
+20. CHECKPOINT post-change: pass
+21. Dev server: localhost:3000
+
+SECTION 19 — REQUIRED REPORT FORMAT
+
+CHECKPOINT before: [pass / issue]
+Part A printed: [yes / no]
+
+WEIGHT FIXES:
+— weightStr() priority chain updated: [yes / no]
+— Control Center chip weight uses aiRawWeight: [yes / no]
+— Item Details Row weight uses aiRawWeight: [yes / no]
+— getShippingMethod() weight priority fixed: [yes / no]
+
+DIMS FIXES:
+— Control Center chip dims uses dimStr(): [yes / no]
+— Item Details Row dims uses dimStr(): [yes / no]
+
+SOURCE LABELS:
+— Weight chip shows accurate source label: [yes / no]
+— Dims chip shows accurate source label: [yes / no]
+
+INLINE EDIT:
+— Edit toggle button replaces navigate-away link: [yes / no]
+— Inline form renders with L/W/H/Weight inputs: [yes / no]
+— Save persists to DB via update API: [yes / no]
+— Data refreshes on save: [yes / no]
+— "Open Full Editor" fallback link present: [yes / no]
+
+QUOTE BRIDGE:
+— ShippingPanel fires EventLog on quote save: [yes / no]
+— New API route /api/shipping/quote-event created: [yes / no]
+— Shipping Center shows quotes from Item Dashboard: [yes / no]
+
+LIGHT MODE: [clean / issues found]
+DARK MODE: [clean / issues found]
+ALWAYS-DARK PANELS: [hardcoded colors used / issues]
+
+EXISTING LOGIC UNTOUCHED:
+— All locked files verified as untouched: [list]
+— No bot AI or prompt logic changed: confirmed
+— No pricing or fee logic changed: confirmed
+
+FLAGS FROM CLAUDE CODE:
+— [All gaps, risks, missed data collection, out-of-scope items]
+— [Any schema changes needed]
+— [Any new carry-forward items identified]
+
+Files modified: [list all — exact paths]
+New files created: [list all or 'none']
+Schema changes needed: [list or 'none']
+Build: [pass / fail]
+TypeScript: [0 errors / list all errors]
+CHECKPOINT after: [pass / issue]
+Dev server: localhost:3000
+
+IF POST-CHECKPOINT FAILS:
+REVERT IMMEDIATELY.
+Report exactly what broke and what was touched.
+Do NOT proceed until clean.
+
+Command CMD5J | LegacyLoop | March 25, 2026 | Ryan Hallee

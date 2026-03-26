@@ -1,0 +1,1033 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 25, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+REAL TECH MANDATE: Minimize demo/mock data. Use real API integrations
+wherever possible. When estimates are used, label them honestly as
+"ESTIMATED" — not "demo". The freight estimate engine uses real carrier
+pricing formulas and real accessorial surcharge data — it's a calculated
+estimate, not a mock. Treat it as professional-grade estimate data.
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'ANTHROPIC_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts — LOCKED
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping (MOST LOCKED) —
+✓ lib/shipping/shippo.ts — LOCKED
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/easypost.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+✓ lib/shipping/freight-estimates.ts — LOCKED (updated by CMD4C)
+✓ lib/shipping/arta.ts — LOCKED (created by CMD4D)
+✓ lib/shipping/metro-estimates.ts — LOCKED
+✓ lib/shipping/city-lookup.ts — LOCKED
+✓ lib/shipping/package-suggestions.ts — LOCKED (updated by CMD5D)
+✓ lib/shipping/saved-quotes.ts — LOCKED (updated by CMD5D)
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/user-events.ts
+✓ lib/data/populate-intelligence.ts — LOCKED (updated by CMD4C)
+
+— Enrichment —
+✓ lib/addons/enrich-item-context.ts
+✓ lib/enrichment/item-context.ts — LOCKED
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— API Routes —
+✓ app/api/** — ALL LOCKED
+✓ EXCEPTION: app/api/shipping/center/route.ts — EXTEND to include AI shipping intelligence fields
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ EXCEPTION: See surgical unlock below
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Always-Dark Overlays — ALL LOCKED
+— Messaging System — ALL LOCKED
+— Add-On Tools — ALL LOCKED
+— Onboarding — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — LOCKED
+
+! SURGICAL UNLOCK for THIS command ONLY:
+  - app/items/[id]/page.tsx (PASS shipping fields from Prisma item to ItemDashboardPanels)
+  - app/items/[id]/ItemDashboardPanels.tsx (RECEIVE shipping fields, PASS real savedShipping to ShippingPanel, ADD AI Recommendation Card)
+  - app/items/[id]/ShippingPanel.tsx (FIX unrealistic quote filtering, ADD preference editor, IMPROVE AI recommendation display)
+  - app/shipping/ShippingCenterClient.tsx (BUILD Master Item Panel, ADD status advancement buttons, FILTER unrealistic quotes, CONNECT AI recommendations)
+  - app/api/shipping/center/route.ts (EXTEND response with AI shipping intelligence fields from Prisma)
+
+All unlocked files return to LOCKED after approval.
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+We are in POLISH MODE — fixes only.
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+
+Data collection for this command:
+  - Log when savedShipping loads from Prisma (vs null fallback)
+  - Log AI shipping recommendation generation
+  - Log shipping preference changes
+  - Log status advancement actions
+  - Log unrealistic quote filtering events
+  - Console.log pattern for all
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+This command follows:
+  1. API: Extend center route with AI shipping intelligence
+  2. Page: Pass real shipping data through the component chain
+  3. UI: Fix savedShipping, build Master Panel, add AI recommendations
+  4. Polish: Quote filtering, preference editor, status buttons
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• AI analysis generates: weight_estimate_lbs, dimensions_estimate, shipping_difficulty,
+  shipping_notes, confidence — stored on Item model via populateFromAnalysis()
+• Item model has: shippingWeight, shippingLength, shippingWidth, shippingHeight, isFragile,
+  shippingPreference, aiWeightLbs, aiDimsEstimate, aiShippingDifficulty, aiShippingNotes,
+  aiShippingConfidence — ALL populated by CMD4C pipeline
+• suggestShippingMethod() in package-suggestions.ts has LOCAL_ONLY_CATEGORIES (30+ items)
+  and FREIGHT_CATEGORIES (25+ items) — FIXED by CMD5D
+• ShippingPanel props include savedShipping object — CURRENTLY ALWAYS NULL (the bug)
+• ShippingCenterClient has 5 tabs: preSale, readyToShip, shipped, freight, pickup
+
+CRITICAL BUG — savedShipping ALWAYS NULL:
+
+  In ItemDashboardPanels.tsx at line 3177-3184:
+
+    savedShipping={{
+      weight: null,        // ← ALWAYS NULL
+      length: null,        // ← ALWAYS NULL
+      width: null,         // ← ALWAYS NULL
+      height: null,        // ← ALWAYS NULL
+      isFragile: false,    // ← ALWAYS DEFAULT
+      preference: "BUYER_PAYS",  // ← ALWAYS DEFAULT
+    }}
+
+  ROOT CAUSE: page.tsx fetches the full Item from Prisma (which HAS these fields),
+  but never passes shippingWeight/Length/Width/Height/isFragile/shippingPreference
+  to ItemDashboardPanels. And ItemDashboardPanels hardcodes nulls instead of using them.
+
+  IMPACT: When user saves shipping dimensions in ShippingPanel (which writes to API),
+  then reloads the page — all saved data disappears. Dimensions revert to AI suggestions.
+  Weight reverts. Fragile flag reverts. Preference reverts. This breaks the entire
+  shipping workflow because nothing persists visually.
+
+REMAINING GAPS from TMS audit:
+
+  1. savedShipping always null (THIS COMMAND FIXES)
+  2. No AI recommendation card telling user WHAT to do (THIS COMMAND FIXES)
+  3. Shipping Center has no Master Item Panel (THIS COMMAND FIXES)
+  4. Unrealistic quotes still visible in Shipping Center (THIS COMMAND FIXES)
+  5. No status advancement buttons in Tracking Board (THIS COMMAND FIXES)
+  6. Shipping preference not editable from UI (THIS COMMAND FIXES)
+  7. AI shipping intelligence not in center API response (THIS COMMAND FIXES)
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Pass shipping fields from page.tsx Item to ItemDashboardPanels
+— Add shipping field props to ItemDashboardPanels interface
+— Replace hardcoded null savedShipping with real Prisma data
+— Build AI Shipping Recommendation Card in both views
+— Build Master Item Panel in Shipping Center PreSaleTab
+— Filter unrealistic quotes (parcel for local_only / freight items)
+— Add shipping preference dropdown to ShippingPanel
+— Add demo status advancement buttons in Tracking Board
+— Extend center API with AI shipping fields
+— Use getShippingMethod() helper in Shipping Center (already added by CMD5D)
+— Add console.log for data collection
+— Create helper functions within unlocked files
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Modify the prisma schema
+— Change how AI analysis or classification works (lib/adapters/ai.ts is LOCKED)
+— Remove or modify existing shipping API integrations
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Change business or pricing logic
+— Remove or rebuild existing functionality
+— Add new npm dependencies
+— Touch any locked shipping lib files
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+No new env variables needed.
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+NO — No schema changes in this command. All needed fields already exist on Item model.
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+Shipping Center has 5 tabs: preSale (Estimates), readyToShip (Ready to Ship),
+shipped (Tracking), freight (Freight/LTL), pickup (Local Pickup).
+
+CMD5A added: Priority Action Banner, Quote Display Overhaul, Saved Quotes Redesign, Batch Pickup API
+CMD5B added: Airport-style Tracking Board with status filters and auto-refresh
+CMD5C added: Section headers in ShippingPanel, Arta inline quotes in FreightTab
+CMD5D added: Shipping method detection fix, panel gating, API guards, cross-view sync, deep linking
+
+SECTIONS 13-17 — See v11 master template.
+
+================================================================================
+
+OBJECTIVE — MASTER ITEM PANEL, AI SHIPPING FLOW, AND FINAL POLISH
+
+================================================================================
+
+This command does SIX things. Connects all the dots. Makes the AI recommendations
+flow from analysis through every shipping view. Builds the Master Panel Ryan wants.
+
+TASK 1 — FIX savedShipping DATA PIPELINE (page.tsx + ItemDashboardPanels.tsx)
+
+  The MOST CRITICAL fix. Without this, nothing persists.
+
+  A) FILE: app/items/[id]/page.tsx
+
+  The Prisma query at line 46 already fetches the full Item object.
+  The Item model includes: shippingWeight, shippingLength, shippingWidth,
+  shippingHeight, isFragile, shippingPreference, aiWeightLbs, aiDimsEstimate,
+  aiShippingDifficulty, aiShippingNotes, aiShippingConfidence.
+
+  These fields are already ON the `item` object from the Prisma query.
+  We just need to pass them down.
+
+  FIND the <ItemDashboardPanels> render at line 363:
+
+    <ItemDashboardPanels
+      itemId={item.id}
+      aiData={aiObj}
+      ...
+      collectiblesScore={collectiblesScore}
+    />
+
+  ADD these new props BEFORE the closing />:
+
+      shippingData={{
+        weight: item.shippingWeight,
+        length: item.shippingLength,
+        width: item.shippingWidth,
+        height: item.shippingHeight,
+        isFragile: item.isFragile,
+        preference: item.shippingPreference,
+        aiWeightLbs: item.aiWeightLbs,
+        aiDimsEstimate: item.aiDimsEstimate,
+        aiShippingDifficulty: item.aiShippingDifficulty,
+        aiShippingNotes: item.aiShippingNotes,
+        aiShippingConfidence: item.aiShippingConfidence,
+      }}
+
+  B) FILE: app/items/[id]/ItemDashboardPanels.tsx
+
+  ADD to the component props interface:
+
+    shippingData?: {
+      weight: number | null;
+      length: number | null;
+      width: number | null;
+      height: number | null;
+      isFragile: boolean;
+      preference: string;
+      aiWeightLbs: number | null;
+      aiDimsEstimate: string | null;
+      aiShippingDifficulty: string | null;
+      aiShippingNotes: string | null;
+      aiShippingConfidence: number | null;
+    };
+
+  ADD to the component destructuring:
+
+    shippingData,
+
+  FIND the hardcoded savedShipping at line 3177-3184:
+
+    savedShipping={{
+      weight: null,
+      length: null,
+      width: null,
+      height: null,
+      isFragile: false,
+      preference: "BUYER_PAYS",
+    }}
+
+  REPLACE WITH:
+
+    savedShipping={{
+      weight: shippingData?.weight ?? null,
+      length: shippingData?.length ?? null,
+      width: shippingData?.width ?? null,
+      height: shippingData?.height ?? null,
+      isFragile: shippingData?.isFragile ?? false,
+      preference: shippingData?.preference || "BUYER_PAYS",
+    }}
+
+  ADD a console.log near where ShippingPanel renders:
+
+    console.log("[shipping-data] savedShipping from Prisma:", {
+      weight: shippingData?.weight,
+      length: shippingData?.length,
+      preference: shippingData?.preference,
+      aiDifficulty: shippingData?.aiShippingDifficulty,
+    });
+
+
+TASK 2 — AI SHIPPING RECOMMENDATION CARD (ItemDashboardPanels.tsx + ShippingPanel.tsx)
+
+  Build a clear, senior-friendly card that tells the user EXACTLY what shipping
+  method the AI recommends and WHY. This is the "AI brain" of shipping.
+
+  A) FILE: app/items/[id]/ItemDashboardPanels.tsx
+
+  ABOVE the <RealShippingPanel> render (inside the shipping panel section, ~line 3170),
+  ADD an AI Recommendation Card that uses the shippingData + shippingMethod:
+
+  {shippingMethod && shippingData?.aiShippingDifficulty && (
+    <div style={{
+      background: "var(--card-bg, rgba(0,188,212,0.06))",
+      border: "1px solid var(--border, rgba(0,188,212,0.2))",
+      borderRadius: "12px",
+      padding: "0.75rem 1rem",
+      marginBottom: "0.75rem",
+    }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem",
+      }}>
+        <span style={{ fontSize: "1.1rem" }}>
+          {shippingMethod === "local_only" ? "🤝" : shippingMethod === "freight" ? "🚛" : "📦"}
+        </span>
+        <span style={{
+          fontSize: "0.7rem", fontWeight: 700,
+          color: shippingMethod === "local_only" ? "#ff9800"
+               : shippingMethod === "freight" ? "#9c27b0" : "#00bcd4",
+        }}>
+          AI RECOMMENDATION: {shippingMethod === "local_only" ? "LOCAL PICKUP"
+            : shippingMethod === "freight" ? "FREIGHT / LTL SHIPPING"
+            : "STANDARD PARCEL SHIPPING"}
+        </span>
+      </div>
+
+      {/* AI rationale */}
+      <div style={{
+        fontSize: "0.6rem", color: "var(--text-secondary, #94a3b8)",
+        lineHeight: 1.5, marginBottom: "0.4rem",
+      }}>
+        {shippingMethod === "local_only" && (
+          <>This item is best handled through <strong style={{ color: "var(--text, #e2e8f0)" }}>local pickup</strong>.
+          It's too large, heavy, or specialized for standard carriers. We recommend coordinating
+          a buyer meetup or arranging local delivery.</>
+        )}
+        {shippingMethod === "freight" && (
+          <>This item requires <strong style={{ color: "var(--text, #e2e8f0)" }}>freight / LTL shipping</strong>.
+          It's too large for parcel carriers but can be shipped via freight truck.
+          If a buyer really wants it, LTL is the way — or offer local pickup as an alternative.</>
+        )}
+        {shippingMethod === "parcel" && (
+          <>This item ships via <strong style={{ color: "var(--text, #e2e8f0)" }}>standard parcel carriers</strong>
+          (USPS, UPS, FedEx). Compare rates below to find the best option for your buyer.</>
+        )}
+      </div>
+
+      {/* AI details row */}
+      <div style={{
+        display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "0.4rem",
+      }}>
+        {shippingData.aiWeightLbs && (
+          <span style={{
+            fontSize: "0.52rem", padding: "2px 8px", borderRadius: "6px",
+            background: "rgba(0,188,212,0.08)", color: "var(--text-secondary, #94a3b8)",
+          }}>
+            ⚖️ AI Est: {shippingData.aiWeightLbs} lbs
+          </span>
+        )}
+        {shippingData.aiShippingDifficulty && (
+          <span style={{
+            fontSize: "0.52rem", padding: "2px 8px", borderRadius: "6px",
+            background: shippingData.aiShippingDifficulty === "Easy" ? "rgba(76,175,80,0.1)"
+                       : shippingData.aiShippingDifficulty === "Moderate" ? "rgba(255,152,0,0.1)"
+                       : "rgba(244,67,54,0.1)",
+            color: shippingData.aiShippingDifficulty === "Easy" ? "#4caf50"
+                  : shippingData.aiShippingDifficulty === "Moderate" ? "#ff9800" : "#f44336",
+          }}>
+            {shippingData.aiShippingDifficulty === "Easy" ? "✅" : shippingData.aiShippingDifficulty === "Moderate" ? "⚠️" : "🔴"} {shippingData.aiShippingDifficulty}
+          </span>
+        )}
+        {shippingData.aiShippingConfidence != null && (
+          <span style={{
+            fontSize: "0.52rem", padding: "2px 8px", borderRadius: "6px",
+            background: "rgba(0,188,212,0.08)", color: "var(--text-secondary, #94a3b8)",
+          }}>
+            🎯 Confidence: {Math.round(shippingData.aiShippingConfidence * 100)}%
+          </span>
+        )}
+      </div>
+
+      {/* AI shipping notes */}
+      {shippingData.aiShippingNotes && (
+        <div style={{
+          marginTop: "0.5rem", padding: "0.4rem 0.6rem",
+          background: "rgba(0,0,0,0.15)", borderRadius: "8px",
+          fontSize: "0.55rem", color: "var(--text-secondary, #94a3b8)",
+          fontStyle: "italic", lineHeight: 1.4,
+        }}>
+          💡 {shippingData.aiShippingNotes}
+        </div>
+      )}
+
+      {/* Action buttons based on recommendation */}
+      <div style={{
+        display: "flex", gap: "0.5rem", marginTop: "0.6rem", flexWrap: "wrap",
+      }}>
+        {shippingMethod === "local_only" && (
+          <>
+            <button
+              onClick={() => {
+                const el = document.getElementById("shipping-pickup-section");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              style={{
+                padding: "6px 14px", fontSize: "0.55rem", fontWeight: 600,
+                background: "rgba(255,152,0,0.15)", color: "#ff9800",
+                border: "1px solid rgba(255,152,0,0.3)", borderRadius: "8px",
+                cursor: "pointer",
+              }}
+            >
+              🤝 Set Up Pickup
+            </button>
+            <button
+              onClick={() => {
+                const el = document.getElementById("shipping-freight-section");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              style={{
+                padding: "6px 14px", fontSize: "0.55rem", fontWeight: 600,
+                background: "rgba(156,39,176,0.1)", color: "#9c27b0",
+                border: "1px solid rgba(156,39,176,0.2)", borderRadius: "8px",
+                cursor: "pointer",
+              }}
+            >
+              🚛 Explore Freight (If Buyer Arranges)
+            </button>
+          </>
+        )}
+        {shippingMethod === "freight" && (
+          <>
+            <button
+              onClick={() => {
+                const el = document.getElementById("shipping-freight-section");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              style={{
+                padding: "6px 14px", fontSize: "0.55rem", fontWeight: 600,
+                background: "rgba(156,39,176,0.15)", color: "#9c27b0",
+                border: "1px solid rgba(156,39,176,0.3)", borderRadius: "8px",
+                cursor: "pointer",
+              }}
+            >
+              🚛 Get Freight Quotes
+            </button>
+            <button
+              onClick={() => {
+                const el = document.getElementById("shipping-pickup-section");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+              style={{
+                padding: "6px 14px", fontSize: "0.55rem", fontWeight: 600,
+                background: "rgba(255,152,0,0.1)", color: "#ff9800",
+                border: "1px solid rgba(255,152,0,0.2)", borderRadius: "8px",
+                cursor: "pointer",
+              }}
+            >
+              🤝 Offer Pickup Instead
+            </button>
+          </>
+        )}
+        {shippingMethod === "parcel" && (
+          <button
+            onClick={() => {
+              const el = document.getElementById("shipping-carrier-rates");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
+            style={{
+              padding: "6px 14px", fontSize: "0.55rem", fontWeight: 600,
+              background: "rgba(0,188,212,0.15)", color: "#00bcd4",
+              border: "1px solid rgba(0,188,212,0.3)", borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            📦 Compare Carrier Rates
+          </button>
+        )}
+      </div>
+    </div>
+  )}
+
+
+TASK 3 — EXTEND SHIPPING CENTER API (center/route.ts)
+
+  The /api/shipping/center route returns enriched item data but does NOT include
+  the AI shipping intelligence fields from Prisma.
+
+  FILE: app/api/shipping/center/route.ts
+
+  FIND where items are queried from Prisma (the findMany or findUnique call).
+  The select/include should already pull most Item fields.
+
+  ENSURE these fields are included in the query result and forwarded to the response:
+    - aiWeightLbs
+    - aiDimsEstimate
+    - aiShippingDifficulty
+    - aiShippingNotes
+    - aiShippingConfidence
+    - shippingWeight (user-entered)
+    - shippingLength
+    - shippingWidth
+    - shippingHeight
+    - isFragile
+    - shippingPreference
+
+  FIND the item mapping section where enriched data is built (look for suggestPackage call).
+
+  ADD to each item's enriched response object:
+
+    // AI shipping intelligence
+    aiShippingDifficulty: item.aiShippingDifficulty || null,
+    aiShippingNotes: item.aiShippingNotes || null,
+    aiShippingConfidence: item.aiShippingConfidence || null,
+    aiWeightLbs: item.aiWeightLbs || null,
+    aiDimsEstimate: item.aiDimsEstimate || null,
+    // User-entered shipping data
+    userWeight: item.shippingWeight || null,
+    userLength: item.shippingLength || null,
+    userWidth: item.shippingWidth || null,
+    userHeight: item.shippingHeight || null,
+    userFragile: item.isFragile || false,
+    shippingPreference: item.shippingPreference || "BUYER_PAYS",
+
+  This gives the Shipping Center everything it needs to build the Master Panel.
+
+
+TASK 4 — MASTER ITEM PANEL IN SHIPPING CENTER (ShippingCenterClient.tsx)
+
+  Ryan's most requested feature. When you click on an item in the Shipping Center,
+  it should expand into a comprehensive shipping command center for that item.
+
+  The Master Panel should show ALL shipping intelligence in ONE place:
+
+  A) AI RECOMMENDATION HEADER — at the top of the expanded item panel:
+
+  Build a function component or inline JSX that renders:
+
+  function ShippingRecommendation({ item }: { item: any }) {
+    const method = getShippingMethod(item);  // Already added by CMD5D
+    const methodConfig = {
+      local_only: {
+        icon: "🤝", label: "LOCAL PICKUP RECOMMENDED", color: "#ff9800",
+        bg: "rgba(255,152,0,0.08)", border: "rgba(255,152,0,0.2)",
+        desc: "This item is too large or specialized for carriers. Best handled through local pickup or buyer-arranged freight.",
+      },
+      freight: {
+        icon: "🚛", label: "FREIGHT / LTL SHIPPING", color: "#9c27b0",
+        bg: "rgba(156,39,176,0.08)", border: "rgba(156,39,176,0.2)",
+        desc: "This item needs freight shipping. Too large for parcel, but shippable via LTL carriers. Also consider offering local pickup.",
+      },
+      parcel: {
+        icon: "📦", label: "STANDARD PARCEL", color: "#00bcd4",
+        bg: "rgba(0,188,212,0.08)", border: "rgba(0,188,212,0.2)",
+        desc: "Ships via standard carriers (USPS, UPS, FedEx). Compare rates to find the best deal for your customer.",
+      },
+    };
+    const cfg = methodConfig[method];
+
+    return (
+      <div style={{
+        background: cfg.bg, border: `1px solid ${cfg.border}`,
+        borderRadius: "10px", padding: "0.65rem 0.85rem", marginBottom: "0.6rem",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.35rem" }}>
+          <span style={{ fontSize: "1rem" }}>{cfg.icon}</span>
+          <span style={{ fontSize: "0.6rem", fontWeight: 700, color: cfg.color, letterSpacing: "0.03em" }}>
+            {cfg.label}
+          </span>
+        </div>
+        <div style={{ fontSize: "0.55rem", color: "#94a3b8", lineHeight: 1.45 }}>
+          {cfg.desc}
+        </div>
+
+        {/* AI Intelligence Row */}
+        <div style={{
+          display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.4rem",
+        }}>
+          {item.aiShippingDifficulty && (
+            <span style={{
+              fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
+              background: item.aiShippingDifficulty === "Easy" ? "rgba(76,175,80,0.1)"
+                         : item.aiShippingDifficulty === "Moderate" ? "rgba(255,152,0,0.1)"
+                         : "rgba(244,67,54,0.1)",
+              color: item.aiShippingDifficulty === "Easy" ? "#4caf50"
+                    : item.aiShippingDifficulty === "Moderate" ? "#ff9800" : "#f44336",
+            }}>
+              {item.aiShippingDifficulty === "Easy" ? "✅" : item.aiShippingDifficulty === "Moderate" ? "⚠️" : "🔴"} {item.aiShippingDifficulty}
+            </span>
+          )}
+          {(item.aiWeightLbs || item.userWeight) && (
+            <span style={{
+              fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
+              background: "rgba(0,188,212,0.08)", color: "#94a3b8",
+            }}>
+              ⚖️ {item.userWeight ? `${item.userWeight} lbs (confirmed)` : `~${item.aiWeightLbs} lbs (AI est.)`}
+            </span>
+          )}
+          {item.aiShippingConfidence != null && (
+            <span style={{
+              fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
+              background: "rgba(0,188,212,0.08)", color: "#94a3b8",
+            }}>
+              🎯 {Math.round(item.aiShippingConfidence * 100)}%
+            </span>
+          )}
+          {item.userFragile && (
+            <span style={{
+              fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
+              background: "rgba(244,67,54,0.08)", color: "#f44336",
+            }}>
+              ⚠️ FRAGILE
+            </span>
+          )}
+          {item.shippingPreference && item.shippingPreference !== "BUYER_PAYS" && (
+            <span style={{
+              fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
+              background: "rgba(76,175,80,0.08)", color: "#4caf50",
+            }}>
+              {item.shippingPreference === "FREE_SHIPPING" ? "🆓 Free Shipping" : "📍 Local Only"}
+            </span>
+          )}
+        </div>
+
+        {/* AI Notes */}
+        {item.aiShippingNotes && (
+          <div style={{
+            marginTop: "0.4rem", padding: "0.35rem 0.5rem",
+            background: "rgba(0,0,0,0.12)", borderRadius: "6px",
+            fontSize: "0.5rem", color: "#94a3b8", fontStyle: "italic",
+          }}>
+            💡 {item.aiShippingNotes}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  B) MASTER PANEL LAYOUT — When an item is expanded in PreSaleTab, render:
+
+  1. ShippingRecommendation card (above)
+  2. Package details summary (dimensions, weight, box size)
+  3. Available actions based on method:
+     - PARCEL: "Get Carrier Quotes" button, saved quote list
+     - FREIGHT: "Get Freight Quotes" button, saved LTL quotes, freight carrier estimates
+     - LOCAL_ONLY: "Schedule Pickup" button, pickup radius info, freight fallback
+  4. Quick links: "Open in Item Dashboard ↗" link
+  5. Shipping preference indicator
+
+  C) QUOTE FILTERING — In the PreSaleTab expanded panel, HIDE parcel carrier quotes
+  for local_only and freight items. If somehow parcel quotes exist in localStorage
+  for a local_only item, do NOT display them. Show a small note instead:
+
+  {method === "local_only" && (
+    <div style={{
+      padding: "0.5rem", fontSize: "0.55rem", color: "#ff9800",
+      background: "rgba(255,152,0,0.06)", borderRadius: "8px",
+      textAlign: "center",
+    }}>
+      Parcel shipping is not available for this item. Use local pickup or freight.
+    </div>
+  )}
+
+  D) ITEM CARD ENHANCEMENT — On EVERY item card in every tab (not just expanded),
+  show the shipping method badge. The badge was specified in CMD5D Task 5A.
+  Verify it's working. If not, add it:
+
+  The getShippingMethod() function (added by CMD5D) should be used on each item.
+  Render a small colored badge next to the item title:
+  - LOCAL PICKUP → orange badge
+  - FREIGHT/LTL → purple badge
+  - PARCEL → teal badge
+
+
+TASK 5 — SHIPPING PREFERENCE EDITOR (ShippingPanel.tsx)
+
+  Allow users to change shipping preference (BUYER_PAYS / FREE_SHIPPING / LOCAL_ONLY)
+  directly from the ShippingPanel.
+
+  FIND the current preference state initialization at ~line 2698:
+    const [preference, setPreference] = useState(savedShipping.preference || "BUYER_PAYS");
+
+  This already reads from savedShipping — after Task 1 fix, it will get real data.
+
+  ADD a preference editor UI near the top of the shipping panel (after the AI brief
+  section, before package details). Render ONLY in pre-sale mode:
+
+  {mode === "pre-sale" && (
+    <div style={{
+      display: "flex", alignItems: "center", gap: "0.5rem",
+      padding: "0.5rem 0.75rem", marginBottom: "0.5rem",
+      background: "var(--card-bg, rgba(0,0,0,0.2))",
+      borderRadius: "10px", border: "1px solid var(--border, rgba(255,255,255,0.06))",
+    }}>
+      <span style={{ fontSize: "0.55rem", color: "var(--text-secondary, #94a3b8)", fontWeight: 600 }}>
+        Shipping Policy:
+      </span>
+      {[
+        { value: "BUYER_PAYS", label: "Buyer Pays", icon: "💰" },
+        { value: "FREE_SHIPPING", label: "Free Shipping", icon: "🆓" },
+        { value: "LOCAL_ONLY", label: "Local Only", icon: "📍" },
+      ].map(opt => (
+        <button
+          key={opt.value}
+          onClick={async () => {
+            setPreference(opt.value);
+            // Persist to server
+            try {
+              await fetch(`/api/items/update/${itemId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ shippingPreference: opt.value }),
+              });
+              console.log(`[shipping-pref] Updated to ${opt.value}`);
+            } catch (err) {
+              console.error("[shipping-pref] Save failed:", err);
+            }
+          }}
+          style={{
+            padding: "4px 10px", fontSize: "0.5rem", fontWeight: 600,
+            borderRadius: "6px", cursor: "pointer",
+            background: preference === opt.value ? "rgba(0,188,212,0.15)" : "transparent",
+            color: preference === opt.value ? "#00bcd4" : "var(--text-secondary, #94a3b8)",
+            border: preference === opt.value
+              ? "1px solid rgba(0,188,212,0.3)"
+              : "1px solid var(--border, rgba(255,255,255,0.08))",
+            transition: "all 0.2s",
+          }}
+        >
+          {opt.icon} {opt.label}
+        </button>
+      ))}
+    </div>
+  )}
+
+  When "Local Only" is selected, the ShippingPanel should behave as if
+  shippingMethod === "local_only" — hide parcel rates, show pickup UI.
+
+  UPDATE the hideParcelRates/isLocalOnly logic to also check preference:
+
+    const isLocalOnly = shippingMethod === "local_only" || preference === "LOCAL_ONLY";
+
+
+TASK 6 — TRACKING BOARD STATUS ADVANCEMENT BUTTONS (ShippingCenterClient.tsx)
+
+  In the Tracking Board (shipped tab / ShippedTab), items have status badges
+  but no way to advance status for demo purposes. Add demo advancement buttons.
+
+  FIND the ShippedTab component section (tracking board rows ~line 2606-3048).
+
+  FOR each tracking row, ADD a status advancement button next to the status badge.
+  Only show in DEMO_MODE or for admin users:
+
+  <button
+    onClick={async () => {
+      const nextStatus: Record<string, string> = {
+        "LABEL_CREATED": "IN_TRANSIT",
+        "IN_TRANSIT": "OUT_FOR_DELIVERY",
+        "OUT_FOR_DELIVERY": "DELIVERED",
+      };
+      const current = item.trackingStatus || "LABEL_CREATED";
+      const next = nextStatus[current];
+      if (!next) return;
+
+      try {
+        // Update via shipment label API or item update
+        const res = await fetch(`/api/items/update/${item.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ trackingStatus: next }),
+        });
+        if (res.ok) {
+          console.log(`[tracking-advance] ${item.id}: ${current} → ${next}`);
+          // Trigger refresh
+          window.location.reload();
+        }
+      } catch (err) {
+        console.error("[tracking-advance] Failed:", err);
+      }
+    }}
+    style={{
+      padding: "3px 8px", fontSize: "0.45rem", fontWeight: 600,
+      background: "rgba(0,188,212,0.1)", color: "#00bcd4",
+      border: "1px solid rgba(0,188,212,0.2)", borderRadius: "6px",
+      cursor: "pointer", marginLeft: "0.5rem",
+    }}
+    title="Advance status (demo)"
+  >
+    ⏭ Advance
+  </button>
+
+  NOTE: Only render this button when DEMO_MODE is detected. Check if there's already
+  a DEMO_MODE check in the component. If not, add at the top:
+
+    const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
+      typeof window !== "undefined" && localStorage.getItem("ll_demo_mode") === "true";
+
+  Or check if there's an existing isDemoMode utility you can import.
+
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+1. cat -n app/items/[id]/page.tsx | sed -n '360,420p'
+   Focus: ItemDashboardPanels props — where to add shippingData
+
+2. cat -n app/items/[id]/ItemDashboardPanels.tsx | sed -n '1,40p'
+   Focus: Component props interface start
+
+3. grep -n "interface.*Props\|type.*Props" app/items/[id]/ItemDashboardPanels.tsx | head -10
+   Focus: Find the exact props interface name and location
+
+4. cat -n app/items/[id]/ItemDashboardPanels.tsx | sed -n '3170,3200p'
+   Focus: ShippingPanel render + savedShipping hardcoding
+
+5. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2646,2710p'
+   Focus: ShippingPanel component start + savedShipping usage
+
+6. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3045,3060p'
+   Focus: isLocalOnly / hideParcelRates gate (after CMD5D)
+
+7. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2695,2710p'
+   Focus: preference state initialization
+
+8. cat -n app/api/shipping/center/route.ts | sed -n '40,90p'
+   Focus: Prisma query — what fields are fetched
+
+9. cat -n app/api/shipping/center/route.ts | sed -n '150,210p'
+   Focus: Item enrichment mapping — where to add AI fields
+
+10. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1,50p'
+    Focus: Imports and top-level helpers
+
+11. grep -n "getShippingMethod\|ShippingRecommendation" app/shipping/ShippingCenterClient.tsx | head -10
+    Focus: Check if CMD5D's getShippingMethod helper exists
+
+12. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2600,2650p'
+    Focus: ShippedTab / tracking board — where to add advance buttons
+
+13. grep -n "DEMO_MODE\|isDemoMode\|demo_mode" app/shipping/ShippingCenterClient.tsx | head -10
+    Focus: Any existing demo mode detection
+
+14. grep -n "preference\|BUYER_PAYS\|FREE_SHIPPING\|LOCAL_ONLY" app/items/[id]/ShippingPanel.tsx | head -20
+    Focus: All preference references
+
+15. cat -n app/items/[id]/ItemDashboardPanels.tsx | sed -n '3128,3145p'
+    Focus: shippingMethod computation
+
+Print ALL findings with exact line numbers. Then build.
+
+================================================================================
+
+PARTS B-G — BUILD INSTRUCTIONS
+
+================================================================================
+
+Follow TASK 1 through TASK 6 in the OBJECTIVE section above.
+Each task maps to a Part:
+
+Part B = Task 1 (Fix savedShipping pipeline — page.tsx + ItemDashboardPanels.tsx)
+Part C = Task 2 (AI Recommendation Card — ItemDashboardPanels.tsx)
+Part D = Task 3 (Extend center API — center/route.ts)
+Part E = Task 4 (Master Item Panel — ShippingCenterClient.tsx)
+Part F = Task 5 (Preference editor — ShippingPanel.tsx)
+Part G = Task 6 (Tracking status buttons — ShippingCenterClient.tsx)
+
+Build in order. Test after each part.
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+SAVED SHIPPING DATA:
+1. Save dimensions in ShippingPanel → reload page → dimensions persist: yes / no
+2. Save weight in ShippingPanel → reload → weight shows saved value: yes / no
+3. Change preference to "Local Only" → reload → preference persists: yes / no
+4. AI weight/difficulty/notes display in recommendation card: yes / no
+
+AI RECOMMENDATION FLOW:
+5. John Deere Rider shows "LOCAL PICKUP RECOMMENDED" in Item Dashboard: yes / no
+6. John Deere Rider shows "LOCAL PICKUP" badge in Shipping Center: yes / no
+7. Furniture items show "FREIGHT / LTL" recommendation: yes / no
+8. Small items show "STANDARD PARCEL" recommendation: yes / no
+9. AI difficulty + confidence badges render correctly: yes / no
+10. AI shipping notes display in both views: yes / no
+
+MASTER ITEM PANEL:
+11. Expanding item in Shipping Center shows full recommendation header: yes / no
+12. Local-only items do NOT show parcel quotes in Shipping Center: yes / no
+13. Freight items show freight quote options prominently: yes / no
+14. "Open in Item Dashboard" link works from Shipping Center: yes / no
+15. Shipping method badges appear on all item cards: yes / no
+
+PREFERENCE & STATUS:
+16. Preference editor renders in pre-sale mode: yes / no
+17. Clicking "Local Only" preference hides parcel rates: yes / no
+18. Preference change persists to API: yes / no
+19. Tracking board advance button shows (demo mode): yes / no
+20. Advancing status updates the display: yes / no
+
+QUOTE FILTERING:
+21. No USPS/UPS/FedEx parcel quotes shown for riding mower: yes / no
+22. No parcel carrier auto-fetch for local_only items: yes / no
+23. Freight items show freight carrier estimates only: yes / no
+
+CROSS-VIEW:
+24. Changes in ShippingPanel sync to Shipping Center (storage listener): yes / no
+25. Deep link /shipping?tab=freight&itemId=xxx works: yes / no
+
+REGRESSIONS:
+26. Normal parcel items still get carrier rates: yes / no
+27. Airport tracking board still renders: yes / no
+28. Freight tab still shows 6 carriers: yes / no
+29. Saved quotes still work: yes / no
+30. No TypeScript errors: npx tsc --noEmit passes: yes / no
+
+SECTION 19 — FINAL REPORT
+
+When done, output:
+
+CMD5E REPORT — MASTER ITEM PANEL & AI SHIPPING FLOW
+=====================================================
+Tasks: 6
+Pass/Fail per task:
+  Task 1 (savedShipping fix): ___
+  Task 2 (AI Recommendation Card): ___
+  Task 3 (Center API extension): ___
+  Task 4 (Master Item Panel): ___
+  Task 5 (Preference editor): ___
+  Task 6 (Status advancement): ___
+
+TypeScript: npx tsc --noEmit → ___ errors
+Build: npm run build → pass / fail
+Time: ___
+
+Files modified:
+  - app/items/[id]/page.tsx
+  - app/items/[id]/ItemDashboardPanels.tsx
+  - app/items/[id]/ShippingPanel.tsx
+  - app/shipping/ShippingCenterClient.tsx
+  - app/api/shipping/center/route.ts
+
+Summary: ___

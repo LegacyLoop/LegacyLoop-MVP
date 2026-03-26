@@ -14,7 +14,17 @@ type ItemData = {
   hasAnalysis: boolean;
   aiResult: string | null;
   valuation: { low: number; high: number; confidence: number } | null;
+  valuationMid?: number | null;
+  valuationRationale?: string | null;
+  valuationSource?: string | null;
   antique: { isAntique: boolean; auctionLow: number | null; auctionHigh: number | null } | null;
+  isAntique?: boolean;
+  auctionLow?: number | null;
+  auctionHigh?: number | null;
+  antiqueScore?: number | null;
+  antiqueMarkers?: string[];
+  analysisHistory?: { id: string; type: string; createdAt: string; payload: any }[];
+  lastAnalyzedAt?: string | null;
 };
 
 function safeJson(s: string | null): any {
@@ -138,6 +148,31 @@ function GridRow({ label, value, bold }: { label: string; value: string; bold?: 
   );
 }
 
+function AccordionHeader({ id, icon, title, subtitle, isOpen, onToggle, accentColor, badge }: {
+  id: string; icon: string; title: string; subtitle?: string;
+  isOpen: boolean; onToggle: (id: string) => void; accentColor?: string; badge?: string;
+}) {
+  return (
+    <button onClick={() => onToggle(id)} style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      width: "100%", background: isOpen ? "rgba(0,188,212,0.02)" : "transparent",
+      border: "none", borderBottom: isOpen ? "1px solid var(--border-default)" : "1px solid transparent",
+      padding: "0.65rem 0.5rem", cursor: "pointer", transition: "all 0.2s ease",
+      borderRadius: isOpen ? "0.4rem 0.4rem 0 0" : "0.4rem", minHeight: "40px",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+        <span style={{ fontSize: "1rem" }}>{icon}</span>
+        <span style={{ fontSize: "0.65rem", fontWeight: 700, color: accentColor || "var(--text-secondary)", letterSpacing: "0.05em", textTransform: "uppercase" as const }}>{title}</span>
+        {badge && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "2px 8px", borderRadius: "6px", background: `${accentColor || "#00bcd4"}18`, color: accentColor || "#00bcd4" }}>{badge}</span>}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        {subtitle && !isOpen && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", maxWidth: "280px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontWeight: 500 }}>{subtitle}</span>}
+        <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", transition: "transform 0.25s ease", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", display: "inline-flex", alignItems: "center", justifyContent: "center", width: "22px", height: "22px", borderRadius: "50%", background: isOpen ? "rgba(0,188,212,0.08)" : "transparent" }}>▼</span>
+      </div>
+    </button>
+  );
+}
+
 export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
   const searchParams = useSearchParams();
   const itemParam = searchParams.get("item");
@@ -154,6 +189,12 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
   const [megaBotStep, setMegaBotStep] = useState(0);
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const [showAgentJson, setShowAgentJson] = useState<string | null>(null);
+
+  // Accordion state
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(["identification", "condition", "pricing"]));
+  const toggleSection = (id: string) => {
+    setOpenSections(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  };
 
   const item = items.find((i) => i.id === selectedId);
   const ai = useMemo(() => safeJson(item?.aiResult ?? null), [item?.aiResult]);
@@ -303,17 +344,49 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
       ) : (
         <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
+          {/* ═══ FRESHNESS INDICATOR ═══ */}
+          {item?.lastAnalyzedAt && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem",
+              background: "var(--ghost-bg)", borderRadius: "0.5rem", marginBottom: "0.25rem",
+              fontSize: "0.65rem", color: "var(--text-muted)", flexWrap: "wrap",
+            }}>
+              <span style={{ fontSize: "0.8rem" }}>🕐</span>
+              <span>Last analyzed: <strong style={{ color: "var(--text-secondary)" }}>
+                {(() => {
+                  const ms = Date.now() - new Date(item.lastAnalyzedAt!).getTime();
+                  const mins = Math.floor(ms / 60000);
+                  if (mins < 60) return `${mins} minute${mins !== 1 ? "s" : ""} ago`;
+                  const hrs = Math.floor(mins / 60);
+                  if (hrs < 24) return `${hrs} hour${hrs !== 1 ? "s" : ""} ago`;
+                  const days = Math.floor(hrs / 24);
+                  return `${days} day${days !== 1 ? "s" : ""} ago`;
+                })()}
+              </strong></span>
+              {(() => {
+                const hrs = (Date.now() - new Date(item.lastAnalyzedAt!).getTime()) / 3600000;
+                if (hrs > 168) return <span style={{ color: "#ef4444", fontWeight: 600 }}>⚠️ Stale — consider re-analyzing</span>;
+                if (hrs > 48) return <span style={{ color: "#f59e0b", fontWeight: 600 }}>⏳ Aging</span>;
+                return <span style={{ color: "#22c55e", fontWeight: 600 }}>✅ Fresh</span>;
+              })()}
+              <span style={{ marginLeft: "auto", fontSize: "0.55rem" }}>
+                {item.analysisHistory?.length ?? 0} total run{(item.analysisHistory?.length ?? 0) !== 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
+
           {/* ═══ STANDARD ANALYSIS SECTIONS ═══ */}
 
           {/* Identification */}
           {d && (
+            <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+              <AccordionHeader id="identification" icon="🔍" title="ITEM IDENTIFICATION" subtitle={ai?.item_name || ""} isOpen={openSections.has("identification")} onToggle={toggleSection} accentColor="#00bcd4" badge={ai?.category || ""} />
+              {openSections.has("identification") && (
             <div style={{
               background: "var(--bg-card, var(--ghost-bg))",
-              border: "1px solid var(--border-card)",
-              borderRadius: "1.25rem",
-              padding: "1.5rem",
+              padding: "1.25rem",
             }}>
-              <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem" }}>Item Identification</div>
+              <div style={{ display: "none" }}>Item Identification</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
                 {[
                   { label: "Item", value: ai.item_name || d.identification.split("\u2014")[0].trim() },
@@ -330,17 +403,20 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                 ))}
               </div>
             </div>
+            )}
+            </div>
           )}
 
           {/* Condition */}
           {d && (
+            <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+              <AccordionHeader id="condition" icon="📋" title="CONDITION ASSESSMENT" subtitle={`${ai?.condition_score ?? "?"}/10 — ${ai?.condition_guess ?? ""}`} isOpen={openSections.has("condition")} onToggle={toggleSection} accentColor={(() => { const s = ai?.condition_score ?? 5; return s >= 7 ? "#22c55e" : s >= 4 ? "#f59e0b" : "#ef4444"; })()} />
+              {openSections.has("condition") && (
             <div style={{
               background: "var(--bg-card, var(--ghost-bg))",
-              border: "1px solid var(--border-card)",
-              borderRadius: "1.25rem",
-              padding: "1.5rem",
+              padding: "1.25rem",
             }}>
-              <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem" }}>Condition Assessment</div>
+              <div style={{ display: "none" }}>Condition Assessment</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem" }}>
                 {[
                   { label: "Overall", value: `${ai.condition_score || d.conditionScore}/10`, color: (ai.condition_score || d.conditionScore) >= 7 ? "#4caf50" : (ai.condition_score || d.conditionScore) >= 5 ? "#ff9800" : "#ef5350" },
@@ -375,17 +451,20 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                 </div>
               )}
             </div>
+            )}
+            </div>
           )}
 
           {/* Pricing */}
           {d && (
+            <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+              <AccordionHeader id="pricing" icon="💰" title="PRICING & VALUATION" subtitle={(() => { const l = ai?.estimated_value_low ?? item?.valuation?.low; const h = ai?.estimated_value_high ?? item?.valuation?.high; return l && h ? `$${l} — $${h}` : ""; })()} isOpen={openSections.has("pricing")} onToggle={toggleSection} accentColor="#00bcd4" badge={`${ai?.pricing_confidence ?? item?.valuation?.confidence ?? 0}% conf.`} />
+              {openSections.has("pricing") && (
             <div style={{
               background: "var(--bg-card, var(--ghost-bg))",
-              border: "1px solid var(--border-card)",
-              borderRadius: "1.25rem",
-              padding: "1.5rem",
+              padding: "1.25rem",
             }}>
-              <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem" }}>Price Estimate</div>
+              <div style={{ display: "none" }}>Price Estimate</div>
               <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem" }}>
                 <span style={{ fontSize: "2rem", fontWeight: 800, color: "var(--accent)" }}>${d.priceLow}</span>
                 <span style={{ fontSize: "1rem", color: "var(--text-muted)" }}>{"\u2014"}</span>
@@ -404,17 +483,20 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                 </div>
               )}
             </div>
+            )}
+            </div>
           )}
 
           {/* Listing Suggestions */}
           {d && (
+            <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+              <AccordionHeader id="listing" icon="📝" title="LISTING SUGGESTIONS" subtitle={ai?.recommended_title || ""} isOpen={openSections.has("listing")} onToggle={toggleSection} />
+              {openSections.has("listing") && (
             <div style={{
               background: "var(--bg-card, var(--ghost-bg))",
-              border: "1px solid var(--border-card)",
-              borderRadius: "1.25rem",
-              padding: "1.5rem",
+              padding: "1.25rem",
             }}>
-              <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem" }}>Listing Suggestions</div>
+              <div style={{ display: "none" }}>Listing Suggestions</div>
               <div style={{ marginBottom: "0.75rem" }}>
                 <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Suggested Title</div>
                 <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--text-primary)" }}>{ai.recommended_title || d.listingTitle}</div>
@@ -427,20 +509,137 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                 {(ai.best_platforms || d.platforms).map((p: string) => <span key={p} className="badge">{p}</span>)}
               </div>
             </div>
+            )}
+            </div>
           )}
 
           {/* Keywords */}
           {d && (
-            <div style={{
-              background: "var(--bg-card, var(--ghost-bg))",
-              border: "1px solid var(--border-card)",
-              borderRadius: "1.25rem",
-              padding: "1.5rem",
-            }}>
-              <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem" }}>Keywords</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-                {(ai.keywords || d.keywords || []).map((k: string) => <span key={k} className="badge">{k}</span>)}
+            <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+              <AccordionHeader id="keywords" icon="🏷️" title="KEYWORDS & SEARCH TERMS" subtitle={`${(ai?.keywords || []).length} keywords`} isOpen={openSections.has("keywords")} onToggle={toggleSection} />
+              {openSections.has("keywords") && (
+              <div style={{ background: "var(--bg-card, var(--ghost-bg))", padding: "1.25rem" }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
+                  {(ai.keywords || d.keywords || []).map((k: string) => <span key={k} className="badge">{k}</span>)}
+                </div>
               </div>
+              )}
+            </div>
+          )}
+
+          {/* ═══ NEW: SHIPPING PROFILE ═══ */}
+          {ai && (
+            <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+              <AccordionHeader id="shipping" icon="📦" title="SHIPPING PROFILE" subtitle={`${ai?.weight_estimate_lbs ?? "?"} lbs · ${ai?.shipping_difficulty ?? "Unknown"}`} isOpen={openSections.has("shipping")} onToggle={toggleSection} badge={ai?.shipping_difficulty} />
+              {openSections.has("shipping") && (
+              <div style={{ background: "var(--bg-card, var(--ghost-bg))", padding: "1.25rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                  <div style={{ textAlign: "center", padding: "0.5rem", background: "var(--ghost-bg)", borderRadius: "0.4rem" }}>
+                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>⚖️ WEIGHT</div>
+                    <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)" }}>{ai.weight_estimate_lbs ?? "—"} lbs</div>
+                  </div>
+                  <div style={{ textAlign: "center", padding: "0.5rem", background: "var(--ghost-bg)", borderRadius: "0.4rem" }}>
+                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>📐 DIMENSIONS</div>
+                    <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)" }}>{ai.dimensions_estimate ?? "—"}</div>
+                  </div>
+                  <div style={{ textAlign: "center", padding: "0.5rem", background: "var(--ghost-bg)", borderRadius: "0.4rem" }}>
+                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>🚚 DIFFICULTY</div>
+                    <div style={{ fontSize: "0.9rem", fontWeight: 700, color: ai?.shipping_difficulty === "Easy" ? "#22c55e" : ai?.shipping_difficulty === "Moderate" ? "#f59e0b" : "#ef4444" }}>{ai.shipping_difficulty ?? "—"}</div>
+                  </div>
+                </div>
+                {ai.shipping_notes && (
+                  <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.6, padding: "0.4rem 0.5rem", background: "rgba(0,188,212,0.04)", borderRadius: "0.4rem", borderLeft: "3px solid #00bcd4" }}>
+                    📋 <strong>Packing Advice:</strong> {ai.shipping_notes}
+                  </div>
+                )}
+              </div>
+              )}
+            </div>
+          )}
+
+          {/* ═══ NEW: ANTIQUE & COLLECTIBLE STATUS ═══ */}
+          {(item?.isAntique || ai?.is_antique) && (
+            <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+              <AccordionHeader id="antique" icon="🏛️" title="ANTIQUE & COLLECTIBLE STATUS" subtitle={`Score: ${item?.antiqueScore ?? "?"}`} isOpen={openSections.has("antique")} onToggle={toggleSection} accentColor="#f59e0b" badge="ANTIQUE" />
+              {openSections.has("antique") && (
+              <div style={{ background: "var(--bg-card, var(--ghost-bg))", padding: "1.25rem" }}>
+                <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                  <div style={{ padding: "0.5rem 0.75rem", background: "rgba(245,158,11,0.08)", borderRadius: "0.4rem", textAlign: "center" }}>
+                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>SCORE</div>
+                    <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#f59e0b" }}>{item?.antiqueScore ?? "—"}</div>
+                  </div>
+                  {item?.auctionLow != null && item?.auctionHigh != null && (
+                    <div style={{ padding: "0.5rem 0.75rem", background: "rgba(245,158,11,0.08)", borderRadius: "0.4rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>AUCTION ESTIMATE</div>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#f59e0b" }}>${item.auctionLow} — ${item.auctionHigh}</div>
+                    </div>
+                  )}
+                </div>
+                {(item?.antiqueMarkers?.length ?? 0) > 0 && (
+                  <div>
+                    <div style={{ fontSize: "0.55rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "0.25rem" }}>ANTIQUE MARKERS:</div>
+                    <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
+                      {item!.antiqueMarkers!.map((m: string, i: number) => (
+                        <span key={i} style={{ fontSize: "0.55rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(245,158,11,0.1)", color: "#f59e0b", fontWeight: 600 }}>{m}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              )}
+            </div>
+          )}
+
+          {/* ═══ NEW: PHOTO QUALITY ═══ */}
+          {ai?.photo_quality_score != null && (
+            <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+              <AccordionHeader id="photos" icon="📸" title="PHOTO QUALITY ASSESSMENT" subtitle={`${ai.photo_quality_score}/10`} isOpen={openSections.has("photos")} onToggle={toggleSection} badge={ai.photo_quality_score >= 7 ? "GOOD" : ai.photo_quality_score >= 4 ? "OK" : "NEEDS WORK"} />
+              {openSections.has("photos") && (
+              <div style={{ background: "var(--bg-card, var(--ghost-bg))", padding: "1.25rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                  <div style={{ width: "48px", height: "48px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem", fontWeight: 800, background: ai.photo_quality_score >= 7 ? "rgba(34,197,94,0.1)" : ai.photo_quality_score >= 4 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)", color: ai.photo_quality_score >= 7 ? "#22c55e" : ai.photo_quality_score >= 4 ? "#f59e0b" : "#ef4444", border: `2px solid ${ai.photo_quality_score >= 7 ? "#22c55e" : ai.photo_quality_score >= 4 ? "#f59e0b" : "#ef4444"}` }}>
+                    {ai.photo_quality_score}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                      {ai.photo_quality_score >= 8 ? "Excellent Photos" : ai.photo_quality_score >= 6 ? "Good Photos" : ai.photo_quality_score >= 4 ? "Acceptable Photos" : "Photos Need Improvement"}
+                    </div>
+                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>Score: {ai.photo_quality_score}/10</div>
+                  </div>
+                </div>
+                {ai.photo_improvement_tips?.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: "0.55rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "0.25rem" }}>IMPROVEMENT TIPS:</div>
+                    {ai.photo_improvement_tips.map((tip: string, i: number) => (
+                      <div key={i} style={{ fontSize: "0.65rem", color: "var(--text-secondary)", padding: "0.2rem 0", paddingLeft: "0.5rem", borderLeft: "2px solid rgba(0,188,212,0.15)" }}>💡 {tip}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              )}
+            </div>
+          )}
+
+          {/* ═══ NEW: ANALYSIS HISTORY ═══ */}
+          {(item?.analysisHistory?.length ?? 0) > 0 && (
+            <div style={{ borderRadius: "0.75rem", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+              <AccordionHeader id="history" icon="📜" title="ANALYSIS HISTORY" subtitle={`${item!.analysisHistory!.length} runs`} isOpen={openSections.has("history")} onToggle={toggleSection} />
+              {openSections.has("history") && (
+              <div style={{ background: "var(--bg-card, var(--ghost-bg))", padding: "0.5rem" }}>
+                {item!.analysisHistory!.map((run: any, i: number) => (
+                  <div key={run.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.4rem 0.5rem", borderBottom: i < item!.analysisHistory!.length - 1 ? "1px solid var(--border-default)" : "none", fontSize: "0.6rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                      <span style={{ padding: "2px 6px", borderRadius: "4px", fontSize: "0.5rem", fontWeight: 600, background: run.type === "MEGABOT_ANALYZEBOT" ? "rgba(139,92,246,0.1)" : "rgba(0,188,212,0.1)", color: run.type === "MEGABOT_ANALYZEBOT" ? "#8b5cf6" : "#00bcd4" }}>
+                        {run.type === "MEGABOT_ANALYZEBOT" ? "⚡ MegaBot" : run.type === "ANALYZED_FORCE" ? "🔄 Re-run" : "🧠 Analysis"}
+                      </span>
+                    </div>
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.55rem" }}>
+                      {new Date(run.createdAt).toLocaleDateString()} {new Date(run.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              )}
             </div>
           )}
 
@@ -520,8 +719,19 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                   </div>
                 ))}
               </div>
-              <button onClick={runMegaBot} className="btn-primary" style={{ padding: "0.65rem 2rem", width: "100%" }}>
-                ⚡ Run MegaBot Analysis — 5 credits
+              <button
+                onClick={runMegaBot}
+                style={{
+                  padding: "0.7rem 2rem", width: "100%", fontSize: "0.88rem", fontWeight: 700,
+                  borderRadius: "0.6rem", border: "none", cursor: "pointer",
+                  background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", color: "#fff",
+                  boxShadow: "0 4px 20px rgba(139,92,246,0.35)",
+                  transition: "all 0.2s ease", minHeight: "48px",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
+                }}
+              >
+                ⚡ Run MegaBot Analysis
+                <span style={{ fontSize: "0.6rem", opacity: 0.8, padding: "2px 8px", borderRadius: "9999px", background: "rgba(255,255,255,0.15)" }}>5 credits</span>
               </button>
             </div>
           )}
@@ -547,12 +757,14 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                     </div>
                   </div>
                   <div style={{
-                    padding: "0.25rem 0.75rem", borderRadius: "9999px",
-                    background: megaAgreement >= 75 ? "rgba(76,175,80,0.15)" : "rgba(255,152,0,0.15)",
-                    color: megaAgreement >= 75 ? "#4caf50" : "#ff9800",
-                    fontSize: "0.75rem", fontWeight: 700,
+                    padding: "0.3rem 0.85rem", borderRadius: "9999px",
+                    background: megaAgreement >= 75 ? "rgba(76,175,80,0.15)" : megaAgreement >= 40 ? "rgba(255,152,0,0.15)" : "rgba(239,68,68,0.15)",
+                    color: megaAgreement >= 75 ? "#4caf50" : megaAgreement >= 40 ? "#ff9800" : "#ef4444",
+                    fontSize: "1.1rem", fontWeight: 800,
+                    textShadow: megaAgreement >= 70 ? "0 0 16px rgba(34,197,94,0.4)" : megaAgreement >= 40 ? "0 0 16px rgba(245,158,11,0.4)" : "0 0 16px rgba(239,68,68,0.4)",
                   }}>
-                    {megaAgreement}% Agreement
+                    {megaAgreement}%
+                    <span style={{ fontSize: "0.6rem", fontWeight: 600, marginLeft: "0.2rem", opacity: 0.8 }}>Agreement</span>
                   </div>
                 </div>
                 <div style={{ height: 6, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
@@ -602,10 +814,12 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                       <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>{meta.icon}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 700, fontSize: "0.88rem", color: meta.color }}>{meta.label}</div>
+                        <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", fontStyle: "italic", marginTop: "0.1rem" }}>{meta.specialty}</div>
                         <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
                           {h.itemName || p.itemName || "\u2014"}
                           {condNum != null && ` \u00B7 ${condNum}/10 ${condLbl}`}
                           {h.isTextOnly && " (text only)"}
+                          {timeStr && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginLeft: "0.3rem" }}>⏱ {timeStr}</span>}
                         </div>
                       </div>
                       <span style={{ fontSize: "0.65rem", color: "#4caf50" }}>✅ {timeStr}</span>
@@ -834,6 +1048,32 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                   {buildMegaSummary()}
                 </p>
               </div>
+
+              {/* MegaBot Research Intelligence */}
+              {(() => {
+                const megaProviders = megaBotData?.providers || megaSuccessful || [];
+                const allSrc = megaProviders.flatMap((p: any) => (p.webSources || []).map((s: any) => ({ ...s, provider: p.provider })));
+                const unique = allSrc.filter((s: any, i: number, a: any[]) => a.findIndex((x: any) => x.url === s.url) === i);
+                if (unique.length === 0) return null;
+                const agentsWithSearch = megaProviders.filter((p: any) => p.webSources?.length).length;
+                return (
+                  <div style={{ marginBottom: "0.5rem", padding: "0.6rem 0.75rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                    <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "#00bcd4", marginBottom: "0.3rem", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
+                      🌐 MEGABOT RESEARCH INTELLIGENCE — {unique.length} sources from {agentsWithSearch} AI engine{agentsWithSearch !== 1 ? "s" : ""}
+                    </div>
+                    <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>
+                      Real-time web research to verify identification, pricing, and provenance
+                    </div>
+                    {unique.slice(0, 10).map((src: any, i: number) => (
+                      <a key={i} href={src.url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.2rem 0.4rem", marginBottom: "0.1rem", borderRadius: "0.3rem", background: "var(--bg-card)", textDecoration: "none", fontSize: "0.55rem", color: "#00bcd4", border: "1px solid transparent" }}>
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, background: src.provider === "openai" ? "#10b981" : src.provider === "gemini" ? "#3b82f6" : src.provider === "grok" ? "#00DC82" : "#8b5cf6" }} />
+                        <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{src.title || src.url}</span>
+                        <span style={{ fontSize: "0.48rem", color: "var(--text-muted)", flexShrink: 0 }}>via {src.provider === "openai" ? "GPT-4" : src.provider === "gemini" ? "Gemini" : src.provider === "grok" ? "Grok" : "Claude"} ↗</span>
+                      </a>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* F) Actions */}
               <div style={{ display: "flex", gap: "0.65rem", flexWrap: "wrap" }}>

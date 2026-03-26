@@ -17,7 +17,37 @@ type ItemData = {
   leadCount: number;
   buyerBotResult: string | null;
   buyerBotRunAt: string | null;
+  buyerHistory?: { id: string; type: string; createdAt: string }[];
+  lastScannedAt?: string | null;
+  activeLeads?: any[];
+  botActive?: boolean;
+  botBuyersFound?: number;
 };
+
+function AccordionHeader({ id, icon, title, subtitle, isOpen, onToggle, accentColor, badge }: {
+  id: string; icon: string; title: string; subtitle?: string;
+  isOpen: boolean; onToggle: (id: string) => void; accentColor?: string; badge?: string;
+}) {
+  return (
+    <button onClick={() => onToggle(id)} style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      width: "100%", background: isOpen ? "rgba(0,188,212,0.02)" : "transparent",
+      border: "none", borderBottom: isOpen ? "1px solid var(--border-default)" : "1px solid transparent",
+      padding: "0.65rem 0.5rem", cursor: "pointer", transition: "all 0.2s ease",
+      borderRadius: isOpen ? "0.4rem 0.4rem 0 0" : "0.4rem", minHeight: "40px",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+        <span style={{ fontSize: "1rem" }}>{icon}</span>
+        <span style={{ fontSize: "0.65rem", fontWeight: 700, color: accentColor || "var(--text-secondary)", letterSpacing: "0.05em", textTransform: "uppercase" as const }}>{title}</span>
+        {badge && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "2px 8px", borderRadius: "6px", background: `${accentColor || "#00bcd4"}18`, color: accentColor || "#00bcd4" }}>{badge}</span>}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        {subtitle && !isOpen && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", maxWidth: "280px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontWeight: 500 }}>{subtitle}</span>}
+        <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", transition: "transform 0.25s ease", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", display: "inline-flex", alignItems: "center", justifyContent: "center", width: "22px", height: "22px", borderRadius: "50%", background: isOpen ? "rgba(0,188,212,0.08)" : "transparent" }}>▼</span>
+      </div>
+    </button>
+  );
+}
 
 function safeJson(s: string | null): any {
   if (!s) return null;
@@ -330,6 +360,8 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
   const [megaBotData, setMegaBotData] = useState<any>(null);
   const [megaBotLoading, setMegaBotLoading] = useState(false);
   const [megaBotExpanded, setMegaBotExpanded] = useState<string | null>(null);
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(["hot-leads", "profiles", "outreach"]));
+  const toggleSection = (id: string) => { setOpenSections(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; }); };
 
   const item = useMemo(() => items.find((i) => i.id === selectedId) || null, [items, selectedId]);
   const ai = useMemo(() => item ? safeJson(item.aiResult) : null, [item]);
@@ -537,7 +569,8 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
           </Card>
 
           {/* SECTION B — Hot Leads */}
-          {hotLeads.length > 0 && (
+          <AccordionHeader id="hot-leads" icon="🔥" title="HOT LEADS" subtitle={`${hotLeads.length} leads found`} isOpen={openSections.has("hot-leads")} onToggle={toggleSection} accentColor="#ef4444" badge={hotLeads.length ? `${hotLeads.length} HOT` : ""} />
+          {openSections.has("hot-leads") && hotLeads.length > 0 && (
             <Card>
               <SectionLabel icon="🔥" label="Hot Leads" />
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
@@ -571,7 +604,8 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* SECTION C — Buyer Profiles */}
-          {profiles.length > 0 && (
+          <AccordionHeader id="profiles" icon="👥" title="BUYER PROFILES" subtitle={`${profiles.length} profiles identified`} isOpen={openSections.has("profiles")} onToggle={toggleSection} accentColor="#00bcd4" />
+          {openSections.has("profiles") && profiles.length > 0 && (
             <Card>
               <SectionLabel icon="👤" label={`Buyer Profiles (${profiles.length})`} />
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "0.5rem" }}>
@@ -615,7 +649,8 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* SECTION D — Platform Opportunities */}
-          {platforms.length > 0 && (
+          <AccordionHeader id="platforms" icon="🏪" title="PLATFORM OPPORTUNITIES" subtitle={`${platforms.length} platforms analyzed`} isOpen={openSections.has("platforms")} onToggle={toggleSection} />
+          {openSections.has("platforms") && platforms.length > 0 && (
             <Card>
               <SectionLabel icon="📡" label="Platform Opportunities" />
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
@@ -670,10 +705,12 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* SECTION E — Outreach Center */}
-          {item && <OutreachCenter item={item} ai={ai} result={result} />}
+          <AccordionHeader id="outreach" icon="📤" title="OUTREACH CENTER" subtitle="Templates & channels to reach buyers" isOpen={openSections.has("outreach")} onToggle={toggleSection} accentColor="#22c55e" />
+          {openSections.has("outreach") && item && <OutreachCenter item={item} ai={ai} result={result} />}
 
           {/* SECTION F — Local Opportunities */}
-          {local && (
+          <AccordionHeader id="local" icon="📍" title="LOCAL OPPORTUNITIES" subtitle="Shops, flea markets, consignment near you" isOpen={openSections.has("local")} onToggle={toggleSection} />
+          {openSections.has("local") && local && (
             <Card>
               <SectionLabel icon="📍" label="Local Opportunities" />
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
@@ -712,7 +749,8 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* SECTION G — Competitive Landscape */}
-          {competition && (
+          <AccordionHeader id="competitive" icon="⚔️" title="COMPETITIVE LANDSCAPE" subtitle="What you're up against" isOpen={openSections.has("competitive")} onToggle={toggleSection} />
+          {openSections.has("competitive") && competition && (
             <Card>
               <SectionLabel icon="⚔️" label="Competitive Landscape" />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
@@ -747,7 +785,8 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* SECTION H — Timing Advice */}
-          {timing && (
+          <AccordionHeader id="timing" icon="⏰" title="TIMING ADVICE" subtitle={timing?.best_day_to_list || ""} isOpen={openSections.has("timing")} onToggle={toggleSection} />
+          {openSections.has("timing") && timing && (
             <Card>
               <SectionLabel icon="⏱️" label="Timing Advice" />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
@@ -1043,6 +1082,28 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
                     })()}
                   </p>
                 </div>
+
+                {/* MegaBot Web Sources */}
+                {(() => {
+                  const megaProviders = megaBotData?.providers || successful || [];
+                  const allSrc = megaProviders.flatMap((p: any) => (p.webSources || []).map((s: any) => ({ ...s, provider: p.provider })));
+                  const unique = allSrc.filter((s: any, i: number, a: any[]) => a.findIndex((x: any) => x.url === s.url) === i);
+                  if (unique.length === 0) return null;
+                  return (
+                    <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                      <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "#00bcd4", marginBottom: "0.25rem", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
+                        🌐 MEGABOT BUYER RESEARCH — {unique.length} sources
+                      </div>
+                      {unique.slice(0, 8).map((src: any, i: number) => (
+                        <a key={i} href={src.url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.2rem 0.35rem", marginBottom: "0.1rem", borderRadius: "0.25rem", background: "var(--bg-card)", textDecoration: "none", fontSize: "0.52rem", color: "#00bcd4" }}>
+                          <span style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, background: src.provider === "openai" ? "#10b981" : src.provider === "gemini" ? "#3b82f6" : "#00DC82" }} />
+                          <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{src.title || src.url}</span>
+                          <span style={{ fontSize: "0.45rem", color: "var(--text-muted)", flexShrink: 0 }}>↗</span>
+                        </a>
+                      ))}
+                    </div>
+                  );
+                })()}
 
                 {/* Re-run */}
                 <div style={{ textAlign: "center" }}>

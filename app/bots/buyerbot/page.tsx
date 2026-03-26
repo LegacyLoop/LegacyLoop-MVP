@@ -19,9 +19,10 @@ export default async function BuyerBotPage() {
       valuation: true,
       buyerBots: { include: { leads: true } },
       eventLogs: {
-        where: { eventType: "BUYERBOT_RESULT" },
+        where: { eventType: { in: ["BUYERBOT_RESULT", "BUYERBOT_RUN", "MEGABOT_BUYERBOT"] } },
         orderBy: { createdAt: "desc" },
-        take: 1,
+        take: 10,
+        select: { id: true, eventType: true, payload: true, createdAt: true },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -45,8 +46,32 @@ export default async function BuyerBotPage() {
         confidence: item.valuation.confidence,
       } : null,
       leadCount: totalLeads,
-      buyerBotResult: item.eventLogs[0]?.payload ?? null,
-      buyerBotRunAt: item.eventLogs[0]?.createdAt?.toISOString() ?? null,
+      buyerBotResult: (() => {
+        const evt = item.eventLogs.find((ev: any) => ev.eventType === "BUYERBOT_RESULT" || ev.eventType === "MEGABOT_BUYERBOT");
+        return evt?.payload ?? null;
+      })(),
+      buyerBotRunAt: (() => {
+        const evt = item.eventLogs.find((ev: any) => ev.eventType === "BUYERBOT_RESULT" || ev.eventType === "MEGABOT_BUYERBOT");
+        return evt?.createdAt?.toISOString() ?? null;
+      })(),
+      buyerHistory: item.eventLogs
+        .filter((ev: any) => ["BUYERBOT_RESULT", "BUYERBOT_RUN", "MEGABOT_BUYERBOT"].includes(ev.eventType))
+        .map((ev: any) => ({ id: ev.id, type: ev.eventType, createdAt: ev.createdAt.toISOString() })),
+      lastScannedAt: (() => {
+        const evt = item.eventLogs.find((ev: any) => ["BUYERBOT_RESULT", "MEGABOT_BUYERBOT"].includes(ev.eventType));
+        return evt?.createdAt?.toISOString() ?? null;
+      })(),
+      activeLeads: (() => {
+        const bot = item.buyerBots?.[0];
+        if (!bot?.leads) return [];
+        return bot.leads.map((lead: any) => ({
+          id: lead.id, buyerName: lead.buyerName, platform: lead.platform,
+          location: lead.location, maxBudget: lead.maxBudget, urgency: lead.urgency,
+          matchScore: lead.matchScore, outreachStatus: lead.outreachStatus,
+        }));
+      })(),
+      botActive: !!item.buyerBots?.[0]?.isActive,
+      botBuyersFound: item.buyerBots?.[0]?.buyersFound ?? 0,
     };
   });
 

@@ -32,10 +32,45 @@ export interface MegaBotResult {
 // ─── Agent specialty suffixes ─────────────────────────────────────────────
 
 const AGENT_SUFFIXES: Record<string, string> = {
-  openai: "\n\nProvide a thorough balanced assessment. Be precise, comprehensive, and data-driven.",
-  claude: "\n\nFocus on craftsmanship, historical significance, authenticity, material quality, rarity, and details others might miss.",
-  gemini: "\n\nFocus on market data, comparable sales, trending demand, platform strategies, and competitive positioning.",
-  grok: "\n\nFocus on social media buzz, viral potential, trending conversations, unconventional angles, and Gen Z/millennial interest.",
+  openai: `\n\nYOUR ROLE — PRIMARY WEB RESEARCHER:
+You have web search enabled. USE IT AGGRESSIVELY.
+- Search eBay for "[item] sold" to find REAL completed sales with prices and dates
+- Search Facebook Marketplace and Craigslist for current local listings
+- Search Poshmark, Mercari, OfferUp for active listings
+- Search auction house results (LiveAuctioneers, Heritage, Sotheby's) for high-value items
+- Search "[brand] [model] value guide" for collector pricing databases
+- Cross-reference at least 3 sources before making pricing claims
+- Cite specific URLs when possible
+Your job: REAL DATA. Not estimates. Not guesses. Real sold prices from real platforms.`,
+  claude: `\n\nYOUR ROLE — DEEP KNOWLEDGE SPECIALIST:
+You do NOT have web search. That is your STRENGTH — you focus purely on expertise.
+- AUTHENTICATE: Analyze construction techniques, joinery methods, materials, and finishes to verify age and origin
+- MAKER IDENTIFICATION: Cross-reference maker marks, stamps, labels, and signatures against your extensive training knowledge
+- PROVENANCE ANALYSIS: Assess likely origin, production era, and regional style based on design elements
+- RESTORATION VALUE: Estimate how much value professional restoration would add
+- FORGERY DETECTION: Flag any indicators that suggest reproduction, fake, or misattributed item
+- MATERIAL SCIENCE: Identify wood species, metal compositions, textile weaves, ceramic glazes
+- HISTORICAL CONTEXT: Place the item within its design movement, cultural period, and market history
+Your job: Be the EXPERT APPRAISER that no search engine can replace.`,
+  gemini: `\n\nYOUR ROLE — MARKET INTELLIGENCE ANALYST:
+You have Google Search grounding enabled. USE IT for market intelligence.
+- Search for current market trends affecting this item category
+- Find recent auction results and price movement data
+- Search collector forums and enthusiast communities for demand signals
+- Find value guide articles and price databases
+- Analyze seasonal patterns and regional demand differences
+- Search for similar items currently listed to assess competition
+- Identify emerging trends that affect future value
+Your job: MARKET INTELLIGENCE. Current trends, demand analysis, competitive landscape.`,
+  grok: `\n\nYOUR ROLE — SOCIAL & CULTURAL INTELLIGENCE:
+You specialize in real-time cultural awareness and social media trends.
+- Assess this item's VIRAL POTENTIAL — would it trend on TikTok, Instagram, or Reddit?
+- Evaluate GEN Z / MILLENNIAL appeal — nostalgia value, aesthetic trends (cottagecore, dark academia, etc.)
+- Identify INFLUENCER ANGLE — what type of content creator would feature this item?
+- Find NICHE COMMUNITIES — Reddit subreddits, Discord servers, Facebook groups
+- Evaluate GIFT POTENTIAL — unique, shareable gift? For what occasions?
+- Identify UNCONVENTIONAL BUYERS — interior designers, prop stylists, museum curators, film production
+Your job: Find the buyers nobody else thinks of. The social angle. The culture play.`,
 };
 
 // ─── Shared helpers ───────────────────────────────────────────────────────
@@ -340,27 +375,73 @@ function debugAgentShape(label: string, data: any) {
 async function callOpenAI(
   prompt: string,
   photoPath: string
-): Promise<{ data: any; raw: string }> {
+): Promise<{ data: any; raw: string; webSources?: Array<{ url: string; title: string }> }> {
   const key = process.env.OPENAI_API_KEY;
   if (!key || key.length < 10) throw new Error("No OPENAI_API_KEY");
   const openai = new OpenAI({ apiKey: key });
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
   const { dataUrl } = fileToDataUrl(photoPath);
 
-  const resp = await openai.responses.create({
-    model,
-    input: [
-      {
-        role: "user",
-        content: [
-          { type: "input_text", text: prompt + AGENT_SUFFIXES.openai },
-          { type: "input_image", image_url: dataUrl, detail: "auto" },
-        ],
-      },
-    ],
-    text: { format: { type: "text" } },
-    max_output_tokens: 16384,
-  });
+  let resp;
+  try {
+    resp = await openai.responses.create({
+      model,
+      input: [
+        {
+          role: "user",
+          content: [
+            { type: "input_text", text: prompt + AGENT_SUFFIXES.openai },
+            { type: "input_image", image_url: dataUrl, detail: "auto" },
+          ],
+        },
+      ],
+      tools: [{ type: "web_search_preview" } as any],
+      text: { format: { type: "text" } },
+      max_output_tokens: 16384,
+    });
+  } catch (searchErr: any) {
+    console.warn("[MegaBot OpenAI] web search failed, retrying without:", searchErr?.message);
+    resp = await openai.responses.create({
+      model,
+      input: [
+        {
+          role: "user",
+          content: [
+            { type: "input_text", text: prompt + AGENT_SUFFIXES.openai },
+            { type: "input_image", image_url: dataUrl, detail: "auto" },
+          ],
+        },
+      ],
+      text: { format: { type: "text" } },
+      max_output_tokens: 16384,
+    });
+  }
+
+  // Parse web sources from OpenAI response
+  let openaiWebSources: Array<{ url: string; title: string }> = [];
+  try {
+    if (resp.output && Array.isArray(resp.output)) {
+      for (const outputItem of resp.output) {
+        if ((outputItem as any).type === "web_search_call" && (outputItem as any).results) {
+          for (const r of (outputItem as any).results) {
+            if (r.url) openaiWebSources.push({ url: r.url, title: r.title || r.url });
+          }
+        }
+        if ((outputItem as any).type === "message" && (outputItem as any).content) {
+          for (const c of (outputItem as any).content) {
+            if (c.annotations) {
+              for (const ann of c.annotations) {
+                if (ann.type === "url_citation" && ann.url) {
+                  openaiWebSources.push({ url: ann.url, title: ann.title || ann.url });
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch {}
+  if (openaiWebSources.length > 0) console.log(`[MegaBot OpenAI] Found ${openaiWebSources.length} web sources`);
 
   const raw = resp.output_text;
   console.log('[megabot][openai] Raw response preview:', JSON.stringify(raw).slice(0, 300));
@@ -369,7 +450,7 @@ async function callOpenAI(
   const data = normalizeKeys(unwrapAgentData(normalizeKeys(parsed)));
   console.log(`[MEGABOT DEBUG][OpenAI] Top keys: ${Object.keys(data || {}).slice(0, 15).join(", ")}`);
   debugAgentShape("OpenAI", data);
-  return { data, raw };
+  return { data, raw, webSources: openaiWebSources };
 }
 
 // Claude models to try: primary then fallback
@@ -485,12 +566,12 @@ async function callClaude(
 async function callGemini(
   prompt: string,
   photoPath: string
-): Promise<{ data: any; raw: string }> {
+): Promise<{ data: any; raw: string; webSources?: Array<{ url: string; title: string }> }> {
   const key = process.env.GEMINI_API_KEY;
   if (!key || key.length < 10) throw new Error("No GEMINI_API_KEY");
   const { base64, mime } = fileToDataUrl(photoPath);
 
-  const reqBody = JSON.stringify({
+  const baseReqBody = {
     contents: [
       {
         parts: [
@@ -510,7 +591,11 @@ async function callGemini(
       maxOutputTokens: 16384,
       thinkingConfig: { thinkingBudget: 2048 },
     },
-  });
+    tools: [{ google_search: {} }],
+  };
+  // Note: Google Search grounding may not work with responseMimeType:"application/json" on all models.
+  // The request will try with tools; if the model ignores the tool, we still get grounding metadata when available.
+  const reqBody = JSON.stringify(baseReqBody);
 
   const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"];
   let json: any;
@@ -610,11 +695,26 @@ async function callGemini(
     console.error(`[MegaBot][Gemini] Empty response. finishReason: ${finishReason}, blockReason: ${blockReason}, safetyRatings: ${safetyRatings}, structure: ${JSON.stringify(json).substring(0, 400)}`);
     throw new Error(`Gemini empty response (finish: ${finishReason}, block: ${blockReason})`);
   }
+  // Parse grounding web sources from Gemini response
+  let geminiWebSources: Array<{ url: string; title: string }> = [];
+  try {
+    const candidate = json.candidates?.[0];
+    if (candidate?.groundingMetadata?.groundingChunks) {
+      for (const chunk of candidate.groundingMetadata.groundingChunks) {
+        if (chunk.web?.uri) geminiWebSources.push({ url: chunk.web.uri, title: chunk.web.title || chunk.web.uri });
+      }
+    }
+    if (candidate?.groundingMetadata?.webSearchQueries) {
+      console.log(`[MegaBot Gemini] Search queries used: ${candidate.groundingMetadata.webSearchQueries.join(", ")}`);
+    }
+  } catch {}
+  if (geminiWebSources.length > 0) console.log(`[MegaBot Gemini] Found ${geminiWebSources.length} grounding sources`);
+
   const parsed = parseAgentResponse(raw, "Gemini");
   const data = normalizeKeys(unwrapAgentData(normalizeKeys(parsed)));
   console.log(`[MEGABOT DEBUG][Gemini] Top keys: ${Object.keys(data || {}).slice(0, 15).join(", ")}`);
   debugAgentShape("Gemini", data);
-  return { data, raw };
+  return { data, raw, webSources: geminiWebSources };
 }
 
 const GROK_TIMEOUT = 60_000; // 60 seconds — generous for text-only

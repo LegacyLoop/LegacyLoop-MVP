@@ -16,7 +16,36 @@ type ItemData = {
   priceBotRunAt: string | null;
   valuation: any;
   antique: any;
+  pricingHistory?: { id: string; type: string; createdAt: string; payload: any }[];
+  lastPricedAt?: string | null;
+  amazonData?: any;
+  analyzeBasePricing?: { low: number; mid: number; high: number; confidence: number; source: string } | null;
 };
+
+function AccordionHeader({ id, icon, title, subtitle, isOpen, onToggle, accentColor, badge }: {
+  id: string; icon: string; title: string; subtitle?: string;
+  isOpen: boolean; onToggle: (id: string) => void; accentColor?: string; badge?: string;
+}) {
+  return (
+    <button onClick={() => onToggle(id)} style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      width: "100%", background: isOpen ? "rgba(0,188,212,0.02)" : "transparent",
+      border: "none", borderBottom: isOpen ? "1px solid var(--border-default)" : "1px solid transparent",
+      padding: "0.65rem 0.5rem", cursor: "pointer", transition: "all 0.2s ease",
+      borderRadius: isOpen ? "0.4rem 0.4rem 0 0" : "0.4rem", minHeight: "40px",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+        <span style={{ fontSize: "1rem" }}>{icon}</span>
+        <span style={{ fontSize: "0.65rem", fontWeight: 700, color: accentColor || "var(--text-secondary)", letterSpacing: "0.05em", textTransform: "uppercase" as const }}>{title}</span>
+        {badge && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "2px 8px", borderRadius: "6px", background: `${accentColor || "#00bcd4"}18`, color: accentColor || "#00bcd4" }}>{badge}</span>}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        {subtitle && !isOpen && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", maxWidth: "280px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontWeight: 500 }}>{subtitle}</span>}
+        <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", transition: "transform 0.25s ease", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", display: "inline-flex", alignItems: "center", justifyContent: "center", width: "22px", height: "22px", borderRadius: "50%", background: isOpen ? "rgba(0,188,212,0.08)" : "transparent" }}>▼</span>
+      </div>
+    </button>
+  );
+}
 
 function safeJson(s: string | null): any {
   if (!s) return null;
@@ -430,6 +459,27 @@ function MegaBotPricingSection({ megaResult, megaBotRunning, megaBotStep, expand
         );
       })()}
 
+      {/* MegaBot Web Sources */}
+      {(() => {
+        const allSrc = (megaResult?.providers || []).flatMap((p: any) => (p.webSources || []).map((s: any) => ({ ...s, provider: p.provider })));
+        const unique = allSrc.filter((s: any, i: number, a: any[]) => a.findIndex((x: any) => x.url === s.url) === i);
+        if (unique.length === 0) return null;
+        return (
+          <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "#00bcd4", marginBottom: "0.25rem", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
+              🌐 MEGABOT WEB RESEARCH — {unique.length} sources
+            </div>
+            {unique.slice(0, 8).map((src: any, i: number) => (
+              <a key={i} href={src.url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.2rem 0.35rem", marginBottom: "0.1rem", borderRadius: "0.25rem", background: "var(--bg-card)", textDecoration: "none", fontSize: "0.52rem", color: "#00bcd4" }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", flexShrink: 0, background: src.provider === "openai" ? "#10b981" : src.provider === "gemini" ? "#3b82f6" : "#00DC82" }} />
+                <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{src.title || src.url}</span>
+                <span style={{ fontSize: "0.45rem", color: "var(--text-muted)", flexShrink: 0 }}>↗</span>
+              </a>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* Actions */}
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         <button onClick={onRunMegaBot} style={{ padding: "0.45rem 1rem", fontSize: "0.78rem", fontWeight: 600, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #a855f7, #7c3aed)", color: "#fff", cursor: "pointer" }}>Re-Run MegaBot — 3 cr</button>
@@ -448,6 +498,9 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
   );
   const [loading, setLoading] = useState(false);
   const [freshResult, setFreshResult] = useState<Record<string, any>>({});
+  // Accordion state
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(["pricing-main", "comps", "platforms"]));
+  const toggleSection = (id: string) => { setOpenSections(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; }); };
 
   const item = items.find((i) => i.id === selectedId);
   const v = item?.valuation;
@@ -630,6 +683,72 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
         /* ── PRICEBOT RESULTS: Full display ── */
         <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
 
+          {/* Freshness Indicator */}
+          {item?.lastPricedAt && (
+            <div style={{
+              display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem",
+              background: "var(--ghost-bg)", borderRadius: "0.5rem", fontSize: "0.65rem", color: "var(--text-muted)", flexWrap: "wrap",
+            }}>
+              <span style={{ fontSize: "0.8rem" }}>🕐</span>
+              <span>Last priced: <strong style={{ color: "var(--text-secondary)" }}>
+                {timeAgo(item.lastPricedAt)}
+              </strong></span>
+              {(() => {
+                const hrs = (Date.now() - new Date(item.lastPricedAt!).getTime()) / 3600000;
+                if (hrs > 168) return <span style={{ color: "#ef4444", fontWeight: 600 }}>⚠️ Stale — prices may have changed</span>;
+                if (hrs > 48) return <span style={{ color: "#f59e0b", fontWeight: 600 }}>⏳ Aging</span>;
+                return <span style={{ color: "#22c55e", fontWeight: 600 }}>✅ Fresh</span>;
+              })()}
+              <span style={{ marginLeft: "auto", fontSize: "0.55rem" }}>
+                {item.pricingHistory?.length ?? 0} run{(item.pricingHistory?.length ?? 0) !== 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
+
+          {/* Expand All / Collapse All */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "-0.75rem" }}>
+            <button onClick={() => {
+              const allIds = ["pricing-main", "comps", "platforms", "market", "regional", "factors", "negotiation", "timeline", "rarity", "amazon", "sources", "history"];
+              setOpenSections(prev => prev.size >= allIds.length ? new Set() : new Set(allIds));
+            }} style={{ fontSize: "0.5rem", fontWeight: 600, color: "var(--text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: "0.2rem 0.4rem" }}>
+              {openSections.size >= 11 ? "▲ Collapse All" : "▼ Expand All"}
+            </button>
+          </div>
+
+          {/* Pricing Evolution (3-stage comparison) */}
+          <AccordionHeader id="pricing-main" icon="💰" title="PRICING EVOLUTION" subtitle={(() => {
+            const low = pb?.price_validation?.revised_low ?? v?.low;
+            const high = pb?.price_validation?.revised_high ?? v?.high;
+            return low && high ? `$${low} — $${high}` : "";
+          })()} isOpen={openSections.has("pricing-main")} onToggle={toggleSection} accentColor="#00bcd4" badge={pb?.confidence?.overall_confidence ? `${pb.confidence.overall_confidence}%` : ""} />
+          {openSections.has("pricing-main") && (
+            <div style={{ padding: "0.75rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0 0 0.5rem 0.5rem", marginTop: "-0.5rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr auto 1fr", gap: "0.5rem", alignItems: "center" }}>
+                <div style={{ textAlign: "center", padding: "0.5rem", background: "var(--ghost-bg)", borderRadius: "0.5rem" }}>
+                  <div style={{ fontSize: "0.48rem", fontWeight: 600, color: "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase" as const }}>🧠 AI ANALYSIS</div>
+                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>Base Estimate</div>
+                  <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary)" }}>${item?.analyzeBasePricing?.low ?? v?.low ?? "?"} — ${item?.analyzeBasePricing?.high ?? v?.high ?? "?"}</div>
+                </div>
+                <div style={{ fontSize: "1.2rem", color: "var(--text-muted)" }}>→</div>
+                <div style={{ textAlign: "center", padding: "0.5rem", background: "rgba(0,188,212,0.04)", borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.15)" }}>
+                  <div style={{ fontSize: "0.48rem", fontWeight: 600, color: "#00bcd4", letterSpacing: "0.05em", textTransform: "uppercase" as const }}>💰 PRICEBOT</div>
+                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>Refined</div>
+                  <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "#00bcd4" }}>${pb?.price_validation?.revised_low ?? v?.low ?? "?"} — ${pb?.price_validation?.revised_high ?? v?.high ?? "?"}</div>
+                </div>
+                <div style={{ fontSize: "1.2rem", color: "var(--text-muted)" }}>→</div>
+                <div style={{ textAlign: "center", padding: "0.5rem", background: megaResult ? "rgba(139,92,246,0.06)" : "var(--ghost-bg)", borderRadius: "0.5rem", border: megaResult ? "1px solid rgba(139,92,246,0.2)" : "1px dashed var(--border-default)" }}>
+                  <div style={{ fontSize: "0.48rem", fontWeight: 600, color: megaResult ? "#8b5cf6" : "var(--text-muted)", letterSpacing: "0.05em", textTransform: "uppercase" as const }}>⚡ MEGABOT</div>
+                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>4-AI Consensus</div>
+                  {megaResult ? (
+                    <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "#8b5cf6" }}>${megaResult.consensus?.price_low ?? "?"} — ${megaResult.consensus?.price_high ?? "?"}</div>
+                  ) : (
+                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", fontStyle: "italic" }}>Not yet run</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Section A — Price Overview */}
           <Card>
             <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start", flexWrap: "wrap" }}>
@@ -687,7 +806,8 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
           </Card>
 
           {/* Section B — Comparable Sales */}
-          {pb.comparable_sales?.length > 0 && (
+          <AccordionHeader id="comps" icon="📊" title="COMPARABLE SALES" subtitle={`${(pb.comparable_sales || []).length} comps`} isOpen={openSections.has("comps")} onToggle={toggleSection} badge={pb.comparable_sales?.length ? `${pb.comparable_sales.length} found` : ""} />
+          {openSections.has("comps") && pb.comparable_sales?.length > 0 && (
             <Card>
               <SectionLabel>Comparable Sales ({pb.comparable_sales.length} found)</SectionLabel>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
@@ -708,6 +828,11 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
                         {comp.sold_date} · {comp.condition_compared} condition
                         {comp.notes && ` · ${comp.notes}`}
                       </div>
+                      {(comp.source_url || comp.url) && (
+                        <a href={comp.source_url || comp.url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem", fontSize: "0.5rem", color: "#00bcd4", textDecoration: "none", marginTop: "0.2rem" }}>
+                          🔗 View source ↗
+                        </a>
+                      )}
                     </div>
                     <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--accent)", flexShrink: 0 }}>
                       ${comp.sold_price}
@@ -719,7 +844,8 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* Section C — Platform Breakdown */}
-          {pb.platform_pricing && (
+          <AccordionHeader id="platforms" icon="🏪" title="WHERE TO SELL" subtitle={pb.platform_pricing?.best_platform ? `Best: ${pb.platform_pricing.best_platform}` : ""} isOpen={openSections.has("platforms")} onToggle={toggleSection} accentColor="#00bcd4" />
+          {openSections.has("platforms") && pb.platform_pricing && (
             <Card>
               <SectionLabel>Platform Breakdown</SectionLabel>
               {pb.platform_pricing.best_platform && (
@@ -772,7 +898,8 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* Section D — Market Analysis */}
-          {pb.market_analysis && (
+          <AccordionHeader id="market" icon="📈" title="MARKET ANALYSIS" subtitle={pb.market_analysis?.demand_level || ""} isOpen={openSections.has("market")} onToggle={toggleSection} />
+          {openSections.has("market") && pb.market_analysis && (
             <Card>
               <SectionLabel>Market Analysis</SectionLabel>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
@@ -801,7 +928,8 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* Section E — Regional Pricing */}
-          {pb.regional_pricing && (
+          <AccordionHeader id="regional" icon="🗺️" title="REGIONAL PRICING" subtitle="Local vs National vs Best Market" isOpen={openSections.has("regional")} onToggle={toggleSection} />
+          {openSections.has("regional") && pb.regional_pricing && (
             <Card>
               <SectionLabel>Regional Pricing</SectionLabel>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.6rem", marginBottom: "0.75rem" }}>
@@ -834,7 +962,8 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* Section F — Value Factors */}
-          {pb.price_factors && (
+          <AccordionHeader id="factors" icon="💎" title="VALUE FACTORS" subtitle={`${(pb.price_factors?.value_adders || []).length} adders · ${(pb.price_factors?.value_reducers || []).length} reducers`} isOpen={openSections.has("factors")} onToggle={toggleSection} />
+          {openSections.has("factors") && pb.price_factors && (
             <Card>
               <SectionLabel>Value Factors</SectionLabel>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
@@ -874,7 +1003,8 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* Section G — Negotiation Guide */}
-          {pb.negotiation_guide && (
+          <AccordionHeader id="negotiation" icon="🤝" title="NEGOTIATION GUIDE" subtitle={pb.negotiation_guide?.sweet_spot ? `Sweet spot: $${pb.negotiation_guide.sweet_spot}` : ""} isOpen={openSections.has("negotiation")} onToggle={toggleSection} accentColor="#22c55e" />
+          {openSections.has("negotiation") && pb.negotiation_guide && (
             <Card>
               <SectionLabel>Negotiation Guide</SectionLabel>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.6rem", marginBottom: "0.75rem" }}>
@@ -900,7 +1030,8 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* Section H — Price Timeline */}
-          {pb.price_decay && (
+          <AccordionHeader id="timeline" icon="📅" title="PRICE TIMELINE & DECAY" subtitle={pb.price_decay?.best_time_to_sell || ""} isOpen={openSections.has("timeline")} onToggle={toggleSection} />
+          {openSections.has("timeline") && pb.price_decay && (
             <Card>
               <SectionLabel>Price Timeline</SectionLabel>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
@@ -922,7 +1053,8 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* Section I — Rarity */}
-          {pb.rarity_assessment && (
+          <AccordionHeader id="rarity" icon="✨" title="RARITY ASSESSMENT" subtitle={pb.rarity_assessment?.rarity_level || ""} isOpen={openSections.has("rarity")} onToggle={toggleSection} />
+          {openSections.has("rarity") && pb.rarity_assessment && (
             <Card>
               <SectionLabel>Rarity Assessment</SectionLabel>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
@@ -957,6 +1089,87 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
                 </div>
               )}
             </Card>
+          )}
+
+          {/* Amazon Market Data */}
+          {item?.amazonData && (
+            <>
+              <AccordionHeader id="amazon" icon="📦" title="AMAZON MARKET DATA" subtitle={`${item.amazonData.resultCount ?? item.amazonData.result_count ?? 0} products`} isOpen={openSections.has("amazon")} onToggle={toggleSection} accentColor="#ff9900" badge="ENRICHED" />
+              {openSections.has("amazon") && (
+                <Card>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
+                    <div style={{ textAlign: "center", padding: "0.4rem", background: "rgba(255,153,0,0.06)", borderRadius: "0.4rem" }}>
+                      <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600 }}>NEW RETAIL AVG</div>
+                      <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "#ff9900" }}>${item.amazonData.priceAvg ?? item.amazonData.price_avg ?? "—"}</div>
+                    </div>
+                    <div style={{ textAlign: "center", padding: "0.4rem", background: "rgba(255,153,0,0.06)", borderRadius: "0.4rem" }}>
+                      <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600 }}>USED ESTIMATE</div>
+                      <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)" }}>${Math.round((item.amazonData.priceAvg ?? item.amazonData.price_avg ?? 0) * 0.55)}</div>
+                    </div>
+                    <div style={{ textAlign: "center", padding: "0.4rem", background: "rgba(255,153,0,0.06)", borderRadius: "0.4rem" }}>
+                      <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600 }}>RESULTS</div>
+                      <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)" }}>{item.amazonData.resultCount ?? item.amazonData.result_count ?? 0}</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontStyle: "italic", marginTop: "0.35rem" }}>
+                    💡 Amazon retail prices are new. Used items typically sell for 30–70% of retail depending on condition.
+                  </div>
+                </Card>
+              )}
+            </>
+          )}
+
+          {/* Pricing History */}
+          {(item?.pricingHistory?.length ?? 0) > 0 && (
+            <>
+              <AccordionHeader id="history" icon="📜" title="PRICING HISTORY" subtitle={`${item!.pricingHistory!.length} runs`} isOpen={openSections.has("history")} onToggle={toggleSection} />
+              {openSections.has("history") && (
+                <Card>
+                  {item!.pricingHistory!.map((run: any, i: number) => (
+                    <div key={run.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.4rem 0.5rem", borderBottom: i < item!.pricingHistory!.length - 1 ? "1px solid var(--border-default)" : "none", fontSize: "0.6rem" }}>
+                      <span style={{ padding: "2px 6px", borderRadius: "4px", fontSize: "0.5rem", fontWeight: 600, background: run.type === "MEGABOT_PRICEBOT" ? "rgba(139,92,246,0.1)" : "rgba(0,188,212,0.1)", color: run.type === "MEGABOT_PRICEBOT" ? "#8b5cf6" : "#00bcd4" }}>
+                        {run.type === "MEGABOT_PRICEBOT" ? "⚡ MegaBot" : "💰 PriceBot"}
+                      </span>
+                      <span style={{ color: "var(--text-muted)", fontSize: "0.55rem" }}>
+                        {new Date(run.createdAt).toLocaleDateString()} {new Date(run.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                    </div>
+                  ))}
+                </Card>
+              )}
+            </>
+          )}
+
+          {/* Sources & Citations */}
+          {(pb?.web_sources?.length > 0 || pb?.comparable_sales?.some((c: any) => c.source_url || c.url)) && (
+            <div style={{ marginTop: "0.25rem" }}>
+              <AccordionHeader id="sources" icon="🔗" title="SOURCES & CITATIONS" subtitle={`${(pb?.web_sources || []).length} web sources`} isOpen={openSections.has("sources")} onToggle={toggleSection} accentColor="#00bcd4" badge="LIVE DATA" />
+              {openSections.has("sources") && (
+                <Card>
+                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: "0.35rem" }}>
+                    Prices found via real-time web search during analysis:
+                  </div>
+                  {(pb?.web_sources || []).map((src: any, i: number) => (
+                    <a key={i} href={src.url} target="_blank" rel="noopener noreferrer" style={{
+                      display: "flex", alignItems: "center", gap: "0.3rem",
+                      padding: "0.3rem 0.5rem", marginBottom: "0.2rem",
+                      borderRadius: "0.35rem", background: "var(--ghost-bg)",
+                      textDecoration: "none", fontSize: "0.58rem", color: "#00bcd4",
+                      border: "1px solid transparent",
+                    }}>
+                      <span style={{ fontSize: "0.75rem" }}>🔗</span>
+                      <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{src.title || src.url}</span>
+                      <span style={{ fontSize: "0.48rem", color: "var(--text-muted)", flexShrink: 0 }}>↗</span>
+                    </a>
+                  ))}
+                  {(pb?.web_sources || []).length === 0 && (
+                    <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", fontStyle: "italic", padding: "0.3rem" }}>
+                      📊 Pricing based on AI market knowledge. Live web search sources will appear here when available.
+                    </div>
+                  )}
+                </Card>
+              )}
+            </div>
           )}
 
           {/* ── MegaBot Pricing Section ── */}

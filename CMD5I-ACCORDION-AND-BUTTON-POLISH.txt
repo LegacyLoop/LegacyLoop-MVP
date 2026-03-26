@@ -1,0 +1,1072 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 25, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+================================================================================
+CMD5I — MAC ACCORDION CONSOLIDATION & WORLD-CLASS BUTTON UPGRADE
+================================================================================
+
+PREREQUISITE: CMD5H must be COMPLETE and PASSING before running CMD5I.
+CMD5H fixed AI data accuracy, banner text, Split Shipping preference,
+and smooth scroll. This command builds visual polish on top of correct data.
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+REAL TECH MANDATE: Minimize demo/mock data. Use real API integrations
+wherever possible. Estimates labeled as "ESTIMATED" not "demo".
+
+BUTTON DESIGN STANDARD (applies to ALL buttons touched by this command):
+
+  Every button a user can click MUST follow this hierarchy.
+  Buttons must be world-class, obvious, senior-friendly, and sleek.
+  Users (especially seniors) must immediately know "I can click this."
+
+  PRIMARY ACTION buttons (Save Quote, Ship Now, Get Rates, Use This Quote,
+  Get Estimate, Save Dims, Generate Label):
+
+    style={{
+      padding: "0.6rem 1.2rem",
+      fontSize: "0.82rem",
+      fontWeight: 700,
+      borderRadius: "0.6rem",
+      border: "none",
+      cursor: "pointer",
+      background: "linear-gradient(135deg, #00bcd4, #009688)",
+      color: "#fff",
+      boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+      transition: "all 0.2s ease",
+      letterSpacing: "0.02em",
+      minHeight: "44px",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "0.4rem",
+    }}
+
+    Hover: boxShadow → "0 4px 16px rgba(0,188,212,0.4)", transform → "translateY(-1px)"
+    Active: transform → "translateY(0)", boxShadow → "0 1px 4px rgba(0,188,212,0.2)"
+
+    GREEN VARIANT (Ship Now, Generate Label, Mark Sold):
+      background: "linear-gradient(135deg, #4caf50, #2e7d32)"
+      boxShadow uses rgba(76,175,80,...) instead of teal
+
+    PURPLE VARIANT (Freight actions):
+      background: "linear-gradient(135deg, #9c27b0, #7b1fa2)"
+      boxShadow uses rgba(156,39,176,...) instead of teal
+
+    GOLD VARIANT (Arta / White-Glove):
+      background: "linear-gradient(135deg, #ff9800, #f57c00)"
+      boxShadow uses rgba(255,152,0,...) instead of teal
+
+
+  SECONDARY ACTION buttons (Change Carrier, Get Fresh Rates, Edit Dims,
+  Refresh, Quick Action buttons in Control Center):
+
+    style={{
+      padding: "0.5rem 0.9rem",
+      fontSize: "0.72rem",
+      fontWeight: 600,
+      borderRadius: "0.5rem",
+      border: "1.5px solid var(--accent, #00bcd4)",
+      background: "rgba(0,188,212,0.06)",
+      color: "var(--accent, #00bcd4)",
+      cursor: "pointer",
+      transition: "all 0.2s ease",
+      minHeight: "38px",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "0.3rem",
+    }}
+
+    Hover: background → "rgba(0,188,212,0.12)", border-color brighter
+
+
+  SELECTION BUTTONS (Preference selector, box size grid, carrier rows):
+
+    ACTIVE state (selected):
+      background: "linear-gradient(135deg, #00bcd4, #009688)",
+      color: "#fff",
+      border: "2px solid #00bcd4",
+      boxShadow: "0 2px 8px rgba(0,188,212,0.3)",
+
+    INACTIVE state (not selected):
+      background: "var(--ghost-bg, rgba(0,0,0,0.04))",
+      color: "var(--text-secondary, #94a3b8)",
+      border: "1.5px solid var(--border-default, rgba(255,255,255,0.08))",
+
+    Hover (inactive): border-color → "var(--accent)", slight background change
+
+
+  DANGER buttons (Delete, Remove):
+    border: "1.5px solid #ef4444", color: "#ef4444",
+    hover background: "rgba(239,68,68,0.08)"
+
+  DISABLED state (all button types):
+    opacity: 0.45, cursor: "not-allowed", pointerEvents: "none"
+
+  ACCESSIBILITY REQUIREMENTS:
+    - Minimum touch target: 44px height (primary), 38px (secondary)
+    - Clear contrast ratios
+    - Obvious clickability (no flat text-only links for actions)
+    - Hover state visually distinct from default
+    - Icons paired with text labels (never icon-only for primary actions)
+
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '--- CMD5H PREREQUISITE CHECK ---'
+grep -n 'aiWeightLbs.*aiShipping.*pkgSuggestion\|aiWeightLbs.*weightEstimate' app/api/shipping/center/route.ts | head -3
+grep -n 'SPLIT_SHIPPING' app/items/[id]/ShippingPanel.tsx | head -3
+grep -n 'pays for it' app/items/[id]/ShippingPanel.tsx | head -3
+grep -n 'aiRealDims' app/api/shipping/center/route.ts | head -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+NOTE: If the CMD5H PREREQUISITE CHECK shows no results for any of those
+grep commands, CMD5H has NOT been fully applied. STOP and tell the user.
+
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+
+— Core Adapters —
+✓ lib/adapters/ai.ts — LOCKED
+✓ lib/adapters/rainforest.ts
+✓ lib/adapters/auth.ts — EXTEND ONLY
+✓ lib/adapters/storage.ts
+✓ lib/adapters/multi-ai.ts
+
+— AI Detection + Scoring —
+✓ lib/antique-detect.ts
+✓ lib/collectible-detect.ts
+
+— MegaBot Engine —
+✓ lib/megabot/run-specialized.ts
+✓ lib/megabot/prompts.ts — ADD-ONLY
+
+— Shipping (MOST LOCKED) —
+✓ lib/shipping/shippo.ts — LOCKED
+✓ lib/shipping/fedex-parcel.ts — LOCKED
+✓ lib/shipping/fedex-ltl.ts — LOCKED
+✓ lib/shipping/easypost.ts — LOCKED
+✓ lib/shipping/shipengine-ltl.ts — LOCKED
+✓ lib/shipping/freight-estimates.ts — LOCKED
+✓ lib/shipping/arta.ts — LOCKED
+✓ lib/shipping/metro-estimates.ts — LOCKED
+✓ lib/shipping/city-lookup.ts — LOCKED
+✓ lib/shipping/package-suggestions.ts — LOCKED
+✓ lib/shipping/saved-quotes.ts — LOCKED
+
+— Data Pipelines —
+✓ lib/data/backfill.ts
+✓ lib/data/user-events.ts
+✓ lib/data/populate-intelligence.ts — LOCKED
+
+— Enrichment —
+✓ lib/addons/enrich-item-context.ts
+✓ lib/enrichment/item-context.ts — LOCKED
+
+— Credits + Billing —
+✓ lib/credits.ts
+✓ lib/tier-enforcement.ts — READ ONLY
+✓ lib/billing/pro-rate.ts
+✓ lib/billing/commission.ts
+
+— Offers —
+✓ lib/offers/expiry.ts
+✓ lib/offers/notify.ts
+✓ lib/offers/cron.ts
+
+— Email System —
+✓ lib/email/send.ts
+✓ lib/email/templates.ts
+
+— Pricing Constants —
+✓ lib/constants/pricing.ts
+✓ lib/pricing/constants.ts
+✓ lib/adapters/pricing.ts
+✓ lib/pricing/calculate.ts
+
+— API Routes —
+✓ app/api/** — ALL LOCKED (no exceptions this command)
+
+— Item + Dashboard + Bots —
+✓ app/items/** — ALL LOCKED
+✓ EXCEPTION: See surgical unlock below
+✓ app/dashboard/** — ALL LOCKED
+✓ app/bots/** — LOCKED
+
+— Core UI —
+✓ app/components/AppNav.tsx
+✓ app/components/UploadModal.tsx
+✓ app/page.tsx
+✓ globals.css
+
+— Always-Dark Overlays — ALL LOCKED
+— Messaging System — ALL LOCKED
+— Add-On Tools — ALL LOCKED
+— Onboarding — ALL LOCKED
+
+— Infrastructure —
+✓ vercel.json — LOCKED
+✓ prisma/schema.prisma — LOCKED
+
+! SURGICAL UNLOCK for THIS command ONLY:
+
+  FILE 1: app/items/[id]/ShippingPanel.tsx
+    TASKS: 1, 3A
+    FIXES:
+      1. Convert 8 shipping sections to collapsible Apple/Mac accordion
+      3A. Upgrade all buttons to world-class standard
+
+  FILE 2: app/shipping/ShippingCenterClient.tsx
+    TASKS: 2, 3B
+    FIXES:
+      2. Convert 4 expandable sections to Mac accordion
+      3B. Upgrade all buttons to world-class standard
+
+All unlocked files return to LOCKED after approval.
+
+
+SECTION 4 — ALL APPROVED + LOCKED FEATURES
+
+Never touch, modify, or rebuild any approved features from Passes 1-5.
+We are in POLISH MODE — fixes only.
+
+CMD5A: Priority Action Banner, Quote Display Overhaul, Saved Quotes Redesign, Batch Pickup API
+CMD5B: Airport-style Tracking Board with status filters and auto-refresh
+CMD5C: Section headers in ShippingPanel, Arta inline quotes in FreightTab
+CMD5D: Shipping method detection fix, panel gating, API guards, cross-view sync, deep linking
+CMD5E: savedShipping pipeline fix, AI Recommendation Card, Master Item Panel, preference editor, tracking status buttons
+CMD5F: local_only wall → recommendation, stale quote filtering, FreightTab item detection, Master Panel upgrade
+CMD5G: Shipping Control Center (info chips, quick actions, status strip, connected services)
+CMD5H: AI data accuracy fix (aiEstWeight priority, weightStr, dimStr, getShippingMethod), banner text, Split Shipping, smooth scroll
+
+
+SECTION 5 — DATA COLLECTION STANDARD
+
+LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+
+Data collection for this command:
+  - Log accordion section open/close events (console.log)
+  - Log button click events where not already logged
+  - No new API calls or database writes needed
+
+
+SECTION 6 — BUILD PATTERN
+
+Database → Storage → API → AI → Enrichment → UI → Dashboard → Database update
+
+This command is UI-ONLY:
+  1. Define AccordionHeader component in both files
+  2. Convert section headers to accordion in ShippingPanel.tsx
+  3. Convert expandable toggles to accordion in ShippingCenterClient.tsx
+  4. Upgrade buttons in ShippingPanel.tsx
+  5. Upgrade buttons in ShippingCenterClient.tsx
+
+
+SECTION 7 — PLATFORM CONTEXT
+
+• DEMO_MODE=true — admin accounts bypass all gates and credits.
+• AI analysis generates: weight_estimate_lbs, dimensions_estimate, shipping_difficulty,
+  shipping_notes, confidence — stored on Item model via populateFromAnalysis()
+• Item model has: shippingWeight, shippingLength, shippingWidth, shippingHeight, isFragile,
+  shippingPreference, aiWeightLbs, aiDimsEstimate, aiShippingDifficulty, aiShippingNotes,
+  aiShippingConfidence
+• ShippingPanel props include savedShipping object — FIXED by CMD5E
+• ShippingCenterClient has 5 tabs: preSale, readyToShip, shipped, freight, pickup
+• CMD5H fixed AI data accuracy: aiEstWeight now uses aiWeightLbs first, dimStr/weightStr
+  updated, getShippingMethod fixed from array to object keys for dims
+
+ShippingPanel.tsx (~4,500+ lines):
+  Major sections with CMD5C headers ("① AI SHIPPING BRIEF" etc.) that are
+  NOT collapsible. Every section always expanded = very long scroll.
+  Ryan wants Apple/Mac accordion: compact headers, expand on click, collapse when done.
+
+ShippingCenterClient.tsx (~5,700+ lines):
+  Expandable sections use plain text toggle buttons:
+  - "▶ Show Quote Details" (line ~1991)
+  - "▶ Edit Shipping Details" (line ~2291)
+  - "📋 SHIPPING CONTROL CENTER" (line ~1593)
+  - Saved Quote banner always visible (line ~1946)
+  These need Mac accordion treatment.
+
+FUTURE NOTE (NOT THIS COMMAND):
+  After CMD5I passes, NEXT phase:
+  - Apply Mac accordion + button standard to ALL bot panels
+    (Valuation, Antique, Market Comps, Photo Analysis, etc.)
+  - Tighten AI bot accuracy + task completion
+  - Polish each bot page individually
+  Do NOT touch bot panels in this command.
+
+
+SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
+
+You MAY:
+— Define AccordionHeader component in both unlocked files
+— Add openSections state and toggleSection function to ShippingPanel
+— Wrap existing section content in accordion containers
+— Replace text toggle buttons with AccordionHeader in ShippingCenterClient
+— Add savedQuoteOpen state for collapsible saved quote banner
+— Upgrade button styles to match the Button Design Standard
+— Add onMouseEnter/onMouseLeave hover handlers to buttons
+— Add useEffect for initializing savedQuoteOpen defaults
+— Create subtitle preview strings from available data
+
+You MAY NOT:
+— Touch ANY file not listed in surgical unlock
+— Modify the prisma schema
+— Change how AI analysis or classification works
+— Remove or modify existing shipping API integrations
+— Restructure, rename, or reorganize anything
+— Change any bot AI or prompt logic
+— Deviate from inline style={{}}
+— Change business or pricing logic
+— Remove or rebuild existing functionality
+— Add new npm dependencies
+— Touch any locked shipping lib files
+— Change any onClick logic on buttons (style changes ONLY)
+— Remove any existing section content (wrap only)
+
+
+SECTION 9 — DEMO MODE + ADMIN BYPASS
+
+DEMO_MODE=true in .env — active now.
+shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
+Admin: never locked out. No credits deducted. Full platform access.
+
+TEST ACCOUNTS:
+annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
+SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
+
+
+SECTION 10 — ENVIRONMENT VARIABLES
+
+No new env variables needed.
+
+
+SECTION 11 — PENDING SCHEMA MIGRATION
+
+NO — No schema changes in this command. Pure UI polish.
+
+
+SECTION 12 — SHIPPING CENTER CONTEXT
+
+Shipping Center has 5 tabs: preSale (Estimates), readyToShip (Ready to Ship),
+shipped (Tracking), freight (Freight/LTL), pickup (Local Pickup).
+
+CMD5A added: Priority Action Banner, Quote Display Overhaul, Saved Quotes Redesign, Batch Pickup API
+CMD5B added: Airport-style Tracking Board with status filters and auto-refresh
+CMD5C added: Section headers in ShippingPanel, Arta inline quotes in FreightTab
+CMD5D added: Shipping method detection fix, panel gating, API guards, cross-view sync, deep linking
+CMD5E added: savedShipping fix, AI Recommendation Card, Master Item Panel, preference editor, tracking buttons
+CMD5F added: local_only → recommendation, stale quote filter, FreightTab detection, Master Panel upgrade
+CMD5G added: Shipping Control Center (info chips, quick actions, status strip, connected services)
+CMD5H added: AI data accuracy fix, banner text fix, Split Shipping, smooth scroll
+
+
+SECTION 13 — COMPONENT RELATIONSHIPS
+
+ShippingPanel.tsx:
+  - Receives props: itemId, mode, fromZip, suggestion, metroEstimates,
+    savedShipping, existingLabel, shippingMethod, itemValue, saleRadius, itemStatus
+  - Contains 8+ sections gated by various conditions
+  - Uses shippingMethod to determine which sections are visible/relevant
+
+ShippingCenterClient.tsx:
+  - Fetches data from /api/shipping/center
+  - PreSaleTab renders items with expandable panels
+  - Uses getShippingMethod() for shipping type detection
+  - Has QuoteDetailPanel, ShipProfile, ShippingAIPanel, ShippingRecommendation components
+
+
+SECTION 14 — COMMISSION + PRICING CONTEXT (READ ONLY)
+
+Commission tiers: Free=12%, Starter=8%, Plus=5%, Pro=4%
+Processing fee: 3.5% total split — buyer 1.75% + seller 1.75%
+No pricing changes in this command.
+
+
+SECTION 15 — SHIPPING API ARCHITECTURE (READ ONLY)
+
+Parcel: Shippo (live) + FedEx Direct (OAuth2) + EasyPost (backup/address verify)
+LTL/Freight: ShipEngine/ShipStation (primary) + FedEx LTL API (direct) + freight-estimates.ts (6 carriers)
+White-Glove: Arta API (premium/antique items)
+No API changes in this command.
+
+
+SECTION 16 — THREE DELIVERY PATHS (READ ONLY)
+
+Parcel: tracking/[labelId] → DELIVERED → runSaleCompletionChain("CARRIER_DELIVERY")
+LTL: ltl/[itemId] → DELIVERED → runSaleCompletionChain("LTL_DELIVERED")
+Pickup: pickup/[itemId] → COMPLETED → runSaleCompletionChain("PICKUP_HANDOFF")
+No delivery path changes in this command.
+
+
+SECTION 17 — TESTING PROTOCOL
+
+After EACH task completion:
+  1. npx tsc --noEmit — must pass with 0 errors
+  2. Visual inspection of accordion open/close behavior
+  3. Verify all existing functionality works inside accordion wrappers
+  4. Verify buttons have correct styles and hover states
+
+After ALL tasks complete:
+  1. npm run build — must pass
+  2. Full regression check (forms, saves, rates, freight, pickup, carrier selection)
+
+
+================================================================================
+
+OBJECTIVE — 3 TASKS
+
+  Task 1: Mac Accordion for ShippingPanel.tsx (8 sections)
+  Task 2: Mac Accordion for ShippingCenterClient.tsx (4 sections)
+  Task 3: World-class button upgrade (both files)
+
+================================================================================
+
+
+TASK 1 — MAC ACCORDION FOR SHIPPING PANEL (8 SECTIONS)
+FILE: app/items/[id]/ShippingPanel.tsx
+
+  A) DEFINE AccordionHeader component ABOVE the ShippingPanel function
+  (not inside it). This is a standalone helper component:
+
+    function AccordionHeader({
+      id, icon, title, subtitle, isOpen, onToggle, accentColor, badge,
+    }: {
+      id: string; icon: string; title: string; subtitle?: string;
+      isOpen: boolean; onToggle: (id: string) => void;
+      accentColor?: string; badge?: string;
+    }) {
+      return (
+        <button
+          onClick={() => onToggle(id)}
+          onMouseEnter={(e) => {
+            if (!isOpen) (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,188,212,0.03)";
+          }}
+          onMouseLeave={(e) => {
+            if (!isOpen) (e.currentTarget as HTMLButtonElement).style.background = "none";
+          }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            background: isOpen ? "rgba(0,188,212,0.02)" : "none",
+            border: "none",
+            borderBottom: isOpen
+              ? "1px solid var(--border, rgba(255,255,255,0.06))"
+              : "1px solid transparent",
+            padding: "0.6rem 0.4rem",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            borderRadius: isOpen ? "0.4rem 0.4rem 0 0" : "0.4rem",
+            minHeight: "38px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <span style={{ fontSize: "0.9rem" }}>{icon}</span>
+            <span style={{
+              fontSize: "0.62rem",
+              fontWeight: 700,
+              color: accentColor || "var(--text-secondary, #94a3b8)",
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
+            }}>
+              {title}
+            </span>
+            {badge && (
+              <span style={{
+                fontSize: "0.48rem", fontWeight: 700,
+                padding: "2px 6px", borderRadius: "6px",
+                background: `${accentColor || "#00bcd4"}18`,
+                color: accentColor || "#00bcd4",
+              }}>
+                {badge}
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+            {subtitle && !isOpen && (
+              <span style={{
+                fontSize: "0.52rem", color: "var(--text-muted, #64748b)",
+                maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis",
+                whiteSpace: "nowrap", fontWeight: 500,
+              }}>
+                {subtitle}
+              </span>
+            )}
+            <span style={{
+              fontSize: "0.5rem",
+              color: "var(--text-muted, #64748b)",
+              transition: "transform 0.25s ease",
+              transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "20px",
+              height: "20px",
+              borderRadius: "50%",
+              background: isOpen ? "rgba(0,188,212,0.08)" : "transparent",
+            }}>
+              ▼
+            </span>
+          </div>
+        </button>
+      );
+    }
+
+
+  B) ADD accordion state at top of ShippingPanel component (near other useState):
+
+    const [openSections, setOpenSections] = useState<Set<string>>(() => {
+      const defaults = new Set<string>(["ai-brief"]);
+      if (shippingMethod === "freight" || shippingMethod === "local_only") {
+        defaults.add("freight");
+        defaults.add("pickup");
+      }
+      if (shippingMethod === "parcel") {
+        defaults.add("carrier-rates");
+      }
+      return defaults;
+    });
+
+    const toggleSection = (id: string) => {
+      setOpenSections(prev => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+    };
+
+
+  C) CONVERT each section. The existing section headers from CMD5C
+  look like:
+    <div style={{ ... }}>
+      <span>① AI SHIPPING BRIEF</span>
+    </div>
+
+  REPLACE each header + content with this pattern:
+
+    <div style={{ marginBottom: "0.3rem" }}>
+      <AccordionHeader
+        id="section-id"
+        icon="🤖"
+        title="SECTION TITLE"
+        subtitle="preview when collapsed"
+        isOpen={openSections.has("section-id")}
+        onToggle={toggleSection}
+        accentColor="#00bcd4"
+      />
+      {openSections.has("section-id") && (
+        <div style={{ padding: "0.5rem 0.2rem" }}>
+          {/* EXISTING section content — DO NOT CHANGE */}
+        </div>
+      )}
+    </div>
+
+
+  SECTIONS TO CONVERT (8 total):
+
+  SECTION 1: AI SHIPPING BRIEF
+    id: "ai-brief"
+    icon: "🤖"
+    title: "AI SHIPPING BRIEF"
+    accentColor: "#00bcd4"
+    DEFAULT: OPEN
+    subtitle: Build from available data, e.g.:
+      `${savedShipping?.aiShippingDifficulty || "Unknown"} · ~${weight} lbs · ${shippingMethod}`
+
+  SECTION 2: PACKAGE DETAILS
+    id: "package-details"
+    icon: "📦"
+    title: "PACKAGE DETAILS"
+    accentColor: "#00bcd4"
+    DEFAULT: CLOSED (unless user hasn't saved dims yet — then OPEN)
+    subtitle: Build from current box/weight data
+
+  SECTION 3: CARRIER RATES
+    id: "carrier-rates"
+    icon: "📊"
+    title: "CARRIER RATES"
+    accentColor: "#00bcd4"
+    DEFAULT: OPEN for parcel items, CLOSED for freight/local_only
+    subtitle: Best rate preview, e.g. "Best: USPS $9.99 · 4 carriers"
+    NOTE: Keep existing !hideParcelRates gate. Only show accordion
+    header if !hideParcelRates.
+
+  SECTION 4: FREIGHT / LTL SHIPPING
+    id: "freight"
+    icon: "🚛"
+    title: "FREIGHT / LTL SHIPPING"
+    accentColor: "#9c27b0"
+    DEFAULT: OPEN for freight/local_only items, CLOSED for parcel
+    subtitle: Carrier count or "Get freight quotes"
+    ADD id="shipping-freight-section" to the wrapper div for smooth scroll
+
+  SECTION 5: WHITE-GLOVE SHIPPING (ARTA)
+    id: "arta"
+    icon: "🏛️"
+    title: "WHITE-GLOVE SHIPPING"
+    accentColor: "#ff9800"
+    DEFAULT: CLOSED
+    subtitle: "Premium handling for high-value items"
+    Keep existing Arta-eligibility gate.
+
+  SECTION 6: SAVED QUOTES
+    id: "saved-quotes"
+    icon: "💾"
+    title: "SAVED QUOTES"
+    accentColor: "#00bcd4"
+    DEFAULT: CLOSED
+    subtitle: Quote count, e.g. "3 saved quotes"
+
+  SECTION 7: METRO ESTIMATES
+    id: "metro"
+    icon: "🏙️"
+    title: "METRO ESTIMATES"
+    accentColor: "#00bcd4"
+    DEFAULT: CLOSED
+    subtitle: City count, e.g. "5 nearby cities"
+
+  SECTION 8: LOCAL PICKUP
+    id: "pickup"
+    icon: "🤝"
+    title: "LOCAL PICKUP"
+    accentColor: "#ff9800"
+    DEFAULT: OPEN for local_only items
+    subtitle: "Meetup location & details"
+    ADD id="shipping-pickup-section" to wrapper div
+
+
+  D) AUTO-OPEN behavior:
+
+  Integrate with CMD5H smooth scroll. Any "Freight Options" click should
+  ALSO auto-open the freight accordion:
+    setOpenSections(prev => { const n = new Set(prev); n.add("freight"); return n; });
+
+  Same for "Set Up Pickup" → add "pickup" to openSections
+  Same for "Compare Rates" → add "carrier-rates" to openSections
+
+  CRITICAL:
+  - Do NOT remove any existing section content
+  - Work ONE section at a time
+  - Run npx tsc --noEmit after EACH section conversion
+  - Most common mistake: mismatched braces. Be extremely careful.
+  - For complex sections (carrier rates, freight), wrap the ENTIRE
+    section content in ONE div and gate that single div.
+
+
+TASK 2 — MAC ACCORDION FOR SHIPPING CENTER (4 SECTIONS)
+FILE: app/shipping/ShippingCenterClient.tsx
+
+  A) DEFINE AccordionHeader in this file too (same component as Task 1).
+  Place near the top after the helper functions (~after line 200).
+
+
+  B) Convert these 4 expandable sections in PreSaleTab:
+
+
+  === 2A: "Show Quote Details" → Accordion ===
+
+  CURRENTLY (~line 1989-1998):
+    <button onClick={...} style={{ fontSize: "0.58rem", ... }}>
+      {detailOpen[item.id] ? "▼ Hide Quote Details" : "▶ Show Quote Details"} · {n} carriers
+    </button>
+
+  REPLACE THE BUTTON with AccordionHeader:
+    <AccordionHeader
+      id={`quote-${item.id}`}
+      icon="📊"
+      title="CARRIER RATES & QUOTES"
+      subtitle={`${item.lastQuote?.carriers?.length || 0} carriers · Best: $${((item.lastQuote?.carriers || []).filter((c:any) => c.price > 0).sort((a:any,b:any) => a.price - b.price)[0])?.price?.toFixed(2) || "—"}`}
+      isOpen={!!detailOpen[item.id]}
+      onToggle={() => setDetailOpen(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+      accentColor="#00bcd4"
+    />
+
+  Keep existing gates: only show when item.lastQuote && !isVehicle && !isFreight
+  Keep the QuoteDetailPanel render gated by detailOpen[item.id]
+
+
+  === 2B: "Edit Shipping Details" → Accordion ===
+
+  CURRENTLY (~line 2289-2293):
+    <button onClick={...} style={{ fontSize: "0.6rem", ... }}>
+      {editingItem === item.id ? "▼ Hide Shipping Details" : "▶ Edit Shipping Details"}
+    </button>
+
+  REPLACE THE BUTTON with AccordionHeader:
+    <AccordionHeader
+      id={`edit-${item.id}`}
+      icon="✏️"
+      title="SHIPPING DETAILS"
+      subtitle={`${dimStr(item) || "No dims"} · ${weightStr(item) || "No weight"}`}
+      isOpen={editingItem === item.id}
+      onToggle={() => openEditor(editingItem === item.id ? null : item)}
+      accentColor="#00bcd4"
+    />
+
+  Keep the editor content gated by editingItem === item.id
+
+
+  === 2C: "Shipping Control Center" → Upgraded Accordion ===
+
+  CURRENTLY (~line 1593-1604):
+    <button onClick={...} style={{ ... }}>
+      📋 SHIPPING CONTROL CENTER <span>▼</span>
+    </button>
+
+  REPLACE THE BUTTON with AccordionHeader:
+    <AccordionHeader
+      id={`cc-${item.id}`}
+      icon="📋"
+      title="SHIPPING CONTROL CENTER"
+      subtitle="Dims · Weight · Policy · Services"
+      isOpen={controlCenterOpen === item.id}
+      onToggle={() => setControlCenterOpen(controlCenterOpen === item.id ? null : item.id)}
+      accentColor="#00bcd4"
+    />
+
+  Keep the Control Center content gated by controlCenterOpen === item.id
+
+
+  === 2D: Saved Quote banner → Collapsible Accordion ===
+
+  CURRENTLY (~line 1946-1987):
+    Saved quote from Item Dashboard always renders as a full banner
+    when savedQuoteFullData[item.id] exists. Not collapsible.
+
+  ADD state for tracking which saved quotes are expanded:
+    const [savedQuoteOpen, setSavedQuoteOpen] = useState<Record<string, boolean>>({});
+
+  Initialize defaults — open if fresh/expiring, closed if expired:
+    useEffect(() => {
+      const defaults: Record<string, boolean> = {};
+      for (const [id, status] of Object.entries(savedQuotes)) {
+        if (!(id in savedQuoteOpen)) {
+          defaults[id] = status === "fresh" || status === "expiring";
+        }
+      }
+      if (Object.keys(defaults).length > 0) {
+        setSavedQuoteOpen(prev => ({ ...defaults, ...prev }));
+      }
+    }, [savedQuotes]);
+
+  WRAP the saved quote banner:
+    {savedQuoteFullData[item.id] && savedQuoteFullData[item.id].carrier && !selectedCarrierMap[item.id] && !isVehicle && !isFreight && (() => {
+      const sq = savedQuoteFullData[item.id];
+      const c = sq.carrier;
+      const status = savedQuotes[item.id];
+      return (
+        <div style={{ margin: "0 0.85rem" }}>
+          <AccordionHeader
+            id={`saved-${item.id}`}
+            icon="📋"
+            title="SAVED QUOTE"
+            subtitle={`${c.carrier || "?"} ${c.service || ""} $${c.price?.toFixed(2) || "?"} · ${status === "fresh" ? "Fresh" : status === "expiring" ? "Expiring" : "Expired"}`}
+            isOpen={savedQuoteOpen[item.id] !== false}
+            onToggle={() => setSavedQuoteOpen(prev => ({ ...prev, [item.id]: !(prev[item.id] !== false) }))}
+            accentColor={status === "fresh" ? "#22c55e" : status === "expiring" ? "#f59e0b" : "#ef4444"}
+            badge={status === "fresh" ? "FRESH" : status === "expiring" ? "EXPIRING" : "EXPIRED"}
+          />
+          {savedQuoteOpen[item.id] !== false && (
+            /* existing saved quote banner content goes here */
+          )}
+        </div>
+      );
+    })()}
+
+  DEFAULT: OPEN if fresh/expiring, CLOSED if expired.
+
+
+TASK 3 — WORLD-CLASS BUTTON UPGRADE
+FILES: app/items/[id]/ShippingPanel.tsx AND app/shipping/ShippingCenterClient.tsx
+
+  Apply the BUTTON DESIGN STANDARD from Section 1 to every button.
+  IMPORTANT: Do NOT change any onClick logic. Only visual changes + hover handlers.
+
+  ADD hover handlers to all primary and secondary buttons:
+
+    onMouseEnter={(e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      btn.style.boxShadow = "0 4px 16px rgba(0,188,212,0.4)";
+      btn.style.transform = "translateY(-1px)";
+    }}
+    onMouseLeave={(e) => {
+      const btn = e.currentTarget as HTMLButtonElement;
+      btn.style.boxShadow = "0 2px 8px rgba(0,188,212,0.25)";
+      btn.style.transform = "translateY(0)";
+    }}
+
+  (Adjust the rgba color for green/purple/gold variants as needed)
+
+
+  === 3A: ShippingPanel.tsx buttons ===
+
+  1. Preference editor buttons (Buyer Pays, Free, Local Only, Split Shipping):
+     → SELECTION BUTTONS
+     Active = gradient background + white text + shadow
+     Inactive = ghost background + accent border + accent text
+
+  2. "Get Rates" / "Refresh Rates" → PRIMARY (teal gradient)
+  3. "Save Dimensions" / "Save" → PRIMARY (teal gradient)
+  4. "Generate Label" / "Ship Now" → PRIMARY GREEN variant
+  5. Freight quote request buttons → SECONDARY (purple accent #9c27b0)
+  6. Arta request buttons → SECONDARY (gold accent #ff9800)
+  7. "Cancel" / "Close" → SECONDARY (default teal)
+  8. Box size grid buttons → SELECTION BUTTONS
+
+
+  === 3B: ShippingCenterClient.tsx buttons ===
+
+  1. "Use This Quote →" button (~line 1968) → PRIMARY (teal gradient)
+     Currently: padding "0.25rem 0.6rem", fontSize "0.6rem"
+     Upgrade to: PRIMARY standard (padding 0.6rem 1.2rem, fontSize 0.82rem, min 44px)
+
+  2. "🔄 Get Fresh Rates" button (~line 1975) → SECONDARY
+     Currently: padding "0.25rem 0.5rem", border "1px solid var(--border-default)"
+     Upgrade to: SECONDARY standard (accent border, 38px min)
+
+  3. "Change carrier" text link (~line 2310) → SECONDARY button (NOT a text link)
+     Currently: text-decoration underline, no border, no background
+     Upgrade to: proper SECONDARY button with border and background
+
+  4. Save Quote full-width button (~line 2395-2407) → PRIMARY (already close)
+     Verify it matches standard. Add hover handler if missing.
+
+  5. Carrier row click targets (~line 2334) → Enhanced hover:
+     Add visible left-border accent on hover:
+       onMouseEnter: borderLeft → "3px solid var(--accent)"
+       plus existing background change
+
+  6. "Get Estimate" button in editor → PRIMARY
+  7. "Save Dims" button in editor → PRIMARY
+  8. Quick Action buttons in Control Center → SECONDARY
+     Currently: ghost buttons with tiny padding
+     Upgrade to: SECONDARY standard with proper min-height and accent border
+
+  9. All remaining inline text toggle buttons that were NOT converted to
+     AccordionHeader in Task 2 → ensure minimum 32px height, visible border
+
+  10. "Refresh" / icon-only buttons → add text label next to icon
+
+
+  WORK ORDER FOR TASK 3:
+  - Do ShippingPanel.tsx first (larger file, more buttons)
+  - Then ShippingCenterClient.tsx
+  - Work in groups of 3-5 buttons at a time
+  - Run npx tsc --noEmit after each group
+  - Do NOT batch too many changes at once
+
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+--- Task 1 (Accordion — ShippingPanel.tsx) ---
+
+1. grep -n "① \|② \|③ \|④ \|⑤ \|⑥ \|⑦ \|SECTION.*HEADER" app/items/[id]/ShippingPanel.tsx | head -20
+   → ALL section headers and line numbers
+
+2. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '2646,2720p'
+   → Component start + existing state
+
+3. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3770,3800p'
+   → Freight section start
+
+4. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3490,3520p'
+   → Carrier rates section
+
+5. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3200,3230p'
+   → Package details section
+
+6. grep -n "SAVED QUOTES\|METRO\|ARTA\|arta\|white.*glove\|VEHICLE\|PickupCompletion\|LOCAL PICKUP" app/items/[id]/ShippingPanel.tsx | head -20
+   → Remaining section locations
+
+7. grep -n "shipping-freight-section\|shipping-pickup-section" app/items/[id]/ShippingPanel.tsx | head -5
+   → Verify section IDs from CMD5H
+
+8. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3120,3145p'
+   → Ship/Pickup tab toggle — where auto-open logic goes
+
+--- Task 2 (Accordion — ShippingCenterClient.tsx) ---
+
+9. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1985,2000p'
+   → "Show Quote Details" toggle
+
+10. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '2285,2300p'
+    → "Edit Shipping Details" toggle
+
+11. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1588,1610p'
+    → Control Center toggle
+
+12. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '1940,1990p'
+    → Saved Quote banner section
+
+13. grep -n "savedQuoteOpen\|savedQuoteFullData\|savedQuotes\b" app/shipping/ShippingCenterClient.tsx | head -20
+    → Existing saved quote state
+
+--- Task 3 (Buttons — both files) ---
+
+14. grep -n "cursor.*pointer" app/items/[id]/ShippingPanel.tsx | head -40
+    → ALL clickable elements in ShippingPanel
+
+15. grep -n "cursor.*pointer" app/shipping/ShippingCenterClient.tsx | head -40
+    → ALL clickable elements in ShippingCenterClient
+
+16. grep -n "BUYER_PAYS\|FREE_SHIPPING\|LOCAL_ONLY\|SPLIT_SHIPPING" app/items/[id]/ShippingPanel.tsx | head -10
+    → Preference selector buttons (verify CMD5H added SPLIT_SHIPPING)
+
+Print ALL findings with exact line numbers. Then build.
+
+
+================================================================================
+
+BUILD ORDER
+
+================================================================================
+
+  Part B = Task 1 — Accordion ShippingPanel.tsx
+    Work section by section: ai-brief → package-details → carrier-rates →
+    freight → arta → saved-quotes → metro → pickup
+    → npx tsc --noEmit after EACH section
+
+  Part C = Task 2 — Accordion ShippingCenterClient.tsx
+    Work section by section: quote-details → edit-details →
+    control-center → saved-quote
+    → npx tsc --noEmit after EACH section
+
+  Part D = Task 3A — Button upgrade ShippingPanel.tsx
+    Groups of 3-5 buttons at a time
+    → npx tsc --noEmit after each group
+
+  Part E = Task 3B — Button upgrade ShippingCenterClient.tsx
+    Groups of 3-5 buttons at a time
+    → npx tsc --noEmit after each group
+
+IMPORTANT: Accordion work (Parts B-C) BEFORE button work (Parts D-E).
+The accordion headers need to exist before we style buttons around them.
+
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+ACCORDION — ShippingPanel.tsx (Task 1):
+1. AI Brief has collapsible header with preview: yes / no
+2. Package Details has collapsible header: yes / no
+3. Carrier Rates has collapsible header (parcel only): yes / no
+4. Freight has collapsible header + auto-opens for freight items: yes / no
+5. Arta has collapsible header (eligible items only): yes / no
+6. Saved Quotes has collapsible header: yes / no
+7. Metro Estimates has collapsible header: yes / no
+8. Local Pickup has collapsible header + auto-opens for local_only: yes / no
+9. Multiple sections can be open at once: yes / no
+10. Collapsed sections show subtitle preview: yes / no
+11. Arrow rotates on open/close with smooth animation: yes / no
+12. Freight Options click auto-opens freight accordion + scrolls: yes / no
+13. Set Up Pickup click auto-opens pickup accordion: yes / no
+
+ACCORDION — ShippingCenterClient.tsx (Task 2):
+14. "Show Quote Details" replaced with AccordionHeader: yes / no
+15. "Edit Shipping Details" replaced with AccordionHeader: yes / no
+16. Control Center toggle upgraded to AccordionHeader: yes / no
+17. Saved Quote banner wrapped in AccordionHeader: yes / no
+18. Saved Quote default open if fresh, closed if expired: yes / no
+19. All 4 accordions show subtitle when collapsed: yes / no
+
+BUTTONS (Task 3):
+20. Primary buttons have gradient + shadow + min 44px height: yes / no
+21. Secondary buttons have accent border + min 38px height: yes / no
+22. Selection buttons have clear active/inactive visual states: yes / no
+23. All buttons have hover state (lift + shadow change): yes / no
+24. No flat text-only links remain for action buttons: yes / no
+25. Preference selector shows active state clearly: yes / no
+26. Carrier rows have enhanced hover (left border accent): yes / no
+27. Disabled buttons have reduced opacity: yes / no
+28. Buttons feel obvious, clickable, and premium for seniors: yes / no
+
+REGRESSIONS:
+29. All forms work inside accordion sections: yes / no
+30. Save dims/weight still works: yes / no
+31. Get rates still works: yes / no
+32. Freight quote form still works: yes / no
+33. Pickup form still works: yes / no
+34. Carrier selection still works: yes / no
+35. Quote detail panel still shows full data: yes / no
+36. Shipping editor still saves correctly: yes / no
+37. No TypeScript errors: npx tsc --noEmit passes: yes / no
+
+
+SECTION 19 — FINAL REPORT
+
+When done, output:
+
+CMD5I REPORT — MAC ACCORDION & WORLD-CLASS BUTTON UPGRADE
+============================================================
+Tasks: 3
+Pass/Fail per task:
+  Task 1 (Accordion — ShippingPanel, 8 sections): ___
+  Task 2 (Accordion — ShippingCenter, 4 sections): ___
+  Task 3 (Button upgrade — both files): ___
+
+TypeScript: npx tsc --noEmit → ___ errors
+Build: npm run build → pass / fail
+Time: ___
+
+Files modified:
+  - app/items/[id]/ShippingPanel.tsx (Tasks 1, 3A)
+  - app/shipping/ShippingCenterClient.tsx (Tasks 2, 3B)
+
+Accordion sections converted:
+  ShippingPanel.tsx: ___/8
+  ShippingCenterClient.tsx: ___/4
+Buttons upgraded: ___ total
+Summary: ___
+
+NEXT PHASE NOTE:
+  After CMD5I approval, the NEXT audit covers:
+  - Apply Mac accordion + button standard to ALL bot panels
+    (Valuation, Antique, Market Comps, Photo Analysis, etc.)
+  - Tighten AI bot accuracy + task completion
+  - Polish each bot page and Item Dashboard panel individually
+  - Apply same senior-friendly UX patterns across entire platform

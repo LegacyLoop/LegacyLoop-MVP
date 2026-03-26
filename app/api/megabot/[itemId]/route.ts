@@ -252,6 +252,16 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     console.log(`[MEGABOT DEBUG][ROUTE][${cp.provider}] itemName=${cp.itemName} priceLow=${cp.priceLow} priceHigh=${cp.priceHigh} condScore=${cp.conditionScore} confidence=${cp.confidence} hasData=${!!cp.data} dataTopKeys=${cp.data ? Object.keys(cp.data).slice(0, 8).join(",") : "null"}`);
   }
 
+  // Collect all web sources from agents
+  const allWebSources: Array<{ url: string; title: string; provider: string }> = [];
+  for (const cp of clientProviders as any[]) {
+    if (cp.webSources?.length) {
+      for (const src of cp.webSources) {
+        allWebSources.push({ ...src, provider: cp.provider });
+      }
+    }
+  }
+
   // Return full result to client
   return Response.json({
     ok: true,
@@ -262,6 +272,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     successCount: result.successCount,
     failCount: result.failCount,
     providers: clientProviders,
+    webSources: allWebSources,
   });
 }
 
@@ -295,6 +306,7 @@ function formatAgentForClient(agent: { data: any; responseTime: number; error?: 
     data: agent.data,
     responseTime: agent.responseTime,
     error: agent.error || null,
+    webSources: (agent as any).webSources || [],
     // Extract common fields — check flat, nested, and camelCase variants
     itemName: id.item_name || id.itemName || id.item_type || id.name || d.item_name || d.itemName || d.name || null,
     confidence: (typeof d.confidence === "number" ? d.confidence : null) || d.pricing_confidence || price.pricing_confidence || price.overall_confidence || null,

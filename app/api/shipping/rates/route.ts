@@ -8,10 +8,28 @@ export async function POST(req: Request) {
   if (!user) return new Response("Unauthorized", { status: 401 });
 
   const body = await req.json().catch(() => ({}));
-  const { fromZip, toZip, weight = 2, length = 12, width = 10, height = 6 } = body;
+  const { fromZip, toZip, weight = 2, length = 12, width = 10, height = 6, category } = body;
 
   if (!fromZip || !toZip) {
     return new Response("Missing fromZip or toZip", { status: 400 });
+  }
+
+  // Skip parcel rates for local-only categories
+  if (category) {
+    const LOCAL_ONLY = ["vehicle", "boat", "motorcycle", "atv", "mower",
+      "tractor", "trailer", "rv", "hot tub", "piano", "pool table",
+      "riding mower", "lawn mower", "snowmobile", "jet ski",
+      "go-kart", "snowblower", "camper", "kayak", "canoe"];
+    const catLower = String(category).toLowerCase();
+    if (LOCAL_ONLY.some((term: string) => catLower.includes(term))) {
+      console.log(`[shipping-rates] Skipping parcel rates for local-only category: ${category}`);
+      return Response.json({
+        rates: [],
+        localOnly: true,
+        message: "This item is recommended for local pickup only. Too large or heavy for parcel carriers.",
+        category,
+      });
+    }
   }
 
   // Run Shippo + FedEx Parcel + EasyPost in parallel

@@ -1,0 +1,561 @@
+LEGACYLOOP — COMMAND TEMPLATE v11
+Master Template for Every Claude Code Command
+Updated: March 25, 2026 | Ryan Hallee, Founder & CEO | Use for EVERY Claude Code command
+
+================================================================================
+CMD5H — AI DATA FIX, BANNER TEXT, SPLIT SHIPPING & SMOOTH SCROLL
+================================================================================
+
+SECTION 1 — CRITICAL DESIGN DIRECTIVE
+
+READ BEFORE MAKING ANY CHANGES:
+
+This app has an established design system: sleek, elegant, high-tech —
+inspired by Tesla, SpaceX, and Grok. Dark theme, teal (#00bcd4) accents,
+glass morphism cards, subtle animations, premium typography. Senior-friendly.
+
+ALL styles inline style={{}} — NO Tailwind. NO external CSS.
+NO className for styling. ONLY inline style={{}}. NO EXCEPTIONS.
+
+LIGHT MODE RULE: All colors on theme-aware surfaces MUST use CSS variables.
+NEVER hardcoded rgba(255,255,255,...) or #fff on theme-aware surfaces.
+
+ALWAYS-DARK PANELS: Modals and overlays that are always dark MUST use
+hardcoded colors (#e2e8f0 text, rgba(255,255,255,0.05) bg).
+NEVER CSS variables on always-dark panels — they invert in light mode.
+
+ELON MUSK STANDARD: This must feel like a $1B product.
+Dense, smart, fast. Think Tesla center console meets enterprise SaaS.
+
+IMPORTANT: We are in POLISH MODE. No major overhauls. No facelifts.
+Surgical fixes and targeted improvements only.
+
+REAL TECH MANDATE: Minimize demo/mock data. Use real API integrations
+wherever possible. Estimates labeled as "ESTIMATED" not "demo".
+
+
+SECTION 2 — VERIFICATION CHECKPOINT
+
+Run BEFORE starting. If it fails — STOP. Report failure. Do NOT proceed.
+
+echo '=== CHECKPOINT ==='
+grep -n 'AI_PROVIDER|mock|demo|DEMO' lib/adapters/ai.ts | head -5
+grep 'OPENAI_API_KEY' .env | sed 's/=.*/=SET/'
+grep 'DEMO_MODE' .env | head -2
+grep -n 'shouldBypassGates|isDemoMode' lib/constants/pricing.ts | head -3
+npx tsc --noEmit 2>&1 | tail -3
+echo '=== CHECKPOINT COMPLETE ==='
+
+
+SECTION 3 — PERMANENTLY LOCKED FILES
+
+ALWAYS LOCKED — Never touch without explicit surgical unlock.
+(Full locked list same as CMD5F/5G — all lib/**, all app/api/**, all bots, etc.)
+
+! SURGICAL UNLOCK for THIS command ONLY:
+
+  FILE 1: app/items/[id]/ShippingPanel.tsx
+    TASKS: 1, 2, 3
+    FIXES:
+      1. Update banner text ("arranges it" → "pays for it")
+      2. Add "Split Shipping" 4th preference option
+      3. Smooth scroll on Freight Options click
+
+  FILE 2: app/api/shipping/center/route.ts
+    TASK: 4A
+    FIX:
+      - Fix aiEstWeight field priority — AI analysis weight (aiWeightLbs)
+        MUST take priority over category default (pkgSuggestion.weightEstimate)
+      - Add aiRealDims field for real AI-analyzed dimensions
+
+  FILE 3: app/shipping/ShippingCenterClient.tsx
+    TASKS: 4B-4H
+    FIXES:
+      - Fix weightStr() to include aiWeightLbs in fallback chain
+      - Fix dimStr() to include aiRealDims + aiDimsEstimate fallbacks
+      - Fix getShippingMethod() weight and dimension field priority
+      - Fix all rate-fetcher weight references (6 locations)
+      - Add SPLIT_SHIPPING handling to Policy info chip
+
+All unlocked files return to LOCKED after approval.
+
+
+SECTION 4-11 — Same as prior commands.
+
+
+SECTION 7 — PLATFORM CONTEXT
+
+=== THE DATA BUG (Task 4 — most critical fix in this command) ===
+
+The Shipping Center shows WRONG weights for items:
+  - Fender Princeton Chorus Amp (real ~45 lbs) → shows "3 lbs"
+  - Uzi Distortion Pedal (real ~2 lbs) → shows "12 lbs"
+
+ROOT CAUSE traced through 3 files:
+
+  1. app/api/shipping/center/route.ts, LINE 205:
+     aiEstWeight: pkgSuggestion?.weightEstimate ?? aiShipping?.weight ?? null
+
+     pkgSuggestion.weightEstimate comes from suggestPackage() which uses
+     CATEGORY DEFAULTS in lib/shipping/package-suggestions.ts:
+       "electronics" = 3 lbs  ← why the amp shows 3
+       "instrument" = 12 lbs  ← why the pedal shows 12
+
+     The REAL AI weight is in (item as any).aiWeightLbs (Prisma field,
+     populated by populateFromAnalysis()). It's returned at line 191
+     but aiEstWeight ignores it.
+
+  2. app/shipping/ShippingCenterClient.tsx, weightStr() lines 41-45:
+     Only checks item.weight (user-entered) then item.aiShipping?.weight.
+     NEVER checks item.aiWeightLbs (the accurate AI analysis weight).
+
+  3. app/shipping/ShippingCenterClient.tsx, getShippingMethod() line 171:
+     Uses item.aiEstWeight (category default!) as primary weight source.
+     Also line 172: reads aiBoxDims with ARRAY indices [0],[1],[2] but
+     the API returns it as an OBJECT { length, width, height }. This
+     silently returns 0 for all dims, making the >48" freight check
+     never trigger from dimensions.
+
+FIELD PRIORITY RULE (apply everywhere):
+  User-entered weight > AI analysis weight > category default weight
+  (item.weight) > (item.aiWeightLbs) > (item.aiEstWeight)
+
+
+=== ShippingPanel.tsx context (Tasks 1-3) ===
+
+  - Banner text at ~line 3057: currently says "arranges it"
+  - Preference editor at ~line after CMD5E: 3 buttons (Buyer/Free/Local)
+  - Ship/Pickup tab toggle at ~line 3127+: "Freight Options" click handler
+  - Freight section at ~line 3772+: needs id="shipping-freight-section"
+
+
+================================================================================
+
+OBJECTIVE — 4 TASKS
+
+  Task 1: Banner text fix ("pays for it")
+  Task 2: Split Shipping 4th preference option
+  Task 3: Smooth scroll to freight section
+  Task 4: AI data accuracy fix across 3 files (THE BIG FIX)
+
+================================================================================
+
+
+TASK 1 — FIX BANNER TEXT
+FILE: app/items/[id]/ShippingPanel.tsx
+
+  FIND the banner text for local_only at ~line 3057:
+    "...if the buyer arranges it."
+
+  CHANGE TO:
+    "...if the buyer pays for it."
+
+  Simple text swap. Verify no other instances of "arranges it" in the file.
+
+
+TASK 2 — ADD "SPLIT SHIPPING" TO PREFERENCE OPTIONS
+FILE: app/items/[id]/ShippingPanel.tsx
+
+  FIND the shipping preference editor (added by CMD5E, ~3 buttons):
+    { value: "BUYER_PAYS", label: "Buyer Pays", icon: "💰" },
+    { value: "FREE_SHIPPING", label: "Free Shipping", icon: "🆓" },
+    { value: "LOCAL_ONLY", label: "Local Only", icon: "📍" },
+
+  ADD a 4th option after "Local Only":
+    { value: "SPLIT_SHIPPING", label: "Split Shipping", icon: "🤝" },
+
+  SPLIT_SHIPPING behavior:
+    - Does NOT trigger any special gating (unlike LOCAL_ONLY which hides parcel rates)
+    - It's purely informational: "shipping cost negotiated between buyer and seller"
+    - The ShippingPanel should treat SPLIT_SHIPPING the same as BUYER_PAYS
+      for display purposes (show all rates, no special banners)
+
+  Where preference is displayed elsewhere in this file, handle the new value:
+    "SPLIT_SHIPPING" → "Split (Negotiated)"
+
+  NOTE: Check any switch/ternary chains that map preference to display text
+  and add the SPLIT_SHIPPING case.
+
+
+TASK 3 — SMOOTH SCROLL ON FREIGHT OPTIONS CLICK
+FILE: app/items/[id]/ShippingPanel.tsx
+
+  A) Find the "Freight Options" tab button in the Ship/Pickup toggle.
+  When user clicks it, ADD after the setShippingTab("ship") call:
+
+    setTimeout(() => {
+      document.getElementById("shipping-freight-section")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+
+  B) Make sure the freight section wrapper div has id="shipping-freight-section".
+  Check if it already exists. If not, add it to the outermost freight div.
+
+  C) If there's a "Freight Options" button in the banner area (when
+  shippingMethod is local_only or freight), make that button ALSO scroll:
+
+    onClick={() => {
+      setShippingTab("ship");
+      setTimeout(() => {
+        document.getElementById("shipping-freight-section")
+          ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+    }}
+
+
+TASK 4 — FIX AI DATA ACCURACY IN SHIPPING CENTER
+FILES: center/route.ts, ShippingCenterClient.tsx
+
+  === 4A: center/route.ts — Fix aiEstWeight field priority ===
+
+  FILE: app/api/shipping/center/route.ts
+  LINE: ~205
+
+  FIND:
+    aiEstWeight: pkgSuggestion?.weightEstimate ?? aiShipping?.weight ?? null,
+
+  CHANGE TO:
+    aiEstWeight: (item as any).aiWeightLbs ?? aiShipping?.weight ?? pkgSuggestion?.weightEstimate ?? null,
+
+  WHY: The #1 bug. aiEstWeight is the primary weight consumed by the
+  frontend. Currently uses pkgSuggestion.weightEstimate FIRST (category
+  default). Fix makes it use aiWeightLbs (real AI analysis) FIRST.
+
+  ALSO: After the aiBoxDims line (~line 204), ADD a new field:
+
+  FIND:
+    aiBoxDims: pkgSuggestion ? { length: pkgSuggestion.length, width: pkgSuggestion.width, height: pkgSuggestion.height } : null,
+
+  ADD AFTER (new line):
+    aiRealDims: aiShipping ? { length: aiShipping.length || 0, width: aiShipping.width || 0, height: aiShipping.height || 0 } : null,
+
+  WHY: Gives the frontend access to REAL AI-analyzed dimensions separate
+  from the category-default box dimensions (aiBoxDims).
+
+
+  === 4B: ShippingCenterClient.tsx — Fix weightStr() ===
+
+  FILE: app/shipping/ShippingCenterClient.tsx
+  LINES: 41-45
+
+  FIND:
+    function weightStr(item: any): string {
+      if (item.weight) return `${item.weight} lbs`;
+      if (item.aiShipping?.weight) return `~${item.aiShipping.weight} lbs`;
+      return "";
+    }
+
+  CHANGE TO:
+    function weightStr(item: any): string {
+      if (item.weight) return `${item.weight} lbs`;
+      if (item.aiWeightLbs) return `~${item.aiWeightLbs} lbs`;
+      if (item.aiEstWeight) return `~${item.aiEstWeight} lbs`;
+      if (item.aiShipping?.weight) return `~${item.aiShipping.weight} lbs`;
+      return "";
+    }
+
+  WHY: weightStr() is used by ShipProfile (line 746) to display weight
+  in item cards. Currently skips aiWeightLbs entirely.
+
+
+  === 4C: ShippingCenterClient.tsx — Fix dimStr() ===
+
+  FILE: app/shipping/ShippingCenterClient.tsx
+  LINES: 32-40
+
+  FIND:
+    function dimStr(item: any): string {
+      if (item.length && item.width && item.height) return `${item.length}×${item.width}×${item.height} in`;
+      if (item.aiShipping) {
+        const a = item.aiShipping;
+        if (a.length && a.width && a.height) return `${a.length}×${a.width}×${a.height} in`;
+        if (typeof a === "string") return a;
+      }
+      return "";
+    }
+
+  CHANGE TO:
+    function dimStr(item: any): string {
+      if (item.length && item.width && item.height)
+        return `${item.length}×${item.width}×${item.height} in`;
+      if (item.aiRealDims?.length && item.aiRealDims?.width && item.aiRealDims?.height)
+        return `${item.aiRealDims.length}×${item.aiRealDims.width}×${item.aiRealDims.height} in`;
+      if (item.aiShipping) {
+        const a = item.aiShipping;
+        if (a.length && a.width && a.height) return `${a.length}×${a.width}×${a.height} in`;
+        if (typeof a === "string") return a;
+      }
+      if (item.aiDimsEstimate) return item.aiDimsEstimate;
+      return "";
+    }
+
+  WHY: dimStr() now checks aiRealDims (new API field from 4A) and
+  aiDimsEstimate (Prisma text field) before giving up.
+
+
+  === 4D: ShippingCenterClient.tsx — Fix getShippingMethod() ===
+
+  FILE: app/shipping/ShippingCenterClient.tsx
+
+  LINE ~171:
+  FIND:
+    const weight = item.aiEstWeight || item.weight || 0;
+  CHANGE TO:
+    const weight = item.aiWeightLbs || item.aiEstWeight || item.weight || 0;
+
+  LINE ~172:
+  FIND:
+    const maxDim = Math.max(item.aiBoxDims?.[0] || 0, item.aiBoxDims?.[1] || 0, item.aiBoxDims?.[2] || 0);
+  CHANGE TO:
+    const maxDim = Math.max(
+      item.aiRealDims?.length || item.aiBoxDims?.length || 0,
+      item.aiRealDims?.width || item.aiBoxDims?.width || 0,
+      item.aiRealDims?.height || item.aiBoxDims?.height || 0,
+    );
+
+  WHY: Two bugs fixed here:
+    1. Weight now uses aiWeightLbs (real AI) first
+    2. Dimensions were read with ARRAY indices [0],[1],[2] but the API
+       returns an OBJECT { length, width, height }. Array indexing
+       silently returned 0, breaking the >48" freight detection.
+
+
+  === 4E: VERIFY item card + Control Center chip displays ===
+
+  These already have correct priority order. Just VERIFY they exist:
+
+  Item card weight (~line 1564-1565):
+    item.weight || item.aiWeightLbs || item.aiEstWeight
+    → CORRECT. Leave alone.
+
+  Control Center weight chip (~line 1651-1652):
+    item.weight || item.aiWeightLbs || item.aiEstWeight
+    → CORRECT. Leave alone.
+
+  ShippingAIPanel weight badge (~line 236):
+    item.weight ? confirmed : item.aiWeightLbs ? AI est : aiEstWeight
+    → CORRECT. Leave alone.
+
+  Fix 4A will make aiEstWeight correct when aiWeightLbs is null,
+  so these displays will automatically show right data.
+
+
+  === 4F: Fix all rate-fetcher weight references ===
+
+  Add item.aiWeightLbs to the priority chain at EACH of these locations.
+  The pattern: insert "|| item.aiWeightLbs" after "item.weight" and before
+  "|| item.aiEstWeight" in each line.
+
+  LINE ~1237:
+  FIND:
+    weight: item.weight || item.aiEstWeight || (catDefaults?.weight ? String(catDefaults.weight) : "5"),
+  CHANGE TO:
+    weight: item.weight || item.aiWeightLbs || item.aiEstWeight || (catDefaults?.weight ? String(catDefaults.weight) : "5"),
+
+  LINE ~1296:
+  FIND:
+    const w = item?.weight || item?.aiEstWeight || Number(editDims.weight) || 5;
+  CHANGE TO:
+    const w = item?.weight || item?.aiWeightLbs || item?.aiEstWeight || Number(editDims.weight) || 5;
+
+  LINE ~2194:
+  FIND:
+    const w = item.weight || item.aiEstWeight || 5;
+  CHANGE TO:
+    const w = item.weight || item.aiWeightLbs || item.aiEstWeight || 5;
+
+  LINE ~2508:
+  FIND:
+    const w = item.weight || item.aiEstWeight || 5;
+  CHANGE TO:
+    const w = item.weight || item.aiWeightLbs || item.aiEstWeight || 5;
+
+  LINE ~2539:
+  FIND:
+    const w = item.weight || item.aiEstWeight || 5;
+  CHANGE TO:
+    const w = item.weight || item.aiWeightLbs || item.aiEstWeight || 5;
+
+  LINE ~2559:
+  FIND:
+    weight: est?.weight ?? item.weight ?? item.aiEstWeight ?? 5,
+  CHANGE TO:
+    weight: est?.weight ?? item.weight ?? item.aiWeightLbs ?? item.aiEstWeight ?? 5,
+
+  VERIFY these are already correct (no change needed):
+  LINE ~4084: const w = i.weight || i.aiWeightLbs || i.aiEstWeight || 0; ✓
+  LINE ~4512: same pattern ✓
+
+
+  === 4G: Fix hasProfile check ===
+
+  LINE ~1368:
+  FIND:
+    const hasProfile = !!(item.aiBox || item.weight || item.aiEstWeight);
+  CHANGE TO:
+    const hasProfile = !!(item.aiBox || item.weight || item.aiWeightLbs || item.aiEstWeight);
+
+
+  === 4H: Add SPLIT_SHIPPING to Policy info chip ===
+
+  Find the Policy info chip in the Control Center (~line 1660 area).
+  It displays shippingPreference as a label. Look for a ternary chain
+  or conditional that maps preference values to display text.
+
+  ADD handling for SPLIT_SHIPPING. The pattern will look like:
+    item.shippingPreference === "BUYER_PAYS" ? "Buyer Pays"
+    : item.shippingPreference === "FREE_SHIPPING" ? "Free Ship"
+    : item.shippingPreference === "LOCAL_ONLY" ? "Local Only"
+    : item.shippingPreference === "SPLIT_SHIPPING" ? "Split Ship"  ← ADD THIS
+    : "Buyer Pays"
+
+  If it's a different pattern, adapt accordingly. The key is:
+    SPLIT_SHIPPING → displays as "Split Ship"
+
+
+================================================================================
+
+PART A — MANDATORY FULL READ
+
+================================================================================
+
+! DO NOT BEGIN BUILDING UNTIL ALL READS ARE COMPLETE AND PRINTED.
+
+--- Task 1 (Banner) ---
+1. grep -n "arranges it\|pays for it" app/items/[id]/ShippingPanel.tsx | head -10
+   → Find exact banner text location
+
+--- Task 2 (Split Shipping) ---
+2. grep -n "BUYER_PAYS\|FREE_SHIPPING\|LOCAL_ONLY\|preference.*value" app/items/[id]/ShippingPanel.tsx | head -20
+   → Preference editor location
+
+3. grep -n "BUYER_PAYS\|FREE_SHIPPING\|LOCAL_ONLY\|shippingPreference" app/items/[id]/ShippingPanel.tsx | head -30
+   → ALL preference display/logic locations (to handle SPLIT_SHIPPING)
+
+--- Task 3 (Smooth Scroll) ---
+4. grep -n "shippingTab.*ship\|setShippingTab\|Freight Options\|freight.*click\|onClick.*freight" app/items/[id]/ShippingPanel.tsx | head -20
+   → Freight click handlers
+
+5. grep -n "shipping-freight-section\|shipping-pickup-section" app/items/[id]/ShippingPanel.tsx | head -10
+   → Check if section IDs already exist
+
+6. cat -n app/items/[id]/ShippingPanel.tsx | sed -n '3770,3790p'
+   → Freight section div to add ID to
+
+--- Task 4A (center/route.ts) ---
+7. cat -n app/api/shipping/center/route.ts | sed -n '198,212p'
+   → aiEstWeight line + aiBoxDims line
+
+--- Task 4B-4D (weightStr, dimStr, getShippingMethod) ---
+8. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '30,48p'
+   → dimStr() and weightStr() functions
+
+9. cat -n app/shipping/ShippingCenterClient.tsx | sed -n '157,176p'
+   → getShippingMethod() function
+
+--- Task 4F (rate-fetcher weight refs) ---
+10. grep -n "item.weight || item.aiEstWeight\|item\.weight || item\.aiWeightLbs\|item\.aiEstWeight" app/shipping/ShippingCenterClient.tsx | head -30
+    → ALL weight reference locations
+
+--- Task 4G (hasProfile) ---
+11. grep -n "hasProfile\|aiBox.*weight.*aiEst" app/shipping/ShippingCenterClient.tsx | head -10
+    → hasProfile check
+
+--- Task 4H (Policy chip) ---
+12. grep -n "shippingPreference\|BUYER_PAYS\|FREE_SHIPPING\|Policy\|policy" app/shipping/ShippingCenterClient.tsx | head -20
+    → Policy chip handling location
+
+Print ALL findings with exact line numbers. Then build.
+
+
+================================================================================
+
+BUILD ORDER
+
+================================================================================
+
+  Part B = Task 4A (center/route.ts — fix API data FIRST)
+  Part C = Task 4B-4D (ShippingCenterClient — fix display functions)
+  Part D = Task 4F-4G (ShippingCenterClient — fix rate weight refs)
+  Part E = Task 4H (ShippingCenterClient — SPLIT_SHIPPING in Policy chip)
+  Part F = Task 1 (ShippingPanel — banner text)
+  Part G = Task 2 (ShippingPanel — Split Shipping preference)
+  Part H = Task 3 (ShippingPanel — smooth scroll)
+
+After EACH part: run npx tsc --noEmit to catch errors early.
+
+WHY THIS ORDER:
+  - Fix the API data layer FIRST (Part B) — everything downstream benefits
+  - Fix display functions SECOND (Parts C-E) — correct rendering
+  - Fix ShippingPanel UX LAST (Parts F-H) — these are independent of data
+
+
+================================================================================
+
+SECTION 18 — VERIFICATION CHECKLIST
+
+BANNER & TEXT:
+1. Banner says "...if the buyer pays for it": yes / no
+2. Banner does NOT say "arranges it": yes / no
+
+SPLIT SHIPPING:
+3. 4 preference buttons visible (Buyer Pays, Free, Local Only, Split): yes / no
+4. Split Shipping button selectable and persists: yes / no
+5. Selecting Split Shipping does NOT hide parcel rates: yes / no
+6. Selecting Split Shipping does NOT show special banners: yes / no
+
+SMOOTH SCROLL:
+7. Clicking "Freight Options" tab scrolls to freight section: yes / no
+8. Clicking banner freight button scrolls to freight section: yes / no
+9. Scroll animation is smooth (not instant jump): yes / no
+10. Freight section has id="shipping-freight-section": yes / no
+
+AI DATA ACCURACY:
+11. center/route.ts aiEstWeight uses aiWeightLbs FIRST: yes / no
+12. center/route.ts has new aiRealDims field: yes / no
+13. weightStr() includes aiWeightLbs in fallback chain: yes / no
+14. dimStr() includes aiRealDims and aiDimsEstimate fallbacks: yes / no
+15. getShippingMethod() uses aiWeightLbs for weight check: yes / no
+16. getShippingMethod() uses OBJECT KEYS (not array) for dims: yes / no
+17. Rate-fetcher weight ref at ~1237 includes aiWeightLbs: yes / no
+18. Rate-fetcher weight ref at ~1296 includes aiWeightLbs: yes / no
+19. Rate-fetcher weight ref at ~2194 includes aiWeightLbs: yes / no
+20. Rate-fetcher weight ref at ~2508 includes aiWeightLbs: yes / no
+21. Rate-fetcher weight ref at ~2539 includes aiWeightLbs: yes / no
+22. Rate-fetcher weight ref at ~2559 includes aiWeightLbs: yes / no
+23. hasProfile check at ~1368 includes aiWeightLbs: yes / no
+24. Policy chip handles SPLIT_SHIPPING → "Split Ship": yes / no
+
+REGRESSIONS:
+25. All forms still work: yes / no
+26. Save dims/weight still works: yes / no
+27. Get rates still works: yes / no
+28. Freight quote form still works: yes / no
+29. Carrier selection still works: yes / no
+30. No TypeScript errors: npx tsc --noEmit passes: yes / no
+
+
+SECTION 19 — FINAL REPORT
+
+When done, output:
+
+CMD5H REPORT — AI DATA FIX, BANNER, SPLIT SHIPPING & SMOOTH SCROLL
+=====================================================================
+Tasks: 4
+Pass/Fail per task:
+  Task 1 (Banner text fix): ___
+  Task 2 (Split Shipping preference): ___
+  Task 3 (Smooth scroll): ___
+  Task 4 (AI data accuracy fix): ___
+
+TypeScript: npx tsc --noEmit → ___ errors
+Build: npm run build → pass / fail
+Time: ___
+
+Files modified:
+  - app/items/[id]/ShippingPanel.tsx (Tasks 1-3)
+  - app/api/shipping/center/route.ts (Task 4A)
+  - app/shipping/ShippingCenterClient.tsx (Tasks 4B-4H)
+
+AI weight fixes applied: ___/6 rate locations + weightStr + dimStr + getShippingMethod
+Summary: ___

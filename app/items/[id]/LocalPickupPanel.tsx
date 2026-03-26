@@ -86,13 +86,41 @@ export default function LocalPickupPanel({
     );
   };
 
+  const [pickupError, setPickupError] = useState<string | null>(null);
+
   const sendInvite = async () => {
     setSending(true);
+    setPickupError(null);
     try {
-      // TODO: connect to real messaging API
-      await new Promise((r) => setTimeout(r, 800));
-      setInviteSent(true);
-    } catch { /* ignore */ }
+      const res = await fetch(`/api/shipping/pickup/${itemId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: "INVITE_SENT",
+          location: JSON.stringify({
+            type: location,
+            name: locationName || location,
+            address: preciseAddress,
+            mapLink: preciseMapLink,
+            spot: precisionSpot || locationSubSpot,
+          }),
+          notes: instructions,
+          timeSlots: JSON.stringify(selectedSlots),
+          contactMethod,
+          paymentMethod,
+          radius: selectedRadius,
+          scheduledDate: pickupDate,
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        setPickupError(data.error);
+      } else {
+        setInviteSent(true);
+      }
+    } catch {
+      setPickupError("Failed to send pickup invite. Please try again.");
+    }
     setSending(false);
   };
 
@@ -106,7 +134,7 @@ export default function LocalPickupPanel({
 
       {/* Item handling notes from AI */}
       {(itemWeight || isFragile || isAntique || itemDimensions) && (
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: "rgba(234,179,8,0.06)", border: "1px solid rgba(234,179,8,0.15)", fontSize: "0.78rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: "rgba(234,179,8,0.06)", border: "1px solid rgba(234,179,8,0.15)", fontSize: "0.85rem" }}>
           {itemWeight != null && itemWeight > 30 && (
             <div style={{ color: "var(--warning-text, #b45309)" }}>⚠️ This item weighs approximately {itemWeight} lbs. Buyer may need help loading.</div>
           )}
@@ -133,7 +161,7 @@ export default function LocalPickupPanel({
               <label
                 style={{
                   display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.6rem",
-                  borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.78rem",
+                  borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem",
                   border: `1px solid ${location === opt.key ? "var(--accent)" : "var(--border-default)"}`,
                   background: location === opt.key ? "rgba(0,188,212,0.06)" : "transparent",
                 }}
@@ -150,17 +178,17 @@ export default function LocalPickupPanel({
                   <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Choose how to specify your location:</div>
                   <div>
                     <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Enter address or intersection</label>
-                    <input type="text" placeholder="e.g. 123 Main St, Waterville ME or Main & Elm" value={preciseAddress} onChange={e => setPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <input type="text" placeholder="e.g. 123 Main St, Waterville ME or Main & Elm" value={preciseAddress} onChange={e => setPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                     <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Exact address only shared with confirmed buyer</div>
                   </div>
                   <div>
                     <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🗺️ Or drop a pin on Google Maps</label>
                     <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#00bcd4", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>📍 Open Google Maps — drop a pin and paste the link below</a>
-                    <input type="text" placeholder="Paste Google Maps link here..." value={preciseMapLink} onChange={e => setPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <input type="text" placeholder="Paste Google Maps link here..." value={preciseMapLink} onChange={e => setPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                   </div>
                   <div>
                     <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📝 Precise meetup instructions</label>
-                    <input type="text" placeholder="e.g. I'll be parked in the blue truck near the entrance" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <input type="text" placeholder="e.g. I'll be parked in the blue truck near the entrance" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                   </div>
                 </div>
               )}
@@ -170,8 +198,8 @@ export default function LocalPickupPanel({
                   <div style={{ display: "flex", gap: "0.5rem" }}>
                     <a href={`https://www.google.com/maps/search/police+station+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>🔍 Find Nearby →</a>
                   </div>
-                  <input type="text" placeholder="Station name or address (e.g. Waterville Police Dept, 9 Colby St)" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                  <input type="text" placeholder="Precise spot (e.g. visitor parking lot, front entrance)" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Station name or address (e.g. Waterville Police Dept, 9 Colby St)" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Precise spot (e.g. visitor parking lot, front entrance)" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                   <div style={{ color: "rgba(16,185,129,0.7)", fontSize: "0.7rem" }}>✓ Safest option — many departments offer exchange programs</div>
                 </div>
               )}
@@ -179,35 +207,35 @@ export default function LocalPickupPanel({
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                   <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>🏦 Find a bank near you:</div>
                   <a href={`https://www.google.com/maps/search/bank+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ alignSelf: "flex-start", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none" }}>🔍 Find Nearby Banks →</a>
-                  <input type="text" placeholder="Bank name (e.g. TD Bank, 15 Elm St)" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                  <input type="text" placeholder="Which entrance or section of parking lot?" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Bank name (e.g. TD Bank, 15 Elm St)" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Which entrance or section of parking lot?" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                 </div>
               )}
               {location === "coffee_shop" && opt.key === "coffee_shop" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                   <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>☕ Find a coffee shop or restaurant near you:</div>
                   <a href={`https://www.google.com/maps/search/coffee+shop+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ alignSelf: "flex-start", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none" }}>🔍 Find Nearby →</a>
-                  <input type="text" placeholder="Name of coffee shop or restaurant" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                  <input type="text" placeholder="Where to meet — inside? outside? which table?" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Name of coffee shop or restaurant" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Where to meet — inside? outside? which table?" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                 </div>
               )}
               {location === "post_office" && opt.key === "post_office" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.04)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                   <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>📬 Find a post office near you:</div>
                   <a href={`https://www.google.com/maps/search/post+office+near+${saleZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ alignSelf: "flex-start", background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: "8px", padding: "0.5rem 0.85rem", color: "#10b981", fontSize: "0.75rem", fontWeight: 700, textDecoration: "none" }}>🔍 Find Nearby USPS →</a>
-                  <input type="text" placeholder="Post office address" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                  <input type="text" placeholder="Where to meet (e.g. parking lot, front entrance)" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Post office address" value={locationName} onChange={e => setLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Where to meet (e.g. parking lot, front entrance)" value={locationSubSpot} onChange={e => setLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                 </div>
               )}
               {location === "other" && opt.key === "other" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                  <input type="text" placeholder="Name of the meetup place" value={otherLocation} onChange={e => setOtherLocation(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
-                  <input type="text" placeholder="Address" value={preciseAddress} onChange={e => setPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Name of the meetup place" value={otherLocation} onChange={e => setOtherLocation(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Address" value={preciseAddress} onChange={e => setPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                   <div>
                     <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#00bcd4", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>📍 Open Google Maps — drop a pin and paste the link</a>
-                    <input type="text" placeholder="Paste Google Maps link here..." value={preciseMapLink} onChange={e => setPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <input type="text" placeholder="Paste Google Maps link here..." value={preciseMapLink} onChange={e => setPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                   </div>
-                  <input type="text" placeholder="Precise meetup instructions" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                  <input type="text" placeholder="Precise meetup instructions" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                 </div>
               )}
             </div>
@@ -218,9 +246,9 @@ export default function LocalPickupPanel({
         </div>
         {location && (
           <div style={{ marginTop: "0.75rem", padding: "0.85rem", background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px" }}>
-            <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.78rem", marginBottom: "0.4rem" }}>📌 Precision Meetup Point</div>
+            <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.85rem", marginBottom: "0.4rem" }}>📌 Precision Meetup Point</div>
             <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: "0.55rem" }}>Give the buyer a precise spot so there&apos;s no confusion — &quot;north entrance&quot;, &quot;blue Honda&quot;, &quot;table by the window&quot;</div>
-            <input type="text" placeholder="e.g. I'll be in the blue truck at the north end of the parking lot" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+            <input type="text" placeholder="e.g. I'll be in the blue truck at the north end of the parking lot" value={precisionSpot} onChange={e => setPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
           </div>
         )}
       </div>
@@ -234,7 +262,7 @@ export default function LocalPickupPanel({
               key={r}
               onClick={() => setSelectedRadius(r)}
               style={{
-                padding: "0.4rem 0.75rem", borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.78rem",
+                padding: "0.4rem 0.75rem", borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem",
                 fontWeight: selectedRadius === r ? 600 : 400,
                 border: selectedRadius === r ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
                 background: selectedRadius === r ? "rgba(0,188,212,0.08)" : "transparent",
@@ -262,7 +290,7 @@ export default function LocalPickupPanel({
             value={pickupDate}
             onChange={(e) => setPickupDate(e.target.value)}
             min={new Date().toISOString().split("T")[0]}
-            style={{ fontSize: "0.78rem", width: "auto" }}
+            style={{ fontSize: "0.85rem", width: "auto" }}
           />
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
@@ -298,7 +326,7 @@ export default function LocalPickupPanel({
               <label
                 style={{
                   display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.5rem",
-                  borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.78rem",
+                  borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem",
                   border: `1px solid ${contactMethod === opt.key ? "var(--accent)" : "var(--border-default)"}`,
                   background: contactMethod === opt.key ? "rgba(0,188,212,0.06)" : "transparent",
                 }}
@@ -309,7 +337,7 @@ export default function LocalPickupPanel({
               </label>
               {contactMethod === "in_app" && opt.key === "in_app" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.05)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-                  <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.78rem" }}>💬 In-App Messaging</div>
+                  <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.85rem" }}>💬 In-App Messaging</div>
                   <div style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "10px", padding: "0.65rem" }}>
                     <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginBottom: "0.4rem", textAlign: "center" }}>Message thread preview</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
@@ -336,10 +364,10 @@ export default function LocalPickupPanel({
               )}
               {contactMethod === "text" && opt.key === "text" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(16,185,129,0.05)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-                  <div style={{ color: "#10b981", fontWeight: 700, fontSize: "0.78rem" }}>📱 Text Message Setup</div>
+                  <div style={{ color: "#10b981", fontWeight: 700, fontSize: "0.85rem" }}>📱 Text Message Setup</div>
                   <div>
                     <label style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Your phone number for this transaction</label>
-                    <input type="tel" placeholder="(207) 555-0000" value={contactPhone} onChange={e => setContactPhone(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <input type="tel" placeholder="(207) 555-0000" value={contactPhone} onChange={e => setContactPhone(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                   </div>
                   <div style={{ background: "rgba(16,185,129,0.08)", borderRadius: "8px", padding: "0.55rem" }}>
                     <div style={{ color: "#10b981", fontSize: "0.72rem", fontWeight: 700, marginBottom: "0.35rem" }}>🔒 How we protect your number</div>
@@ -359,10 +387,10 @@ export default function LocalPickupPanel({
               )}
               {contactMethod === "email" && opt.key === "email" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(139,92,246,0.05)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-                  <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.78rem" }}>📧 Email Contact Setup</div>
+                  <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.85rem" }}>📧 Email Contact Setup</div>
                   <div>
                     <label style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Email address to use for this transaction</label>
-                    <input type="email" placeholder="your@email.com" value={contactEmailAddr} onChange={e => setContactEmailAddr(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <input type="email" placeholder="your@email.com" value={contactEmailAddr} onChange={e => setContactEmailAddr(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                     <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Shown as r****@****.com until both parties confirm</div>
                   </div>
                   <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", cursor: "pointer" }}>
@@ -398,7 +426,7 @@ export default function LocalPickupPanel({
               <label
                 style={{
                   display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.5rem",
-                  borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.78rem",
+                  borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem",
                   border: `1px solid ${paymentMethod === opt.key ? "var(--accent)" : "var(--border-default)"}`,
                   background: paymentMethod === opt.key ? "rgba(0,188,212,0.06)" : "transparent",
                 }}
@@ -410,7 +438,7 @@ export default function LocalPickupPanel({
               </label>
               {paymentMethod === "legacyloop" && opt.key === "legacyloop" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.05)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-                  <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.78rem" }}>💳 How LegacyLoop Escrow Works</div>
+                  <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.85rem" }}>💳 How LegacyLoop Escrow Works</div>
                   {[{ step: "1", text: "Buyer pays at checkout — funds held securely" }, { step: "2", text: "You meet and complete the handoff" }, { step: "3", text: "Both confirm handoff in app" }, { step: "4", text: "Funds released to your account within 24hrs" }].map(s => (
                     <div key={s.step} style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
                       <div style={{ width: "1.3rem", height: "1.3rem", background: "rgba(0,188,212,0.15)", border: "1px solid rgba(0,188,212,0.3)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#00bcd4", fontSize: "0.68rem", fontWeight: 800, flexShrink: 0 }}>{s.step}</div>
@@ -437,7 +465,7 @@ export default function LocalPickupPanel({
               )}
               {paymentMethod === "cash" && opt.key === "cash" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-                  <div style={{ color: "#f59e0b", fontWeight: 700, fontSize: "0.78rem" }}>💵 Cash Payment Details</div>
+                  <div style={{ color: "#f59e0b", fontWeight: 700, fontSize: "0.85rem" }}>💵 Cash Payment Details</div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Exact amount to request</span>
                     <span style={{ color: "#f59e0b", fontWeight: 800, fontSize: "0.95rem" }}>${listingPrice ?? "—"}</span>
@@ -461,7 +489,7 @@ export default function LocalPickupPanel({
               )}
               {paymentMethod === "venmo" && opt.key === "venmo" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(139,92,246,0.05)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-                  <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.78rem" }}>📱 Venmo / Zelle Setup</div>
+                  <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.85rem" }}>📱 Venmo / Zelle Setup</div>
                   <div>
                     <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>Which service will you use?</div>
                     <div style={{ display: "flex", gap: "0.4rem" }}>
@@ -472,7 +500,7 @@ export default function LocalPickupPanel({
                   </div>
                   <div>
                     <label style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Your Venmo/Zelle handle or phone number</label>
-                    <input type="text" placeholder="@yourhandle or phone number" value={venmoHandle} onChange={e => setVenmoHandle(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" }} />
+                    <input type="text" placeholder="@yourhandle or phone number" value={venmoHandle} onChange={e => setVenmoHandle(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.85rem", outline: "none", boxSizing: "border-box" }} />
                     <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Only shared with buyer after both parties confirm meetup</div>
                   </div>
                   <div>
@@ -504,11 +532,11 @@ export default function LocalPickupPanel({
       {isVehicle && (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
           <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.2rem" }}>Vehicle Details</div>
-          <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--text-secondary)", cursor: "pointer" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", color: "var(--text-secondary)", cursor: "pointer" }}>
             <input type="checkbox" checked={testDrive} onChange={(e) => setTestDrive(e.target.checked)} style={{ accentColor: "var(--accent)" }} />
             Test drive available?
           </label>
-          <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.78rem", color: "var(--text-secondary)", cursor: "pointer" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", color: "var(--text-secondary)", cursor: "pointer" }}>
             <input type="checkbox" checked={titleReady} onChange={(e) => setTitleReady(e.target.checked)} style={{ accentColor: "var(--accent)" }} />
             Title transfer ready?
           </label>
@@ -531,7 +559,7 @@ export default function LocalPickupPanel({
           onChange={(e) => setInstructions(e.target.value)}
           placeholder="Ex: I'll be in a blue truck. Ring doorbell. Item is heavy, bring help. Cash preferred."
           rows={2}
-          style={{ resize: "vertical", width: "100%", fontSize: "0.78rem" }}
+          style={{ resize: "vertical", width: "100%", fontSize: "0.85rem" }}
         />
       </div>
 
@@ -550,7 +578,7 @@ export default function LocalPickupPanel({
             <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "var(--success-text)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.5rem" }}>
               📋 Pickup Details
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.78rem", color: "var(--text-secondary)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.85rem", color: "var(--text-secondary)" }}>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span style={{ color: "var(--text-muted)" }}>Location</span>
                 <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>
@@ -595,11 +623,40 @@ export default function LocalPickupPanel({
                 </div>
               )}
             </div>
+            {pickupError && (
+              <div style={{
+                padding: "0.5rem 0.6rem", borderRadius: "0.4rem", marginBottom: "0.3rem",
+                background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)",
+                fontSize: "0.55rem", color: "#ef4444",
+              }}>
+                ⚠️ {pickupError}
+              </div>
+            )}
             <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.6rem" }}>
-              <button className="btn-primary" onClick={sendInvite} disabled={sending} style={{ padding: "0.5rem 1.25rem", fontSize: "0.85rem" }}>
-                {sending ? "Sending..." : "📤 Send Pickup Invite to Buyer"}
+              <button
+                onClick={sendInvite}
+                disabled={sending || inviteSent}
+                style={{
+                  padding: "0.5rem 1.25rem", fontSize: "0.82rem", fontWeight: 700,
+                  borderRadius: "0.5rem", border: "none", cursor: sending ? "wait" : "pointer",
+                  background: inviteSent ? "linear-gradient(135deg, #4caf50, #2e7d32)" : "linear-gradient(135deg, #00bcd4, #009688)",
+                  color: "#fff", boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+                  transition: "all 0.2s ease", minHeight: "44px",
+                  display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                  opacity: sending ? 0.6 : 1,
+                }}
+              >
+                {sending ? "⏳ Sending..." : inviteSent ? "✅ Invite Sent!" : "📤 Send Pickup Invite to Buyer"}
               </button>
-              <button className="btn-ghost" onClick={() => setShowConfirmation(false)} style={{ padding: "0.5rem 0.75rem", fontSize: "0.85rem" }}>
+              <button
+                onClick={() => setShowConfirmation(false)}
+                style={{
+                  padding: "0.5rem 0.75rem", fontSize: "0.82rem", fontWeight: 600,
+                  borderRadius: "0.5rem", cursor: "pointer",
+                  border: "1.5px solid var(--accent, #00bcd4)",
+                  background: "rgba(0,188,212,0.06)", color: "var(--accent, #00bcd4)",
+                }}
+              >
                 Edit
               </button>
             </div>

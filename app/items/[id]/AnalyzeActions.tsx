@@ -10,7 +10,7 @@ type Props = {
   megabotUsed: boolean;
 };
 
-export default function AnalyzeActions({ itemId, hasPhotos, isAnalyzed }: Props) {
+export default function AnalyzeActions({ itemId, hasPhotos, isAnalyzed, megabotUsed }: Props) {
   const router = useRouter();
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +82,7 @@ export default function AnalyzeActions({ itemId, hasPhotos, isAnalyzed }: Props)
             }}
           >
             {analyzing ? (
-              <>🧠 Analyzing... <span style={{ fontSize: "0.8rem", opacity: 0.8 }}>(10-30 sec)</span></>
+              <>🧠 Analyzing... <span style={{ fontSize: "0.7rem", opacity: 0.8 }}>(Our AI is examining your photos — usually 10-30 seconds)</span></>
             ) : (
               "🧠 Analyze with AI"
             )}
@@ -109,7 +109,40 @@ export default function AnalyzeActions({ itemId, hasPhotos, isAnalyzed }: Props)
             {analyzing ? "🧠 Re-analyzing..." : "🧠 Re-Analyze with AI"}
           </button>
         )}
+        {/* What gets analyzed — shown before first run */}
+        {!isAnalyzed && hasPhotos && !analyzing && (
+          <div style={{
+            display: "flex", gap: "0.5rem", justifyContent: "center", flexWrap: "wrap",
+            marginTop: "0.5rem", fontSize: "0.55rem", color: "var(--text-muted)",
+          }}>
+            {["🔍 Item ID", "📋 Condition", "💰 Pricing", "📦 Shipping", "🏛️ Antique Check", "📸 Photo Quality"].map((label) => (
+              <span key={label} style={{
+                padding: "2px 8px", borderRadius: "9999px",
+                background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.1)",
+              }}>{label}</span>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* MegaBot CTA when analyzed but not boosted */}
+      {isAnalyzed && !megabotUsed && (
+        <div style={{ textAlign: "center", marginTop: "0.75rem" }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "0.4rem",
+            padding: "0.5rem 1.25rem", borderRadius: "0.6rem",
+            background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(59,130,246,0.15))",
+            border: "1px solid rgba(139,92,246,0.3)",
+            fontSize: "0.75rem", color: "#8b5cf6", fontWeight: 600,
+          }}>
+            <span style={{ fontSize: "1rem" }}>⚡</span>
+            <span>MegaBot Available — 4 AI engines for deeper analysis</span>
+          </div>
+          <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.3rem" }}>
+            Scroll down to the MegaBot panel to run a premium multi-AI analysis
+          </div>
+        </div>
+      )}
 
       {analysisDone && !analyzing && (
         <p style={{
@@ -119,7 +152,7 @@ export default function AnalyzeActions({ itemId, hasPhotos, isAnalyzed }: Props)
           marginTop: "0.5rem",
           margin: "0.5rem 0 0 0",
         }}>
-          ✓ Analysis complete — Amazon market data included
+          ✓ Analysis complete — AI identification, pricing, condition assessment, and Amazon market data all updated
         </p>
       )}
 

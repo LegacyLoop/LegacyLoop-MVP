@@ -226,7 +226,19 @@ IMPORTANT INSTRUCTIONS:
 ${isAntique ? "- This IS an antique: include auction houses, collector forums, specialty dealers." : ""}
 ${isVehicle ? "- This IS a vehicle: focus on LOCAL buyers, dealerships, enthusiast groups within 100 miles. LOCAL PICKUP ONLY." : ""}
 - Every recommendation must be actionable — the seller should be able to DO something immediately.
-- All prices in USD.`;
+- All prices in USD.
+
+WEB SEARCH INSTRUCTIONS:
+If you have web search capability, USE IT AGGRESSIVELY to find real buyers:
+1. Search Facebook Groups for "${category} buy sell" and "${itemName} wanted"
+2. Search eBay for "${itemName}" to see who's bidding on similar items
+3. Search Reddit for relevant subreddits (e.g. WTB posts, collector communities)
+4. Search Craigslist for "${category} wanted" postings
+5. Search collector forums for "${ai.brand || ""} ${itemName} wanted" or "ISO"
+6. Search Instagram hashtags like #${category.replace(/\s/g, "")}collector
+
+For each hot lead, include WHERE you found evidence of their interest.
+Include a "web_sources" array in your response with {"url": "...", "title": "..."} objects for pages you found. If no web search performed, return empty array.`;
 
     let buyerbotResult: any;
 
@@ -242,6 +254,7 @@ ${isVehicle ? "- This IS a vehicle: focus on LOCAL buyers, dealerships, enthusia
           model: "gpt-4o-mini",
           instructions: systemPrompt,
           input: `Find all potential buyers for this item. Photos: ${photoDescs.join(", ")}. Return ONLY valid JSON.`,
+          tools: [{ type: "web_search_preview" as any }],
         }, { signal: controller.signal });
 
         const text = typeof response.output === "string"
@@ -254,6 +267,30 @@ ${isVehicle ? "- This IS a vehicle: focus on LOCAL buyers, dealerships, enthusia
         } else {
           throw new Error("No JSON in response");
         }
+
+        // Extract web search citations
+        const webSources: Array<{ url: string; title: string }> = [];
+        try {
+          const outputArr = Array.isArray(response.output) ? response.output : [];
+          for (const outItem of outputArr) {
+            if ((outItem as any).type === "web_search_call" && Array.isArray((outItem as any).results)) {
+              for (const r of (outItem as any).results) {
+                if (r.url && r.title) webSources.push({ url: r.url, title: r.title });
+              }
+            }
+            if ((outItem as any).type === "message" && Array.isArray((outItem as any).content)) {
+              for (const c of (outItem as any).content) {
+                if (c.annotations) {
+                  for (const ann of c.annotations) {
+                    if (ann.type === "url_citation" && ann.url) webSources.push({ url: ann.url, title: ann.title || ann.url });
+                  }
+                }
+              }
+            }
+          }
+        } catch { /* citation extraction non-critical */ }
+        if (!buyerbotResult.web_sources) buyerbotResult.web_sources = [];
+        if (webSources.length > 0) buyerbotResult.web_sources = [...webSources, ...(buyerbotResult.web_sources || [])];
       } catch (aiErr: any) {
         console.error("[buyerbot] OpenAI error:", aiErr);
         return NextResponse.json({ error: `BuyerBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` }, { status: 422 });
