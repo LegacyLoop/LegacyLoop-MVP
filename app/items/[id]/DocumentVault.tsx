@@ -52,7 +52,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
   const [dragOver, setDragOver] = useState(false);
   const [expandedSummary, setExpandedSummary] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [vaultCollapsed, setVaultCollapsed] = useState(true);
+  const [vaultCollapsed, setVaultCollapsed] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 

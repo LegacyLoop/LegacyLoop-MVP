@@ -129,6 +129,132 @@ function AccordionHeader({ id, icon, title, subtitle, isOpen, onToggle, accentCo
   );
 }
 
+function CollapsedSummary({ botType, data, megaData, buttons }: {
+  botType: string;
+  data: any;
+  megaData?: any;
+  buttons?: React.ReactNode;
+}) {
+  const summaries: Record<string, () => React.ReactNode> = {
+    analyze: () => (
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
+        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)", textAlign: "center", maxWidth: "90%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{data?.itemName || "—"}</div>
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", flexWrap: "wrap" as const, justifyContent: "center" }}>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Condition</div><div style={{ fontSize: "0.82rem", fontWeight: 800, color: (data?.conditionScore ?? 5) >= 7 ? "#22c55e" : (data?.conditionScore ?? 5) >= 4 ? "#f59e0b" : "#ef4444" }}>{data?.conditionScore ?? "?"}/10</div></div>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Category</div><div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>{data?.category || "—"}</div></div>
+          {data?.confidence && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Confidence</div><div style={{ fontSize: "0.65rem", fontWeight: 600, color: "#00bcd4" }}>{Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%</div></div>}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+      </div>
+    ),
+    pricing: () => (
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
+        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Estimated Value</div>
+        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>{data?.low != null && data?.high != null ? `$${Math.round(data.low)} — $${Math.round(data.high)}` : "—"}</div>
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
+          <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Confidence</div><div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)" }}>{data?.confidence != null ? `${Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%` : "?"}</div></div>
+          {data?.demand && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Demand</div><div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.demand === "High" || data.demand === "high" ? "#22c55e" : data.demand === "Low" || data.demand === "low" ? "#ef4444" : "#f59e0b" }}>{data.demand}</div></div>}
+          {data?.netPayout && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>You Keep</div><div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#22c55e" }}>${Math.round(data.netPayout)}</div></div>}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+      </div>
+    ),
+    buyers: () => (
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
+        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Buyer Intelligence</div>
+        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#22c55e" }}>🎯 {data?.leadCount ?? 0} leads found</div>
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
+          {data?.hotCount > 0 && <span style={{ fontSize: "0.62rem", color: "#ef4444", fontWeight: 600 }}>🔥 {data.hotCount} hot</span>}
+          {data?.bestPlatform && <span style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>Best: {data.bestPlatform}</span>}
+          {data?.platformCount > 0 && <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{data.platformCount} platforms</span>}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}%</span>}
+      </div>
+    ),
+    listing: () => (
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
+        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Listing Status</div>
+        <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "#00bcd4" }}>📋 {data?.platformCount ?? 0} platforms ready</div>
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
+          {data?.bestPlatform && <span style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>Best: {data.bestPlatform}</span>}
+          {data?.copiedCount > 0 && <span style={{ fontSize: "0.62rem", color: "#22c55e" }}>{data.copiedCount}/13 launched</span>}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}%</span>}
+      </div>
+    ),
+    recon: () => (
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
+        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Market Recon</div>
+        <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "#f59e0b" }}>🔍 {data?.competitorCount ?? 0} competitors</div>
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
+          {data?.alertCount > 0 && <span style={{ fontSize: "0.62rem", color: "#ef4444", fontWeight: 600 }}>🚨 {data.alertCount} alerts</span>}
+          {data?.marketHeat && <span style={{ fontSize: "0.62rem", color: data.marketHeat === "Hot" ? "#ef4444" : data.marketHeat === "Warm" ? "#f59e0b" : "#00bcd4" }}>{data.marketHeat === "Hot" ? "🔥" : "🌤️"} {data.marketHeat}</span>}
+          {data?.pricePosition && <span style={{ fontSize: "0.62rem", color: data.pricePosition === "Well-Priced" ? "#22c55e" : "#f59e0b" }}>{data.pricePosition}</span>}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}%</span>}
+      </div>
+    ),
+    shipping: () => (
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
+        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Shipping Method</div>
+        <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "#00bcd4" }}>📦 {data?.method || "—"}</div>
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
+          {data?.weight && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Weight</div><div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>⚖️ {data.weight}</div></div>}
+          {data?.difficulty && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Difficulty</div><div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.difficulty === "Easy" ? "#22c55e" : data.difficulty === "Difficult" ? "#ef4444" : "#f59e0b" }}>{data.difficulty}</div></div>}
+        </div>
+      </div>
+    ),
+    photos: () => (
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
+        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Photo Quality</div>
+        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: (data?.score ?? 5) >= 7 ? "#22c55e" : (data?.score ?? 5) >= 4 ? "#f59e0b" : "#ef4444" }}>📸 {data?.score ?? "?"}/10</div>
+        <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>{data?.count ?? 0} photo{(data?.count ?? 0) !== 1 ? "s" : ""} uploaded</div>
+      </div>
+    ),
+    carbot: () => (
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
+        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Vehicle</div>
+        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>🚗 {data?.label || "Assessment available"}</div>
+      </div>
+    ),
+    antique: () => (
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
+        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Antique Status</div>
+        <div style={{ fontSize: "0.9rem", fontWeight: 700, color: data?.isAntique ? "#f59e0b" : "var(--text-muted)" }}>{data?.isAntique ? `🏛️ Score: ${data.score ?? "?"}` : "Not flagged"}</div>
+        {data?.auctionLow != null && data?.auctionHigh != null && (
+          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#f59e0b" }}>Auction: ${data.auctionLow?.toLocaleString()}–${data.auctionHigh?.toLocaleString()}</div>
+        )}
+      </div>
+    ),
+    collectibles: () => (
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
+        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Collectible</div>
+        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#8b5cf6" }}>⭐ {data?.name || "Evaluation available"}</div>
+        {data?.rarity && <span style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>Rarity: {data.rarity}</span>}
+      </div>
+    ),
+  };
+
+  const render = summaries[botType];
+  return (
+    <div style={{
+      padding: "0.65rem 1rem",
+      display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center",
+    }}>
+      {render ? render() : <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>Expand for full details</span>}
+      {buttons && (
+        <div style={{
+          display: "flex", gap: "0.4rem", justifyContent: "center",
+          flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem",
+          borderTop: "1px solid var(--border-default)", width: "100%",
+        }}>
+          {buttons}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function GlassCard({ children, premium, fullWidth }: {
   children: React.ReactNode;
   premium?: boolean;
@@ -148,6 +274,9 @@ function GlassCard({ children, premium, fullWidth }: {
         overflow: "hidden",
         transition: "border-color 0.2s, box-shadow 0.2s",
         gridColumn: fullWidth ? "1 / -1" : undefined,
+        display: "flex",
+        flexDirection: "column" as const,
+        minHeight: "280px",
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = premium ? "rgba(0,188,212,0.5)" : "rgba(0,188,212,0.3)";
@@ -287,7 +416,7 @@ function PanelFooter({ botName, botLink, itemId, botIcon, botCost, onSuperBoost,
   botError?: { type: string; message: string; balance?: number; required?: number } | null;
 }) {
   return (
-    <div>
+    <div style={{ marginTop: "auto" }}>
       {/* MegaBot loading state — full cooking animation when boosting */}
       {boosting && !boosted && (
         <BotLoadingState botName={`MegaBot — ${botName}`} />
@@ -2379,7 +2508,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
   const [analyzing, setAnalyzing] = useState(false);
   const [showJson, setShowJson] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [aiOpenSections, setAiOpenSections] = useState<Set<string>>(new Set(["ai-summary", "ai-condition", "ai-pricing"]));
+  const [aiOpenSections, setAiOpenSections] = useState<Set<string>>(new Set(["ai-summary", "ai-condition", "ai-pricing", "megabot-results"]));
   const toggleAiSection = (id: string) => { setAiOpenSections(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; }); };
   const hasData = !!aiData;
   const isDraft = status === "DRAFT";
@@ -2410,7 +2539,30 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
         preview={hasData ? `${aiData.item_name || "Identified"} · ${aiData.condition_guess || "—"} ${aiData.condition_score ? aiData.condition_score + "/10" : ""} · ${aiData.confidence ? Math.round((aiData.confidence > 1 ? aiData.confidence : aiData.confidence * 100)) + "% confident" : ""}` : "Not analyzed yet"}
       />
 
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      {collapsed && hasData && <CollapsedSummary botType="analyze" data={{ itemName: aiData?.item_name, conditionScore: aiData?.condition_score, category: aiData?.category, confidence: aiData?.confidence }} buttons={<>
+        <button onClick={() => analyze(hasData)} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🧠 Re-Run · 0.5 cr</button>
+        {onSuperBoost && !boosted && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>⚡ MegaBot · 3 cr</button>}
+        <a href="/bots/analyzebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AnalyzeBot →</a>
+      </>} />}
+      {collapsed && !hasData && (
+        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "center" }}>
+          <span style={{ fontSize: "1.5rem" }}>🧠</span>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>AI Analysis</div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Upload photos to identify your item, assess condition, and get pricing.</p>
+          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+            {[{ icon: "🔍", text: "Item identification" }, { icon: "📋", text: "Condition scoring" }, { icon: "💰", text: "Price estimate" }].map((b: any, i: number) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+            <button onClick={() => analyze(false)} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🧠 Analyze · 1 cr</button>
+            <a href="/bots/analyzebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AnalyzeBot →</a>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "1.25rem" }}>
         {analyzing ? (
           <BotLoadingState botName="AnalyzeBot" />
@@ -2768,7 +2920,8 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
                     }}>{boostResult.agreementScore}% Agreement</span>
                   )}
                 </div>
-                <MegaBotBoostResults botType="analysis" result={boostResult} aiData={aiData} />
+                <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={aiOpenSections.has("megabot-results")} onToggle={toggleAiSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+                {aiOpenSections.has("megabot-results") && <MegaBotBoostResults botType="analysis" result={boostResult} aiData={aiData} />}
               </>
             )}
             {!boosted && !boosting && hasData && (
@@ -2826,6 +2979,16 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   onToggle?: () => void;
 }) {
   const [showCalc, setShowCalc] = useState(false);
+  const [priceOpenSections, setPriceOpenSections] = useState<Set<string>>(
+    new Set(["price-value", "price-confidence", "megabot-results"])
+  );
+  const togglePriceSection = (id: string) => {
+    setPriceOpenSections(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
   const hasData = !!v;
 
   // Parse extended pricing from onlineRationale
@@ -2883,7 +3046,30 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
         preview={hasData ? `$${Math.round(v.low)} – $${Math.round(v.high)} · ${v.source || "AI estimate"}` : "Awaiting analysis"}
       />
 
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      {collapsed && hasData && <CollapsedSummary botType="pricing" data={{ low: v.low, high: v.high, confidence: v.confidence }} megaData={boosted ? boostResult : undefined} buttons={<>
+        {onPriceBotRun && <button onClick={onPriceBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>💰 Re-Run · 0.5 cr</button>}
+        {onSuperBoost && !boosted && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>⚡ MegaBot · 5 cr</button>}
+        <a href="/bots/pricebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PriceBot →</a>
+      </>} />}
+      {collapsed && !hasData && (
+        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "center" }}>
+          <span style={{ fontSize: "1.5rem" }}>💰</span>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Price Estimate</div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>AI-powered pricing from market data and comparable sales.</p>
+          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+            {[{ icon: "📊", text: "Market comparable sales" }, { icon: "📈", text: "Demand analysis" }, { icon: "🏪", text: "Best selling platforms" }].map((b: any, i: number) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+            {onPriceBotRun && <button onClick={onPriceBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>💰 PriceBot · 1 cr</button>}
+            <a href="/bots/pricebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PriceBot →</a>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "1.25rem" }}>
         {priceBotLoading ? (
           <BotLoadingState botName="PriceBot" />
@@ -2935,6 +3121,8 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               </div>
             )}
 
+            <AccordionHeader id="price-comps" icon="📋" title="COMPARABLE SALES" isOpen={priceOpenSections.has("price-comps")} onToggle={togglePriceSection} />
+            {priceOpenSections.has("price-comps") && (<div style={{ padding: "0.35rem 0", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {/* How We Calculated This */}
             {(pr.adjustments || v.rationale) && (
               <>
@@ -2984,7 +3172,10 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
             )}
 
             {/* MegaBot boost results */}
-            {boosted && boostResult && <MegaBotBoostResults botType="pricing" result={boostResult} aiData={aiData} />}
+            {boosted && boostResult && (<>
+              <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={priceOpenSections.has("megabot-results")} onToggle={togglePriceSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+              {priceOpenSections.has("megabot-results") && <MegaBotBoostResults botType="pricing" result={boostResult} aiData={aiData} />}
+            </>)}
 
             {/* PriceBot Deep Dive Summary */}
             {priceBotResult && (() => {
@@ -3030,13 +3221,17 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 </div>
               );
             })()}
+            </div>)}
           </div>
         ) : (
           /* Legacy fallback */
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--accent)" }}>${Math.round(v.low)} – ${Math.round(v.high)}</div>
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Confidence: {Math.round(v.confidence * 100)}%</div>
-            {boosted && boostResult && <MegaBotBoostResults botType="pricing" result={boostResult} aiData={aiData} />}
+            {boosted && boostResult && (<>
+              <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={priceOpenSections.has("megabot-results")} onToggle={togglePriceSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+              {priceOpenSections.has("megabot-results") && <MegaBotBoostResults botType="pricing" result={boostResult} aiData={aiData} />}
+            </>)}
           </div>
         )}
 
@@ -3098,7 +3293,10 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
             <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem", marginTop: "0.75rem" }}>
 
               {/* ═══ ADDITION 1 — Seller Net Breakdown ═══ */}
-              {salePrice > 0 && (
+              {salePrice > 0 && (<>
+                <AccordionHeader id="price-value" icon="💰" title="NET PAYOUT" subtitle={`$${Math.round(net)}`} isOpen={priceOpenSections.has("price-value")} onToggle={togglePriceSection} accentColor="#00bcd4" />
+                {priceOpenSections.has("price-value") && (
+                <div style={{ padding: "0.35rem 0" }}>
                 <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.6rem", padding: "0.75rem" }}>
                   <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.45rem" }}>💵 Your Best Net Payout</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
@@ -3128,9 +3326,13 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                     </div>
                   </div>
                 </div>
-              )}
+                </div>)}
+              </>)}
 
               {/* ═══ ADDITION 2 — Quick Market Snapshot ═══ */}
+              <AccordionHeader id="price-confidence" icon="📊" title="CONFIDENCE & DEMAND" subtitle={`${conf ?? "?"}% · ${demand || "—"}`} isOpen={priceOpenSections.has("price-confidence")} onToggle={togglePriceSection} />
+              {priceOpenSections.has("price-confidence") && (
+              <div style={{ padding: "0.35rem 0" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem" }}>
                 {conf != null && (
                   <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.45rem 0.5rem", textAlign: "center" }}>
@@ -3152,8 +3354,12 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--accent)" }}>{sellsIn}</div>
                 </div>
               </div>
+              </div>)}
 
               {/* ═══ ADDITION 3 — Where to Sell ═══ */}
+              <AccordionHeader id="price-platforms" icon="🏪" title="BEST PLACES TO SELL" isOpen={priceOpenSections.has("price-platforms")} onToggle={togglePriceSection} />
+              {priceOpenSections.has("price-platforms") && (
+              <div style={{ padding: "0.35rem 0" }}>
               <div>
                 <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.3rem" }}>🏪 Best Places to Sell</div>
                 <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
@@ -3173,6 +3379,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Run PriceBot for platform-specific pricing</div>
                 )}
               </div>
+              </div>)}
 
               {/* ═══ ADDITION 4 — Condition Impact ═══ */}
               {cScore != null && (
@@ -3239,6 +3446,8 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
   shippingData?: Props["shippingData"];
 }) {
   const hasAnalysis = !!aiData;
+  const [shipSections, setShipSections] = useState<Set<string>>(new Set(["megabot-results"]));
+  const toggleShipSection = (id: string) => { setShipSections(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; }); };
 
   // Compute package suggestion from AI data (including AI weight + shipping notes)
   const suggestion = useMemo(() => {
@@ -3296,10 +3505,59 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
         preview={hasAnalysis ? `${suggestion?.label || "Package ready"} · ${suggestion?.weightEstimate ? suggestion.weightEstimate + " lbs" : ""}` : "Awaiting analysis"}
       />
 
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      {collapsed && hasAnalysis && <CollapsedSummary botType="shipping" data={{ method: suggestion?.label || shippingMethod || "—", weight: suggestion?.weightEstimate ? `${suggestion.weightEstimate} lbs` : null }} buttons={<>
+        <a href="/shipping" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open Shipping →</a>
+      </>} />}
+      {collapsed && !hasAnalysis && (
+        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "center" }}>
+          <span style={{ fontSize: "1.5rem" }}>📦</span>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Shipping Estimates</div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>AI-powered shipping profile with carrier comparison.</p>
+          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+            {[{ icon: "📐", text: "AI package sizing" }, { icon: "🚚", text: "Carrier rate comparison" }, { icon: "📋", text: "Packing tips" }].map((b: any, i: number) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+            <a href="/shipping" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open Shipping →</a>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "0.75rem 1.25rem 1.25rem" }}>
         {!hasAnalysis ? (
-          <EmptyState message="Run analysis for shipping estimates." />
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center", padding: "0.5rem 0", flex: 1, justifyContent: "center" }}>
+            <div style={{ fontSize: "1.5rem" }}>📦</div>
+            <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 360, margin: 0 }}>Run AI analysis to generate your shipping profile and carrier comparison.</p>
+            <div style={{ marginTop: "0.25rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360 }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "📦", text: "AI-recommended box size and packing materials" }, { icon: "🚚", text: "Real-time carrier rate comparison (USPS, UPS, FedEx)" }, { icon: "📋", text: "Professional packing tips to prevent damage" }, { icon: "💰", text: "Cost estimates to the 5 largest metro areas" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
+                  <span>{b.text}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
+              {["AI measures and weighs your item", "Compare carrier rates side by side", "Get packing tips to prevent damage"].map((step, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
+              {[{ value: "4+", label: "Carriers" }, { value: "AI", label: "Box sizing" }, { value: "5", label: "Metro estimates" }].map((m, i) => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
+                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         ) : (
           <>
           {/* AI Shipping Recommendation Card */}
@@ -3414,7 +3672,10 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
           </>
         )}
 
-        {boosted && boostResult && <MegaBotBoostResults botType="shipping" result={boostResult} aiData={aiData} />}
+        {boosted && boostResult && (<>
+          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={shipSections.has("megabot-results")} onToggle={toggleShipSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+          {shipSections.has("megabot-results") && <MegaBotBoostResults botType="shipping" result={boostResult} aiData={aiData} />}
+        </>)}
       </div>
 
       <PanelFooter botName="Shipping Center" botLink="/shipping" itemId={itemId} />
@@ -3440,6 +3701,8 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
 }) {
   const hasAnalysis = !!aiData;
   const photoCount = photos.length;
+  const [photoSections, setPhotoSections] = useState<Set<string>>(new Set(["megabot-results"]));
+  const togglePhotoSection = (id: string) => { setPhotoSections(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; }); };
 
   // Enhancement studio state
   const [enhanceResult, setEnhanceResult] = useState<any>(null);
@@ -3664,10 +3927,62 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
         preview={hasAnalysis ? `${qualityScore}/10 quality · ${photoCount} photo${photoCount !== 1 ? "s" : ""}` : `${photoCount} photo${photoCount !== 1 ? "s" : ""} uploaded`}
       />
 
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      {collapsed && hasAnalysis && <CollapsedSummary botType="photos" data={{ score: qualityScore, count: photoCount }} buttons={<>
+        <button onClick={runAssessOnly} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📸 Re-Run · 1 cr</button>
+        {onSuperBoost && !boosted && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>⚡ MegaBot · 5 cr</button>}
+        <a href={`/bots/stylebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PhotoBot →</a>
+      </>} />}
+      {collapsed && !hasAnalysis && (
+        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "center" }}>
+          <span style={{ fontSize: "1.5rem" }}>📸</span>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Photo Assessment</div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>AI analysis of your listing photos with improvement tips.</p>
+          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+            {[{ icon: "📷", text: "Photo quality score" }, { icon: "💡", text: "Improvement tips" }, { icon: "🎯", text: "Listing readiness check" }].map((b: any, i: number) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+            <button onClick={runAssessOnly} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📸 PhotoBot · 1 cr</button>
+            <a href={`/bots/stylebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PhotoBot →</a>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "1.25rem" }}>
         {!hasAnalysis ? (
-          <EmptyState message="Run analysis for photo assessment." />
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center", padding: "0.5rem 0", flex: 1, justifyContent: "center" }}>
+            <div style={{ fontSize: "1.5rem" }}>📸</div>
+            <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 360, margin: 0 }}>Run AI analysis for photo quality assessment and improvement tips.</p>
+            <div style={{ marginTop: "0.25rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360 }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "📷", text: "Photo quality score with specific improvement tips" }, { icon: "💡", text: "Lighting, angle, and composition recommendations" }, { icon: "🎯", text: "Platform-specific photo requirements checklist" }, { icon: "📈", text: "Better photos = faster sales and higher prices" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
+                  <span>{b.text}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
+              {["AI analyzes your listing photos", "Get quality score and improvement tips", "Retake and re-score for better results"].map((step, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
+              {[{ value: "1-10", label: "Quality score" }, { value: "AI", label: "Analysis" }, { value: "Tips", label: "Per photo" }].map((m, i) => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
+                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {/* ── EXISTING ASSESSMENT DISPLAY ── */}
@@ -4014,7 +4329,8 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
                   ))}
                 </div>
 
-                <MegaBotBoostResults botType="photos" result={boostResult} aiData={aiData} />
+                <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={photoSections.has("megabot-results")} onToggle={togglePhotoSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+                {photoSections.has("megabot-results") && <MegaBotBoostResults botType="photos" result={boostResult} aiData={aiData} />}
 
                 {/* MegaBot Enhancement Variation Cards — merged with generated images */}
                 {megaVariations.length > 0 && (
@@ -4294,6 +4610,16 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
   const [composerMsg, setComposerMsg] = useState("");
   const [reachedOut, setReachedOut] = useState<Record<string, string>>({});
   const [justCopied, setJustCopied] = useState(false);
+  const [buyerOpenSections, setBuyerOpenSections] = useState<Set<string>>(
+    new Set(["buyer-leads", "buyer-platforms", "megabot-results"])
+  );
+  const toggleBuyerSection = (id: string) => {
+    setBuyerOpenSections(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   const itemName = aiData?.item_name || "this item";
   const condLabel = (aiData?.condition_score ?? 5) >= 8 ? "excellent" : (aiData?.condition_score ?? 5) >= 5 ? "great" : "good";
@@ -4383,7 +4709,30 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
         preview={hasResult ? `${hotLeads.length} hot leads · Best: ${bestPlatform?.platform || "—"}` : "Not run yet"}
       />
 
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      {collapsed && hasResult && <CollapsedSummary botType="buyers" data={{ leadCount: hotLeads.length + profiles.length, bestPlatform: bestPlatform?.platform, hotCount: hotLeads.length }} megaData={boosted ? boostResult : undefined} buttons={<>
+        {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 Re-Run · 0.5 cr</button>}
+        {onSuperBoost && !boosted && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>⚡ MegaBot · 5 cr</button>}
+        <a href="/bots/buyerbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open BuyerBot →</a>
+      </>} />}
+      {collapsed && !hasResult && (
+        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "center" }}>
+          <span style={{ fontSize: "1.5rem" }}>🎯</span>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Buyer Finder</div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Scans 15+ platforms to find people actively searching for items like yours.</p>
+          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+            {[{ icon: "🎯", text: "Targeted buyer profiles" }, { icon: "📊", text: "Platform analysis" }, { icon: "📤", text: "Outreach templates" }].map((b: any, i: number) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+            {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 BuyerBot · 1 cr</button>}
+            <a href="/bots/buyerbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open BuyerBot →</a>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "1.25rem" }}>
         {!hasAnalysis ? (
           <EmptyState message="Run AI analysis first to enable buyer search." />
@@ -4391,7 +4740,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
           <BotLoadingState botName="BuyerBot" />
         ) : !hasResult ? (
           /* ── NOT RUN ── */
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center" }}>
             <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 360, margin: 0 }}>
               Scans 15+ platforms to find people actively searching for items like yours.
             </p>
@@ -4402,10 +4751,38 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
               <span>·</span>
               <span>📤 Outreach templates</span>
             </div>
+            <div style={{ marginTop: "0.75rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "🎯", text: "Targeted buyer profiles matched to your exact item" }, { icon: "📊", text: "Platform-by-platform opportunity analysis" }, { icon: "📝", text: "Ready-to-use outreach templates for each buyer" }, { icon: "💰", text: "Buyer budget estimates so you know who's serious" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
+                  <span>{b.text}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
+              {["Run scan — AI searches 15+ platforms", "Review matched buyers with scores", "Send outreach with one click"].map((step, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
+              {[{ value: "8+", label: "Avg buyers found" }, { value: "15+", label: "Platforms scanned" }, { value: "< 30s", label: "Scan time" }].map((m, i) => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
+                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           /* ── HAS RESULT — SUMMARY ── */
           <div style={{ display: "flex", flexDirection: "column", gap: "0.55rem" }}>
+            <AccordionHeader id="buyer-leads" icon="🔥" title="HOT LEADS" subtitle={`${hotLeads.length + profiles.length} potential buyers`} isOpen={buyerOpenSections.has("buyer-leads")} onToggle={toggleBuyerSection} accentColor="#ef4444" />
+            {buyerOpenSections.has("buyer-leads") && (<div style={{ padding: "0.35rem 0", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
             {/* Stats row */}
             <div style={{ display: "flex", gap: "0.5rem", fontSize: "0.72rem", color: "var(--text-muted)", flexWrap: "wrap" }}>
               <span>🎯 <strong style={{ color: "var(--text-primary)" }}>{profiles.length}</strong> buyers</span>
@@ -4486,7 +4863,10 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
                 </div>
               );
             })}
+            </div>)}
 
+            <AccordionHeader id="buyer-platforms" icon="🏪" title="PLATFORMS" isOpen={buyerOpenSections.has("buyer-platforms")} onToggle={toggleBuyerSection} />
+            {buyerOpenSections.has("buyer-platforms") && (<div style={{ padding: "0.35rem 0", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
             {/* Best platform */}
             {bestPlatform && (
               <div style={{ fontSize: "0.68rem", color: "var(--text-secondary)" }}>
@@ -4494,7 +4874,10 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
                 {bestPlatform.estimated_buyers && <span> — ~{bestPlatform.estimated_buyers} active buyers</span>}
               </div>
             )}
+            </div>)}
 
+            <AccordionHeader id="buyer-outreach" icon="📤" title="OUTREACH" isOpen={buyerOpenSections.has("buyer-outreach")} onToggle={toggleBuyerSection} />
+            {buyerOpenSections.has("buyer-outreach") && (<div style={{ padding: "0.35rem 0", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
             {/* Competitive edge */}
             {competition?.your_advantage && (
               <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", lineHeight: 1.35 }}>
@@ -4506,11 +4889,15 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
             <a href={`/bots/buyerbot?item=${itemId}`} style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}>
               See all buyers →
             </a>
+            </div>)}
           </div>
         )}
 
         {/* MegaBot boost results — outside the hasResult check so it shows even without regular BuyerBot run */}
-        {boosted && boostResult && <MegaBotBoostResults botType="buyers" result={boostResult} aiData={aiData} />}
+        {boosted && boostResult && (<>
+          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={buyerOpenSections.has("megabot-results")} onToggle={toggleBuyerSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+          {buyerOpenSections.has("megabot-results") && <MegaBotBoostResults botType="buyers" result={boostResult} aiData={aiData} />}
+        </>)}
       </div>
 
       <PanelFooter botName="BuyerBot" botLink="/bots/buyerbot" itemId={itemId} botIcon="🎯" botCost={1} onBotRun={hasAnalysis ? onBuyerBotRun : undefined} onSuperBoost={hasAnalysis ? onSuperBoost : undefined} boosting={boosting} boosted={boosted} hasResult={!!buyerBotResult} />
@@ -4718,6 +5105,16 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
   const hasAnalysis = !!aiData;
   const hasListBotData = !!listBotResult;
   const [copiedPlatform, setCopiedPlatform] = useState<string | null>(null);
+  const [listOpenSections, setListOpenSections] = useState<Set<string>>(
+    new Set(["list-platforms", "megabot-results"])
+  );
+  const toggleListSection = (id: string) => {
+    setListOpenSections(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   const listings = listBotResult?.listings || {};
   const platformKeys = Object.keys(listings);
@@ -4773,7 +5170,30 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
         preview={hasListBotData ? `${platformCount} platform listings ready` : "Ready to generate"}
       />
 
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      {collapsed && hasListBotData && <CollapsedSummary botType="listing" data={{ platformCount }} megaData={boosted ? boostResult : undefined} buttons={<>
+        {onListBotRun && <button onClick={onListBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📋 Re-Run · 0.5 cr</button>}
+        {onSuperBoost && !boosted && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>⚡ MegaBot · 5 cr</button>}
+        <a href="/bots/listbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ListBot →</a>
+      </>} />}
+      {collapsed && !hasListBotData && (
+        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "center" }}>
+          <span style={{ fontSize: "1.5rem" }}>📋</span>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Listing Creator</div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Auto-generates optimized listings for 10+ platforms in one click.</p>
+          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+            {[{ icon: "📝", text: "Platform-optimized listings" }, { icon: "🏷️", text: "SEO keywords" }, { icon: "🚀", text: "One-click publish" }].map((b: any, i: number) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+            {onListBotRun && <button onClick={onListBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📋 ListBot · 1 cr</button>}
+            <a href="/bots/listbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ListBot →</a>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "1.25rem" }}>
         {!hasAnalysis ? (
           <EmptyState message="Run AI analysis first to enable listing creation." />
@@ -4781,7 +5201,7 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
           <BotLoadingState botName="ListBot" />
         ) : !hasListBotData ? (
           /* ── NOT RUN or ERROR ── */
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center" }}>
             {listBotError && (
               <div style={{
                 padding: "0.5rem 0.75rem", borderRadius: "0.4rem", width: "100%",
@@ -4797,10 +5217,38 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
             <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.4, maxWidth: 360 }}>
               Each listing is optimized for that platform&apos;s audience, format, and algorithm. Ready to copy &amp; paste.
             </p>
+            <div style={{ marginTop: "0.25rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "📝", text: "Professional listings optimized for each platform's algorithm" }, { icon: "🏷️", text: "SEO keywords and hashtags for maximum visibility" }, { icon: "📊", text: "Character-perfect titles and descriptions per platform" }, { icon: "🚀", text: "One-click copy to all 13 platforms via Publish Hub" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
+                  <span>{b.text}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
+              {["Generate — AI creates optimized listings", "Review and customize per platform", "Publish to all 13 platforms instantly"].map((step, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
+              {[{ value: "13", label: "Platforms" }, { value: "< 10s", label: "Generation time" }, { value: "SEO", label: "Optimized" }].map((m, i) => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
+                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           /* ── HAS LISTBOT DATA ── */
           <>
+            <AccordionHeader id="list-platforms" icon="🏪" title="PLATFORM LISTINGS" subtitle={`${platformCount} platforms`} isOpen={listOpenSections.has("list-platforms")} onToggle={toggleListSection} />
+            {listOpenSections.has("list-platforms") && (<div style={{ padding: "0.35rem 0" }}>
             {/* PATH 1 — Single AI result (no MegaBot yet) */}
             {!boostResult?.listings && (
               <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
@@ -4848,9 +5296,12 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
                 <ListingCommandCenter listings={mergedListings} listBotResult={listBotResult} boostResult={boostResult} itemId={itemId} getFullText={getFullText} copiedPlatform={copiedPlatform} setCopiedPlatform={setCopiedPlatform} copyPlatform={copyPlatform} getTitle={getTitle} getPrice={getPrice} platformCount={mergedCount} />
               );
             })()}
+            </div>)}
           </>
         )}
 
+        <AccordionHeader id="list-strategy" icon="🎯" title="SEO & STRATEGY" isOpen={listOpenSections.has("list-strategy")} onToggle={toggleListSection} />
+        {listOpenSections.has("list-strategy") && (<div style={{ padding: "0.35rem 0" }}>
         {/* MegaBot results — outside the hasListBotData conditional so it shows even without 1cr run */}
         {boostError && !boosting && (
           <div style={{
@@ -4861,7 +5312,11 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
             {boostError}
           </div>
         )}
-        {boosted && boostResult && <MegaBotBoostResults botType="listing" result={boostResult} aiData={aiData} />}
+        {boosted && boostResult && (<>
+          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={listOpenSections.has("megabot-results")} onToggle={toggleListSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+          {listOpenSections.has("megabot-results") && <MegaBotBoostResults botType="listing" result={boostResult} aiData={aiData} />}
+        </>)}
+        </div>)}
       </div>
 
       {hasListBotData && (
@@ -4932,6 +5387,8 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
 }) {
   const hasAnalysis = !!aiData;
   const hasData = !!carBotResult;
+  const [carSections, setCarSections] = useState<Set<string>>(new Set(["megabot-results"]));
+  const toggleCarSection = (id: string) => { setCarSections(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; }); };
   const ident = carBotResult?.identification;
   const cond = carBotResult?.condition_assessment;
   const val = carBotResult?.valuation;
@@ -5038,7 +5495,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
         <PanelHeader icon="🚗" title="Vehicle Specialist" hasData={false} collapsed={collapsed} onToggle={onToggle}
           preview="Upload a vehicle to activate"
         />
-        <div style={{ display: collapsed ? "none" : undefined }}>
+        <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
           <div style={{ padding: "1.25rem" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", alignItems: "center", textAlign: "center" }}>
               <div style={{ fontSize: "2rem" }}>🚗</div>
@@ -5051,6 +5508,32 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
               <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.5, maxWidth: 360 }}>
                 Upload a vehicle photo and run AI analysis to activate CarBot.
               </p>
+              <div style={{ marginTop: "0.5rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" }}>
+                <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
+                {[{ icon: "🔑", text: "Full VIN decode with vehicle history and specs" }, { icon: "📊", text: "Market value based on year, make, model, and condition" }, { icon: "🤝", text: "Local pickup planning with safe meetup recommendations" }].map((b, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                    <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
+                    <span>{b.text}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" }}>
+                <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
+                {["Upload a vehicle photo", "AI identifies make, model, year", "Get market value and selling strategy"].map((step, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                    <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                    <span>{step}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
+                {[{ value: "VIN", label: "Full decode" }, { value: "KBB", label: "Market data" }, { value: "Local", label: "Pickup ready" }].map((m, i) => (
+                  <div key={i} style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
+                    <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <PanelFooter
@@ -5071,7 +5554,30 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
         preview={hasData ? previewParts.filter(Boolean).join(" · ") : "Not analyzed yet"}
       />
 
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      {collapsed && hasData && <CollapsedSummary botType="carbot" data={{ label: ymm || "Vehicle assessment" }} buttons={<>
+        {onCarBotRun && <button onClick={onCarBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🚗 Re-Run · 0.5 cr</button>}
+        {onSuperBoost && !boosted && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>⚡ MegaBot · 5 cr</button>}
+        <a href={`/bots/carbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CarBot →</a>
+      </>} />}
+      {collapsed && !hasData && (
+        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "center" }}>
+          <span style={{ fontSize: "1.5rem" }}>🚗</span>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Vehicle Specialist</div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Condition grading, market pricing, and local pickup planning for vehicles.</p>
+          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+            {[{ icon: "🔑", text: "Full VIN decode" }, { icon: "📊", text: "Market pricing" }, { icon: "🤝", text: "Pickup planning" }].map((b: any, i: number) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+            {onCarBotRun && <button onClick={onCarBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🚗 CarBot · 1 cr</button>}
+            <a href={`/bots/carbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CarBot →</a>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "1.25rem" }}>
 
         {/* ── VIN + MILEAGE INPUT (always visible when vehicle detected) ── */}
@@ -5259,10 +5765,36 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
 
         {/* ── RESULTS ── */}
         {!hasData && !carBotLoading ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", alignItems: "center", textAlign: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center" }}>
             <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 360 }}>
               Condition grading, market pricing, selling strategy, and local pickup planning for your vehicle.
             </p>
+            <div style={{ padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "🔑", text: "Full VIN decode with vehicle history and specs" }, { icon: "📊", text: "Market value based on year, make, model, and condition" }, { icon: "🤝", text: "Local pickup planning with safe meetup recommendations" }, { icon: "📋", text: "Complete seller's checklist for vehicle transactions" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
+                  <span>{b.text}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
+              {["Enter VIN and mileage", "AI decodes vehicle history and specs", "Get market value and selling strategy"].map((step, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
+              {[{ value: "VIN", label: "Full decode" }, { value: "KBB", label: "Market data" }, { value: "Local", label: "Pickup ready" }].map((m, i) => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
+                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : carBotLoading ? (
           <BotLoadingState botName="CarBot" />
@@ -5394,7 +5926,10 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
       </div>
 
       {/* MegaBot boost results — full 4-agent breakdown */}
-      {boosted && boostResult && <MegaBotBoostResults botType="carbot" result={boostResult} aiData={aiData} />}
+      {boosted && boostResult && (<>
+        <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={carSections.has("megabot-results")} onToggle={toggleCarSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+        {carSections.has("megabot-results") && <MegaBotBoostResults botType="carbot" result={boostResult} aiData={aiData} />}
+      </>)}
 
       {/* LOCAL PICKUP ONLY banner */}
       <div style={{
@@ -5436,6 +5971,8 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 }) {
   const detection = aiData ? detectCollectible(aiData) : null;
   const hasResult = !!collectiblesBotResult;
+  const [collectSections, setCollectSections] = useState<Set<string>>(new Set(["megabot-results"]));
+  const toggleCollectSection = (id: string) => { setCollectSections(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; }); };
   const hasAnalysis = !!aiData;
   const r = collectiblesBotResult;
 
@@ -5535,7 +6072,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
         <PanelHeader icon="🎴" title="CollectiblesBot" hasData={false} collapsed={collapsed} onToggle={onToggle}
           preview="Collectibles specialist"
         />
-        <div style={{ display: collapsed ? "none" : undefined }}>
+        <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
           <div style={{ padding: "1.25rem" }}>
             <div style={{ textAlign: "center", padding: "1rem 0.5rem" }}>
               <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🎴</div>
@@ -5543,9 +6080,38 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
               <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: "0.75rem", maxWidth: 400, margin: "0 auto 0.75rem" }}>
                 Sports cards, trading cards, vinyl records, coins, comics, vintage toys, and more. Run CollectiblesBot for expert evaluation including rarity assessment, grading recommendations, and collector market analysis.
               </p>
+              <div style={{ marginTop: "0.5rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left", margin: "0.5rem auto 0" }}>
+                <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
+                {[{ icon: "⭐", text: "Rarity tier assessment from Common to Ultra Rare" }, { icon: "🏅", text: "Professional grade estimate (PSA, BGS, CGC scale)" }, { icon: "📈", text: "Collector market trends and demand forecasting" }].map((b, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                    <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
+                    <span>{b.text}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left", margin: "0.5rem auto 0" }}>
+                <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
+                {["Run AI analysis to detect collectibles", "AI grades rarity and condition", "Get market value and grading ROI"].map((step, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                    <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                    <span>{step}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360, margin: "0.4rem auto 0" }}>
+                {[{ value: "PSA", label: "Grade scale" }, { value: "ROI", label: "Analysis" }, { value: "Live", label: "Market data" }].map((m, i) => (
+                  <div key={i} style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
+                    <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-          {boosted && boostResult && <MegaBotBoostResults botType="collectibles" result={boostResult} aiData={aiData} />}
+          {boosted && boostResult && (<>
+            <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={collectSections.has("megabot-results")} onToggle={toggleCollectSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+            {collectSections.has("megabot-results") && <MegaBotBoostResults botType="collectibles" result={boostResult} aiData={aiData} />}
+          </>)}
           <PanelFooter
             botName="CollectiblesBot"
             botLink={`/bots/collectiblesbot?item=${itemId}`}
@@ -5583,7 +6149,30 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
           : detection?.isCollectible ? `${detection.category} detected` : "Collectibles specialist"}
       />
 
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      {collapsed && hasResult && <CollapsedSummary botType="collectibles" data={{ name: ident?.item_name }} buttons={<>
+        {onCollectiblesBotRun && <button onClick={onCollectiblesBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>⭐ Re-Run · 0.5 cr</button>}
+        {onSuperBoost && !boosted && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>⚡ MegaBot · 5 cr</button>}
+        <a href={`/bots/collectiblesbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CollectiblesBot →</a>
+      </>} />}
+      {collapsed && !hasResult && (
+        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "center" }}>
+          <span style={{ fontSize: "1.5rem" }}>⭐</span>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>CollectiblesBot</div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Rarity assessment, grading recommendations, and collector market analysis.</p>
+          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+            {[{ icon: "⭐", text: "Rarity tier assessment" }, { icon: "🏅", text: "Grade estimate" }, { icon: "📈", text: "Market trends" }].map((b: any, i: number) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+            {onCollectiblesBotRun && <button onClick={onCollectiblesBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>⭐ CollectiblesBot · 1 cr</button>}
+            <a href={`/bots/collectiblesbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CollectiblesBot →</a>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "1.25rem" }}>
         {/* Detection alert (when detected but not yet run) */}
         {detection?.isCollectible && !hasResult && !collectiblesBotLoading && (
@@ -5601,10 +6190,36 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
         {collectiblesBotLoading ? (
           <BotLoadingState botName="CollectiblesBot" />
         ) : !hasResult ? (
-          <div style={{ textAlign: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center" }}>
             <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.5, margin: 0 }}>
               Run CollectiblesBot for rarity assessment, grading, and collector market analysis.
             </p>
+            <div style={{ padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "⭐", text: "Rarity tier assessment from Common to Ultra Rare" }, { icon: "🏅", text: "Professional grade estimate (PSA, BGS, CGC scale)" }, { icon: "📈", text: "Collector market trends and demand forecasting" }, { icon: "💎", text: "Grading ROI analysis — is it worth getting graded?" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
+                  <span>{b.text}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
+              {["Submit your collectible for evaluation", "AI grades rarity and condition", "Get market value and grading ROI"].map((step, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
+              {[{ value: "PSA", label: "Grade scale" }, { value: "ROI", label: "Analysis" }, { value: "Live", label: "Market data" }].map((m, i) => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
+                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
@@ -5867,7 +6482,10 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
       </div>
 
       {/* MegaBot boost results */}
-      {boosted && boostResult && <MegaBotBoostResults botType="collectibles" result={boostResult} aiData={aiData} />}
+      {boosted && boostResult && (<>
+        <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={collectSections.has("megabot-results")} onToggle={toggleCollectSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+        {collectSections.has("megabot-results") && <MegaBotBoostResults botType="collectibles" result={boostResult} aiData={aiData} />}
+      </>)}
 
       <PanelFooter
         botName="CollectiblesBot"
@@ -5959,6 +6577,8 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
   }
 
   const hasData = !!abr;
+  const [antiqueSections, setAntiqueSections] = useState<Set<string>>(new Set(["megabot-results"]));
+  const toggleAntiqueSection = (id: string) => { setAntiqueSections(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; }); };
   const auth = abr?.authentication as any;
   const val = abr?.valuation as any;
   const ident = abr?.identification as any;
@@ -5984,7 +6604,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
         <PanelHeader icon="🏺" title="Antique Evaluation" hasData={false} collapsed={collapsed} onToggle={onToggle}
           preview="Run evaluation to check"
         />
-        <div style={{ display: collapsed ? "none" : undefined }}>
+        <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
           <div style={{ padding: "1.25rem" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", alignItems: "center", textAlign: "center" }}>
               <div style={{ fontSize: "2rem" }}>🏺</div>
@@ -6009,7 +6629,10 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
             </div>
           </div>
           {/* MegaBot boost results if already run */}
-          {boosted && boostResult && <MegaBotBoostResults botType="antique" result={boostResult} aiData={aiData} />}
+          {boosted && boostResult && (<>
+            <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={antiqueSections.has("megabot-results")} onToggle={toggleAntiqueSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+            {antiqueSections.has("megabot-results") && <MegaBotBoostResults botType="antique" result={boostResult} aiData={aiData} />}
+          </>)}
           <PanelFooter
             botName="AntiqueBot"
             botLink={`/bots/antiquebot?item=${itemId}`}
@@ -6046,7 +6669,30 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
           : "Antique detected — run evaluation"}
       />
 
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      {collapsed && hasData && <CollapsedSummary botType="antique" data={{ isAntique: antique?.isAntique, score: antique?.score, auctionLow: antique?.auctionLow, auctionHigh: antique?.auctionHigh }} buttons={<>
+        {onAntiqueBotRun && <button onClick={onAntiqueBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🏺 Re-Run · 0.5 cr</button>}
+        {onSuperBoost && !boosted && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>⚡ MegaBot · 5 cr</button>}
+        <a href={`/bots/antiquebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AntiqueBot →</a>
+      </>} />}
+      {collapsed && !hasData && (
+        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "center" }}>
+          <span style={{ fontSize: "1.5rem" }}>🏺</span>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Antique Evaluation</div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Authentication, historical research, and collector market analysis.</p>
+          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+            {[{ icon: "🏛️", text: "Authentication analysis" }, { icon: "📜", text: "Historical research" }, { icon: "💰", text: "Auction estimate" }].map((b: any, i: number) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+            {onAntiqueBotRun && <button onClick={onAntiqueBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🏺 AntiqueBot · 1 cr</button>}
+            <a href={`/bots/antiquebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AntiqueBot →</a>
+          </div>
+        </div>
+      )}
+
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       {/* Authenticity Score Card */}
       {authenticityScore && authenticityScore.score > 0 && (
         <div style={{
@@ -6112,7 +6758,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
         {antiqueBotLoading ? (
           <BotLoadingState botName="AntiqueBot" />
         ) : !hasData ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", flex: 1, justifyContent: "center" }}>
             {antiqueBotError && (
               <div style={{
                 padding: "0.5rem 0.75rem", borderRadius: "0.4rem",
@@ -6156,6 +6802,32 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
             <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.4, margin: 0, textAlign: "center" }}>
               Run AntiqueBot for full authentication, historical context, and expert selling strategy.
             </p>
+            <div style={{ padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "🏛️", text: "Authentication analysis — real antique or reproduction?" }, { icon: "📜", text: "Historical context and provenance research" }, { icon: "💰", text: "Auction house estimate for premium selling channels" }, { icon: "🔍", text: "Maker mark identification and period dating" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
+                  <span>{b.text}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
+              {["Submit item for authentication", "AI analyzes age, origin, and maker marks", "Get auction estimate and selling strategy"].map((step, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)" }}>
+              {[{ value: "78+", label: "Detection signals" }, { value: "Auction", label: "Estimates" }, { value: "Expert", label: "Authentication" }].map((m, i) => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
+                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
@@ -6213,7 +6885,10 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
       </div>
 
       {/* MegaBot boost results — full 4-agent breakdown */}
-      {boosted && boostResult && <MegaBotBoostResults botType="antique" result={boostResult} aiData={aiData} />}
+      {boosted && boostResult && (<>
+        <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={antiqueSections.has("megabot-results")} onToggle={toggleAntiqueSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+        {antiqueSections.has("megabot-results") && <MegaBotBoostResults botType="antique" result={boostResult} aiData={aiData} />}
+      </>)}
 
       <PanelFooter
         botName="AntiqueBot"
@@ -6315,8 +6990,24 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
       <PanelHeader icon="⚡" title="MegaBot — Multi-AI Power Center" hasData={boostedCount > 0} badge="PREMIUM" collapsed={collapsed} onToggle={onToggle}
         preview={boostedCount > 0 ? `${boostedCount}/${allBots.length} boosted · ${avgAgreement}% avg agreement` : "No bots enhanced yet"}
       />
+      {collapsed && (
+        <div style={{
+          padding: "0.65rem 1rem", display: "flex",
+          alignItems: "center", justifyContent: "center", gap: "0.75rem",
+          flexWrap: "wrap" as const,
+        }}>
+          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#8b5cf6" }}>
+            ⚡ {boostedCount} of {allBots.length} bots boosted
+          </span>
+          {boostedCount > 0 && (
+            <span style={{ fontSize: "0.58rem", color: "var(--text-muted)" }}>
+              Click to view Multi-AI results
+            </span>
+          )}
+        </div>
+      )}
 
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "1.25rem" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
 
@@ -6677,7 +7368,51 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   return (
     <GlassCard fullWidth>
       <PanelHeader icon={"\u{1F39B}\u{FE0F}"} title="Item Control Center" hasData={true} badge="STATUS" collapsed={collapsed} onToggle={onToggle} />
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      {collapsed && (
+        <div style={{
+          padding: "0.65rem 1rem",
+          display: "flex", alignItems: "center", gap: "0.75rem",
+          flexWrap: "wrap", justifyContent: "center",
+        }}>
+          <span style={{
+            fontSize: "0.6rem", fontWeight: 700, padding: "3px 10px",
+            borderRadius: "9999px",
+            background: status === "SOLD" || status === "COMPLETED" ? "rgba(34,197,94,0.1)"
+              : status === "SHIPPED" ? "rgba(59,130,246,0.1)"
+              : status === "LISTED" || status === "INTERESTED" ? "rgba(0,188,212,0.1)"
+              : status === "ANALYZED" || status === "READY" ? "rgba(245,158,11,0.1)"
+              : "var(--ghost-bg)",
+            color: status === "SOLD" || status === "COMPLETED" ? "#22c55e"
+              : status === "SHIPPED" ? "#3b82f6"
+              : status === "LISTED" || status === "INTERESTED" ? "#00bcd4"
+              : status === "ANALYZED" || status === "READY" ? "#f59e0b"
+              : "var(--text-muted)",
+          }}>
+            {status}
+          </span>
+          {(initialListingPrice || valuation) && (
+            <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#00bcd4" }}>
+              {initialListingPrice ? `$${Math.round(initialListingPrice)}` :
+               valuation?.low != null && valuation?.high != null ? `$${Math.round(valuation.low)} — $${Math.round(valuation.high)}` : ""}
+            </span>
+          )}
+          {aiData?.item_name && (
+            <span style={{
+              fontSize: "0.6rem", color: "var(--text-secondary)",
+              maxWidth: "200px", overflow: "hidden",
+              textOverflow: "ellipsis", whiteSpace: "nowrap" as const,
+            }}>
+              {aiData.item_name}
+            </span>
+          )}
+          {aiData?.category && (
+            <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>
+              {aiData.category}
+            </span>
+          )}
+        </div>
+      )}
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "0.75rem 1rem" }}>
 
         {/* ── STATUS PROGRESS BAR ── */}
@@ -7111,6 +7846,16 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
   const recs = reconBotResult?.strategic_recommendations || [];
   const [expandedAlerts, setExpandedAlerts] = useState<Set<number>>(new Set());
   const [reScanLoading, setReScanLoading] = useState(false);
+  const [reconOpenSections, setReconOpenSections] = useState<Set<string>>(
+    new Set(["recon-competitors", "recon-alerts", "megabot-results"])
+  );
+  const toggleReconSection = (id: string) => {
+    setReconOpenSections(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   async function handleReScan() {
     setReScanLoading(true);
@@ -7132,15 +7877,63 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
       <PanelHeader icon="🔍" title="ReconBot" hasData={hasData} badge={hasData ? (scan?.market_heat || "SCAN") : "INTEL"} collapsed={collapsed} onToggle={onToggle}
         preview={hasData ? `${competitors.length} competitors · ${scan?.price_position || "—"} · Market ${scan?.market_heat || "—"}` : "Not scanned yet"}
       />
-      <div style={{ display: collapsed ? "none" : undefined }}>
+      {collapsed && hasData && <CollapsedSummary botType="recon" data={{ competitorCount: competitors.length, alertCount: alerts.length, marketHeat: scan?.market_heat, pricePosition: scan?.price_position }} megaData={boosted ? boostResult : undefined} buttons={<>
+        {onReconBotRun && <button onClick={onReconBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🔍 Re-Scan · 0.5 cr</button>}
+        {onSuperBoost && !boosted && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>⚡ MegaBot · 5 cr</button>}
+        <a href={`/bots/reconbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ReconBot →</a>
+      </>} />}
+      {collapsed && !hasData && (
+        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "center" }}>
+          <span style={{ fontSize: "1.5rem" }}>🔍</span>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>ReconBot</div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Scan marketplaces to find competing listings, track prices, and get alerts.</p>
+          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+            {[{ icon: "🔍", text: "Competitor listings" }, { icon: "💰", text: "Price tracking" }, { icon: "🚨", text: "Market alerts" }].map((b: any, i: number) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+            {onReconBotRun && <button onClick={onReconBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🔍 ReconBot · 1 cr</button>}
+            <a href={`/bots/reconbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ReconBot →</a>
+          </div>
+        </div>
+      )}
+      <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
         {!hasData && !reconBotLoading ? (
-          <div style={{ padding: "1.25rem", textAlign: "center" }}>
+          <div style={{ padding: "1.25rem", textAlign: "center", display: "flex", flexDirection: "column" as const, alignItems: "center", flex: 1, justifyContent: "center" }}>
             <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🔍</div>
             <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.3rem" }}>
               Competitive Intelligence Scanner
             </div>
-            <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "1rem", lineHeight: 1.5 }}>
+            <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.75rem", lineHeight: 1.5 }}>
               Scan all major marketplaces to find competing listings, track prices, and get strategic alerts.
+            </div>
+            <div style={{ marginBottom: "1rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "🔍", text: "Real competitor listings found across 5+ marketplaces" }, { icon: "💰", text: "Price comparison showing where you stand in the market" }, { icon: "🚨", text: "Strategic alerts when competitors change prices" }, { icon: "📈", text: "Market heat score and optimal pricing recommendation" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
+                  <span>{b.text}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
+              {["Scan — AI searches competing listings", "Review competitor prices and strategies", "Get alerts when the market shifts"].map((step, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
+                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                  <span>{step}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)" }}>
+              {[{ value: "5+", label: "Marketplaces" }, { value: "Live", label: "Price tracking" }, { value: "24/7", label: "Alert monitoring" }].map((m, i) => (
+                <div key={i} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
+                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
+                </div>
+              ))}
             </div>
             <button onClick={onReconBotRun} disabled={!aiData} style={{
               padding: "0.5rem 1.2rem", borderRadius: "0.5rem", fontSize: "0.78rem", fontWeight: 700,
@@ -7197,6 +7990,8 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
               </button>
             </div>
 
+            <AccordionHeader id="recon-alerts" icon="🚨" title="ALERTS" subtitle={`${alerts.length} active`} isOpen={reconOpenSections.has("recon-alerts")} onToggle={toggleReconSection} />
+            {reconOpenSections.has("recon-alerts") && (<div style={{ padding: "0.35rem 0" }}>
             {/* Alerts — clickable expandable */}
             {alerts.length > 0 && (
               <div style={{ marginBottom: "0.75rem" }}>
@@ -7246,7 +8041,10 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
                 })}
               </div>
             )}
+            </div>)}
 
+            <AccordionHeader id="recon-position" icon="📊" title="MARKET POSITION" isOpen={reconOpenSections.has("recon-position")} onToggle={toggleReconSection} />
+            {reconOpenSections.has("recon-position") && (<div style={{ padding: "0.35rem 0" }}>
             {/* Price intelligence snippet */}
             {pi && (
               <div style={{ display: "flex", gap: "1rem", fontSize: "0.72rem", marginBottom: "0.75rem", flexWrap: "wrap" }}>
@@ -7267,7 +8065,10 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
                 <span style={{ fontWeight: 700, color: "var(--accent)" }}>Top move: </span>{recs[0].action}
               </div>
             )}
+            </div>)}
 
+            <AccordionHeader id="recon-competitors" icon="🔍" title="COMPETITORS" subtitle={`${competitors.length} found`} isOpen={reconOpenSections.has("recon-competitors")} onToggle={toggleReconSection} accentColor="#f59e0b" />
+            {reconOpenSections.has("recon-competitors") && (<div style={{ padding: "0.35rem 0" }}>
             {/* Top 3 competitors */}
             {competitors.length > 0 && (
               <div style={{ marginBottom: "0.5rem" }}>
@@ -7282,11 +8083,15 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
                 ))}
               </div>
             )}
+            </div>)}
           </div>
         )}
 
         {/* MegaBot boost results — full 4-agent breakdown */}
-        {boosted && boostResult && <MegaBotBoostResults botType="recon" result={boostResult} aiData={aiData} />}
+        {boosted && boostResult && (<>
+          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={reconOpenSections.has("megabot-results")} onToggle={toggleReconSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+          {reconOpenSections.has("megabot-results") && <MegaBotBoostResults botType="recon" result={boostResult} aiData={aiData} />}
+        </>)}
 
         <PanelFooter
           botName="ReconBot"
