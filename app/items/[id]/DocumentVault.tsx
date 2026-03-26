@@ -52,6 +52,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
   const [dragOver, setDragOver] = useState(false);
   const [expandedSummary, setExpandedSummary] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [vaultCollapsed, setVaultCollapsed] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
@@ -131,39 +132,138 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
     <div style={{
       background: "var(--bg-card)",
       border: "1px solid var(--border-default)",
-      borderRadius: "0.85rem",
-      padding: "1.25rem",
+      borderRadius: "16px",
+      overflow: "hidden",
       marginTop: "1rem",
+      boxShadow: "0 1px 4px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,188,212,0.08)",
+      transition: "box-shadow 0.2s ease",
     }}>
-      {/* ── HEADER ── */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem" }}>
-        <div>
-          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-            🗄️ Document Vault
-          </div>
-          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
-            Upload documents to make every AI bot smarter
+      {/* Hidden file inputs — outside collapse gate so quick upload works */}
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*,application/pdf,.doc,.docx,.odt,.txt,.rtf,.xls,.xlsx,.csv"
+        style={{ display: "none" }}
+        onChange={(e) => handleFiles(e.target.files)}
+      />
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style={{ display: "none" }}
+        onChange={(e) => handleFiles(e.target.files)}
+      />
+
+      {/* ── PREMIUM COLLAPSIBLE HEADER ── */}
+      <div
+        onClick={() => setVaultCollapsed(!vaultCollapsed)}
+        style={{
+          display: "flex", alignItems: "center", gap: "0.75rem",
+          padding: "0.85rem 1.15rem", cursor: "pointer",
+          borderBottom: vaultCollapsed ? "none" : "1px solid var(--border-default)",
+          transition: "all 0.2s ease", userSelect: "none" as const,
+          minHeight: vaultCollapsed ? "72px" : undefined,
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "var(--ghost-bg)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+      >
+        {/* Left: Icon + Title */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span style={{ fontSize: "1.2rem" }}>📁</span>
+          <div>
+            <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)", letterSpacing: "0.03em" }}>
+              DOCUMENT VAULT
+            </div>
+            <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+              Upload documents to make every AI bot smarter
+            </div>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          {docs.length > 0 && (
-            <span style={{
-              padding: "3px 9px", borderRadius: "20px", fontSize: "0.65rem", fontWeight: 700,
-              background: "rgba(0,188,212,0.1)", color: "var(--accent)", border: "1px solid rgba(0,188,212,0.2)",
+
+        {/* Center: Document type icons (compact display when collapsed) */}
+        {vaultCollapsed && (
+          <div style={{ display: "flex", gap: "0.25rem", marginLeft: "auto", marginRight: "0.75rem" }}>
+            {[
+              { icon: "🧾", has: docs.some(d => d.docType === "RECEIPT") },
+              { icon: "📜", has: docs.some(d => d.docType === "CERTIFICATE") },
+              { icon: "🏛️", has: docs.some(d => d.docType === "PROVENANCE") },
+              { icon: "🔧", has: docs.some(d => d.docType === "MAINTENANCE") },
+              { icon: "📖", has: docs.some(d => d.docType === "MANUAL") },
+            ].map((dt, i) => (
+              <span key={i} style={{
+                fontSize: "0.85rem", opacity: dt.has ? 1 : 0.2,
+                filter: dt.has ? "none" : "grayscale(1)",
+                transition: "all 0.2s ease",
+              }}>{dt.icon}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Right: Score + Upload + Toggle */}
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginLeft: vaultCollapsed ? undefined : "auto" }}>
+          {/* Progress bar for document score */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+            <div style={{
+              width: "60px", height: "6px", borderRadius: "3px",
+              background: "var(--ghost-bg)", overflow: "hidden",
             }}>
-              {docs.length} Document{docs.length !== 1 ? "s" : ""}
-            </span>
-          )}
-          {hasAiAnalyzed && (
+              <div style={{
+                height: "100%", borderRadius: "3px",
+                width: `${Math.min(100, (completedRecommended / RECOMMENDED.length) * 100)}%`,
+                background: completedRecommended >= 5 ? "linear-gradient(90deg, #22c55e, #16a34a)"
+                  : completedRecommended >= 2 ? "linear-gradient(90deg, #f59e0b, #d97706)"
+                  : "linear-gradient(90deg, #94a3b8, #64748b)",
+                transition: "width 0.3s ease",
+              }} />
+            </div>
             <span style={{
-              padding: "3px 9px", borderRadius: "20px", fontSize: "0.65rem", fontWeight: 700,
-              background: "rgba(0,188,212,0.08)", color: "var(--accent)", border: "1px solid rgba(0,188,212,0.15)",
+              fontSize: "0.55rem", fontWeight: 600, whiteSpace: "nowrap" as const,
+              color: completedRecommended >= 5 ? "#22c55e" : completedRecommended >= 2 ? "#f59e0b" : "var(--text-muted)",
             }}>
-              🤖 AI Analyzed
+              {completedRecommended}/{RECOMMENDED.length}
             </span>
-          )}
+          </div>
+
+          {/* Doc count badge */}
+          <span style={{
+            fontSize: "0.52rem", fontWeight: 700, padding: "3px 8px", borderRadius: "6px",
+            background: docs.length > 0 ? "rgba(0,188,212,0.12)" : "var(--ghost-bg)",
+            color: docs.length > 0 ? "#00bcd4" : "var(--text-muted)",
+          }}>
+            {docs.length} doc{docs.length !== 1 ? "s" : ""}
+          </span>
+
+          {/* Quick upload — functional even when collapsed */}
+          <button
+            onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
+            style={{
+              padding: "0.35rem 0.65rem", fontSize: "0.6rem", fontWeight: 700,
+              background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
+              border: "none", borderRadius: "0.4rem", cursor: "pointer",
+              display: "inline-flex", alignItems: "center", gap: "0.25rem",
+              boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+              transition: "all 0.15s ease",
+            }}
+          >
+            📎 Upload
+          </button>
+
+          {/* Collapse toggle */}
+          <span style={{
+            fontSize: "0.55rem", color: "var(--text-muted)",
+            transition: "transform 0.25s ease",
+            transform: vaultCollapsed ? "rotate(-90deg)" : "rotate(0deg)",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: "24px", height: "24px", borderRadius: "50%",
+            background: !vaultCollapsed ? "rgba(0,188,212,0.08)" : "transparent",
+          }}>▼</span>
         </div>
       </div>
+
+      {/* ── EXPANDED CONTENT ── */}
+      {!vaultCollapsed && (
+      <div style={{ padding: "1.25rem" }}>
 
       {/* ── TRUST BADGES ── */}
       {trustBadges.length > 0 && (
@@ -275,15 +375,6 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
         )}
       </div>
 
-      {/* Hidden file inputs */}
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*,application/pdf,.doc,.docx,.odt,.txt,.rtf,.xls,.xlsx,.csv"
-        style={{ display: "none" }}
-        onChange={(e) => handleFiles(e.target.files)}
-      />
-
       {/* Camera button for mobile */}
       <div style={{ display: "flex", gap: "6px", marginBottom: "0.75rem" }}>
         <button
@@ -313,14 +404,6 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
           📁 Browse Files
         </button>
       </div>
-      <input
-        ref={cameraRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        style={{ display: "none" }}
-        onChange={(e) => handleFiles(e.target.files)}
-      />
 
       {/* ── COMPLETENESS SCORE ── */}
       <div style={{
@@ -483,6 +566,8 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
           })}
         </div>
       )}
+    </div>
+    )}
     </div>
   );
 }

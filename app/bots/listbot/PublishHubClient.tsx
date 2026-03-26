@@ -94,6 +94,8 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showStrategy, setShowStrategy] = useState(false);
   const [showSeo, setShowSeo] = useState(false);
+  const [launchMode, setLaunchMode] = useState(false);
+  const [launchStep, setLaunchStep] = useState(0);
 
   const hasListingData = !!listBotResult || !!megaBotResult;
   const allPlatforms = [...PLATFORMS, { key: "legacyloop", name: "LegacyLoop Storefront", color: "#00bcd4", icon: "\ud83d\udd04", url: `/store/${userId}`, apiStatus: "live", category: "platform", tip: "Your personal LegacyLoop storefront \u2014 already live!" }];
@@ -194,6 +196,67 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
           </span>
         ))}
       </div>
+
+      {/* ── LAUNCH ALL WIZARD ── */}
+      {hasListingData && !launchMode && (
+        <button
+          onClick={() => { setLaunchStep(0); setLaunchMode(true); }}
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+            width: "100%", padding: "0.7rem 1.5rem", fontSize: "0.82rem", fontWeight: 700,
+            background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff",
+            border: "none", borderRadius: "0.6rem", cursor: "pointer",
+            boxShadow: "0 4px 20px rgba(34,197,94,0.3)", transition: "all 0.2s ease",
+            marginBottom: "0.75rem", minHeight: "48px",
+          }}
+        >
+          🚀 Launch All Listings — {totalPlatforms} Platforms
+        </button>
+      )}
+
+      {launchMode && (
+        <div style={{
+          padding: "0.75rem", borderRadius: "0.6rem", marginBottom: "0.75rem",
+          background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
+            <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#22c55e" }}>
+              🚀 LAUNCH WIZARD — Step {launchStep + 1} of {filtered.length}
+            </div>
+            <button onClick={() => setLaunchMode(false)} style={{ fontSize: "0.55rem", color: "var(--text-muted)", background: "transparent", border: "none", cursor: "pointer" }}>✕ Exit</button>
+          </div>
+          <div style={{ height: "4px", background: "var(--ghost-bg)", borderRadius: "2px", marginBottom: "0.5rem", overflow: "hidden" }}>
+            <div style={{ height: "100%", borderRadius: "2px", background: "linear-gradient(90deg, #22c55e, #16a34a)", width: `${((launchStep + 1) / Math.max(filtered.length, 1)) * 100}%`, transition: "width 0.3s ease" }} />
+          </div>
+          {filtered[launchStep] && (() => {
+            const p = filtered[launchStep];
+            const listing = getPlatformListing(listBotResult, megaBotResult, p.key, { title: itemTitle, price: itemPrice, photo: itemPhoto });
+            const fullText = listing ? [listing.title, listing.description, listing.description_html, listing.caption].filter(Boolean).join("\n\n") : itemTitle;
+            return (
+              <div style={{ padding: "0.5rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+                <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.3rem" }}>
+                  {p.icon} {p.name}
+                </div>
+                <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                  <button onClick={() => copyToClipboard(fullText, p.key)} style={{ padding: "0.35rem 0.7rem", fontSize: "0.6rem", fontWeight: 600, background: "linear-gradient(135deg, #00bcd4, #00acc1)", color: "#fff", border: "none", borderRadius: "0.35rem", cursor: "pointer" }}>
+                    📋 Copy Listing
+                  </button>
+                  <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ padding: "0.35rem 0.7rem", fontSize: "0.6rem", fontWeight: 600, color: "#00bcd4", border: "1px solid rgba(0,188,212,0.3)", borderRadius: "0.35rem", textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+                    🌐 Open {p.name} ↗
+                  </a>
+                  <button onClick={() => {
+                    markPosted(p.key);
+                    if (launchStep < filtered.length - 1) setLaunchStep(s => s + 1);
+                    else setLaunchMode(false);
+                  }} style={{ padding: "0.35rem 0.7rem", fontSize: "0.6rem", fontWeight: 600, background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#fff", border: "none", borderRadius: "0.35rem", cursor: "pointer", marginLeft: "auto" }}>
+                    {launchStep < filtered.length - 1 ? "✅ Done — Next →" : "✅ All Done!"}
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
 
       {/* ── COMMAND CENTER ── */}
       <div style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: 12, padding: "14px 18px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>

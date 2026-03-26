@@ -15,11 +15,74 @@ type ItemData = {
   category: string;
   connectedPlatforms: string[];
   valuationMid: number | null;
+  listingHistory?: { id: string; type: string; createdAt: string }[];
+  lastListedAt?: string | null;
 };
+
+function AccordionHeader({ id, icon, title, subtitle, isOpen, onToggle, accentColor, badge }: {
+  id: string; icon: string; title: string; subtitle?: string;
+  isOpen: boolean; onToggle: (id: string) => void; accentColor?: string; badge?: string;
+}) {
+  return (
+    <button onClick={() => onToggle(id)} style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      width: "100%", background: isOpen ? "rgba(0,188,212,0.02)" : "transparent",
+      border: "none", borderBottom: isOpen ? "1px solid var(--border-default)" : "1px solid transparent",
+      padding: "0.65rem 0.5rem", cursor: "pointer", transition: "all 0.2s ease",
+      borderRadius: isOpen ? "0.4rem 0.4rem 0 0" : "0.4rem", minHeight: "40px",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+        <span style={{ fontSize: "1rem" }}>{icon}</span>
+        <span style={{ fontSize: "0.65rem", fontWeight: 700, color: accentColor || "var(--text-secondary)", letterSpacing: "0.05em", textTransform: "uppercase" as const }}>{title}</span>
+        {badge && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "2px 8px", borderRadius: "6px", background: `${accentColor || "#00bcd4"}18`, color: accentColor || "#00bcd4" }}>{badge}</span>}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        {subtitle && !isOpen && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", maxWidth: "280px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontWeight: 500 }}>{subtitle}</span>}
+        <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", transition: "transform 0.25s ease", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", display: "inline-flex", alignItems: "center", justifyContent: "center", width: "22px", height: "22px", borderRadius: "50%", background: isOpen ? "rgba(0,188,212,0.08)" : "transparent" }}>▼</span>
+      </div>
+    </button>
+  );
+}
 
 function safeJson(s: string | null): any {
   if (!s) return null;
   try { return JSON.parse(s); } catch { return null; }
+}
+
+function calculateListingScore(listing: any): { score: number; breakdown: { label: string; score: number; max: number; tip?: string }[] } {
+  const breakdown: { label: string; score: number; max: number; tip?: string }[] = [];
+  const title = listing?.recommended_title || listing?.listings?.ebay?.title || "";
+  const titleScore = Math.min(20, Math.round((title.length >= 30 ? 8 : title.length >= 15 ? 5 : 2) + (title.split(" ").length >= 5 ? 6 : 3) + (/\d/.test(title) ? 3 : 0) + (/[A-Z]/.test(title) ? 3 : 0)));
+  breakdown.push({ label: "Title", score: titleScore, max: 20, tip: titleScore < 15 ? "Add brand/model/year" : undefined });
+  const desc = listing?.listings?.ebay?.description_html || listing?.listings?.facebook_marketplace?.description || "";
+  const descScore = Math.min(25, Math.round((desc.length >= 200 ? 10 : desc.length >= 100 ? 6 : 1) + (desc.toLowerCase().includes("condition") ? 5 : 0) + (/\n/.test(desc) ? 5 : 0) + (desc.includes("$") ? 5 : 0)));
+  breakdown.push({ label: "Description", score: descScore, max: 25, tip: descScore < 18 ? "Add condition + pricing" : undefined });
+  const keywords = listing?.seo_master?.primary_keywords || listing?.keywords || [];
+  const kwScore = Math.min(20, keywords.length * 2);
+  breakdown.push({ label: "SEO", score: kwScore, max: 20, tip: kwScore < 10 ? "Add more keywords" : undefined });
+  const platforms = listing?.listings ? Object.keys(listing.listings).length : 0;
+  const platScore = Math.min(20, platforms * 2);
+  breakdown.push({ label: "Platforms", score: platScore, max: 20 });
+  const photoScore = 12; // Default — photos counted externally
+  breakdown.push({ label: "Photos", score: photoScore, max: 15 });
+  return { score: breakdown.reduce((s, b) => s + b.score, 0), breakdown };
+}
+
+function CharacterBar({ current, max, label }: { current: number; max: number; label: string }) {
+  if (!max || max <= 0) return null;
+  const pct = Math.min(100, (current / max) * 100);
+  const color = pct > 95 ? "#ef4444" : pct > 80 ? "#f59e0b" : "#22c55e";
+  return (
+    <div style={{ marginTop: "0.2rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.48rem", color: "var(--text-muted)", marginBottom: "0.08rem" }}>
+        <span>{label}</span>
+        <span style={{ color, fontWeight: 600 }}>{current}/{max}</span>
+      </div>
+      <div style={{ height: "3px", background: "var(--ghost-bg)", borderRadius: "2px", overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: "2px", transition: "width 0.3s ease" }} />
+      </div>
+    </div>
+  );
 }
 
 // Platform definitions with icons, colors, char limits
@@ -34,6 +97,13 @@ const PLATFORM_META: Record<string, { icon: string; color: string; titleLimit: n
   mercari: { icon: "🔴", color: "#ef4444", titleLimit: 40, name: "Mercari" },
   offerup: { icon: "🏪", color: "#00d4aa", titleLimit: 100, name: "OfferUp" },
   poshmark: { icon: "👗", color: "#c63663", titleLimit: 80, name: "Poshmark" },
+};
+
+const LISTBOT_SPECIALTIES: Record<string, string> = {
+  openai: "Web Research — real listing examples",
+  claude: "Expert Copywriting — craftsmanship",
+  gemini: "Market Intelligence — SEO optimization",
+  grok: "Social Strategy — viral captions",
 };
 
 const PLATFORM_ORDER = ["ebay", "facebook_marketplace", "facebook_groups", "instagram", "tiktok", "etsy", "craigslist", "mercari", "offerup", "poshmark"];
@@ -228,6 +298,10 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
   const [megaBotLoading, setMegaBotLoading] = useState(false);
   const [megaBotExpanded, setMegaBotExpanded] = useState<string | null>(null);
 
+  // Accordion state
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(["listing-preview", "platforms", "publish"]));
+  const toggleSection = (id: string) => { setOpenSections(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; }); };
+
   const item = items.find((i) => i.id === selectedId);
   const ai = useMemo(() => safeJson(item?.aiResult ?? null), [item?.aiResult]);
   const listings = listBotResult?.listings || {};
@@ -373,6 +447,37 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
         </div>
       )}
 
+      {/* Freshness Indicator */}
+      {item?.lastListedAt && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem",
+          background: "var(--ghost-bg)", borderRadius: "0.5rem", marginBottom: "0.75rem",
+          fontSize: "0.65rem", color: "var(--text-muted)", flexWrap: "wrap",
+        }}>
+          <span style={{ fontSize: "0.8rem" }}>🕐</span>
+          <span>Last generated: <strong style={{ color: "var(--text-secondary)" }}>
+            {(() => {
+              const ms = Date.now() - new Date(item.lastListedAt!).getTime();
+              const mins = Math.floor(ms / 60000);
+              if (mins < 60) return `${mins}m ago`;
+              const hrs = Math.floor(mins / 60);
+              if (hrs < 24) return `${hrs}h ago`;
+              return `${Math.floor(hrs / 24)}d ago`;
+            })()}
+          </strong></span>
+          {(() => {
+            const ms = Date.now() - new Date(item.lastListedAt!).getTime();
+            const hrs = ms / 3600000;
+            if (hrs > 168) return <span style={{ color: "#ef4444", fontWeight: 600 }}>⚠️ Stale — re-generate recommended</span>;
+            if (hrs > 48) return <span style={{ color: "#f59e0b", fontWeight: 600 }}>⏳ Aging — listings may be outdated</span>;
+            return <span style={{ color: "#22c55e", fontWeight: 600 }}>✅ Fresh</span>;
+          })()}
+          <span style={{ marginLeft: "auto", fontSize: "0.55rem" }}>
+            {item.listingHistory?.length ?? 0} run{(item.listingHistory?.length ?? 0) !== 1 ? "s" : ""}
+          </span>
+        </div>
+      )}
+
       {!item ? (
         <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-muted)" }}>
           <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem", opacity: 0.3 }}>📝</div>
@@ -426,6 +531,34 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
               Demo Mode — Listings generated from item analysis data
             </div>
           )}
+
+          {/* Listing Quality Score */}
+          {listBotResult && (() => {
+            const { score, breakdown } = calculateListingScore(listBotResult);
+            const color = score >= 80 ? "#22c55e" : score >= 60 ? "#f59e0b" : "#ef4444";
+            return (
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem" }}>
+                <div style={{ width: "48px", height: "48px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", border: `3px solid ${color}`, flexShrink: 0 }}>
+                  <span style={{ fontSize: "1rem", fontWeight: 800, color }}>{score}</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.15rem" }}>
+                    Listing Quality: {score >= 80 ? "Excellent" : score >= 60 ? "Good" : score >= 40 ? "Fair" : "Needs Work"}
+                  </div>
+                  <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
+                    {breakdown.map((b, i) => (
+                      <span key={i} style={{ fontSize: "0.48rem", padding: "1px 6px", borderRadius: "4px", background: b.score >= b.max * 0.7 ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)", color: b.score >= b.max * 0.7 ? "#22c55e" : "#f59e0b", fontWeight: 600 }}>
+                        {b.label}: {b.score}/{b.max}
+                      </span>
+                    ))}
+                  </div>
+                  {breakdown.find(b => b.tip) && (
+                    <div style={{ fontSize: "0.5rem", color: "#f59e0b", marginTop: "0.1rem" }}>💡 {breakdown.find(b => b.tip)?.tip}</div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ═══ SECTION A: POST ALL HERO ═══ */}
           <div style={{
@@ -580,7 +713,8 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
           </div>
 
           {/* ═══ SECTION C: PLATFORM LISTINGS ═══ */}
-          {activeTab === "listings" && (
+          <AccordionHeader id="platforms" icon="🏪" title="PLATFORM LISTINGS" subtitle={`${Object.keys(listings).length} platforms`} isOpen={openSections.has("platforms")} onToggle={toggleSection} badge={`${Object.keys(listings).length} READY`} />
+          {openSections.has("platforms") && activeTab === "listings" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               {PLATFORM_ORDER.map((p) => {
                 const listing = listings[p];
@@ -640,6 +774,18 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
                         }}>
                           {fullText}
                         </div>
+
+                        {/* Character bars */}
+                        {(() => {
+                          const tLimit = meta.titleLimit || 100;
+                          const dLimit: Record<string, number> = { ebay: 4000, facebook_marketplace: 1000, instagram: 2200, tiktok: 300, etsy: 2000, craigslist: 2000, mercari: 1000, offerup: 1000, poshmark: 1500, reverb: 3000, pinterest: 500, amazon: 2000 };
+                          return (
+                            <div style={{ marginTop: "0.3rem" }}>
+                              {tLimit > 0 && <CharacterBar current={title.length} max={tLimit} label="Title" />}
+                              <CharacterBar current={fullText.length} max={dLimit[p] || 1000} label="Full listing" />
+                            </div>
+                          );
+                        })()}
 
                         {/* Platform-specific extras */}
                         {p === "ebay" && listing.scheduling_tip && (
@@ -992,7 +1138,8 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* ═══ SECTION I: MEGABOT LISTING DEEP DIVE ═══ */}
-          {megaBotLoading && (
+          <AccordionHeader id="megabot" icon="⚡" title="MEGABOT LISTING DEEP DIVE" subtitle={megaBotData ? `${(megaBotData.providers || []).length} AI engines` : "Not yet run"} isOpen={openSections.has("megabot")} onToggle={toggleSection} accentColor="#8b5cf6" />
+          {openSections.has("megabot") && megaBotLoading && (
             <Card style={{ background: "linear-gradient(135deg, rgba(167,139,250,0.04), rgba(251,191,36,0.04))", border: "1px solid rgba(167,139,250,0.2)" }}>
               <div style={{ textAlign: "center", padding: "2rem 1rem" }}>
                 <div style={{ fontSize: "2rem", marginBottom: "0.75rem", animation: "pulse 1.5s ease-in-out infinite" }}>⚡</div>
@@ -1002,7 +1149,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
             </Card>
           )}
 
-          {!megaBotLoading && !megaBotData && (
+          {openSections.has("megabot") && !megaBotLoading && !megaBotData && (
             <Card style={{ background: "linear-gradient(135deg, rgba(167,139,250,0.04), rgba(251,191,36,0.04))", border: "1px solid rgba(167,139,250,0.2)" }}>
               <SectionLabel icon="⚡" label="MegaBot Listing Deep Dive" />
               <div style={{ textAlign: "center", padding: "1rem 0.5rem" }}>
@@ -1020,7 +1167,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
             </Card>
           )}
 
-          {!megaBotLoading && megaBotData && (() => {
+          {openSections.has("megabot") && !megaBotLoading && megaBotData && (() => {
             const providers: any[] = megaBotData.providers || [];
             const successful = providers.filter((p: any) => !p.error);
             const failed = providers.filter((p: any) => p.error);
@@ -1077,8 +1224,9 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
                         >
                           <span style={{ fontSize: "0.85rem" }}>{pm.icon}</span>
                           <span style={{ fontWeight: 700, fontSize: "0.72rem", color: pm.color, minWidth: 52 }}>{pm.label}</span>
+                          <span style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontStyle: "italic" }}>{LISTBOT_SPECIALTIES[p.provider] || ""}</span>
                           <span style={{ fontSize: "0.68rem", color: "var(--text-secondary)", flex: 1, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                            {lb.platformCount} listings · {Object.values(lb.titles)[0] ? `"${(Object.values(lb.titles)[0] as string).slice(0, 40)}..."` : "ready to post"} {timeStr}
+                            {lb.platformCount} listings · {timeStr}
                           </span>
                           <span style={{ fontSize: "0.6rem", color: "#4caf50" }}>✅ {timeStr}</span>
                           <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", transform: isExp ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▾</span>
@@ -1174,6 +1322,17 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
                               </div>
                             )}
 
+                            {/* Web sources */}
+                            {p.webSources?.length > 0 && (
+                              <div style={{ marginTop: "0.4rem", paddingTop: "0.3rem", borderTop: "1px solid var(--border-default)" }}>
+                                <div style={{ fontSize: "0.5rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "0.15rem", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>🔗 LISTING RESEARCH ({p.webSources.length})</div>
+                                {p.webSources.slice(0, 4).map((src: any, si: number) => (
+                                  <a key={si} href={src.url} target="_blank" rel="noopener noreferrer" style={{ display: "block", padding: "0.15rem 0.35rem", marginBottom: "0.08rem", borderRadius: "0.25rem", background: "var(--ghost-bg)", textDecoration: "none", fontSize: "0.5rem", color: "#00bcd4", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>
+                                    🔗 {src.title || src.url} ↗
+                                  </a>
+                                ))}
+                              </div>
+                            )}
                             <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontStyle: "italic", marginTop: "0.35rem" }}>
                               {pm.icon} {pm.label}: {pm.specialty}
                             </div>
@@ -1237,6 +1396,25 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
                     })()}
                   </p>
                 </div>
+
+                {/* Unified web research */}
+                {(() => {
+                  const allSrc = successful.flatMap((p: any) => (p.webSources || []).map((s: any) => ({ ...s, provider: p.provider })));
+                  const unique = allSrc.filter((s: any, i: number, a: any[]) => a.findIndex((x: any) => x.url === s.url) === i);
+                  if (unique.length === 0) return null;
+                  return (
+                    <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                      <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "#00bcd4", marginBottom: "0.2rem", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>🌐 MEGABOT LISTING RESEARCH — {unique.length} sources</div>
+                      {unique.slice(0, 6).map((src: any, i: number) => (
+                        <a key={i} href={src.url} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", gap: "0.25rem", padding: "0.15rem 0.35rem", marginBottom: "0.08rem", borderRadius: "0.25rem", background: "var(--bg-card)", textDecoration: "none", fontSize: "0.5rem", color: "#00bcd4" }}>
+                          <span style={{ width: 5, height: 5, borderRadius: "50%", flexShrink: 0, background: src.provider === "openai" ? "#10b981" : src.provider === "gemini" ? "#3b82f6" : "#00DC82" }} />
+                          <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{src.title || src.url}</span>
+                          <span style={{ fontSize: "0.42rem", color: "var(--text-muted)" }}>↗</span>
+                        </a>
+                      ))}
+                    </div>
+                  );
+                })()}
 
                 {/* Re-run */}
                 <div style={{ textAlign: "center" }}>

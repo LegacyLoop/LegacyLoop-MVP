@@ -28,7 +28,34 @@ type ItemData = {
     nextScan: string | null;
     alertCount: number;
   } | null;
+  scanHistory?: { id: string; type: string; createdAt: string }[];
+  lastScannedAt?: string | null;
 };
+
+function AccordionHeader({ id, icon, title, subtitle, isOpen, onToggle, accentColor, badge }: {
+  id: string; icon: string; title: string; subtitle?: string;
+  isOpen: boolean; onToggle: (id: string) => void; accentColor?: string; badge?: string;
+}) {
+  return (
+    <button onClick={() => onToggle(id)} style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      width: "100%", background: isOpen ? "rgba(0,188,212,0.02)" : "transparent",
+      border: "none", borderBottom: isOpen ? "1px solid var(--border-default)" : "1px solid transparent",
+      padding: "0.65rem 0.5rem", cursor: "pointer", transition: "all 0.2s ease",
+      borderRadius: isOpen ? "0.4rem 0.4rem 0 0" : "0.4rem", minHeight: "40px",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+        <span style={{ fontSize: "1rem" }}>{icon}</span>
+        <span style={{ fontSize: "0.65rem", fontWeight: 700, color: accentColor || "var(--text-secondary)", letterSpacing: "0.05em", textTransform: "uppercase" as const }}>{title}</span>
+        {badge && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "2px 8px", borderRadius: "6px", background: `${accentColor || "#00bcd4"}18`, color: accentColor || "#00bcd4" }}>{badge}</span>}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        {subtitle && !isOpen && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", maxWidth: "280px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontWeight: 500 }}>{subtitle}</span>}
+        <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", transition: "transform 0.25s ease", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", display: "inline-flex", alignItems: "center", justifyContent: "center", width: "22px", height: "22px", borderRadius: "50%", background: isOpen ? "rgba(0,188,212,0.08)" : "transparent" }}>▼</span>
+      </div>
+    </button>
+  );
+}
 
 function safeJson(s: string | null): any {
   if (!s) return null;
@@ -174,6 +201,8 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
   const [megaBotData, setMegaBotData] = useState<any>(null);
   const [megaBotLoading, setMegaBotLoading] = useState(false);
   const [megaBotExpanded, setMegaBotExpanded] = useState<string | null>(null);
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(["competitors", "alerts", "market-position"]));
+  const toggleSection = (id: string) => { setOpenSections(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; }); };
 
   const item = useMemo(() => items.find((i) => i.id === selectedId) ?? null, [items, selectedId]);
   const stored = useMemo(() => safeJson(item?.reconBotResult ?? null), [item]);
@@ -277,6 +306,45 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
     <>
       <BotItemSelector items={items} selectedId={selectedId} onSelect={handleSelect} />
 
+      {/* ── Freshness Indicator ── */}
+      {item?.lastScannedAt && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: "0.5rem",
+          padding: "0.5rem 0.75rem", background: "var(--ghost-bg)",
+          borderRadius: "0.5rem", marginTop: "0.75rem", marginBottom: "0.75rem",
+          fontSize: "0.65rem", color: "var(--text-muted)", flexWrap: "wrap",
+        }}>
+          <span style={{ fontSize: "0.8rem" }}>🕐</span>
+          <span>Last scanned: <strong style={{ color: "var(--text-secondary)" }}>
+            {(() => {
+              const ms = Date.now() - new Date(item.lastScannedAt!).getTime();
+              const mins = Math.floor(ms / 60000);
+              if (mins < 60) return `${mins} minute${mins !== 1 ? "s" : ""} ago`;
+              const hrs = Math.floor(mins / 60);
+              if (hrs < 24) return `${hrs} hour${hrs !== 1 ? "s" : ""} ago`;
+              const days = Math.floor(hrs / 24);
+              return `${days} day${days !== 1 ? "s" : ""} ago`;
+            })()}
+          </strong></span>
+          {(() => {
+            const ms = Date.now() - new Date(item.lastScannedAt!).getTime();
+            const hrs = ms / 3600000;
+            if (hrs > 168) return <span style={{ color: "#ef4444", fontWeight: 600 }}>⚠️ Stale — re-scan recommended</span>;
+            if (hrs > 48) return <span style={{ color: "#f59e0b", fontWeight: 600 }}>⏳ Aging — consider re-scanning</span>;
+            return <span style={{ color: "#22c55e", fontWeight: 600 }}>✅ Fresh</span>;
+          })()}
+          {item.reconBot?.isActive && (
+            <span style={{ fontSize: "0.5rem", padding: "2px 8px", borderRadius: "9999px",
+              background: "rgba(34,197,94,0.1)", color: "#22c55e", fontWeight: 600 }}>
+              🟢 Auto-scanning
+            </span>
+          )}
+          <span style={{ marginLeft: "auto", fontSize: "0.55rem" }}>
+            {item.scanHistory?.length ?? 0} scan{(item.scanHistory?.length ?? 0) !== 1 ? "s" : ""}
+          </span>
+        </div>
+      )}
+
       {/* ── Loading State ── */}
       {loading && (
         <Card style={{ marginTop: "1rem" }}>
@@ -379,7 +447,8 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
           )}
 
           {/* ═══ SECTION C: Price Intelligence ═══ */}
-          {data.price_intelligence && (() => {
+          <AccordionHeader id="market-position" icon="📊" title="PRICE INTELLIGENCE" subtitle="Market pricing data" isOpen={openSections.has("market-position")} onToggle={toggleSection} accentColor="#00bcd4" />
+          {openSections.has("market-position") && data.price_intelligence && (() => {
             const pi = data.price_intelligence;
             return (
               <Card>
@@ -446,7 +515,8 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
           })()}
 
           {/* ═══ SECTION D: Competitor Listings ═══ */}
-          {data.competitor_listings && data.competitor_listings.length > 0 && (
+          <AccordionHeader id="competitors" icon="🔍" title="COMPETITOR LISTINGS" subtitle={`${(data.competitor_listings || []).length} found`} isOpen={openSections.has("competitors")} onToggle={toggleSection} accentColor="#f59e0b" badge={`${(data.competitor_listings || []).length} ACTIVE`} />
+          {openSections.has("competitors") && data.competitor_listings && data.competitor_listings.length > 0 && (
             <Card>
               <SectionLabel icon="🏪" label={`Competitor Listings (${data.competitor_listings.length})`} />
               <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
@@ -1016,6 +1086,53 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
               </Card>
             );
           })()}
+
+          {/* ═══ Scan History ═══ */}
+          {item?.scanHistory && item.scanHistory.length > 0 && (
+            <div style={{ marginTop: "0.5rem" }}>
+              <AccordionHeader
+                id="scan-history"
+                icon="📜"
+                title="SCAN HISTORY"
+                subtitle={`${item.scanHistory.length} scans`}
+                isOpen={openSections.has("scan-history")}
+                onToggle={toggleSection}
+              />
+              {openSections.has("scan-history") && (
+                <Card>
+                  {item.scanHistory.map((scan: any, i: number) => (
+                    <div key={scan.id || i} style={{
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      padding: "0.4rem 0.5rem",
+                      borderBottom: i < item.scanHistory!.length - 1
+                        ? "1px solid var(--border-default)" : "none",
+                      fontSize: "0.6rem",
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                        <span style={{
+                          padding: "2px 6px", borderRadius: "4px", fontSize: "0.5rem", fontWeight: 600,
+                          background: scan.type === "MEGABOT_RECONBOT" ? "rgba(139,92,246,0.1)"
+                            : scan.type === "RECONBOT_SCAN" ? "rgba(245,158,11,0.1)"
+                            : "rgba(0,188,212,0.1)",
+                          color: scan.type === "MEGABOT_RECONBOT" ? "#8b5cf6"
+                            : scan.type === "RECONBOT_SCAN" ? "#f59e0b"
+                            : "#00bcd4",
+                        }}>
+                          {scan.type === "MEGABOT_RECONBOT" ? "⚡ MegaBot"
+                            : scan.type === "RECONBOT_SCAN" ? "🔄 Auto-Scan"
+                            : "🔍 Manual"}
+                        </span>
+                      </div>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.55rem" }}>
+                        {new Date(scan.createdAt).toLocaleDateString()}{" "}
+                        {new Date(scan.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    </div>
+                  ))}
+                </Card>
+              )}
+            </div>
+          )}
 
           {/* ═══ SECTION L: Executive Summary ═══ */}
           {data.executive_summary && (

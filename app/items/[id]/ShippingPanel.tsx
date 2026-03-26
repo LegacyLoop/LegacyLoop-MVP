@@ -1431,17 +1431,17 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                       <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Choose how to specify your location:</div>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Enter address or intersection</label>
-                        <input type="text" placeholder="e.g. 123 Main St, Waterville ME" value={invPreciseAddress} onChange={e => setInvPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. 123 Main St, Waterville ME" value={invPreciseAddress} onChange={e => setInvPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                         <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Exact address only shared with confirmed buyer</div>
                       </div>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🗺️ Or drop a pin on Google Maps</label>
                         <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#00bcd4", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>📍 Open Google Maps &mdash; drop a pin and paste link below</a>
-                        <input type="text" placeholder="Paste Google Maps link here..." value={invPreciseMapLink} onChange={e => setInvPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="Paste Google Maps link here..." value={invPreciseMapLink} onChange={e => setInvPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📝 Precise meetup instructions</label>
-                        <input type="text" placeholder="e.g. I'll be parked in the blue truck near the entrance" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. I'll be parked in the blue truck near the entrance" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1452,11 +1452,11 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                       <a href={`https://www.google.com/maps/search/police+station+near+${sellerZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#22c55e", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none", alignSelf: "flex-start" }}>🗺️ Find Police Stations near {sellerZip || "you"}</a>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🚔 Station name</label>
-                        <input type="text" placeholder="e.g. Waterville Police Department" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. Waterville Police Department" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Precise spot</label>
-                        <input type="text" placeholder="e.g. Front parking lot, visitor spaces" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. Front parking lot, visitor spaces" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1467,11 +1467,11 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                       <a href={`https://www.google.com/maps/search/bank+near+${sellerZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#22c55e", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none", alignSelf: "flex-start" }}>🗺️ Find Banks near {sellerZip || "you"}</a>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🏦 Bank name</label>
-                        <input type="text" placeholder="e.g. Camden National Bank, Main St" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. Camden National Bank, Main St" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Where to meet</label>
-                        <input type="text" placeholder="e.g. Main entrance, ATM side" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. Main entrance, ATM side" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1482,11 +1482,11 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                       <a href={`https://www.google.com/maps/search/coffee+shop+near+${sellerZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#22c55e", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none", alignSelf: "flex-start" }}>🗺️ Find Coffee Shops near {sellerZip || "you"}</a>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>☕ Shop name</label>
-                        <input type="text" placeholder="e.g. Dunkin&apos; on College Ave" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. Dunkin&apos; on College Ave" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Where to meet</label>
-                        <input type="text" placeholder="e.g. Table by the window, back patio" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. Table by the window, back patio" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1497,11 +1497,11 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                       <a href={`https://www.google.com/maps/search/post+office+near+${sellerZip || ""}`} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#22c55e", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none", alignSelf: "flex-start" }}>🗺️ Find Post Offices near {sellerZip || "you"}</a>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📬 Location</label>
-                        <input type="text" placeholder="e.g. Waterville Post Office, Elm St" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. Waterville Post Office, Elm St" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Where to meet</label>
-                        <input type="text" placeholder="e.g. Front steps, parking lot" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. Front steps, parking lot" value={invLocationSubSpot} onChange={e => setInvLocationSubSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1511,20 +1511,20 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📍 Location name</label>
-                        <input type="text" placeholder="e.g. Walmart parking lot, Town park" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. Walmart parking lot, Town park" value={invLocationName} onChange={e => setInvLocationName(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🏠 Address</label>
-                        <input type="text" placeholder="e.g. 123 Main St, Waterville ME" value={invPreciseAddress} onChange={e => setInvPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. 123 Main St, Waterville ME" value={invPreciseAddress} onChange={e => setInvPreciseAddress(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>🗺️ Or drop a pin on Google Maps</label>
                         <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "8px", padding: "0.45rem 0.85rem", color: "#00bcd4", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>📍 Open Google Maps &mdash; drop a pin and paste link below</a>
-                        <input type="text" placeholder="Paste Google Maps link here..." value={invPreciseMapLink} onChange={e => setInvPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="Paste Google Maps link here..." value={invPreciseMapLink} onChange={e => setInvPreciseMapLink(e.target.value)} style={{ width: "100%", marginTop: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📝 Meetup instructions</label>
-                        <input type="text" placeholder="e.g. I'll be near the main entrance in a red jacket" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder="e.g. I'll be near the main entrance in a red jacket" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                       </div>
                     </div>
                   )}
@@ -1538,7 +1538,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
             <div style={{ marginTop: "0.25rem", padding: "0.85rem", background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px" }}>
               <div style={{ color: "#8b5cf6", fontWeight: 700, fontSize: "0.75rem", marginBottom: "0.4rem" }}>📌 Precision Meetup Point</div>
               <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.5rem" }}>Give the buyer a precise spot &mdash; &quot;north entrance&quot;, &quot;blue Honda&quot;, &quot;table by the window&quot;</div>
-              <input type="text" placeholder="e.g. I'll be in the blue truck at the north end" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+              <input type="text" placeholder="e.g. I'll be in the blue truck at the north end" value={invPrecisionSpot} onChange={e => setInvPrecisionSpot(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
             </div>
           )}
 
@@ -1639,7 +1639,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📱 Your phone number</label>
-                        <input type="tel" placeholder="(207) 555-1234" value={invContactPhone} onChange={e => setInvContactPhone(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="tel" placeholder="(207) 555-1234" value={invContactPhone} onChange={e => setInvContactPhone(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                         <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Your number is masked &mdash; buyer texts a LegacyLoop relay number</div>
                       </div>
                       <div>
@@ -1670,7 +1670,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                       {invUseDiffEmail && (
                         <div>
                           <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📧 Preferred email</label>
-                          <input type="email" placeholder="alternate@email.com" value={invContactEmailAddr} onChange={e => setInvContactEmailAddr(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                          <input type="email" placeholder="alternate@email.com" value={invContactEmailAddr} onChange={e => setInvContactEmailAddr(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                         </div>
                       )}
                       <div>
@@ -1809,7 +1809,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                       </div>
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📱 Your handle / username</label>
-                        <input type="text" placeholder={invVenmoService ? `@your-${invVenmoService.toLowerCase()}-handle` : "@your-handle"} value={invVenmoHandle} onChange={e => setInvVenmoHandle(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "white", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
+                        <input type="text" placeholder={invVenmoService ? `@your-${invVenmoService.toLowerCase()}-handle` : "@your-handle"} value={invVenmoHandle} onChange={e => setInvVenmoHandle(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
                         <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Only shared with confirmed buyer</div>
                       </div>
                       <div>
@@ -2844,14 +2844,8 @@ export default function ShippingPanel({
 
   // Accordion state
   const [openSections, setOpenSections] = useState<Set<string>>(() => {
+    // Aggressive defaults: only ONE relevant section open
     const defaults = new Set<string>(["ai-brief"]);
-    if (shippingMethod === "freight" || shippingMethod === "local_only") {
-      defaults.add("freight");
-      defaults.add("pickup");
-    }
-    if (shippingMethod === "parcel") {
-      defaults.add("carrier-rates");
-    }
     return defaults;
   });
   const toggleSection = (id: string) => {
@@ -3540,6 +3534,16 @@ export default function ShippingPanel({
               )}
             </div>
           )}
+
+          {/* Expand All / Collapse All */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "-0.25rem", marginTop: "0.25rem" }}>
+            <button onClick={() => {
+              const allIds = ["ai-brief", "package-details", "carrier-rates", "freight", "metro"];
+              setOpenSections(prev => prev.size >= allIds.length ? new Set() : new Set(allIds));
+            }} style={{ fontSize: "0.5rem", fontWeight: 600, color: "var(--text-muted)", background: "transparent", border: "none", cursor: "pointer", padding: "0.2rem 0.4rem" }}>
+              {openSections.size >= 5 ? "▲ Collapse All" : "▼ Expand All"}
+            </button>
+          </div>
 
           {/* ── PRE-SALE: Section A — Package Details ── */}
           <div className="mt-4 space-y-4">

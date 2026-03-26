@@ -19,9 +19,10 @@ export default async function ReconBotPage() {
       valuation: true,
       reconBots: { include: { alerts: { where: { dismissed: false }, orderBy: { createdAt: "desc" } } } },
       eventLogs: {
-        where: { eventType: "RECONBOT_RESULT" },
+        where: { eventType: { in: ["RECONBOT_RESULT", "RECONBOT_RUN", "RECONBOT_SCAN", "MEGABOT_RECONBOT"] } },
         orderBy: { createdAt: "desc" },
-        take: 1,
+        take: 5,
+        select: { id: true, eventType: true, payload: true, createdAt: true },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -44,8 +45,18 @@ export default async function ReconBotPage() {
         high: item.valuation.high,
         confidence: item.valuation.confidence,
       } : null,
-      reconBotResult: item.eventLogs[0]?.payload ?? null,
-      reconBotRunAt: item.eventLogs[0]?.createdAt?.toISOString() ?? null,
+      reconBotResult: (() => {
+        const evt = item.eventLogs.find((ev: any) => ev.eventType === "RECONBOT_RESULT" || ev.eventType === "MEGABOT_RECONBOT");
+        return evt?.payload ?? null;
+      })(),
+      reconBotRunAt: (() => {
+        const evt = item.eventLogs.find((ev: any) => ev.eventType === "RECONBOT_RESULT" || ev.eventType === "MEGABOT_RECONBOT");
+        return evt?.createdAt?.toISOString() ?? null;
+      })(),
+      scanHistory: item.eventLogs.map((ev: any) => ({
+        id: ev.id, type: ev.eventType, createdAt: ev.createdAt.toISOString(),
+      })),
+      lastScannedAt: item.eventLogs[0]?.createdAt?.toISOString() ?? null,
       reconBot: bot ? {
         isActive: bot.isActive,
         competitorCount: bot.competitorCount,

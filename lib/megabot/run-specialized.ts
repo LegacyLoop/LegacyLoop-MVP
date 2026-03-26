@@ -591,11 +591,13 @@ async function callGemini(
       maxOutputTokens: 16384,
       thinkingConfig: { thinkingBudget: 2048 },
     },
-    tools: [{ google_search: {} }],
   };
-  // Note: Google Search grounding may not work with responseMimeType:"application/json" on all models.
-  // The request will try with tools; if the model ignores the tool, we still get grounding metadata when available.
-  const reqBody = JSON.stringify(baseReqBody);
+  // Two request bodies: with and without google_search grounding.
+  // google_search may conflict with responseMimeType:"application/json" on some models,
+  // so we try with search first and fall back to without if it fails or returns empty.
+  const reqBodyWithSearch = JSON.stringify({ ...baseReqBody, tools: [{ google_search: {} }] });
+  const reqBodyPlain = JSON.stringify(baseReqBody);
+  let triedWithSearch = false;
 
   const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"];
   let json: any;
@@ -606,13 +608,16 @@ async function callGemini(
     let succeeded = false;
 
     for (let attempt = 0; attempt < 2; attempt++) {
+      // Attempt 0: try with google_search. Attempt 1: retry without.
+      const useSearchBody = attempt === 0;
+      const currentBody = useSearchBody ? reqBodyWithSearch : reqBodyPlain;
       const { signal, clear } = withTimeout(AGENT_TIMEOUT);
       try {
-        console.log(`[MegaBot][Gemini] Calling ${tryModel} (attempt ${attempt + 1})...`);
+        console.log(`[MegaBot][Gemini] Calling ${tryModel} (attempt ${attempt + 1}, search=${useSearchBody})...`);
         const res = await fetch(tryUrl, {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: reqBody,
+          body: currentBody,
           signal,
         });
         clear();
@@ -648,6 +653,21 @@ async function callGemini(
           break; // Try next model
         }
 
+        // Validate response has actual text content
+        const responseText = json?.candidates?.[0]?.content?.parts?.map((p: any) => p.text || "").join("") || "";
+        if (!responseText || responseText.trim().length < 10) {
+          console.log(`[MegaBot][Gemini] ${tryModel} returned empty/short response (${responseText.length} chars, search=${useSearchBody})`);
+          if (attempt === 0) {
+            // Search body returned empty — retry without search
+            json = null;
+            continue;
+          }
+          lastError = `Gemini ${tryModel} empty response`;
+          json = null;
+          break;
+        }
+
+        triedWithSearch = useSearchBody;
         succeeded = true;
         break;
       } catch (err: any) {
@@ -655,14 +675,14 @@ async function callGemini(
         if (err.name === "AbortError") {
           lastError = `Gemini ${tryModel} timed out after ${AGENT_TIMEOUT / 1000}s`;
           console.log(`[MegaBot][Gemini] ${lastError}`);
-          break; // Don't retry timeout, try next model
+          if (attempt === 0) continue; // Try without search
+          break; // Both attempts timed out, try next model
         }
         const retryableMsg = ["503", "429", "500", "ECONNRESET", "ETIMEDOUT", "fetch failed"].some(
           code => err.message?.includes(code)
         );
-        if (attempt === 0 && retryableMsg) {
-          console.log(`[MegaBot][Gemini] ${tryModel} error: ${err.message} — retrying in 3s...`);
-          await new Promise(r => setTimeout(r, 3000));
+        if (attempt === 0) {
+          console.log(`[MegaBot][Gemini] ${tryModel} error with search=${useSearchBody}: ${err.message} — retrying without search...`);
           continue;
         }
         lastError = err.message || "Unknown Gemini error";

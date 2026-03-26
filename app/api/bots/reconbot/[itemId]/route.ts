@@ -281,6 +281,7 @@ ${isAntique ? "- This IS an antique: include auction houses, specialty dealers, 
 - If price position can't be determined (not listed), recommend an optimal listing price.`;
 
     let reconbotResult: any;
+    let webSources: Array<{ url: string; title: string }> = [];
 
     if (openai) {
       const controller = new AbortController();
@@ -294,11 +295,34 @@ ${isAntique ? "- This IS an antique: include auction houses, specialty dealers, 
           model: "gpt-4o-mini",
           instructions: systemPrompt,
           input: `Run a comprehensive competitive intelligence scan for this item. Photos: ${photoDescs.join(", ")}. Return ONLY valid JSON.`,
+          tools: [{ type: "web_search_preview" } as any],
         }, { signal: controller.signal });
 
         const text = typeof response.output === "string"
           ? response.output
           : response.output_text || JSON.stringify(response.output);
+
+        // Extract web sources
+        webSources = [];
+        try {
+          const outputArr = Array.isArray(response.output) ? response.output : [];
+          for (const outItem of outputArr) {
+            if ((outItem as any).type === "web_search_call" && Array.isArray((outItem as any).results)) {
+              for (const r of (outItem as any).results) {
+                if (r.url && r.title) webSources.push({ url: r.url, title: r.title });
+              }
+            }
+            if ((outItem as any).type === "message" && Array.isArray((outItem as any).content)) {
+              for (const c of (outItem as any).content) {
+                if (c.annotations) {
+                  for (const ann of c.annotations) {
+                    if (ann.type === "url_citation" && ann.url) webSources.push({ url: ann.url, title: ann.title || ann.url });
+                  }
+                }
+              }
+            }
+          }
+        } catch { /* non-critical */ }
 
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
@@ -326,6 +350,7 @@ ${isAntique ? "- This IS an antique: include auction houses, specialty dealers, 
     for (const key of requiredKeys) {
       if (reconbotResult[key] === undefined) reconbotResult[key] = null;
     }
+    if (webSources && webSources.length > 0) reconbotResult.web_sources = webSources;
 
     // Store in EventLog
     await prisma.eventLog.create({

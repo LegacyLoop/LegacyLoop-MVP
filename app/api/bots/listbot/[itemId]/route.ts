@@ -142,18 +142,27 @@ export async function POST(
       }
     }
 
-    // Fetch PriceBot + BuyerBot results if available
-    const [pricebotLog, buyerbotLog] = await Promise.all([
+    // Fetch PriceBot + BuyerBot + Amazon results if available
+    const [pricebotLog, buyerbotLog, rainforestLog] = await Promise.all([
       prisma.eventLog.findFirst({ where: { itemId, eventType: "PRICEBOT_RESULT" }, orderBy: { createdAt: "desc" } }),
       prisma.eventLog.findFirst({ where: { itemId, eventType: "BUYERBOT_RESULT" }, orderBy: { createdAt: "desc" } }),
+      prisma.eventLog.findFirst({ where: { itemId, eventType: "RAINFOREST_RESULT" }, orderBy: { createdAt: "desc" }, select: { payload: true } }),
     ]);
     const pricebotData = safeJson(pricebotLog?.payload);
     const buyerbotData = safeJson(buyerbotLog?.payload);
+    const amazonData = safeJson(rainforestLog?.payload);
 
     const bestPlatform = pricebotData?.platform_pricing?.best_platform || "";
     const targetBuyers = buyerbotData?.buyer_profiles?.slice(0, 3).map((b: any) => b.profile_name).join(", ") || "";
     const valueDrivers = pricebotData?.price_factors?.value_adders?.slice(0, 3).map((v: any) => v.factor).join(", ") || "";
     const searchKeywords = buyerbotData?.platform_opportunities?.slice(0, 2).flatMap((p: any) => p.search_terms_buyers_use || []).slice(0, 6).join(", ") || "";
+
+    // Amazon enrichment context
+    let amazonContext = "";
+    if (amazonData) {
+      const topProducts = (amazonData.products || amazonData.topProducts || []).slice(0, 3);
+      amazonContext = `\nAMAZON CONTEXT: New retail avg $${amazonData.priceAvg ?? amazonData.price_avg ?? "?"}, ${amazonData.resultCount ?? amazonData.result_count ?? 0} results. ${topProducts.map((p: any) => p.title || "").filter(Boolean).slice(0, 2).join(" | ")}. Use Amazon product titles/features as writing reference for professional descriptions.`;
+    }
 
     // ── CROSS-BOT ENRICHMENT ──
     const enrichment = await getItemEnrichmentContext(itemId, "listbot").catch(() => null);
@@ -174,7 +183,7 @@ ${sellerPrice !== null ? `SELLER ASKING PRICE: $${sellerPrice} — Use this as t
 ${bestPlatform ? `Best platforms: ${bestPlatform}` : ""}
 ${targetBuyers ? `Target buyers: ${targetBuyers}` : ""}
 ${valueDrivers ? `Value drivers: ${valueDrivers}` : ""}
-${searchKeywords ? `Keywords buyers search: ${searchKeywords}` : ""}
+${searchKeywords ? `Keywords buyers search: ${searchKeywords}` : ""}${amazonContext}
 Photos available: ${photoCount} photos uploaded
 
 Create PERFECT, ready-to-post listings for EVERY relevant platform. Each listing must be optimized for that specific platform's format, audience, algorithm, and best practices.
@@ -333,6 +342,7 @@ IMPORTANT:
 - All prices in USD.`;
 
     let listbotResult: any;
+    let webSources: Array<{ url: string; title: string }> = [];
 
     if (openai) {
       const controller = new AbortController();
@@ -356,12 +366,35 @@ IMPORTANT:
                 ],
               }]
             : inputText,
-          max_output_tokens: 4096,
+          tools: [{ type: "web_search_preview" } as any],
+          max_output_tokens: 8192,
         }, { signal: controller.signal });
 
         const text = typeof response.output === "string"
           ? response.output
           : response.output_text || JSON.stringify(response.output);
+
+        // Extract web sources from response
+        webSources = [];
+        try {
+          const outputArr = Array.isArray(response.output) ? response.output : [];
+          for (const outItem of outputArr) {
+            if ((outItem as any).type === "web_search_call" && Array.isArray((outItem as any).results)) {
+              for (const r of (outItem as any).results) {
+                if (r.url && r.title) webSources.push({ url: r.url, title: r.title });
+              }
+            }
+            if ((outItem as any).type === "message" && Array.isArray((outItem as any).content)) {
+              for (const c of (outItem as any).content) {
+                if (c.annotations) {
+                  for (const ann of c.annotations) {
+                    if (ann.type === "url_citation" && ann.url) webSources.push({ url: ann.url, title: ann.title || ann.url });
+                  }
+                }
+              }
+            }
+          }
+        } catch { /* citation extraction non-critical */ }
 
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
@@ -388,6 +421,10 @@ IMPORTANT:
     ];
     for (const key of requiredKeys) {
       if (listbotResult[key] === undefined) listbotResult[key] = null;
+    }
+    // Add web sources if captured
+    if (webSources.length > 0) {
+      listbotResult.web_sources = webSources;
     }
 
     // Optional DALL-E hero image generation

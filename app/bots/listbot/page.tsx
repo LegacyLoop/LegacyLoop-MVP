@@ -98,6 +98,12 @@ export default async function ListBotPage({
         photos: { orderBy: { order: "asc" }, take: 1 },
         aiResult: true,
         valuation: true,
+        eventLogs: {
+          where: { eventType: { in: ["LISTBOT_RESULT", "LISTBOT_RUN", "MEGABOT_LISTBOT"] } },
+          orderBy: { createdAt: "desc" },
+          take: 5,
+          select: { id: true, eventType: true, payload: true, createdAt: true },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -121,6 +127,10 @@ export default async function ListBotPage({
       category: ai?.category || "general",
       connectedPlatforms,
       valuationMid: item.valuation ? Math.round((item.valuation.low + item.valuation.high) / 2) : null,
+      listingHistory: item.eventLogs.map((ev: any) => ({
+        id: ev.id, type: ev.eventType, createdAt: ev.createdAt.toISOString(),
+      })),
+      lastListedAt: item.eventLogs[0]?.createdAt?.toISOString() ?? null,
     };
   });
 
