@@ -286,7 +286,6 @@ function extractAntiqueBot(item: any, eventPayload: string | null | undefined): 
       parts.push(`Auction Est: $${ac.auctionLow}–$${ac.auctionHigh}`);
     }
     if (ac.authenticityScore) parts.push(`Auth Score: ${ac.authenticityScore}`);
-    // reason may be JSON with markers
     const reason = safeJson(ac.reason);
     if (reason?.markers?.length) {
       parts.push(`Markers: ${reason.markers.slice(0, 5).join(", ")}`);
@@ -295,15 +294,85 @@ function extractAntiqueBot(item: any, eventPayload: string | null | undefined): 
     }
   }
 
-  // From ANTIQUEBOT_RESULT EventLog (deeper AI analysis)
+  // From ANTIQUEBOT_RESULT EventLog (deep AI analysis — full extraction)
   const d = safeJson(eventPayload);
   if (d) {
-    if (d.authentication?.verdict) parts.push(`Auth Verdict: ${d.authentication.verdict}`);
-    if (d.identification?.period) parts.push(`Period: ${d.identification.period}`);
-    if (d.identification?.origin) parts.push(`Origin: ${d.identification.origin}`);
-    if (d.valuation?.fair_market_value?.mid) parts.push(`FMV Mid: $${d.valuation.fair_market_value.mid}`);
-    if (d.collector_market?.collector_demand) parts.push(`Collector Demand: ${d.collector_market.collector_demand}`);
-    if (d.executive_summary) parts.push(`Expert: ${String(d.executive_summary).slice(0, 150)}`);
+    // Authentication
+    const auth = d.authentication;
+    if (auth?.verdict) parts.push(`Auth Verdict: ${auth.verdict}`);
+    if (auth?.confidence) parts.push(`Auth Confidence: ${auth.confidence}%`);
+    if (auth?.reasoning) parts.push(`Auth Reasoning: ${String(auth.reasoning).slice(0, 150)}`);
+    if (auth?.positive_indicators?.length) parts.push(`Positive Signs: ${auth.positive_indicators.slice(0, 5).join(", ")}`);
+    if (auth?.red_flags?.length) parts.push(`Red Flags: ${auth.red_flags.slice(0, 5).join(", ")}`);
+    if (auth?.recommended_tests?.length) parts.push(`Recommended Tests: ${auth.recommended_tests.slice(0, 3).join(", ")}`);
+
+    // Identification
+    const ident = d.identification;
+    if (ident?.item_type) parts.push(`Item Type: ${ident.item_type}`);
+    if (ident?.period) parts.push(`Period: ${ident.period}`);
+    if (ident?.origin) parts.push(`Origin: ${ident.origin}`);
+    const maker = typeof ident?.maker_info === "object" ? ident.maker_info?.name : ident?.maker_info;
+    if (maker) parts.push(`Maker: ${maker}`);
+    if (ident?.material_analysis) {
+      const mat = typeof ident.material_analysis === "object" ? ident.material_analysis.primary : ident.material_analysis;
+      if (mat) parts.push(`Material: ${mat}`);
+    }
+    if (ident?.style_movement) parts.push(`Style: ${ident.style_movement}`);
+    if (ident?.rarity) parts.push(`Rarity: ${ident.rarity}`);
+
+    // Historical context
+    const hist = d.historical_context;
+    if (hist?.era_overview) parts.push(`Era: ${String(hist.era_overview).slice(0, 120)}`);
+    if (hist?.cultural_significance) parts.push(`Cultural: ${String(hist.cultural_significance).slice(0, 100)}`);
+
+    // Condition
+    const cond = d.condition_assessment;
+    if (cond?.overall_grade) parts.push(`Condition Grade: ${cond.overall_grade}`);
+    if (cond?.age_appropriate_wear != null) parts.push(`Age-Appropriate Wear: ${cond.age_appropriate_wear}`);
+    if (cond?.restoration_detected != null) parts.push(`Restoration: ${cond.restoration_detected ? "Detected" : "None"}`);
+    if (cond?.conservation_recommendations) parts.push(`Conservation: ${String(cond.conservation_recommendations).slice(0, 100)}`);
+
+    // Valuation — all price points
+    const val = d.valuation;
+    if (val?.fair_market_value?.low != null && val?.fair_market_value?.high != null) {
+      parts.push(`FMV: $${val.fair_market_value.low}–$${val.fair_market_value.high}${val.fair_market_value.mid ? ` (mid: $${val.fair_market_value.mid})` : ""}`);
+    }
+    if (val?.insurance_value) parts.push(`Insurance: $${val.insurance_value}`);
+    if (val?.replacement_value) parts.push(`Replacement: $${val.replacement_value}`);
+    if (val?.auction_estimate) {
+      const ae = val.auction_estimate;
+      if (typeof ae === "object" && ae.low != null && ae.high != null) {
+        parts.push(`Auction Est: $${ae.low}–$${ae.high}`);
+      } else if (ae) parts.push(`Auction Est: ${ae}`);
+    }
+    if (val?.dealer_buy_price) parts.push(`Dealer Buy: $${val.dealer_buy_price}`);
+    if (val?.private_sale_estimate) parts.push(`Private Sale: $${val.private_sale_estimate}`);
+    if (val?.value_trend) parts.push(`Value Trend: ${val.value_trend}`);
+
+    // Collector market
+    const mkt = d.collector_market;
+    if (mkt?.collector_demand) parts.push(`Collector Demand: ${mkt.collector_demand}`);
+    if (mkt?.market_outlook) parts.push(`Market Outlook: ${String(mkt.market_outlook).slice(0, 100)}`);
+    if (mkt?.collector_organizations?.length) parts.push(`Collector Orgs: ${mkt.collector_organizations.slice(0, 3).join(", ")}`);
+    if (mkt?.recent_auction_results?.length) {
+      parts.push(`Auction Comps: ${mkt.recent_auction_results.length} results`);
+    }
+
+    // Selling strategy
+    const strat = d.selling_strategy;
+    if (strat?.best_venue) parts.push(`Best Venue: ${strat.best_venue}`);
+    if (strat?.timing) parts.push(`Timing: ${strat.timing}`);
+    if (strat?.venue_options?.length) {
+      const venues = strat.venue_options.slice(0, 3).map((v: any) => v.name || v.venue).filter(Boolean);
+      if (venues.length) parts.push(`Venue Options: ${venues.join(", ")}`);
+    }
+
+    // Documentation
+    const docs = d.documentation;
+    if (docs?.provenance_importance) parts.push(`Provenance Importance: ${docs.provenance_importance}`);
+
+    // Expert summary (250 chars)
+    if (d.executive_summary) parts.push(`Expert: ${String(d.executive_summary).slice(0, 250)}`);
   }
 
   return parts.length ? parts.join(" · ") : null;

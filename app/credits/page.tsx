@@ -2,6 +2,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import CreditsClient from "./CreditsClient";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata = { title: "Credits — LegacyLoop" };
 
@@ -22,6 +23,8 @@ export default async function CreditsPage() {
   }
 
   return (
+    <>
+    <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Credits" }]} />
     <CreditsClient
       initialBalance={credits?.balance ?? 0}
       lifetime={credits?.lifetime ?? 0}
@@ -36,5 +39,6 @@ export default async function CreditsPage() {
         createdAt: t.createdAt.toISOString(),
       }))}
     />
+    </>
   );
 }

@@ -2,6 +2,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 const TIER_NAMES: Record<number, string> = {
   1: "Free",
@@ -43,6 +44,7 @@ export default async function ProfilePage() {
 
   return (
     <div style={{ maxWidth: "680px", margin: "0 auto" }}>
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Profile" }]} />
       {/* Page header */}
       <div style={{ marginBottom: "2rem" }}>
         <div className="section-title">Your Account</div>

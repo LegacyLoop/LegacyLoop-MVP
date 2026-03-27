@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import BotItemSelector from "../BotItemSelector";
 import BotLoadingState from "@/app/components/BotLoadingState";
 
@@ -1217,13 +1218,16 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
               }}>
                 ✍️ Create Listing at ${pb.negotiation_guide?.list_price ?? Math.round(v.high)} →
               </a>
-              <a href={`/items/${item.id}`} style={{
-                padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, borderRadius: "0.5rem",
-                border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-secondary)",
-                textDecoration: "none",
-              }}>
-                🔙 Back to Item
-              </a>
+              <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+                <Link href={`/items/${item.id}`} style={{
+                  display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                  fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+                  textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+                  border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+                }}>
+                  ← Back to Item
+                </Link>
+              </div>
             </div>
           </Card>
         </div>

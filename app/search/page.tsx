@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import type { Metadata } from "next";
 import SearchClient from "./SearchClient";
 import { safeJson } from "@/lib/utils/json";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Browse Estate Sales · LegacyLoop",
@@ -50,6 +51,7 @@ export default async function SearchPage() {
 
   return (
     <div className="mx-auto max-w-7xl">
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Search" }]} />
       {/* Header */}
       <div style={{ marginBottom: "2rem" }}>
         <div className="section-title">Marketplace</div>

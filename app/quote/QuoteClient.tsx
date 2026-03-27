@@ -416,8 +416,16 @@ export default function QuoteClient() {
             <Link href="/pricing" className="btn-ghost" style={{ padding: "0.75rem 1.5rem" }}>
               View Pricing
             </Link>
-            <Link href="/" className="btn-primary" style={{ padding: "0.75rem 1.5rem" }}>
-              Back to Home
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+            <Link href="/" style={{
+              display: "inline-flex", alignItems: "center", gap: "0.35rem",
+              fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+              textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+              border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+            }}>
+              ← Back to Home
             </Link>
           </div>
         </div>

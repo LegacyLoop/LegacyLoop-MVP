@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import ReferralClient from "./ReferralClient";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata = { title: "Referrals — LegacyLoop" };
 
@@ -44,6 +45,7 @@ export default async function ReferralPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Referral Program" }]} />
       <div>
         <div className="section-title">Referral Program</div>
         <h1 className="h2 mt-1">Refer a Friend</h1>

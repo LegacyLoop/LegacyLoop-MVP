@@ -1972,12 +1972,16 @@ export default function CarBotClient({ items }: { items: Item[] }) {
             }}>
               🎯 Find Vehicle Buyers
             </Link>
-            <Link href={`/items/${selectedId}`} style={{
-              padding: "0.55rem 1rem", fontSize: "0.78rem", fontWeight: 600, borderRadius: "0.5rem",
-              border: "1px solid var(--border-default)", background: "var(--bg-card)", color: "var(--text-secondary)", textDecoration: "none",
-            }}>
-              🔙 Back to Item
-            </Link>
+            <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+              <Link href={`/items/${selectedId}`} style={{
+                display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+                textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+                border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+              }}>
+                ← Back to Item
+              </Link>
+            </div>
           </div>
         </div>
       )}

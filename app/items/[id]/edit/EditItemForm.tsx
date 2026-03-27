@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import UploadModal, { type PhotoFile } from "@/app/components/UploadModal";
 
 type SaleMethod = "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH";
@@ -237,6 +238,16 @@ export default function EditItemForm({ initial, initialPhotos = [] }: { initial:
 
   return (
     <div className="card p-8">
+      <div style={{ marginBottom: "1rem" }}>
+        <Link href={`/items/${initial.id}`} style={{
+          display: "inline-flex", alignItems: "center", gap: "0.35rem",
+          fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+          textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+          border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+        }}>
+          ← Back to Item
+        </Link>
+      </div>
       {/* ── Photo Management ── */}
       <div style={{ marginBottom: "2rem" }}>
         <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.75rem" }}>

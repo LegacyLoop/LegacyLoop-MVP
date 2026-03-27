@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { safeJson } from "@/lib/utils/json";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Analytics · LegacyLoop",
@@ -522,6 +523,7 @@ export default async function AnalyticsPage({
   // ─── RENDER ────────────────────────────────────────────────────────────
   return (
     <div style={{ maxWidth: "80rem", margin: "0 auto", padding: "0 1rem" }}>
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Analytics" }]} />
 
       {/* ── Header ── */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "1rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>

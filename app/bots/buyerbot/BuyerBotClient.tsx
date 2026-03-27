@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import BotItemSelector from "../BotItemSelector";
 import BotLoadingState from "@/app/components/BotLoadingState";
 
@@ -1132,13 +1133,16 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
               }}>
                 ⚡ MegaBot — 5 cr
               </button>
-              <a href={`/items/${selectedId}`} style={{
-                display: "inline-flex", alignItems: "center", padding: "0.5rem 1rem", fontSize: "0.75rem",
-                borderRadius: "0.5rem", border: "1px solid var(--border-default)",
-                color: "var(--text-secondary)", textDecoration: "none", fontWeight: 600,
-              }}>
-                🔙 Back to Item
-              </a>
+              <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+                <Link href={`/items/${selectedId}`} style={{
+                  display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                  fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+                  textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+                  border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+                }}>
+                  ← Back to Item
+                </Link>
+              </div>
               <a href={`/bots/listbot?item=${selectedId}`} style={{
                 display: "inline-flex", alignItems: "center", padding: "0.5rem 1rem", fontSize: "0.75rem",
                 borderRadius: "0.5rem", border: "1px solid var(--border-default)",

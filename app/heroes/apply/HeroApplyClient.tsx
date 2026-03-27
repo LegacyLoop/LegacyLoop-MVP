@@ -568,19 +568,16 @@ export default function HeroApplyClient() {
             You will receive an email at <strong>{email}</strong> once approved.
           </p>
 
-          <Link
-            href="/heroes"
-            className="btn-primary"
-            style={{
-              display: "inline-flex",
-              padding: "0.85rem 2.5rem",
-              fontSize: "1rem",
-              borderRadius: "9999px",
-              textDecoration: "none",
-            }}
-          >
-            Back to Heroes Program
-          </Link>
+          <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+            <Link href="/heroes" style={{
+              display: "inline-flex", alignItems: "center", gap: "0.35rem",
+              fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+              textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+              border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+            }}>
+              ← Back to Heroes Program
+            </Link>
+          </div>
         </div>
       )}
 

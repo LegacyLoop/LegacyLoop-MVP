@@ -297,12 +297,62 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
       </div>
     ),
     antique: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Antique Status</div>
-        <div style={{ fontSize: "0.9rem", fontWeight: 700, color: data?.isAntique ? "#f59e0b" : "var(--text-muted)" }}>{data?.isAntique ? `🏛️ Score: ${data.score ?? "?"}` : "Not flagged"}</div>
-        {data?.auctionLow != null && data?.auctionHigh != null && (
-          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#f59e0b" }}>Auction: ${data.auctionLow?.toLocaleString()}–${data.auctionHigh?.toLocaleString()}</div>
+      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.35rem", width: "100%" }}>
+        {data?.verdict ? (
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <span style={{ fontSize: "1rem" }}>
+              {data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "✅" : data.verdict === "Uncertain" ? "⚠️" : "❌"}
+            </span>
+            <div style={{ fontSize: "0.82rem", fontWeight: 800, color: data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "#16a34a" : data.verdict === "Uncertain" ? "#d97706" : "#dc2626" }}>
+              {data.verdict}
+            </div>
+            {data?.confidence && <span style={{ fontSize: "0.58rem", color: "var(--text-muted)", fontWeight: 600 }}>{data.confidence}%</span>}
+          </div>
+        ) : (
+          <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Antique Detected</div>
         )}
+        {(data?.fmvLow != null || data?.auctionLow != null) && (
+          <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#fbbf24" }}>
+            {data.fmvLow != null && data.fmvHigh != null
+              ? `$${Math.round(data.fmvLow).toLocaleString()} — $${Math.round(data.fmvHigh).toLocaleString()}`
+              : data.auctionLow != null && data.auctionHigh != null
+              ? `$${Math.round(data.auctionLow).toLocaleString()} — $${Math.round(data.auctionHigh).toLocaleString()}`
+              : "—"}
+          </div>
+        )}
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
+          {data?.period && (
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Period</div>
+              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)" }}>{data.period}</div>
+            </div>
+          )}
+          {data?.rarity && (
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Rarity</div>
+              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.rarity === "Rare" || data.rarity === "Very Rare" ? "#f59e0b" : "var(--text-secondary)" }}>{data.rarity}</div>
+            </div>
+          )}
+          {data?.overallGrade && (
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Condition</div>
+              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#00bcd4" }}>{data.overallGrade}</div>
+            </div>
+          )}
+          {data?.collectorDemand && (
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Demand</div>
+              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.collectorDemand === "High" || data.collectorDemand === "Strong" ? "#22c55e" : "#f59e0b" }}>{data.collectorDemand}</div>
+            </div>
+          )}
+          {data?.insuranceValue != null && (
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Insurance</div>
+              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)" }}>${Math.round(data.insuranceValue).toLocaleString()}</div>
+            </div>
+          )}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
       </div>
     ),
     collectibles: () => (
@@ -6923,7 +6973,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
   }
 
   const hasData = !!abr;
-  const [antiqueSections, setAntiqueSections] = useState<Set<string>>(new Set(["megabot-results"]));
+  const [antiqueSections, setAntiqueSections] = useState<Set<string>>(new Set(["ant-verdict", "ant-identification", "ant-valuation", "megabot-results"]));
   const toggleAntiqueSection = (id: string) => { setAntiqueSections(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; }); };
   const auth = abr?.authentication as any;
   const val = abr?.valuation as any;
@@ -7032,7 +7082,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
           : "Antique detected — run evaluation"}
       />
 
-      {collapsed && hasData && <CollapsedSummary botType="antique" data={{ isAntique: antique?.isAntique, score: antique?.score, auctionLow: antique?.auctionLow, auctionHigh: antique?.auctionHigh }} buttons={<>
+      {collapsed && hasData && <CollapsedSummary botType="antique" data={{ isAntique: antique?.isAntique, score: antique?.score, auctionLow: antique?.auctionLow, auctionHigh: antique?.auctionHigh, verdict: auth?.verdict, confidence: auth?.confidence, period: ident?.period, origin: ident?.origin, rarity: ident?.rarity, fmvLow: extractPrice(val?.fair_market_value?.low ?? val?.fair_market_value?.min), fmvHigh: extractPrice(val?.fair_market_value?.high ?? val?.fair_market_value?.max), insuranceValue: extractPrice(val?.insurance_value), overallGrade: abr?.condition_assessment?.overall_grade, collectorDemand: abr?.collector_market?.collector_demand, bestVenue: abr?.selling_strategy?.best_venue }} megaData={boosted ? boostResult : undefined} buttons={<>
         {onAntiqueBotRun && <button onClick={onAntiqueBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🏺 Re-Run · 0.5 cr</button>}
         {onSuperBoost && !boosted && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>⚡ MegaBot · 5 cr</button>}
         <a href={`/bots/antiquebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AntiqueBot →</a>
@@ -7131,16 +7181,18 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
                 {antiqueBotError}
               </div>
             )}
-            {/* Era/maker grid from AI analysis */}
+            {/* Era/maker grid from AI analysis — 3x2 */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
               {[
                 { label: "Era", value: aiData?.era || "Unknown" },
                 { label: "Maker", value: aiData?.maker || aiData?.brand || "Unknown" },
                 { label: "Material", value: aiData?.material || "Unknown" },
                 { label: "Style", value: aiData?.style || "Unknown" },
+                { label: "Markings", value: aiData?.markings || "Unknown" },
+                { label: "Condition", value: aiData?.condition_score ? `${aiData.condition_score}/10` : "Unknown" },
               ].map((d) => (
                 <div key={d.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
-                  <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{d.label}</div>
+                  <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)" }}>{d.label}</div>
                   <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{d.value}</div>
                 </div>
               ))}
@@ -7148,100 +7200,294 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
 
             {/* Auction estimate from detection */}
             {antique?.auctionLow != null && (
-              <div style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "0.5rem", padding: "0.5rem 0.7rem", textAlign: "center" }}>
-                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#fbbf24", fontWeight: 700 }}>Preliminary Auction Estimate</div>
+              <div style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "0.5rem", padding: "0.5rem 0.7rem", textAlign: "center" as const }}>
+                <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#fbbf24", fontWeight: 700 }}>Preliminary Auction Estimate</div>
                 <div style={{ fontSize: "1rem", fontWeight: 800, color: "#fbbf24", marginTop: "0.15rem" }}>${antique.auctionLow.toLocaleString()} – ${antique.auctionHigh.toLocaleString()}</div>
               </div>
             )}
 
+            {/* Detection confidence */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
+              padding: "0.4rem 0.65rem", borderRadius: "0.5rem",
+              background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+            }}>
+              <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Detection Score</div>
+              <div style={{ fontSize: "0.82rem", fontWeight: 800, color: (antique?.score ?? 0) >= 20 ? "#16a34a" : (antique?.score ?? 0) >= 12 ? "#f59e0b" : "#d97706" }}>
+                {antique?.score ?? "?"}/100
+              </div>
+              <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>
+                ({(antique?.score ?? 0) >= 20 ? "High confidence" : (antique?.score ?? 0) >= 12 ? "Moderate" : "Low"})
+              </div>
+            </div>
+
             {markers.length > 0 && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem" }}>
+              <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "0.25rem" }}>
                 {markers.slice(0, 6).map((m: string) => (
                   <span key={m} style={{ padding: "0.15rem 0.45rem", borderRadius: "9999px", fontSize: "0.6rem", fontWeight: 600, background: "rgba(251,191,36,0.1)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" }}>{m}</span>
                 ))}
               </div>
             )}
 
-            <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.4, margin: 0, textAlign: "center" }}>
-              Run AntiqueBot for full authentication, historical context, and expert selling strategy.
-            </p>
-            <div style={{ padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
-              {[{ icon: "🏛️", text: "Authentication analysis — real antique or reproduction?" }, { icon: "📜", text: "Historical context and provenance research" }, { icon: "💰", text: "Auction house estimate for premium selling channels" }, { icon: "🔍", text: "Maker mark identification and period dating" }].map((b, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
+            {/* What AntiqueBot Will Analyze — item-specific */}
+            <div style={{
+              padding: "0.65rem 0.85rem", background: "var(--ghost-bg)",
+              borderRadius: "0.6rem", border: "1px solid var(--border-default)",
+            }}>
+              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "#fbbf24", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>
+                What AntiqueBot Will Analyze
+              </div>
+              {[
+                { icon: "🔍", text: `Authentication — Is this ${aiData?.era || "antique"} ${aiData?.category || "item"} genuine or reproduction?` },
+                { icon: "📜", text: `Historical provenance — ${aiData?.maker ? `${aiData.maker} production history and catalog verification` : "Origin, maker marks, and period dating"}` },
+                { icon: "💰", text: "Expert valuation — Fair market, insurance, auction, and dealer buy prices" },
+                { icon: "🏛️", text: "Collector market — Demand level, comparable auction results, and market outlook" },
+                { icon: "📋", text: "Selling strategy — Best venue, timing, presentation tips, and reserve strategy" },
+              ].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <span style={{ flexShrink: 0, fontSize: "0.65rem" }}>{b.icon}</span>
                   <span>{b.text}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
-              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
-              {["Submit item for authentication", "AI analyzes age, origin, and maker marks", "Get auction estimate and selling strategy"].map((step, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
-                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
-                  <span>{step}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)" }}>
-              {[{ value: "78+", label: "Detection signals" }, { value: "Auction", label: "Estimates" }, { value: "Expert", label: "Authentication" }].map((m, i) => (
-                <div key={i} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
-                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
                 </div>
               ))}
             </div>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-            {/* Verdict */}
-            {auth && (
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: `${verdictColor}10`, border: `1px solid ${verdictColor}25` }}>
-                <span style={{ fontSize: "1.1rem" }}>
-                  {auth.verdict === "Authentic" || auth.verdict === "Likely Authentic" ? "✅" : auth.verdict === "Uncertain" ? "⚠️" : "❌"}
-                </span>
-                <div>
-                  <div style={{ fontSize: "0.72rem", fontWeight: 700, color: verdictColor }}>{auth.verdict}</div>
-                  {auth.confidence && <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>Confidence: {auth.confidence}%</div>}
-                </div>
-              </div>
-            )}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
 
-            {/* Identification grid */}
-            {ident && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
-                {[
-                  { label: "Period", value: ident.period },
-                  { label: "Origin", value: ident.origin },
-                  { label: "Rarity", value: ident.rarity },
-                  { label: "Style", value: ident.style_movement },
-                ].filter((d) => d.value).map((d) => (
-                  <div key={d.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
-                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{d.label}</div>
-                    <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{d.value}</div>
+            {/* ── AUTHENTICATION VERDICT ACCORDION ── */}
+            <AccordionHeader id="ant-verdict" icon="🔍" title="AUTHENTICATION" subtitle={auth?.verdict ? `${auth.verdict} · ${auth.confidence || "?"}%` : "Pending"} isOpen={antiqueSections.has("ant-verdict")} onToggle={toggleAntiqueSection} accentColor={verdictColor} />
+            {antiqueSections.has("ant-verdict") && (
+              <div style={{ padding: "0.35rem 0" }}>
+                {auth && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: `${verdictColor}10`, border: `1px solid ${verdictColor}25`, marginBottom: "0.5rem" }}>
+                    <span style={{ fontSize: "1.2rem" }}>
+                      {auth.verdict === "Authentic" || auth.verdict === "Likely Authentic" ? "✅" : auth.verdict === "Uncertain" ? "⚠️" : "❌"}
+                    </span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: "0.78rem", fontWeight: 800, color: verdictColor }}>{auth.verdict || "Evaluated"}</div>
+                      {auth.confidence && <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>Confidence: {auth.confidence}%</div>}
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* Valuation */}
-            {val?.fair_market_value && (
-              <div style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "0.5rem", padding: "0.5rem 0.7rem", textAlign: "center" }}>
-                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#fbbf24", fontWeight: 700 }}>Expert Valuation</div>
-                <div style={{ fontSize: "1rem", fontWeight: 800, color: "#fbbf24", marginTop: "0.15rem" }}>
-                  {formatPriceRange(val.fair_market_value)}
-                </div>
-                {val.insurance_value && (
-                  <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Insurance: {formatPrice(val.insurance_value)}</div>
+                )}
+                {auth?.reasoning && (
+                  <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: "0 0 0.5rem", padding: "0.4rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.4rem", borderLeft: `2px solid ${verdictColor}` }}>
+                    {String(auth.reasoning).slice(0, 300)}{String(auth.reasoning).length > 300 ? "..." : ""}
+                  </p>
+                )}
+                {auth?.positive_indicators && (auth.positive_indicators as string[]).length > 0 && (
+                  <div style={{ marginBottom: "0.4rem" }}>
+                    <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#16a34a", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.2rem" }}>Positive Indicators</div>
+                    <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "0.25rem" }}>
+                      {(auth.positive_indicators as string[]).slice(0, 5).map((ind: string, i: number) => (
+                        <span key={i} style={{ padding: "0.15rem 0.45rem", borderRadius: "9999px", fontSize: "0.58rem", fontWeight: 600, background: "rgba(22,163,74,0.08)", color: "#16a34a", border: "1px solid rgba(22,163,74,0.2)" }}>{ind}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {auth?.red_flags && (auth.red_flags as string[]).length > 0 && (
+                  <div style={{ marginBottom: "0.4rem" }}>
+                    <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#dc2626", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.2rem" }}>Red Flags</div>
+                    <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "0.25rem" }}>
+                      {(auth.red_flags as string[]).slice(0, 5).map((flag: string, i: number) => (
+                        <span key={i} style={{ padding: "0.15rem 0.45rem", borderRadius: "9999px", fontSize: "0.58rem", fontWeight: 600, background: "rgba(220,38,38,0.08)", color: "#dc2626", border: "1px solid rgba(220,38,38,0.2)" }}>{flag}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {auth?.recommended_tests && (auth.recommended_tests as string[]).length > 0 && (
+                  <div>
+                    <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.2rem" }}>Recommended Tests</div>
+                    {(auth.recommended_tests as string[]).slice(0, 3).map((test: string, i: number) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}>
+                        <span style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.55rem" }}>{i + 1}.</span>
+                        <span>{test}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {auth?.appraiser_recommendation && (
+                  <div style={{ marginTop: "0.4rem", padding: "0.4rem 0.65rem", borderRadius: "0.4rem", background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)", borderLeft: "3px solid #fbbf24" }}>
+                    <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#fbbf24", textTransform: "uppercase" as const, marginBottom: "0.15rem" }}>Appraiser Recommendation</div>
+                    <p style={{ fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: 0 }}>{String(auth.appraiser_recommendation).slice(0, 200)}</p>
+                  </div>
                 )}
               </div>
             )}
 
-            {/* Executive summary */}
+            {/* ── IDENTIFICATION ACCORDION ── */}
+            <AccordionHeader id="ant-identification" icon="🏺" title="IDENTIFICATION" subtitle={ident?.period ? `${ident.period} · ${ident.origin || ""}` : ""} isOpen={antiqueSections.has("ant-identification")} onToggle={toggleAntiqueSection} />
+            {antiqueSections.has("ant-identification") && (
+              <div style={{ padding: "0.35rem 0" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                  {[
+                    { label: "Type", value: ident?.item_type },
+                    { label: "Period", value: ident?.period },
+                    { label: "Origin", value: ident?.origin },
+                    { label: "Maker", value: typeof ident?.maker_info === "object" ? ident?.maker_info?.name : (ident?.maker_info || aiData?.maker) },
+                    { label: "Material", value: typeof ident?.material_analysis === "object" ? ident?.material_analysis?.primary : (ident?.material_analysis || aiData?.material) },
+                    { label: "Style", value: ident?.style_movement || aiData?.style },
+                    { label: "Rarity", value: ident?.rarity },
+                    { label: "Markings", value: aiData?.markings },
+                  ].filter((d) => d.value).map((d) => (
+                    <div key={d.label} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem 0.65rem" }}>
+                      <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", fontWeight: 600 }}>{d.label}</div>
+                      <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{d.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── EXPERT VALUATION ACCORDION ── */}
+            <AccordionHeader id="ant-valuation" icon="💰" title="EXPERT VALUATION" subtitle={val?.fair_market_value ? formatPriceRange(val.fair_market_value) : ""} isOpen={antiqueSections.has("ant-valuation")} onToggle={toggleAntiqueSection} accentColor="#fbbf24" />
+            {antiqueSections.has("ant-valuation") && (
+              <div style={{ padding: "0.35rem 0" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                  {[
+                    { label: "Fair Market Value", value: val?.fair_market_value ? formatPriceRange(val.fair_market_value) : null, color: "#fbbf24", primary: true },
+                    { label: "Insurance Value", value: val?.insurance_value ? formatPrice(val.insurance_value) : null, color: "#00bcd4" },
+                    { label: "Auction Estimate", value: val?.auction_estimate ? formatPriceRange(val.auction_estimate) : (antique?.auctionLow ? `$${antique.auctionLow.toLocaleString()} – $${antique.auctionHigh.toLocaleString()}` : null), color: "#f59e0b" },
+                    { label: "Dealer Buy Price", value: val?.dealer_buy_price ? formatPrice(val.dealer_buy_price) : null, color: "#22c55e" },
+                    { label: "Replacement Value", value: val?.replacement_value ? formatPrice(val.replacement_value) : null, color: "#8b5cf6" },
+                    { label: "Value Trend", value: val?.value_trend || null, color: val?.value_trend === "Appreciating" ? "#22c55e" : val?.value_trend === "Stable" ? "#00bcd4" : "#ef4444" },
+                  ].filter((d) => d.value).map((d: any) => (
+                    <div key={d.label} style={{
+                      background: d.primary ? `${d.color}08` : "var(--bg-card)",
+                      border: `1px solid ${d.primary ? `${d.color}30` : "var(--border-default)"}`,
+                      borderRadius: "0.5rem", padding: "0.5rem 0.65rem", textAlign: "center" as const,
+                    }}>
+                      <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>{d.label}</div>
+                      <div style={{ fontSize: d.primary ? "1rem" : "0.82rem", fontWeight: 800, color: d.color, marginTop: "0.15rem" }}>{d.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── CONDITION ASSESSMENT ACCORDION ── */}
+            {abr?.condition_assessment && (<>
+              <AccordionHeader id="ant-condition" icon="📋" title="CONDITION ASSESSMENT" subtitle={abr.condition_assessment.overall_grade || ""} isOpen={antiqueSections.has("ant-condition")} onToggle={toggleAntiqueSection} />
+              {antiqueSections.has("ant-condition") && (() => {
+                const cond = abr.condition_assessment;
+                return (
+                  <div style={{ padding: "0.35rem 0" }}>
+                    {cond.overall_grade && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.65rem", marginBottom: "0.4rem", borderRadius: "0.4rem", background: "var(--ghost-bg)" }}>
+                        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" as const }}>Overall Grade</div>
+                        <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "#00bcd4" }}>{cond.overall_grade}</div>
+                      </div>
+                    )}
+                    {cond.age_appropriate_wear && (
+                      <p style={{ fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: "0 0 0.35rem", padding: "0.3rem 0.5rem" }}>
+                        ⏳ {String(cond.age_appropriate_wear).slice(0, 200)}
+                      </p>
+                    )}
+                    {cond.restoration_detected && (
+                      <p style={{ fontSize: "0.65rem", color: "#f59e0b", lineHeight: 1.5, margin: "0 0 0.35rem", padding: "0.3rem 0.5rem" }}>
+                        🔧 Restoration: {String(cond.restoration_detected).slice(0, 150)}
+                      </p>
+                    )}
+                    {cond.conservation_recommendations && (
+                      <div style={{ padding: "0.4rem 0.65rem", borderRadius: "0.4rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", borderLeft: "3px solid #00bcd4" }}>
+                        <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, marginBottom: "0.15rem" }}>Conservation Tips</div>
+                        <p style={{ fontSize: "0.62rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: 0 }}>{String(cond.conservation_recommendations).slice(0, 250)}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </>)}
+
+            {/* ── COLLECTOR MARKET ACCORDION ── */}
+            {abr?.collector_market && (<>
+              <AccordionHeader id="ant-market" icon="🏛️" title="COLLECTOR MARKET" subtitle={abr.collector_market.collector_demand || ""} isOpen={antiqueSections.has("ant-market")} onToggle={toggleAntiqueSection} />
+              {antiqueSections.has("ant-market") && (() => {
+                const cm = abr.collector_market;
+                return (
+                  <div style={{ padding: "0.35rem 0" }}>
+                    <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.4rem" }}>
+                      {cm.collector_demand && (
+                        <div style={{ flex: 1, textAlign: "center" as const, padding: "0.4rem", borderRadius: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                          <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" as const }}>Demand</div>
+                          <div style={{ fontSize: "0.78rem", fontWeight: 800, color: cm.collector_demand === "High" || cm.collector_demand === "Strong" ? "#22c55e" : "#f59e0b" }}>{cm.collector_demand}</div>
+                        </div>
+                      )}
+                      {cm.market_outlook && (
+                        <div style={{ flex: 1, textAlign: "center" as const, padding: "0.4rem", borderRadius: "0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                          <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase" as const }}>Outlook</div>
+                          <div style={{ fontSize: "0.78rem", fontWeight: 800, color: "var(--text-primary)" }}>{cm.market_outlook}</div>
+                        </div>
+                      )}
+                    </div>
+                    {cm.collector_base && (
+                      <p style={{ fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: "0 0 0.35rem", padding: "0.3rem 0.5rem" }}>
+                        👥 {String(cm.collector_base).slice(0, 200)}
+                      </p>
+                    )}
+                    {cm.recent_auction_results && (cm.recent_auction_results as any[]).length > 0 && (
+                      <div style={{ marginTop: "0.3rem" }}>
+                        <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#fbbf24", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.2rem" }}>Recent Auction Results</div>
+                        {(cm.recent_auction_results as any[]).slice(0, 3).map((ar: any, i: number) => (
+                          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.25rem 0.5rem", fontSize: "0.62rem", borderBottom: "1px solid var(--border-default)" }}>
+                            <span style={{ color: "var(--text-secondary)" }}>{ar.house || ar.auction_house || "Auction"} {ar.date ? `(${ar.date})` : ""}</span>
+                            <span style={{ fontWeight: 700, color: "#fbbf24" }}>{ar.hammer_price || ar.realized_price ? formatPrice(ar.hammer_price || ar.realized_price) : "—"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </>)}
+
+            {/* ── SELLING STRATEGY ACCORDION ── */}
+            {abr?.selling_strategy && (<>
+              <AccordionHeader id="ant-strategy" icon="🎯" title="SELLING STRATEGY" subtitle={abr.selling_strategy.best_venue || ""} isOpen={antiqueSections.has("ant-strategy")} onToggle={toggleAntiqueSection} />
+              {antiqueSections.has("ant-strategy") && (() => {
+                const ss = abr.selling_strategy;
+                return (
+                  <div style={{ padding: "0.35rem 0" }}>
+                    {ss.best_venue && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.65rem", marginBottom: "0.4rem", borderRadius: "0.4rem", background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.2)" }}>
+                        <div style={{ fontSize: "0.48rem", color: "#16a34a", fontWeight: 700, textTransform: "uppercase" as const }}>Best Venue</div>
+                        <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#16a34a" }}>🏆 {ss.best_venue}</div>
+                      </div>
+                    )}
+                    {ss.timing && (
+                      <p style={{ fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: "0 0 0.35rem", padding: "0.3rem 0.5rem" }}>
+                        ⏰ {String(ss.timing).slice(0, 150)}
+                      </p>
+                    )}
+                    {ss.presentation_tips && (ss.presentation_tips as string[]).length > 0 && (
+                      <div style={{ marginBottom: "0.3rem" }}>
+                        <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.15rem" }}>Presentation Tips</div>
+                        {(ss.presentation_tips as string[]).slice(0, 3).map((tip: string, i: number) => (
+                          <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.3rem", padding: "0.15rem 0.5rem", fontSize: "0.62rem", color: "var(--text-secondary)" }}>
+                            <span style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.55rem", flexShrink: 0 }}>✓</span>
+                            <span>{tip}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {ss.reserve_strategy && (
+                      <div style={{ padding: "0.35rem 0.65rem", borderRadius: "0.4rem", background: "rgba(251,191,36,0.04)", borderLeft: "2px solid rgba(251,191,36,0.3)" }}>
+                        <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#fbbf24", textTransform: "uppercase" as const, marginBottom: "0.1rem" }}>Reserve Strategy</div>
+                        <p style={{ fontSize: "0.62rem", color: "var(--text-secondary)", lineHeight: 1.4, margin: 0 }}>{String(ss.reserve_strategy).slice(0, 150)}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </>)}
+
+            {/* ── EXECUTIVE SUMMARY ── */}
             {abr?.executive_summary && (
-              <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: 0, padding: "0.5rem", background: "rgba(251,191,36,0.04)", borderRadius: "0.35rem", borderLeft: "2px solid rgba(251,191,36,0.3)" }}>
-                {String(abr.executive_summary).slice(0, 200)}{String(abr.executive_summary).length > 200 ? "..." : ""}
-              </p>
+              <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: "rgba(251,191,36,0.04)", border: "1px solid rgba(251,191,36,0.15)", borderLeft: "3px solid rgba(251,191,36,0.4)" }}>
+                <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#fbbf24", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.25rem" }}>Expert Summary</div>
+                <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.6, margin: 0 }}>
+                  {String(abr.executive_summary)}
+                </p>
+              </div>
             )}
           </div>
         )}

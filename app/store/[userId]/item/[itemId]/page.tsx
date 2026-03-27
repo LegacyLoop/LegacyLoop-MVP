@@ -105,9 +105,15 @@ export default async function PublicItemPage({ params }: { params: Params }) {
       />
 
       {/* Breadcrumb */}
-      <div style={{ marginBottom: "1rem", fontSize: "0.85rem", color: "var(--text-muted)" }}>
-        <Link href={`/store/${userId}`} style={{ color: "var(--accent)", textDecoration: "none" }}>← Back to store</Link>
-        <span> / {title}</span>
+      <div style={{ marginBottom: "1rem" }}>
+        <Link href={`/store/${userId}`} style={{
+          display: "inline-flex", alignItems: "center", gap: "0.35rem",
+          fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+          textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+          border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+        }}>
+          ← Back to Store
+        </Link>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }} className="sm:grid-cols-2">

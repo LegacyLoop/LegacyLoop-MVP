@@ -175,18 +175,67 @@ Return ALL standard recon fields PLUS these enhanced fields in your JSON.`;
 
 const MEGA_ANTIQUE = `
 
-MEGABOT ENHANCEMENT — Museum-grade deep dive:
-- Trace likely ownership chain through historical context
-- Maker deep dive — catalog references, production dates, factory locations, notable pieces
-- Professional authentication methodology — what tests, what to look for
-- 8-10 specific auction results with dates, houses, hammer prices
-- Formal insurance appraisal paragraph
-- Conservation assessment — environmental threats, long-term storage
-- Exhibition potential — museum or gallery interest?
-- Academic/research value
-- Forgery analysis — how to spot real vs reproduction
-- 5-year and 10-year value projection
-Return ALL standard antique fields PLUS these enhanced fields in your JSON.`;
+MEGA_ANTIQUE DEEP DIVE — MUSEUM-GRADE ANALYSIS
+
+You are now operating at museum curator / senior auction house specialist level.
+This is NOT a repeat of the standard analysis — this adds ENTIRELY NEW dimensions.
+
+REQUIRED ADDITIONAL ANALYSIS DIMENSIONS:
+
+1. ACADEMIC & SCHOLARLY CONTEXT
+   - Place this item within art historical scholarship
+   - Reference relevant published catalogs, monographs, or exhibition records
+   - Identify the specific movement, school, or workshop tradition
+   - Note if this item type appears in known museum collections (cite which museums)
+   - Academic importance rating: SIGNIFICANT / NOTABLE / MINOR / ROUTINE
+
+2. DEEP PROVENANCE METHODOLOGY
+   - Suggest specific research avenues: auction house archives (Christie's, Sotheby's, Heritage), dealer records, exhibition catalogs, import/export records, family documentation
+   - Identify provenance gaps that affect value (WWII era gaps, undocumented transfers)
+   - Flag items from categories with known restitution/repatriation issues
+
+3. ADVANCED MARKET INTELLIGENCE
+   - Identify the top 5 auction houses/dealers for this exact category
+   - Recent market trends for this specific type (rising, stable, declining)
+   - Collector demographic (institutional vs private, geographic concentrations)
+   - Seasonal timing factors (when does this category sell best?)
+   - Cross-category appeal and market manipulation risks
+
+4. TECHNICAL EXAMINATION RECOMMENDATIONS
+   - Specify EXACTLY which scientific tests would help authenticate: XRF (metal composition), UV fluorescence (repairs/overpainting), dendrochronology (wood dating), thermoluminescence (ceramic dating), carbon-14 (organic materials), spectroscopy (pigment analysis), X-ray (hidden construction)
+   - Estimated cost range for each recommended test
+   - Priority order: which test gives most information per dollar
+
+5. INSURANCE & LEGAL CONSIDERATIONS
+   - Specific insurance riders needed for this value level
+   - Storage and transit requirements for insurance validity
+   - Export/import restrictions (cultural property laws by origin country)
+   - Authentication documentation needed for future resale
+
+6. COMPARATIVE RARITY ANALYSIS
+   - Known surviving examples of this exact type (estimate count)
+   - Census of comparable items in museum collections
+   - Frequency at auction in last 10 years
+   - Rarity trajectory and condition rarity for this age
+
+7. RESTORATION VS PRESERVATION DECISION MATRIX
+   - Should this item be restored? (with specific rationale)
+   - What restoration is acceptable without value loss?
+   - Estimated restoration cost range
+   - Value impact of restoration: +X% or -X% with explanation
+
+Each MegaBot AI agent should bring their SPECIALIZED PERSPECTIVE:
+- OpenAI (Web Researcher): Focus on recent auction results, market data, online references
+- Claude (Deep Knowledge): Focus on art historical context, scholarly analysis, dating methodology
+- Gemini (Market Intelligence): Focus on pricing trends, collector demographics, timing strategy
+- Grok (Cultural Trends): Focus on cultural relevance, social media collectibility, emerging demand
+
+REQUIRED STRUCTURED FIELDS — include ALL in your JSON response:
+- "condition_assessment" MUST include sub-scores: structural_score (1-10), surface_score (1-10), patina_score (1-10), completeness_score (1-10), mechanisms_score (1-10 or null if N/A). Each sub-score reflects a DIFFERENT aspect.
+- "provenance_chain": array of {owner, period, evidence, confidence: High|Medium|Low}
+- "exhibition_potential": {museum_interest: None|Low|Moderate|Strong, reasoning, comparable_museum_pieces[]}
+- "value_projections": {five_year: {low, high, reasoning}, ten_year: {low, high, reasoning}, risk_factors[], upside_catalysts[]}
+These fields are NOT optional.`;
 
 const MEGA_CARBOT = `
 
@@ -485,7 +534,16 @@ ${ctx.auctionLow ? `Preliminary auction estimate: $${ctx.auctionLow} – $${ctx.
 
 Return JSON with: authentication (verdict: Authentic|Likely Authentic|Uncertain|Likely Reproduction|Reproduction, confidence 1-100, reasoning, red_flags[], positive_indicators[], recommended_tests[], appraiser_recommendation), identification (item_type, period, origin, maker_info{name, active_period, notable_for}, material_analysis{primary, secondary[], construction}, rarity), historical_context (era_overview, cultural_significance, notable_examples), condition_assessment (overall_grade, age_appropriate_wear, restoration_detected, conservation_recommendations[]), valuation (fair_market_value{low,mid,high}, replacement_value, insurance_value, auction_estimate{low,high,reserve_recommendation}, dealer_buy_price, value_trend, value_trend_reasoning), collector_market (collector_demand, collector_organizations[], recent_auction_results[], market_outlook), selling_strategy (best_venue, venue_options[], timing, presentation_tips[], documentation_needed[]), documentation (provenance_importance 1-10, provenance_tips[], recommended_references[]), executive_summary (5-8 sentences for senior, warm, clear advice).
 
-Be SPECIFIC. Don't inflate values. All prices USD. Return ONLY valid JSON.`;
+Be SPECIFIC. Don't inflate values. All prices USD. Return ONLY valid JSON.
+
+CONDITION SUB-SCORING REQUIREMENT:
+For condition_assessment, you MUST provide SPECIFIC sub-scores (1-10):
+- structural_score: frame, joints, foundation, load-bearing integrity
+- surface_score: finish, paint, veneer, gilding, lacquer, surface treatment quality
+- patina_score: quality and authenticity of age-appropriate patina (higher = better, more desirable patina)
+- completeness_score: all original parts, hardware, fittings, elements present and intact
+- mechanisms_score: locks, hinges, drawers, clockwork, moving parts (null if item has no moving parts)
+Each score must be INDEPENDENTLY assessed. A piece can have excellent patina (9/10) but poor structural integrity (4/10).`;
 }
 
 export function getCarBotPrompt(ctx: PromptContext): string {

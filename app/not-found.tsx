@@ -14,12 +14,14 @@ export default function NotFound() {
       <p style={{ color: "var(--text-muted)", marginBottom: "2rem", lineHeight: 1.5 }}>
         The page you&apos;re looking for doesn&apos;t exist or may have been moved.
       </p>
-      <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
-        <Link href="/dashboard" className="btn-primary" style={{ padding: "0.7rem 1.5rem", fontSize: "0.9rem", borderRadius: "0.6rem" }}>
-          Go to Dashboard
-        </Link>
-        <Link href="/" className="btn-ghost" style={{ padding: "0.7rem 1.5rem", fontSize: "0.9rem", borderRadius: "0.6rem" }}>
-          Go Home
+      <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+        <Link href="/dashboard" style={{
+          display: "inline-flex", alignItems: "center", gap: "0.35rem",
+          fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+          textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+          border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+        }}>
+          ← Back to Dashboard
         </Link>
       </div>
       <div style={{ marginTop: "2rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>

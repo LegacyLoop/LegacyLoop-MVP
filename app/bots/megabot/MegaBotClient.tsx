@@ -2602,13 +2602,16 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
           {/* Actions */}
           <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
             {selectedId && (
-              <Link href={`/items/${selectedId}`} style={{
-                padding: "0.4rem 1rem", fontSize: "0.75rem", fontWeight: 600, borderRadius: "0.5rem",
-                border: "1px solid var(--accent)", background: "transparent", color: "var(--accent)",
-                textDecoration: "none",
-              }}>
-                🔙 Back to Item Dashboard
-              </Link>
+              <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+                <Link href={`/items/${selectedId}`} style={{
+                  display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                  fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+                  textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+                  border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+                }}>
+                  ← Back to Item
+                </Link>
+              </div>
             )}
             <button onClick={() => setShowJson(!showJson)} style={{
               padding: "0.35rem 0.85rem", fontSize: "0.75rem", fontWeight: 600, borderRadius: "0.5rem",

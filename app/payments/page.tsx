@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { TIERS, TIER_NUMBER_TO_KEY, PROCESSING_FEE } from "@/lib/constants/pricing";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Earnings & Payouts · LegacyLoop",
@@ -141,6 +142,7 @@ export default async function PaymentsPage() {
 
   return (
     <div className="mx-auto max-w-6xl">
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Payments" }]} />
       {/* Header */}
       <div
         style={{

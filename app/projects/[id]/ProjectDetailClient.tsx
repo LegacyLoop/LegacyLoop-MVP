@@ -939,6 +939,16 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
           </div>
         )}
       </div>
+      <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+        <Link href="/projects" style={{
+          display: "inline-flex", alignItems: "center", gap: "0.35rem",
+          fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+          textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+          border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+        }}>
+          ← Back to Projects
+        </Link>
+      </div>
     </div>
   );
 }

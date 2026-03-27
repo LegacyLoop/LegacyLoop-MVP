@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import Link from "next/link";
 
 const AI_ENGINES = [
   { key: "openai", name: "GPT-4o", color: "#10a37f", label: "Pricing", icon: "💰", runLabel: "Analyzing Pricing..." },
@@ -138,12 +139,16 @@ function MarketReportInner() {
           marginBottom: 28,
         }}
       >
-        <a
-          href="/marketplace"
-          style={{ fontSize: 12, color: "var(--text-muted)", textDecoration: "none", marginBottom: 12, display: "inline-block" }}
-        >
-          ← Back to Store
-        </a>
+        <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+          <Link href="/marketplace" style={{
+            display: "inline-flex", alignItems: "center", gap: "0.35rem",
+            fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+            textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+            border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+          }}>
+            ← Back to Marketplace
+          </Link>
+        </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
           <div>
             <h1 style={{ fontSize: 26, fontWeight: 800, color: "#fff", margin: 0 }}>

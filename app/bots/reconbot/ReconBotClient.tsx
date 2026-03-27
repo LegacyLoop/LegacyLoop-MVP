@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
+import Link from "next/link";
 import BotItemSelector from "../BotItemSelector";
 import BotLoadingState from "@/app/components/BotLoadingState";
 
@@ -1182,6 +1183,19 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
               </div>
             )}
           </Card>
+        </div>
+      )}
+
+      {selectedId && (
+        <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+          <Link href={`/items/${selectedId}`} style={{
+            display: "inline-flex", alignItems: "center", gap: "0.35rem",
+            fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+            textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+            border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+          }}>
+            ← Back to Item
+          </Link>
         </div>
       )}
     </>

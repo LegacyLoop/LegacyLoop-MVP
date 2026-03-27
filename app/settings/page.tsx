@@ -2,6 +2,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import SettingsClient from "./SettingsClient";
 import ThemeSettings from "./ThemeSettings";
 import ChangePasswordSection from "./ChangePasswordSection";
@@ -27,6 +28,8 @@ export default async function SettingsPage() {
 
   return (
     <div style={{ maxWidth: "680px", margin: "0 auto" }}>
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Settings" }]} />
+
       <div style={{ marginBottom: "2rem" }}>
         <div className="section-title">Account</div>
         <h1 className="h1 mt-2">Settings</h1>
@@ -93,6 +96,17 @@ export default async function SettingsPage() {
             Manage Subscription
           </Link>
         </div>
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+        <Link href="/dashboard" style={{
+          display: "inline-flex", alignItems: "center", gap: "0.35rem",
+          fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+          textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+          border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+        }}>
+          ← Back to Dashboard
+        </Link>
       </div>
     </div>
   );

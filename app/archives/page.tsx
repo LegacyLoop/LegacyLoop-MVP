@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import ArchivesClient from "./ArchivesClient";
 import { safeJson } from "@/lib/utils/json";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Legacy Archives · LegacyLoop",
@@ -38,5 +39,10 @@ export default async function ArchivesPage() {
     };
   });
 
-  return <ArchivesClient items={serialized} />;
+  return (
+    <>
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Legacy Archives" }]} />
+      <ArchivesClient items={serialized} />
+    </>
+  );
 }

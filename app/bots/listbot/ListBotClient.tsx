@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import BotItemSelector from "../BotItemSelector";
 import BotLoadingState from "@/app/components/BotLoadingState";
 
@@ -1464,13 +1465,16 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
               <button onClick={() => setShowPostAll(true)} className="btn-primary" style={{ padding: "0.5rem 1.25rem", fontSize: "0.78rem" }}>
                 🚀 Post to All
               </button>
-              <a href={`/items/${selectedId}`} style={{
-                padding: "0.5rem 1.25rem", fontSize: "0.78rem", fontWeight: 600, borderRadius: "0.5rem",
-                border: "1px solid var(--border-default)", background: "transparent",
-                color: "var(--text-muted)", textDecoration: "none", display: "inline-flex", alignItems: "center",
-              }}>
-                🔙 Back to Item
-              </a>
+              <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+                <Link href={`/items/${selectedId}`} style={{
+                  display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                  fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+                  textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+                  border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+                }}>
+                  ← Back to Item
+                </Link>
+              </div>
             </div>
           </div>
         </div>

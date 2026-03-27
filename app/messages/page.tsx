@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import MessagesClient from "./MessagesClient";
 import MessagesAgentWrapper from "./MessagesAgentWrapper";
 import { safeJson } from "@/lib/utils/json";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export default async function MessagesPage() {
   const user = await authAdapter.getSession();
@@ -69,6 +70,7 @@ export default async function MessagesPage() {
 
   return (
     <MessagesAgentWrapper>
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Messages" }]} />
       <div style={{ width: "100%", height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
         {itemsForForm.length === 0 ? (
           <div style={{ padding: 40, textAlign: "center" }}>

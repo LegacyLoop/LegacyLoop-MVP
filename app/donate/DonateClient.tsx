@@ -154,9 +154,16 @@ export default function DonateClient({ items }: Props) {
           <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
             Items have been marked as completed in your inventory.
           </p>
-          <Link href="/dashboard" className="btn-primary block text-center">
-            Back to dashboard →
-          </Link>
+          <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+            <Link href="/dashboard" style={{
+              display: "inline-flex", alignItems: "center", gap: "0.35rem",
+              fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+              textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+              border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+            }}>
+              ← Back to Dashboard
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -204,7 +211,16 @@ export default function DonateClient({ items }: Props) {
             <div style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
               <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>📦</div>
               <p>No eligible items found. All items may already be sold or completed.</p>
-              <Link href="/dashboard" className="btn-ghost" style={{ display: "inline-block", marginTop: "1rem" }}>Back to dashboard</Link>
+              <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+                <Link href="/dashboard" style={{
+                  display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                  fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+                  textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+                  border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+                }}>
+                  ← Back to Dashboard
+                </Link>
+              </div>
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>

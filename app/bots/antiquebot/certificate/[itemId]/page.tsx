@@ -41,7 +41,16 @@ export default async function CertificatePage({ params }: { params: Params }) {
       <p style={{ color: "var(--text-primary)", fontWeight: 600 }}>Certificate Not Available</p>
       <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: "0.5rem" }}>Authenticity certificates require a Gold tier score (34+). Current score: {scoreResult.score}/100.</p>
       <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginTop: "0.5rem" }}>Run AntiqueBot to increase your score.</p>
-      <Link href={`/items/${itemId}`} style={{ display: "inline-block", marginTop: "1rem", padding: "0.5rem 1.25rem", borderRadius: "0.5rem", background: "var(--accent)", color: "#fff", fontWeight: 600, fontSize: "0.85rem", textDecoration: "none" }}>Back to Item</Link>
+      <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+        <Link href={`/items/${itemId}`} style={{
+          display: "inline-flex", alignItems: "center", gap: "0.35rem",
+          fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+          textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+          border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+        }}>
+          ← Back to Item
+        </Link>
+      </div>
     </div>;
   }
 
@@ -56,10 +65,7 @@ export default async function CertificatePage({ params }: { params: Params }) {
   return (
     <div style={{ maxWidth: "680px", margin: "2rem auto", padding: "0 1rem" }}>
       {/* Print button — hidden in print */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }} className="no-print">
-        <Link href={`/items/${itemId}`} style={{ color: "var(--accent)", fontSize: "0.85rem", fontWeight: 600, textDecoration: "none" }}>
-          ← Back to Item
-        </Link>
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: "1.5rem" }} className="no-print">
         <PrintButton />
       </div>
 
@@ -193,6 +199,17 @@ export default async function CertificatePage({ params }: { params: Params }) {
             {analysisDate} · Item ID: {item.id.slice(0, 12)}
           </div>
         </div>
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }} className="no-print">
+        <Link href={`/items/${itemId}`} style={{
+          display: "inline-flex", alignItems: "center", gap: "0.35rem",
+          fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+          textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+          border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+        }}>
+          ← Back to Item
+        </Link>
       </div>
     </div>
   );

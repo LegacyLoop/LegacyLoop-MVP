@@ -2,6 +2,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import IntegrationsClient from "./IntegrationsClient";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata = { title: "Platform Integrations — LegacyLoop" };
 
@@ -14,6 +15,8 @@ export default async function IntegrationsPage() {
   }).catch((e) => { console.error("[integrations] platforms query failed:", e); return []; });
 
   return (
+    <>
+    <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Integrations" }]} />
     <IntegrationsClient
       connectedPlatforms={platforms.map((p) => ({
         platform: p.platform,
@@ -22,5 +25,6 @@ export default async function IntegrationsPage() {
         lastSync: p.lastSync?.toISOString() ?? null,
       }))}
     />
+    </>
   );
 }

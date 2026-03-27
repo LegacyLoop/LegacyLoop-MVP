@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 
 // ── Platform definitions ────────────────────────────────────────────────────
 
@@ -174,7 +175,16 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
     <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px 100px" }}>
       {/* ── HEADER ── */}
       <div style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.08), transparent)", borderBottom: "1px solid rgba(0,188,212,0.12)", padding: "24px 0 20px", marginBottom: "20px" }}>
-        <a href={`/items/${itemId}`} style={{ display: "inline-block", marginBottom: "12px", fontSize: "0.78rem", color: "var(--text-muted)", textDecoration: "none", border: "1px solid var(--border-default)", borderRadius: "0.4rem", padding: "0.35rem 0.75rem" }}>{"\u2190"} Back to Item</a>
+        <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
+          <Link href={`/items/${itemId}`} style={{
+            display: "inline-flex", alignItems: "center", gap: "0.35rem",
+            fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
+            textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+            border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+          }}>
+            ← Back to Item
+          </Link>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
           {itemPhoto && <img src={itemPhoto} alt="" style={{ width: 64, height: 64, borderRadius: 10, objectFit: "cover", border: "2px solid rgba(0,188,212,0.3)" }} />}
           <div style={{ flex: 1, minWidth: 0 }}>

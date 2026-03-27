@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import type { Metadata } from "next";
 import ProjectsClient from "./ProjectsClient";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = { title: "Projects · LegacyLoop" };
 
@@ -79,6 +80,7 @@ export default async function ProjectsPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Projects" }]} />
       <ProjectsClient projects={serialized} unassignedItems={unassigned} />
     </div>
   );
