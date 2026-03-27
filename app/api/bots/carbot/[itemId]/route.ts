@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import OpenAI from "openai";
 import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { logUserEvent } from "@/lib/data/user-events";
+import { getVehicleHistoryReport, decodeVinNHTSA } from "@/lib/vehicle/nhtsa";
 import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 
@@ -138,6 +139,30 @@ export async function POST(
     const estimatedMid = v?.mid ? Math.round(v.mid) : v ? Math.round((v.low + v.high) / 2) : 0;
     const sellerZip = item.saleZip || "04901";
 
+    // ── NHTSA VEHICLE HISTORY (recalls, complaints, safety ratings) ──
+    let nhtsaReport: any = null;
+    const vYear = vehData.year || ai.vehicle_year;
+    const vMake = vehData.make || ai.vehicle_make;
+    const vModel = vehData.model || ai.vehicle_model;
+    if (vMake && vModel && vYear) {
+      try {
+        nhtsaReport = await getVehicleHistoryReport(String(vMake), String(vModel), String(vYear));
+        console.log(`[CarBot] NHTSA report: ${nhtsaReport.recalls.count} recalls, ${nhtsaReport.complaints.count} complaints`);
+      } catch (e) {
+        console.warn("[CarBot] NHTSA fetch failed:", e);
+      }
+    }
+
+    // If VIN is provided and we don't have decoded data yet, decode it via NHTSA
+    let vinDecoded = vehData.vinDecoded || null;
+    if (vehData.vin && !vinDecoded) {
+      try {
+        vinDecoded = await decodeVinNHTSA(vehData.vin);
+      } catch (e) {
+        console.warn("[CarBot] VIN decode failed:", e);
+      }
+    }
+
     // Build seller context from saved vehicle data
     let sellerContext = "";
     if (vehData.vin) sellerContext += `\n- VIN: ${vehData.vin}`;
@@ -155,6 +180,22 @@ export async function POST(
     if (vehData.knownIssues) sellerContext += `\n- Known Issues: ${vehData.knownIssues}`;
     if (vehData.recentService) sellerContext += `\n- Recent Service/Repairs: ${vehData.recentService}`;
     if (vehData.askingPrice) sellerContext += `\n- Seller's Asking Price: $${vehData.askingPrice}`;
+
+    // Append NHTSA data to seller context
+    if (nhtsaReport) {
+      sellerContext += `\n\nNHTSA VEHICLE HISTORY (Real Federal Data):`;
+      sellerContext += `\nRecalls: ${nhtsaReport.recalls.count} active recalls`;
+      if (nhtsaReport.recalls.items.length > 0) {
+        sellerContext += nhtsaReport.recalls.items.slice(0, 5).map((r: any) => `\n  - ${r.component}: ${r.summary.slice(0, 150)}`).join("");
+      }
+      sellerContext += `\nComplaints: ${nhtsaReport.complaints.count} consumer complaints filed`;
+      if (nhtsaReport.complaints.items.length > 0) {
+        sellerContext += nhtsaReport.complaints.items.slice(0, 3).map((c: any) => `\n  - ${c.component}: ${c.summary.slice(0, 100)}`).join("");
+      }
+      sellerContext += nhtsaReport.safetyRatings
+        ? `\nSafety Rating: ${nhtsaReport.safetyRatings.overallRating}/5 stars (NHTSA)`
+        : `\nSafety Rating: Not available for this model year`;
+    }
 
     // ── CROSS-BOT ENRICHMENT ──
     const enrichment = await getItemEnrichmentContext(itemId, "carbot").catch(() => null);
@@ -175,6 +216,8 @@ Vehicle data from seller/AI:
 - Seller's estimated value: $${estimatedLow} – $${estimatedHigh}
 - Location ZIP: ${sellerZip}
 
+VIN EXTRACTION FROM PHOTOS: Carefully examine ALL vehicle photos for visible VIN numbers. VINs appear on: the dashboard (visible through windshield, lower driver side), driver door jamb sticker, engine bay sticker, or vehicle registration/title documents. If you can read ANY part of a VIN, include it in the vin_from_photo field. Even a partial VIN is valuable. Also look for mileage on any visible odometer reading.
+
 Analyze the vehicle and provide a COMPREHENSIVE vehicle evaluation.
 
 Return a JSON object:
@@ -193,6 +236,8 @@ Return a JSON object:
     "color_exterior": "string",
     "color_interior": "string if visible",
     "vin_decoded": "If VIN visible, decode what you can",
+    "vin_from_photo": "VIN number extracted from photos (full or partial), or null if no VIN visible",
+    "odometer_from_photo": "Odometer reading extracted from photos, or null if not visible",
     "identification_confidence": number (0-100)
   },
   "condition_assessment": {
@@ -356,9 +401,13 @@ IMPORTANT:
       if (carbotResult[key] === undefined) carbotResult[key] = null;
     }
 
-    // Store in EventLog
+    // Store in EventLog (include NHTSA + VIN decode data alongside AI result)
     await prisma.eventLog.create({
-      data: { itemId, eventType: "CARBOT_RESULT", payload: JSON.stringify(carbotResult) },
+      data: { itemId, eventType: "CARBOT_RESULT", payload: JSON.stringify({
+        ...carbotResult,
+        nhtsaReport: nhtsaReport || null,
+        vinDecoded: vinDecoded || null,
+      }) },
     });
     await prisma.eventLog.create({
       data: { itemId, eventType: "CARBOT_RUN", payload: JSON.stringify({ userId: user.id, timestamp: new Date().toISOString() }) },
@@ -380,7 +429,11 @@ IMPORTANT:
     // Fire-and-forget: log user event
     logUserEvent(user.id, "BOT_RUN", { itemId, metadata: { botType: "CARBOT", success: true } }).catch(() => null);
 
-    return NextResponse.json({ success: true, result: carbotResult, isDemo: !!carbotResult._isDemo });
+    return NextResponse.json({
+      success: true,
+      result: { ...carbotResult, nhtsaReport: nhtsaReport || null, vinDecoded: vinDecoded || null },
+      isDemo: !!carbotResult._isDemo,
+    });
   } catch (e) {
     console.error("[carbot POST]", e);
     return NextResponse.json({ error: "CarBot analysis failed" }, { status: 500 });

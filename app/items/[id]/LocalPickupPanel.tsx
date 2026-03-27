@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PROCESSING_FEE } from "@/lib/constants/pricing";
 
 function AccordionHeader({
@@ -56,6 +56,15 @@ function AccordionHeader({
   );
 }
 
+interface CarBotPickupData {
+  viewing_location?: string;
+  safety_tips?: string[];
+  payment_methods?: string;
+  title_transfer_checklist?: string[];
+  state_specific_notes?: string;
+  test_drive_tips?: string[];
+}
+
 interface Props {
   itemId: string;
   saleZip: string | null;
@@ -66,6 +75,7 @@ interface Props {
   isAntique?: boolean;
   itemDimensions?: string | null;
   listingPrice?: number;
+  carBotPickup?: CarBotPickupData | null;
 }
 
 const RADIUS_OPTIONS = [10, 25, 50, 100];
@@ -99,8 +109,23 @@ const PAYMENT_OPTIONS = [
 ];
 
 export default function LocalPickupPanel({
-  itemId, saleZip, saleRadius, isVehicle, itemWeight, isFragile, isAntique, itemDimensions, listingPrice,
+  itemId, saleZip, saleRadius, isVehicle, itemWeight, isFragile, isAntique, itemDimensions, listingPrice, carBotPickup: carBotPickupProp,
 }: Props) {
+  const [fetchedPickup, setFetchedPickup] = useState<CarBotPickupData | null>(null);
+
+  // Self-fetch CarBot pickup data when isVehicle and no prop provided
+  useEffect(() => {
+    if (!isVehicle || carBotPickupProp) return;
+    fetch(`/api/bots/carbot/${itemId}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => {
+        const pickup = d?.result?.local_pickup_plan || d?.result?.pickup_plan || null;
+        if (pickup) setFetchedPickup(pickup);
+      })
+      .catch(() => null);
+  }, [itemId, isVehicle, carBotPickupProp]);
+
+  const carBotPickup = carBotPickupProp || fetchedPickup;
   const [selectedRadius, setSelectedRadius] = useState(saleRadius || 25);
   const [pickupDate, setPickupDate] = useState("");
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
@@ -687,6 +712,93 @@ export default function LocalPickupPanel({
               Buyer must bring their own insurance for test drive
             </div>
           )}
+        </div>
+      )}
+
+      {/* CarBot Pickup Intelligence */}
+      {isVehicle && carBotPickup && (
+        <div style={{
+          marginTop: "1rem", padding: "0.85rem 1rem",
+          background: "rgba(0,188,212,0.04)",
+          border: "1px solid rgba(0,188,212,0.15)",
+          borderRadius: "0.65rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.5rem" }}>
+            <span style={{ fontSize: "0.85rem" }}>🤖</span>
+            <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>CarBot Pickup Intelligence</span>
+            <span style={{ fontSize: "0.5rem", padding: "1px 6px", borderRadius: "4px", background: "rgba(76,175,80,0.1)", color: "#4caf50", fontWeight: 600, marginLeft: "auto" }}>AI</span>
+          </div>
+
+          {carBotPickup.viewing_location && (
+            <div style={{ padding: "0.5rem 0.6rem", background: "rgba(245,158,11,0.06)", borderRadius: "0.4rem", borderLeft: "3px solid #f59e0b", marginBottom: "0.5rem" }}>
+              <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "#f59e0b", textTransform: "uppercase" as const, marginBottom: "0.15rem" }}>Recommended Viewing Location</div>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>{carBotPickup.viewing_location}</div>
+            </div>
+          )}
+
+          {carBotPickup.safety_tips && carBotPickup.safety_tips.length > 0 && (
+            <div style={{ marginBottom: "0.5rem" }}>
+              <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "#ef4444", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.2rem" }}>🛡️ Safety Guidelines</div>
+              {carBotPickup.safety_tips.map((tip: string, i: number) => (
+                <div key={i} style={{ fontSize: "0.68rem", color: "var(--text-secondary)", padding: "0.2rem 0", lineHeight: 1.4 }}>
+                  {i + 1}. {tip}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {carBotPickup.title_transfer_checklist && carBotPickup.title_transfer_checklist.length > 0 && (
+            <div style={{ marginBottom: "0.5rem" }}>
+              <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.2rem" }}>📋 Title Transfer Checklist</div>
+              {carBotPickup.title_transfer_checklist.map((step: string, i: number) => (
+                <div key={i} style={{ fontSize: "0.68rem", color: "var(--text-secondary)", padding: "0.15rem 0", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                  <span style={{ fontSize: "0.6rem" }}>☐</span> {step}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {carBotPickup.state_specific_notes && (
+            <div style={{ padding: "0.4rem 0.6rem", background: "rgba(0,188,212,0.06)", borderRadius: "0.35rem", borderLeft: "3px solid #00bcd4", fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>
+              <span style={{ fontWeight: 700, color: "#00bcd4" }}>State Note: </span>{carBotPickup.state_specific_notes}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Vehicle Transport Options */}
+      {isVehicle && (
+        <div style={{
+          marginTop: "0.75rem", padding: "0.65rem 0.85rem",
+          background: "var(--ghost-bg)",
+          border: "1px solid var(--border-default)",
+          borderRadius: "0.5rem",
+        }}>
+          <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.3rem" }}>
+            🚚 Buyer Wants It Shipped?
+          </div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: "0 0 0.4rem" }}>
+            If your buyer can&apos;t pick up locally, they can arrange professional vehicle transport. Share these options:
+          </p>
+          <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" as const }}>
+            {[
+              { name: "uShip", desc: "Marketplace — buyers bid on transport", color: "#00bcd4" },
+              { name: "Montway", desc: "Fixed-price nationwide transport", color: "#4ade80" },
+              { name: "Central Dispatch", desc: "Dealer-grade carrier network", color: "#f59e0b" },
+            ].map((svc) => (
+              <div key={svc.name} style={{
+                padding: "0.35rem 0.55rem", borderRadius: "0.4rem",
+                background: `${svc.color}08`, border: `1px solid ${svc.color}25`,
+                fontSize: "0.62rem", textAlign: "center" as const, flex: "1 1 0", minWidth: "80px",
+              }}>
+                <div style={{ fontWeight: 700, color: svc.color }}>{svc.name}</div>
+                <div style={{ color: "var(--text-muted)", fontSize: "0.55rem", marginTop: "0.1rem" }}>{svc.desc}</div>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: "0.58rem", color: "var(--text-muted)", margin: "0.35rem 0 0", fontStyle: "italic" }}>
+            Transport is arranged and paid by the buyer. LegacyLoop does not handle vehicle shipping directly.
+          </p>
         </div>
       )}
 

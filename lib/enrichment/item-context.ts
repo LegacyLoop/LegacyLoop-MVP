@@ -348,16 +348,53 @@ function extractCollectiblesBot(d: any): string | null {
 
 function extractCarBot(d: any): string | null {
   const parts: string[] = [];
+
+  // Vehicle identification
   const id = d.identification;
-  if (id?.year && id?.make && id?.model) parts.push(`Vehicle: ${id.year} ${id.make} ${id.model}${id.trim ? ` ${id.trim}` : ""}`);
+  if (id?.year && id?.make && id?.model) {
+    parts.push(`Vehicle: ${id.year} ${id.make} ${id.model}${id.trim ? ` ${id.trim}` : ""}`);
+  }
+  if (id?.body_style) parts.push(`Body: ${id.body_style}`);
+  if (id?.drivetrain) parts.push(`Drive: ${id.drivetrain}`);
+  if (id?.engine) parts.push(`Engine: ${id.engine}`);
+  if (id?.vin_from_photo) parts.push(`VIN (photo): ${id.vin_from_photo}`);
+
+  // Condition — all 3 sub-scores + overall
   if (d.condition_assessment?.overall_grade) parts.push(`Grade: ${d.condition_assessment.overall_grade}`);
-  if (d.valuation?.private_party_value?.mid) parts.push(`Private Party: $${d.valuation.private_party_value.mid}`);
-  if (d.valuation?.retail_value?.mid) parts.push(`Retail: $${d.valuation.retail_value.mid}`);
+  const ext = d.condition_assessment?.exterior?.score;
+  const int_ = d.condition_assessment?.interior?.score;
+  const mech = d.condition_assessment?.mechanical?.score;
+  if (ext != null || int_ != null || mech != null) {
+    parts.push(`Condition: Ext ${ext ?? "?"}/10, Int ${int_ ?? "?"}/10, Mech ${mech ?? "?"}/10`);
+  }
+
+  // Valuation — all 3 types
+  if (d.valuation?.private_party_value?.mid) parts.push(`Private Party: $${Math.round(d.valuation.private_party_value.mid).toLocaleString()}`);
+  if (d.valuation?.retail_value?.mid) parts.push(`Retail: $${Math.round(d.valuation.retail_value.mid).toLocaleString()}`);
+  if (d.valuation?.trade_in_value?.mid) parts.push(`Trade-In: $${Math.round(d.valuation.trade_in_value.mid).toLocaleString()}`);
+
+  // NHTSA real government data
+  const nhtsa = d.nhtsaReport;
+  if (nhtsa) {
+    if (nhtsa.recalls?.count > 0) parts.push(`NHTSA Recalls: ${nhtsa.recalls.count} active`);
+    if (nhtsa.complaints?.count > 0) parts.push(`NHTSA Complaints: ${nhtsa.complaints.count} filed`);
+    if (nhtsa.safetyRatings?.overallRating) parts.push(`Safety: ${nhtsa.safetyRatings.overallRating}/5 stars (NHTSA)`);
+  }
+
+  // Market intelligence
   if (d.market_analysis?.demand_level) parts.push(`Demand: ${d.market_analysis.demand_level}`);
+  if (d.market_analysis?.time_to_sell_estimate) parts.push(`Time to Sell: ${d.market_analysis.time_to_sell_estimate}`);
+  if (d.selling_strategy?.listing_price) parts.push(`List Price: $${Math.round(d.selling_strategy.listing_price).toLocaleString()}`);
+
+  // History + reliability
   if (d.vehicle_history_context?.common_problems?.length) {
     parts.push(`Common Issues: ${d.vehicle_history_context.common_problems.slice(0, 3).join(", ")}`);
   }
-  if (d.executive_summary) parts.push(`Expert: ${String(d.executive_summary).slice(0, 150)}`);
+  if (d.vehicle_history_context?.reliability_rating) parts.push(`Reliability: ${d.vehicle_history_context.reliability_rating}`);
+
+  // Expert summary (200 chars)
+  if (d.executive_summary) parts.push(`Expert: ${String(d.executive_summary).slice(0, 200)}`);
+
   return parts.length ? parts.join(" · ") : null;
 }
 

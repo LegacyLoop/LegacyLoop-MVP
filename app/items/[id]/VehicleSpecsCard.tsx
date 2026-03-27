@@ -14,6 +14,8 @@ interface Props {
   conditionInterior?: number;  // 1-10
   conditionMechanical?: number; // 1-10
   saleMethod?: string;
+  nhtsaSafetyRating?: number | null;
+  nhtsaRecallCount?: number | null;
 }
 
 function ratingColor(score: number | undefined): string {
@@ -47,6 +49,8 @@ export default function VehicleSpecsCard({
   conditionInterior,
   conditionMechanical,
   saleMethod,
+  nhtsaSafetyRating,
+  nhtsaRecallCount,
 }: Props) {
   const ymm = [year, make, model].filter(Boolean).join(" ");
   const showLocalBanner =
@@ -204,6 +208,42 @@ export default function VehicleSpecsCard({
           ))}
         </div>
       </div>
+
+      {/* NHTSA Summary */}
+      {(nhtsaSafetyRating != null || nhtsaRecallCount != null) && (
+        <div
+          style={{
+            display: "flex",
+            gap: "0.75rem",
+            alignItems: "center",
+            padding: "0.55rem 0.75rem",
+            margin: "0 1.25rem 0",
+            background: "rgba(0,188,212,0.04)",
+            border: "1px solid rgba(0,188,212,0.12)",
+            borderRadius: "0.5rem",
+          }}
+        >
+          {nhtsaSafetyRating != null && (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <span style={{ fontSize: "0.65rem" }}>⭐</span>
+              <div>
+                <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Safety</div>
+                <div style={{ fontSize: "0.78rem", fontWeight: 800, color: nhtsaSafetyRating >= 4 ? "#4ade80" : nhtsaSafetyRating >= 3 ? "#f59e0b" : "#ef4444" }}>{nhtsaSafetyRating}/5</div>
+              </div>
+            </div>
+          )}
+          {nhtsaRecallCount != null && (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+              <span style={{ fontSize: "0.65rem" }}>{nhtsaRecallCount > 0 ? "🚨" : "✅"}</span>
+              <div>
+                <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Recalls</div>
+                <div style={{ fontSize: "0.78rem", fontWeight: 700, color: nhtsaRecallCount > 0 ? "#ef4444" : "#4ade80" }}>{nhtsaRecallCount > 0 ? `${nhtsaRecallCount} active` : "Clear"}</div>
+              </div>
+            </div>
+          )}
+          <span style={{ fontSize: "0.48rem", padding: "1px 5px", borderRadius: "3px", background: "rgba(76,175,80,0.1)", color: "#4caf50", fontWeight: 600, marginLeft: "auto" }}>NHTSA</span>
+        </div>
+      )}
 
       {/* LOCAL PICKUP ONLY banner */}
       {showLocalBanner && (

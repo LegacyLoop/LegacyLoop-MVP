@@ -52,3 +52,5 @@ next-env.d.ts
 # Temp files
 /tmp/
 /public/uploads/
+.claude/worktrees/
+.claude/worktrees/

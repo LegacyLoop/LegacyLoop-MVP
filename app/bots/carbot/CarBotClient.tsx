@@ -428,6 +428,12 @@ export default function CarBotClient({ items }: { items: Item[] }) {
   const strategy = result?.selling_strategy;
   const pickup = result?.local_pickup_plan;
   const fun = result?.fun_facts;
+  const nhtsaReport = result?.nhtsaReport;
+  const nhtsaRecalls = nhtsaReport?.recalls?.items || [];
+  const nhtsaComplaints = nhtsaReport?.complaints?.items || [];
+  const nhtsaSafety = nhtsaReport?.safetyRatings;
+  const vinFromPhoto = result?.identification?.vin_from_photo || result?.vin_from_photo;
+  const odometerFromPhoto = result?.identification?.odometer_from_photo || result?.odometer_from_photo;
 
   return (
     <div>
@@ -749,6 +755,29 @@ export default function CarBotClient({ items }: { items: Item[] }) {
       {/* Results */}
       {result && selected && isVehicle && (
         <div>
+          {/* Freshness Indicator */}
+          {selected?.carBotRunAt && (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.75rem", fontSize: "0.68rem", color: "var(--text-muted)" }}>
+              <span>🕐</span>
+              <span>Last evaluated: {(() => {
+                const diff = Date.now() - new Date(selected.carBotRunAt).getTime();
+                const hours = Math.floor(diff / 3600000);
+                if (hours < 1) return "Just now";
+                if (hours < 24) return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
+                const days = Math.floor(hours / 24);
+                return `${days} day${days !== 1 ? "s" : ""} ago`;
+              })()}</span>
+              {(() => {
+                const diff = Date.now() - new Date(selected.carBotRunAt).getTime();
+                const hours = Math.floor(diff / 3600000);
+                return hours > 72 ? (
+                  <span style={{ fontSize: "0.55rem", padding: "1px 6px", borderRadius: "4px", background: "rgba(245,158,11,0.1)", color: "#f59e0b", fontWeight: 600 }}>Consider re-running</span>
+                ) : (
+                  <span style={{ fontSize: "0.55rem", padding: "1px 6px", borderRadius: "4px", background: "rgba(76,175,80,0.1)", color: "#4caf50", fontWeight: 600 }}>Fresh</span>
+                );
+              })()}
+            </div>
+          )}
           {/* Section A — Vehicle ID Hero */}
           {ident && (
             <div style={{
@@ -807,6 +836,47 @@ export default function CarBotClient({ items }: { items: Item[] }) {
             <div style={{ fontSize: "0.65rem", fontWeight: 700, color: AUTO_BLUE, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.85rem" }}>
               Vehicle Data
             </div>
+
+            {/* VIN Photo Suggestion */}
+            <div style={{ padding: "0.65rem 0.85rem", marginBottom: "0.65rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "0.5rem", display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
+              <span style={{ fontSize: "1.1rem", flexShrink: 0, marginTop: "0.1rem" }}>📷</span>
+              <div>
+                <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.2rem" }}>Pro Tip: Our AI Can Read Your VIN</div>
+                <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: 0 }}>Upload a clear photo of your VIN plate and our AI will extract it automatically. VIN locations: dashboard (through windshield), driver door jamb, or engine bay.</p>
+                <p style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4, margin: "0.2rem 0 0", fontStyle: "italic" }}>A decoded VIN unlocks recall history, safety ratings, and complete factory specifications.</p>
+              </div>
+            </div>
+
+            {/* VIN Detected from Photos */}
+            {vinFromPhoto && (
+              <div style={{ padding: "0.6rem 0.85rem", marginBottom: "0.75rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.2)", borderRadius: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <span style={{ fontSize: "1rem" }}>🔍</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4caf50", marginBottom: "0.1rem" }}>VIN Detected in Vehicle Photos</div>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)", fontFamily: "monospace", letterSpacing: "0.12em" }}>{vinFromPhoto}</div>
+                </div>
+                {!vin && (
+                  <button onClick={() => { setVin(formatVin(vinFromPhoto)); }} style={{ padding: "0.35rem 0.75rem", fontSize: "0.72rem", fontWeight: 700, background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", border: "none", borderRadius: "0.4rem", cursor: "pointer", minHeight: "44px" }}>
+                    Use This VIN
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Odometer Detected from Photos */}
+            {odometerFromPhoto && (
+              <div style={{ padding: "0.4rem 0.85rem", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                <span style={{ fontSize: "0.75rem" }}>🔢</span>
+                <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+                  Odometer detected: <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>{odometerFromPhoto} miles</span>
+                </span>
+                {!mileage && (
+                  <button onClick={() => setMileage(String(odometerFromPhoto).replace(/[^\d]/g, ""))} style={{ padding: "0.2rem 0.5rem", fontSize: "0.62rem", fontWeight: 600, background: "rgba(0,188,212,0.1)", color: "#00bcd4", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "0.3rem", cursor: "pointer" }}>
+                    Use This Reading
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* VIN Input */}
             <div style={{ marginBottom: "1rem" }}>
@@ -1060,6 +1130,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
               { key: "condition", label: "📋 Condition", show: !!cond },
               { key: "valuation", label: "💰 Valuation", show: !!val },
               { key: "history", label: "🔧 History", show: !!hist },
+              { key: "nhtsa", label: "📋 NHTSA", show: !!(nhtsaRecalls.length > 0 || nhtsaComplaints.length > 0 || nhtsaSafety) },
               { key: "market", label: "📊 Market", show: !!market },
               { key: "strategy", label: "🏷️ Strategy", show: !!strategy },
               { key: "pickup", label: "📍 Pickup", show: !!pickup },
@@ -1117,6 +1188,8 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                     conditionInterior={cond.interior?.score}
                     conditionMechanical={cond.mechanical?.score}
                     saleMethod="LOCAL_PICKUP"
+                    nhtsaSafetyRating={nhtsaSafety?.overallRating != null ? Number(nhtsaSafety.overallRating) : null}
+                    nhtsaRecallCount={nhtsaRecalls?.length ?? null}
                   />
                 </div>
 
@@ -1303,6 +1376,76 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                         ))}
                       </div>
                     )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── NHTSA Tab ── */}
+            {activeTab === "nhtsa" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {/* Data Source Banner */}
+                <div style={{ padding: "0.5rem 0.75rem", background: "rgba(76,175,80,0.06)", borderRadius: "0.5rem", border: "1px solid rgba(76,175,80,0.2)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <span style={{ fontSize: "0.5rem", padding: "2px 6px", borderRadius: "4px", background: "rgba(76,175,80,0.15)", color: "#4caf50", fontWeight: 700 }}>VERIFIED DATA</span>
+                  <span style={{ fontSize: "0.68rem", color: "var(--text-secondary)" }}>Source: National Highway Traffic Safety Administration (NHTSA)</span>
+                </div>
+
+                {/* Safety Rating */}
+                {nhtsaSafety && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.75rem 1rem", background: "rgba(0,188,212,0.04)", borderRadius: "0.65rem", border: "1px solid rgba(0,188,212,0.15)" }}>
+                    <div style={{ textAlign: "center", minWidth: "60px" }}>
+                      <div style={{ fontSize: "2rem", fontWeight: 900, color: Number(nhtsaSafety.overallRating) >= 4 ? "#4ade80" : Number(nhtsaSafety.overallRating) >= 3 ? "#f59e0b" : "#ef4444", lineHeight: 1 }}>{nhtsaSafety.overallRating}</div>
+                      <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>/ 5 Stars</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>NHTSA Safety Rating</div>
+                      <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", lineHeight: 1.4 }}>Government crash test rating for this year, make, and model</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Recalls */}
+                <div>
+                  <div style={{ fontSize: "0.65rem", fontWeight: 700, color: nhtsaRecalls.length > 0 ? "#ef4444" : "#4ade80", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.5rem" }}>
+                    {nhtsaRecalls.length > 0 ? `🚨 ${nhtsaRecalls.length} Active Recalls` : "✅ No Active Recalls Found"}
+                  </div>
+                  {nhtsaRecalls.map((r: any, i: number) => (
+                    <div key={i} style={{ padding: "0.65rem 0.75rem", marginBottom: "0.4rem", borderRadius: "0.5rem", background: "rgba(239,68,68,0.04)", borderLeft: "3px solid rgba(239,68,68,0.4)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.25rem" }}>
+                        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>{r.component}</div>
+                        {r.reportDate && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{r.reportDate}</span>}
+                      </div>
+                      <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: "0 0 0.3rem" }}>{r.summary}</p>
+                      {r.consequence && <p style={{ fontSize: "0.68rem", color: "#ef4444", lineHeight: 1.4, margin: "0 0 0.2rem" }}>Risk: {r.consequence}</p>}
+                      {r.remedy && <p style={{ fontSize: "0.68rem", color: "#4ade80", lineHeight: 1.4, margin: 0 }}>Fix: {r.remedy}</p>}
+                      {r.campaignNumber && <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Campaign: {r.campaignNumber}</div>}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Complaints */}
+                <div>
+                  <div style={{ fontSize: "0.65rem", fontWeight: 700, color: nhtsaComplaints.length > 0 ? "#f59e0b" : "#4ade80", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.5rem" }}>
+                    {nhtsaComplaints.length > 0 ? `⚠️ ${nhtsaComplaints.length} Consumer Complaints` : "✅ No Consumer Complaints Found"}
+                  </div>
+                  {nhtsaComplaints.slice(0, 10).map((c: any, i: number) => (
+                    <div key={i} style={{ padding: "0.55rem 0.75rem", marginBottom: "0.35rem", borderRadius: "0.45rem", background: "rgba(245,158,11,0.04)", borderLeft: "3px solid rgba(245,158,11,0.3)" }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.15rem" }}>{c.component}</div>
+                      <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: 0 }}>{c.summary}</p>
+                      {(c.crash || c.fire) && <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.2rem" }}>
+                        {c.crash && <span style={{ fontSize: "0.55rem", color: "#ef4444", fontWeight: 600 }}>💥 Crash reported</span>}
+                        {c.fire && <span style={{ fontSize: "0.55rem", color: "#ef4444", fontWeight: 600 }}>🔥 Fire reported</span>}
+                      </div>}
+                    </div>
+                  ))}
+                  {nhtsaComplaints.length > 10 && <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", textAlign: "center" }}>Showing 10 of {nhtsaComplaints.length} complaints</div>}
+                </div>
+
+                {/* No data fallback */}
+                {!nhtsaSafety && nhtsaRecalls.length === 0 && nhtsaComplaints.length === 0 && (
+                  <div style={{ textAlign: "center", padding: "1.5rem", color: "var(--text-muted)" }}>
+                    <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>📋</div>
+                    <p style={{ fontSize: "0.82rem", lineHeight: 1.5 }}>No NHTSA data available. Run CarBot with the correct year, make, and model to fetch vehicle history.</p>
                   </div>
                 )}
               </div>
