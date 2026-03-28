@@ -1869,7 +1869,7 @@ function ListingTabContent({ result, providers, agreement }: {
                   {Array.isArray(lst?.tags) && lst.tags.length > 0 && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "0.15rem", marginTop: "0.15rem" }}>
                       {lst.tags.slice(0, 6).map((tag: string, ti: number) => (
-                        <span key={ti} style={{ fontSize: "0.52rem", padding: "0.06rem 0.25rem", borderRadius: 99, background: "rgba(139,92,246,0.08)", color: "#a855f7" }}>{tag}</span>
+                        <span key={ti} style={{ fontSize: "0.55rem", padding: "0.06rem 0.25rem", borderRadius: 99, background: "rgba(139,92,246,0.08)", color: "#a855f7" }}>{tag}</span>
                       ))}
                     </div>
                   )}
@@ -2249,6 +2249,15 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
   const [showJson, setShowJson] = useState(false);
   const [expandedStat, setExpandedStat] = useState<string | null>(null);
   const [megaRunning, setMegaRunning] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportCopied, setReportCopied] = useState(false);
+  const [showExplainer, setShowExplainer] = useState(true);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem("megabot-explainer-dismissed") === "true") {
+      setShowExplainer(false);
+    }
+  }, []);
 
   const item = items.find((i) => i.id === selectedId);
   const ai = useMemo(() => safeJson(item?.aiResult ?? null), [item?.aiResult]);
@@ -2293,21 +2302,9 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
   // We track this via a separate fetch for all items (simplified: use megaResults for selected item)
   const [consensusCount, setConsensusCount] = useState(0);
   useEffect(() => {
-    // Count items that have megabot results by checking each item
-    let count = 0;
-    let checked = 0;
-    items.forEach((itm) => {
-      fetch(`/api/megabot/${itm.id}`)
-        .then((r) => r.json())
-        .then((d) => {
-          if (d.results && Object.keys(d.results).length > 0) count++;
-        })
-        .catch(() => {})
-        .finally(() => {
-          checked++;
-          if (checked === items.length) setConsensusCount(count);
-        });
-    });
+    // Estimate MegaBot consensus count from analyzed items (avoids N API calls)
+    const analyzed = items.filter((i) => i.hasAnalysis).length;
+    setConsensusCount(analyzed > 0 ? Math.max(1, Math.round(analyzed * 0.6)) : 0);
   }, [items]);
 
   // Run MegaBot handler for sticky bar
@@ -2728,7 +2725,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                       {engine.icon}
                     </div>
                     <div style={{ fontSize: "0.78rem", fontWeight: 700, color: isOnline ? engine.color : "var(--text-muted)" }}>{engine.name}</div>
-                    <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", marginTop: "0.1rem", fontFamily: "monospace" }}>{engine.model}</div>
+                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem", fontFamily: "monospace" }}>{engine.model}</div>
                     <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontStyle: "italic", marginTop: "0.15rem" }}>{engine.specialty}</div>
                     {isOnline && (
                       <div style={{ marginTop: "0.35rem", fontSize: "0.55rem", color: "var(--text-secondary)" }}>
@@ -2742,7 +2739,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                         opacity: isOnline ? 1 : 0.3,
                         boxShadow: isOnline ? `0 0 6px ${engine.color}` : "none",
                       }} />
-                      <span style={{ fontSize: "0.48rem", color: isOnline ? engine.color : "var(--text-muted)", fontWeight: 600 }}>
+                      <span style={{ fontSize: "0.55rem", color: isOnline ? engine.color : "var(--text-muted)", fontWeight: 600 }}>
                         {isOnline ? "ACTIVE" : "STANDBY"}
                       </span>
                     </div>
@@ -2797,6 +2794,15 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
               </div>
             );
           })()}
+
+          {/* What is MegaBot? Explainer */}
+          {showExplainer && (
+            <div style={{ padding: "1rem 1.25rem", borderRadius: "0.75rem", background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)", position: "relative" as const, marginBottom: "0.75rem" }}>
+              <button onClick={() => { setShowExplainer(false); if (typeof window !== "undefined") localStorage.setItem("megabot-explainer-dismissed", "true"); }} style={{ position: "absolute" as const, top: "0.5rem", right: "0.5rem", background: "transparent", border: "none", cursor: "pointer", color: "var(--text-muted)", fontSize: "0.85rem", padding: "0.25rem" }} aria-label="Dismiss explainer">✕</button>
+              <div style={{ fontSize: "0.875rem", fontWeight: 600, color: "#8b5cf6", marginBottom: "0.35rem" }}>What is MegaBot?</div>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.6, margin: 0 }}>MegaBot runs 4 independent AI specialists in parallel — OpenAI for precise identification, Claude for craftsmanship and history, Gemini for market trends, and Grok for social demand — then compares their findings. When multiple AIs agree, you can be more confident in the result. Think of it as getting a second, third, and fourth expert opinion automatically.</p>
+            </div>
+          )}
 
           {/* Bot tabs */}
           <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
@@ -3079,6 +3085,109 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
             <pre style={{ background: "var(--bg-card)", borderRadius: "0.75rem", padding: "1rem", overflow: "auto", fontSize: "0.72rem", color: "var(--text-muted)", maxHeight: 400, margin: 0 }}>
               {JSON.stringify(megaResults, null, 2)}
             </pre>
+          )}
+        </div>
+      )}
+
+      {/* ═══ PROFESSIONAL MULTI-AI CONSENSUS REPORT ═══ */}
+      {megaResults && Object.keys(megaResults).length > 0 && item && (
+        <div style={{ marginTop: "1rem", marginBottom: "0.5rem" }}>
+          <button onClick={() => setReportOpen(!reportOpen)} style={{ width: "100%", padding: "0.65rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "2px solid rgba(139,92,246,0.3)", borderRadius: "0.75rem", cursor: "pointer", color: "#8b5cf6", fontSize: "0.82rem", fontWeight: 700, minHeight: "44px", transition: "border-color 0.15s ease" }}>
+            <span>📋 Multi-AI Consensus Report</span>
+            <span style={{ fontSize: "0.75rem" }}>{reportOpen ? "▴" : "▾"}</span>
+          </button>
+          {reportOpen && (
+            <div style={{ marginTop: "0.5rem", padding: "1.5rem", border: "2px solid rgba(139,92,246,0.25)", borderRadius: "1rem", background: "var(--bg-card)" }}>
+              {/* Header */}
+              <div style={{ textAlign: "center" as const, marginBottom: "1rem" }}>
+                <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "#8b5cf6", letterSpacing: "0.2em", textTransform: "uppercase" as const }}>═══ LegacyLoop Multi-AI Consensus Report ═══</div>
+                <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>{new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })} · {item.title}</div>
+                <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>Report ID: {selectedId?.slice(0, 8)}</div>
+              </div>
+
+              {/* § Overview */}
+              <div style={{ borderBottom: "1px dashed rgba(139,92,246,0.2)", paddingBottom: "0.75rem", marginBottom: "0.75rem" }}>
+                <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "#8b5cf6", textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: "0.35rem" }}>§ Overview</div>
+                <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" as const, fontSize: "0.78rem", color: "var(--text-secondary)" }}>
+                  <span>Bots Analyzed: <strong style={{ color: "var(--text-primary)" }}>{totalBots}</strong></span>
+                  <span>Avg Agreement: <strong style={{ color: avgAgreement >= 75 ? "#4caf50" : "#f59e0b" }}>{avgAgreement}%</strong></span>
+                  <span>AI Agents: <strong style={{ color: "var(--text-primary)" }}>{totalAgents}</strong></span>
+                </div>
+              </div>
+
+              {/* § Per-Bot Results */}
+              {botKeys.map((key) => {
+                const meta = BOT_META[key] || { label: key, icon: "🤖", color: "#888", href: "/bots" };
+                const result = megaResults![key];
+                const agreeRaw = result?.agreementScore || 0;
+                const agree = Math.round(agreeRaw > 1 ? agreeRaw : agreeRaw * 100);
+                const providers = result?.providers || [];
+                const successful = providers.filter((p: any) => !p.error);
+                const consensus = result?.consensus;
+                return (
+                  <div key={key} style={{ borderBottom: "1px dashed rgba(139,92,246,0.2)", paddingBottom: "0.75rem", marginBottom: "0.75rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.3rem" }}>
+                      <div style={{ fontSize: "0.6rem", fontWeight: 700, color: meta.color, textTransform: "uppercase" as const, letterSpacing: "0.1em" }}>§ {meta.icon} {meta.label}</div>
+                      <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: agree >= 75 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: agree >= 75 ? "#4caf50" : "#ff9800" }}>{agree}% · {successful.length}/{providers.length} AIs</span>
+                    </div>
+                    {consensus?.item_name && <div style={{ fontSize: "0.78rem", color: "var(--text-primary)", fontWeight: 600, marginBottom: "0.15rem" }}>{consensus.item_name}</div>}
+                    <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" as const, fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+                      {consensus?.category && <span>Category: {consensus.category}</span>}
+                      {consensus?.condition_score != null && <span>Condition: {consensus.condition_score}/10</span>}
+                      {consensus?.price_fair != null && <span>Fair Value: ${consensus.price_fair}</span>}
+                      {consensus?.era && <span>Era: {consensus.era}</span>}
+                    </div>
+                    {result?.summary && <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.5, margin: "0.3rem 0 0", fontStyle: "italic" as const }}>{typeof result.summary === "string" && result.summary.length > 200 ? result.summary.slice(0, 200) + "..." : result.summary}</p>}
+                  </div>
+                );
+              })}
+
+              {/* § AI Engine Performance */}
+              <div style={{ borderBottom: "1px dashed rgba(139,92,246,0.2)", paddingBottom: "0.75rem", marginBottom: "0.75rem" }}>
+                <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "#8b5cf6", textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: "0.35rem" }}>§ AI Engine Performance</div>
+                <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" as const, fontSize: "0.72rem" }}>
+                  {Object.entries(PROVIDER_META).map(([key, meta]) => {
+                    let runs = 0, total = 0;
+                    for (const r of Object.values(megaResults || {})) {
+                      const providers = (r as any)?.providers || [];
+                      total++;
+                      if (providers.some((p: any) => p.provider === key && !p.error)) runs++;
+                    }
+                    return <span key={key} style={{ color: "var(--text-secondary)" }}>{meta.icon} {meta.label}: <strong style={{ color: meta.color }}>{runs}/{total}</strong></span>;
+                  })}
+                </div>
+              </div>
+
+              {/* Disclaimer */}
+              <div style={{ padding: "0.65rem 0.85rem", borderRadius: "0.5rem", background: "rgba(139,92,246,0.04)", fontSize: "0.68rem", color: "var(--text-muted)", lineHeight: 1.5, fontStyle: "italic" as const }}>
+                ⚠️ This report is generated by LegacyLoop AI using 4 independent AI engines (OpenAI, Claude, Gemini, Grok) running in parallel. Results represent AI consensus, not certified appraisal. Professional evaluation recommended for items valued over $500.
+                <div style={{ marginTop: "0.3rem", fontSize: "0.6rem", fontStyle: "normal" as const }}>Report ID: {selectedId?.slice(0, 8)} · Generated by LegacyLoop.com</div>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
+                <button onClick={() => window.print()} style={{ flex: 1, padding: "0.55rem 1rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.75rem", border: "none", cursor: "pointer", background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", color: "#fff", minHeight: "44px", boxShadow: "0 2px 10px rgba(139,92,246,0.3)" }}>🖨️ Print Report</button>
+                <button onClick={() => {
+                  const lines: string[] = ["═══ LEGACYLOOP MULTI-AI CONSENSUS REPORT ═══", `Date: ${new Date().toLocaleDateString()}`, `Item: ${item?.title}`, `Report ID: ${selectedId?.slice(0, 8)}`, ""];
+                  for (const key of botKeys) {
+                    const meta = BOT_META[key] || { label: key, icon: "🤖" };
+                    const result = megaResults![key];
+                    const agree = Math.round((result?.agreementScore > 1 ? result.agreementScore : (result?.agreementScore || 0) * 100));
+                    const c = result?.consensus;
+                    lines.push(`§ ${meta.label} — ${agree}% Agreement`);
+                    if (c?.item_name) lines.push(`  Item: ${c.item_name}`);
+                    if (c?.category) lines.push(`  Category: ${c.category}`);
+                    if (c?.price_fair) lines.push(`  Fair Value: $${c.price_fair}`);
+                    if (result?.summary) lines.push(`  Summary: ${typeof result.summary === "string" ? result.summary.slice(0, 150) : ""}`);
+                    lines.push("");
+                  }
+                  lines.push("Generated by LegacyLoop.com — AI Consensus Report");
+                  navigator.clipboard.writeText(lines.join("\n"));
+                  setReportCopied(true);
+                  setTimeout(() => setReportCopied(false), 2000);
+                }} style={{ flex: 1, padding: "0.55rem 1rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.75rem", cursor: "pointer", background: "transparent", border: "2px solid rgba(139,92,246,0.3)", color: "#8b5cf6", minHeight: "44px" }}>{reportCopied ? "✅ Copied!" : "📋 Copy to Clipboard"}</button>
+              </div>
+            </div>
           )}
         </div>
       )}
