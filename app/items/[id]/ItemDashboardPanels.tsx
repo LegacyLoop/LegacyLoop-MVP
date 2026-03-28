@@ -7341,7 +7341,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
    MEGABOT POWER CENTER (standalone bottom panel)
    ═══════════════════════════════════════════ */
 
-function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoostAll, collapsed, onToggle }: {
+function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoostAll, collapsed, onToggle, boostingBot }: {
   itemId: string;
   boostedBots: Set<string>;
   boostResults: Record<string, any>;
@@ -7349,6 +7349,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
   onBoostAll?: () => void;
   collapsed?: boolean;
   onToggle?: () => void;
+  boostingBot?: string | null;
 }) {
   const allBots = [
     { key: "analysis", label: "AnalyzeBot", icon: "🧠", color: "#00bcd4" },
@@ -7502,16 +7503,28 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
                   borderRadius: "0.6rem",
                   fontSize: "0.6rem",
                   fontWeight: 600,
-                  background: isBoosted ? `${b.color}08` : "var(--bg-card)",
-                  color: isBoosted ? b.color : "var(--text-muted)",
-                  border: `1px solid ${isBoosted ? `${b.color}35` : "var(--border-default)"}`,
-                  textAlign: "center",
+                  background: boostingBot === b.key ? `${b.color}15` : isBoosted ? `${b.color}08` : "var(--bg-card)",
+                  color: boostingBot === b.key ? b.color : isBoosted ? b.color : "var(--text-muted)",
+                  border: `1px solid ${boostingBot === b.key ? b.color : isBoosted ? `${b.color}35` : "var(--border-default)"}`,
+                  textAlign: "center" as const,
                   transition: "all 0.2s ease",
+                  boxShadow: boostingBot === b.key ? `0 0 12px ${b.color}30` : "none",
+                  animation: boostingBot === b.key ? "pulse 1.5s ease-in-out infinite" : "none",
                 }}>
                   <div style={{ fontSize: "0.85rem", marginBottom: "0.15rem" }}>{b.icon}</div>
                   <div style={{ fontSize: "0.55rem", fontWeight: 700, lineHeight: 1.2 }}>{b.label}</div>
-                  {isBoosted ? (
-                    <div style={{ fontSize: "0.5rem", marginTop: "0.2rem" }}>
+                  {boostingBot === b.key ? (
+                    <div style={{ fontSize: "0.55rem", marginTop: "0.2rem" }}>
+                      <span style={{
+                        padding: "0.1rem 0.3rem", borderRadius: 99,
+                        background: `${b.color}20`,
+                        color: b.color,
+                        fontWeight: 700,
+                        animation: "pulse 1.5s ease-in-out infinite",
+                      }}>⚡ Running...</span>
+                    </div>
+                  ) : isBoosted ? (
+                    <div style={{ fontSize: "0.55rem", marginTop: "0.2rem" }}>
                       <span style={{
                         padding: "0.1rem 0.3rem", borderRadius: 99,
                         background: agreeNum >= 75 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)",
@@ -7520,7 +7533,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
                       }}>✓ {agreeNum}%</span>
                     </div>
                   ) : (
-                    <div style={{ fontSize: "0.5rem", marginTop: "0.2rem", opacity: 0.4 }}>—</div>
+                    <div style={{ fontSize: "0.55rem", marginTop: "0.2rem", opacity: 0.4 }}>—</div>
                   )}
                 </div>
               );
@@ -7583,24 +7596,47 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
             </div>
           )}
 
+          {/* ═══ BOOST PROGRESS ═══ */}
+          {boostingBot && (
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              gap: "0.5rem", padding: "0.5rem 0.75rem",
+              background: "rgba(139,92,246,0.06)",
+              border: "1px solid rgba(139,92,246,0.15)",
+              borderRadius: "0.5rem",
+            }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#8b5cf6", animation: "pulse 1s ease-in-out infinite" }} />
+              <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "#8b5cf6" }}>
+                Now boosting: {allBots.find(b => b.key === boostingBot)?.label || boostingBot}
+              </span>
+              <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>
+                ({boostedCount + 1}/{allBots.length})
+              </span>
+            </div>
+          )}
+
           {/* ═══ BOOST ALL BUTTON ═══ */}
           {remaining.length > 0 && aiData && (
             <div style={{ display: "flex", justifyContent: "center" }}>
               <button
                 onClick={onBoostAll}
+                disabled={!!boostingBot}
                 style={{
                   padding: "0.65rem 2rem",
                   fontSize: "0.82rem",
                   fontWeight: 700,
                   borderRadius: "10px",
                   border: "none",
-                  background: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
-                  color: "#fff",
-                  cursor: "pointer",
-                  boxShadow: "0 4px 16px rgba(139,92,246,0.3)",
+                  background: boostingBot ? "var(--ghost-bg)" : "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+                  color: boostingBot ? "var(--text-muted)" : "#fff",
+                  cursor: boostingBot ? "not-allowed" : "pointer",
+                  boxShadow: boostingBot ? "none" : "0 4px 16px rgba(139,92,246,0.3)",
                   transition: "all 0.2s ease",
                 }}>
-                ⚡ Boost {remaining.length === allBots.length ? "All" : `${remaining.length} Remaining`} · {remaining.length * 5} credits
+                {boostingBot
+                  ? "⏳ Boosting in progress..."
+                  : `⚡ Boost ${remaining.length === allBots.length ? "All" : `${remaining.length} Remaining`} · ${remaining.length * 5} credits`
+                }
               </button>
             </div>
           )}
@@ -9507,11 +9543,12 @@ export default function ItemDashboardPanels({
         </div>
 
         {/* ── MEGABOT POWER CENTER (full width) ── */}
-        <MegaBotPowerCenter itemId={itemId} boostedBots={boostedBots} boostResults={boostResults} aiData={aiData} onBoostAll={() => {
-          // Sequentially boost remaining bots
+        <MegaBotPowerCenter itemId={itemId} boostedBots={boostedBots} boostResults={boostResults} aiData={aiData} onBoostAll={async () => {
           const remaining = ["analysis","pricing","shipping","photos","buyers","listing","recon","carbot","antique","collectibles"].filter((k) => !boostedBots.has(k));
-          remaining.forEach((k) => superBoost(k));
-        }} collapsed={collapsed.megabot} onToggle={() => togglePanel("megabot")} />
+          for (const k of remaining) {
+            await superBoost(k);
+          }
+        }} collapsed={collapsed.megabot} onToggle={() => togglePanel("megabot")} boostingBot={boostingBot} />
       </div>
 
       {/* ── MODULE SUMMARY (collapsible, kept at bottom) ── */}
