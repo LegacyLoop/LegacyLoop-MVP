@@ -77,6 +77,8 @@ type Props = {
     aiShippingDifficulty: string | null;
     aiShippingNotes: string | null;
     aiShippingConfidence: number | null;
+    quotedShippingRate?: number | null;
+    quotedShippingAt?: string | null;
   };
   controlCenterExtra?: {
     totalViews: number;
@@ -3125,7 +3127,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
    PANEL 2: Pricing (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, priceBotResult, priceBotLoading, collapsed, onToggle }: {
+function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt }: {
   valuation: any;
   antique: any;
   aiData: any;
@@ -3140,6 +3142,8 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   priceBotLoading?: boolean;
   collapsed?: boolean;
   onToggle?: () => void;
+  quotedShippingRate?: number | null;
+  quotedShippingAt?: string | null;
 }) {
   const [showCalc, setShowCalc] = useState(false);
   const [priceOpenSections, setPriceOpenSections] = useState<Set<string>>(
@@ -3172,7 +3176,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
     const localMid = pr.localPrice?.mid ?? 0;
     const nationalMid = pr.nationalPrice?.mid ?? 0;
     const bestMid = pr.bestMarket?.mid ?? 0;
-    const shippingCost = pr.bestMarket?.shippingCost ?? pr.shippingEstimate ?? 25;
+    const shippingCost = quotedShippingRate ?? pr.bestMarket?.shippingCost ?? pr.shippingEstimate ?? 25;
     const bestCity = pr.bestMarket?.label ?? "top market";
 
     const localNet = Math.round((localMid - localMid * commRate) * 100) / 100;
@@ -3406,10 +3410,12 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
           const tName = TIER_NAMES[userTier] ?? "Free";
 
           // ── ADDITION 1: Best net payout scenario ──
+          // Priority for shipping cost: 1) Real quoted rate from carrier, 2) AI/market estimate, 3) fallback
           let salePrice = 0, shipCost = 0, isLocal = false, scenario = "";
+          const realQuotedRate = quotedShippingRate ?? null;
           if (pr) {
             const lm = pr.localPrice?.mid ?? 0, bm = pr.bestMarket?.mid ?? 0;
-            const sc = pr.bestMarket?.shippingCost ?? pr.shippingEstimate ?? 25;
+            const sc = realQuotedRate ?? pr.bestMarket?.shippingCost ?? pr.shippingEstimate ?? 25;
             const ln = lm - lm * cRate, sn = bm - bm * cRate - sc;
             if (sn > ln && bm > 0) { salePrice = bm; shipCost = sc; scenario = `Ship to ${pr.bestMarket?.label ?? "best market"}`; }
             else { salePrice = lm; isLocal = true; scenario = "Local pickup"; }
@@ -3468,7 +3474,19 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                       <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>${salePrice.toFixed(2)}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
-                      <span>Shipping</span>
+                      <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                        Shipping
+                        {!isLocal && realQuotedRate != null && (
+                          <span style={{ fontSize: "0.55rem", padding: "1px 5px", borderRadius: 99, background: "rgba(76,175,80,0.1)", color: "#4caf50", fontWeight: 600 }}>
+                            Quoted
+                          </span>
+                        )}
+                        {!isLocal && realQuotedRate == null && (
+                          <span style={{ fontSize: "0.55rem", padding: "1px 5px", borderRadius: 99, background: "rgba(245,158,11,0.1)", color: "#f59e0b", fontWeight: 600 }}>
+                            Est.
+                          </span>
+                        )}
+                      </span>
                       <span style={{ color: isLocal ? "#4ade80" : "#ef4444" }}>{isLocal ? "$0.00 local pickup" : `-$${shipCost.toFixed(2)}`}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
@@ -9403,6 +9421,8 @@ export default function ItemDashboardPanels({
           priceBotLoading={priceBotLoading}
           collapsed={collapsed.pricing}
           onToggle={() => togglePanel("pricing")}
+          quotedShippingRate={shippingData?.quotedShippingRate ?? null}
+          quotedShippingAt={shippingData?.quotedShippingAt ?? null}
         />
 
         {/* Shipping */}

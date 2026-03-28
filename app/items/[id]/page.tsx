@@ -61,10 +61,15 @@ export default async function ItemPage({ params }: { params: Params }) {
     );
   }
 
-  // Fetch engagement metrics + document count for control center
-  const [engagement, docCount] = await Promise.all([
+  // Fetch engagement metrics + document count + latest shipping quote for control center
+  const [engagement, docCount, latestShippingQuote] = await Promise.all([
     prisma.itemEngagementMetrics.findUnique({ where: { itemId: item.id }, select: { totalViews: true, inquiries: true, buyersFound: true } }).catch(() => null),
     prisma.itemDocument.count({ where: { itemId: item.id } }).catch(() => 0),
+    prisma.eventLog.findFirst({
+      where: { itemId: item.id, eventType: "SHIPPING_QUOTED" },
+      orderBy: { createdAt: "desc" },
+      select: { payload: true, createdAt: true },
+    }).catch(() => null),
   ]);
 
   const aiObj = item.aiResult?.rawJson ? safeJsonParse(item.aiResult.rawJson) : null;
@@ -444,6 +449,14 @@ export default async function ItemPage({ params }: { params: Params }) {
             aiShippingDifficulty: (item as any).aiShippingDifficulty ?? null,
             aiShippingNotes: (item as any).aiShippingNotes ?? null,
             aiShippingConfidence: (item as any).aiShippingConfidence ?? null,
+            quotedShippingRate: (() => {
+              if (!latestShippingQuote?.payload) return null;
+              try {
+                const q = JSON.parse(latestShippingQuote.payload);
+                return q.cheapest?.price ?? null;
+              } catch { return null; }
+            })(),
+            quotedShippingAt: latestShippingQuote?.createdAt?.toISOString() ?? null,
           }}
           controlCenterExtra={{
             totalViews: engagement?.totalViews ?? 0,
