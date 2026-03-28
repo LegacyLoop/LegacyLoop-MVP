@@ -31,6 +31,7 @@ type Props = {
   megabotUsed: boolean;
   userTier: number;
   listingPrice?: number | null;
+  projectId?: string | null;
   authenticityScore?: {
     score: number;
     tier: string;
@@ -3085,7 +3086,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
                     }}>{boostResult.agreementScore}% Agreement</span>
                   )}
                 </div>
-                <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={aiOpenSections.has("megabot-results")} onToggle={toggleAiSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+                <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={aiOpenSections.has("megabot-results")} onToggle={toggleAiSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
                 {aiOpenSections.has("megabot-results") && <MegaBotBoostResults botType="analysis" result={boostResult} aiData={aiData} />}
               </>
             )}
@@ -3340,7 +3341,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
 
             {/* MegaBot boost results */}
             {boosted && boostResult && (<>
-              <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={priceOpenSections.has("megabot-results")} onToggle={togglePriceSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+              <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={priceOpenSections.has("megabot-results")} onToggle={togglePriceSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
               {priceOpenSections.has("megabot-results") && <MegaBotBoostResults botType="pricing" result={boostResult} aiData={aiData} />}
             </>)}
 
@@ -3396,7 +3397,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
             <div style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--accent)" }}>${Math.round(v.low)} – ${Math.round(v.high)}</div>
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Confidence: {Math.round(v.confidence * 100)}%</div>
             {boosted && boostResult && (<>
-              <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={priceOpenSections.has("megabot-results")} onToggle={togglePriceSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+              <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={priceOpenSections.has("megabot-results")} onToggle={togglePriceSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
               {priceOpenSections.has("megabot-results") && <MegaBotBoostResults botType="pricing" result={boostResult} aiData={aiData} />}
             </>)}
           </div>
@@ -3880,7 +3881,7 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
         )}
 
         {boosted && boostResult && (<>
-          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={shipSections.has("megabot-results")} onToggle={toggleShipSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={shipSections.has("megabot-results")} onToggle={toggleShipSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
           {shipSections.has("megabot-results") && <MegaBotBoostResults botType="shipping" result={boostResult} aiData={aiData} />}
         </>)}
       </div>
@@ -4445,7 +4446,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
 
             {/* ═══ ACCORDION: MegaBot Results ═══ */}
             {boosted && boostResult && (<>
-              <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={photoSections.has("megabot-results")} onToggle={togglePhotoSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+              <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={photoSections.has("megabot-results")} onToggle={togglePhotoSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
               {photoSections.has("megabot-results") && (
                 <div style={{ padding: "0.75rem 0.4rem" }}>
                   {/* MegaBot Advantage Callout */}
@@ -4904,7 +4905,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
 
         {/* MegaBot boost results — outside the hasResult check so it shows even without regular BuyerBot run */}
         {boosted && boostResult && (<>
-          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={buyerOpenSections.has("megabot-results")} onToggle={toggleBuyerSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={buyerOpenSections.has("megabot-results")} onToggle={toggleBuyerSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
           {buyerOpenSections.has("megabot-results") && <MegaBotBoostResults botType="buyers" result={boostResult} aiData={aiData} />}
         </>)}
       </div>
@@ -4968,7 +4969,7 @@ function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, ge
   const topKeywords = con.top_keywords || con.seo_keywords?.primary || listBotResult?.top_keywords || listBotResult?.seo_keywords?.primary || listBotResult?.hashtags?.slice(0, 5) || [];
   const strategy = con.cross_platform_strategy || listBotResult?.cross_platform_strategy || null;
   const estimatedDays = con.estimated_sell_days || listBotResult?.estimated_sell_days || null;
-  const agentCount = Array.isArray(boostResult?.providers) ? boostResult.providers.filter((p: any) => p.result).length : 0;
+  const agentCount = Array.isArray(boostResult?.providers) ? boostResult.providers.filter((p: any) => p.data || !p.error).length : 0;
   const copiedCount = Object.values(publishStatuses).filter((s) => s === "COPIED" || s === "POSTED" || s === "LIVE").length;
 
   // Find matching listing for any platform key (fuzzy)
@@ -5322,7 +5323,7 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
           </div>
         )}
         {boosted && boostResult && (<>
-          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={listOpenSections.has("megabot-results")} onToggle={toggleListSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={listOpenSections.has("megabot-results")} onToggle={toggleListSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
           {listOpenSections.has("megabot-results") && <MegaBotBoostResults botType="listing" result={boostResult} aiData={aiData} />}
         </>)}
         </div>)}
@@ -6134,7 +6135,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
 
       {/* MegaBot boost results — full 4-agent breakdown */}
       {boosted && boostResult && (<>
-        <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={carSections.has("megabot-results")} onToggle={toggleCarSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+        <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={carSections.has("megabot-results")} onToggle={toggleCarSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
         {carSections.has("megabot-results") && <MegaBotBoostResults botType="carbot" result={boostResult} aiData={aiData} />}
       </>)}
 
@@ -6333,7 +6334,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
             </div>
           </div>
           {boosted && boostResult && (<>
-            <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={collectSections.has("megabot-results")} onToggle={toggleCollectSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+            <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={collectSections.has("megabot-results")} onToggle={toggleCollectSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
             {collectSections.has("megabot-results") && <MegaBotBoostResults botType="collectibles" result={boostResult} aiData={aiData} />}
           </>)}
           <PanelFooter
@@ -6707,7 +6708,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 
       {/* MegaBot boost results */}
       {boosted && boostResult && (<>
-        <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={collectSections.has("megabot-results")} onToggle={toggleCollectSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+        <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={collectSections.has("megabot-results")} onToggle={toggleCollectSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
         {collectSections.has("megabot-results") && <MegaBotBoostResults botType="collectibles" result={boostResult} aiData={aiData} />}
       </>)}
 
@@ -6871,7 +6872,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
           </div>
           {/* MegaBot boost results if already run */}
           {boosted && boostResult && (<>
-            <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={antiqueSections.has("megabot-results")} onToggle={toggleAntiqueSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+            <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={antiqueSections.has("megabot-results")} onToggle={toggleAntiqueSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
             {antiqueSections.has("megabot-results") && <MegaBotBoostResults botType="antique" result={boostResult} aiData={aiData} />}
           </>)}
           <PanelFooter
@@ -7323,7 +7324,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
 
       {/* MegaBot boost results — full 4-agent breakdown */}
       {boosted && boostResult && (<>
-        <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={antiqueSections.has("megabot-results")} onToggle={toggleAntiqueSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+        <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={antiqueSections.has("megabot-results")} onToggle={toggleAntiqueSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
         {antiqueSections.has("megabot-results") && <MegaBotBoostResults botType="antique" result={boostResult} aiData={aiData} />}
       </>)}
 
@@ -7760,7 +7761,7 @@ const STATUS_FLOW = [
   { key: "COMPLETED", label: "Done", icon: "🎉" },
 ];
 
-function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: initialListingPrice, collapsed, onToggle, photos, category, extra, shippingData }: {
+function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: initialListingPrice, collapsed, onToggle, photos, category, extra, shippingData, projectId }: {
   itemId: string;
   status: string;
   valuation: any;
@@ -7772,6 +7773,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   category?: string | null;
   extra?: { totalViews: number; inquiries: number; buyersFound: number; documentCount: number; updatedAt: string; shippingReady: boolean };
   shippingData?: { weight: number | null; length: number | null; width: number | null; height: number | null; isFragile: boolean; preference: string; aiWeightLbs: number | null; aiDimsEstimate: string | null; aiShippingDifficulty: string | null; aiShippingNotes: string | null; aiShippingConfidence: number | null };
+  projectId?: string | null;
 }) {
   const router = useRouter();
   const [updating, setUpdating] = useState(false);
@@ -8202,7 +8204,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           {/* Sale assignment */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.2rem" }}>
             <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F3F7}\u{FE0F}"}</span>
-            <SaleAssignment itemId={itemId} initialProjectId={null} />
+            <SaleAssignment itemId={itemId} initialProjectId={projectId ?? null} />
           </div>
 
           <div style={{ flex: 1 }} />
@@ -8615,7 +8617,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
 
         {/* MegaBot boost results — full 4-agent breakdown */}
         {boosted && boostResult && (<>
-          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={reconOpenSections.has("megabot-results")} onToggle={toggleReconSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+          <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={reconOpenSections.has("megabot-results")} onToggle={toggleReconSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
           {reconOpenSections.has("megabot-results") && <MegaBotBoostResults botType="recon" result={boostResult} aiData={aiData} />}
         </>)}
 
@@ -8641,7 +8643,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
    ═══════════════════════════════════════════ */
 
 export default function ItemDashboardPanels({
-  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra,
+  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra, projectId,
 }: Props) {
   // Track which bots have been enhanced with MegaBot
   const [boostedBots, setBoostedBots] = useState<Set<string>>(new Set());
@@ -9012,7 +9014,7 @@ export default function ItemDashboardPanels({
 
       {/* ── ITEM CONTROL CENTER (full width, above panel grid) ── */}
       <div style={{ marginBottom: "1rem" }}>
-        <ItemControlCenter itemId={itemId} status={status} valuation={valuation} aiData={aiData} listingPrice={listingPrice} collapsed={collapsed.control} onToggle={() => togglePanel("control")} photos={photos} category={category} extra={controlCenterExtra} shippingData={shippingData} />
+        <ItemControlCenter itemId={itemId} status={status} valuation={valuation} aiData={aiData} listingPrice={listingPrice} collapsed={collapsed.control} onToggle={() => togglePanel("control")} photos={photos} category={category} extra={controlCenterExtra} shippingData={shippingData} projectId={projectId} />
       </div>
 
       {/* ── ACTIVE OFFERS (below Sale Assignment) ── */}

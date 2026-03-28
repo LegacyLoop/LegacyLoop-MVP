@@ -466,6 +466,7 @@ export default async function ItemPage({ params }: { params: Params }) {
             updatedAt: item.createdAt.toISOString(),
             shippingReady: !!((item as any).shippingWeight && (item as any).shippingLength),
           }}
+          projectId={item.projectId ?? null}
         />
       </div>
 
