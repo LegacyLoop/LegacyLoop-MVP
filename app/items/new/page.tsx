@@ -273,6 +273,7 @@ function NewItemPageContent() {
       if (damageRepairs) formData.append("damageRepairs", damageRepairs);
       if (purchasePrice) formData.append("purchasePrice", purchasePrice);
       if (purchaseDate) formData.append("purchaseDate", purchaseDate);
+      if (selectedSaleId) formData.append("projectId", selectedSaleId);
 
       // Start upload progress tracking
       const statusInit: Record<string, "uploading"> = {};

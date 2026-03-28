@@ -58,6 +58,7 @@ export async function POST(req: Request) {
       : "BOTH";
 
   const saleZip = String(formData.get("saleZip") || "").trim() || null;
+  const projectId = String(formData.get("projectId") || "").trim() || null;
 
   const saleRadiusRaw = String(formData.get("saleRadiusMi") || "250").trim();
   const saleRadiusMiNum = saleRadiusRaw ? Number(saleRadiusRaw) : 250;
@@ -79,6 +80,7 @@ export async function POST(req: Request) {
         saleMethod: saleMethod as any,
         saleZip,
         saleRadiusMi,
+        projectId,
         numberOfOwners: numOwners || null,
         approximateAge: ageEstimate || null,
         worksProperly: functionality || null,

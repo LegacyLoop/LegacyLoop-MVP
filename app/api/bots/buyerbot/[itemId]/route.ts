@@ -17,6 +17,72 @@ function safeJson(s: string | null | undefined): any {
 }
 
 /**
+ * Robust JSON parser for AI-generated responses.
+ * Handles: trailing commas, unclosed brackets/braces, markdown fences,
+ * truncated strings, web search noise, and common AI output quirks.
+ */
+function parseAiJson(text: string): any {
+  // Strip ALL markdown code fences (not just at start/end — can appear mid-text)
+  let cleaned = text.replace(/```(?:json)?\s*/gi, "").replace(/```/g, "").trim();
+
+  // Extract the outermost JSON object — find the FIRST { and the LAST }
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return null;
+  let json = cleaned.slice(firstBrace, lastBrace + 1);
+
+  // Attempt 1: direct parse
+  try { return JSON.parse(json); } catch { /* continue to repairs */ }
+
+  // Attempt 2: fix trailing commas before } or ]
+  let repaired = json.replace(/,\s*([\]}])/g, "$1");
+  try { return JSON.parse(repaired); } catch { /* continue */ }
+
+  // Attempt 3: fix truncated response — close unclosed brackets/braces
+  let opens = 0, closesNeeded = "";
+  for (const ch of repaired) {
+    if (ch === "{") opens++;
+    else if (ch === "}") opens--;
+  }
+  if (opens > 0) {
+    // Remove any trailing incomplete key-value (after last comma)
+    repaired = repaired.replace(/,\s*"[^"]*"?\s*:?\s*[^,}\]]*$/, "");
+    for (let i = 0; i < opens; i++) closesNeeded += "}";
+    repaired = repaired + closesNeeded;
+  }
+  try { return JSON.parse(repaired); } catch { /* continue */ }
+
+  // Attempt 4: fix unclosed arrays too
+  let arrOpens = 0;
+  for (const ch of repaired) {
+    if (ch === "[") arrOpens++;
+    else if (ch === "]") arrOpens--;
+  }
+  if (arrOpens > 0) {
+    for (let i = 0; i < arrOpens; i++) repaired = repaired + "]";
+    // Re-close braces after arrays
+    try { return JSON.parse(repaired); } catch { /* continue */ }
+  }
+
+  // Attempt 5: fix unclosed strings — find last unclosed quote and close it
+  const quoteCount = (repaired.match(/(?<!\\)"/g) || []).length;
+  if (quoteCount % 2 !== 0) {
+    repaired = repaired + '"';
+    // Try closing brackets again
+    try { return JSON.parse(repaired); } catch { /* continue */ }
+    repaired = repaired.replace(/,\s*"[^"]*$/, "");
+    let b2 = 0, a2 = 0;
+    for (const ch of repaired) { if (ch === "{") b2++; else if (ch === "}") b2--; if (ch === "[") a2++; else if (ch === "]") a2--; }
+    for (let i = 0; i < a2; i++) repaired += "]";
+    for (let i = 0; i < b2; i++) repaired += "}";
+    try { return JSON.parse(repaired); } catch { /* final fallback */ }
+  }
+
+  console.error("[parseAiJson] All repair attempts failed. First 500 chars:", json.slice(0, 500));
+  return null;
+}
+
+/**
  * GET /api/bots/buyerbot/[itemId]
  * Retrieve existing BuyerBot result for an item
  */
@@ -130,96 +196,84 @@ Era/Age: ${era}
 Material: ${material}
 Keywords: ${keywords || "none provided"}
 
-Your job: Find EVERY type of buyer who would want this item. Be specific about WHERE they are and HOW to reach them.
+Your job: Find the BEST buyers for this item. Be specific about WHERE they are and HOW to reach them.
 
-Return a JSON object with ALL of the following:
+CRITICAL: Keep your response COMPACT. Short values, no filler text. This must fit within token limits.
+
+Return a JSON object with this structure:
 
 {
   "buyer_profiles": [
     {
-      "profile_name": "Descriptive name (e.g. 'Vintage Guitar Gear Collector', 'Mid-Century Furniture Flipper')",
-      "buyer_type": "Collector | Reseller | Decorator | Hobbyist | Gift Buyer | Dealer | Museum/Gallery | Personal Use",
-      "motivation": "Why this person wants this item specifically",
-      "price_sensitivity": "Will Pay Premium | Fair Market | Bargain Hunter | Lowballer",
-      "likelihood_to_buy": "Very High | High | Medium | Low",
+      "profile_name": "e.g. Vintage Guitar Gear Collector",
+      "buyer_type": "Collector | Reseller | Decorator | Hobbyist | Dealer | Personal Use",
+      "motivation": "1 sentence why they want this",
+      "price_sensitivity": "Will Pay Premium | Fair Market | Bargain Hunter",
+      "likelihood_to_buy": "Very High | High | Medium",
       "estimated_offer_range": "$X — $Y",
-      "location_preference": "Local Only | Regional | National | International",
-      "platforms_active_on": ["list of platforms where this buyer type shops"],
-      "best_approach": "How to reach and pitch to this buyer type",
-      "time_sensitivity": "Buys immediately | Takes time to decide | Seasonal buyer"
+      "platforms_active_on": ["platform1", "platform2"],
+      "best_approach": "1 sentence how to reach them"
     }
   ],
 
   "platform_opportunities": [
     {
       "platform": "Platform name",
-      "opportunity_level": "Excellent | Good | Moderate | Low",
-      "estimated_buyers": number,
-      "avg_sale_price_here": number,
-      "avg_days_to_sell": number,
-      "audience_description": "Who shops here for this type of item",
-      "how_to_list": "Specific tips for listing on this platform",
-      "search_terms_buyers_use": ["what buyers search for"],
-      "groups_or_communities": ["specific Facebook groups, subreddits, forums relevant to this item"],
-      "best_time_to_post": "When to post for maximum visibility"
+      "opportunity_level": "Excellent | Good | Moderate",
+      "estimated_buyers": 100,
+      "avg_sale_price_here": 50,
+      "avg_days_to_sell": 7,
+      "how_to_list": "1-2 sentence tip",
+      "groups_or_communities": ["specific group names"]
     }
   ],
 
   "outreach_strategies": [
     {
-      "strategy_name": "Direct approach name",
-      "channel": "The platform or method",
-      "target_audience": "Who you're reaching",
-      "message_template": "A ready-to-send warm personal message the seller can customize",
-      "expected_response_rate": "X%",
-      "effort_level": "Easy | Medium | Hard",
-      "cost": "Free | Paid ($X)"
+      "strategy_name": "Approach name",
+      "channel": "Platform",
+      "message_template": "Ready-to-send warm message (2-3 sentences max)",
+      "effort_level": "Easy | Medium | Hard"
     }
   ],
 
   "local_opportunities": {
-    "antique_shops_nearby": "Types of local shops that might buy or consign",
-    "flea_markets": "Local flea markets or swap meets",
-    "estate_sale_companies": "Companies that might include this in a sale",
-    "local_collector_clubs": "Clubs or groups in the seller's area",
-    "consignment_options": "Local consignment shops suited for this item",
-    "word_of_mouth": "How to leverage personal network"
+    "antique_shops_nearby": "1 sentence",
+    "flea_markets": "1 sentence",
+    "consignment_options": "1 sentence"
   },
 
   "hot_leads": [
     {
-      "lead_description": "A specific type of buyer actively searching right now",
-      "evidence": "Why we think they're actively looking",
-      "urgency": "Act now | This week | This month | Anytime",
-      "how_to_reach": "Specific action to take",
-      "estimated_price_theyd_pay": number
+      "lead_description": "Who is actively looking",
+      "urgency": "Act now | This week | This month",
+      "how_to_reach": "Specific action",
+      "estimated_price_theyd_pay": 50
     }
   ],
 
   "competitive_landscape": {
-    "similar_items_listed": number,
+    "similar_items_listed": 15,
     "price_range_of_competitors": "$X — $Y",
-    "your_advantage": "What makes the seller's item stand out",
-    "your_disadvantage": "What competing listings have that this one doesn't",
-    "differentiation_tip": "How to stand out from other listings"
+    "your_advantage": "1 sentence",
+    "differentiation_tip": "1 sentence"
   },
 
   "timing_advice": {
-    "best_day_to_list": "Day of week",
+    "best_day_to_list": "Day",
     "best_time_to_list": "Morning/Afternoon/Evening",
-    "seasonal_peak": "Best month or season",
-    "avoid_listing": "When NOT to list",
-    "urgency_recommendation": "List now or wait?"
+    "seasonal_peak": "Season",
+    "urgency_recommendation": "1 sentence"
   },
 
-  "executive_summary": "4-6 sentence plain-language summary for a senior citizen. Who are the most likely buyers, where to find them, what to say, and what to expect. Be warm, specific, and actionable."
+  "executive_summary": "3-4 sentence plain-language summary. Who are the most likely buyers, where to find them, and what to expect."
 }
 
 IMPORTANT INSTRUCTIONS:
-- Generate 6-12 buyer profiles based on real market behavior for this item category.
-- Generate 5-10 platform opportunities.
-- Generate 3-6 outreach strategies with WARM, HUMAN message templates.
-- Generate 3-8 hot leads with urgency levels.
+- Generate 4-6 buyer profiles (not more).
+- Generate 4-5 platform opportunities (not more).
+- Generate 2-3 outreach strategies with SHORT message templates.
+- Generate 3-4 hot leads.
 - Be SPECIFIC. Don't say 'post on Facebook.' Say which specific groups or communities.
 - Consider the seller's location (Maine) for local opportunities.
 - Message templates must sound HUMAN and WARM — never like a bot or spam.
@@ -253,19 +307,41 @@ Include a "web_sources" array in your response with {"url": "...", "title": "...
         const response = await openai.responses.create({
           model: "gpt-4o-mini",
           instructions: systemPrompt,
-          input: `Find all potential buyers for this item. Photos: ${photoDescs.join(", ")}. Return ONLY valid JSON.`,
+          input: `Find the best buyers for this item. Photos: ${photoDescs.join(", ")}. Return ONLY valid JSON — keep values short and compact.`,
           tools: [{ type: "web_search_preview" as any }],
+          max_output_tokens: 16384,
         }, { signal: controller.signal });
 
         const text = typeof response.output === "string"
           ? response.output
           : response.output_text || JSON.stringify(response.output);
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          buyerbotResult = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("No JSON in response");
+        buyerbotResult = parseAiJson(text);
+        if (!buyerbotResult) {
+          console.error("[buyerbot] Failed to parse AI response. Length:", text.length);
+          console.error("[buyerbot] First 200:", text.slice(0, 200));
+          console.error("[buyerbot] Last 300:", text.slice(-300));
+          console.error("[buyerbot] Cleaned first 200:", text.replace(/```(?:json)?\s*/gi, "").replace(/```/g, "").trim().slice(0, 200));
+          // Last resort: try extracting any valid JSON substring
+          const fallbackMatch = text.match(/\{[\s\S]{100,}\}/);
+          if (fallbackMatch) {
+            // Aggressively truncate at last complete key-value pair
+            let truncated = fallbackMatch[0];
+            // Find the last valid closing point
+            for (let i = truncated.length - 1; i > truncated.length - 200; i--) {
+              const sub = truncated.slice(0, i);
+              // Count braces
+              let b = 0, a = 0;
+              for (const c of sub) { if (c === "{") b++; else if (c === "}") b--; if (c === "[") a++; else if (c === "]") a--; }
+              let attempt = sub;
+              for (let j = 0; j < a; j++) attempt += "]";
+              for (let j = 0; j < b; j++) attempt += "}";
+              try { buyerbotResult = JSON.parse(attempt); console.log("[buyerbot] Recovered via truncation at offset", i); break; } catch { /* continue */ }
+            }
+          }
+          if (!buyerbotResult) {
+            throw new Error("AI returned unparseable response — retry recommended");
+          }
         }
 
         // Extract web search citations

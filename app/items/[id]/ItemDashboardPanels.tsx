@@ -736,11 +736,27 @@ function EmptyState({ message }: { message: string }) {
 
 /* ─── MegaBot Results (renders within any panel) ─── */
 
-function MegaBotBoostResults({ botType, result, aiData }: { botType: string; result: any; aiData: any }) {
+function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string; result: any; aiData: any }) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showRawJson, setShowRawJson] = useState<string | null>(null);
+
+  // Safety: if result is null/undefined/invalid, show fallback immediately
+  if (!result || typeof result !== "object") {
+    return (
+      <div style={{ padding: "0.75rem 1rem", borderRadius: "0.5rem", background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.15)", textAlign: "center" }}>
+        <span style={{ fontSize: "0.72rem", color: "#8b5cf6" }}>⚡ MegaBot results unavailable</span>
+      </div>
+    );
+  }
+
   const consensus = result?.consensus || {};
-  const providerArray: any[] = Array.isArray(result?.providers) ? result.providers : [];
+  // Normalize providers — ensure each has data and error fields properly set
+  const rawProviders: any[] = Array.isArray(result?.providers) ? result.providers : [];
+  const providerArray = rawProviders.map((p: any) => ({
+    ...p,
+    data: p.data ?? p.result ?? null,
+    error: p.error ?? null,
+  }));
   const agreementRaw = result?.agreementScore || result?.agreement || 0.88;
   const agreement = Math.round(agreementRaw > 1 ? agreementRaw : agreementRaw * 100);
 
@@ -1544,6 +1560,13 @@ function MegaBotBoostResults({ botType, result, aiData }: { botType: string; res
         <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#a855f7", textTransform: "uppercase", letterSpacing: "0.05em" }}>
           {isPricing ? "MegaBot Deep Pricing" : isBuyers ? "MegaBot Buyer Intelligence" : isListing ? "MegaBot Listing Intelligence" : isRecon ? "MegaBot Competitive Intel" : isCarbot ? "MegaBot Vehicle Evaluation" : isAntique ? "MegaBot Antique Assessment" : isPhotos ? "MegaBot Photo Analysis" : isCollectibles ? "MegaBot Collectibles Assessment" : "MegaBot Deep Analysis"} — {successfulProviders.length} AI Expert{successfulProviders.length !== 1 ? "s" : ""}
         </span>
+        {/* Freshness indicator */}
+        {result?.timestamp && (() => {
+          const ts = new Date(result.timestamp);
+          const hours = Math.round((Date.now() - ts.getTime()) / 3600000);
+          const label = hours < 1 ? "Just now" : hours < 24 ? `${hours}h ago` : `${Math.round(hours / 24)}d ago`;
+          return <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 400 }}>· {label}</span>;
+        })()}
         {failedProviders.length > 0 && failedProviders.length < providerArray.length && (
           <span style={{ fontSize: "0.58rem", color: "var(--text-muted)", opacity: 0.6, fontWeight: 400 }}>({failedProviders.length} of {providerArray.length} unavailable)</span>
         )}
@@ -2655,6 +2678,22 @@ function CreditLaunchButton({ label, credits, onClick, loading, variant = "prima
   );
 }
 
+// Error boundary wrapper — catches React render crashes and shows fallback instead of blank panel
+function MegaBotBoostResults(props: { botType: string; result: any; aiData: any }) {
+  try {
+    return <MegaBotBoostResultsInner {...props} />;
+  } catch (err: any) {
+    console.error("[MegaBotBoostResults] Render crash:", err);
+    return (
+      <div style={{ padding: "0.75rem 1rem", borderRadius: "0.5rem", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
+        <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#ef4444", marginBottom: "0.3rem" }}>⚡ MegaBot Render Error</div>
+        <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{err?.message || "Unknown error"}</div>
+        <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Data received: {props.result?.providers?.length ?? 0} providers, {props.result?.agreementScore ?? "?"}% agreement</div>
+      </div>
+    );
+  }
+}
+
 /* ═══════════════════════════════════════════
    PANEL 1: AI Analysis (FREE — auto-populates)
    ═══════════════════════════════════════════ */
@@ -3339,12 +3378,6 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               </div>
             )}
 
-            {/* MegaBot boost results */}
-            {boosted && boostResult && (<>
-              <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={priceOpenSections.has("megabot-results")} onToggle={togglePriceSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
-              {priceOpenSections.has("megabot-results") && <MegaBotBoostResults botType="pricing" result={boostResult} aiData={aiData} />}
-            </>)}
-
             {/* PriceBot Deep Dive Summary */}
             {priceBotResult && (() => {
               const pb = typeof priceBotResult === "string" ? (() => { try { return JSON.parse(priceBotResult); } catch { return null; } })() : priceBotResult;
@@ -3396,10 +3429,6 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--accent)" }}>${Math.round(v.low)} – ${Math.round(v.high)}</div>
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Confidence: {Math.round(v.confidence * 100)}%</div>
-            {boosted && boostResult && (<>
-              <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={priceOpenSections.has("megabot-results")} onToggle={togglePriceSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
-              {priceOpenSections.has("megabot-results") && <MegaBotBoostResults botType="pricing" result={boostResult} aiData={aiData} />}
-            </>)}
           </div>
         )}
 
@@ -3596,6 +3625,112 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
           );
         })()}
       </div>
+
+      {/* ═══ MEGABOT DEEP PRICING — premium positioned after enrichment ═══ */}
+      {boosted && boostResult && (() => {
+        const mbProviders = (boostResult.providers || []).filter((p: any) => (p.data || p.result) && !p.error);
+        const mbAgreement = Math.round((boostResult.agreementScore ?? 0) > 1 ? boostResult.agreementScore : (boostResult.agreementScore ?? 0) * 100);
+        const mbTimestamp = boostResult.timestamp ? new Date(boostResult.timestamp) : null;
+        const mbAge = mbTimestamp ? Math.round((Date.now() - mbTimestamp.getTime()) / 3600000) : null;
+        const mbAgeLabel = mbAge != null ? (mbAge < 1 ? "Just now" : mbAge < 24 ? `${mbAge}h ago` : `${Math.round(mbAge / 24)}d ago`) : null;
+
+        // Extract per-agent prices for comparison table
+        const agentPrices: { provider: string; icon: string; color: string; low: number | null; high: number | null; mid: number | null; platform: string | null }[] = [];
+        const META: Record<string, { icon: string; color: string }> = { openai: { icon: "🤖", color: "#10a37f" }, claude: { icon: "🧠", color: "#d97706" }, gemini: { icon: "🔮", color: "#4285f4" }, grok: { icon: "🌀", color: "#00DC82" } };
+        for (const p of mbProviders) {
+          const d = p.data || p.result || {};
+          const pv = (d && typeof d === "object" && d.price_validation) ? d.price_validation : d;
+          const m = META[p.provider] || { icon: "🤖", color: "#888" };
+          agentPrices.push({
+            provider: p.provider, icon: m.icon, color: m.color,
+            low: pv?.revised_low ?? d?.estimated_value_low ?? null,
+            high: pv?.revised_high ?? d?.estimated_value_high ?? null,
+            mid: pv?.revised_mid ?? d?.estimated_value_mid ?? null,
+            platform: (() => { const pp = d?.platform_pricing; if (!pp || typeof pp !== "object") return null; return pp.best_platform || Object.keys(pp).filter(k => k !== "best_platform")[0] || null; })(),
+          });
+        }
+        // Consensus price from all agents
+        const allLows = agentPrices.map(a => a.low).filter((n): n is number => n != null);
+        const allHighs = agentPrices.map(a => a.high).filter((n): n is number => n != null);
+        const consensusLow = allLows.length > 0 ? Math.round(allLows.reduce((s, n) => s + n, 0) / allLows.length) : null;
+        const consensusHigh = allHighs.length > 0 ? Math.round(allHighs.reduce((s, n) => s + n, 0) / allHighs.length) : null;
+
+        return (
+          <div style={{ margin: "0 1.25rem 0.5rem", background: "linear-gradient(135deg, rgba(139,92,246,0.06), rgba(0,188,212,0.03))", border: "1px solid rgba(139,92,246,0.2)", borderRadius: "0.75rem", overflow: "hidden" }}>
+            {/* Header bar */}
+            <button
+              onClick={() => togglePriceSection("megabot-results")}
+              style={{ width: "100%", display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.65rem 0.85rem", background: "transparent", border: "none", cursor: "pointer", borderBottom: priceOpenSections.has("megabot-results") ? "1px solid rgba(139,92,246,0.12)" : "none" }}
+            >
+              <span style={{ fontSize: "0.85rem" }}>⚡</span>
+              <span style={{ fontSize: "0.68rem", fontWeight: 800, color: "#a855f7", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>MegaBot Deep Pricing</span>
+              <span style={{ fontSize: "0.6rem", fontWeight: 700, color: mbAgreement >= 80 ? "#4caf50" : mbAgreement >= 60 ? "#ff9800" : "#ef4444" }}>{mbAgreement}%</span>
+              <span style={{ fontSize: "0.55rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.12)", color: "#a855f7", fontWeight: 700 }}>{mbProviders.length} AI</span>
+              {mbAgeLabel && <span style={{ fontSize: "0.52rem", color: "var(--text-muted)", marginLeft: "auto" }}>{mbAgeLabel}</span>}
+              <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", transition: "transform 0.2s", transform: priceOpenSections.has("megabot-results") ? "rotate(180deg)" : "none" }}>▾</span>
+            </button>
+
+            {priceOpenSections.has("megabot-results") && (
+              <div style={{ padding: "0.65rem 0.85rem" }}>
+                {/* Consensus price banner */}
+                {consensusLow != null && consensusHigh != null && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", marginBottom: "0.65rem", background: "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(0,188,212,0.06))", borderRadius: "0.5rem", border: "1px solid rgba(139,92,246,0.15)" }}>
+                    <span style={{ fontSize: "0.55rem", fontWeight: 700, color: "#a855f7", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>Consensus</span>
+                    <span style={{ fontSize: "1.3rem", fontWeight: 800, color: "#a855f7" }}>${consensusLow}</span>
+                    <span style={{ color: "var(--text-muted)" }}>—</span>
+                    <span style={{ fontSize: "1.3rem", fontWeight: 800, color: "#a855f7" }}>${consensusHigh}</span>
+                    <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                      <div style={{ width: "32px", height: "4px", borderRadius: "2px", background: "var(--ghost-bg)", overflow: "hidden" }}>
+                        <div style={{ width: `${mbAgreement}%`, height: "100%", borderRadius: "2px", background: mbAgreement >= 80 ? "#4caf50" : mbAgreement >= 60 ? "#ff9800" : "#ef4444" }} />
+                      </div>
+                      <span style={{ fontSize: "0.55rem", fontWeight: 700, color: mbAgreement >= 80 ? "#4caf50" : mbAgreement >= 60 ? "#ff9800" : "#ef4444" }}>{mbAgreement >= 80 ? "Strong" : mbAgreement >= 60 ? "Moderate" : "Mixed"}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Per-agent price comparison — compact grid */}
+                {agentPrices.length > 0 && (
+                  <div style={{ display: "grid", gridTemplateColumns: agentPrices.length <= 2 ? "1fr" : "1fr 1fr", gap: "0.35rem", marginBottom: "0.65rem" }}>
+                    {agentPrices.map((ap) => (
+                      <div key={ap.provider} style={{ display: "flex", alignItems: "center", gap: "0.35rem", padding: "0.4rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.45rem", border: "1px solid var(--border-default)", borderLeft: `3px solid ${ap.color}` }}>
+                        <span style={{ fontSize: "0.7rem", flexShrink: 0 }}>{ap.icon}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: "0.58rem", fontWeight: 700, color: ap.color }}>{ap.provider === "openai" ? "OpenAI" : ap.provider === "claude" ? "Claude" : ap.provider === "gemini" ? "Gemini" : "Grok"}</div>
+                          <div style={{ fontSize: "0.82rem", fontWeight: 800, color: "var(--text-primary)" }}>
+                            {ap.low != null && ap.high != null ? `$${ap.low}–$${ap.high}` : ap.mid != null ? `$${Math.round(ap.mid)}` : "—"}
+                          </div>
+                        </div>
+                        {ap.platform && <span style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 500, textAlign: "right" as const, maxWidth: "60px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{String(ap.platform).replace(/_/g, " ")}</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Quick summary line */}
+                {(() => {
+                  const firstD = mbProviders[0]?.data || mbProviders[0]?.result || {};
+                  const demand = firstD?.market_analysis?.demand_level;
+                  const totalComps = mbProviders.reduce((sum: number, p: any) => { const d = p.data || p.result || {}; return sum + (Array.isArray(d?.comparable_sales) ? d.comparable_sales.length : 0); }, 0);
+                  const ng = firstD?.negotiation_guide;
+                  const parts: string[] = [];
+                  if (demand) parts.push(`Demand: ${demand}.`);
+                  if (totalComps > 0) parts.push(`${totalComps} comps found.`);
+                  if (ng?.list_price && ng?.minimum_accept) parts.push(`List $${Math.round(Number(ng.list_price))}, floor $${Math.round(Number(ng.minimum_accept))}.`);
+                  if (parts.length === 0) return null;
+                  return (
+                    <div style={{ padding: "0.4rem 0.5rem", marginBottom: "0.5rem", background: "rgba(139,92,246,0.04)", borderRadius: "0.35rem", borderLeft: "3px solid #a855f7", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                      {parts.join(" ")}
+                    </div>
+                  );
+                })()}
+
+                {/* Full deep analysis — expandable */}
+                <MegaBotBoostResults botType="pricing" result={boostResult} aiData={aiData} />
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Amazon trust seal — self-fetching */}
       <div style={{ display: "flex", justifyContent: "center", padding: "0.6rem 0 0.3rem" }}>
@@ -7786,6 +7921,10 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   const [refundActionLoading, setRefundActionLoading] = useState<string | null>(null);
   const [relistLoading, setRelistLoading] = useState(false);
   const [showReturnsInfo, setShowReturnsInfo] = useState(false);
+  const [showMoreActions, setShowMoreActions] = useState(false);
+  const [showReadiness, setShowReadiness] = useState(false);
+  const [exportDone, setExportDone] = useState(false);
+  const [publicLinkCopied, setPublicLinkCopied] = useState(false);
   const currentIdx = STATUS_FLOW.findIndex((s) => s.key === status);
 
   const updateStatus = async (newStatus: string) => {
@@ -8004,6 +8143,31 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           </div>
         </div>
 
+        {/* ── AI SUGGESTED NEXT ACTION ── */}
+        {(() => {
+          const hasPhotos = (photos?.length ?? 0) > 0;
+          const hasAnalysis = !!aiData;
+          const hasPrice = !!initialListingPrice;
+          const views = extra?.totalViews ?? 0;
+          const msg = status === "DRAFT" && !hasPhotos ? "📸 Add photos to get started — AI needs at least 1 image"
+            : status === "DRAFT" && hasPhotos && !hasAnalysis ? "🧠 Ready for AI — tap Run AI Analysis above"
+            : (status === "ANALYZED" || status === "READY") && !hasPrice ? `💰 Set a listing price${valuation ? ` — AI suggests $${Math.round(valuation.low || 0)}–$${Math.round(valuation.high || 0)}` : ""}`
+            : (status === "ANALYZED" || status === "READY") && hasPrice ? "📢 Ready to list! Mark as Listed to go live"
+            : status === "LISTED" && views === 0 ? "⏳ Just listed — share your link to attract buyers"
+            : status === "LISTED" && views > 0 ? "📊 Getting views! Check messages for inquiries"
+            : status === "INTERESTED" ? "🤝 Buyers interested — check messages and close the sale"
+            : status === "SOLD" ? "📦 Congrats! Ship within 3 days for best rating"
+            : status === "SHIPPED" ? "📬 Package on its way — mark complete when delivered"
+            : status === "COMPLETED" ? "🎉 All done! Create a new listing or check earnings"
+            : null;
+          if (!msg) return null;
+          return (
+            <div style={{ padding: "0.4rem 0.6rem", marginBottom: "0.5rem", borderRadius: "0.4rem", borderLeft: "3px solid var(--accent)", background: "var(--ghost-bg)", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+              {msg}
+            </div>
+          );
+        })()}
+
         {/* ── TELEMETRY BAR — Inline KPIs ── */}
         <div style={{
           display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap",
@@ -8070,7 +8234,43 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           {extra?.shippingReady && (
             <span style={{ fontSize: "0.5rem", fontWeight: 700, color: "#22c55e", background: "rgba(34,197,94,0.08)", padding: "1px 5px", borderRadius: "4px" }}>SHIP {"\u2713"}</span>
           )}
+          {/* AI Readiness */}
+          {(() => {
+            const checks = [
+              { ok: (photos?.length ?? 0) > 0, label: "Photos" },
+              { ok: !!aiData, label: "AI Analysis" },
+              { ok: !!valuation, label: "Valuation" },
+              { ok: !!initialListingPrice, label: "Price" },
+              { ok: shippingData?.weight != null, label: "Shipping" },
+            ];
+            const score = checks.filter(c => c.ok).length;
+            const color = score >= 4 ? "#22c55e" : score >= 2 ? "#f59e0b" : "#ef4444";
+            return (
+              <button onClick={() => setShowReadiness(!showReadiness)} style={{ padding: "1px 6px", borderRadius: "4px", fontSize: "0.55rem", fontWeight: 700, color, background: `${color}12`, border: `1px solid ${color}25`, cursor: "pointer" }}>
+                {score}/5 ✓
+              </button>
+            );
+          })()}
         </div>
+
+        {/* AI Readiness Checklist */}
+        {showReadiness && (
+          <div style={{ padding: "0.4rem 0.6rem", marginBottom: "0.5rem", borderRadius: "0.4rem", borderLeft: "3px solid var(--accent)", background: "var(--ghost-bg)" }}>
+            {[
+              { ok: (photos?.length ?? 0) > 0, label: "Photos uploaded", fix: `/items/${itemId}/edit` },
+              { ok: !!aiData, label: "AI analysis complete", fix: `/items/${itemId}` },
+              { ok: !!valuation, label: "Valuation generated", fix: `/items/${itemId}` },
+              { ok: !!initialListingPrice, label: "Listing price set", fix: null },
+              { ok: shippingData?.weight != null, label: "Shipping info complete", fix: `/items/${itemId}/edit` },
+            ].map((c, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.35rem", padding: "0.15rem 0", fontSize: "0.62rem" }}>
+                <span style={{ color: c.ok ? "#22c55e" : "#ef4444" }}>{c.ok ? "✓" : "✗"}</span>
+                <span style={{ color: c.ok ? "var(--text-secondary)" : "var(--text-primary)", fontWeight: c.ok ? 400 : 600 }}>{c.label}</span>
+                {!c.ok && c.fix && <a href={c.fix} style={{ fontSize: "0.55rem", color: "var(--accent)", textDecoration: "none", marginLeft: "auto" }}>Fix →</a>}
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* ── UNIFIED COMMAND BAR ── */}
         <div style={{
@@ -8188,6 +8388,29 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           ))}
         </div>
 
+        {/* ── MORE ACTIONS ROW ── */}
+        <div style={{ marginBottom: "0.5rem" }}>
+          <button onClick={() => setShowMoreActions(!showMoreActions)} style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "0.62rem", fontWeight: 600, color: "var(--text-muted)", padding: "0.2rem 0.4rem", borderRadius: "0.3rem" }}>
+            ⚙️ {showMoreActions ? "Less" : "More"}
+          </button>
+          {showMoreActions && (
+            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" as const, marginTop: "0.3rem", padding: "0.35rem 0.5rem", background: "var(--ghost-bg)", borderRadius: "0.4rem" }}>
+              <button onClick={() => { window.print(); }} style={{ padding: "0.3rem 0.6rem", fontSize: "0.6rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.35rem", cursor: "pointer", color: "var(--text-secondary)" }}>🖨️ Print</button>
+              <button onClick={() => {
+                const blob = new Blob([JSON.stringify({ itemId, status, category, aiData, valuation, photos: photos?.map((p: any) => p.filePath) }, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a"); a.href = url; a.download = `legacyloop-${itemId.slice(0, 8)}.json`; a.click(); URL.revokeObjectURL(url);
+                setExportDone(true); setTimeout(() => setExportDone(false), 2000);
+              }} style={{ padding: "0.3rem 0.6rem", fontSize: "0.6rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.35rem", cursor: "pointer", color: "var(--text-secondary)" }}>{exportDone ? "✅ Exported" : "📥 Export"}</button>
+              <button onClick={() => {
+                const url = `${typeof window !== "undefined" ? window.location.origin : ""}/store`;
+                navigator.clipboard.writeText(url);
+                setPublicLinkCopied(true); setTimeout(() => setPublicLinkCopied(false), 2000);
+              }} style={{ padding: "0.3rem 0.6rem", fontSize: "0.6rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.35rem", cursor: "pointer", color: "var(--text-secondary)" }}>{publicLinkCopied ? "✅ Copied" : "🔗 Public Link"}</button>
+            </div>
+          )}
+        </div>
+
         {/* ── MANAGE STRIP — Trade · Sale · Offers ── */}
         <div style={{
           display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap",
@@ -8196,15 +8419,23 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.06)",
           marginBottom: "0.5rem",
         }}>
-          {/* Trade toggle */}
-          <TradeToggle itemId={itemId} />
+          {/* Trade toggle + pending indicator */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+            <TradeToggle itemId={itemId} />
+          </div>
 
           <div style={{ width: "1px", height: "16px", background: "var(--border-default)", opacity: 0.5 }} />
 
           {/* Sale assignment */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.2rem" }}>
-            <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F3F7}\u{FE0F}"}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>🏷️</span>
             <SaleAssignment itemId={itemId} initialProjectId={projectId ?? null} />
+            {projectId && (
+              <span style={{ fontSize: "0.55rem", fontWeight: 600, padding: "1px 5px", borderRadius: "4px", background: "rgba(0,188,212,0.08)", color: "var(--accent)", border: "1px solid rgba(0,188,212,0.15)" }}>Assigned</span>
+            )}
+            {!projectId && (
+              <a href="/projects/new" style={{ fontSize: "0.55rem", color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>+ New</a>
+            )}
           </div>
 
           <div style={{ flex: 1 }} />
@@ -8733,8 +8964,17 @@ export default function ItemDashboardPanels({
         const newResults: Record<string, any> = {};
         for (const [key, data] of Object.entries(d.results)) {
           const panelKey = BOT_TO_PANEL[key] || key;
+          const rd = data as any;
+          // Normalize: ensure providers have proper format
+          if (rd?.providers && Array.isArray(rd.providers)) {
+            rd.providers = rd.providers.map((p: any) => ({
+              ...p,
+              error: p.error ?? null,
+              data: p.data ?? p.result ?? null,
+            }));
+          }
           newBoosted.add(panelKey);
-          newResults[panelKey] = data;
+          newResults[panelKey] = rd;
         }
         setBoostedBots(newBoosted);
         setBoostResults(newResults);
@@ -8766,11 +9006,13 @@ export default function ItemDashboardPanels({
       if (res.ok) {
         const data = await res.json();
         setBuyerBotResult(data.result);
-      } else if (res.status === 402 || res.status === 403) {
-        const err = await res.json().catch(() => ({ error: "error", message: "Something went wrong." }));
-        setBotError("buyers", { type: err.error, message: err.message, balance: err.balance, required: err.required });
+      } else {
+        const err = await res.json().catch(() => ({ error: "error", message: "BuyerBot failed. Please try again." }));
+        setBotError("buyers", { type: err.error || "error", message: err.message || `BuyerBot failed (${res.status})` });
       }
-    } catch { /* ignore */ }
+    } catch (e: any) {
+      setBotError("buyers", { type: "error", message: e?.message || "Network error — check connection and retry." });
+    }
     setBuyerBotLoading(false);
   }
 
@@ -8939,7 +9181,16 @@ export default function ItemDashboardPanels({
                 setBoostResults((prev) => {
                   const next = { ...prev };
                   for (const [key, rdata] of Object.entries(refreshData.results)) {
-                    next[BOT_TO_PANEL[key] || key] = rdata;
+                    const rd = rdata as any;
+                    // Normalize providers — same as mount-time fetch
+                    if (rd?.providers && Array.isArray(rd.providers)) {
+                      rd.providers = rd.providers.map((p: any) => ({
+                        ...p,
+                        error: p.error ?? null,
+                        data: p.data ?? p.result ?? null,
+                      }));
+                    }
+                    next[BOT_TO_PANEL[key] || key] = rd;
                   }
                   return next;
                 });
@@ -9428,6 +9679,7 @@ export default function ItemDashboardPanels({
         />
 
         {/* Shipping */}
+        <div id="shipping-panel">
         <ShippingEstimatesPanel
           itemId={itemId} aiData={aiData} saleZip={saleZip} valuation={valuation} status={status} category={category}
           onSuperBoost={() => superBoost("shipping")}
@@ -9438,6 +9690,7 @@ export default function ItemDashboardPanels({
           onToggle={() => togglePanel("shipping")}
           shippingData={shippingData}
         />
+        </div>
 
         {/* Photo Quality */}
         <PhotoQualityPanel
