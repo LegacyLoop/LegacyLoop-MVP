@@ -2252,6 +2252,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
   const [reportOpen, setReportOpen] = useState(false);
   const [reportCopied, setReportCopied] = useState(false);
   const [showExplainer, setShowExplainer] = useState(true);
+  const [expandedEngine, setExpandedEngine] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem("megabot-explainer-dismissed") === "true") {
@@ -2378,6 +2379,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
               <button
                 key={stat.key}
                 onClick={() => setExpandedStat(isExpanded ? null : stat.key)}
+                aria-label={`${stat.label} details`}
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -2709,11 +2711,13 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                 })();
                 const isOnline = engineRuns > 0;
                 return (
-                  <div key={engine.key} style={{
+                  <button key={engine.key} onClick={() => setExpandedEngine(expandedEngine === engine.key ? null : engine.key)} aria-label={`View ${engine.name} AI engine details`} style={{
                     padding: "0.85rem 0.65rem", borderRadius: "0.75rem",
-                    background: isOnline ? `${engine.color}08` : "var(--bg-card)",
-                    border: `1px solid ${isOnline ? `${engine.color}30` : "var(--border-default)"}`,
-                    textAlign: "center", transition: "all 0.2s ease",
+                    background: expandedEngine === engine.key ? `${engine.color}12` : isOnline ? `${engine.color}08` : "var(--bg-card)",
+                    border: `2px solid ${expandedEngine === engine.key ? engine.color : isOnline ? `${engine.color}30` : "var(--border-default)"}`,
+                    textAlign: "center" as const, transition: "all 0.2s ease", cursor: "pointer",
+                    boxShadow: expandedEngine === engine.key ? `0 4px 16px ${engine.color}25` : "none",
+                    fontFamily: "inherit", fontSize: "inherit", lineHeight: "inherit", display: "block", width: "100%",
                   }}>
                     <div style={{
                       width: 36, height: 36, borderRadius: "50%", margin: "0 auto 0.5rem",
@@ -2726,7 +2730,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                     </div>
                     <div style={{ fontSize: "0.78rem", fontWeight: 700, color: isOnline ? engine.color : "var(--text-muted)" }}>{engine.name}</div>
                     <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem", fontFamily: "monospace" }}>{engine.model}</div>
-                    <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontStyle: "italic", marginTop: "0.15rem" }}>{engine.specialty}</div>
+                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontStyle: "italic", marginTop: "0.15rem" }}>{engine.specialty}</div>
                     {isOnline && (
                       <div style={{ marginTop: "0.35rem", fontSize: "0.55rem", color: "var(--text-secondary)" }}>
                         {engineRuns} run{engineRuns !== 1 ? "s" : ""}{avgTime ? ` · ~${avgTime}s` : ""}
@@ -2743,10 +2747,115 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                         {isOnline ? "ACTIVE" : "STANDBY"}
                       </span>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
+
+            {/* ═══ EXPANDED ENGINE DETAIL ═══ */}
+            {expandedEngine && megaResults && (() => {
+              const engineMeta: Record<string, { name: string; icon: string; color: string; model: string; specialty: string; strengths: string }> = {
+                openai: { name: "GPT-4o", icon: "🤖", color: "#10a37f", model: "gpt-4o", specialty: "Balanced & Data-Driven", strengths: "Precise item identification, accurate pricing, comprehensive condition assessment. Best at cross-referencing market data with visual analysis." },
+                claude: { name: "Claude", icon: "🧠", color: "#d97706", model: "claude-3.5-haiku", specialty: "Craftsmanship & History", strengths: "Deep historical knowledge, maker identification, construction analysis, authentication expertise. Best at provenance research and cultural context." },
+                gemini: { name: "Gemini", icon: "🔮", color: "#4285f4", model: "gemini-1.5-flash", specialty: "Market & Trends", strengths: "Real-time market analysis, trend detection, comparable sales research, SEO optimization. Best at identifying demand patterns and pricing trends." },
+                grok: { name: "Grok", icon: "🌀", color: "#00DC82", model: "grok-3-fast", specialty: "Social & Viral", strengths: "Social media trends, community demand, viral potential, Gen Z appeal. Best at identifying non-traditional buyer segments and emerging markets." },
+              };
+              const em = engineMeta[expandedEngine];
+              if (!em) return null;
+
+              const engineFindings: { botKey: string; botLabel: string; botIcon: string; botColor: string; data: any; responseTime: number; error: string | null; agreement: number }[] = [];
+              let totalRuns = 0, totalSuccess = 0, totalErrors = 0, totalTime = 0;
+
+              for (const [botKey, result] of Object.entries(megaResults)) {
+                const r = result as any;
+                const providers: any[] = r?.providers || [];
+                const match = providers.find((p: any) => p.provider === expandedEngine);
+                if (match) {
+                  totalRuns++;
+                  const meta = BOT_META[botKey] || { label: botKey, icon: "🤖", color: "#888", href: "/bots" };
+                  if (match.error) { totalErrors++; } else { totalSuccess++; totalTime += match.durationMs || match.responseTime || 0; }
+                  const agreeRaw = r?.agreementScore || 0;
+                  engineFindings.push({ botKey, botLabel: meta.label, botIcon: meta.icon, botColor: meta.color, data: match.data || match, responseTime: match.durationMs || match.responseTime || 0, error: match.error, agreement: Math.round(agreeRaw > 1 ? agreeRaw : agreeRaw * 100) });
+                }
+              }
+
+              const avgTime = totalSuccess > 0 ? (totalTime / totalSuccess / 1000).toFixed(1) : "—";
+              const successRate = totalRuns > 0 ? Math.round((totalSuccess / totalRuns) * 100) : 0;
+
+              return (
+                <div style={{ marginTop: "0.75rem", padding: "1.25rem", background: `${em.color}06`, border: `2px solid ${em.color}30`, borderRadius: "0.85rem", borderTop: `3px solid ${em.color}` }}>
+                  {/* Hero */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: "50%", background: `${em.color}20`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem", boxShadow: `0 0 16px ${em.color}30` }}>{em.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 800, color: em.color }}>{em.name}</div>
+                      <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontFamily: "monospace" }}>{em.model}</div>
+                      <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", fontStyle: "italic" as const }}>{em.specialty}</div>
+                    </div>
+                    <button onClick={(e) => { e.stopPropagation(); setExpandedEngine(null); }} style={{ background: "transparent", border: "none", cursor: "pointer", color: "var(--text-muted)", fontSize: "1rem", padding: "0.25rem" }} aria-label="Close engine detail">✕</button>
+                  </div>
+
+                  {/* KPIs */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", marginBottom: "1rem" }}>
+                    {[
+                      { label: "Runs", value: `${totalSuccess}/${totalRuns}`, color: em.color },
+                      { label: "Success", value: `${successRate}%`, color: successRate >= 80 ? "#10b981" : "#f59e0b" },
+                      { label: "Avg Time", value: `${avgTime}s`, color: "var(--text-primary)" },
+                      { label: "Errors", value: String(totalErrors), color: totalErrors > 0 ? "#ef4444" : "#10b981" },
+                    ].map((kpi) => (
+                      <div key={kpi.label} style={{ textAlign: "center" as const, padding: "0.5rem", borderRadius: "0.5rem", background: "var(--bg-card)", border: "1px solid var(--border-default)" }}>
+                        <div style={{ fontSize: "1rem", fontWeight: 800, color: kpi.color }}>{kpi.value}</div>
+                        <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>{kpi.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Strengths */}
+                  <div style={{ padding: "0.65rem 0.85rem", borderRadius: "0.5rem", marginBottom: "1rem", background: `${em.color}08`, borderLeft: `3px solid ${em.color}` }}>
+                    <div style={{ fontSize: "0.58rem", fontWeight: 700, color: em.color, textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: "0.2rem" }}>Engine Strengths</div>
+                    <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.6, margin: 0 }}>{em.strengths}</p>
+                  </div>
+
+                  {/* Per-Bot Findings */}
+                  <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: "0.5rem" }}>{em.name} Findings ({engineFindings.length} runs)</div>
+                  <div style={{ display: "flex", flexDirection: "column" as const, gap: "0.4rem" }}>
+                    {engineFindings.map((ef) => {
+                      const insight = ef.data ? (typeof ef.data === "object" ? (ef.data.executive_summary || ef.data.summary || ef.data.notes || (ef.data.identification?.item_name ? `Identified as: ${ef.data.identification.item_name}` : null) || JSON.stringify(ef.data).slice(0, 120) + "...") : String(ef.data).slice(0, 120)) : null;
+                      const priceFair = ef.data?.estimated_value_mid ?? ef.data?.price_fair ?? ef.data?.pricing?.mid ?? null;
+                      return (
+                        <div key={ef.botKey} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", padding: "0.55rem 0.65rem", borderRadius: "0.5rem", background: ef.error ? "rgba(239,68,68,0.06)" : "var(--bg-card)", border: `1px solid ${ef.error ? "rgba(239,68,68,0.2)" : "var(--border-default)"}` }}>
+                          <span style={{ fontSize: "0.85rem", flexShrink: 0 }}>{ef.botIcon}</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginBottom: "0.15rem" }}>
+                              <span style={{ fontSize: "0.72rem", fontWeight: 700, color: ef.botColor }}>{ef.botLabel}</span>
+                              <span style={{ fontSize: "0.55rem", padding: "1px 5px", borderRadius: 99, fontWeight: 600, background: ef.agreement >= 75 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: ef.agreement >= 75 ? "#4caf50" : "#ff9800" }}>{ef.agreement}%</span>
+                              {ef.responseTime > 0 && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{(ef.responseTime / 1000).toFixed(1)}s</span>}
+                              {priceFair != null && <span style={{ fontSize: "0.62rem", fontWeight: 700, color: em.color, marginLeft: "auto" }}>${typeof priceFair === "number" ? Math.round(priceFair).toLocaleString() : priceFair}</span>}
+                            </div>
+                            {ef.error ? <div style={{ fontSize: "0.68rem", color: "#ef4444" }}>Error: {ef.error}</div> : insight ? <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: 0, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{typeof insight === "string" && insight.length > 150 ? insight.slice(0, 150) + "..." : insight}</p> : null}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Agreement Pattern */}
+                  {engineFindings.length >= 2 && (
+                    <div style={{ marginTop: "0.75rem", padding: "0.55rem 0.75rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                      <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: "0.25rem" }}>Agreement Pattern</div>
+                      <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                        {(() => {
+                          const agreements = engineFindings.filter(f => !f.error).map(f => f.agreement);
+                          const avg = agreements.length > 0 ? Math.round(agreements.reduce((a, b) => a + b, 0) / agreements.length) : 0;
+                          const high = engineFindings.filter(f => f.agreement >= 80);
+                          return `${em.name} averages ${avg}% agreement across ${agreements.length} analyses.${high.length > 0 ? ` Strongest alignment with ${high.map(h => h.botLabel).join(", ")}.` : ""}`;
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* ═══ CONSENSUS STRENGTH VISUALIZATION ═══ */}
@@ -2816,6 +2925,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                 <button
                   key={key}
                   onClick={() => setActiveTab(key)}
+                  aria-label={`View ${meta.label} MegaBot results`}
                   style={{
                     padding: "0.45rem 0.85rem", borderRadius: "0.5rem",
                     border: `1px solid ${isActive ? meta.color : "var(--border-default)"}`,
@@ -3092,7 +3202,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
       {/* ═══ PROFESSIONAL MULTI-AI CONSENSUS REPORT ═══ */}
       {megaResults && Object.keys(megaResults).length > 0 && item && (
         <div style={{ marginTop: "1rem", marginBottom: "0.5rem" }}>
-          <button onClick={() => setReportOpen(!reportOpen)} style={{ width: "100%", padding: "0.65rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "2px solid rgba(139,92,246,0.3)", borderRadius: "0.75rem", cursor: "pointer", color: "#8b5cf6", fontSize: "0.82rem", fontWeight: 700, minHeight: "44px", transition: "border-color 0.15s ease" }}>
+          <button onClick={() => setReportOpen(!reportOpen)} aria-label={reportOpen ? "Close consensus report" : "Open consensus report"} style={{ width: "100%", padding: "0.65rem 1.25rem", display: "flex", alignItems: "center", justifyContent: "space-between", background: "transparent", border: "2px solid rgba(139,92,246,0.3)", borderRadius: "0.75rem", cursor: "pointer", color: "#8b5cf6", fontSize: "0.82rem", fontWeight: 700, minHeight: "44px", transition: "border-color 0.15s ease" }}>
             <span>📋 Multi-AI Consensus Report</span>
             <span style={{ fontSize: "0.75rem" }}>{reportOpen ? "▴" : "▾"}</span>
           </button>
@@ -3224,13 +3334,14 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
             <button
               onClick={handleRunMegaBot}
               disabled={megaRunning}
+              aria-label="Run MegaBot analysis"
               style={{
                 padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
                 borderRadius: "10px", border: "none",
                 background: megaRunning ? "var(--ghost-bg)" : "linear-gradient(135deg, #8b5cf6, #6d28d9)",
                 color: megaRunning ? "var(--text-muted)" : "#fff",
                 cursor: megaRunning ? "not-allowed" : "pointer",
-                minHeight: "36px", whiteSpace: "nowrap" as const,
+                minHeight: "44px", whiteSpace: "nowrap" as const,
                 boxShadow: megaRunning ? "none" : "0 2px 10px rgba(139,92,246,0.3)",
                 transition: "all 0.2s ease",
               }}
@@ -3239,9 +3350,10 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
             </button>
             <Link
               href={`/items/${item.id}`}
+              aria-label="View item dashboard"
               style={{
                 padding: "0.45rem 0.85rem", fontSize: "0.72rem", fontWeight: 600,
-                borderRadius: "10px", textDecoration: "none", minHeight: "36px",
+                borderRadius: "10px", textDecoration: "none", minHeight: "44px",
                 background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                 color: "var(--text-secondary)", display: "flex", alignItems: "center",
                 whiteSpace: "nowrap" as const,
