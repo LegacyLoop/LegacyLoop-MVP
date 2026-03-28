@@ -49,18 +49,24 @@ export default function AmazonPriceBadge({ itemId }: { itemId: string }) {
   // No data yet — render nothing (enrichment happens automatically)
   if (!data) return null;
 
-  const { priceRange, resultCount } = data;
+  const { priceRange, resultCount, topResult } = data;
   const hasRange = priceRange.low > 0 && priceRange.high > 0;
+  const avgPrice = priceRange.avg > 0 ? Math.round(priceRange.avg) : null;
+  const medianPrice = priceRange.median > 0 ? Math.round(priceRange.median) : null;
+  // Use median as the primary "market price" — more accurate than avg (resists outliers)
+  const marketPrice = medianPrice || avgPrice;
+  const topRating = topResult?.rating;
+  const topRatingsCount = topResult?.ratingsTotal;
 
   return (
     <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-      {/* Element A — Trust seal (always shown when data exists) */}
+      {/* Trust seal */}
       <span
         style={{
           display: "inline-flex",
           alignItems: "center",
           gap: "4px",
-          padding: "3px 9px",
+          padding: "3px 10px",
           borderRadius: "20px",
           border: "1px solid rgba(0,188,212,0.25)",
           background: "rgba(0,188,212,0.08)",
@@ -71,31 +77,38 @@ export default function AmazonPriceBadge({ itemId }: { itemId: string }) {
         }}
       >
         <span style={{ fontSize: "11px", lineHeight: 1 }}>✓</span>
-        Amazon Evaluated
+        Amazon Verified
       </span>
 
-      {/* Element B — Price context (only when price range exists) */}
-      {hasRange && (
+      {/* Market price — shows median (reliable) instead of misleading min-max spread */}
+      {hasRange && marketPrice && (
         <span
           style={{
             display: "inline-flex",
             alignItems: "center",
             gap: "5px",
-            padding: "3px 9px",
+            padding: "3px 10px",
             borderRadius: "20px",
-            border: "1px solid rgba(255,153,0,0.25)",
-            background: "rgba(255,153,0,0.1)",
+            border: "1px solid rgba(255,153,0,0.3)",
+            background: "rgba(255,153,0,0.08)",
             fontSize: "10.5px",
-            fontWeight: 600,
-            color: "rgba(255,153,0,0.9)",
+            fontWeight: 700,
+            color: "#e67e00",
             letterSpacing: "0.01em",
           }}
         >
-          <span style={{ fontSize: "11px" }}>🛒</span>
-          ${Math.round(priceRange.low)}–${Math.round(priceRange.high)}
+          ~${marketPrice}
+          <span style={{ fontWeight: 500, color: "rgba(230,126,0,0.6)", fontSize: "9.5px" }}>
+            avg
+          </span>
+          {topRating && topRating >= 4.0 && (
+            <span style={{ fontSize: "9.5px", color: "rgba(230,126,0,0.7)", fontWeight: 600 }}>
+              ★ {topRating}
+            </span>
+          )}
           {resultCount > 0 && (
-            <span style={{ color: "rgba(255,153,0,0.5)", fontWeight: 400, marginLeft: "1px" }}>
-              · {resultCount} listings
+            <span style={{ fontWeight: 400, color: "rgba(230,126,0,0.5)", fontSize: "9.5px" }}>
+              · {resultCount} found
             </span>
           )}
         </span>
