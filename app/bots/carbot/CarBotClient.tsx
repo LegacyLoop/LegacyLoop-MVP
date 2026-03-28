@@ -198,6 +198,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
   const [savingData, setSavingData] = useState(false);
   const [plateBlurred, setPlateBlurred] = useState(false);
   const [blurringPlates, setBlurringPlates] = useState(false);
+  const [expandedStat, setExpandedStat] = useState<string | null>(null);
   const [itemPhotos, setItemPhotos] = useState<ItemPhoto[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -436,107 +437,316 @@ export default function CarBotClient({ items }: { items: Item[] }) {
   const odometerFromPhoto = result?.identification?.odometer_from_photo || result?.odometer_from_photo;
 
   return (
-    <div>
+    <div style={{ paddingBottom: selectedId && selected ? "5rem" : undefined }}>
       {toast && <Toast message={toast} />}
 
       {/* Hero */}
       <div style={{
-        background: "var(--bg-card)",
-        backdropFilter: "blur(12px)",
-        border: "1px solid rgba(0,188,212,0.15)",
-        borderRadius: "16px",
-        padding: "1.5rem",
-        marginBottom: "1.5rem",
+        borderRadius: "1rem", padding: "3px", marginBottom: "1.5rem",
+        background: `linear-gradient(135deg, ${AUTO_BLUE}, #00838f, ${AUTO_BLUE})`,
+        boxShadow: `0 4px 24px rgba(0,188,212,0.15)`,
       }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <span style={{ fontSize: "2rem" }}>🚗</span>
-            <div>
-              <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--text-primary)", margin: 0 }}>
-                CarBot — Vehicle Specialist
-              </h1>
-              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: "0.25rem 0 0" }}>
-                Professional vehicle evaluation powered by AI
-              </p>
-            </div>
-          </div>
-          <span style={{
-            background: "rgba(0,188,212,0.15)",
-            color: "#00bcd4",
-            padding: "0.25rem 0.75rem",
-            borderRadius: "999px",
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            textTransform: "uppercase" as const,
-            letterSpacing: "0.05em",
-          }}>LOCAL PICKUP ONLY</span>
-        </div>
-
-        {selected && isVehicle && result && ident && (
-          <div style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border-default)",
-            borderRadius: "0.75rem",
-            padding: "1rem",
-            display: "grid",
-            gridTemplateColumns: "1fr auto",
-            gap: "1rem",
-            alignItems: "center",
-            marginBottom: "0.75rem",
-          }}>
-            <div>
-              <h2 style={{ fontSize: "1.35rem", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 0.5rem" }}>
-                {[ident.year, ident.make, ident.model, ident.trim].filter(Boolean).join(" ") || selected.title}
-              </h2>
-              <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", margin: "0 0 0.5rem" }}>
-                {[ident.body_style, ident.engine, ident.drivetrain, ident.transmission].filter(Boolean).join(" · ") || "\u00A0"}
-              </p>
-              {(mileage || sellerDetails.titleStatus) && (
-                <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: 0 }}>
-                  {mileage ? `${Number(mileage).toLocaleString()} miles` : ""}
-                  {mileage && sellerDetails.titleStatus ? " · " : ""}
-                  {sellerDetails.titleStatus ? `${sellerDetails.titleStatus} Title` : ""}
+        <div style={{
+          background: "var(--bg-card-solid)",
+          borderRadius: "calc(1rem - 3px)",
+          padding: "1.5rem 2rem",
+        }}>
+          {/* Top Row: Branding + Badge */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: "14px",
+                background: `linear-gradient(135deg, ${AUTO_BLUE}18, ${AUTO_BLUE}08)`,
+                border: `1px solid ${AUTO_BLUE}30`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "1.5rem", flexShrink: 0,
+              }}>🚗</div>
+              <div>
+                <h1 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text-primary)", margin: 0, letterSpacing: "-0.02em" }}>
+                  CarBot
+                </h1>
+                <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: "0.15rem 0 0", fontWeight: 500 }}>
+                  Vehicle Specialist · AI-Powered Evaluation
                 </p>
-              )}
+              </div>
             </div>
-            <div style={{ textAlign: "right" }}>
-              {cond?.overall_grade && (
-                <div style={{
-                  fontSize: "1.5rem", fontWeight: 700,
-                  color: String(cond.overall_grade).startsWith("A") ? "#4ade80" : String(cond.overall_grade).startsWith("B") ? "#fbbf24" : "#ef4444",
-                  marginBottom: "0.25rem",
-                }}>
-                  {cond.overall_grade}
-                </div>
-              )}
-              {val?.private_party_value?.mid && (
-                <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--accent)" }}>
-                  ${Number(val.private_party_value.mid).toLocaleString()}
-                </div>
-              )}
-              <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>Private Party Est.</div>
+            <div style={{
+              display: "flex", alignItems: "center", gap: "0.35rem",
+              padding: "0.35rem 0.85rem", borderRadius: "999px",
+              background: `linear-gradient(135deg, ${AUTO_BLUE}15, ${AUTO_BLUE}08)`,
+              border: `1px solid ${AUTO_BLUE}35`,
+            }}>
+              <span style={{ fontSize: "0.65rem" }}>🏠</span>
+              <span style={{ fontSize: "0.62rem", fontWeight: 700, color: AUTO_BLUE, letterSpacing: "0.04em", textTransform: "uppercase" as const }}>
+                Local Pickup Only
+              </span>
             </div>
           </div>
-        )}
 
-        {/* Plate blur indicator */}
-        {plateBlurred && (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.75rem", fontSize: "0.72rem", color: "#4ade80" }}>
-            🛡️ License plates auto-blurred for privacy
-          </div>
-        )}
-        {blurringPlates && (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.75rem", fontSize: "0.72rem", color: "var(--text-muted)" }}>
-            🛡️ Scanning photos for license plates...
-          </div>
-        )}
+          {/* Selected Vehicle Summary */}
+          {selected && isVehicle && result && ident && (
+            <div style={{
+              background: "var(--ghost-bg)",
+              border: "1px solid var(--border-default)",
+              borderRadius: "0.75rem",
+              padding: "1rem 1.25rem",
+              display: "grid",
+              gridTemplateColumns: "1fr auto",
+              gap: "1.25rem",
+              alignItems: "center",
+              marginBottom: "1rem",
+            }}>
+              <div>
+                <h2 style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--text-primary)", margin: "0 0 0.35rem", letterSpacing: "-0.01em" }}>
+                  {[ident.year, ident.make, ident.model, ident.trim].filter(Boolean).join(" ") || selected.title}
+                </h2>
+                <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap", alignItems: "center" }}>
+                  {[ident.body_style, ident.engine, ident.drivetrain, ident.transmission].filter(Boolean).map((spec: string) => (
+                    <span key={spec} style={{
+                      padding: "0.15rem 0.5rem", borderRadius: "999px", fontSize: "0.62rem", fontWeight: 600,
+                      background: `${AUTO_BLUE}10`, color: "#0097a7", border: `1px solid ${AUTO_BLUE}20`,
+                    }}>{spec}</span>
+                  ))}
+                </div>
+                {(mileage || sellerDetails.titleStatus) && (
+                  <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "0.4rem 0 0", fontWeight: 500 }}>
+                    {mileage ? `${Number(mileage).toLocaleString()} miles` : ""}
+                    {mileage && sellerDetails.titleStatus ? " · " : ""}
+                    {sellerDetails.titleStatus ? `${sellerDetails.titleStatus} Title` : ""}
+                  </p>
+                )}
+              </div>
+              <div style={{ textAlign: "right" as const, minWidth: 80 }}>
+                {cond?.overall_grade && (
+                  <div style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    width: 40, height: 40, borderRadius: "10px", marginBottom: "0.3rem",
+                    fontSize: "1.1rem", fontWeight: 900,
+                    background: String(cond.overall_grade).startsWith("A") ? "rgba(74,222,128,0.12)"
+                      : String(cond.overall_grade).startsWith("B") ? "rgba(251,191,36,0.12)" : "rgba(239,68,68,0.12)",
+                    color: String(cond.overall_grade).startsWith("A") ? "#22c55e"
+                      : String(cond.overall_grade).startsWith("B") ? "#eab308" : "#ef4444",
+                    border: `1px solid ${String(cond.overall_grade).startsWith("A") ? "rgba(74,222,128,0.3)"
+                      : String(cond.overall_grade).startsWith("B") ? "rgba(251,191,36,0.3)" : "rgba(239,68,68,0.3)"}`,
+                  }}>
+                    {cond.overall_grade}
+                  </div>
+                )}
+                {val?.private_party_value?.mid && (
+                  <div style={{ fontSize: "1.15rem", fontWeight: 800, color: AUTO_BLUE }}>
+                    ${Number(val.private_party_value.mid).toLocaleString()}
+                  </div>
+                )}
+                <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>Private Party Est.</div>
+              </div>
+            </div>
+          )}
 
-        <div style={{ display: "flex", gap: "1rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-          <span><strong style={{ color: AUTO_BLUE }}>{vehicleItems.length}</strong> Vehicles</span>
-          <span><strong style={{ color: AUTO_BLUE }}>{items.filter((i) => i.carBotResult).length}</strong> Evaluated</span>
-          <span><strong style={{ color: AUTO_BLUE }}>{analyzedItems.length}</strong> Analyzed</span>
+          {/* Privacy + Stats Strip */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div>
+              {plateBlurred && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.68rem", color: "#22c55e", fontWeight: 600 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 18, height: 18, borderRadius: "50%", background: "rgba(34,197,94,0.12)", fontSize: "0.6rem" }}>🛡️</span>
+                  License plates auto-blurred
+                </div>
+              )}
+              {blurringPlates && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 500 }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 18, height: 18, borderRadius: "50%", background: "var(--ghost-bg)", fontSize: "0.6rem" }}>🛡️</span>
+                  Scanning for license plates...
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: "1.25rem", fontSize: "0.72rem" }}>
+              {[
+                { label: "Vehicles", count: vehicleItems.length },
+                { label: "Evaluated", count: items.filter((i) => i.carBotResult).length },
+                { label: "Analyzed", count: analyzedItems.length },
+              ].map((s) => (
+                <span key={s.label} style={{ color: "var(--text-muted)", fontWeight: 500 }}>
+                  <strong style={{ color: AUTO_BLUE, fontWeight: 800 }}>{s.count}</strong> {s.label}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* ═══ STATS BANNER (clickable) ═══ */}
+      {(() => {
+        const scannedItems = items.filter(i => i.carBotResult);
+        const valVehicles = vehicleItems.filter(i => i.valuation?.mid);
+        const totalVal = valVehicles.reduce((a, b) => a + (b.valuation?.mid ?? 0), 0);
+        const avgVal = valVehicles.length ? Math.round(totalVal / valVehicles.length) : 0;
+        const highItem = valVehicles.length ? valVehicles.reduce((a, b) => (a.valuation?.mid ?? 0) > (b.valuation?.mid ?? 0) ? a : b) : null;
+        const lowItem = valVehicles.length ? valVehicles.reduce((a, b) => (a.valuation?.mid ?? 0) < (b.valuation?.mid ?? 0) ? a : b) : null;
+        const statPanels = [
+          { key: "total", label: "Total Items", value: items.length, icon: "📦" },
+          { key: "vehicles", label: "Vehicles", value: vehicleItems.length, icon: "🚗" },
+          { key: "scanned", label: "Scanned", value: scannedItems.length, icon: "🔬" },
+          { key: "value", label: "Avg Value", value: avgVal ? `$${avgVal.toLocaleString()}` : "$--", icon: "💰" },
+        ];
+        return (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem" }}>
+              {statPanels.map((s) => (
+                <div
+                  key={s.key}
+                  onClick={() => setExpandedStat(expandedStat === s.key ? null : s.key)}
+                  style={{
+                    background: expandedStat === s.key ? "rgba(0,188,212,0.06)" : "var(--bg-card-solid)",
+                    border: expandedStat === s.key ? `2px solid ${AUTO_BLUE}` : "1px solid var(--border-default)",
+                    borderRadius: "12px",
+                    padding: "1rem 0.85rem", textAlign: "center" as const,
+                    boxShadow: expandedStat === s.key ? `0 4px 16px rgba(0,188,212,0.15)` : "0 1px 3px rgba(0,0,0,0.06)",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    transform: expandedStat === s.key ? "translateY(-2px)" : "none",
+                    userSelect: "none" as const,
+                  }}
+                >
+                  <div style={{ fontSize: "1.1rem", marginBottom: "0.25rem" }}>{s.icon}</div>
+                  <div style={{ fontSize: "1.35rem", fontWeight: 800, color: AUTO_BLUE }}>{s.value}</div>
+                  <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginTop: "0.15rem" }}>
+                    {s.label} <span style={{ fontSize: "0.5rem", opacity: 0.6 }}>{expandedStat === s.key ? "▲" : "▼"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Expanded stat detail panel */}
+            {expandedStat && (
+              <div style={{
+                marginTop: "0.75rem", padding: "1rem 1.25rem", borderRadius: "12px",
+                background: "var(--bg-card-solid)", border: "1px solid var(--border-default)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+              }}>
+                {expandedStat === "total" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: AUTO_BLUE, fontWeight: 700, marginBottom: "0.65rem" }}>All Items Overview</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                      {[
+                        { l: "Analyzed", v: analyzedItems.length },
+                        { l: "Not Analyzed", v: items.length - analyzedItems.length },
+                        { l: "Vehicles", v: vehicleItems.length },
+                        { l: "With Value", v: valVehicles.length },
+                      ].map(d => (
+                        <div key={d.l} style={{ padding: "0.45rem 0.5rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", textAlign: "center" as const }}>
+                          <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-primary)" }}>{d.v}</div>
+                          <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{d.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ maxHeight: "160px", overflowY: "auto" as const }}>
+                      {items.slice(0, 12).map(it => (
+                        <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                          display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.4rem",
+                          borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                        }}>
+                          {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" as const }} />}
+                          <span style={{ flex: 1, fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</span>
+                          <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", flexShrink: 0 }}>{it.status}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {expandedStat === "vehicles" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: AUTO_BLUE, fontWeight: 700, marginBottom: "0.65rem" }}>Detected Vehicles</div>
+                    {vehicleItems.length === 0 ? (
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>No vehicles detected yet. Upload vehicle photos and run AI analysis.</p>
+                    ) : (
+                      <div style={{ maxHeight: "200px", overflowY: "auto" as const }}>
+                        {vehicleItems.map(it => {
+                          const ymm = [it.vehicleYear, it.vehicleMake, it.vehicleModel].filter(Boolean).join(" ");
+                          return (
+                            <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                              display: "flex", alignItems: "center", gap: "0.65rem", padding: "0.45rem 0.4rem",
+                              borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                            }}>
+                              {it.photo && <img src={it.photo} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" as const }} />}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</div>
+                                <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{ymm || it.category}{it.carBotResult ? " · ✅ Evaluated" : ""}</div>
+                              </div>
+                              {it.valuation?.mid && <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#10b981", flexShrink: 0 }}>${it.valuation.mid.toLocaleString()}</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {expandedStat === "scanned" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: AUTO_BLUE, fontWeight: 700, marginBottom: "0.65rem" }}>CarBot Scan History</div>
+                    {scannedItems.length === 0 ? (
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>No items scanned yet. Select a vehicle and run CarBot.</p>
+                    ) : (
+                      <div style={{ maxHeight: "200px", overflowY: "auto" as const }}>
+                        {scannedItems.map(it => {
+                          const cbr = safeJson(it.carBotResult);
+                          const grade = cbr?.condition_assessment?.overall_grade ?? null;
+                          return (
+                            <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                              display: "flex", alignItems: "center", gap: "0.65rem", padding: "0.45rem 0.4rem",
+                              borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                            }}>
+                              {it.photo && <img src={it.photo} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" as const }} />}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</div>
+                                <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>Scanned {it.carBotRunAt ? new Date(it.carBotRunAt).toLocaleDateString() : ""}</div>
+                              </div>
+                              {grade && <span style={{ padding: "0.1rem 0.45rem", borderRadius: 99, fontSize: "0.62rem", fontWeight: 700, background: "rgba(0,188,212,0.1)", color: AUTO_BLUE }}>{grade}</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {expandedStat === "value" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: AUTO_BLUE, fontWeight: 700, marginBottom: "0.65rem" }}>Valuation Summary</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                      {[
+                        { l: "Portfolio Total", v: `$${totalVal.toLocaleString()}`, c: "#10b981" },
+                        { l: "Average", v: `$${avgVal.toLocaleString()}`, c: AUTO_BLUE },
+                        { l: "Highest", v: highItem ? `$${(highItem.valuation?.mid ?? 0).toLocaleString()}` : "--", c: "#10b981" },
+                        { l: "Lowest", v: lowItem ? `$${(lowItem.valuation?.mid ?? 0).toLocaleString()}` : "--", c: "var(--text-muted)" },
+                      ].map(d => (
+                        <div key={d.l} style={{ padding: "0.5rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", textAlign: "center" as const }}>
+                          <div style={{ fontSize: "1.05rem", fontWeight: 800, color: d.c }}>{d.v}</div>
+                          <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{d.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {valVehicles.length > 0 && (
+                      <div style={{ maxHeight: "140px", overflowY: "auto" as const }}>
+                        {valVehicles.sort((a, b) => (b.valuation?.mid ?? 0) - (a.valuation?.mid ?? 0)).map(it => (
+                          <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                            display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.4rem",
+                            borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                          }}>
+                            {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" as const }} />}
+                            <span style={{ flex: 1, fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</span>
+                            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#10b981", flexShrink: 0 }}>${(it.valuation?.mid ?? 0).toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Item Selector */}
       <div style={{
@@ -794,7 +1004,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                     </div>
                     <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
                       {[ident.generation, ident.body_style, ident.drivetrain, ident.engine, ident.transmission].filter(Boolean).map((tag: string) => (
-                        <span key={tag} style={{ padding: "2px 8px", borderRadius: "4px", fontSize: "0.65rem", fontWeight: 600, background: "rgba(0,0,0,0.2)", color: "#fff" }}>{tag}</span>
+                        <span key={tag} style={{ padding: "2px 8px", borderRadius: "4px", fontSize: "0.65rem", fontWeight: 600, background: "rgba(0,188,212,0.12)", color: "#0097a7", border: "1px solid rgba(0,188,212,0.2)" }}>{tag}</span>
                       ))}
                     </div>
                     {ident.color_exterior && (
@@ -804,24 +1014,25 @@ export default function CarBotClient({ items }: { items: Item[] }) {
                     )}
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: "2rem", fontWeight: 900, color: "#fff" }}>{ident.identification_confidence}%</div>
-                    <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Confidence</div>
+                    <div style={{ fontSize: "2rem", fontWeight: 900, color: AUTO_BLUE }}>{ident.identification_confidence}%</div>
+                    <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Confidence</div>
                   </div>
                 </div>
 
                 {/* LOCAL PICKUP ONLY banner */}
                 <div style={{
                   marginTop: "1rem", padding: "0.75rem 1.25rem", borderRadius: "10px",
-                  background: "rgba(0,0,0,0.35)", backdropFilter: "blur(8px)",
-                  border: "1px solid rgba(0,188,212,0.4)",
+                  background: "var(--bg-card-solid)",
+                  border: "1px solid rgba(0,188,212,0.35)",
                   display: "flex", alignItems: "center", gap: "0.6rem",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
                 }}>
-                  <span style={{ fontSize: "1.1rem" }}>🚗</span>
+                  <span style={{ fontSize: "1.1rem", flexShrink: 0 }}>🚗</span>
                   <span style={{
-                    color: "#00bcd4", fontWeight: 600, fontSize: "0.85rem",
-                    letterSpacing: "0.05em", textTransform: "uppercase",
+                    color: "#0097a7", fontWeight: 700, fontSize: "0.78rem",
+                    letterSpacing: "0.04em", textTransform: "uppercase",
                   }}>
-                    LOCAL PICKUP ONLY — Vehicles cannot be shipped through our platform
+                    Local Pickup Only — Vehicles cannot be shipped through our platform
                   </span>
                 </div>
               </div>
@@ -1945,41 +2156,39 @@ export default function CarBotClient({ items }: { items: Item[] }) {
             );
           })()}
 
-          {/* Section J — Actions */}
-          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-            <button onClick={runCarBot} disabled={loading} style={{
-              padding: "0.55rem 1rem", fontSize: "0.78rem", fontWeight: 600, borderRadius: "0.5rem",
-              border: `1px solid ${AUTO_BLUE}`, background: AUTO_BLUE_BG, color: AUTO_BLUE, cursor: "pointer",
-            }}>
-              🚗 Re-Run CarBot — 1 cr
-            </button>
-            <button onClick={runMegaCarBot} disabled={megaBotLoading} style={{
-              padding: "0.55rem 1rem", fontSize: "0.78rem", fontWeight: 600, borderRadius: "0.5rem",
-              background: "linear-gradient(135deg, rgba(167,139,250,0.15), rgba(251,191,36,0.15))",
-              border: "1px solid rgba(167,139,250,0.3)", color: "#a78bfa", cursor: megaBotLoading ? "not-allowed" : "pointer",
-            }}>
-              ⚡ MegaBot — 5 cr
-            </button>
-            <Link href={`/bots/listbot?item=${selectedId}`} style={{
-              padding: "0.55rem 1rem", fontSize: "0.78rem", fontWeight: 600, borderRadius: "0.5rem",
-              border: "1px solid var(--accent)", background: "rgba(0,188,212,0.08)", color: "var(--accent)", textDecoration: "none",
-            }}>
-              ✍️ Create Vehicle Listing
-            </Link>
-            <Link href={`/bots/buyerbot?item=${selectedId}`} style={{
-              padding: "0.55rem 1rem", fontSize: "0.78rem", fontWeight: 600, borderRadius: "0.5rem",
-              border: "1px solid var(--accent)", background: "rgba(0,188,212,0.08)", color: "var(--accent)", textDecoration: "none",
-            }}>
-              🎯 Find Vehicle Buyers
-            </Link>
-            <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
-              <Link href={`/items/${selectedId}`} style={{
-                display: "inline-flex", alignItems: "center", gap: "0.35rem",
-                fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
-                textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
-                border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
+          {/* Next Steps */}
+          <div style={{
+            marginTop: "1rem", padding: "1rem 1.25rem",
+            background: "var(--ghost-bg)", borderRadius: "0.75rem",
+            border: "1px solid var(--border-default)",
+          }}>
+            <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.75rem" }}>
+              Next Steps
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
+              <Link href={`/bots/listbot?item=${selectedId}`} style={{
+                display: "flex", alignItems: "center", gap: "0.6rem",
+                padding: "0.75rem 1rem", borderRadius: "0.6rem",
+                background: "var(--bg-card-solid)", border: "1px solid var(--border-default)",
+                textDecoration: "none", transition: "border-color 0.15s ease",
               }}>
-                ← Back to Item
+                <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>✍️</span>
+                <div>
+                  <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>Create Vehicle Listing</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>Auto-generate optimized listings for marketplaces</div>
+                </div>
+              </Link>
+              <Link href={`/bots/buyerbot?item=${selectedId}`} style={{
+                display: "flex", alignItems: "center", gap: "0.6rem",
+                padding: "0.75rem 1rem", borderRadius: "0.6rem",
+                background: "var(--bg-card-solid)", border: "1px solid var(--border-default)",
+                textDecoration: "none", transition: "border-color 0.15s ease",
+              }}>
+                <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>🎯</span>
+                <div>
+                  <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>Find Vehicle Buyers</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>Match with interested buyers in your area</div>
+                </div>
               </Link>
             </div>
           </div>
@@ -2011,6 +2220,83 @@ export default function CarBotClient({ items }: { items: Item[] }) {
             {["VIN Decode", "Condition Report", "Market Analysis", "KBB/NADA Est.", "Selling Strategy", "Safety Tips"].map((f) => (
               <span key={f} style={{ padding: "0.2rem 0.5rem", borderRadius: "9999px", background: AUTO_BLUE_BG, border: `1px solid ${AUTO_BLUE_BORDER}`, color: AUTO_BLUE, fontWeight: 600 }}>{f}</span>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ═══ STICKY BOTTOM ACTION BAR ═══ */}
+      {selectedId && selected && (
+        <div data-no-print style={{
+          position: "sticky", bottom: 0, zIndex: 100,
+          background: "var(--bg-card-solid)", backdropFilter: "blur(20px)",
+          borderTop: "1px solid var(--border-default)",
+          boxShadow: "0 -2px 12px rgba(0,0,0,0.08)",
+          padding: "0.85rem 2rem",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: "1rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", minWidth: 0, flex: 1 }}>
+            {selected.photo && (
+              <img src={selected.photo} alt="" style={{ width: 32, height: 32, borderRadius: "0.35rem", objectFit: "cover" as const, flexShrink: 0 }} />
+            )}
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>
+              {selected.title}
+            </span>
+            {selected.valuation?.mid && (
+              <span style={{ fontSize: "0.72rem", fontWeight: 600, color: AUTO_BLUE, flexShrink: 0 }}>
+                ${selected.valuation.mid.toLocaleString()}
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
+            <button
+              onClick={runCarBot}
+              disabled={loading}
+              style={{
+                minHeight: "44px", padding: "0 1.25rem",
+                background: loading ? "var(--ghost-bg)" : `linear-gradient(135deg, ${AUTO_BLUE}, #0097a7)`,
+                color: loading ? "var(--text-muted)" : "#fff",
+                border: "none", borderRadius: "0.65rem",
+                fontSize: "0.78rem", fontWeight: 700,
+                cursor: loading ? "not-allowed" : "pointer",
+                transition: "all 0.2s ease",
+                boxShadow: loading ? "none" : `0 4px 14px rgba(0,188,212,0.3)`,
+              }}
+            >
+              {loading ? "Running..." : result ? "Re-Run CarBot" : "Run CarBot"}
+            </button>
+            <button
+              onClick={runMegaCarBot}
+              disabled={megaBotLoading}
+              style={{
+                minHeight: "44px", padding: "0.45rem 1rem",
+                background: megaBotLoading ? "var(--ghost-bg)" : `linear-gradient(135deg, rgba(0,188,212,0.15), rgba(0,151,167,0.1))`,
+                color: megaBotLoading ? "var(--text-muted)" : AUTO_BLUE,
+                border: `1px solid ${AUTO_BLUE_BORDER}`,
+                borderRadius: "10px",
+                fontSize: "0.75rem", fontWeight: 700,
+                cursor: megaBotLoading ? "not-allowed" : "pointer",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {megaBotLoading ? "Boosting..." : "MegaBot Boost"}
+            </button>
+            <Link
+              href={`/items/${selectedId}`}
+              style={{
+                minHeight: "44px", padding: "0.45rem 0.85rem",
+                display: "inline-flex", alignItems: "center",
+                background: "var(--ghost-bg)",
+                color: "var(--text-secondary)",
+                border: "1px solid var(--border-default)",
+                borderRadius: "10px",
+                fontSize: "0.72rem", fontWeight: 600,
+                textDecoration: "none",
+                transition: "all 0.2s ease",
+              }}
+            >
+              View Item →
+            </Link>
           </div>
         </div>
       )}

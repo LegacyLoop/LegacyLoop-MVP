@@ -949,18 +949,21 @@ model DataCollectionConsent {
 }
 
 model ItemDocument {
-  id            String   @id @default(cuid())
-  itemId        String
-  item          Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  fileName      String
-  fileUrl       String
-  fileType      String   // MIME type
-  fileSizeBytes Int
-  docType       String   // RECEIPT | CERTIFICATE | LEGAL | MAINTENANCE | MANUAL | PROVENANCE | APPRAISAL | OTHER
-  label         String?
-  aiSummary     String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(cuid())
+  itemId          String
+  item            Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  fileName        String
+  fileUrl         String
+  fileType        String   // MIME type
+  fileSizeBytes   Int
+  docType         String   // RECEIPT | CERTIFICATE | LEGAL | MAINTENANCE | MANUAL | PROVENANCE | APPRAISAL | OTHER
+  label           String?
+  aiSummary       String?
+  aiAnalysis      String?  // JSON: multi-AI structured extraction (dates, prices, serial numbers, etc.)
+  confidenceScore Float?   // 0-100 consensus confidence across providers
+  providerResults String?  // JSON: per-provider raw results for transparency
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([itemId])
 }

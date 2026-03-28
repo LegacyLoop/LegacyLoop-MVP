@@ -114,10 +114,10 @@ export async function getItemEnrichmentContext(
         orderBy: { createdAt: "desc" },
         take: 5,
       }),
-      // 4. Document vault summaries
+      // 4. Document vault summaries (now with structured AI analysis)
       prisma.itemDocument.findMany({
         where: { itemId, aiSummary: { not: null } },
-        select: { docType: true, label: true, aiSummary: true },
+        select: { docType: true, label: true, aiSummary: true, aiAnalysis: true, confidenceScore: true },
         take: 10,
       }).catch(() => [] as any[]),
       // 5. Market comps
@@ -130,12 +130,33 @@ export async function getItemEnrichmentContext(
 
     if (!item) return emptyContext(itemId);
 
-    // Document vault findings
+    // Document vault findings — enriched with structured AI analysis
     let documentVaultFindings: string | null = null;
     if (docs.length > 0) {
-      documentVaultFindings = docs
-        .map((d: any) => `[${d.docType}]${d.label ? ` ${d.label}` : ""}: ${d.aiSummary}`)
-        .join(" | ");
+      const docParts: string[] = [];
+      for (const d of docs as any[]) {
+        let entry = `[${d.docType}]${d.label ? ` ${d.label}` : ""}`;
+        if (d.aiAnalysis) {
+          try {
+            const analysis = JSON.parse(d.aiAnalysis);
+            const fields: string[] = [];
+            if (analysis.dates?.length) fields.push(`Dates: ${analysis.dates.map((dt: any) => `${dt.label}=${dt.value}`).join(", ")}`);
+            if (analysis.prices?.length) fields.push(`Prices: ${analysis.prices.map((p: any) => `${p.label}=$${p.value}`).join(", ")}`);
+            if (analysis.identifiers?.length) fields.push(`IDs: ${analysis.identifiers.map((id: any) => `${id.label}=${id.value}`).join(", ")}`);
+            if (analysis.authenticityMarkers?.length) fields.push(`Auth: ${analysis.authenticityMarkers.join(", ")}`);
+            if (analysis.provenanceDetails?.length) fields.push(`Provenance: ${analysis.provenanceDetails.join("; ")}`);
+            if (analysis.keyFindings?.length) fields.push(`Findings: ${analysis.keyFindings.join("; ")}`);
+            if (d.confidenceScore) fields.push(`Confidence: ${d.confidenceScore}%`);
+            entry += ` — ${fields.join(". ")}`;
+          } catch {
+            entry += `: ${d.aiSummary || ""}`;
+          }
+        } else {
+          entry += `: ${d.aiSummary || ""}`;
+        }
+        docParts.push(entry);
+      }
+      documentVaultFindings = docParts.join(" | ");
     }
 
     // Index EventLogs by type (most recent per type)
@@ -398,20 +419,135 @@ function extractPriceBot(d: any): string | null {
 
 function extractCollectiblesBot(d: any): string | null {
   const parts: string[] = [];
+
+  // ── Section 1: Identity (6 fields) ──
   if (d.item_name) parts.push(`Collectible: ${d.item_name}`);
   if (d.year) parts.push(`Year: ${d.year}`);
   if (d.brand_series) parts.push(`Series: ${d.brand_series}`);
   if (d.edition_variation) parts.push(`Edition: ${d.edition_variation}`);
+  if (d.category) parts.push(`Category: ${d.category}`);
+  if (d.subcategory) parts.push(`Subcategory: ${d.subcategory}`);
+
+  // ── Section 2: Rarity & Condition (5 fields) ──
   if (d.rarity) parts.push(`Rarity: ${d.rarity}`);
-  if (d.estimated_grade) parts.push(`Grade: ${d.estimated_grade}`);
+  if (d.condition_assessment) parts.push(`Condition: ${String(d.condition_assessment).slice(0, 120)}`);
+  if (d.potential_value) parts.push(`Potential: ${d.potential_value}`);
+  if (d.authenticated != null) parts.push(`Authenticated: ${d.authenticated ? "Yes" : "No"}`);
+  if (d.provenance_confirmed != null) parts.push(`Provenance: ${d.provenance_confirmed ? "Confirmed" : "Unconfirmed"}`);
+
+  // ── Section 3: Raw Valuation (4 fields) ──
   if (d.raw_value_low != null && d.raw_value_high != null) {
-    parts.push(`Raw Value: $${d.raw_value_low}–$${d.raw_value_high}`);
+    parts.push(`Raw Value: $${d.raw_value_low}–$${d.raw_value_high}${d.raw_value_mid ? ` (mid: $${d.raw_value_mid})` : ""}`);
   }
-  if (d.visual_grading?.psa_grade) parts.push(`PSA: ${d.visual_grading.psa_grade}`);
-  if (d.grading_roi?.recommendation) parts.push(`Grading: ${d.grading_roi.recommendation}`);
+  if (d.value_reasoning) parts.push(`Value Reasoning: ${String(d.value_reasoning).slice(0, 150)}`);
+
+  // ── Section 4: Graded Values (5 fields) ──
+  const gv = d.graded_values;
+  if (gv && typeof gv === "object") {
+    const tiers = Object.entries(gv)
+      .filter(([, v]) => v != null && v !== 0)
+      .map(([k, v]) => `${k}: $${v}`)
+      .slice(0, 6);
+    if (tiers.length) parts.push(`Graded Values: ${tiers.join(", ")}`);
+  }
+  if (d.valuation_source) parts.push(`Source: ${String(d.valuation_source).slice(0, 100)}`);
+  if (d.population_data) parts.push(`Population: ${String(d.population_data).slice(0, 100)}`);
+  if (d.print_run) parts.push(`Print Run: ${d.print_run}`);
+  if (d.notable_variations) parts.push(`Variations: ${String(d.notable_variations).slice(0, 100)}`);
+
+  // ── Section 5: Visual Grading (8 fields) ──
+  const vg = d.visual_grading;
+  if (vg && typeof vg === "object") {
+    if (vg.psa_grade) parts.push(`PSA Grade: ${vg.psa_grade}`);
+    if (vg.bgs_grade) parts.push(`BGS Grade: ${vg.bgs_grade}`);
+    if (vg.grade_confidence != null) parts.push(`Grade Confidence: ${Math.round(vg.grade_confidence * 100)}%`);
+    if (vg.corners) parts.push(`Corners: ${String(vg.corners).slice(0, 80)}`);
+    if (vg.edges) parts.push(`Edges: ${String(vg.edges).slice(0, 80)}`);
+    if (vg.surface) parts.push(`Surface: ${String(vg.surface).slice(0, 80)}`);
+    if (vg.centering) parts.push(`Centering: ${vg.centering}`);
+    if (vg.grade_reasoning) parts.push(`Grade Reasoning: ${String(vg.grade_reasoning).slice(0, 150)}`);
+  }
+
+  // ── Section 6: Grading Recommendation (3 fields) ──
+  if (d.grading_recommendation) parts.push(`Grading Rec: ${d.grading_recommendation}`);
+  if (d.grading_roi_reasoning) parts.push(`Grading ROI: ${String(d.grading_roi_reasoning).slice(0, 120)}`);
+  if (d.collector_notes) parts.push(`Collector Notes: ${String(d.collector_notes).slice(0, 120)}`);
+
+  // ── Section 7: Market & Demand (6 fields) ──
   if (d.demand_trend) parts.push(`Demand: ${d.demand_trend}`);
+  if (d.demand_reasoning) parts.push(`Demand Reasoning: ${String(d.demand_reasoning).slice(0, 100)}`);
   if (d.best_platform) parts.push(`Best Platform: ${d.best_platform}`);
-  if (d.executive_summary) parts.push(`Expert: ${String(d.executive_summary).slice(0, 150)}`);
+  if (d.platform_reasoning) parts.push(`Platform Reasoning: ${String(d.platform_reasoning).slice(0, 100)}`);
+  if (d.selling_strategy) parts.push(`Selling Strategy: ${String(d.selling_strategy).slice(0, 120)}`);
+  if (d.community_sentiment) parts.push(`Sentiment: ${d.community_sentiment}`);
+
+  // ── Section 8: Collection Context (7 fields) ──
+  const cc = d.collection_context;
+  if (cc && typeof cc === "object") {
+    if (cc.set_name) parts.push(`Set: ${cc.set_name}`);
+    if (cc.set_total) parts.push(`Set Size: ${cc.set_total}`);
+    if (cc.card_number) parts.push(`Card #: ${cc.card_number}`);
+    if (cc.is_key_card) parts.push(`Key Card: Yes${cc.key_card_reason ? ` — ${String(cc.key_card_reason).slice(0, 60)}` : ""}`);
+    if (cc.set_completion_hint) parts.push(`Set Tip: ${String(cc.set_completion_hint).slice(0, 100)}`);
+    if (cc.collection_category_tag) parts.push(`Tag: ${cc.collection_category_tag}`);
+  }
+
+  // ── Section 9: Price History (6 fields) ──
+  const ph = d.price_history;
+  if (ph && typeof ph === "object") {
+    if (ph.trend_6mo) parts.push(`6mo Trend: ${ph.trend_6mo}`);
+    if (ph.trend_1yr) parts.push(`1yr Trend: ${ph.trend_1yr}`);
+    if (ph.trend_3yr) parts.push(`3yr Trend: ${ph.trend_3yr}`);
+    if (ph.peak_price) parts.push(`Peak: ${ph.peak_price}`);
+    if (ph.floor_price) parts.push(`Floor: ${ph.floor_price}`);
+    if (ph.catalyst_events) parts.push(`Catalysts: ${String(ph.catalyst_events).slice(0, 100)}`);
+  }
+
+  // ── Section 10: Investment (5 fields) ──
+  const inv = d.investment;
+  if (inv && typeof inv === "object") {
+    if (inv.price_1yr) parts.push(`1yr Projection: ${String(inv.price_1yr).slice(0, 80)}`);
+    if (inv.price_5yr) parts.push(`5yr Projection: ${String(inv.price_5yr).slice(0, 80)}`);
+    if (inv.catalysts) parts.push(`Growth Drivers: ${String(inv.catalysts).slice(0, 100)}`);
+    if (inv.risks) parts.push(`Risks: ${String(inv.risks).slice(0, 100)}`);
+    if (inv.verdict) parts.push(`Verdict: ${inv.verdict}`);
+  }
+
+  // ── Section 11: Authentication & Professional Services (4 fields) ──
+  if (d.authentication_services?.recommended_service) parts.push(`Auth Service: ${d.authentication_services.recommended_service}`);
+  if (d.authentication_services?.estimated_cost) parts.push(`Auth Cost: ${d.authentication_services.estimated_cost}`);
+  if (d.authentication_services?.turnaround_time) parts.push(`Auth Turnaround: ${d.authentication_services.turnaround_time}`);
+  if (d.authentication_services?.value_with_authentication) parts.push(`Value After Auth: ${d.authentication_services.value_with_authentication}`);
+
+  // ── Section 12: Liquidity & Timing (4 fields) ──
+  if (d.liquidity_assessment?.time_to_sell) parts.push(`Liquidity: ${d.liquidity_assessment.time_to_sell}`);
+  if (d.liquidity_assessment?.market_depth) parts.push(`Market Depth: ${d.liquidity_assessment.market_depth}`);
+  if (d.liquidity_assessment?.best_selling_window) parts.push(`Sell Window: ${d.liquidity_assessment.best_selling_window}`);
+  if (d.liquidity_assessment?.reasoning) parts.push(`Liquidity Note: ${String(d.liquidity_assessment.reasoning).slice(0, 100)}`);
+
+  // ── Section 13: Insurance & Risk (3 fields) ──
+  if (d.insurance_valuation?.replacement_value) parts.push(`Insurance Value: $${d.insurance_valuation.replacement_value}`);
+  if (d.insurance_valuation?.reasoning) parts.push(`Insurance Note: ${String(d.insurance_valuation.reasoning).slice(0, 100)}`);
+
+  // ── Section 14: Condition History & Red Flags (3 fields) ──
+  if (d.condition_history?.restoration_flags) parts.push(`Restoration: ${String(d.condition_history.restoration_flags).slice(0, 100)}`);
+  if (d.condition_history?.red_flags && !String(d.condition_history.red_flags).toLowerCase().includes("none")) parts.push(`Red Flags: ${String(d.condition_history.red_flags).slice(0, 100)}`);
+  if (d.condition_history?.provenance_notes) parts.push(`Provenance: ${String(d.condition_history.provenance_notes).slice(0, 100)}`);
+
+  // ── Section 15: Comparable Sales (1 aggregate field) ──
+  if (Array.isArray(d.comparable_sales) && d.comparable_sales.length > 0) parts.push(`Recent Comps: ${d.comparable_sales.map((c: any) => `${c.item}=$${c.price}(${c.date},${c.platform})`).join("; ")}`);
+
+  // ── Section 16: Market Intelligence ──
+  if (d.market_comps && Array.isArray(d.market_comps) && d.market_comps.length > 0) parts.push(`Market Comps: ${d.market_comps.length} real sold listings`);
+  if (d.market_median != null) parts.push(`Market Median: $${d.market_median}`);
+  if (d.market_confidence != null) parts.push(`Market Confidence: ${Math.round(d.market_confidence * 100)}%`);
+  if (d.pricing_sources && Array.isArray(d.pricing_sources)) parts.push(`Pricing Sources: ${d.pricing_sources.join(", ")}`);
+  if (d.market_trend) parts.push(`Market Trend: ${d.market_trend}`);
+  if (d.pricing_discrepancy) parts.push(`⚠️ Pricing discrepancy: AI vs market data differ >40%`);
+
+  // ── Section 17: Executive Summary ──
+  if (d.executive_summary) parts.push(`Expert: ${String(d.executive_summary).slice(0, 250)}`);
+
   return parts.length ? parts.join(" · ") : null;
 }
 

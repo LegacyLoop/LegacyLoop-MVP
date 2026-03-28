@@ -521,6 +521,7 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
   const [megaBotStep, setMegaBotStep] = useState(0);
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const [showAgentJson, setShowAgentJson] = useState<string | null>(null);
+  const [expandedStat, setExpandedStat] = useState<string | null>(null);
 
   const megaResult = selectedId ? megaBotData[selectedId] : null;
 
@@ -588,6 +589,169 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
         selectedId={selectedId}
         onSelect={setSelectedId}
       />
+
+      {/* ═══ STATS BANNER (clickable) ═══ */}
+      {(() => {
+        const pricedItems = items.filter(i => i.valuation && i.valuation.mid != null);
+        const totalVal = pricedItems.reduce((a, b) => a + (b.valuation?.mid ?? 0), 0);
+        const avgVal = pricedItems.length ? Math.round(totalVal / pricedItems.length) : 0;
+        const highItem = pricedItems.length ? pricedItems.reduce((a, b) => (a.valuation?.mid ?? 0) > (b.valuation?.mid ?? 0) ? a : b) : null;
+        const GREEN_ACCENT = "#10b981";
+        const statPanels = [
+          { key: "total", label: "Total Items", value: items.length, icon: "\ud83d\udce6" },
+          { key: "priced", label: "Priced", value: pricedItems.length, icon: "\ud83d\udcb2" },
+          { key: "value", label: "Avg Value", value: avgVal ? `$${avgVal.toLocaleString()}` : "$--", icon: "\ud83d\udcb0" },
+          { key: "high", label: "High Value", value: highItem ? `$${Math.round(highItem.valuation?.mid ?? 0).toLocaleString()}` : "$--", icon: "\ud83c\udfc6" },
+        ];
+        return (
+          <div style={{ marginBottom: "1.5rem", marginTop: "1rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem" }}>
+              {statPanels.map((s) => (
+                <div
+                  key={s.key}
+                  onClick={() => setExpandedStat(expandedStat === s.key ? null : s.key)}
+                  style={{
+                    background: expandedStat === s.key ? "rgba(16,185,129,0.06)" : "var(--bg-card-solid, var(--bg-card))",
+                    border: expandedStat === s.key ? `2px solid ${GREEN_ACCENT}` : "1px solid var(--border-default)",
+                    borderRadius: "12px",
+                    padding: "1rem 0.85rem", textAlign: "center" as const,
+                    boxShadow: expandedStat === s.key ? `0 4px 16px rgba(16,185,129,0.15)` : "0 1px 3px rgba(0,0,0,0.06)",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    transform: expandedStat === s.key ? "translateY(-2px)" : "none",
+                    userSelect: "none" as const,
+                  }}
+                >
+                  <div style={{ fontSize: "1.1rem", marginBottom: "0.25rem" }}>{s.icon}</div>
+                  <div style={{ fontSize: "1.35rem", fontWeight: 800, color: GREEN_ACCENT }}>{s.value}</div>
+                  <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginTop: "0.15rem" }}>
+                    {s.label} <span style={{ fontSize: "0.5rem", opacity: 0.6 }}>{expandedStat === s.key ? "\u25b2" : "\u25bc"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Expanded stat detail panel */}
+            {expandedStat && (
+              <div style={{
+                marginTop: "0.75rem", padding: "1rem 1.25rem", borderRadius: "12px",
+                background: "var(--bg-card-solid, var(--bg-card))", border: "1px solid var(--border-default)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+              }}>
+                {expandedStat === "total" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: GREEN_ACCENT, fontWeight: 700, marginBottom: "0.65rem" }}>All Items Breakdown</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                      {[
+                        { l: "Total", v: items.length },
+                        { l: "Analyzed", v: items.filter(i => i.hasAnalysis).length },
+                        { l: "Priced", v: pricedItems.length },
+                        { l: "Not Priced", v: items.length - pricedItems.length },
+                      ].map(d => (
+                        <div key={d.l} style={{ padding: "0.45rem 0.5rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", textAlign: "center" as const }}>
+                          <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-primary)" }}>{d.v}</div>
+                          <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{d.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ maxHeight: "160px", overflowY: "auto" as const }}>
+                      {items.slice(0, 12).map(it => (
+                        <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                          display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.4rem",
+                          borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                        }}>
+                          {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" as const }} />}
+                          <span style={{ flex: 1, fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</span>
+                          <span style={{ fontSize: "0.62rem", color: it.valuation?.mid ? GREEN_ACCENT : "var(--text-muted)", fontWeight: it.valuation?.mid ? 700 : 400, flexShrink: 0 }}>
+                            {it.valuation?.mid ? `$${Math.round(it.valuation.mid).toLocaleString()}` : "Not priced"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {expandedStat === "priced" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: GREEN_ACCENT, fontWeight: 700, marginBottom: "0.65rem" }}>Priced Items — Sorted by Value</div>
+                    {pricedItems.length === 0 ? (
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>No items have been priced yet. Run analysis on your items first.</p>
+                    ) : (
+                      <div style={{ maxHeight: "200px", overflowY: "auto" as const }}>
+                        {[...pricedItems].sort((a, b) => (b.valuation?.mid ?? 0) - (a.valuation?.mid ?? 0)).map(it => (
+                          <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                            display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.4rem",
+                            borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                          }}>
+                            {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" as const }} />}
+                            <span style={{ flex: 1, fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</span>
+                            <span style={{ fontSize: "0.75rem", fontWeight: 800, color: GREEN_ACCENT, flexShrink: 0 }}>
+                              ${Math.round(it.valuation?.mid ?? 0).toLocaleString()}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {expandedStat === "value" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: GREEN_ACCENT, fontWeight: 700, marginBottom: "0.65rem" }}>Portfolio Stats</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.5rem" }}>
+                      {[
+                        { l: "Total Value", v: totalVal ? `$${totalVal.toLocaleString()}` : "$--" },
+                        { l: "Avg Value", v: avgVal ? `$${avgVal.toLocaleString()}` : "$--" },
+                        { l: "Highest", v: highItem ? `$${Math.round(highItem.valuation?.mid ?? 0).toLocaleString()}` : "$--" },
+                        { l: "Lowest", v: pricedItems.length ? `$${Math.round(pricedItems.reduce((a, b) => (a.valuation?.mid ?? 0) < (b.valuation?.mid ?? 0) ? a : b).valuation?.mid ?? 0).toLocaleString()}` : "$--" },
+                        { l: "Priced Items", v: `${pricedItems.length} of ${items.length}` },
+                        { l: "Coverage", v: items.length ? `${Math.round((pricedItems.length / items.length) * 100)}%` : "0%" },
+                      ].map(d => (
+                        <div key={d.l} style={{ padding: "0.55rem 0.6rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", textAlign: "center" as const }}>
+                          <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-primary)" }}>{d.v}</div>
+                          <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{d.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {expandedStat === "high" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: GREEN_ACCENT, fontWeight: 700, marginBottom: "0.65rem" }}>Top 5 Highest Value Items</div>
+                    {pricedItems.length === 0 ? (
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>No priced items yet.</p>
+                    ) : (
+                      <div>
+                        {[...pricedItems].sort((a, b) => (b.valuation?.mid ?? 0) - (a.valuation?.mid ?? 0)).slice(0, 5).map((it, idx) => (
+                          <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                            display: "flex", alignItems: "center", gap: "0.65rem", padding: "0.5rem 0.5rem",
+                            borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                          }}>
+                            <span style={{ fontSize: "0.85rem", fontWeight: 800, color: idx === 0 ? "#fbbf24" : idx === 1 ? "#94a3b8" : idx === 2 ? "#cd7f32" : "var(--text-muted)", minWidth: "1.2rem", textAlign: "center" as const }}>
+                              {idx === 0 ? "\ud83e\udd47" : idx === 1 ? "\ud83e\udd48" : idx === 2 ? "\ud83e\udd49" : `${idx + 1}`}
+                            </span>
+                            {it.photo && <img src={it.photo} alt="" style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover" as const }} />}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</div>
+                              <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>
+                                {it.valuation?.low != null && it.valuation?.high != null ? `$${Math.round(it.valuation.low)} — $${Math.round(it.valuation.high)}` : ""} {it.valuation?.source ? `\u00b7 ${it.valuation.source}` : ""}
+                              </div>
+                            </div>
+                            <div style={{ fontSize: "1.1rem", fontWeight: 800, color: GREEN_ACCENT, flexShrink: 0 }}>
+                              ${Math.round(it.valuation?.mid ?? 0).toLocaleString()}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {!item ? (
         <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-muted)" }}>
@@ -1230,6 +1394,74 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
               </div>
             </div>
           </Card>
+        </div>
+      )}
+
+      {/* ═══ STICKY BOTTOM ACTION BAR ═══ */}
+      {selectedId && item && (
+        <div data-no-print style={{
+          position: "sticky", bottom: 0, zIndex: 100,
+          background: "var(--bg-card-solid, var(--bg-card))", backdropFilter: "blur(20px)",
+          borderTop: "1px solid var(--border-default)",
+          boxShadow: "0 -2px 12px rgba(0,0,0,0.08)",
+          padding: "0.85rem 2rem",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: "1rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", minWidth: 0, flex: 1 }}>
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>
+              {item.title}
+            </span>
+            {v && (
+              <span style={{
+                padding: "0.15rem 0.5rem", borderRadius: 99, fontSize: "0.58rem", fontWeight: 700, flexShrink: 0,
+                background: "rgba(16,185,129,0.12)", color: "#10b981",
+              }}>
+                ${Math.round(v.low)} — ${Math.round(v.high)}
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
+            <button
+              onClick={() => runPriceBot()}
+              disabled={loading}
+              style={{
+                padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
+                borderRadius: "10px", cursor: loading ? "not-allowed" : "pointer",
+                minHeight: "44px",
+                background: loading ? "var(--ghost-bg)" : "linear-gradient(135deg, #10b981, #059669)",
+                border: "none", color: "#fff",
+                boxShadow: loading ? "none" : "0 2px 10px rgba(16,185,129,0.3)",
+              }}
+            >
+              {loading ? "Running..." : hasPriceBot ? "\ud83d\udcb0 Re-Run \u00b7 1 cr" : "\ud83d\udcb0 Run PriceBot \u00b7 1 cr"}
+            </button>
+            <button
+              onClick={() => runPriceBot(true)}
+              disabled={megaBotRunning}
+              style={{
+                padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
+                borderRadius: "10px", cursor: megaBotRunning ? "not-allowed" : "pointer",
+                minHeight: "44px",
+                background: megaBotRunning ? "var(--ghost-bg)" : "linear-gradient(135deg, rgba(16,185,129,0.2), rgba(5,150,105,0.15))",
+                border: "1px solid rgba(16,185,129,0.4)", color: "#10b981",
+              }}
+            >
+              {megaBotRunning ? "Running..." : megaResult ? "🔄 Re-Run MegaBot · 3 cr" : "⚡ MegaBot · 3 cr"}
+            </button>
+            <Link
+              href={`/items/${selectedId}`}
+              style={{
+                padding: "0.45rem 0.85rem", fontSize: "0.72rem", fontWeight: 600,
+                borderRadius: "10px", textDecoration: "none",
+                minHeight: "44px",
+                background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                color: "var(--text-secondary)", display: "flex", alignItems: "center",
+              }}
+            >
+              View Item \u2192
+            </Link>
+          </div>
         </div>
       )}
     </div>

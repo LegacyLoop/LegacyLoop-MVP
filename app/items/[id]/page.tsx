@@ -61,6 +61,12 @@ export default async function ItemPage({ params }: { params: Params }) {
     );
   }
 
+  // Fetch engagement metrics + document count for control center
+  const [engagement, docCount] = await Promise.all([
+    prisma.itemEngagementMetrics.findUnique({ where: { itemId: item.id }, select: { totalViews: true, inquiries: true, buyersFound: true } }).catch(() => null),
+    prisma.itemDocument.count({ where: { itemId: item.id } }).catch(() => 0),
+  ]);
+
   const aiObj = item.aiResult?.rawJson ? safeJsonParse(item.aiResult.rawJson) : null;
   const displayTitle = item.title || aiObj?.item_name || (item.status === "DRAFT" ? "New Item — Awaiting Analysis" : `Item #${item.id.slice(0, 8)}`);
   const antique = item.antiqueCheck;
@@ -438,6 +444,14 @@ export default async function ItemPage({ params }: { params: Params }) {
             aiShippingDifficulty: (item as any).aiShippingDifficulty ?? null,
             aiShippingNotes: (item as any).aiShippingNotes ?? null,
             aiShippingConfidence: (item as any).aiShippingConfidence ?? null,
+          }}
+          controlCenterExtra={{
+            totalViews: engagement?.totalViews ?? 0,
+            inquiries: engagement?.inquiries ?? 0,
+            buyersFound: engagement?.buyersFound ?? 0,
+            documentCount: docCount,
+            updatedAt: item.createdAt.toISOString(),
+            shippingReady: !!((item as any).shippingWeight && (item as any).shippingLength),
           }}
         />
       </div>

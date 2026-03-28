@@ -140,7 +140,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   const item = await prisma.item.findUnique({
     where: { id: itemId },
     include: {
-      photos: { orderBy: { order: "asc" }, take: 4 },
+      photos: { orderBy: { order: "asc" }, take: 6 },
       aiResult: true,
       valuation: true,
       antiqueCheck: true,
@@ -204,7 +204,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
 
   let result;
   try {
-    result = await runSpecializedMegaBot(botType, prompt, item.photos[0].filePath, itemId);
+    const photoPaths = item.photos.slice(0, 6).map((p: any) => p.filePath);
+    result = await runSpecializedMegaBot(botType, prompt, photoPaths[0], itemId);
   } catch (e: any) {
     console.error(`[megabot/${botType}]`, e);
     return new Response(`MegaBot ${botType} failed: ${e.message}`, { status: 422 });

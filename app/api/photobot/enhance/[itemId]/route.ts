@@ -32,24 +32,27 @@ export async function POST(
 
     const { itemId } = await params;
 
-    // ── Tier + Credit Gate ──
+    // ── Tier + Credit Gate (check only — deduct AFTER DALL-E succeeds) ──
+    let creditCost = 0;
+    let isRerunCredit = false;
     if (!isDemoMode()) {
       if (!canUseBotOnTier(user.tier, "photoBot")) {
         return NextResponse.json({ error: "upgrade_required", message: "Upgrade your plan to access PhotoBot.", upgradeUrl: "/pricing?upgrade=true" }, { status: 403 });
       }
-      const isRerun = await hasPriorBotRun(user.id, itemId, "PHOTOBOT");
-      const cost = isRerun ? BOT_CREDIT_COSTS.singleBotReRun : BOT_CREDIT_COSTS.singleBotRun;
-      const cc = await checkCredits(user.id, cost);
+      isRerunCredit = await hasPriorBotRun(user.id, itemId, "PHOTOBOT");
+      creditCost = isRerunCredit ? BOT_CREDIT_COSTS.singleBotReRun : BOT_CREDIT_COSTS.singleBotRun;
+      const cc = await checkCredits(user.id, creditCost);
       if (!cc.hasEnough) {
-        return NextResponse.json({ error: "insufficient_credits", message: "Not enough credits to run PhotoBot.", balance: cc.balance, required: cost, buyUrl: "/credits" }, { status: 402 });
+        return NextResponse.json({ error: "insufficient_credits", message: "Not enough credits to run PhotoBot.", balance: cc.balance, required: creditCost, buyUrl: "/credits" }, { status: 402 });
       }
-      await deductCredits(user.id, cost, isRerun ? "PhotoBot re-run" : "PhotoBot run", itemId);
+      // DON'T deduct yet — wait until DALL-E operations succeed
     }
 
     const body = await req.json().catch(() => ({}));
-    const { photoId, dallePrompt: overrideDallePrompt, editInstructions: overrideEditInstructions, variationName, mode } = body;
+    const { photoId, dallePrompt: overrideDallePrompt, editInstructions: overrideEditInstructions, variationName, mode, customPrompt } = body;
     const isVariation = !!variationName;
     const assessOnly = mode === "assess";
+    const hasCustomPrompt = typeof customPrompt === "string" && customPrompt.trim().length > 0;
 
     const item = await prisma.item.findUnique({
       where: { id: itemId },
@@ -130,47 +133,86 @@ export async function POST(
     // ── STEP A: ASSESSMENT (OpenAI Vision) — skip for variations ──────────
     if (!isVariation) {
       try {
-        console.log("[photobot-enhance] Step A: Assessing photo with precision physical extraction...");
+        const customPromptDirective = hasCustomPrompt
+          ? `\n\nUSER CUSTOM REQUEST: "${customPrompt}". Factor this into your assessment, enhancement steps, and DALL-E prompts. The user's request should guide your edit and generation recommendations while maintaining item authenticity.`
+          : "";
+
+        const enrichmentDirective = hasEnrichment
+          ? `\n\nKNOWN ITEM DATA (from prior AI analysis):\n${enrichmentContext}\nUse this data to build more accurate physical descriptions and DALL-E prompts.`
+          : "";
+
+        console.log("[photobot-enhance] Step A: Assessing photo with precision physical extraction...", hasCustomPrompt ? `Custom: "${customPrompt}"` : "standard");
         const assessResp = await openai.responses.create({
           model: "gpt-4o",
           input: [
             {
               role: "system",
-              content: "You are a precision product photography analyst. Your primary job is to extract exact, literal physical descriptions of items for AI image generation. You must count every visible component precisely. Never estimate or approximate counts — state exactly what you see. Your physicalDescription and exactCount fields will be used directly in image generation prompts, so accuracy is critical. Do not embellish. Do not guess. Describe only what is literally visible in the photo. You must NEVER suggest hiding any damage, wear, scratches, dents, stains, or condition issues — those must stay visible for buyer transparency.",
+              content: `You are a world-class product photography analyst and visual merchandising expert with 20 years of experience shooting for Sotheby's, eBay, Etsy, and luxury resale platforms.
+
+Your PRIMARY MISSION: Extract EXACT, LITERAL physical descriptions for AI image generation. Every detail you describe will be fed directly into DALL-E to recreate the item — your accuracy determines whether the generated image looks correct.
+
+PRECISION RULES:
+- Count every visible component (drawers, legs, shelves, doors, knobs, handles, buttons, panels) — state EXACT numbers
+- Describe colors with precision (not "brown" but "dark walnut brown with warm amber undertones")
+- Note proportions, textures, materials with specificity
+- If you cannot see something clearly, say so — never fabricate details
+
+IRON RULE — CONDITION AUTHENTICITY:
+You must NEVER suggest hiding, minimizing, smoothing, or altering ANY condition detail:
+- Scratches, dents, chips, cracks, scuffs, wear marks
+- Stains, discoloration, fading, patina, tarnish
+- Missing parts, repairs, alterations, replaced components
+Every condition detail MUST appear in your generated descriptions. Buyer trust depends on this.${enrichmentDirective}${customPromptDirective}`,
             },
             {
               role: "user",
               content: [
                 {
                   type: "input_text",
-                  text: `Count every visible component of this item with absolute precision. State exact numbers for drawers, legs, shelves, doors, panels, handles, or any repeated element. Your exactCount field will be injected directly into an image generation prompt — if you say 6 drawers, the AI will attempt to draw exactly 6 drawers. Accuracy here directly determines image quality.
+                  text: `Analyze this product listing photo with absolute precision. Return flat JSON only — no wrapper keys — with these exact fields:
 
-Return flat JSON only — no wrapper keys — with these exact fields:
+physicalDescription: ULTRA-PRECISE literal description of exactly what you see. Count every component. State exact numbers, exact shapes, exact positions. This will be directly injected into a DALL-E prompt. Example: "6-drawer wooden dresser, 3 drawers stacked in left column and 3 in right column, approximately 48 inches wide by 34 inches tall, dark walnut finish with visible wood grain, brass ring-pull handles on each drawer, flat rectangular top surface, tapered round legs, rectangular beveled edge trim on each drawer face"
 
-physicalDescription: A precise, literal description of exactly what is visible in the photo. Count every visible component. State exact numbers. Example: "6-drawer dresser with 3 drawers on left column and 3 drawers on right column, approximately 48 inches wide, dark walnut finish, brass ring pulls on each drawer, flat top surface"
-exactCount: If the item has countable components (drawers, legs, shelves, doors, buttons, knobs, wheels, panels, cushions, etc.) state the EXACT count seen in the photo. Example: "6 drawers total, 3 per column, 4 legs, 2 columns"
-colorDescription: Precise color description. Example: "dark walnut brown with warm amber undertones, brass-toned hardware"
-styleDescription: Furniture style, era, design language. Example: "mid-century modern, clean lines, minimal ornamentation"
-dimensionEstimate: Approximate size relative to known objects in photo. Example: "approximately 4 feet wide, 3 feet tall, 18 inches deep"
-surfaceDetails: Visible surface characteristics — scratches, wear, damage, patina, stains — that must appear in generated image. Example: "slight wear on top surface edges, minor scratches on second drawer front"
-backgroundDescription: what is distracting in the background
-isolationScore: 1-10 how well item stands out
-lightingScore: 1-10 lighting quality
-framingScore: 1-10 how well item fills the frame
+exactCount: EXACT counts of every repeated element visible. This is non-negotiable — if you say 6 drawers, DALL-E draws exactly 6. Example: "6 drawers (3 per column, 2 columns), 4 tapered legs, 6 brass ring pulls, 1 flat top surface"
+
+colorDescription: Multi-layer color description with primary, secondary, accent, and hardware colors. Example: "Primary: dark walnut brown with warm amber undertones. Hardware: aged brass with slight tarnish. Interior drawer surfaces: raw pine, lighter honey color"
+
+styleDescription: Design era, style movement, construction approach, aesthetic. Example: "American mid-century modern circa 1960s, Danish-influenced clean lines, minimal ornamentation, function-forward design"
+
+dimensionEstimate: Size estimate with comparison references. Example: "approximately 48 inches wide, 34 inches tall, 18 inches deep — standard double dresser dimensions"
+
+surfaceDetails: EVERY visible surface characteristic that must appear in the generated image. Be exhaustive. Example: "light wear ring on top surface left side, minor scratches on right column second drawer, slight darkening at handle touch points, small chip in bottom-left trim, original finish 85% intact"
+
+materialAnalysis: What materials you can identify and how confident you are. Example: "Solid walnut construction (high confidence), brass hardware (confirmed by patina pattern), likely dovetail joint drawers (visible edge profile)"
+
+backgroundDescription: Detailed description of everything in the background that should be removed or replaced
+distractingElements: array of specific background elements to remove (people, clutter, walls, furniture, pets, cables, reflections)
+backgroundReplacement: Recommended replacement background description for professional listing
+
+isolationScore: 1-10 how well the item stands out from surroundings
+lightingScore: 1-10 quality and evenness of lighting
+framingScore: 1-10 how well item fills the frame and is centered
+focusScore: 1-10 sharpness and clarity of the item
+colorAccuracy: 1-10 how true-to-life the colors appear
+
 backgroundRemovalNeeded: true/false
-enhancementSteps: array of up to 5 specific improvement steps
-conditionDetails: array of visible condition issues that MUST remain visible in any enhanced version
-coverPhotoReady: true/false
-editPrompt: a concise description (under 200 chars) of ONLY the background and staging improvements needed — do not mention condition changes
-dallePrompt: Build using your physical descriptors above: "[physicalDescription]. CRITICAL PHYSICAL ACCURACY: this item has EXACTLY [exactCount] — do not add, remove, or change any components. Color: [colorDescription]. Style: [styleDescription]. Approximate size: [dimensionEstimate]. Professional product photography, clean white or neutral background, item centered and filling 70% of frame, even soft lighting, no shadows. Condition details visible: [surfaceDetails]."
-overallScore: 1-10`,
+enhancementSteps: array of up to 7 specific, actionable improvement steps prioritized by impact
+conditionDetails: array of ALL visible condition issues that MUST remain visible in every enhanced version — this is critical for buyer trust
+coverPhotoReady: true/false — would this pass as a lead listing image on eBay/Etsy right now?
+coverPhotoBlockers: array of specific issues preventing cover-photo readiness (empty if ready)
+
+editPrompt: Precise description (under 300 chars) of ONLY background/staging/lighting improvements. Never mention condition changes. Be specific: "Remove cluttered bookshelf background, replace with clean soft-white gradient, add even fill light from left to eliminate harsh right-side shadow"
+
+dallePrompt: Build this EXACTLY from your physical descriptors: "[physicalDescription]. CRITICAL PHYSICAL ACCURACY: this item has EXACTLY [exactCount] — reproduce every component precisely, do not add, remove, or alter any elements. [exactCount] is non-negotiable. Color accuracy: [colorDescription]. Style: [styleDescription]. Scale: [dimensionEstimate]. CONDITION AUTHENTICITY: these details must be visible: [surfaceDetails]. Professional product photography on a clean neutral background, item centered filling 70% of frame, soft even studio lighting, no harsh shadows, photorealistic quality."
+
+overallScore: 1-10 composite quality score`,
                 },
-                { type: "input_image", image_url: dataUrl, detail: "auto" },
+                { type: "input_image", image_url: dataUrl, detail: "high" },
               ],
             },
           ],
           text: { format: { type: "text" } },
-          max_output_tokens: 3000,
+          max_output_tokens: 4000,
         });
 
         const rawAssess = assessResp.output_text;
@@ -211,24 +253,46 @@ overallScore: 1-10`,
       dimensionEstimate && `Size: ${dimensionEstimate}`,
     ].filter(Boolean).join(" ");
 
+    // Also extract new assessment fields
+    const materialAnalysis = (assessment?.materialAnalysis ?? "") as string;
+    const bgReplacement = (assessment?.backgroundReplacement ?? "clean soft-white studio background") as string;
+    const conditionDetailsArr = Array.isArray(assessment?.conditionDetails) ? assessment.conditionDetails : [];
+    const conditionNote = conditionDetailsArr.length > 0
+      ? `CONDITION DETAILS that MUST remain visible: ${conditionDetailsArr.join("; ")}.`
+      : "";
+
     let dallePromptText: string;
     if (overrideDallePrompt) {
-      // MegaBot variation path — still prepend physical reference
+      // MegaBot variation path — prepend physical reference + condition
       dallePromptText = [
         physicallyAccuratePrompt && `Physical reference: ${physicallyAccuratePrompt}`,
+        materialAnalysis && `Materials: ${materialAnalysis}`,
         overrideDallePrompt,
-        "Preserve all visible condition details. Professional product photography. Clean neutral background.",
+        conditionNote,
+        "Preserve all visible condition details — scratches, wear, patina, damage must be present.",
+        "Professional product photography. Clean neutral background. Photorealistic.",
       ].filter(Boolean).join(" ");
     } else {
-      // Standard enhance path — build from physical descriptors + enrichment
+      // Standard enhance path — build from physical descriptors + enrichment + custom prompt
+      const customGenDirective = hasCustomPrompt ? `User instruction: ${customPrompt}.` : "";
       dallePromptText = [
-        hasEnrichment && enrichmentContext,
+        hasEnrichment && `Product context: ${enrichmentContext}`,
         physicallyAccuratePrompt || assessment?.dallePrompt || "Professional product photo on clean neutral background",
-        surfaceDetails && `Visible condition details that must appear: ${surfaceDetails}`,
-        "Preserve all visible condition details including scratches, wear, dents, stains, and damage exactly as they appear. Do not hide or smooth over any condition issues.",
-        "Professional product photography. Clean neutral background. Item centered and well-lit. Photorealistic.",
-        "Every physical detail must match the description exactly — exact component counts, exact colors, exact proportions.",
+        materialAnalysis && `Materials: ${materialAnalysis}`,
+        surfaceDetails && `Visible condition details that must appear exactly: ${surfaceDetails}`,
+        conditionNote,
+        customGenDirective,
+        `Background: ${bgReplacement}`,
+        "IRON RULE: Preserve ALL visible condition details including scratches, wear, dents, stains, patina, and damage exactly as they appear in the original. Do not hide, smooth, soften, or alter any condition detail.",
+        "Professional product photography. Item centered, filling 70% of frame. Even soft studio lighting. No harsh shadows. Photorealistic quality.",
+        "CRITICAL: Every physical detail must match exactly — exact component counts, exact colors, exact proportions, exact textures. Do not add, remove, or alter any element.",
       ].filter(Boolean).join(" ");
+    }
+
+    // Enforce DALL-E 3 prompt length limit (4000 chars)
+    if (dallePromptText.length > 4000) {
+      console.warn(`[photobot-enhance] DALL-E 3 prompt truncated to 4000 chars (was ${dallePromptText.length})`);
+      dallePromptText = dallePromptText.slice(0, 4000);
     }
 
     console.log("[photobot-enhance] Final DALL-E prompt:", dallePromptText.slice(0, 250));
@@ -246,10 +310,28 @@ overallScore: 1-10`,
       const tempPath = path.join(tempDir, `edit-${Date.now()}.png`);
       fs.writeFileSync(tempPath, pngBuffer);
 
+      // Build enriched DALL-E 2 edit prompt
+      const customEditDirective = hasCustomPrompt ? ` User instruction: ${customPrompt}.` : "";
+      const bgReplace = (assessment?.backgroundReplacement ?? "clean, neutral, softly-lit studio background") as string;
+      const distractingList = Array.isArray(assessment?.distractingElements) && assessment.distractingElements.length > 0
+        ? `Remove these specific elements: ${assessment.distractingElements.slice(0, 5).join(", ")}.`
+        : "";
+      const condPreserve = conditionNote || "";
+      const editFinalPrompt = [
+        `Professional product photography edit: ${editPromptText}.`,
+        customEditDirective,
+        distractingList,
+        `Replace background with: ${bgReplace}.`,
+        condPreserve,
+        "IRON RULE: preserve ALL visible scratches, wear, damage, patina, and condition details EXACTLY as they appear.",
+        "Only modify background and staging. Do not alter the item's colors, proportions, or surface characteristics in any way.",
+        "Even, soft professional lighting. No harsh shadows. Clean and marketplace-ready.",
+      ].filter(Boolean).join(" ").slice(0, 1000);
+
       const editResponse = await openai.images.edit({
         model: "dall-e-2",
         image: fs.createReadStream(tempPath) as any,
-        prompt: `Professional product photo edit: ${editPromptText}. IMPORTANT: preserve all visible scratches, wear, damage, and condition details exactly as they appear. Only clean up background and improve staging.`,
+        prompt: editFinalPrompt,
         n: 1,
         size: "1024x1024",
       });
@@ -314,6 +396,31 @@ overallScore: 1-10`,
       }
     }
 
+    // ── PERMANENT ITEMPHOTO RECORDS (before EventLog so savedPath is available) ──
+    if (editedPhotoSavedPath) {
+      try {
+        await prisma.itemPhoto.create({
+          data: { itemId, filePath: editedPhotoSavedPath, isPrimary: false, order: 999, caption: "AI Enhanced" },
+        });
+      } catch (photoErr: any) {
+        console.warn("[photobot-enhance] Failed to create ItemPhoto for edited image (non-fatal):", photoErr?.message);
+      }
+    }
+    if (generatedPhotoSavedPath) {
+      try {
+        await prisma.itemPhoto.create({
+          data: { itemId, filePath: generatedPhotoSavedPath, isPrimary: false, order: 999, caption: "AI Enhanced" },
+        });
+      } catch (photoErr: any) {
+        console.warn("[photobot-enhance] Failed to create ItemPhoto for generated image (non-fatal):", photoErr?.message);
+      }
+    }
+
+    // ── Deduct credits AFTER all DALL-E operations succeeded ──────────
+    if (!isDemoMode() && creditCost > 0) {
+      await deductCredits(user.id, creditCost, isRerunCredit ? "PhotoBot re-run" : "PhotoBot run", itemId);
+    }
+
     // ── STEP D: STORE RESULTS ─────────────────────────────────────────────
     const result = {
       assessment,
@@ -341,26 +448,6 @@ overallScore: 1-10`,
         payload: JSON.stringify(result),
       },
     });
-
-    // ── PERMANENT ITEMPHOTO RECORDS (after EventLog) ────────────────────
-    if (editedPhotoSavedPath) {
-      try {
-        await prisma.itemPhoto.create({
-          data: { itemId, filePath: editedPhotoSavedPath, isPrimary: false, order: 999, caption: "AI Enhanced" },
-        });
-      } catch (photoErr: any) {
-        console.warn("[photobot-enhance] Failed to create ItemPhoto for edited image (non-fatal):", photoErr?.message);
-      }
-    }
-    if (generatedPhotoSavedPath) {
-      try {
-        await prisma.itemPhoto.create({
-          data: { itemId, filePath: generatedPhotoSavedPath, isPrimary: false, order: 999, caption: "AI Enhanced" },
-        });
-      } catch (photoErr: any) {
-        console.warn("[photobot-enhance] Failed to create ItemPhoto for generated image (non-fatal):", photoErr?.message);
-      }
-    }
 
     return NextResponse.json({ success: true, result });
   } catch (e: any) {

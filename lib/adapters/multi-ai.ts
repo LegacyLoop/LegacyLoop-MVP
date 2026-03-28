@@ -169,12 +169,27 @@ const openai =
     ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
     : null;
 
-async function analyzeWithOpenAI(absPath: string, context?: string): Promise<AiAnalysis> {
+async function analyzeWithOpenAI(absPath: string, context?: string, extraPaths?: string[]): Promise<AiAnalysis> {
   if (!openai) throw new Error("No OpenAI key configured");
 
-  const { dataUrl } = fileToDataUrl(absPath);
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
   const prompt = buildComprehensivePrompt(context) + OPENAI_SPECIALTY;
+
+  // Build multi-image content
+  const imageContent: any[] = [];
+  const allPaths = [absPath, ...(extraPaths || [])];
+  for (const p of allPaths) {
+    try {
+      if (fs.existsSync(p) && fs.statSync(p).size <= 10 * 1024 * 1024) {
+        const { dataUrl } = fileToDataUrl(p);
+        imageContent.push({ type: "input_image", image_url: dataUrl, detail: "high" });
+      }
+    } catch { /* skip unreadable */ }
+  }
+  if (imageContent.length === 0) {
+    const { dataUrl } = fileToDataUrl(absPath);
+    imageContent.push({ type: "input_image", image_url: dataUrl, detail: "auto" });
+  }
 
   const resp = await openai.responses.create({
     model,
@@ -182,8 +197,8 @@ async function analyzeWithOpenAI(absPath: string, context?: string): Promise<AiA
       {
         role: "user",
         content: [
-          { type: "input_text", text: prompt },
-          { type: "input_image", image_url: dataUrl, detail: "auto" },
+          { type: "input_text", text: `${imageContent.length} photo(s) attached — cross-reference all angles for grading. ${prompt}` },
+          ...imageContent,
         ],
       },
     ],
@@ -197,12 +212,27 @@ async function analyzeWithOpenAI(absPath: string, context?: string): Promise<AiA
 
 // ─── Claude analysis (comprehensive) ────────────────────────────────────
 
-async function analyzeWithClaude(absPath: string, context?: string): Promise<AiAnalysis> {
+async function analyzeWithClaude(absPath: string, context?: string, extraPaths?: string[]): Promise<AiAnalysis> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key || key.includes("YOUR_CLAUDE") || key.length < 10) throw new Error("No Anthropic key configured");
 
-  const { base64, mime } = fileToDataUrl(absPath);
   const prompt = buildComprehensivePrompt(context) + CLAUDE_SPECIALTY;
+
+  // Build multi-image content for Claude
+  const imageBlocks: any[] = [];
+  const allPaths = [absPath, ...(extraPaths || [])];
+  for (const p of allPaths) {
+    try {
+      if (fs.existsSync(p) && fs.statSync(p).size <= 10 * 1024 * 1024) {
+        const { base64: b64, mime: m } = fileToDataUrl(p);
+        imageBlocks.push({ type: "image", source: { type: "base64", media_type: m, data: b64 } });
+      }
+    } catch { /* skip */ }
+  }
+  if (imageBlocks.length === 0) {
+    const { base64, mime } = fileToDataUrl(absPath);
+    imageBlocks.push({ type: "image", source: { type: "base64", media_type: mime, data: base64 } });
+  }
 
   const body = {
     model: "claude-haiku-4-5-20251001",
@@ -211,11 +241,8 @@ async function analyzeWithClaude(absPath: string, context?: string): Promise<AiA
       {
         role: "user",
         content: [
-          {
-            type: "image",
-            source: { type: "base64", media_type: mime, data: base64 },
-          },
-          { type: "text", text: prompt },
+          ...imageBlocks,
+          { type: "text", text: `${imageBlocks.length} photo(s) — cross-reference all. ${prompt}` },
         ],
       },
     ],
@@ -253,21 +280,36 @@ async function analyzeWithClaude(absPath: string, context?: string): Promise<AiA
 
 // ─── Gemini analysis (comprehensive) ────────────────────────────────────
 
-async function analyzeWithGemini(absPath: string, context?: string): Promise<AiAnalysis> {
+async function analyzeWithGemini(absPath: string, context?: string, extraPaths?: string[]): Promise<AiAnalysis> {
   const key = process.env.GEMINI_API_KEY;
   if (!key || key.includes("YOUR_GEMINI") || key.length < 10) throw new Error("No Gemini key configured");
 
-  const { base64, mime } = fileToDataUrl(absPath);
   const model = "gemini-2.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
   const prompt = buildComprehensivePrompt(context) + GEMINI_SPECIALTY;
+
+  // Build multi-image parts for Gemini
+  const imageParts: any[] = [];
+  const allPaths = [absPath, ...(extraPaths || [])];
+  for (const p of allPaths) {
+    try {
+      if (fs.existsSync(p) && fs.statSync(p).size <= 10 * 1024 * 1024) {
+        const { base64: b64, mime: m } = fileToDataUrl(p);
+        imageParts.push({ inline_data: { mime_type: m, data: b64 } });
+      }
+    } catch { /* skip */ }
+  }
+  if (imageParts.length === 0) {
+    const { base64, mime } = fileToDataUrl(absPath);
+    imageParts.push({ inline_data: { mime_type: mime, data: base64 } });
+  }
 
   const body = {
     contents: [
       {
         parts: [
-          { inline_data: { mime_type: mime, data: base64 } },
-          { text: prompt },
+          ...imageParts,
+          { text: `${imageParts.length} photo(s) — cross-reference all. ${prompt}` },
         ],
       },
     ],
@@ -297,14 +339,29 @@ async function analyzeWithGemini(absPath: string, context?: string): Promise<AiA
 
 // ─── Grok analysis (xAI — OpenAI-compatible chat completions) ─────────
 
-async function analyzeWithGrok(absPath: string, context?: string): Promise<AiAnalysis> {
+async function analyzeWithGrok(absPath: string, context?: string, extraPaths?: string[]): Promise<AiAnalysis> {
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey || apiKey.length < 10) throw new Error("No XAI_API_KEY configured");
 
   const baseUrl = process.env.XAI_BASE_URL || "https://api.x.ai/v1";
   const model = process.env.XAI_MODEL_VISION || "grok-4";
-  const { dataUrl } = fileToDataUrl(absPath);
   const prompt = buildComprehensivePrompt(context) + GROK_SPECIALTY;
+
+  // Build multi-image content for Grok (OpenAI-compatible)
+  const imageUrls: any[] = [];
+  const allPaths = [absPath, ...(extraPaths || [])];
+  for (const p of allPaths) {
+    try {
+      if (fs.existsSync(p) && fs.statSync(p).size <= 10 * 1024 * 1024) {
+        const { dataUrl } = fileToDataUrl(p);
+        imageUrls.push({ type: "image_url", image_url: { url: dataUrl } });
+      }
+    } catch { /* skip */ }
+  }
+  if (imageUrls.length === 0) {
+    const { dataUrl } = fileToDataUrl(absPath);
+    imageUrls.push({ type: "image_url", image_url: { url: dataUrl } });
+  }
 
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
@@ -319,8 +376,8 @@ async function analyzeWithGrok(absPath: string, context?: string): Promise<AiAna
         {
           role: "user",
           content: [
-            { type: "text", text: "Analyze the item in these photos and return your assessment as JSON." },
-            { type: "image_url", image_url: { url: dataUrl } },
+            { type: "text", text: `${imageUrls.length} photo(s) — cross-reference all angles. Return JSON.` },
+            ...imageUrls,
           ],
         },
       ],
@@ -545,10 +602,12 @@ function calcAgreement(results: AiAnalysis[]): number {
 // ─── Public API ────────────────────────────────────────────────────────────
 
 export async function runMegabot(
-  photoPath: string,
+  photoPath: string | string[],
   context?: string
 ): Promise<MegabotResult> {
-  const absPath = publicUrlToAbsPath(photoPath);
+  const paths = Array.isArray(photoPath) ? photoPath : [photoPath];
+  const absPath = publicUrlToAbsPath(paths[0]);
+  const extraAbsPaths = paths.slice(1).map(publicUrlToAbsPath);
 
   const runWithTimer = async (
     provider: "openai" | "claude" | "gemini" | "grok",
@@ -566,14 +625,14 @@ export async function runMegabot(
 
   // All 4 in parallel — real API calls (Grok skipped if no key)
   const agents: Promise<AiProviderResult>[] = [
-    runWithTimer("openai", () => analyzeWithOpenAI(absPath, context)),
-    runWithTimer("claude", () => analyzeWithClaude(absPath, context)),
-    runWithTimer("gemini", () => analyzeWithGemini(absPath, context)),
+    runWithTimer("openai", () => analyzeWithOpenAI(absPath, context, extraAbsPaths)),
+    runWithTimer("claude", () => analyzeWithClaude(absPath, context, extraAbsPaths)),
+    runWithTimer("gemini", () => analyzeWithGemini(absPath, context, extraAbsPaths)),
   ];
 
   // Only add Grok if API key is configured
   if (process.env.XAI_API_KEY && process.env.XAI_API_KEY.length > 10) {
-    agents.push(runWithTimer("grok", () => analyzeWithGrok(absPath, context)));
+    agents.push(runWithTimer("grok", () => analyzeWithGrok(absPath, context, extraAbsPaths)));
   }
 
   const settled = await Promise.all(agents);

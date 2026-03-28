@@ -78,6 +78,14 @@ type Props = {
     aiShippingNotes: string | null;
     aiShippingConfidence: number | null;
   };
+  controlCenterExtra?: {
+    totalViews: number;
+    inquiries: number;
+    buyersFound: number;
+    documentCount: number;
+    updatedAt: string;
+    shippingReady: boolean;
+  };
 };
 
 /* ═══════════════════════════════════════════
@@ -3882,7 +3890,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
 }) {
   const hasAnalysis = !!aiData;
   const photoCount = photos.length;
-  const [photoSections, setPhotoSections] = useState<Set<string>>(new Set(["megabot-results"]));
+  const [photoSections, setPhotoSections] = useState<Set<string>>(new Set(["photo-score", "photo-enhance", "photo-editor", "megabot-results"]));
   const togglePhotoSection = (id: string) => { setPhotoSections(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; }); };
 
   // Enhancement studio state
@@ -4109,9 +4117,9 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
       />
 
       {collapsed && hasAnalysis && <CollapsedSummary botType="photos" data={{ score: qualityScore, count: photoCount }} buttons={<>
-        <button onClick={runAssessOnly} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📸 Re-Run · 1 cr</button>
+        <button onClick={runAssessOnly} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>{enhanceResult ? "🔄 Re-Run · 0.5 cr" : "📷 PhotoBot · 1 cr"}</button>
         {onSuperBoost && !boosted && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>⚡ MegaBot · 5 cr</button>}
-        <a href={`/bots/stylebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PhotoBot →</a>
+        <a href={`/bots/photobot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PhotoBot →</a>
       </>} />}
       {collapsed && !hasAnalysis && (
         <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
@@ -4126,7 +4134,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
           </div>
           <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
             <button onClick={runAssessOnly} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📸 PhotoBot · 1 cr</button>
-            <a href={`/bots/stylebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PhotoBot →</a>
+            <a href={`/bots/photobot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PhotoBot →</a>
           </div>
         </div>
       )}
@@ -4165,587 +4173,389 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
             </div>
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {/* ── EXISTING ASSESSMENT DISPLAY ── */}
-            {qualityScore != null && (
-              <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
-                <div style={{
-                  width: 50, height: 50, borderRadius: "50%",
-                  border: `3px solid ${qualityScore >= 7 ? "#4caf50" : qualityScore >= 4 ? "#f59e0b" : "#ef4444"}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  background: `${qualityScore >= 7 ? "#4caf50" : qualityScore >= 4 ? "#f59e0b" : "#ef4444"}12`,
-                }}>
-                  <span style={{ fontSize: "1rem", fontWeight: 700, color: qualityScore >= 7 ? "#4caf50" : qualityScore >= 4 ? "#f59e0b" : "#ef4444" }}>
-                    {qualityScore}/10
-                  </span>
-                </div>
-                <div>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)" }}>Photo Quality</div>
-                  <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
-                    {qualityScore >= 7 ? "Great photos!" : qualityScore >= 4 ? "Room for improvement" : "Needs more photos"}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {tips.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
-                {tips.slice(0, 3).map((tip, i) => (
-                  <div key={i} style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start" }}>
-                    <span style={{ fontSize: "0.78rem", flexShrink: 0 }}>📷</span>
-                    <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>{tip}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{photoCount} of 10 photos used</span>
-              {photoCount < 10 && (
-                <a href={`/items/${itemId}/edit`} style={{ fontSize: "0.72rem", color: "var(--accent)", fontWeight: 600, textDecoration: "none" }}>Add Photos</a>
-              )}
-            </div>
-
-            {/* ── ENHANCEMENT STUDIO SUB-CARD ── */}
-            {photos.length > 0 && (
-              <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.1)", borderRadius: "0.75rem", padding: "1rem", marginTop: "0.75rem" }}>
-                {/* Header */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                  <span style={{ color: "var(--text-secondary)", fontWeight: 700, fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    ✨ Photo Enhancement Studio
-                  </span>
-                  {!enhanceLoading && (
-                    <button onClick={runEnhance} style={{
-                      background: "linear-gradient(135deg, #00bcd4, #009688)", border: "none", borderRadius: "8px",
-                      padding: "0.4rem 0.9rem", color: "white", fontWeight: 700, fontSize: "0.78rem", cursor: "pointer",
+          <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+            {/* ═══ ACCORDION: Photo Score & Tips ═══ */}
+            <AccordionHeader id="photo-score" icon="📊" title="PHOTO QUALITY SCORE" subtitle={qualityScore != null ? `${qualityScore}/10 · ${photoCount} photo${photoCount !== 1 ? "s" : ""}` : `${photoCount} photos`} isOpen={photoSections.has("photo-score")} onToggle={togglePhotoSection} accentColor="#00bcd4" badge={qualityScore != null ? (qualityScore >= 7 ? "GOOD" : qualityScore >= 4 ? "FAIR" : "NEEDS WORK") : undefined} />
+            {photoSections.has("photo-score") && (
+              <div style={{ padding: "0.75rem 0.4rem" }}>
+                {qualityScore != null && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", marginBottom: "0.75rem" }}>
+                    <div style={{
+                      width: 50, height: 50, borderRadius: "50%",
+                      border: `3px solid ${qualityScore >= 7 ? "#4caf50" : qualityScore >= 4 ? "#f59e0b" : "#ef4444"}`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      background: `${qualityScore >= 7 ? "#4caf50" : qualityScore >= 4 ? "#f59e0b" : "#ef4444"}12`,
                     }}>
-                      {enhanceResult?.editedPhotoUrl || enhanceResult?.generatedPhotoUrl ? "Re-Enhance · 1 cr" : "✨ Enhance Cover Photo · 2 cr"}
-                    </button>
-                  )}
-                </div>
-
-                {enhanceError && (
-                  <div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", marginBottom: "0.5rem" }}>
-                    {enhanceError}
-                  </div>
-                )}
-
-                {/* State 1: Idle — no enhance result yet */}
-                {!enhanceResult && !enhanceLoading && (
-                  <div>
-                    {!hasAnalysis && (
-                      <div style={{ background: "rgba(0,188,212,0.05)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "8px", padding: "0.6rem 0.85rem", marginBottom: "0.75rem", display: "flex", gap: "0.6rem", alignItems: "flex-start" }}>
-                        <span style={{ fontSize: "0.9rem", flexShrink: 0, marginTop: "0.1rem" }}>💡</span>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ color: "#00bcd4", fontWeight: 600, fontSize: "0.8rem", marginBottom: "0.2rem" }}>Run AnalyzeBot first for best results</div>
-                          <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", lineHeight: 1.5 }}>
-                            AnalyzeBot identifies your item's exact details — brand, material, condition, age. PhotoBot uses that data to generate far more accurate enhanced photos.
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", lineHeight: 1.6, margin: 0 }}>
-                      AI edits your real photo to clean up the background, then generates a professional storefront version. You choose which to use as your cover.
-                    </p>
-                  </div>
-                )}
-
-                {/* State 2: Loading — generation in progress */}
-                {enhanceLoading && (
-                  <BotLoadingState botName="PhotoBot" />
-                )}
-
-                {/* State 3: Results ready */}
-                {enhanceResult && !enhanceLoading && (
-                  <div>
-                    {/* Assessment scores row */}
-                    {assess && (
-                      <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
-                        {[
-                          { label: "Isolation", val: assess.isolationScore },
-                          { label: "Lighting", val: assess.lightingScore },
-                          { label: "Framing", val: assess.framingScore },
-                          { label: "Overall", val: assess.overallScore },
-                        ].map((s) => (
-                          <div key={s.label} style={{ background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "6px", padding: "0.25rem 0.6rem", fontSize: "0.78rem" }}>
-                            <span style={{ color: "var(--text-muted)" }}>{s.label}: </span>
-                            <span style={{ color: "#00bcd4", fontWeight: 700 }}>{s.val ?? "?"}/10</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Enrichment badge — confirms photos used AnalyzeBot intelligence */}
-                    {enhanceResult?.enrichedWithAnalysis && (
-                      <div style={{ marginBottom: "0.75rem" }}>
-                        <span style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "20px", padding: "0.15rem 0.6rem", fontSize: "0.72rem", color: "#10b981", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-                          ✓ Enhanced with item analysis data
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Condition preservation notice */}
-                    {conditionDetails.length > 0 && (
-                      <div style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "8px", padding: "0.6rem 0.85rem", marginBottom: "0.75rem" }}>
-                        <div style={{ color: "#f59e0b", fontWeight: 700, fontSize: "0.8rem", marginBottom: "0.4rem" }}>⚠️ Condition preserved in all versions:</div>
-                        {conditionDetails.map((c: string, i: number) => (
-                          <div key={i} style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>• {c}</div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Two photo outputs side by side */}
-                    {(enhanceResult.editedPhotoUrl || enhanceResult.generatedPhotoUrl) && (
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "0.75rem" }}>
-                        {/* Edited photo card */}
-                        {enhanceResult.editedPhotoUrl && (
-                          <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "10px", overflow: "hidden" }}>
-                            <img src={enhanceResult.editedPhotoUrl} alt="Edited original" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
-                            <div style={{ padding: "0.6rem" }}>
-                              <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "0.78rem" }}>📸 Edited Original</div>
-                              <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: "0.4rem" }}>Real photo · background cleaned</div>
-                              <button onClick={() => setAsCover(enhanceResult.editedPhotoUrl, "edited")} style={{
-                                width: "100%", background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.25)",
-                                borderRadius: "6px", padding: "0.35rem 0", color: "#00bcd4", fontWeight: 600, fontSize: "0.75rem",
-                                cursor: "pointer",
-                              }}>
-                                {coverSet === "edited" ? "✓ Set!" : "Set as Cover"}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                        {/* AI Generated card */}
-                        {enhanceResult.generatedPhotoUrl && (
-                          <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "10px", overflow: "hidden" }}>
-                            <img src={enhanceResult.generatedPhotoUrl} alt="AI generated" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
-                            <div style={{ padding: "0.6rem" }}>
-                              <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "0.78rem" }}>🎨 AI Generated</div>
-                              <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginBottom: "0.4rem" }}>Professional storefront render</div>
-                              <button onClick={() => setAsCover(enhanceResult.generatedPhotoUrl, "generated")} style={{
-                                width: "100%", background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.25)",
-                                borderRadius: "6px", padding: "0.35rem 0", color: "#00bcd4", fontWeight: 600, fontSize: "0.75rem",
-                                cursor: "pointer",
-                              }}>
-                                {coverSet === "generated" ? "✓ Set!" : "Set as Cover"}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Assessment-only fallback (no images — from single bot 1cr run) */}
-                    {!enhanceResult.editedPhotoUrl && !enhanceResult.generatedPhotoUrl && (
-                      <div style={{ color: "var(--text-muted)", fontSize: "0.82rem", padding: "0.5rem", lineHeight: 1.5 }}>
-                        Assessment complete. Click <strong style={{ color: "var(--accent)" }}>Enhance Cover Photo</strong> above to generate edited and AI versions, or use MegaBot for 3 professional variations.
-                      </div>
-                    )}
-
-                    {/* Improvement steps */}
-                    {assess?.enhancementSteps && assess.enhancementSteps.length > 0 && (
-                      <div style={{ marginTop: "0.75rem" }}>
-                        <div style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.82rem", marginBottom: "0.4rem" }}>📋 Improvement Steps</div>
-                        {assess.enhancementSteps.map((step: string, i: number) => (
-                          <div key={i} style={{ display: "flex", gap: "0.4rem", color: "var(--text-secondary)", fontSize: "0.8rem", marginBottom: "0.3rem" }}>
-                            <span style={{ color: "#00bcd4" }}>•</span>
-                            <span>{step}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Re-Enhance button after first full run */}
-                    {(enhanceResult.editedPhotoUrl || enhanceResult.generatedPhotoUrl) && (
-                      <button onClick={runEnhance} style={{
-                        background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
-                        borderRadius: "8px", padding: "0.35rem 0.75rem", color: "var(--text-secondary)",
-                        fontWeight: 600, fontSize: "0.75rem", cursor: "pointer", marginTop: "0.5rem",
-                      }}>
-                        Re-Enhance · 1 cr
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ── PHOTO EDITOR SUB-CARD ── */}
-            {photos.length > 0 && (
-              <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.1)", borderRadius: "0.75rem", padding: "1rem", marginTop: "0.75rem" }}>
-                {/* Header */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                  <span style={{ color: "var(--text-secondary)", fontWeight: 700, fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    🧹 Photo Editor
-                  </span>
-                  <span style={{ background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "20px", padding: "0.2rem 0.6rem", color: "#00bcd4", fontSize: "0.72rem", fontWeight: 600 }}>
-                    1 cr per photo
-                  </span>
-                </div>
-
-                {editError && (
-                  <div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", marginBottom: "0.5rem" }}>
-                    {editError}
-                  </div>
-                )}
-
-                {/* State 1: Idle */}
-                {!editResult && !editLoading && (
-                  <div>
-                    {/* Photo selector thumbnails */}
-                    <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
-                      {photos.slice(0, 5).map((p) => (
-                        <img
-                          key={p.id}
-                          src={p.filePath}
-                          alt=""
-                          onClick={() => setEditSelectedPhoto(p.id)}
-                          style={{
-                            width: "52px", height: "52px", borderRadius: "6px", objectFit: "cover", cursor: "pointer",
-                            border: editSelectedPhoto === p.id ? "2px solid #00bcd4" : "2px solid transparent",
-                            opacity: editSelectedPhoto === p.id ? 1 : 0.7, transition: "all 0.2s",
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <p style={{ color: "var(--text-muted)", fontSize: "0.8rem", lineHeight: 1.5, marginBottom: "0.75rem", margin: "0 0 0.75rem" }}>
-                      AI scans the selected photo, protects the item, and removes backgrounds, people, and clutter automatically.
-                    </p>
-                    <button
-                      onClick={runPhotoEdit}
-                      disabled={!editSelectedPhoto}
-                      style={{
-                        background: editSelectedPhoto ? "linear-gradient(135deg, #00bcd4, #009688)" : "var(--ghost-bg)",
-                        border: "none", borderRadius: "8px", padding: "0.45rem 1rem",
-                        color: editSelectedPhoto ? "white" : "var(--text-muted)",
-                        fontWeight: 700, fontSize: "0.78rem", cursor: editSelectedPhoto ? "pointer" : "default",
-                        opacity: editSelectedPhoto ? 1 : 0.5,
-                      }}
-                    >
-                      🧹 Auto-Clean Photo · 1 cr
-                    </button>
-                  </div>
-                )}
-
-                {/* State 2: Loading */}
-                {editLoading && (
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.82rem", textAlign: "center", padding: "1rem" }}>
-                    🧹 Scanning photo and removing distractions — protecting your item...
-                  </div>
-                )}
-
-                {/* State 3: Results */}
-                {editResult && !editLoading && (
-                  <div>
-                    {/* What was removed */}
-                    <div style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "8px", padding: "0.6rem 0.85rem", marginBottom: "0.75rem" }}>
-                      <div style={{ color: "#10b981", fontWeight: 700, fontSize: "0.78rem", marginBottom: "0.3rem" }}>✓ Item protected · Cleaned:</div>
-                      <div style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>{editResult.cleaningDescription}</div>
-                    </div>
-
-                    {/* Before / After comparison */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem", marginBottom: "0.75rem" }}>
-                      {/* Original */}
-                      <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "8px", overflow: "hidden" }}>
-                        <img src={editResult.originalPhotoPath} alt="Original" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
-                        <div style={{ padding: "0.4rem 0.5rem", color: "var(--text-muted)", fontSize: "0.72rem", fontWeight: 600 }}>Original</div>
-                      </div>
-                      {/* Cleaned */}
-                      <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "8px", overflow: "hidden" }}>
-                        <img src={editResult.editedPhotoUrl} alt="Cleaned" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ padding: "0.4rem 0.5rem", color: "#00bcd4", fontSize: "0.72rem", fontWeight: 600 }}>Cleaned</span>
-                          <button onClick={() => { setCoverSet("edit"); }} style={{ background: "rgba(0,188,212,0.1)", border: "none", borderRadius: "4px", padding: "0.25rem 0.5rem", color: "#00bcd4", fontSize: "0.7rem", fontWeight: 600, cursor: "pointer", margin: "0.3rem" }}>
-                            {coverSet === "edit" ? "✓ Set!" : "Set as Cover"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Item protection badge */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.5rem" }}>
-                      <span style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "20px", padding: "0.2rem 0.65rem", color: "#f59e0b", fontSize: "0.72rem", fontWeight: 600 }}>
-                        🛡️ Item condition untouched — only surroundings edited
+                      <span style={{ fontSize: "1rem", fontWeight: 700, color: qualityScore >= 7 ? "#4caf50" : qualityScore >= 4 ? "#f59e0b" : "#ef4444" }}>
+                        {qualityScore}/10
                       </span>
                     </div>
-
-                    {/* Clean Another */}
-                    <button
-                      onClick={() => { setEditResult(null); setEditSelectedPhoto(null); }}
-                      style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.35rem 0.75rem", color: "var(--text-muted)", fontSize: "0.75rem", cursor: "pointer" }}
-                    >
-                      Clean Another Photo
-                    </button>
+                    <div>
+                      <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)" }}>Photo Quality</div>
+                      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
+                        {qualityScore >= 7 ? "Great photos!" : qualityScore >= 4 ? "Room for improvement" : "Needs more photos"}
+                      </div>
+                    </div>
                   </div>
                 )}
+
+                {/* Assessment scores from AI */}
+                {assess && (
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
+                    {[
+                      { label: "Isolation", val: assess.isolationScore },
+                      { label: "Lighting", val: assess.lightingScore },
+                      { label: "Framing", val: assess.framingScore },
+                      { label: "Focus", val: assess.focusScore },
+                      { label: "Overall", val: assess.overallScore },
+                    ].filter((s) => s.val != null).map((s) => (
+                      <div key={s.label} style={{ background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "6px", padding: "0.2rem 0.55rem", fontSize: "0.72rem" }}>
+                        <span style={{ color: "var(--text-muted)" }}>{s.label}: </span>
+                        <span style={{ color: (s.val ?? 0) >= 7 ? "#4caf50" : (s.val ?? 0) >= 4 ? "#f59e0b" : "#ef4444", fontWeight: 700 }}>{s.val}/10</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {tips.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", marginBottom: "0.65rem" }}>
+                    {tips.slice(0, 4).map((tip, i) => (
+                      <div key={i} style={{ display: "flex", gap: "0.4rem", alignItems: "flex-start" }}>
+                        <span style={{ fontSize: "0.72rem", flexShrink: 0, color: "#f59e0b" }}>💡</span>
+                        <span style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>{tip}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>{photoCount} of 10 photos used</span>
+                  {photoCount < 10 && (
+                    <a href={`/items/${itemId}/edit`} style={{ fontSize: "0.68rem", color: "var(--accent)", fontWeight: 600, textDecoration: "none" }}>+ Add Photos</a>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* ── MEGABOT BOOST RESULTS ── */}
-            {boosted && boostResult && (
-              <div>
-                {/* MegaBot Advantage Callout */}
-                <div style={{
-                  background: "rgba(139,92,246,0.08)",
-                  border: "1px solid rgba(139,92,246,0.25)",
-                  borderRadius: "0.6rem",
-                  padding: "0.6rem 0.85rem",
-                  marginBottom: "0.75rem",
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "0.5rem",
-                  alignItems: "center",
-                }}>
-                  <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#8b5cf6" }}>⚡ MegaBot Advantage</span>
-                  {["4 AI experts", "3 generated photo variations", "Deep photo intelligence", "Cover photo ready"].map((item) => (
-                    <span key={item} style={{
-                      background: "rgba(139,92,246,0.12)",
-                      color: "#a78bfa",
-                      borderRadius: "20px",
-                      padding: "0.15rem 0.55rem",
-                      fontSize: "0.68rem",
-                      fontWeight: 600,
-                    }}>
-                      {item}
-                    </span>
-                  ))}
-                </div>
+            {/* ═══ ACCORDION: Enhancement Studio ═══ */}
+            {photos.length > 0 && (<>
+              <AccordionHeader id="photo-enhance" icon="✨" title="ENHANCEMENT STUDIO" subtitle={enhanceResult ? "Results ready" : "AI photo enhancement"} isOpen={photoSections.has("photo-enhance")} onToggle={togglePhotoSection} accentColor="#00bcd4" badge={enhanceResult?.enrichedWithAnalysis ? "AI ENRICHED" : undefined} />
+              {photoSections.has("photo-enhance") && (
+                <div style={{ padding: "0.75rem 0.4rem" }}>
+                  {enhanceError && (
+                    <div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.72rem", color: "#ef4444", marginBottom: "0.5rem" }}>
+                      {enhanceError}
+                    </div>
+                  )}
 
-                <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={photoSections.has("megabot-results")} onToggle={togglePhotoSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
-                {photoSections.has("megabot-results") && <MegaBotBoostResults botType="photos" result={boostResult} aiData={aiData} />}
-
-                {/* MegaBot Enhancement Variation Cards — merged with generated images */}
-                {megaVariations.length > 0 && (
-                  <div style={{ marginTop: "0.75rem" }}>
-                    <div style={{ color: "var(--text-secondary)", fontSize: "0.82rem", fontWeight: 700, marginBottom: "0.5rem" }}>Enhancement Variations</div>
-                    {megaVariations.slice(0, 3).map((v: any, i: number) => {
-                      const vName = v.variationName || v.variation_name || `Variation ${i + 1}`;
-                      const vResult = variationResults.find((vr: any) => vr.variationName === vName);
-                      const vImgUrl = vResult?.generatedPhotoUrl || vResult?.editedPhotoUrl || null;
-                      const isGenerating = variationLoading === vName;
-
-                      return (
-                        <div key={i} style={{ background: "var(--bg-card)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px", overflow: "hidden", marginBottom: "0.75rem" }}>
-                          {/* Generated image or loading placeholder */}
-                          {vImgUrl ? (
-                            <img src={vImgUrl} alt={vName} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
-                          ) : isGenerating ? (
-                            <div style={{ width: "100%", aspectRatio: "1", background: "rgba(139,92,246,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <span style={{ color: "#8b5cf6", fontSize: "0.82rem" }}>🎨 Generating...</span>
-                            </div>
-                          ) : null}
-
-                          {/* Card footer */}
-                          <div style={{ padding: "0.75rem" }}>
-                            <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "0.875rem", marginBottom: "0.25rem" }}>{vName}</div>
-                            <div style={{ color: "var(--text-secondary)", fontSize: "0.8rem", marginBottom: "0.4rem" }}>{v.description}</div>
-                            {(v.bestFor || v.best_for) && (
-                              <div style={{ marginBottom: "0.5rem" }}>
-                                <span style={{ background: "rgba(139,92,246,0.1)", color: "#8b5cf6", borderRadius: "20px", padding: "0.2rem 0.65rem", fontSize: "0.72rem", fontWeight: 600 }}>
-                                  {v.bestFor || v.best_for}
-                                </span>
-                              </div>
-                            )}
-                            {/* Button row */}
-                            <div style={{ display: "flex", gap: "0.4rem" }}>
-                              {vImgUrl ? (
-                                <button onClick={() => setAsCover(vImgUrl, `var-${i}`)} style={{
-                                  flex: 1, background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.25)",
-                                  borderRadius: "6px", padding: "0.35rem 0", color: "#00bcd4", fontWeight: 600, fontSize: "0.75rem", cursor: "pointer",
-                                }}>
-                                  {coverSet === `var-${i}` ? "✓ Set!" : "Set as Cover"}
-                                </button>
-                              ) : !isGenerating ? (
-                                <button onClick={() => generateVariation(v)} disabled={!!variationLoading} style={{
-                                  flex: 1, background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.25)",
-                                  borderRadius: "6px", padding: "0.35rem 0", color: "#00bcd4", fontWeight: 600, fontSize: "0.75rem",
-                                  cursor: variationLoading ? "wait" : "pointer", opacity: variationLoading ? 0.6 : 1,
-                                }}>
-                                  Generate This Version
-                                </button>
-                              ) : null}
-                              {vImgUrl && (
-                                <button onClick={() => generateVariation(v)} disabled={!!variationLoading} style={{
-                                  background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
-                                  borderRadius: "6px", padding: "0.35rem 0.6rem", color: "var(--text-muted)", fontSize: "0.72rem",
-                                  cursor: variationLoading ? "wait" : "pointer",
-                                }}>
-                                  Regenerate
-                                </button>
-                              )}
-                            </div>
+                  {/* Idle state */}
+                  {!enhanceResult && !enhanceLoading && (
+                    <div>
+                      {!hasAnalysis && (
+                        <div style={{ background: "rgba(0,188,212,0.05)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "8px", padding: "0.5rem 0.75rem", marginBottom: "0.65rem", display: "flex", gap: "0.5rem", alignItems: "flex-start" }}>
+                          <span style={{ fontSize: "0.8rem", flexShrink: 0 }}>💡</span>
+                          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
+                            <span style={{ color: "#00bcd4", fontWeight: 600 }}>Tip:</span> Run AnalyzeBot first — PhotoBot uses item data for far more accurate enhancements.
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                      )}
+                      <p style={{ color: "var(--text-muted)", fontSize: "0.75rem", lineHeight: 1.5, margin: "0 0 0.65rem" }}>
+                        AI edits your real photo background, then generates a professional storefront version.
+                      </p>
+                      <button onClick={runEnhance} style={{
+                        background: "linear-gradient(135deg, #00bcd4, #009688)", border: "none", borderRadius: "0.4rem",
+                        padding: "0.35rem 0.85rem", color: "#fff", fontWeight: 700, fontSize: "0.72rem", cursor: "pointer",
+                      }}>
+                        ✨ Enhance Cover Photo · 2 cr
+                      </button>
+                    </div>
+                  )}
 
-                {/* Missing Shots */}
-                {megaMissingShots.length > 0 && (
-                  <div style={{ marginTop: "0.75rem" }}>
-                    <div style={{ color: "var(--text-secondary)", fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.4rem" }}>Missing Shots</div>
-                    {megaMissingShots.slice(0, 5).map((shot, i) => (
-                      <div key={i} style={{ display: "flex", gap: "0.4rem", color: "var(--text-secondary)", fontSize: "0.8rem", marginBottom: "0.3rem" }}>
-                        <span style={{ color: "#00bcd4" }}>☐</span>
-                        <span>{shot}</span>
+                  {/* Loading */}
+                  {enhanceLoading && <BotLoadingState botName="PhotoBot" />}
+
+                  {/* Results */}
+                  {enhanceResult && !enhanceLoading && (
+                    <div>
+                      {/* Enrichment badge */}
+                      {enhanceResult?.enrichedWithAnalysis && (
+                        <div style={{ marginBottom: "0.65rem" }}>
+                          <span style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "20px", padding: "0.12rem 0.55rem", fontSize: "0.65rem", color: "#10b981", fontWeight: 600 }}>
+                            ✓ Enhanced with item analysis data
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Condition preservation */}
+                      {conditionDetails.length > 0 && (
+                        <div style={{ background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "8px", padding: "0.5rem 0.75rem", marginBottom: "0.65rem" }}>
+                          <div style={{ color: "#f59e0b", fontWeight: 700, fontSize: "0.72rem", marginBottom: "0.3rem" }}>🛡️ Condition preserved:</div>
+                          {conditionDetails.slice(0, 4).map((c: string, i: number) => (
+                            <div key={i} style={{ color: "var(--text-muted)", fontSize: "0.72rem" }}>• {c}</div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Two photo outputs */}
+                      {(enhanceResult.editedPhotoUrl || enhanceResult.generatedPhotoUrl) && (
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem", marginBottom: "0.65rem" }}>
+                          {enhanceResult.editedPhotoUrl && (
+                            <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "8px", overflow: "hidden" }}>
+                              <img src={enhanceResult.editedPhotoUrl} alt="Edited" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
+                              <div style={{ padding: "0.5rem" }}>
+                                <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "0.72rem" }}>📸 Edited Original</div>
+                                <div style={{ color: "var(--text-muted)", fontSize: "0.62rem", marginBottom: "0.35rem" }}>Background cleaned</div>
+                                <button onClick={() => setAsCover(enhanceResult.editedPhotoUrl, "edited")} style={{ width: "100%", background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "6px", padding: "0.3rem 0", color: "#00bcd4", fontWeight: 600, fontSize: "0.68rem", cursor: "pointer" }}>
+                                  {coverSet === "edited" ? "✓ Set!" : "Set as Cover"}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                          {enhanceResult.generatedPhotoUrl && (
+                            <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "8px", overflow: "hidden" }}>
+                              <img src={enhanceResult.generatedPhotoUrl} alt="AI Generated" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
+                              <div style={{ padding: "0.5rem" }}>
+                                <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "0.72rem" }}>🎨 AI Generated</div>
+                                <div style={{ color: "var(--text-muted)", fontSize: "0.62rem", marginBottom: "0.35rem" }}>Storefront render</div>
+                                <button onClick={() => setAsCover(enhanceResult.generatedPhotoUrl, "generated")} style={{ width: "100%", background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "6px", padding: "0.3rem 0", color: "#00bcd4", fontWeight: 600, fontSize: "0.68rem", cursor: "pointer" }}>
+                                  {coverSet === "generated" ? "✓ Set!" : "Set as Cover"}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Assessment-only fallback */}
+                      {!enhanceResult.editedPhotoUrl && !enhanceResult.generatedPhotoUrl && (
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", padding: "0.4rem 0", lineHeight: 1.5 }}>
+                          Assessment complete. Click <strong style={{ color: "var(--accent)" }}>Enhance</strong> below for edited and AI versions.
+                        </div>
+                      )}
+
+                      {/* Improvement steps */}
+                      {assess?.enhancementSteps && assess.enhancementSteps.length > 0 && (
+                        <div style={{ marginTop: "0.5rem" }}>
+                          <div style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.72rem", marginBottom: "0.3rem" }}>📋 Improvement Steps</div>
+                          {assess.enhancementSteps.slice(0, 5).map((step: string, i: number) => (
+                            <div key={i} style={{ display: "flex", gap: "0.35rem", color: "var(--text-secondary)", fontSize: "0.72rem", marginBottom: "0.2rem" }}>
+                              <span style={{ color: "#00bcd4" }}>•</span>
+                              <span>{step}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>)}
+
+            {/* ═══ ACCORDION: Photo Editor ═══ */}
+            {photos.length > 0 && (<>
+              <AccordionHeader id="photo-editor" icon="🧹" title="PHOTO EDITOR" subtitle={editResult ? "Cleaned" : "Auto-clean backgrounds"} isOpen={photoSections.has("photo-editor")} onToggle={togglePhotoSection} accentColor="#00bcd4" badge="1 CR/PHOTO" />
+              {photoSections.has("photo-editor") && (
+                <div style={{ padding: "0.75rem 0.4rem" }}>
+                  {editError && (
+                    <div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.72rem", color: "#ef4444", marginBottom: "0.5rem" }}>
+                      {editError}
+                    </div>
+                  )}
+
+                  {/* Idle */}
+                  {!editResult && !editLoading && (
+                    <div>
+                      <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginBottom: "0.65rem" }}>
+                        {photos.slice(0, 5).map((p) => (
+                          <img key={p.id} src={p.filePath} alt="" onClick={() => setEditSelectedPhoto(p.id)}
+                            style={{ width: "52px", height: "52px", borderRadius: "6px", objectFit: "cover", cursor: "pointer", border: editSelectedPhoto === p.id ? "2px solid #00bcd4" : "2px solid transparent", opacity: editSelectedPhoto === p.id ? 1 : 0.7, transition: "all 0.2s" }} />
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <p style={{ color: "var(--text-muted)", fontSize: "0.72rem", lineHeight: 1.5, margin: "0 0 0.65rem" }}>
+                        AI protects the item and removes backgrounds, people, and clutter.
+                      </p>
+                      <button onClick={runPhotoEdit} disabled={!editSelectedPhoto}
+                        style={{ background: editSelectedPhoto ? "linear-gradient(135deg, #00bcd4, #009688)" : "var(--ghost-bg)", border: "none", borderRadius: "0.4rem", padding: "0.35rem 0.85rem", color: editSelectedPhoto ? "#fff" : "var(--text-muted)", fontWeight: 700, fontSize: "0.72rem", cursor: editSelectedPhoto ? "pointer" : "default", opacity: editSelectedPhoto ? 1 : 0.5 }}>
+                        🧹 Auto-Clean Photo · 1 cr
+                      </button>
+                    </div>
+                  )}
 
-                {/* Professional Tips */}
-                {megaProTips.length > 0 && (
-                  <div style={{ marginTop: "0.75rem" }}>
-                    <div style={{ color: "var(--text-secondary)", fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.4rem" }}>Professional Tips</div>
-                    {megaProTips.slice(0, 5).map((tip, i) => (
-                      <div key={i} style={{ display: "flex", gap: "0.4rem", color: "var(--text-secondary)", fontSize: "0.8rem", marginBottom: "0.3rem" }}>
-                        <span style={{ color: "#00bcd4" }}>•</span>
-                        <span>{tip}</span>
+                  {/* Loading */}
+                  {editLoading && (
+                    <div style={{ color: "var(--text-muted)", fontSize: "0.75rem", textAlign: "center", padding: "0.75rem" }}>
+                      🧹 Scanning and cleaning — protecting your item...
+                    </div>
+                  )}
+
+                  {/* Results */}
+                  {editResult && !editLoading && (
+                    <div>
+                      <div style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.15)", borderRadius: "8px", padding: "0.5rem 0.75rem", marginBottom: "0.65rem" }}>
+                        <div style={{ color: "#10b981", fontWeight: 700, fontSize: "0.72rem", marginBottom: "0.2rem" }}>✓ Item protected · Cleaned:</div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.72rem" }}>{editResult.cleaningDescription}</div>
                       </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.65rem" }}>
+                        <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "8px", overflow: "hidden" }}>
+                          <img src={editResult.originalPhotoPath} alt="Original" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
+                          <div style={{ padding: "0.35rem 0.45rem", color: "var(--text-muted)", fontSize: "0.65rem", fontWeight: 600 }}>Original</div>
+                        </div>
+                        <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "8px", overflow: "hidden" }}>
+                          <img src={editResult.editedPhotoUrl} alt="Cleaned" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ padding: "0.35rem 0.45rem", color: "#00bcd4", fontSize: "0.65rem", fontWeight: 600 }}>Cleaned</span>
+                            <button onClick={() => { setCoverSet("edit"); }} style={{ background: "rgba(0,188,212,0.1)", border: "none", borderRadius: "4px", padding: "0.2rem 0.45rem", color: "#00bcd4", fontSize: "0.62rem", fontWeight: 600, cursor: "pointer", margin: "0.25rem" }}>
+                              {coverSet === "edit" ? "✓ Set!" : "Set as Cover"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.5rem" }}>
+                        <span style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "20px", padding: "0.15rem 0.55rem", color: "#f59e0b", fontSize: "0.65rem", fontWeight: 600 }}>
+                          🛡️ Item condition untouched
+                        </span>
+                      </div>
+                      <button onClick={() => { setEditResult(null); setEditSelectedPhoto(null); }}
+                        style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "0.4rem", padding: "0.3rem 0.65rem", color: "var(--text-muted)", fontSize: "0.68rem", cursor: "pointer" }}>
+                        Clean Another Photo
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>)}
+
+            {/* ═══ ACCORDION: MegaBot Results ═══ */}
+            {boosted && boostResult && (<>
+              <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={photoSections.has("megabot-results")} onToggle={togglePhotoSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.result).length} AI`} />
+              {photoSections.has("megabot-results") && (
+                <div style={{ padding: "0.75rem 0.4rem" }}>
+                  {/* MegaBot Advantage Callout */}
+                  <div style={{ background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.25)", borderRadius: "0.5rem", padding: "0.5rem 0.75rem", marginBottom: "0.65rem", display: "flex", flexWrap: "wrap", gap: "0.4rem", alignItems: "center" }}>
+                    <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#8b5cf6" }}>⚡ MegaBot</span>
+                    {["4 AI experts", "5 variations", "Deep intelligence"].map((item) => (
+                      <span key={item} style={{ background: "rgba(139,92,246,0.12)", color: "#a78bfa", borderRadius: "20px", padding: "0.12rem 0.5rem", fontSize: "0.6rem", fontWeight: 600 }}>
+                        {item}
+                      </span>
                     ))}
                   </div>
-                )}
 
-                {/* Condition Documentation */}
-                {megaConditionDocs.length > 0 && (
-                  <div style={{ marginTop: "0.75rem", background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "6px", padding: "0.5rem 0.75rem" }}>
-                    <div style={{ color: "#f59e0b", fontWeight: 600, fontSize: "0.78rem", marginBottom: "0.25rem" }}>Condition Documentation (all agents)</div>
-                    {megaConditionDocs.map((c, i) => (
-                      <div key={i} style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>• {c}</div>
-                    ))}
-                  </div>
-                )}
+                  <MegaBotBoostResults botType="photos" result={boostResult} aiData={aiData} />
 
-                {/* MegaBot summary */}
-                {boostResult?.summary && (
-                  <div style={{ marginTop: "0.75rem", color: "var(--text-muted)", fontSize: "0.78rem", fontStyle: "italic", lineHeight: 1.5 }}>
-                    {boostResult.summary}
-                  </div>
-                )}
-              </div>
-            )}
+                  {/* Enhancement Variation Cards */}
+                  {megaVariations.length > 0 && (
+                    <div style={{ marginTop: "0.65rem" }}>
+                      <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 700, marginBottom: "0.4rem" }}>Enhancement Variations</div>
+                      {megaVariations.slice(0, 5).map((v: any, i: number) => {
+                        const vName = v.variationName || v.variation_name || `Variation ${i + 1}`;
+                        const vResult = variationResults.find((vr: any) => vr.variationName === vName);
+                        const vImgUrl = vResult?.generatedPhotoUrl || vResult?.editedPhotoUrl || null;
+                        const isGenerating = variationLoading === vName;
+
+                        return (
+                          <div key={i} style={{ background: "var(--bg-card)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "8px", overflow: "hidden", marginBottom: "0.5rem" }}>
+                            {vImgUrl ? (
+                              <img src={vImgUrl} alt={vName} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
+                            ) : isGenerating ? (
+                              <div style={{ width: "100%", aspectRatio: "1", background: "rgba(139,92,246,0.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <span style={{ color: "#8b5cf6", fontSize: "0.75rem" }}>🎨 Generating...</span>
+                              </div>
+                            ) : null}
+                            <div style={{ padding: "0.6rem" }}>
+                              <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "0.78rem", marginBottom: "0.2rem" }}>{vName}</div>
+                              <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", marginBottom: "0.35rem" }}>{v.description}</div>
+                              {(v.bestFor || v.best_for) && (
+                                <div style={{ marginBottom: "0.4rem" }}>
+                                  <span style={{ background: "rgba(139,92,246,0.1)", color: "#8b5cf6", borderRadius: "20px", padding: "0.15rem 0.55rem", fontSize: "0.62rem", fontWeight: 600 }}>
+                                    {v.bestFor || v.best_for}
+                                  </span>
+                                </div>
+                              )}
+                              <div style={{ display: "flex", gap: "0.35rem" }}>
+                                {vImgUrl ? (
+                                  <button onClick={() => setAsCover(vImgUrl, `var-${i}`)} style={{ flex: 1, background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "6px", padding: "0.3rem 0", color: "#00bcd4", fontWeight: 600, fontSize: "0.68rem", cursor: "pointer" }}>
+                                    {coverSet === `var-${i}` ? "✓ Set!" : "Set as Cover"}
+                                  </button>
+                                ) : !isGenerating ? (
+                                  <button onClick={() => generateVariation(v)} disabled={!!variationLoading} style={{ flex: 1, background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "6px", padding: "0.3rem 0", color: "#00bcd4", fontWeight: 600, fontSize: "0.68rem", cursor: variationLoading ? "wait" : "pointer", opacity: variationLoading ? 0.6 : 1 }}>
+                                    Generate This Version
+                                  </button>
+                                ) : null}
+                                {vImgUrl && (
+                                  <button onClick={() => generateVariation(v)} disabled={!!variationLoading} style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "6px", padding: "0.3rem 0.5rem", color: "var(--text-muted)", fontSize: "0.62rem", cursor: variationLoading ? "wait" : "pointer" }}>
+                                    Redo
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Missing Shots */}
+                  {megaMissingShots.length > 0 && (
+                    <div style={{ marginTop: "0.65rem" }}>
+                      <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 600, marginBottom: "0.35rem" }}>📸 Missing Shots</div>
+                      {megaMissingShots.slice(0, 5).map((shot, i) => (
+                        <div key={i} style={{ display: "flex", gap: "0.35rem", color: "var(--text-secondary)", fontSize: "0.72rem", marginBottom: "0.25rem" }}>
+                          <span style={{ color: "#00bcd4" }}>☐</span>
+                          <span>{typeof shot === "string" ? shot : (shot as any).shotName || JSON.stringify(shot)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Professional Tips */}
+                  {megaProTips.length > 0 && (
+                    <div style={{ marginTop: "0.65rem" }}>
+                      <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 600, marginBottom: "0.35rem" }}>💡 Professional Tips</div>
+                      {megaProTips.slice(0, 5).map((tip, i) => (
+                        <div key={i} style={{ display: "flex", gap: "0.35rem", color: "var(--text-secondary)", fontSize: "0.72rem", marginBottom: "0.25rem" }}>
+                          <span style={{ color: "#00bcd4" }}>•</span>
+                          <span>{typeof tip === "string" ? tip : JSON.stringify(tip)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Condition Documentation */}
+                  {megaConditionDocs.length > 0 && (
+                    <div style={{ marginTop: "0.65rem", background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "6px", padding: "0.45rem 0.65rem" }}>
+                      <div style={{ color: "#f59e0b", fontWeight: 600, fontSize: "0.68rem", marginBottom: "0.2rem" }}>🛡️ Condition Documentation</div>
+                      {megaConditionDocs.slice(0, 6).map((c, i) => (
+                        <div key={i} style={{ color: "var(--text-muted)", fontSize: "0.68rem" }}>• {typeof c === "string" ? c : (c as any).issue || JSON.stringify(c)}</div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* MegaBot summary */}
+                  {boostResult?.summary && (
+                    <div style={{ marginTop: "0.65rem", color: "var(--text-muted)", fontSize: "0.72rem", fontStyle: "italic", lineHeight: 1.5 }}>
+                      {boostResult.summary}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>)}
           </div>
         )}
       </div>
 
-      {/* Custom PhotoBot footer */}
-      <div style={{
-        padding: "0.65rem 1.25rem",
-        borderTop: "1px solid var(--border-default)",
-        display: "flex",
-        gap: "0.5rem",
-        flexWrap: "wrap",
-        alignItems: "center",
-      }}>
-        {/* PhotoBot single run — assessment only */}
-        <button
-          onClick={runAssessOnly}
-          disabled={enhanceLoading || !hasAnalysis}
-          style={{
-            padding: "0.3rem 0.75rem",
-            fontSize: "0.68rem",
-            fontWeight: 600,
-            borderRadius: "0.5rem",
-            border: "1px solid var(--border-default)",
-            background: "var(--ghost-bg)",
-            color: "var(--text-secondary)",
-            cursor: enhanceLoading || !hasAnalysis ? "not-allowed" : "pointer",
-            opacity: enhanceLoading || !hasAnalysis ? 0.5 : 1,
-          }}
-        >
-          📷 PhotoBot · 1 cr
-        </button>
-
-        {/* Re-Run (only after first enhance) */}
-        {enhanceResult && (
-          <button
-            onClick={runEnhance}
-            disabled={enhanceLoading}
-            style={{
-              padding: "0.3rem 0.75rem",
-              fontSize: "0.68rem",
-              fontWeight: 600,
-              borderRadius: "0.5rem",
-              border: "1px solid rgba(0,188,212,0.2)",
-              background: "rgba(0,188,212,0.06)",
-              color: "var(--accent)",
-              cursor: enhanceLoading ? "wait" : "pointer",
-              opacity: enhanceLoading ? 0.6 : 1,
-            }}
-          >
-            {enhanceLoading ? "Running..." : "🔄 Re-Run · 0.5 cr"}
-          </button>
-        )}
-
-        {/* MegaBot — single button, transforms on state */}
-        {hasAnalysis && !boosted && !boosting && (
-          <button
-            onClick={onSuperBoost}
-            style={{
-              padding: "0.3rem 0.75rem",
-              fontSize: "0.68rem",
-              fontWeight: 600,
-              borderRadius: "0.5rem",
-              border: "none",
-              background: "linear-gradient(135deg, #00bcd4, #009688)",
-              color: "#fff",
-              cursor: "pointer",
-            }}
-          >
-            ⚡ MegaBot · 5 cr
-          </button>
-        )}
-        {hasAnalysis && boosted && !boosting && (
-          <button
-            onClick={onSuperBoost}
-            style={{
-              padding: "0.3rem 0.75rem",
-              fontSize: "0.68rem",
-              fontWeight: 600,
-              borderRadius: "0.5rem",
-              border: "none",
-              background: "linear-gradient(135deg, #00bcd4, #009688)",
-              color: "#fff",
-              cursor: "pointer",
-            }}
-          >
-            🔄 MegaBot Re-Run · 3 cr
-          </button>
-        )}
-        {hasAnalysis && boosting && (
-          <button
-            disabled
-            style={{
-              padding: "0.3rem 0.75rem",
-              fontSize: "0.68rem",
-              fontWeight: 600,
-              borderRadius: "0.5rem",
-              border: "none",
-              background: "rgba(0,188,212,0.2)",
-              color: "#fff",
-              cursor: "wait",
-              opacity: 0.6,
-            }}
-          >
-            ⚡ Re-running...
-          </button>
-        )}
-
-        {/* Open PhotoBot page link */}
-        <a
-          href={`/bots/stylebot?item=${itemId}`}
-          style={{
-            padding: "0.3rem 0.75rem",
-            fontSize: "0.72rem",
-            fontWeight: 600,
-            color: "var(--text-muted)",
-            textDecoration: "none",
-            marginLeft: "auto",
-          }}
-        >
-          Open PhotoBot →
-        </a>
-      </div>
+      {/* ── Standard PanelFooter (matches all other bot panels) ── */}
+      <PanelFooter
+        botName="PhotoBot"
+        botLink="/bots/photobot"
+        itemId={itemId}
+        botIcon="📷"
+        botCost={1}
+        onBotRun={hasAnalysis ? runAssessOnly : undefined}
+        onSuperBoost={hasAnalysis ? onSuperBoost : undefined}
+        boosting={boosting}
+        boosted={boosted}
+        hasResult={!!enhanceResult}
+      />
       </div>
     </GlassCard>
   );
@@ -7761,7 +7571,7 @@ function BotSummaryContent({ aiData, valuation, antique, photos, megabotUsed, it
     { name: "ListBot", icon: "📝", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Ready to generate listing" : "Needs analysis first", link: `/bots/listbot?item=${itemId}` },
     { name: "BuyerBot", icon: "🎯", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Ready to scan for buyers" : "Analyze item first", link: `/bots/buyerbot?item=${itemId}` },
     { name: "Shipping", icon: "📦", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Estimates available" : "Analyze first", link: `/shipping?itemId=${itemId}` },
-    { name: "PhotoBot", icon: "📷", status: photos.length > 0 ? "Ready" : "No photos", finding: `${photos.length} photo${photos.length !== 1 ? "s" : ""}`, link: `/bots/stylebot?item=${itemId}` },
+    { name: "PhotoBot", icon: "📷", status: photos.length > 0 ? "Ready" : "No photos", finding: `${photos.length} photo${photos.length !== 1 ? "s" : ""}`, link: `/bots/photobot?item=${itemId}` },
     { name: "MegaBot", icon: "⚡", status: megabotUsed ? "Used" : "Available", finding: megabotUsed ? "Multi-agent complete" : "Run MegaBot on any bot", link: `/bots/megabot?item=${itemId}` },
   ];
   if (isAntique) {
@@ -7819,7 +7629,7 @@ const STATUS_FLOW = [
   { key: "COMPLETED", label: "Done", icon: "🎉" },
 ];
 
-function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: initialListingPrice, collapsed, onToggle, photos, category }: {
+function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: initialListingPrice, collapsed, onToggle, photos, category, extra, shippingData }: {
   itemId: string;
   status: string;
   valuation: any;
@@ -7829,6 +7639,8 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   onToggle?: () => void;
   photos?: any[];
   category?: string | null;
+  extra?: { totalViews: number; inquiries: number; buyersFound: number; documentCount: number; updatedAt: string; shippingReady: boolean };
+  shippingData?: { weight: number | null; length: number | null; width: number | null; height: number | null; isFragile: boolean; preference: string; aiWeightLbs: number | null; aiDimsEstimate: string | null; aiShippingDifficulty: string | null; aiShippingNotes: string | null; aiShippingConfidence: number | null };
 }) {
   const router = useRouter();
   const [updating, setUpdating] = useState(false);
@@ -7979,12 +7791,12 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
       <PanelHeader icon={"\u{1F39B}\u{FE0F}"} title="Item Control Center" hasData={true} badge="STATUS" collapsed={collapsed} onToggle={onToggle} />
       {collapsed && (
         <div style={{
-          padding: "0.65rem 1rem",
-          display: "flex", alignItems: "center", gap: "0.75rem",
+          padding: "0.4rem 1rem",
+          display: "flex", alignItems: "center", gap: "0.5rem",
           flexWrap: "wrap", justifyContent: "center",
         }}>
           <span style={{
-            fontSize: "0.6rem", fontWeight: 700, padding: "3px 10px",
+            fontSize: "0.58rem", fontWeight: 700, padding: "2px 8px",
             borderRadius: "9999px",
             background: status === "SOLD" || status === "COMPLETED" ? "rgba(34,197,94,0.1)"
               : status === "SHIPPED" ? "rgba(59,130,246,0.1)"
@@ -8000,32 +7812,20 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
             {status}
           </span>
           {(initialListingPrice || valuation) && (
-            <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#00bcd4" }}>
+            <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#00bcd4" }}>
               {initialListingPrice ? `$${Math.round(initialListingPrice)}` :
-               valuation?.low != null && valuation?.high != null ? `$${Math.round(valuation.low)} — $${Math.round(valuation.high)}` : ""}
+               valuation?.low != null && valuation?.high != null ? `$${Math.round(valuation.low)}\u2013$${Math.round(valuation.high)}` : ""}
             </span>
           )}
-          {aiData?.item_name && (
-            <span style={{
-              fontSize: "0.6rem", color: "var(--text-secondary)",
-              maxWidth: "200px", overflow: "hidden",
-              textOverflow: "ellipsis", whiteSpace: "nowrap" as const,
-            }}>
-              {aiData.item_name}
-            </span>
-          )}
-          {aiData?.category && (
-            <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>
-              {aiData.category}
-            </span>
-          )}
+          {confPct > 0 && <span style={{ fontSize: "0.56rem", color: confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#eab308" : "#ef4444" }}>{confPct}% AI</span>}
+          {(extra?.totalViews ?? 0) > 0 && <span style={{ fontSize: "0.56rem", color: "var(--text-muted)" }}>{extra!.totalViews} views</span>}
         </div>
       )}
       <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
-      <div style={{ padding: "0.75rem 1rem" }}>
+      <div style={{ padding: "0.5rem 0.75rem" }}>
 
         {/* ── STATUS PROGRESS BAR ── */}
-        <div style={{ marginBottom: "0.75rem" }}>
+        <div style={{ marginBottom: "0.5rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.4rem" }}>
             <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Status</span>
             <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>Step {currentIdx + 1} of {STATUS_FLOW.length} {"\u00B7"} {Math.round(((currentIdx + 1) / STATUS_FLOW.length) * 100)}%</span>
@@ -8071,105 +7871,137 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           </div>
         </div>
 
-        {/* ── INFO STRIP ── */}
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.75rem", paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)" }}>
+        {/* ── TELEMETRY BAR — Inline KPIs ── */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap",
+          padding: "0.4rem 0.6rem", marginBottom: "0.5rem",
+          background: "linear-gradient(135deg, rgba(0,188,212,0.03), rgba(0,188,212,0.01))",
+          borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.08)",
+        }}>
+          {/* Photo count */}
           {(photos?.length ?? 0) > 0 && (
-            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#00bcd4", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "rgba(0,188,212,0.08)" }}>
-              {"\u{1F4F7}"} {photos!.length} photo{photos!.length !== 1 ? "s" : ""}
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.2rem" }}>
+              <span style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{"\u{1F4F7}"}</span>
+              <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-primary)" }}>{photos!.length}</span>
+              <span style={{ fontSize: "0.55rem", color: photos!.length >= 6 ? "#22c55e" : "var(--text-muted)" }}>{photos!.length >= 6 ? "\u2713" : "/6"}</span>
+            </div>
           )}
-          {(category || aiData?.category) && (
-            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--accent)", border: "1px solid var(--accent-border, rgba(0,188,212,0.2))", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "var(--accent-dim, rgba(0,188,212,0.06))" }}>
-              {"\u{1F3F7}\u{FE0F}"} {category || aiData.category}
-            </span>
-          )}
+          {/* AI confidence gauge */}
           {confPct > 0 && (
-            <span style={{
-              fontSize: "0.68rem", fontWeight: 600, borderRadius: "9999px", padding: "0.15rem 0.5rem",
-              color: confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#eab308" : "#ef4444",
-              border: `1px solid ${confPct >= 80 ? "rgba(34,197,94,0.3)" : confPct >= 60 ? "rgba(234,179,8,0.3)" : "rgba(239,68,68,0.3)"}`,
-              background: confPct >= 80 ? "rgba(34,197,94,0.08)" : confPct >= 60 ? "rgba(234,179,8,0.08)" : "rgba(239,68,68,0.08)",
-            }}>
-              {"\u{1F3AF}"} AI: {confPct}%
+            <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+              <div style={{ width: "28px", height: "4px", borderRadius: "2px", background: "var(--ghost-bg)", overflow: "hidden" }}>
+                <div style={{ width: `${confPct}%`, height: "100%", borderRadius: "2px", background: confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#eab308" : "#ef4444", transition: "width 0.5s ease" }} />
+              </div>
+              <span style={{ fontSize: "0.6rem", fontWeight: 700, color: confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#eab308" : "#ef4444" }}>{confPct}%</span>
+            </div>
+          )}
+          {/* Category */}
+          {(category || aiData?.category) && (
+            <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>
+              {category || aiData.category}
             </span>
           )}
+          {/* Price range */}
           {valuation?.low != null && valuation?.high != null && (
-            <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)", borderRadius: "9999px", padding: "0.15rem 0.5rem", background: "rgba(74,222,128,0.08)" }}>
-              ${Math.round(valuation.low)}{"\u2013"}${Math.round(valuation.high)} est
+            <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#4ade80", letterSpacing: "-0.01em" }}>
+              ${Math.round(valuation.low)}{"\u2013"}${Math.round(valuation.high)}
             </span>
+          )}
+          {/* Spacer pushes metrics right */}
+          <div style={{ flex: 1 }} />
+          {/* Engagement metrics */}
+          {(extra?.totalViews ?? 0) > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}>
+              <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F441}"}</span>
+              <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>{extra!.totalViews}</span>
+            </div>
+          )}
+          {(extra?.inquiries ?? 0) > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}>
+              <span style={{ fontSize: "0.55rem", color: "#a78bfa" }}>{"\u{1F4AC}"}</span>
+              <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "#a78bfa" }}>{extra!.inquiries}</span>
+            </div>
+          )}
+          {(extra?.buyersFound ?? 0) > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}>
+              <span style={{ fontSize: "0.55rem", color: "#f59e0b" }}>{"\u{1F916}"}</span>
+              <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "#f59e0b" }}>{extra!.buyersFound}</span>
+            </div>
+          )}
+          {(extra?.documentCount ?? 0) > 0 && (
+            <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}>
+              <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F4C4}"}</span>
+              <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>{extra!.documentCount}</span>
+            </div>
+          )}
+          {extra?.shippingReady && (
+            <span style={{ fontSize: "0.5rem", fontWeight: 700, color: "#22c55e", background: "rgba(34,197,94,0.08)", padding: "1px 5px", borderRadius: "4px" }}>SHIP {"\u2713"}</span>
           )}
         </div>
 
-        {/* ── QUICK ACTIONS ── */}
-        {actions.length > 0 && (
-          <div style={{ marginBottom: "0.75rem", paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)" }}>
-            <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>Quick Actions</div>
-            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
-              {actions.map((a) => (
-                <button
-                  key={a.label}
-                  onClick={a.onClick}
-                  disabled={updating || deleting}
-                  style={{
-                    padding: "0.35rem 0.75rem", borderRadius: "0.5rem", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
-                    background: a.primary ? "linear-gradient(135deg, #00bcd4, #0097a7)" : a.danger ? "transparent" : "var(--ghost-bg)",
-                    border: a.primary ? "none" : a.danger ? "1px solid rgba(239,68,68,0.25)" : "1px solid var(--border-default)",
-                    color: a.primary ? "#fff" : a.danger ? "#ef4444" : "var(--text-secondary)",
-                    opacity: (updating || deleting) ? 0.5 : 1,
-                    transition: "all 0.15s ease",
-                  }}
-                >
-                  {a.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── LISTING PRICE ── */}
+        {/* ── UNIFIED COMMAND BAR ── */}
         <div style={{
-          background: "var(--bg-card)",
-          backdropFilter: "blur(12px)",
-          border: "1px solid rgba(0,188,212,0.15)",
-          borderRadius: "12px",
-          padding: "0.65rem 1rem",
-          marginBottom: "0.75rem",
+          display: "flex", alignItems: "center", gap: "0.35rem", flexWrap: "wrap",
+          padding: "0.45rem 0.55rem", marginBottom: "0.5rem",
+          background: "var(--ghost-bg)", borderRadius: "0.5rem",
+          border: "1px solid var(--border-default)",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-            <span style={{
-              color: "var(--text-secondary)",
-              fontSize: "0.72rem",
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              whiteSpace: "nowrap",
-            }}>{"\u{1F4B0}"} Listing Price</span>
-            <div>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="$0.00"
-                value={priceInput}
-                onChange={(e) => setPriceInput(e.target.value)}
-                style={{
-                  background: "var(--ghost-bg)",
-                  border: "1px solid rgba(0,188,212,0.3)",
-                  borderRadius: "8px",
-                  padding: "0.5rem 0.75rem",
-                  color: "var(--text-primary)",
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  width: "140px",
-                  outline: "none",
-                }}
-              />
-              {valuation?.mid && !priceInput && (
-                <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginTop: "0.2rem" }}>
-                  AI Est: ${Math.round(valuation.mid).toLocaleString()}
-                </div>
-              )}
-            </div>
+          {/* Primary action — hero button */}
+          {actions.filter(a => a.primary).map((a) => (
+            <button
+              key={a.label}
+              onClick={a.onClick}
+              disabled={updating || deleting}
+              style={{
+                padding: "0.35rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer",
+                background: "linear-gradient(135deg, #00bcd4, #0097a7)", border: "none", color: "#fff",
+                opacity: (updating || deleting) ? 0.5 : 1, transition: "all 0.2s ease",
+                boxShadow: "0 2px 8px rgba(0,188,212,0.3)",
+              }}
+            >
+              {a.label}
+            </button>
+          ))}
+
+          {/* Divider */}
+          {actions.filter(a => a.primary).length > 0 && actions.filter(a => !a.primary && !a.danger).length > 0 && (
+            <div style={{ width: "1px", height: "20px", background: "var(--border-default)" }} />
+          )}
+
+          {/* Secondary actions */}
+          {actions.filter(a => !a.primary && !a.danger).map((a) => (
+            <button
+              key={a.label}
+              onClick={a.onClick}
+              disabled={updating || deleting}
+              style={{
+                padding: "0.3rem 0.55rem", borderRadius: "0.35rem", fontSize: "0.65rem", fontWeight: 600, cursor: "pointer",
+                background: "transparent", border: "1px solid var(--border-default)",
+                color: "var(--text-secondary)",
+                opacity: (updating || deleting) ? 0.5 : 1, transition: "all 0.15s ease",
+              }}
+            >
+              {a.label}
+            </button>
+          ))}
+
+          {/* Price + Net — pushed right */}
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+            <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.04em" }}>$</span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder={valuation?.mid ? `${Math.round(valuation.mid)}` : "0"}
+              value={priceInput}
+              onChange={(e) => setPriceInput(e.target.value)}
+              style={{
+                background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)",
+                borderRadius: "0.3rem", padding: "0.25rem 0.4rem",
+                color: "var(--text-primary)", fontSize: "0.82rem", fontWeight: 700,
+                width: "75px", outline: "none",
+              }}
+            />
             <button
               onClick={async () => {
                 const val = parseFloat(priceInput);
@@ -8187,247 +8019,201 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               }}
               disabled={priceSaveState === "saving"}
               style={{
-                background: priceSaveState === "saved" ? "rgba(74,222,128,0.2)" : priceSaveState === "error" ? "rgba(239,68,68,0.2)" : "linear-gradient(135deg, #00bcd4, #009688)",
-                border: priceSaveState === "saved" ? "1px solid rgba(74,222,128,0.4)" : priceSaveState === "error" ? "1px solid rgba(239,68,68,0.4)" : "none",
-                borderRadius: "8px",
-                padding: "0.5rem 1.25rem",
-                color: priceSaveState === "saved" ? "#4ade80" : priceSaveState === "error" ? "#ef4444" : "white",
-                fontWeight: 600, fontSize: "0.85rem",
-                cursor: priceSaveState === "saving" ? "not-allowed" : "pointer",
-                whiteSpace: "nowrap",
+                background: priceSaveState === "saved" ? "#22c55e" : priceSaveState === "error" ? "#ef4444" : "linear-gradient(135deg, #00bcd4, #009688)",
+                border: "none", borderRadius: "0.3rem", padding: "0.25rem 0.5rem",
+                color: "#fff", fontWeight: 700, fontSize: "0.62rem",
+                cursor: priceSaveState === "saving" ? "wait" : "pointer",
                 opacity: priceSaveState === "saving" ? 0.6 : 1,
+                minWidth: "36px", textAlign: "center" as const,
+                boxShadow: "0 1px 4px rgba(0,188,212,0.2)",
+                transition: "all 0.2s ease",
               }}
             >
-              {priceSaveState === "saving" ? "Saving..." : priceSaveState === "saved" ? "\u2713 Saved" : priceSaveState === "error" ? "Save failed" : "Set Price"}
+              {priceSaveState === "saving" ? "\u23F3" : priceSaveState === "saved" ? "\u2713" : priceSaveState === "error" ? "\u2717" : "SET"}
             </button>
+            {listPriceNum > 0 && (
+              <span style={{ fontSize: "0.55rem", color: "#4ade80", fontWeight: 700, whiteSpace: "nowrap" }}>
+                net ~${netEst.toFixed(0)}
+              </span>
+            )}
           </div>
-          {/* Net earnings preview */}
-          {listPriceNum > 0 && (
-            <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.4rem", display: "flex", gap: "0.35rem", alignItems: "baseline" }}>
-              <span>You{"\u2019"}ll keep</span>
-              <span style={{ color: "#4ade80", fontWeight: 700, fontSize: "0.82rem" }}>~${netEst.toFixed(2)}</span>
-              <span>after ~5% commission + 1.75% fee</span>
-            </div>
-          )}
+
+          {/* Danger actions at far right */}
+          {actions.filter(a => a.danger).map((a) => (
+            <button
+              key={a.label}
+              onClick={a.onClick}
+              disabled={updating || deleting}
+              style={{
+                padding: "0.25rem 0.4rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600, cursor: "pointer",
+                background: "transparent", border: "1px solid rgba(239,68,68,0.12)",
+                color: "#ef4444", opacity: (updating || deleting) ? 0.5 : 1,
+              }}
+            >
+              {a.label}
+            </button>
+          ))}
         </div>
 
-        {/* ── TRADE & ASSIGNMENT ── */}
-        <div style={{ paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)", marginBottom: "0.5rem" }}>
-          <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>Trade & Assignment</div>
-          <div style={{ marginBottom: "0.5rem" }}>
-            <TradeToggle itemId={itemId} />
-          </div>
-          <div style={{ marginBottom: "0.5rem" }}>
+        {/* ── MANAGE STRIP — Trade · Sale · Offers ── */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap",
+          padding: "0.35rem 0.55rem",
+          background: "linear-gradient(135deg, rgba(0,188,212,0.02), transparent)",
+          borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.06)",
+          marginBottom: "0.5rem",
+        }}>
+          {/* Trade toggle */}
+          <TradeToggle itemId={itemId} />
+
+          <div style={{ width: "1px", height: "16px", background: "var(--border-default)", opacity: 0.5 }} />
+
+          {/* Sale assignment */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.2rem" }}>
+            <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F3F7}\u{FE0F}"}</span>
             <SaleAssignment itemId={itemId} initialProjectId={null} />
           </div>
-          <div style={{ marginBottom: "0.5rem" }}>
-            <ActiveOffersWidget itemId={itemId} compact />
-          </div>
+
+          <div style={{ flex: 1 }} />
+
+          {/* Offers jump */}
+          <button
+            onClick={() => {
+              const el = document.getElementById("active-offers-widget");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
+            style={{
+              fontSize: "0.55rem", fontWeight: 600, color: "var(--accent)",
+              background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.12)",
+              borderRadius: "0.3rem", padding: "0.15rem 0.4rem",
+              cursor: "pointer", transition: "all 0.15s ease",
+            }}
+          >
+            {"\u{1F91D}"} Offers
+          </button>
         </div>
 
-        {/* Sale Details (when sold/shipped/completed) */}
-        {(status === "SOLD" || status === "SHIPPED" || status === "COMPLETED") && price && (
+        {/* ── POST-SALE SECTIONS (contextual) ── */}
+        {(status === "SOLD" || status === "SHIPPED" || status === "COMPLETED") && (
           <div style={{
-            padding: "0.6rem 0.75rem", borderRadius: "0.5rem",
-            background: "rgba(22,163,74,0.06)", border: "1px solid rgba(22,163,74,0.2)",
-            marginBottom: "0.75rem",
+            padding: "0.4rem 0.55rem", marginBottom: "0.5rem",
+            background: "linear-gradient(135deg, rgba(34,197,94,0.04), rgba(34,197,94,0.01))",
+            borderRadius: "0.5rem", border: "1px solid rgba(34,197,94,0.1)",
           }}>
-            <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--success-text)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.3rem" }}>Sale Details</div>
-            <div style={{ display: "flex", gap: "1.5rem", fontSize: "0.8rem", flexWrap: "wrap" }}>
-              <div>
-                <span style={{ color: "var(--text-muted)" }}>Est. Value: </span>
-                <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>${price}{"\u2013"}${priceHigh}</span>
+            {/* Sale summary line */}
+            {price && (
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.35rem" }}>
+                <span style={{ fontSize: "0.5rem", fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.12)", padding: "2px 6px", borderRadius: "4px", letterSpacing: "0.06em" }}>SOLD</span>
+                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)" }}>${price}{"\u2013"}${priceHigh}</span>
+                {aiData?.category && <span style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{"\u00B7"} {aiData.category}</span>}
               </div>
-              {aiData?.category && (
-                <div>
-                  <span style={{ color: "var(--text-muted)" }}>Category: </span>
-                  <span style={{ color: "var(--text-primary)" }}>{aiData.category}</span>
-                </div>
+            )}
+
+            {/* Shipping bridge */}
+            {(status === "SOLD" || status === "SHIPPED") && (
+              <a
+                href={`/shipping?itemId=${itemId}`}
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.4rem",
+                  width: "100%", padding: "0.35rem 0.5rem", borderRadius: "0.35rem",
+                  background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)",
+                  color: "#00bcd4", fontSize: "0.7rem", fontWeight: 600,
+                  textDecoration: "none", transition: "all 0.15s ease",
+                  marginBottom: "0.3rem",
+                }}
+              >
+                <span>{"\u{1F4E6}"}</span>
+                <span style={{ flex: 1 }}>{status === "SOLD" ? "Shipping Center" : "Track Shipment"}</span>
+                <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 400 }}>{status === "SOLD" ? "Labels & carriers" : "Live status"}</span>
+                <span style={{ fontSize: "0.7rem" }}>{"\u2192"}</span>
+              </a>
+            )}
+
+            {/* Returns row */}
+            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+              <button
+                onClick={relistItem}
+                disabled={relistLoading}
+                style={{
+                  padding: "0.2rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.62rem", fontWeight: 600,
+                  border: "1px solid rgba(0,188,212,0.15)", background: "rgba(0,188,212,0.03)",
+                  color: "#00bcd4", cursor: relistLoading ? "wait" : "pointer",
+                  opacity: relistLoading ? 0.6 : 1,
+                }}
+              >
+                {relistLoading ? "..." : "\u{1F504} Relist Item"}
+              </button>
+              <button
+                onClick={() => setShowReturnsInfo(!showReturnsInfo)}
+                style={{ fontSize: "0.55rem", fontWeight: 500, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+              >
+                {showReturnsInfo ? "\u25B2" : "\u25BC"} Returns info
+              </button>
+              {!refundLoading && refundRequests.length === 0 && (
+                <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginLeft: "auto", opacity: 0.6 }}>No refunds</span>
               )}
             </div>
-          </div>
-        )}
 
-        {/* ── SHIPPING BRIDGE (post-sale) ── */}
-        {(status === "SOLD" || status === "SHIPPED") && (
-          <div style={{ paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)", marginBottom: "0.75rem" }}>
-            <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>{"\u{1F4E6}"} Shipping</div>
-            <a
-              href={`/shipping?itemId=${itemId}`}
-              style={{
-                display: "flex", alignItems: "center", gap: "0.5rem",
-                width: "100%", padding: "0.65rem 0.75rem", borderRadius: "0.5rem",
-                border: "1px solid rgba(0,188,212,0.25)", background: "rgba(0,188,212,0.04)",
-                color: "var(--accent, #00bcd4)", fontSize: "0.82rem", fontWeight: 600,
-                textDecoration: "none", transition: "all 0.15s ease",
-              }}
-            >
-              <span>{"\u{1F4E6}"}</span>
-              <div style={{ flex: 1 }}>
-                <div>Go to Shipping Center</div>
-                <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400, marginTop: 1 }}>
-                  {status === "SOLD" ? "Generate label, compare carriers, track shipments" : "Track this shipment"}
-                </div>
-              </div>
-              <span>{"\u2192"}</span>
-            </a>
-          </div>
-        )}
-
-        {/* ── RETURNS & RELISTING ── */}
-        {(status === "SOLD" || status === "SHIPPED" || status === "COMPLETED") && (
-          <div style={{ paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)", marginBottom: "0.75rem" }}>
-            <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>{"\u{1F504}"} Returns & Relisting</div>
-
-            {/* Relist button */}
-            {status !== "COMPLETED" && (
-              <button
-                onClick={relistItem}
-                disabled={relistLoading}
-                style={{
-                  display: "flex", alignItems: "center", gap: "0.5rem",
-                  width: "100%", padding: "0.65rem 0.75rem", borderRadius: "0.5rem",
-                  border: "1px solid rgba(0,188,212,0.25)", background: "rgba(0,188,212,0.04)",
-                  color: "var(--accent, #00bcd4)", fontSize: "0.82rem", fontWeight: 600,
-                  cursor: relistLoading ? "wait" : "pointer", textAlign: "left",
-                  opacity: relistLoading ? 0.6 : 1, marginBottom: "0.5rem",
-                  transition: "all 0.15s ease",
-                }}
-              >
-                <span>{"\u{1F504}"}</span>
-                <div style={{ flex: 1 }}>
-                  <div>Relist This Item</div>
-                  <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 400, marginTop: 1 }}>Move back to LISTED {"\u2014"} does not process a refund</div>
-                </div>
-              </button>
-            )}
-            {status === "COMPLETED" && (
-              <button
-                onClick={relistItem}
-                disabled={relistLoading}
-                style={{
-                  display: "flex", alignItems: "center", gap: "0.5rem",
-                  width: "100%", padding: "0.65rem 0.75rem", borderRadius: "0.5rem",
-                  border: "1px solid var(--border-default)", background: "var(--ghost-bg)",
-                  color: "var(--text-secondary)", fontSize: "0.82rem", fontWeight: 600,
-                  cursor: relistLoading ? "wait" : "pointer", textAlign: "left",
-                  opacity: relistLoading ? 0.6 : 1, marginBottom: "0.5rem",
-                }}
-              >
-                <span>{"\u{1F504}"}</span>
-                <div style={{ flex: 1 }}>
-                  <div>Relist This Item</div>
-                  <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 400, marginTop: 1 }}>Sale complete {"\u2014"} relist if needed</div>
-                </div>
-              </button>
-            )}
-
-            {/* Refund requests */}
-            {!refundLoading && refundRequests.length > 0 && (
-              <div style={{ marginBottom: "0.5rem" }}>
-                <div style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "0.3rem" }}>Refund Requests</div>
-                {refundRequests.map((r: any) => {
-                  const isPending = r.type === "refund_requested";
-                  const isApproved = r.type === "refund_approved";
-                  const badge = isPending ? { label: "Pending Review", color: "#f59e0b", bg: "rgba(245,158,11,0.12)" }
-                    : isApproved ? { label: "Approved", color: "#22c55e", bg: "rgba(34,197,94,0.12)" }
-                    : { label: "Denied", color: "#ef4444", bg: "rgba(239,68,68,0.12)" };
-                  return (
-                    <div key={r.id} style={{
-                      padding: "0.5rem 0.65rem", borderRadius: "0.45rem",
-                      background: "var(--bg-card)", border: "1px solid var(--border-default)",
-                      marginBottom: "0.35rem",
-                    }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.25rem" }}>
-                        <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)" }}>
-                          {r.data?.reason || "Refund request"}
-                        </span>
-                        <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: 8, background: badge.bg, color: badge.color }}>{badge.label}</span>
-                      </div>
-                      {r.data?.refundAmount && (
-                        <div style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
-                          Amount: ${Number(r.data.refundAmount).toFixed(2)} {"\u00B7"} Fee: ${Number(r.data.processingFee || 0).toFixed(2)} (non-refundable)
-                        </div>
-                      )}
-                      {isPending && (
-                        <div style={{ display: "flex", gap: "0.35rem", marginTop: "0.4rem" }}>
-                          <button
-                            onClick={() => handleRefund("approve")}
-                            disabled={refundActionLoading === "approve"}
-                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.68rem", fontWeight: 700, borderRadius: 6, border: "none", background: "#22c55e", color: "#fff", cursor: "pointer", opacity: refundActionLoading === "approve" ? 0.5 : 1 }}
-                          >
-                            {refundActionLoading === "approve" ? "..." : "Approve"}
-                          </button>
-                          <button
-                            onClick={() => handleRefund("deny")}
-                            disabled={refundActionLoading === "deny"}
-                            style={{ padding: "0.3rem 0.6rem", fontSize: "0.68rem", fontWeight: 700, borderRadius: 6, border: "1px solid rgba(239,68,68,0.3)", background: "transparent", color: "#ef4444", cursor: "pointer", opacity: refundActionLoading === "deny" ? 0.5 : 1 }}
-                          >
-                            {refundActionLoading === "deny" ? "..." : "Deny"}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            {!refundLoading && refundRequests.length === 0 && (
-              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>No refund requests for this item.</div>
-            )}
-
-            {/* How Returns Work */}
-            <button
-              onClick={() => setShowReturnsInfo(!showReturnsInfo)}
-              style={{
-                fontSize: "0.68rem", fontWeight: 600, color: "var(--text-muted)",
-                background: "none", border: "none", cursor: "pointer", padding: 0,
-                display: "flex", alignItems: "center", gap: "0.25rem",
-              }}
-            >
-              {showReturnsInfo ? "\u25B2" : "\u25BC"} How Returns Work
-            </button>
             {showReturnsInfo && (
-              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.5, marginTop: "0.35rem", padding: "0.5rem 0.65rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.45rem" }}>
-                1. Buyer requests a return through LegacyLoop{"\n"}
-                2. You review the request and approve or deny{"\n"}
-                3. If approved, the item is automatically relisted{"\n"}
-                4. Processing fees are non-refundable per our terms{"\n"}
-                5. Refund is issued to the buyer (minus processing fee)
+              <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", lineHeight: 1.45, padding: "0.25rem 0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "0.3rem", marginTop: "0.25rem" }}>
+                Buyer requests {"\u2192"} You approve/deny {"\u2192"} Auto-relist if approved {"\u2192"} Refund (minus processing fee)
               </div>
             )}
+
+            {/* Refund cards */}
+            {!refundLoading && refundRequests.length > 0 && refundRequests.map((r: any) => {
+              const isPending = r.type === "refund_requested";
+              const isApproved = r.type === "refund_approved";
+              const badge = isPending ? { label: "Pending", color: "#f59e0b", bg: "rgba(245,158,11,0.1)" }
+                : isApproved ? { label: "OK", color: "#22c55e", bg: "rgba(34,197,94,0.1)" }
+                : { label: "Denied", color: "#ef4444", bg: "rgba(239,68,68,0.1)" };
+              return (
+                <div key={r.id} style={{ padding: "0.25rem 0.4rem", borderRadius: "0.3rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", marginTop: "0.2rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                    <span style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--text-primary)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.data?.reason || "Refund"}</span>
+                    {r.data?.refundAmount && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>${Number(r.data.refundAmount).toFixed(2)}</span>}
+                    <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: 6, background: badge.bg, color: badge.color }}>{badge.label}</span>
+                    {isPending && (
+                      <>
+                        <button onClick={() => handleRefund("approve")} disabled={refundActionLoading === "approve"} style={{ padding: "2px 8px", fontSize: "0.55rem", fontWeight: 700, borderRadius: 4, border: "none", background: "#22c55e", color: "#fff", cursor: "pointer", opacity: refundActionLoading === "approve" ? 0.5 : 1 }}>{"\u2713"}</button>
+                        <button onClick={() => handleRefund("deny")} disabled={refundActionLoading === "deny"} style={{ padding: "2px 8px", fontSize: "0.55rem", fontWeight: 700, borderRadius: 4, border: "1px solid rgba(239,68,68,0.25)", background: "transparent", color: "#ef4444", cursor: "pointer", opacity: refundActionLoading === "deny" ? 0.5 : 1 }}>{"\u2717"}</button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* ── QUICK LINKS ── */}
-        <div style={{ paddingTop: "0.5rem", borderTop: "1px solid var(--border-default)" }}>
-          <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>Quick Links</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "0.35rem" }}>
-            {[
-              { icon: "\u270F\u{FE0F}", label: "Edit Item", href: `/items/${itemId}/edit` },
-              { icon: "\u{1F4F7}", label: "Add Item", href: "/items/new" },
-              { icon: "\u{1F3EA}", label: "View Store", href: "/store" },
-              { icon: "\u{1F4AC}", label: "Item Messages", href: `/messages?itemId=${itemId}` },
-              { icon: "\u{1F4CA}", label: "Dashboard", href: "/dashboard" },
-              ...((status === "ANALYZED" || status === "READY") ? [{ icon: "\u{1F916}", label: "Run Bots", href: "/bots" }] : []),
-            ].map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                style={{
-                  display: "flex", alignItems: "center", gap: "0.35rem",
-                  padding: "0.4rem 0.55rem", borderRadius: "0.45rem",
-                  background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
-                  color: "var(--text-secondary)", textDecoration: "none",
-                  fontSize: "0.7rem", fontWeight: 500,
-                  transition: "all 0.15s ease",
-                }}
-              >
-                <span>{link.icon}</span>
-                <span>{link.label}</span>
-              </a>
-            ))}
-          </div>
+        {/* ── QUICK NAV ── */}
+        <div style={{ display: "flex", gap: "0.2rem", flexWrap: "wrap", justifyContent: "center" }}>
+          {[
+            { icon: "\u270F\u{FE0F}", label: "Edit", href: `/items/${itemId}/edit` },
+            { icon: "+", label: "New", href: "/items/new" },
+            { icon: "\u{1F3EA}", label: "Store", href: "/store" },
+            { icon: "\u{1F4AC}", label: "Messages", href: `/messages?itemId=${itemId}` },
+            { icon: "\u{1F4CA}", label: "Dashboard", href: "/dashboard" },
+            ...((status === "ANALYZED" || status === "READY") ? [{ icon: "\u{1F916}", label: "Bots", href: "/bots" }] : []),
+          ].map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "0.15rem",
+                padding: "0.18rem 0.35rem", borderRadius: "0.25rem",
+                background: "transparent", border: "none",
+                color: "var(--text-muted)", textDecoration: "none",
+                fontSize: "0.58rem", fontWeight: 500,
+                transition: "color 0.15s ease",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#00bcd4"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
+            >
+              <span>{link.icon}</span>
+              <span>{link.label}</span>
+            </a>
+          ))}
         </div>
 
       </div>
@@ -8724,7 +8510,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
    ═══════════════════════════════════════════ */
 
 export default function ItemDashboardPanels({
-  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData,
+  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra,
 }: Props) {
   // Track which bots have been enhanced with MegaBot
   const [boostedBots, setBoostedBots] = useState<Set<string>>(new Set());
@@ -9095,11 +8881,11 @@ export default function ItemDashboardPanels({
 
       {/* ── ITEM CONTROL CENTER (full width, above panel grid) ── */}
       <div style={{ marginBottom: "1rem" }}>
-        <ItemControlCenter itemId={itemId} status={status} valuation={valuation} aiData={aiData} listingPrice={listingPrice} collapsed={collapsed.control} onToggle={() => togglePanel("control")} photos={photos} category={category} />
+        <ItemControlCenter itemId={itemId} status={status} valuation={valuation} aiData={aiData} listingPrice={listingPrice} collapsed={collapsed.control} onToggle={() => togglePanel("control")} photos={photos} category={category} extra={controlCenterExtra} shippingData={shippingData} />
       </div>
 
       {/* ── ACTIVE OFFERS (below Sale Assignment) ── */}
-      <div style={{ marginBottom: "1rem" }}>
+      <div id="active-offers-widget" style={{ marginBottom: "1rem" }}>
         <ActiveOffersWidget itemId={itemId} />
       </div>
 

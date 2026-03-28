@@ -198,6 +198,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
   const [loading, setLoading] = useState(false);
   const [liveResult, setLiveResult] = useState<any>(null);
   const [expandedCompetitors, setExpandedCompetitors] = useState(false);
+  const [expandedStat, setExpandedStat] = useState<string | null>(null);
   const [expandedSold, setExpandedSold] = useState(false);
   const [megaBotData, setMegaBotData] = useState<any>(null);
   const [megaBotLoading, setMegaBotLoading] = useState(false);
@@ -208,6 +209,217 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
   const item = useMemo(() => items.find((i) => i.id === selectedId) ?? null, [items, selectedId]);
   const stored = useMemo(() => safeJson(item?.reconBotResult ?? null), [item]);
   const data = liveResult || stored;
+
+  // ── Stats computations ──
+  const stats = useMemo(() => {
+    const totalItems = items.length;
+    const monitored = items.filter((i) => i.reconBot?.isActive).length;
+    const alerts = items.reduce((sum, i) => sum + (i.reconBot?.alertCount ?? 0), 0);
+    const competitors = items.reduce((sum, i) => sum + (i.reconBot?.competitorCount ?? 0), 0);
+    return { totalItems, monitored, alerts, competitors };
+  }, [items]);
+
+  const statPanels: { key: string; icon: string; label: string; value: number }[] = [
+    { key: "total", icon: "\u{1F4E6}", label: "Total Items", value: stats.totalItems },
+    { key: "monitored", icon: "\u{1F50D}", label: "Monitored", value: stats.monitored },
+    { key: "alerts", icon: "\u{1F514}", label: "Alerts", value: stats.alerts },
+    { key: "competitors", icon: "\u{1F3EA}", label: "Competitors", value: stats.competitors },
+  ];
+
+  const statsBanner = (
+    <div style={{ marginBottom: "1rem" }}>
+      {/* Stats grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
+        {statPanels.map((sp) => {
+          const isActive = expandedStat === sp.key;
+          return (
+            <button
+              key={sp.key}
+              onClick={() => setExpandedStat(isActive ? null : sp.key)}
+              style={{
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                padding: "0.75rem 0.5rem", borderRadius: "0.75rem", cursor: "pointer",
+                minHeight: "44px",
+                background: isActive ? "rgba(0,188,212,0.08)" : "var(--bg-card)",
+                border: isActive ? "1.5px solid #00bcd4" : "1px solid var(--border-default)",
+                backdropFilter: "blur(12px)",
+                transition: "all 0.2s ease",
+                boxShadow: isActive ? "0 0 12px rgba(0,188,212,0.15)" : "none",
+              }}
+            >
+              <span style={{ fontSize: "1.1rem", marginBottom: "0.15rem" }}>{sp.icon}</span>
+              <span style={{ fontSize: "1.2rem", fontWeight: 800, color: isActive ? "#00bcd4" : "var(--text-primary)" }}>{sp.value}</span>
+              <span style={{ fontSize: "0.6rem", fontWeight: 600, color: isActive ? "#00bcd4" : "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>{sp.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Expandable detail panels */}
+      {expandedStat === "total" && (
+        <div style={{
+          marginTop: "0.5rem", padding: "0.85rem", borderRadius: "0.75rem",
+          background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)",
+          backdropFilter: "blur(12px)",
+        }}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+            Item Breakdown
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.35rem", marginBottom: "0.6rem" }}>
+            <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+              Analyzed: <strong style={{ color: "var(--text-primary)" }}>{items.filter((i) => i.hasAnalysis).length}</strong>
+            </div>
+            <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+              Pending: <strong style={{ color: "var(--text-primary)" }}>{items.filter((i) => !i.hasAnalysis).length}</strong>
+            </div>
+            <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+              With ReconBot: <strong style={{ color: "var(--text-primary)" }}>{items.filter((i) => i.reconBot).length}</strong>
+            </div>
+            <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
+              No ReconBot: <strong style={{ color: "var(--text-primary)" }}>{items.filter((i) => !i.reconBot).length}</strong>
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", maxHeight: "200px", overflowY: "auto" }}>
+            {items.map((it) => (
+              <div key={it.id} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "0.4rem 0.5rem", borderRadius: "0.4rem",
+                background: it.id === selectedId ? "rgba(0,188,212,0.06)" : "transparent",
+                border: it.id === selectedId ? "1px solid rgba(0,188,212,0.15)" : "1px solid transparent",
+                fontSize: "0.7rem",
+              }}>
+                <span style={{ color: "var(--text-primary)", fontWeight: it.id === selectedId ? 700 : 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "60%" }}>{it.title}</span>
+                <span style={{
+                  padding: "0.1rem 0.4rem", borderRadius: "9999px", fontSize: "0.55rem", fontWeight: 600,
+                  background: it.hasAnalysis ? "rgba(74,222,128,0.1)" : "rgba(245,158,11,0.1)",
+                  color: it.hasAnalysis ? "#4ade80" : "#f59e0b",
+                }}>{it.hasAnalysis ? "Analyzed" : "Pending"}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {expandedStat === "monitored" && (
+        <div style={{
+          marginTop: "0.5rem", padding: "0.85rem", borderRadius: "0.75rem",
+          background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)",
+          backdropFilter: "blur(12px)",
+        }}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+            Monitored Items
+          </div>
+          {items.filter((i) => i.reconBot?.isActive).length === 0 ? (
+            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", textAlign: "center", padding: "1rem 0" }}>
+              No items currently monitored. Run a ReconBot scan to start monitoring.
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", maxHeight: "200px", overflowY: "auto" }}>
+              {items.filter((i) => i.reconBot?.isActive).map((it) => (
+                <div key={it.id} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "0.45rem 0.55rem", borderRadius: "0.4rem",
+                  background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.1)",
+                  fontSize: "0.7rem",
+                }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.1rem", overflow: "hidden", flex: 1 }}>
+                    <span style={{ color: "var(--text-primary)", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{it.title}</span>
+                    <span style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>
+                      {it.reconBot!.scansCompleted} scans completed
+                      {it.reconBot!.lastScan ? ` \u00B7 Last: ${new Date(it.reconBot!.lastScan).toLocaleDateString()}` : ""}
+                    </span>
+                  </div>
+                  <span style={{
+                    padding: "0.15rem 0.5rem", borderRadius: "9999px", fontSize: "0.55rem", fontWeight: 600,
+                    background: "rgba(34,197,94,0.1)", color: "#22c55e", whiteSpace: "nowrap" as const,
+                  }}>Active</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {expandedStat === "alerts" && (
+        <div style={{
+          marginTop: "0.5rem", padding: "0.85rem", borderRadius: "0.75rem",
+          background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)",
+          backdropFilter: "blur(12px)",
+        }}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+            Alert Details
+          </div>
+          {stats.alerts === 0 ? (
+            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", textAlign: "center", padding: "1rem 0" }}>
+              No active alerts. ReconBot will notify you of market changes.
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", maxHeight: "200px", overflowY: "auto" }}>
+              {items.filter((i) => (i.reconBot?.alertCount ?? 0) > 0).map((it) => (
+                <div key={it.id} style={{
+                  padding: "0.5rem 0.55rem", borderRadius: "0.4rem",
+                  background: "rgba(239,68,68,0.04)", border: "1px solid rgba(239,68,68,0.1)",
+                  fontSize: "0.7rem",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.15rem" }}>
+                    <span style={{ color: "var(--text-primary)", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "70%" }}>{it.title}</span>
+                    <span style={{
+                      padding: "0.1rem 0.4rem", borderRadius: "9999px", fontSize: "0.55rem", fontWeight: 700,
+                      background: it.reconBot!.alertCount > 2 ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)",
+                      color: it.reconBot!.alertCount > 2 ? "#ef4444" : "#f59e0b",
+                    }}>{it.reconBot!.alertCount} alert{it.reconBot!.alertCount !== 1 ? "s" : ""}</span>
+                  </div>
+                  <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>
+                    {it.reconBot!.recommendation || "Check item for details"}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {expandedStat === "competitors" && (
+        <div style={{
+          marginTop: "0.5rem", padding: "0.85rem", borderRadius: "0.75rem",
+          background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)",
+          backdropFilter: "blur(12px)",
+        }}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
+            Competitor Summary
+          </div>
+          {stats.competitors === 0 ? (
+            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", textAlign: "center", padding: "1rem 0" }}>
+              No competitors found yet. Run ReconBot scans to discover competing listings.
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", maxHeight: "200px", overflowY: "auto" }}>
+              {items.filter((i) => (i.reconBot?.competitorCount ?? 0) > 0).map((it) => (
+                <div key={it.id} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "0.45rem 0.55rem", borderRadius: "0.4rem",
+                  background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                  fontSize: "0.7rem",
+                }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.1rem", overflow: "hidden", flex: 1 }}>
+                    <span style={{ color: "var(--text-primary)", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{it.title}</span>
+                    <div style={{ display: "flex", gap: "0.5rem", fontSize: "0.6rem", color: "var(--text-muted)" }}>
+                      {it.reconBot!.lowestPrice != null && <span>Low: ${it.reconBot!.lowestPrice}</span>}
+                      {it.reconBot!.averagePrice != null && <span>Avg: ${it.reconBot!.averagePrice}</span>}
+                    </div>
+                  </div>
+                  <span style={{
+                    padding: "0.15rem 0.5rem", borderRadius: "9999px", fontSize: "0.55rem", fontWeight: 700,
+                    background: "rgba(0,188,212,0.1)", color: "#00bcd4", whiteSpace: "nowrap" as const,
+                  }}>{it.reconBot!.competitorCount} found</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 
   const runScan = useCallback(async () => {
     if (!selectedId) return;
@@ -286,6 +498,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
   if (item && !item.hasAnalysis) {
     return (
       <>
+        {statsBanner}
         <BotItemSelector items={items} selectedId={selectedId} onSelect={handleSelect} />
         <Card style={{ marginTop: "1rem" }}>
           <div style={{ textAlign: "center", padding: "2rem 1rem" }}>
@@ -305,6 +518,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
 
   return (
     <>
+      {statsBanner}
       <BotItemSelector items={items} selectedId={selectedId} onSelect={handleSelect} />
 
       {/* ── Freshness Indicator ── */}
@@ -1196,6 +1410,63 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
           }}>
             ← Back to Item
           </Link>
+        </div>
+      )}
+
+      {/* ── Sticky Bottom Action Bar ── */}
+      {selectedId && item && (
+        <div data-no-print style={{
+          position: "sticky", bottom: 0, zIndex: 100,
+          background: "var(--bg-card-solid)", backdropFilter: "blur(20px)",
+          borderTop: "1px solid var(--border-default)",
+          boxShadow: "0 -2px 12px rgba(0,0,0,0.08)",
+          padding: "0.85rem 2rem",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: "1rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", minWidth: 0, flex: 1 }}>
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>
+              {item.title}
+            </span>
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
+            <button
+              onClick={runScan}
+              disabled={loading}
+              style={{
+                padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
+                borderRadius: "10px", cursor: loading ? "not-allowed" : "pointer",
+                background: loading ? "var(--ghost-bg)" : "linear-gradient(135deg, #00bcd4, #0097a7)",
+                border: "none", color: "#fff", minHeight: "44px",
+                boxShadow: loading ? "none" : "0 2px 10px rgba(0,188,212,0.3)",
+              }}
+            >
+              {loading ? "Scanning..." : stored ? "🔄 Re-Run · 1 cr" : "🔍 Run · 1 cr"}
+            </button>
+            <button
+              onClick={runScan}
+              disabled={loading}
+              style={{
+                padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
+                borderRadius: "10px", cursor: loading ? "not-allowed" : "pointer",
+                background: loading ? "var(--ghost-bg)" : "linear-gradient(135deg, rgba(0,188,212,0.2), rgba(0,151,167,0.15))",
+                border: "1px solid rgba(0,188,212,0.4)", color: "#00bcd4", minHeight: "44px",
+              }}
+            >
+              {loading ? "Running..." : "⚡ MegaBot · 3 cr"}
+            </button>
+            <Link
+              href={`/items/${selectedId}`}
+              style={{
+                padding: "0.45rem 0.85rem", fontSize: "0.72rem", fontWeight: 600,
+                borderRadius: "10px", textDecoration: "none", minHeight: "44px",
+                background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                color: "var(--text-secondary)", display: "flex", alignItems: "center",
+              }}
+            >
+              View Item →
+            </Link>
+          </div>
         </div>
       )}
     </>

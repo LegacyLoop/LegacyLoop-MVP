@@ -59,8 +59,8 @@ export default async function CollectiblesBotPage() {
       <Suspense fallback={
         <div style={{
           padding: "3rem", textAlign: "center",
-          background: "rgba(15,15,25,0.6)", backdropFilter: "blur(12px)",
-          borderRadius: "14px", border: "1px solid rgba(139,92,246,0.15)",
+          background: "var(--bg-card-solid, var(--bg-card))",
+          borderRadius: "14px", border: "1px solid var(--border-default)",
         }}>
           <div style={{ width: "2rem", height: "2rem", border: "3px solid rgba(139,92,246,0.2)", borderTopColor: "#8b5cf6", borderRadius: "50%", animation: "spin 0.7s linear infinite", margin: "0 auto 0.75rem" }} />
           <div style={{ color: "var(--text-muted)", fontSize: "0.85rem" }}>Loading CollectiblesBot...</div>

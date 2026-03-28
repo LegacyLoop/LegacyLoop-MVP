@@ -303,6 +303,9 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(["listing-preview", "platforms", "publish"]));
   const toggleSection = (id: string) => { setOpenSections(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; }); };
 
+  // Stat panels state
+  const [expandedStat, setExpandedStat] = useState<string | null>(null);
+
   const item = items.find((i) => i.id === selectedId);
   const ai = useMemo(() => safeJson(item?.aiResult ?? null), [item?.aiResult]);
   const listings = listBotResult?.listings || {};
@@ -431,15 +434,273 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
   const hasResult = !!listBotResult;
   const isDemo = !!listBotResult?._isDemo;
 
+  // ── Computed stats for stat panels ──
+  const statTotalItems = items.length;
+  const statListedItems = items.filter((i) => i.lastListedAt || i.status === "LISTED");
+  const statListedCount = statListedItems.length;
+  const statPlatformSet = new Set<string>();
+  items.forEach((i) => { (i.connectedPlatforms || []).forEach((p) => statPlatformSet.add(p)); });
+  const statPlatformCount = statPlatformSet.size;
+  const statItemsWithValue = items.filter((i) => i.valuationMid != null && i.valuationMid > 0);
+  const statAvgValue = statItemsWithValue.length > 0
+    ? Math.round(statItemsWithValue.reduce((s, i) => s + (i.valuationMid || 0), 0) / statItemsWithValue.length)
+    : 0;
+  const statTotalValue = statItemsWithValue.reduce((s, i) => s + (i.valuationMid || 0), 0);
+
+  const STAT_PANELS: { key: string; icon: string; label: string; value: string | number }[] = [
+    { key: "total", icon: "\u{1F4E6}", label: "Total Items", value: statTotalItems },
+    { key: "listed", icon: "\u{1F4E2}", label: "Listed", value: statListedCount },
+    { key: "platforms", icon: "\u{1F310}", label: "Platforms", value: statPlatformCount },
+    { key: "value", icon: "\u{1F4B0}", label: "Avg Value", value: statAvgValue > 0 ? `$${statAvgValue.toLocaleString()}` : "$0" },
+  ];
+
   // ── RENDER ──
 
   return (
-    <div>
+    <div style={{ paddingBottom: hasResult && selectedId ? "80px" : undefined }}>
       <BotItemSelector
         items={items.map((i) => ({ id: i.id, title: i.title, photo: i.photo, status: i.status, hasAnalysis: i.hasAnalysis }))}
         selectedId={selectedId}
         onSelect={(id) => setSelectedId(id)}
       />
+
+      {/* ═══ STAT PANELS (item picker mode) ═══ */}
+      {!hasResult && !listBotLoading && (
+        <div style={{ marginBottom: "1rem" }}>
+          {/* Stats grid */}
+          <div style={{
+            display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem",
+            marginBottom: expandedStat ? "0.5rem" : "0",
+          }}>
+            {STAT_PANELS.map((sp) => {
+              const isActive = expandedStat === sp.key;
+              return (
+                <button
+                  key={sp.key}
+                  onClick={() => setExpandedStat(isActive ? null : sp.key)}
+                  style={{
+                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                    padding: "0.75rem 0.5rem", borderRadius: "0.75rem", cursor: "pointer",
+                    background: isActive ? "rgba(0,188,212,0.08)" : "var(--bg-card, var(--ghost-bg))",
+                    border: isActive ? "1.5px solid #00bcd4" : "1px solid var(--border-card, var(--border-default))",
+                    transition: "all 0.2s ease", minHeight: "44px",
+                    boxShadow: isActive ? "0 0 12px rgba(0,188,212,0.15)" : "none",
+                  }}
+                >
+                  <span style={{ fontSize: "1.25rem", marginBottom: "0.15rem" }}>{sp.icon}</span>
+                  <span style={{
+                    fontSize: "1.1rem", fontWeight: 800,
+                    color: isActive ? "#00bcd4" : "var(--text-primary)",
+                    lineHeight: 1.2,
+                  }}>
+                    {sp.value}
+                  </span>
+                  <span style={{
+                    fontSize: "0.6rem", fontWeight: 600,
+                    color: isActive ? "#00bcd4" : "var(--text-muted)",
+                    textTransform: "uppercase" as const, letterSpacing: "0.04em",
+                    marginTop: "0.1rem",
+                  }}>
+                    {sp.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Expandable detail panels */}
+          {expandedStat === "total" && (
+            <div style={{
+              background: "var(--bg-card, var(--ghost-bg))", border: "1px solid rgba(0,188,212,0.2)",
+              borderRadius: "0.75rem", padding: "1rem", animation: "fadeIn 0.2s ease",
+            }}>
+              <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.6rem" }}>
+                {"\u{1F4E6}"} Item Breakdown
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                {[
+                  { label: "Analyzed", count: items.filter((i) => i.hasAnalysis).length, color: "#4caf50" },
+                  { label: "With Value", count: statItemsWithValue.length, color: "#00bcd4" },
+                  { label: "No Analysis", count: items.filter((i) => !i.hasAnalysis).length, color: "#f59e0b" },
+                ].map((b) => (
+                  <div key={b.label} style={{
+                    textAlign: "center", padding: "0.5rem", borderRadius: "0.5rem",
+                    background: `${b.color}10`, border: `1px solid ${b.color}25`,
+                  }}>
+                    <div style={{ fontSize: "1rem", fontWeight: 800, color: b.color }}>{b.count}</div>
+                    <div style={{ fontSize: "0.55rem", fontWeight: 600, color: "var(--text-muted)" }}>{b.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "0.4rem" }}>All Items</div>
+              <div style={{ maxHeight: "200px", overflowY: "auto" as const, display: "flex", flexDirection: "column" as const, gap: "0.25rem" }}>
+                {items.map((i) => (
+                  <div key={i.id} style={{
+                    display: "flex", alignItems: "center", gap: "0.5rem",
+                    padding: "0.35rem 0.5rem", borderRadius: "0.4rem",
+                    background: i.id === selectedId ? "rgba(0,188,212,0.08)" : "transparent",
+                    border: i.id === selectedId ? "1px solid rgba(0,188,212,0.2)" : "1px solid transparent",
+                  }}>
+                    {i.photo ? (
+                      <img src={i.photo} alt="" style={{ width: 24, height: 24, borderRadius: "0.25rem", objectFit: "cover" as const }} />
+                    ) : (
+                      <div style={{ width: 24, height: 24, borderRadius: "0.25rem", background: "var(--ghost-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.6rem" }}>{"\u{1F4E6}"}</div>
+                    )}
+                    <span style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-primary)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{i.title}</span>
+                    <span style={{
+                      fontSize: "0.5rem", fontWeight: 600, padding: "0.1rem 0.35rem", borderRadius: "9999px",
+                      background: i.hasAnalysis ? "rgba(76,175,80,0.1)" : "rgba(245,158,11,0.1)",
+                      color: i.hasAnalysis ? "#4caf50" : "#f59e0b",
+                    }}>
+                      {i.status}
+                    </span>
+                    {i.valuationMid != null && i.valuationMid > 0 && (
+                      <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#00bcd4" }}>${Math.round(i.valuationMid).toLocaleString()}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {expandedStat === "listed" && (
+            <div style={{
+              background: "var(--bg-card, var(--ghost-bg))", border: "1px solid rgba(0,188,212,0.2)",
+              borderRadius: "0.75rem", padding: "1rem", animation: "fadeIn 0.2s ease",
+            }}>
+              <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.6rem" }}>
+                {"\u{1F4E2}"} Listed Items
+              </div>
+              {statListedCount === 0 ? (
+                <div style={{ textAlign: "center", padding: "1rem", color: "var(--text-muted)", fontSize: "0.78rem" }}>
+                  No items listed yet. Run ListBot on an item to generate listings.
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column" as const, gap: "0.4rem" }}>
+                  {statListedItems.map((i) => (
+                    <div key={i.id} style={{
+                      display: "flex", alignItems: "center", gap: "0.6rem",
+                      padding: "0.5rem 0.6rem", borderRadius: "0.5rem",
+                      background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                    }}>
+                      {i.photo ? (
+                        <img src={i.photo} alt="" style={{ width: 28, height: 28, borderRadius: "0.3rem", objectFit: "cover" as const }} />
+                      ) : (
+                        <div style={{ width: 28, height: 28, borderRadius: "0.3rem", background: "var(--ghost-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem" }}>{"\u{1F4E2}"}</div>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{i.title}</div>
+                        <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>
+                          {i.lastListedAt ? `Listed ${new Date(i.lastListedAt).toLocaleDateString()}` : "Listed"}
+                          {(i.connectedPlatforms || []).length > 0 && ` \u00B7 ${i.connectedPlatforms.join(", ")}`}
+                        </div>
+                      </div>
+                      {i.valuationMid != null && i.valuationMid > 0 && (
+                        <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#00bcd4" }}>${Math.round(i.valuationMid).toLocaleString()}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {expandedStat === "platforms" && (
+            <div style={{
+              background: "var(--bg-card, var(--ghost-bg))", border: "1px solid rgba(0,188,212,0.2)",
+              borderRadius: "0.75rem", padding: "1rem", animation: "fadeIn 0.2s ease",
+            }}>
+              <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.6rem" }}>
+                {"\u{1F310}"} Platform Breakdown
+              </div>
+              {statPlatformCount === 0 ? (
+                <div style={{ textAlign: "center", padding: "1rem" }}>
+                  <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>No platforms connected yet.</div>
+                  <Link href="/integrations" style={{
+                    display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                    fontSize: "0.75rem", fontWeight: 600, color: "#00bcd4", textDecoration: "none",
+                    padding: "0.4rem 0.8rem", borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)",
+                    minHeight: "44px",
+                  }}>
+                    {"\u{1F517}"} Connect Platforms
+                  </Link>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "0.5rem" }}>
+                  {Array.from(statPlatformSet).map((p) => {
+                    const meta = PLATFORM_META[p];
+                    const itemCount = items.filter((i) => (i.connectedPlatforms || []).includes(p)).length;
+                    return (
+                      <div key={p} style={{
+                        display: "flex", alignItems: "center", gap: "0.5rem",
+                        padding: "0.6rem 0.75rem", borderRadius: "0.5rem",
+                        background: "var(--ghost-bg)", border: `1px solid ${meta?.color || "var(--border-default)"}25`,
+                      }}>
+                        <span style={{ fontSize: "1rem" }}>{meta?.icon || "\u{1F310}"}</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: "0.7rem", fontWeight: 700, color: meta?.color || "var(--text-primary)" }}>{meta?.name || p}</div>
+                          <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{itemCount} item{itemCount !== 1 ? "s" : ""}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {expandedStat === "value" && (
+            <div style={{
+              background: "var(--bg-card, var(--ghost-bg))", border: "1px solid rgba(0,188,212,0.2)",
+              borderRadius: "0.75rem", padding: "1rem", animation: "fadeIn 0.2s ease",
+            }}>
+              <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.6rem" }}>
+                {"\u{1F4B0}"} Value Summary
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                {[
+                  { label: "Total Portfolio", value: `$${Math.round(statTotalValue).toLocaleString()}`, color: "#4caf50" },
+                  { label: "Average", value: `$${statAvgValue.toLocaleString()}`, color: "#00bcd4" },
+                  { label: "Items Valued", value: `${statItemsWithValue.length}/${statTotalItems}`, color: "#f59e0b" },
+                ].map((kpi) => (
+                  <div key={kpi.label} style={{
+                    textAlign: "center", padding: "0.6rem 0.4rem", borderRadius: "0.5rem",
+                    background: `${kpi.color}10`, border: `1px solid ${kpi.color}25`,
+                  }}>
+                    <div style={{ fontSize: "1rem", fontWeight: 800, color: kpi.color }}>{kpi.value}</div>
+                    <div style={{ fontSize: "0.55rem", fontWeight: 600, color: "var(--text-muted)" }}>{kpi.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "0.4rem" }}>Items by Value (highest first)</div>
+              <div style={{ maxHeight: "200px", overflowY: "auto" as const, display: "flex", flexDirection: "column" as const, gap: "0.25rem" }}>
+                {[...statItemsWithValue].sort((a, b) => (b.valuationMid || 0) - (a.valuationMid || 0)).map((i, idx) => (
+                  <div key={i.id} style={{
+                    display: "flex", alignItems: "center", gap: "0.5rem",
+                    padding: "0.35rem 0.5rem", borderRadius: "0.4rem",
+                    background: idx === 0 ? "rgba(255,152,0,0.06)" : "transparent",
+                    border: idx === 0 ? "1px solid rgba(255,152,0,0.15)" : "1px solid transparent",
+                  }}>
+                    <span style={{
+                      fontSize: "0.6rem", fontWeight: 700, width: "18px", textAlign: "center" as const,
+                      color: idx === 0 ? "#ff9800" : idx < 3 ? "#00bcd4" : "var(--text-muted)",
+                    }}>
+                      {idx === 0 ? "\u{1F947}" : idx === 1 ? "\u{1F948}" : idx === 2 ? "\u{1F949}" : `${idx + 1}`}
+                    </span>
+                    <span style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-primary)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{i.title}</span>
+                    <span style={{ fontSize: "0.72rem", fontWeight: 800, color: "#00bcd4" }}>${Math.round(i.valuationMid || 0).toLocaleString()}</span>
+                  </div>
+                ))}
+                {statItemsWithValue.length === 0 && (
+                  <div style={{ textAlign: "center", padding: "0.75rem", color: "var(--text-muted)", fontSize: "0.72rem" }}>
+                    No items have been valued yet. Run AI analysis first.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (
@@ -1477,6 +1738,74 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ═══ STICKY BOTTOM ACTION BAR ═══ */}
+      {selectedId && item && (
+        <div style={{
+          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100,
+          background: "var(--bg-card, rgba(30,30,30,0.95))", backdropFilter: "blur(16px)",
+          borderTop: "1px solid rgba(0,188,212,0.2)",
+          padding: "0.6rem 1.25rem",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem",
+          boxShadow: "0 -4px 24px rgba(0,0,0,0.25)",
+        }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: "0.5rem",
+            flex: 1, minWidth: 0, maxWidth: "180px",
+          }}>
+            {item.photo ? (
+              <img src={item.photo} alt="" style={{ width: 32, height: 32, borderRadius: "0.3rem", objectFit: "cover" as const, flexShrink: 0 }} />
+            ) : (
+              <div style={{ width: 32, height: 32, borderRadius: "0.3rem", background: "var(--ghost-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.8rem", flexShrink: 0 }}>{"\u{1F4E6}"}</div>
+            )}
+            <span style={{
+              fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)",
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const,
+            }}>
+              {item.title}
+            </span>
+          </div>
+
+          <button
+            onClick={runListBot}
+            disabled={listBotLoading}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.35rem",
+              padding: "0 1.25rem",
+              minHeight: "44px",
+              fontSize: "0.82rem", fontWeight: 700, borderRadius: "0.6rem",
+              background: listBotLoading ? "var(--ghost-bg)" : "linear-gradient(135deg, #00bcd4, #009688)",
+              border: "none",
+              color: listBotLoading ? "var(--text-muted)" : "#fff",
+              cursor: listBotLoading ? "not-allowed" : "pointer",
+              boxShadow: listBotLoading ? "none" : "0 2px 10px rgba(0,188,212,0.3)",
+              transition: "all 0.2s ease",
+              flexShrink: 0,
+            }}
+          >
+            {listBotLoading ? "\u23F3 Running..." : hasResult ? "\u{1F504} Re-Run ListBot" : "\u270D\uFE0F Run ListBot"}
+          </button>
+
+          <Link
+            href={`/items/${selectedId}`}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.3rem",
+              padding: "0 1rem",
+              minHeight: "44px",
+              fontSize: "0.78rem", fontWeight: 600, borderRadius: "0.6rem",
+              background: "transparent",
+              border: "1px solid var(--border-default)",
+              color: "var(--accent)",
+              textDecoration: "none",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              flexShrink: 0,
+            }}
+          >
+            {"\u{1F4CB}"} View Item
+          </Link>
         </div>
       )}
     </div>

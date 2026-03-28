@@ -190,8 +190,23 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
   const [showAgentJson, setShowAgentJson] = useState<string | null>(null);
 
+  // Stat panels state
+  const [expandedStat, setExpandedStat] = useState<string | null>(null);
+
   // Accordion state
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(["identification", "condition", "pricing"]));
+
+  // Compute stats
+  const analyzedItems = useMemo(() => items.filter(i => i.hasAnalysis), [items]);
+  const pendingItems = useMemo(() => items.filter(i => !i.hasAnalysis), [items]);
+  const avgValue = useMemo(() => {
+    const withVal = analyzedItems.filter(i => i.valuationMid != null && i.valuationMid > 0);
+    if (withVal.length === 0) return 0;
+    return Math.round(withVal.reduce((sum, i) => sum + (i.valuationMid || 0), 0) / withVal.length);
+  }, [analyzedItems]);
+  const totalPortfolioValue = useMemo(() => {
+    return analyzedItems.filter(i => i.valuationMid != null).reduce((sum, i) => sum + (i.valuationMid || 0), 0);
+  }, [analyzedItems]);
   const toggleSection = (id: string) => {
     setOpenSections(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
   };
@@ -313,6 +328,222 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
 
   return (
     <div>
+      {/* ═══ STAT PANELS ═══ */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem", marginBottom: "1.25rem" }}>
+        {([
+          { key: "total", icon: "\uD83D\uDCE6", label: "Total Items", value: String(items.length), sub: `${analyzedItems.length} analyzed, ${pendingItems.length} pending` },
+          { key: "analyzed", icon: "\u2705", label: "Analyzed", value: String(analyzedItems.length), sub: analyzedItems.length > 0 ? `${Math.round((analyzedItems.length / items.length) * 100)}% complete` : "None yet" },
+          { key: "pending", icon: "\u23F3", label: "Pending", value: String(pendingItems.length), sub: pendingItems.length > 0 ? "Tap to see list" : "All done!" },
+          { key: "value", icon: "\uD83D\uDCB0", label: "Avg Value", value: avgValue > 0 ? `$${avgValue.toLocaleString()}` : "--", sub: totalPortfolioValue > 0 ? `$${totalPortfolioValue.toLocaleString()} total` : "No valuations yet" },
+        ] as const).map((stat) => (
+          <div key={stat.key}>
+            <button
+              onClick={() => setExpandedStat(expandedStat === stat.key ? null : stat.key)}
+              style={{
+                width: "100%", display: "flex", flexDirection: "column", alignItems: "center",
+                padding: "0.85rem 0.5rem", borderRadius: "0.85rem", cursor: "pointer",
+                border: expandedStat === stat.key ? "2px solid #00bcd4" : "1px solid var(--border-default)",
+                background: expandedStat === stat.key ? "rgba(0,188,212,0.06)" : "var(--bg-card, var(--ghost-bg))",
+                transition: "all 0.2s ease",
+                boxShadow: expandedStat === stat.key ? "0 4px 20px rgba(0,188,212,0.15)" : "none",
+                minHeight: "44px",
+              }}
+            >
+              <span style={{ fontSize: "1.3rem", marginBottom: "0.2rem" }}>{stat.icon}</span>
+              <span style={{ fontSize: "1.25rem", fontWeight: 800, color: expandedStat === stat.key ? "#00bcd4" : "var(--text-primary)", lineHeight: 1.1 }}>{stat.value}</span>
+              <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginTop: "0.15rem" }}>{stat.label}</span>
+              <span style={{ fontSize: "0.52rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{stat.sub}</span>
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* ═══ EXPANDED STAT PANELS ═══ */}
+      {expandedStat === "total" && (
+        <div style={{
+          marginBottom: "1.25rem", padding: "1.25rem", borderRadius: "1rem",
+          background: "var(--bg-card, var(--ghost-bg))", border: "1px solid #00bcd4",
+          boxShadow: "0 4px 24px rgba(0,188,212,0.1)",
+        }}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
+            {"\uD83D\uDCE6"} Item Breakdown
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.65rem", marginBottom: "1rem" }}>
+            <div style={{ padding: "0.65rem", borderRadius: "0.6rem", background: "rgba(0,188,212,0.06)", textAlign: "center" }}>
+              <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "#00bcd4" }}>{items.length}</div>
+              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>TOTAL</div>
+            </div>
+            <div style={{ padding: "0.65rem", borderRadius: "0.6rem", background: "rgba(34,197,94,0.06)", textAlign: "center" }}>
+              <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "#22c55e" }}>{analyzedItems.length}</div>
+              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>ANALYZED</div>
+            </div>
+            <div style={{ padding: "0.65rem", borderRadius: "0.6rem", background: "rgba(245,158,11,0.06)", textAlign: "center" }}>
+              <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "#f59e0b" }}>{pendingItems.length}</div>
+              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>PENDING</div>
+            </div>
+          </div>
+          <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, marginBottom: "0.4rem" }}>All Items</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", maxHeight: "240px", overflowY: "auto" as const }}>
+            {items.map(it => (
+              <button key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.6rem",
+                borderRadius: "0.5rem", border: "1px solid var(--border-default)",
+                background: it.id === selectedId ? "rgba(0,188,212,0.08)" : "transparent",
+                cursor: "pointer", width: "100%", textAlign: "left" as const,
+                minHeight: "36px",
+              }}>
+                {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: "0.3rem", objectFit: "cover" as const }} />}
+                <span style={{ flex: 1, fontSize: "0.78rem", fontWeight: 500, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{it.title}</span>
+                <span style={{
+                  fontSize: "0.5rem", fontWeight: 600, padding: "2px 8px", borderRadius: "9999px",
+                  background: it.hasAnalysis ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)",
+                  color: it.hasAnalysis ? "#22c55e" : "#f59e0b",
+                }}>{it.hasAnalysis ? "Analyzed" : "Pending"}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {expandedStat === "analyzed" && (
+        <div style={{
+          marginBottom: "1.25rem", padding: "1.25rem", borderRadius: "1rem",
+          background: "var(--bg-card, var(--ghost-bg))", border: "1px solid #00bcd4",
+          boxShadow: "0 4px 24px rgba(0,188,212,0.1)",
+        }}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#22c55e", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
+            {"\u2705"} Analyzed Items ({analyzedItems.length})
+          </div>
+          {analyzedItems.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "1.5rem", color: "var(--text-muted)", fontSize: "0.82rem" }}>
+              No items have been analyzed yet. Select an item and run AnalyzeBot!
+            </div>
+          ) : (
+            <>
+              {/* Category breakdown */}
+              {(() => {
+                const cats: Record<string, number> = {};
+                analyzedItems.forEach(it => {
+                  const parsed = safeJson(it.aiResult ?? null);
+                  const cat = parsed?.category || "Uncategorized";
+                  cats[cat] = (cats[cat] || 0) + 1;
+                });
+                return (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginBottom: "0.75rem" }}>
+                    {Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([cat, count]) => (
+                      <span key={cat} style={{ fontSize: "0.55rem", fontWeight: 600, padding: "3px 10px", borderRadius: "9999px", background: "rgba(0,188,212,0.08)", color: "#00bcd4" }}>
+                        {cat} ({count})
+                      </span>
+                    ))}
+                  </div>
+                );
+              })()}
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", maxHeight: "240px", overflowY: "auto" as const }}>
+                {analyzedItems.map(it => {
+                  const parsed = safeJson(it.aiResult ?? null);
+                  return (
+                    <button key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                      display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.6rem",
+                      borderRadius: "0.5rem", border: "1px solid var(--border-default)",
+                      background: it.id === selectedId ? "rgba(0,188,212,0.08)" : "transparent",
+                      cursor: "pointer", width: "100%", textAlign: "left" as const,
+                      minHeight: "36px",
+                    }}>
+                      {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: "0.3rem", objectFit: "cover" as const }} />}
+                      <span style={{ flex: 1, fontSize: "0.78rem", fontWeight: 500, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{it.title}</span>
+                      {it.valuationMid != null && <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#00bcd4" }}>${it.valuationMid.toLocaleString()}</span>}
+                      {parsed?.category && <span style={{ fontSize: "0.48rem", fontWeight: 600, padding: "2px 6px", borderRadius: "9999px", background: "rgba(34,197,94,0.08)", color: "#22c55e" }}>{parsed.category}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {expandedStat === "pending" && (
+        <div style={{
+          marginBottom: "1.25rem", padding: "1.25rem", borderRadius: "1rem",
+          background: "var(--bg-card, var(--ghost-bg))", border: "1px solid #00bcd4",
+          boxShadow: "0 4px 24px rgba(0,188,212,0.1)",
+        }}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#f59e0b", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
+            {"\u23F3"} Pending Analysis ({pendingItems.length})
+          </div>
+          {pendingItems.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "1.5rem", color: "var(--text-muted)", fontSize: "0.82rem" }}>
+              {"\uD83C\uDF89"} All items have been analyzed! Great job.
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", maxHeight: "240px", overflowY: "auto" as const }}>
+              {pendingItems.map(it => (
+                <button key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                  display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.6rem",
+                  borderRadius: "0.5rem", border: "1px solid rgba(245,158,11,0.2)",
+                  background: it.id === selectedId ? "rgba(245,158,11,0.08)" : "transparent",
+                  cursor: "pointer", width: "100%", textAlign: "left" as const,
+                  minHeight: "40px",
+                }}>
+                  {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: "0.3rem", objectFit: "cover" as const }} />}
+                  <span style={{ flex: 1, fontSize: "0.78rem", fontWeight: 500, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{it.title}</span>
+                  <span style={{
+                    fontSize: "0.55rem", fontWeight: 600, padding: "4px 10px", borderRadius: "9999px",
+                    background: "rgba(245,158,11,0.1)", color: "#f59e0b",
+                  }}>Click to select</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {expandedStat === "value" && (
+        <div style={{
+          marginBottom: "1.25rem", padding: "1.25rem", borderRadius: "1rem",
+          background: "var(--bg-card, var(--ghost-bg))", border: "1px solid #00bcd4",
+          boxShadow: "0 4px 24px rgba(0,188,212,0.1)",
+        }}>
+          <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
+            {"\uD83D\uDCB0"} Value Summary
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.65rem", marginBottom: "1rem" }}>
+            <div style={{ padding: "0.65rem", borderRadius: "0.6rem", background: "rgba(0,188,212,0.06)", textAlign: "center" }}>
+              <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>${avgValue.toLocaleString()}</div>
+              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>AVG VALUE</div>
+            </div>
+            <div style={{ padding: "0.65rem", borderRadius: "0.6rem", background: "rgba(34,197,94,0.06)", textAlign: "center" }}>
+              <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#22c55e" }}>${totalPortfolioValue.toLocaleString()}</div>
+              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>TOTAL PORTFOLIO</div>
+            </div>
+            <div style={{ padding: "0.65rem", borderRadius: "0.6rem", background: "rgba(139,92,246,0.06)", textAlign: "center" }}>
+              <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#8b5cf6" }}>{analyzedItems.filter(i => i.valuationMid != null && i.valuationMid > 0).length}</div>
+              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>WITH VALUE</div>
+            </div>
+          </div>
+          <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, marginBottom: "0.4rem" }}>Ranked by Value</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", maxHeight: "240px", overflowY: "auto" as const }}>
+            {[...analyzedItems]
+              .filter(i => i.valuationMid != null && i.valuationMid > 0)
+              .sort((a, b) => (b.valuationMid || 0) - (a.valuationMid || 0))
+              .map((it, idx) => (
+                <button key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                  display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.6rem",
+                  borderRadius: "0.5rem", border: "1px solid var(--border-default)",
+                  background: it.id === selectedId ? "rgba(0,188,212,0.08)" : "transparent",
+                  cursor: "pointer", width: "100%", textAlign: "left" as const,
+                  minHeight: "36px",
+                }}>
+                  <span style={{ fontSize: "0.65rem", fontWeight: 800, color: idx === 0 ? "#f59e0b" : idx === 1 ? "#94a3b8" : idx === 2 ? "#d97706" : "var(--text-muted)", width: "20px" }}>#{idx + 1}</span>
+                  {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: "0.3rem", objectFit: "cover" as const }} />}
+                  <span style={{ flex: 1, fontSize: "0.78rem", fontWeight: 500, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{it.title}</span>
+                  <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#00bcd4" }}>${(it.valuationMid || 0).toLocaleString()}</span>
+                </button>
+              ))}
+          </div>
+        </div>
+      )}
+
       <BotItemSelector
         items={items.map((i) => ({ id: i.id, title: i.title, photo: i.photo, status: i.status, hasAnalysis: i.hasAnalysis }))}
         selectedId={selectedId}
@@ -1125,6 +1356,71 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
               {JSON.stringify({ aiAnalysis: ai, standardResult, megaBotData }, null, 2)}
             </pre>
           )}
+        </div>
+      )}
+
+      {/* ═══ STICKY BOTTOM ACTION BAR ═══ */}
+      {item && (
+        <div data-no-print style={{
+          position: "sticky", bottom: 0, zIndex: 100,
+          background: "var(--bg-card-solid)", backdropFilter: "blur(20px)",
+          borderTop: "1px solid var(--border-default)",
+          boxShadow: "0 -2px 12px rgba(0,0,0,0.08)",
+          padding: "0.85rem 2rem",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: "1rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", minWidth: 0, flex: 1 }}>
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>
+              {item.title}
+            </span>
+            {item.valuationMid && (
+              <span style={{
+                padding: "0.15rem 0.5rem", borderRadius: 99, fontSize: "0.58rem", fontWeight: 700, flexShrink: 0,
+                background: "rgba(0,188,212,0.12)", color: "#00bcd4",
+              }}>
+                ${item.valuationMid.toLocaleString()}
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
+            <button
+              onClick={runAnalysis}
+              disabled={analyzing}
+              style={{
+                padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
+                borderRadius: "10px", cursor: analyzing ? "not-allowed" : "pointer",
+                background: analyzing ? "var(--ghost-bg)" : "linear-gradient(135deg, #00bcd4, #0097a7)",
+                border: "none", color: "#fff", minHeight: "44px",
+                boxShadow: analyzing ? "none" : "0 2px 10px rgba(0,188,212,0.3)",
+              }}
+            >
+              {analyzing ? "Analyzing..." : standardResult ? "🔄 Re-Run · 1 cr" : "🧠 Run · 1 cr"}
+            </button>
+            <button
+              onClick={runMegaBot}
+              disabled={megaBotRunning}
+              style={{
+                padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
+                borderRadius: "10px", cursor: megaBotRunning ? "not-allowed" : "pointer",
+                background: megaBotRunning ? "var(--ghost-bg)" : "linear-gradient(135deg, rgba(0,188,212,0.2), rgba(0,151,167,0.15))",
+                border: "1px solid rgba(0,188,212,0.4)", color: "#00bcd4", minHeight: "44px",
+              }}
+            >
+              {megaBotRunning ? "Running..." : megaBotData ? "🔄 Re-Run MegaBot · 3 cr" : "⚡ MegaBot · 3 cr"}
+            </button>
+            <Link
+              href={`/items/${selectedId}`}
+              style={{
+                padding: "0.45rem 0.85rem", fontSize: "0.72rem", fontWeight: 600,
+                borderRadius: "10px", textDecoration: "none", minHeight: "44px",
+                background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                color: "var(--text-secondary)", display: "flex", alignItems: "center",
+              }}
+            >
+              View Item →
+            </Link>
+          </div>
         </div>
       )}
     </div>

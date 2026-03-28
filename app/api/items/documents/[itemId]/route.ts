@@ -40,7 +40,8 @@ export async function GET(
     select: {
       id: true, fileName: true, fileUrl: true, fileType: true,
       fileSizeBytes: true, docType: true, label: true,
-      aiSummary: true, createdAt: true,
+      aiSummary: true, aiAnalysis: true, confidenceScore: true,
+      providerResults: true, createdAt: true,
     },
   });
 

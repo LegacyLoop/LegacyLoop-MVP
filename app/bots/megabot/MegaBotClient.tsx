@@ -40,8 +40,8 @@ const BOT_META: Record<string, { label: string; icon: string; color: string; hre
   listing: { label: "ListBot", icon: "📝", color: "#ff9800", href: "/bots/listbot" },
   reconbot: { label: "ReconBot", icon: "🔍", color: "#607d8b", href: "/bots/reconbot" },
   recon: { label: "ReconBot", icon: "🔍", color: "#607d8b", href: "/bots/reconbot" },
-  photobot: { label: "PhotoBot", icon: "📷", color: "#f06292", href: "/bots/stylebot" },
-  photos: { label: "PhotoBot", icon: "📷", color: "#f06292", href: "/bots/stylebot" },
+  photobot: { label: "PhotoBot", icon: "📷", color: "#f06292", href: "/bots/photobot" },
+  photos: { label: "PhotoBot", icon: "📷", color: "#f06292", href: "/bots/photobot" },
   carbot: { label: "CarBot", icon: "🚗", color: "#2196f3", href: "/bots/carbot" },
   antiquebot: { label: "AntiqueBot", icon: "🏺", color: "#d97706", href: "/bots/antiquebot" },
   antique: { label: "AntiqueBot", icon: "🏺", color: "#d97706", href: "/bots/antiquebot" },
@@ -2247,6 +2247,8 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const [showJson, setShowJson] = useState(false);
+  const [expandedStat, setExpandedStat] = useState<string | null>(null);
+  const [megaRunning, setMegaRunning] = useState(false);
 
   const item = items.find((i) => i.id === selectedId);
   const ai = useMemo(() => safeJson(item?.aiResult ?? null), [item?.aiResult]);
@@ -2268,6 +2270,65 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [selectedId]);
+
+  // ── Stat computations ──
+  const statData = useMemo(() => {
+    const total = items.length;
+    const analyzed = items.filter((i) => i.hasAnalysis).length;
+    const consensus = items.filter((i) => {
+      // An item has consensus if megaResults exist for the currently-selected item,
+      // but for the stat we count all items that have an AI result (proxy for having been run)
+      return i.hasAnalysis;
+    }).length;
+    const valuations = items
+      .filter((i) => i.valuation && i.valuation.low != null && i.valuation.high != null)
+      .map((i) => (Number(i.valuation.low) + Number(i.valuation.high)) / 2);
+    const avgValue = valuations.length > 0
+      ? Math.round(valuations.reduce((a, b) => a + b, 0) / valuations.length)
+      : 0;
+    return { total, analyzed, consensus, avgValue, valuations };
+  }, [items]);
+
+  // For consensus stat, count items that have MEGABOT event logs
+  // We track this via a separate fetch for all items (simplified: use megaResults for selected item)
+  const [consensusCount, setConsensusCount] = useState(0);
+  useEffect(() => {
+    // Count items that have megabot results by checking each item
+    let count = 0;
+    let checked = 0;
+    items.forEach((itm) => {
+      fetch(`/api/megabot/${itm.id}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.results && Object.keys(d.results).length > 0) count++;
+        })
+        .catch(() => {})
+        .finally(() => {
+          checked++;
+          if (checked === items.length) setConsensusCount(count);
+        });
+    });
+  }, [items]);
+
+  // Run MegaBot handler for sticky bar
+  const handleRunMegaBot = async () => {
+    if (!selectedId || megaRunning) return;
+    setMegaRunning(true);
+    try {
+      const res = await fetch(`/api/megabot/${selectedId}?bot=analyzebot`, { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        // Refresh results
+        const r2 = await fetch(`/api/megabot/${selectedId}`);
+        const d2 = await r2.json();
+        if (d2.results && Object.keys(d2.results).length > 0) {
+          setMegaResults(d2.results);
+          setActiveTab(Object.keys(d2.results)[0]);
+        }
+      }
+    } catch {}
+    setMegaRunning(false);
+  };
 
   const botKeys = megaResults ? Object.keys(megaResults) : [];
   const activeResult = activeTab && megaResults ? megaResults[activeTab] : null;
@@ -2301,6 +2362,277 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
         selectedId={selectedId}
         onSelect={setSelectedId}
       />
+
+      {/* ── FEATURE 1: Clickable Stat Panels ── */}
+      <div style={{ marginTop: "1.25rem", marginBottom: "1rem" }}>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(4, 1fr)",
+          gap: "0.75rem",
+        }}>
+          {[
+            { key: "total", icon: "\uD83D\uDCE6", label: "Total Items", value: statData.total, suffix: "" },
+            { key: "analyzed", icon: "\u2705", label: "Analyzed", value: statData.analyzed, suffix: "" },
+            { key: "consensus", icon: "\uD83E\uDD16", label: "Consensus Runs", value: consensusCount, suffix: "" },
+            { key: "value", icon: "\uD83D\uDCB0", label: "Avg Value", value: statData.avgValue > 0 ? `$${statData.avgValue.toLocaleString()}` : "$0", suffix: "" },
+          ].map((stat) => {
+            const isExpanded = expandedStat === stat.key;
+            return (
+              <button
+                key={stat.key}
+                onClick={() => setExpandedStat(isExpanded ? null : stat.key)}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "1rem 0.5rem",
+                  borderRadius: "1rem",
+                  border: isExpanded ? "2px solid #8b5cf6" : "1px solid var(--border-default)",
+                  background: isExpanded ? "rgba(139,92,246,0.1)" : "var(--bg-card)",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  minHeight: "44px",
+                }}
+              >
+                <span style={{ fontSize: "1.25rem", marginBottom: "0.25rem" }}>{stat.icon}</span>
+                <span style={{ fontSize: "1.35rem", fontWeight: 800, color: "#8b5cf6" }}>
+                  {typeof stat.value === "number" ? stat.value : stat.value}
+                </span>
+                <span style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600, marginTop: "0.15rem" }}>
+                  {stat.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Expandable detail panels */}
+        {expandedStat === "total" && (
+          <div style={{
+            marginTop: "0.75rem",
+            background: "var(--bg-card)",
+            border: "1px solid rgba(139,92,246,0.25)",
+            borderRadius: "1rem",
+            padding: "1rem 1.25rem",
+            maxHeight: "300px",
+            overflowY: "auto",
+          }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8b5cf6", marginBottom: "0.75rem" }}>
+              {"\uD83D\uDCE6"} Item Breakdown ({statData.total} total)
+            </div>
+            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "0.75rem", fontSize: "0.75rem" }}>
+              <span style={{ color: "var(--text-secondary)" }}>Analyzed: <strong style={{ color: "#4caf50" }}>{statData.analyzed}</strong></span>
+              <span style={{ color: "var(--text-secondary)" }}>Pending: <strong style={{ color: "#ff9800" }}>{statData.total - statData.analyzed}</strong></span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              {items.map((itm) => (
+                <div key={itm.id} style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.4rem 0.6rem",
+                  borderRadius: "0.5rem",
+                  background: itm.id === selectedId ? "rgba(139,92,246,0.08)" : "transparent",
+                  border: itm.id === selectedId ? "1px solid rgba(139,92,246,0.2)" : "1px solid transparent",
+                  fontSize: "0.75rem",
+                  cursor: "pointer",
+                }} onClick={() => { setSelectedId(itm.id); setExpandedStat(null); }}>
+                  {itm.photo ? (
+                    <img src={itm.photo} alt="" style={{ width: 28, height: 28, borderRadius: "0.35rem", objectFit: "cover" }} />
+                  ) : (
+                    <div style={{ width: 28, height: 28, borderRadius: "0.35rem", background: "var(--ghost-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem" }}>{"\uD83D\uDCE6"}</div>
+                  )}
+                  <span style={{ flex: 1, color: "var(--text-primary)", fontWeight: 500, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{itm.title}</span>
+                  <span style={{
+                    fontSize: "0.55rem",
+                    padding: "0.1rem 0.4rem",
+                    borderRadius: "9999px",
+                    background: itm.hasAnalysis ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)",
+                    color: itm.hasAnalysis ? "#4caf50" : "#ff9800",
+                    fontWeight: 600,
+                  }}>{itm.status}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {expandedStat === "analyzed" && (
+          <div style={{
+            marginTop: "0.75rem",
+            background: "var(--bg-card)",
+            border: "1px solid rgba(139,92,246,0.25)",
+            borderRadius: "1rem",
+            padding: "1rem 1.25rem",
+            maxHeight: "300px",
+            overflowY: "auto",
+          }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8b5cf6", marginBottom: "0.75rem" }}>
+              {"\u2705"} Analyzed Items ({statData.analyzed} of {statData.total})
+            </div>
+            {statData.analyzed === 0 ? (
+              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", padding: "0.5rem 0" }}>
+                No items have been analyzed yet. Run analysis on an item to get started.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                {items.filter((i) => i.hasAnalysis).map((itm) => {
+                  const val = itm.valuation;
+                  const mid = val && val.low != null && val.high != null ? Math.round((Number(val.low) + Number(val.high)) / 2) : null;
+                  return (
+                    <div key={itm.id} style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      padding: "0.4rem 0.6rem",
+                      borderRadius: "0.5rem",
+                      background: itm.id === selectedId ? "rgba(139,92,246,0.08)" : "transparent",
+                      border: itm.id === selectedId ? "1px solid rgba(139,92,246,0.2)" : "1px solid transparent",
+                      fontSize: "0.75rem",
+                      cursor: "pointer",
+                    }} onClick={() => { setSelectedId(itm.id); setExpandedStat(null); }}>
+                      {itm.photo ? (
+                        <img src={itm.photo} alt="" style={{ width: 28, height: 28, borderRadius: "0.35rem", objectFit: "cover" }} />
+                      ) : (
+                        <div style={{ width: 28, height: 28, borderRadius: "0.35rem", background: "var(--ghost-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem" }}>{"\u2705"}</div>
+                      )}
+                      <span style={{ flex: 1, color: "var(--text-primary)", fontWeight: 500, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{itm.title}</span>
+                      {mid != null && (
+                        <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8b5cf6" }}>${mid.toLocaleString()}</span>
+                      )}
+                      {val?.confidence != null && (
+                        <span style={{
+                          fontSize: "0.55rem", padding: "0.1rem 0.35rem", borderRadius: "9999px",
+                          background: Number(val.confidence) >= 70 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)",
+                          color: Number(val.confidence) >= 70 ? "#4caf50" : "#ff9800",
+                          fontWeight: 600,
+                        }}>{Math.round(Number(val.confidence))}%</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {expandedStat === "consensus" && (
+          <div style={{
+            marginTop: "0.75rem",
+            background: "var(--bg-card)",
+            border: "1px solid rgba(139,92,246,0.25)",
+            borderRadius: "1rem",
+            padding: "1rem 1.25rem",
+            maxHeight: "300px",
+            overflowY: "auto",
+          }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8b5cf6", marginBottom: "0.75rem" }}>
+              {"\uD83E\uDD16"} MegaBot Consensus Runs ({consensusCount} items)
+            </div>
+            {consensusCount === 0 ? (
+              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", padding: "0.5rem 0" }}>
+                No MegaBot consensus runs yet. Select an item and run MegaBot to see multi-agent results.
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                {/* Show selected item's consensus if available */}
+                {megaResults && Object.keys(megaResults).length > 0 && item && (
+                  <>
+                    <div style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600, marginBottom: "0.25rem" }}>
+                      Current: {item.title}
+                    </div>
+                    {Object.entries(megaResults).map(([key, result]) => {
+                      const meta = BOT_META[key] || { label: key, icon: "\uD83E\uDD16", color: "#888" };
+                      const agreeRaw = (result as any)?.agreementScore || 0;
+                      const agree = Math.round(agreeRaw > 1 ? agreeRaw : agreeRaw * 100);
+                      return (
+                        <div key={key} style={{
+                          display: "flex", alignItems: "center", gap: "0.5rem",
+                          padding: "0.4rem 0.6rem", borderRadius: "0.5rem",
+                          border: "1px solid var(--border-default)", fontSize: "0.75rem",
+                        }}>
+                          <span>{meta.icon}</span>
+                          <span style={{ fontWeight: 600, color: meta.color }}>{meta.label}</span>
+                          <span style={{ flex: 1 }} />
+                          <span style={{
+                            fontSize: "0.55rem", padding: "0.1rem 0.4rem", borderRadius: "9999px",
+                            background: agree >= 75 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)",
+                            color: agree >= 75 ? "#4caf50" : "#ff9800",
+                            fontWeight: 700,
+                          }}>{agree}% agreement</span>
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {expandedStat === "value" && (
+          <div style={{
+            marginTop: "0.75rem",
+            background: "var(--bg-card)",
+            border: "1px solid rgba(139,92,246,0.25)",
+            borderRadius: "1rem",
+            padding: "1rem 1.25rem",
+            maxHeight: "300px",
+            overflowY: "auto",
+          }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#8b5cf6", marginBottom: "0.75rem" }}>
+              {"\uD83D\uDCB0"} Portfolio Value KPIs
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.75rem", marginBottom: "1rem" }}>
+              {[
+                { label: "Total Portfolio", value: statData.valuations.length > 0 ? `$${Math.round(statData.valuations.reduce((a, b) => a + b, 0)).toLocaleString()}` : "$0" },
+                { label: "Highest Item", value: statData.valuations.length > 0 ? `$${Math.round(Math.max(...statData.valuations)).toLocaleString()}` : "$0" },
+                { label: "Items Valued", value: `${statData.valuations.length}/${statData.total}` },
+              ].map((kpi) => (
+                <div key={kpi.label} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#8b5cf6" }}>{kpi.value}</div>
+                  <div style={{ fontSize: "0.58rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600 }}>{kpi.label}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600, marginBottom: "0.4rem" }}>
+              Ranked by Value
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+              {items
+                .filter((i) => i.valuation && i.valuation.low != null && i.valuation.high != null)
+                .map((itm) => ({
+                  ...itm,
+                  mid: Math.round((Number(itm.valuation.low) + Number(itm.valuation.high)) / 2),
+                }))
+                .sort((a, b) => b.mid - a.mid)
+                .map((itm, idx) => (
+                  <div key={itm.id} style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.35rem 0.6rem",
+                    borderRadius: "0.5rem",
+                    background: itm.id === selectedId ? "rgba(139,92,246,0.08)" : "transparent",
+                    border: itm.id === selectedId ? "1px solid rgba(139,92,246,0.2)" : "1px solid transparent",
+                    fontSize: "0.75rem",
+                    cursor: "pointer",
+                  }} onClick={() => { setSelectedId(itm.id); setExpandedStat(null); }}>
+                    <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", minWidth: 20, textAlign: "right" }}>#{idx + 1}</span>
+                    {itm.photo ? (
+                      <img src={itm.photo} alt="" style={{ width: 28, height: 28, borderRadius: "0.35rem", objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: 28, height: 28, borderRadius: "0.35rem", background: "var(--ghost-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem" }}>{"\uD83D\uDCB0"}</div>
+                    )}
+                    <span style={{ flex: 1, color: "var(--text-primary)", fontWeight: 500, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>{itm.title}</span>
+                    <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#8b5cf6" }}>${itm.mid.toLocaleString()}</span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {!item ? (
         <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-muted)" }}>
@@ -2627,6 +2959,110 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
           )}
         </div>
       )}
+
+      {/* ── FEATURE 2: Sticky Bottom Action Bar ── */}
+      {item && (
+        <div style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          background: "var(--bg-card)",
+          borderTop: "1px solid var(--border-default)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          padding: "0.75rem 1.5rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "0.75rem",
+        }}>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            maxWidth: "900px",
+            width: "100%",
+          }}>
+            {/* Item thumbnail + name */}
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1, minWidth: 0 }}>
+              {item.photo ? (
+                <img src={item.photo} alt="" style={{ width: 36, height: 36, borderRadius: "0.5rem", objectFit: "cover", flexShrink: 0 }} />
+              ) : (
+                <div style={{ width: 36, height: 36, borderRadius: "0.5rem", background: "rgba(139,92,246,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem", flexShrink: 0 }}>{"\uD83E\uDD16"}</div>
+              )}
+              <span style={{
+                fontSize: "0.82rem",
+                fontWeight: 600,
+                color: "var(--text-primary)",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+              }}>{item.title}</span>
+            </div>
+
+            {/* View Item link */}
+            <Link href={`/items/${item.id}`} style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.35rem",
+              padding: "0 1.25rem",
+              minHeight: "44px",
+              borderRadius: "0.65rem",
+              border: "1px solid var(--border-default)",
+              background: "transparent",
+              color: "var(--text-secondary)",
+              fontSize: "0.82rem",
+              fontWeight: 600,
+              textDecoration: "none",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+            }}>
+              View Item
+            </Link>
+
+            {/* Run MegaBot button */}
+            <button
+              onClick={handleRunMegaBot}
+              disabled={megaRunning}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.4rem",
+                padding: "0 1.5rem",
+                minHeight: "44px",
+                borderRadius: "0.65rem",
+                border: "none",
+                background: megaRunning ? "rgba(139,92,246,0.4)" : "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+                color: "#fff",
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                cursor: megaRunning ? "not-allowed" : "pointer",
+                whiteSpace: "nowrap",
+                boxShadow: megaRunning ? "none" : "0 4px 14px rgba(139,92,246,0.35)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              {megaRunning ? (
+                <>
+                  <span style={{ display: "inline-block", animation: "spin 1s linear infinite", fontSize: "1rem" }}>{"\u2699\uFE0F"}</span>
+                  Running...
+                </>
+              ) : (
+                <>
+                  {"\uD83E\uDD16"} Run MegaBot
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Spacer so content isn't hidden behind sticky bar */}
+      {item && <div style={{ height: "80px" }} />}
     </div>
   );
 }

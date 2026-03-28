@@ -363,6 +363,7 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
   const [megaBotExpanded, setMegaBotExpanded] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(["hot-leads", "profiles", "outreach"]));
   const toggleSection = (id: string) => { setOpenSections(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; }); };
+  const [expandedStat, setExpandedStat] = useState<string | null>(null);
 
   const item = useMemo(() => items.find((i) => i.id === selectedId) || null, [items, selectedId]);
   const ai = useMemo(() => item ? safeJson(item.aiResult) : null, [item]);
@@ -466,14 +467,172 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
   const timing = result?.timing_advice || null;
   const summary = result?.executive_summary || "";
 
+  // ── Compute stats ──
+  const statsActiveLeads = items.reduce((sum, it) => sum + (it.activeLeads?.length || 0), 0);
+  const statsContacted = items.reduce((sum, it) => sum + (it.activeLeads?.filter((l: any) => l.outreachStatus === "CONTACTED" || l.outreachStatus === "REPLIED" || l.outreachStatus === "INTERESTED").length || 0), 0);
+  const statsTotalLeads = items.reduce((sum, it) => sum + (it.leadCount || 0), 0);
+  const statsResponseRate = statsTotalLeads > 0 ? Math.round((statsContacted / Math.max(statsTotalLeads, 1)) * 100) : 0;
+  const itemsWithBotResults = items.filter(it => !!it.buyerBotResult);
+  const itemsWithLeads = items.filter(it => (it.activeLeads?.length || 0) > 0);
+  const itemsWithContacted = items.filter(it => (it.activeLeads?.filter((l: any) => l.outreachStatus === "CONTACTED" || l.outreachStatus === "REPLIED" || l.outreachStatus === "INTERESTED").length || 0) > 0);
+
+  const TEAL = "#00bcd4";
+
+  const statPanels = [
+    { key: "total", label: "Total Items", value: items.length, icon: "📦" },
+    { key: "leads", label: "Active Leads", value: statsActiveLeads, icon: "👥" },
+    { key: "contacted", label: "Contacted", value: statsContacted, icon: "📧" },
+    { key: "rate", label: "Response Rate", value: `${statsResponseRate}%`, icon: "📊" },
+  ];
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1rem", paddingBottom: selectedId && item ? "5rem" : undefined }}>
       {/* Item selector */}
       <BotItemSelector
         items={items.map((i) => ({ id: i.id, title: i.title, photo: i.photo, status: i.status, hasAnalysis: i.hasAnalysis }))}
         selectedId={selectedId}
         onSelect={(id) => { setSelectedId(id); setResult(null); }}
       />
+
+      {/* ═══ STATS BANNER (clickable panels) ═══ */}
+      <div style={{ marginBottom: "0.25rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem" }}>
+          {statPanels.map((s) => (
+            <div
+              key={s.key}
+              onClick={() => setExpandedStat(expandedStat === s.key ? null : s.key)}
+              style={{
+                background: expandedStat === s.key ? "rgba(0,188,212,0.06)" : "var(--bg-card-solid)",
+                border: expandedStat === s.key ? `2px solid ${TEAL}` : "1px solid var(--border-default)",
+                borderRadius: "12px",
+                padding: "1rem 0.85rem", textAlign: "center" as const,
+                boxShadow: expandedStat === s.key ? `0 4px 16px rgba(0,188,212,0.15)` : "0 1px 3px rgba(0,0,0,0.06)",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                transform: expandedStat === s.key ? "translateY(-2px)" : "none",
+                userSelect: "none" as const,
+              }}
+            >
+              <div style={{ fontSize: "1.1rem", marginBottom: "0.25rem" }}>{s.icon}</div>
+              <div style={{ fontSize: "1.35rem", fontWeight: 800, color: TEAL }}>{s.value}</div>
+              <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginTop: "0.15rem" }}>
+                {s.label} <span style={{ fontSize: "0.5rem", opacity: 0.6 }}>{expandedStat === s.key ? "▲" : "▼"}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Expanded stat detail panel */}
+        {expandedStat && (
+          <div style={{
+            marginTop: "0.75rem", padding: "1rem 1.25rem", borderRadius: "12px",
+            background: "var(--bg-card-solid)", border: "1px solid var(--border-default)",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+          }}>
+            {expandedStat === "total" && (
+              <>
+                <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: TEAL, fontWeight: 700, marginBottom: "0.65rem" }}>All Items Overview</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                  {[
+                    { l: "Analyzed", v: items.filter(i => i.hasAnalysis).length },
+                    { l: "Not Analyzed", v: items.filter(i => !i.hasAnalysis).length },
+                    { l: "With Bot Results", v: itemsWithBotResults.length },
+                    { l: "With Leads", v: itemsWithLeads.length },
+                  ].map(d => (
+                    <div key={d.l} style={{ padding: "0.45rem 0.5rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", textAlign: "center" as const }}>
+                      <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-primary)" }}>{d.v}</div>
+                      <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{d.l}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ maxHeight: "160px", overflowY: "auto" as const }}>
+                  {items.slice(0, 12).map(it => (
+                    <div key={it.id} onClick={() => { setSelectedId(it.id); setResult(null); setExpandedStat(null); }} style={{
+                      display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.4rem",
+                      borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                    }}>
+                      {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" as const }} />}
+                      <span style={{ flex: 1, fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</span>
+                      <span style={{ fontSize: "0.62rem", color: it.buyerBotResult ? TEAL : "var(--text-muted)", flexShrink: 0 }}>{it.buyerBotResult ? "Bot ran" : it.status}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {expandedStat === "leads" && (
+              <>
+                <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: TEAL, fontWeight: 700, marginBottom: "0.65rem" }}>Items with Active Leads</div>
+                {itemsWithLeads.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "1rem", color: "var(--text-muted)", fontSize: "0.75rem" }}>No active leads yet. Run BuyerBot on your items to generate leads.</div>
+                ) : (
+                  <div style={{ maxHeight: "180px", overflowY: "auto" as const }}>
+                    {itemsWithLeads.map(it => (
+                      <div key={it.id} onClick={() => { setSelectedId(it.id); setResult(null); setExpandedStat(null); }} style={{
+                        display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.4rem",
+                        borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                      }}>
+                        {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" as const }} />}
+                        <span style={{ flex: 1, fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</span>
+                        <span style={{ fontSize: "0.65rem", fontWeight: 700, color: TEAL }}>{it.activeLeads?.length || 0} leads</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {expandedStat === "contacted" && (
+              <>
+                <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: TEAL, fontWeight: 700, marginBottom: "0.65rem" }}>Contacted Leads</div>
+                {itemsWithContacted.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "1rem", color: "var(--text-muted)", fontSize: "0.75rem" }}>No contacted leads yet. Use the Outreach Center to reach out to buyers.</div>
+                ) : (
+                  <div style={{ maxHeight: "180px", overflowY: "auto" as const }}>
+                    {itemsWithContacted.map(it => {
+                      const contacted = it.activeLeads?.filter((l: any) => l.outreachStatus === "CONTACTED" || l.outreachStatus === "REPLIED" || l.outreachStatus === "INTERESTED") || [];
+                      return (
+                        <div key={it.id} onClick={() => { setSelectedId(it.id); setResult(null); setExpandedStat(null); }} style={{
+                          display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.4rem 0.4rem",
+                          borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                        }}>
+                          {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" as const }} />}
+                          <span style={{ flex: 1, fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</span>
+                          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#4ade80" }}>{contacted.length} contacted</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+
+            {expandedStat === "rate" && (
+              <>
+                <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: TEAL, fontWeight: 700, marginBottom: "0.65rem" }}>Buyer Engagement Summary</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.5rem" }}>
+                  {[
+                    { l: "Total Leads", v: statsTotalLeads, c: "var(--text-primary)" },
+                    { l: "Active Leads", v: statsActiveLeads, c: TEAL },
+                    { l: "Contacted / Replied", v: statsContacted, c: "#4ade80" },
+                    { l: "Response Rate", v: `${statsResponseRate}%`, c: statsResponseRate >= 30 ? "#4ade80" : statsResponseRate >= 15 ? "#f59e0b" : "var(--text-muted)" },
+                  ].map(d => (
+                    <div key={d.l} style={{ padding: "0.55rem 0.5rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", textAlign: "center" as const }}>
+                      <div style={{ fontSize: "1.1rem", fontWeight: 800, color: d.c }}>{d.v}</div>
+                      <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{d.l}</div>
+                    </div>
+                  ))}
+                </div>
+                {items.filter(i => i.botActive).length > 0 && (
+                  <div style={{ marginTop: "0.65rem", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                    {items.filter(i => i.botActive).length} active bot{items.filter(i => i.botActive).length !== 1 ? "s" : ""} scanning for buyers across your items.
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* No analysis */}
       {item && !item.hasAnalysis && (
@@ -1158,6 +1317,67 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
             )}
           </Card>
         </>
+      )}
+
+      {/* ═══ STICKY BOTTOM ACTION BAR ═══ */}
+      {selectedId && item && (
+        <div data-no-print style={{
+          position: "sticky", bottom: 0, zIndex: 100,
+          background: "var(--bg-card-solid)", backdropFilter: "blur(20px)",
+          borderTop: "1px solid var(--border-default)",
+          boxShadow: "0 -2px 12px rgba(0,0,0,0.08)",
+          padding: "0.85rem 2rem",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: "1rem",
+        }}>
+          {/* Left: item title */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", minWidth: 0, flex: 1 }}>
+            {item.photo && (
+              <img src={item.photo} alt="" style={{ width: 32, height: 32, borderRadius: 6, objectFit: "cover", flexShrink: 0 }} />
+            )}
+            <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+              {item.title}
+            </span>
+          </div>
+          {/* Right: action buttons */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+            <button
+              onClick={runBuyerBot}
+              disabled={loading}
+              style={{
+                minHeight: 44, padding: "0.5rem 1.2rem", fontSize: "0.78rem", fontWeight: 700,
+                borderRadius: "0.5rem", border: "none", cursor: loading ? "not-allowed" : "pointer",
+                background: loading ? "var(--ghost-bg)" : `linear-gradient(135deg, ${TEAL}, #0097a7)`,
+                color: loading ? "var(--text-muted)" : "#fff",
+                transition: "all 0.2s ease", opacity: loading ? 0.6 : 1,
+              }}
+            >
+              {loading ? "Running..." : "🎯 Run BuyerBot"}
+            </button>
+            <button
+              onClick={runMegaBuyerBot}
+              disabled={megaBotLoading}
+              style={{
+                minHeight: 44, padding: "0.5rem 1rem", fontSize: "0.75rem", fontWeight: 600,
+                borderRadius: "0.5rem", cursor: megaBotLoading ? "not-allowed" : "pointer",
+                background: megaBotLoading ? "var(--ghost-bg)" : "linear-gradient(135deg, rgba(167,139,250,0.15), rgba(251,191,36,0.15))",
+                border: "1px solid rgba(167,139,250,0.3)", color: megaBotLoading ? "var(--text-muted)" : "#a78bfa",
+                transition: "all 0.2s ease", opacity: megaBotLoading ? 0.6 : 1,
+              }}
+            >
+              {megaBotLoading ? "Working..." : "⚡ MegaBot"}
+            </button>
+            <Link href={`/items/${selectedId}`} style={{
+              minHeight: 44, display: "inline-flex", alignItems: "center", gap: "0.3rem",
+              padding: "0.5rem 0.85rem", fontSize: "0.75rem", fontWeight: 600,
+              borderRadius: "0.5rem", border: "1px solid var(--border-default)",
+              color: "var(--text-secondary)", textDecoration: "none",
+              transition: "border-color 0.15s ease",
+            }}>
+              View Item ↗
+            </Link>
+          </div>
+        </div>
       )}
     </div>
   );

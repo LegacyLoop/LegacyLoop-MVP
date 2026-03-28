@@ -89,16 +89,18 @@ function extractSingleRun(result: any) {
   const gradeConfidence = result.grade_confidence ?? null;
   const conditionAssessment = result.condition_assessment ?? cond?.overall_assessment ?? null;
 
-  // Graded values — new schema psa6-10
+  // Graded values — CMD-COL-A format { PSA_5: N } AND old { psa6_value: N }
   const valObj = typeof result.valuation === "object" && result.valuation ? result.valuation : null;
-  const psa6 = valObj?.psa6_value ?? null;
-  const psa7 = valObj?.psa7_value ?? null;
-  const psa8 = valObj?.psa8_value ?? null;
-  const psa9 = valObj?.psa9_value ?? null;
-  const psa10 = valObj?.psa10_value ?? null;
-
-  // Old graded_values
   const gradedValues = result.graded_values ?? null;
+  const gvObj = typeof gradedValues === "object" && gradedValues ? gradedValues : null;
+  const psa5 = valObj?.psa5_value ?? gvObj?.PSA_5 ?? gvObj?.psa5 ?? null;
+  const psa6 = valObj?.psa6_value ?? gvObj?.PSA_6 ?? gvObj?.psa6 ?? null;
+  const psa7 = valObj?.psa7_value ?? gvObj?.PSA_7 ?? gvObj?.psa7 ?? null;
+  const psa8 = valObj?.psa8_value ?? gvObj?.PSA_8 ?? gvObj?.psa8 ?? null;
+  const psa9 = valObj?.psa9_value ?? gvObj?.PSA_9 ?? gvObj?.psa9 ?? null;
+  const psa10 = valObj?.psa10_value ?? gvObj?.PSA_10 ?? gvObj?.psa10 ?? null;
+
+  // Old graded_values (legacy format)
   const gradedLow = gradedValues?.low_grade_value ?? null;
   const gradedMid = gradedValues?.mid_grade_value ?? null;
   const gradedHigh = gradedValues?.high_grade_value ?? null;
@@ -135,12 +137,41 @@ function extractSingleRun(result: any) {
 
   const summary = result.expertSummary ?? result.executive_summary ?? result.summary ?? null;
 
+  // Visual grading (CMD-COL-A)
+  const vg = result.visual_grading ?? null;
+  const vgPsaGrade = vg?.psa_grade ?? result.estimated_grade ?? null;
+  const vgBgsGrade = vg?.bgs_grade ?? null;
+  const vgGradeConfidence = vg?.grade_confidence ?? result.grade_confidence ?? null;
+  const vgCorners = vg?.corners ?? null;
+  const vgEdges = vg?.edges ?? null;
+  const vgSurface = vg?.surface ?? null;
+  const vgCentering = vg?.centering ?? null;
+  const vgGradeReasoning = vg?.grade_reasoning ?? null;
+
+  // Price history (CMD-COL-A)
+  const ph = result.price_history ?? null;
+  const trend6mo = ph?.trend_6mo ?? null;
+  const trend1yr = ph?.trend_1yr ?? null;
+  const trend3yr = ph?.trend_3yr ?? null;
+  const peakPrice = ph?.peak_price ?? null;
+  const floorPrice = ph?.floor_price ?? null;
+  const catalystEvents = ph?.catalyst_events ?? null;
+
+  // Collection context new fields (CMD-COL-A)
+  const setName = collection?.set_name ?? null;
+  const setTotal = collection?.set_total ?? null;
+  const cardNumber = collection?.card_number ?? null;
+  const isKeyCard = collection?.is_key_card ?? null;
+  const keyCardReason = collection?.key_card_reason ?? null;
+  const setCompletionHint = collection?.set_completion_hint ?? null;
+  const collectionTag = collection?.collection_category_tag ?? null;
+
   return {
     assess, ident, val, market, hist, cond, strategy, collection,
     itemName, year, brandSeries, editionVariation, category, subcategory, rarity,
     rawLow, rawMid, rawHigh, valueReasoning, recentComps, populationNote,
     psaGrade, gradeConfidence, conditionAssessment,
-    psa6, psa7, psa8, psa9, psa10,
+    psa5, psa6, psa7, psa8, psa9, psa10,
     gradedValues, gradedLow, gradedMid, gradedHigh,
     gradingRec, gradingReasoning, breakEvenGrade, bestGradingService, psaStandardCost,
     bestPlatform, platformReasoning, demandTrend, demandReasoning,
@@ -148,6 +179,9 @@ function extractSingleRun(result: any) {
     price1yr, price5yr, catalysts, risks, investmentVerdict,
     insiderKnowledge, communitySentiment, notableVariations, authenticationNotes, printRun,
     summary,
+    vg, vgPsaGrade, vgBgsGrade, vgGradeConfidence, vgCorners, vgEdges, vgSurface, vgCentering, vgGradeReasoning,
+    ph, trend6mo, trend1yr, trend3yr, peakPrice, floorPrice, catalystEvents,
+    setName, setTotal, cardNumber, isKeyCard, keyCardReason, setCompletionHint, collectionTag,
   };
 }
 
@@ -290,13 +324,13 @@ function GlassCard({ children, borderColor, borderLeft, style }: {
 }) {
   return (
     <div style={{
-      background: "rgba(15,15,25,0.8)",
-      backdropFilter: "blur(12px)",
-      border: `1px solid ${borderColor || "rgba(139,92,246,0.2)"}`,
+      background: "var(--bg-card-solid)",
+      border: `1px solid ${borderColor || "var(--border-default)"}`,
       borderLeft: borderLeft || undefined,
       borderRadius: "14px",
       padding: "1.5rem",
       marginBottom: "1rem",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
       ...style,
     }}>
       {children}
@@ -307,7 +341,7 @@ function GlassCard({ children, borderColor, borderLeft, style }: {
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
-      fontSize: "0.6rem", fontWeight: 700, color: PURPLE, textTransform: "uppercase",
+      fontSize: "0.65rem", fontWeight: 700, color: "#7c3aed", textTransform: "uppercase",
       letterSpacing: "0.1em", marginBottom: "0.65rem",
     }}>
       {children}
@@ -332,6 +366,34 @@ function GridRow({ label, value, bold }: { label: string; value: string; bold?: 
     <div style={{ display: "flex", justifyContent: "space-between", padding: "0.2rem 0", borderBottom: "1px solid var(--border-default)" }}>
       <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</span>
       <span style={{ fontSize: "0.72rem", fontWeight: bold ? 700 : 600, color: "var(--text-primary)" }}>{value}</span>
+    </div>
+  );
+}
+
+// ─── SVG Confidence Meter ─────────────────────────────────────────────────
+function ConfidenceMeter({ value, size = 120, label }: { value: number; size?: number; label?: string }) {
+  const safeVal = typeof value === "number" && !isNaN(value) ? value : 0;
+  const pct = safeVal > 1 ? safeVal : Math.round(safeVal * 100);
+  const r = 42;
+  const stroke = 6;
+  const circ = 2 * Math.PI * r;
+  const arcLen = circ * 0.75; // 270-degree arc
+  const dash = (pct / 100) * arcLen;
+  const gap = circ - dash;
+  const color = pct >= 80 ? "#22c55e" : pct >= 50 ? PURPLE : "#ef4444";
+  return (
+    <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
+      <svg viewBox="0 0 100 100" style={{ width: "100%", height: "100%", transform: "rotate(135deg)" }}>
+        <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(139,92,246,0.15)" strokeWidth={stroke}
+          strokeDasharray={`${arcLen} ${circ - arcLen}`} strokeLinecap="round" />
+        <circle cx="50" cy="50" r={r} fill="none" stroke={color} strokeWidth={stroke}
+          strokeDasharray={`${dash} ${gap}`} strokeLinecap="round"
+          style={{ transition: "stroke-dasharray 0.6s ease" }} />
+      </svg>
+      <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -45%)", textAlign: "center" }}>
+        <div style={{ fontSize: size > 90 ? "1.4rem" : "1rem", fontWeight: 800, color, lineHeight: 1 }}>{pct}%</div>
+        {label && <div style={{ fontSize: "0.42rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginTop: "0.1rem" }}>{label}</div>}
+      </div>
     </div>
   );
 }
@@ -363,11 +425,23 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
   const [toast, setToast] = useState<string | null>(null);
   const [megaBotData, setMegaBotData] = useState<any>(null);
   const [megaBotLoading, setMegaBotLoading] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportCopied, setReportCopied] = useState(false);
   const [megaBotExpanded, setMegaBotExpanded] = useState<string | null>(null);
   const [itemPhotos, setItemPhotos] = useState<ItemPhoto[]>([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [expandedStat, setExpandedStat] = useState<string | null>(null);
+
+  // ─── Print stylesheet ──────────────────────────────────────────────────
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.setAttribute("data-print-collectibles", "true");
+    style.textContent = `@media print { body { background: white !important; color: black !important; } nav, footer, [data-no-print] { display: none !important; } }`;
+    document.head.appendChild(style);
+    return () => { style.remove(); };
+  }, []);
 
   // ─── Auto-select from URL ──────────────────────────────────────────────
   useEffect(() => {
@@ -512,19 +586,22 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
 
       {/* ═══ 1 — PAGE HEADER ═══ */}
       <div style={{
-        background: "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(109,40,217,0.04))",
-        borderBottom: "1px solid rgba(139,92,246,0.15)",
-        borderRadius: "16px 16px 0 0",
+        background: "var(--bg-card-solid)",
+        border: "1px solid var(--border-default)",
+        borderLeft: "4px solid #8b5cf6",
+        borderRadius: "14px",
         padding: "1.5rem 2rem",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         marginBottom: "1.5rem",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <div style={{
             width: 52, height: 52, borderRadius: "14px",
-            background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(109,40,217,0.15))",
+            background: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: "1.6rem", boxShadow: "0 4px 16px rgba(139,92,246,0.2)",
+            fontSize: "1.6rem", color: "#fff",
+            boxShadow: "0 4px 12px rgba(139,92,246,0.3)",
           }}>
             🎴
           </div>
@@ -551,25 +628,180 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
         </div>
       </div>
 
-      {/* ═══ 2 — STATS BANNER ═══ */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem", marginBottom: "1.5rem" }}>
-        {[
-          { label: "Total Items", value: items.length, icon: "📦" },
-          { label: "Collectibles", value: collectibleAnalyzedItems.length, icon: "🎴" },
-          { label: "Scanned", value: collectibleItems.length, icon: "🔬" },
-          { label: "Avg Value", value: (() => { const vals = collectibleAnalyzedItems.filter(i => i.valuationMid).map(i => i.valuationMid!); return vals.length ? `$${Math.round(vals.reduce((a, b) => a + b, 0) / vals.length).toLocaleString()}` : "$--"; })(), icon: "💰" },
-        ].map((s) => (
-          <div key={s.label} style={{
-            background: "rgba(15,15,25,0.6)", backdropFilter: "blur(12px)",
-            border: "1px solid rgba(139,92,246,0.15)", borderRadius: "12px",
-            padding: "0.85rem", textAlign: "center",
-          }}>
-            <div style={{ fontSize: "1.1rem", marginBottom: "0.15rem" }}>{s.icon}</div>
-            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: PURPLE }}>{s.value}</div>
-            <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{s.label}</div>
+      {/* ═══ 2 — STATS BANNER (clickable) ═══ */}
+      {(() => {
+        const valItems = collectibleAnalyzedItems.filter(i => i.valuationMid);
+        const totalVal = valItems.reduce((a, b) => a + (b.valuationMid ?? 0), 0);
+        const avgVal = valItems.length ? Math.round(totalVal / valItems.length) : 0;
+        const highItem = valItems.length ? valItems.reduce((a, b) => (a.valuationMid ?? 0) > (b.valuationMid ?? 0) ? a : b) : null;
+        const lowItem = valItems.length ? valItems.reduce((a, b) => (a.valuationMid ?? 0) < (b.valuationMid ?? 0) ? a : b) : null;
+        const statPanels = [
+          { key: "total", label: "Total Items", value: items.length, icon: "📦" },
+          { key: "collectibles", label: "Collectibles", value: collectibleAnalyzedItems.length, icon: "🎴" },
+          { key: "scanned", label: "Scanned", value: collectibleItems.length, icon: "🔬" },
+          { key: "value", label: "Avg Value", value: avgVal ? `$${avgVal.toLocaleString()}` : "$--", icon: "💰" },
+        ];
+        return (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem" }}>
+              {statPanels.map((s) => (
+                <div
+                  key={s.key}
+                  onClick={() => setExpandedStat(expandedStat === s.key ? null : s.key)}
+                  style={{
+                    background: expandedStat === s.key ? "rgba(139,92,246,0.06)" : "var(--bg-card-solid)",
+                    border: expandedStat === s.key ? `2px solid ${PURPLE}` : "1px solid var(--border-default)",
+                    borderRadius: "12px",
+                    padding: "1rem 0.85rem", textAlign: "center" as const,
+                    boxShadow: expandedStat === s.key ? `0 4px 16px rgba(139,92,246,0.15)` : "0 1px 3px rgba(0,0,0,0.06)",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    transform: expandedStat === s.key ? "translateY(-2px)" : "none",
+                    userSelect: "none" as const,
+                  }}
+                >
+                  <div style={{ fontSize: "1.1rem", marginBottom: "0.25rem" }}>{s.icon}</div>
+                  <div style={{ fontSize: "1.35rem", fontWeight: 800, color: PURPLE }}>{s.value}</div>
+                  <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.08em", marginTop: "0.15rem" }}>
+                    {s.label} <span style={{ fontSize: "0.5rem", opacity: 0.6 }}>{expandedStat === s.key ? "▲" : "▼"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Expanded stat detail panel */}
+            {expandedStat && (
+              <div style={{
+                marginTop: "0.75rem", padding: "1rem 1.25rem", borderRadius: "12px",
+                background: "var(--bg-card-solid)", border: "1px solid var(--border-default)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+              }}>
+                {expandedStat === "total" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.65rem" }}>All Items Overview</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                      {[
+                        { l: "Analyzed", v: analyzedItems.length },
+                        { l: "Not Analyzed", v: items.length - analyzedItems.length },
+                        { l: "Collectibles", v: collectibleAnalyzedItems.length },
+                        { l: "With Value", v: valItems.length },
+                      ].map(d => (
+                        <div key={d.l} style={{ padding: "0.45rem 0.5rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", textAlign: "center" as const }}>
+                          <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-primary)" }}>{d.v}</div>
+                          <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{d.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ maxHeight: "160px", overflowY: "auto" as const }}>
+                      {items.slice(0, 12).map(it => (
+                        <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                          display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.4rem",
+                          borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                        }}>
+                          {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" as const }} />}
+                          <span style={{ flex: 1, fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</span>
+                          <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", flexShrink: 0 }}>{it.status}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {expandedStat === "collectibles" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.65rem" }}>Detected Collectibles</div>
+                    {collectibleAnalyzedItems.length === 0 ? (
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>No collectibles detected yet. Run analysis on your items.</p>
+                    ) : (
+                      <div style={{ maxHeight: "200px", overflowY: "auto" as const }}>
+                        {collectibleAnalyzedItems.map(it => {
+                          const ai = safeJson(it.aiResult);
+                          const det = ai ? detectCollectible(ai) : null;
+                          return (
+                            <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                              display: "flex", alignItems: "center", gap: "0.65rem", padding: "0.45rem 0.4rem",
+                              borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                            }}>
+                              {it.photo && <img src={it.photo} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" as const }} />}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</div>
+                                <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{det?.category ?? it.category}{it.era ? ` · ${it.era}` : ""}</div>
+                              </div>
+                              {it.valuationMid && <span style={{ fontSize: "0.78rem", fontWeight: 700, color: GREEN, flexShrink: 0 }}>${it.valuationMid.toLocaleString()}</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {expandedStat === "scanned" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.65rem" }}>CollectiblesBot Scan History</div>
+                    {collectibleItems.length === 0 ? (
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>No items scanned yet. Select an item and run CollectiblesBot.</p>
+                    ) : (
+                      <div style={{ maxHeight: "200px", overflowY: "auto" as const }}>
+                        {collectibleItems.map(it => {
+                          const cbr = safeJson(it.collectiblesBotResult);
+                          const grade = cbr?.visual_grading?.estimated_psa_grade ?? cbr?.grading_assessment?.estimated_grade ?? null;
+                          return (
+                            <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                              display: "flex", alignItems: "center", gap: "0.65rem", padding: "0.45rem 0.4rem",
+                              borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                            }}>
+                              {it.photo && <img src={it.photo} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" as const }} />}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</div>
+                                <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>Scanned {it.collectiblesBotRunAt ? new Date(it.collectiblesBotRunAt).toLocaleDateString() : ""}</div>
+                              </div>
+                              {grade && <span style={{ padding: "0.1rem 0.45rem", borderRadius: 99, fontSize: "0.62rem", fontWeight: 700, background: "rgba(139,92,246,0.1)", color: PURPLE }}>{grade}</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {expandedStat === "value" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.65rem" }}>Valuation Summary</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                      {[
+                        { l: "Portfolio Total", v: `$${totalVal.toLocaleString()}`, c: GREEN },
+                        { l: "Average", v: `$${avgVal.toLocaleString()}`, c: PURPLE },
+                        { l: "Highest", v: highItem ? `$${(highItem.valuationMid ?? 0).toLocaleString()}` : "--", c: GREEN },
+                        { l: "Lowest", v: lowItem ? `$${(lowItem.valuationMid ?? 0).toLocaleString()}` : "--", c: "var(--text-muted)" },
+                      ].map(d => (
+                        <div key={d.l} style={{ padding: "0.5rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", textAlign: "center" as const }}>
+                          <div style={{ fontSize: "1.05rem", fontWeight: 800, color: d.c }}>{d.v}</div>
+                          <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{d.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                    {valItems.length > 0 && (
+                      <div style={{ maxHeight: "140px", overflowY: "auto" as const }}>
+                        {valItems.sort((a, b) => (b.valuationMid ?? 0) - (a.valuationMid ?? 0)).map(it => (
+                          <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                            display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.4rem",
+                            borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                          }}>
+                            {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" as const }} />}
+                            <span style={{ flex: 1, fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</span>
+                            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: GREEN, flexShrink: 0 }}>${(it.valuationMid ?? 0).toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
-        ))}
-      </div>
+        );
+      })()}
 
       {/* ═══ 3 — ITEM SELECTOR ═══ */}
       <GlassCard borderColor="rgba(139,92,246,0.2)" style={{ padding: "1.25rem" }}>
@@ -587,8 +819,8 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
           borderColor={detection.isCollectible ? "rgba(139,92,246,0.35)" : "rgba(139,92,246,0.15)"}
           style={{
             background: detection.isCollectible
-              ? "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(109,40,217,0.04))"
-              : "rgba(15,15,25,0.6)",
+              ? "linear-gradient(135deg, rgba(139,92,246,0.06), rgba(109,40,217,0.02))"
+              : "var(--bg-card-solid)",
           }}
         >
           <SectionLabel>Pre-Scan Detection</SectionLabel>
@@ -629,7 +861,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
       {/* ═══ PHOTO GALLERY ═══ */}
       {selected && (
         <div style={{
-          background: "rgba(15,15,25,0.8)",
+          background: "var(--bg-card-solid, var(--bg-card))",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
           border: "1px solid rgba(139,92,246,0.2)",
@@ -859,24 +1091,24 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                       border: `1.5px solid ${v.highlight ? "rgba(245,158,11,0.25)" : "var(--border-default)"}`,
                       minWidth: "5.5rem",
                     }}>
-                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{v.label}</div>
+                      <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>{v.label}</div>
                       <div style={{ fontSize: "1.3rem", fontWeight: 800, color: v.color, marginTop: "0.1rem" }}>{_fp(v.value)}</div>
                     </div>
                   ))}
                 </div>
               )}
               {/* PSA Grade Ladder */}
-              {(sr.psa6 || sr.psa7 || sr.psa8 || sr.psa9 || sr.psa10) && (
+              {(sr.psa5 || sr.psa6 || sr.psa7 || sr.psa8 || sr.psa9 || sr.psa10) && (
                 <div style={{ marginBottom: "0.85rem" }}>
                   <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>PSA Grade Ladder</div>
                   <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
-                    {[{ g: "6", v: sr.psa6 }, { g: "7", v: sr.psa7 }, { g: "8", v: sr.psa8 }, { g: "9", v: sr.psa9 }, { g: "10", v: sr.psa10 }].filter(x => x.v != null).map(x => (
+                    {[{ g: "5", v: sr.psa5 }, { g: "6", v: sr.psa6 }, { g: "7", v: sr.psa7 }, { g: "8", v: sr.psa8 }, { g: "9", v: sr.psa9 }, { g: "10", v: sr.psa10 }].filter(x => x.v != null).map(x => (
                       <div key={x.g} style={{
                         textAlign: "center", padding: "0.4rem 0.65rem", borderRadius: "10px", minWidth: "4rem",
                         background: x.g === "10" ? "rgba(139,92,246,0.12)" : "var(--bg-card)",
                         border: `1px solid ${x.g === "10" ? "rgba(139,92,246,0.35)" : "var(--border-default)"}`,
                       }}>
-                        <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>PSA {x.g}</div>
+                        <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>PSA {x.g}</div>
                         <div style={{ fontSize: "0.85rem", fontWeight: 700, color: x.g === "10" ? PURPLE : "var(--text-primary)" }}>{_fp(x.v)}</div>
                       </div>
                     ))}
@@ -924,34 +1156,28 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
           {(sr.psaGrade || sr.conditionAssessment || sr.gradingRec) && (
             <GlassCard borderLeft="3px solid rgba(139,92,246,0.6)">
               <SectionLabel>Grade Assessment</SectionLabel>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "1.25rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
                 {sr.psaGrade && (
-                  <div style={{
-                    width: 56, height: 56, borderRadius: "14px",
-                    background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(109,40,217,0.15))",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    border: "1.5px solid rgba(139,92,246,0.4)",
-                  }}>
-                    <span style={{ fontSize: "1.3rem", fontWeight: 800, color: PURPLE }}>{sr.psaGrade}</span>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.25rem", flexShrink: 0 }}>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600 }}>Estimated</div>
+                    <div style={{
+                      padding: "0.5rem 1rem", borderRadius: "14px",
+                      background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(109,40,217,0.1))",
+                      border: "1.5px solid rgba(139,92,246,0.35)",
+                      textAlign: "center",
+                    }}>
+                      <span style={{ fontSize: "1.4rem", fontWeight: 800, color: "#7c3aed", whiteSpace: "nowrap" }}>{sr.psaGrade}</span>
+                    </div>
                   </div>
                 )}
-                <div style={{ flex: 1 }}>
-                  {sr.gradeConfidence != null && (
-                    <div style={{ marginBottom: "0.35rem" }}>
-                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>Grade Confidence</div>
-                      <div style={{ height: 5, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
-                        <div style={{
-                          height: "100%", borderRadius: 99,
-                          width: `${Math.round(Number(sr.gradeConfidence) * (Number(sr.gradeConfidence) <= 1 ? 100 : 1))}%`,
-                          background: `linear-gradient(90deg, ${PURPLE}, ${TEAL})`,
-                        }} />
-                      </div>
-                    </div>
-                  )}
-                  {sr.conditionAssessment && (
-                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>{sr.conditionAssessment}</div>
-                  )}
-                </div>
+                {(sr.vgGradeConfidence ?? sr.gradeConfidence) != null && (
+                  <div style={{ flexShrink: 0 }}>
+                    <ConfidenceMeter value={sr.vgGradeConfidence ?? sr.gradeConfidence ?? 0} size={80} label="Grade Confidence" />
+                  </div>
+                )}
+                {sr.conditionAssessment && (
+                  <div style={{ flex: 1, minWidth: "150px", fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>{sr.conditionAssessment}</div>
+                )}
               </div>
               {/* Grading recommendation pill */}
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
@@ -974,92 +1200,231 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
             </GlassCard>
           )}
 
+          {/* Card C2 — Visual Grading */}
+          {sr.vg && (sr.vgPsaGrade || sr.vgCorners || sr.vgCentering || sr.vgGradeConfidence) && (
+            <GlassCard borderLeft="3px solid rgba(139,92,246,0.6)">
+              <SectionLabel>Visual Grade Analysis</SectionLabel>
+              <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap", marginBottom: "0.75rem" }}>
+                {sr.vgPsaGrade && (
+                  <div style={{ width: 60, height: 60, borderRadius: "0.65rem", background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.3)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ fontSize: "1.1rem", fontWeight: 800, color: PURPLE }}>{sr.vgPsaGrade.replace(/^PSA\s*/i, "")}</div>
+                    <div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" as const }}>PSA</div>
+                  </div>
+                )}
+                {sr.vgBgsGrade && (
+                  <div style={{ flex: 1, minWidth: 0, fontSize: "0.75rem", color: TEAL, fontWeight: 600 }}>{sr.vgBgsGrade}</div>
+                )}
+                {sr.vgGradeConfidence != null && (
+                  <ConfidenceMeter value={sr.vgGradeConfidence} size={70} label="Confidence" />
+                )}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                {[
+                  { label: "Corners", value: sr.vgCorners },
+                  { label: "Edges", value: sr.vgEdges },
+                  { label: "Surface", value: sr.vgSurface },
+                  { label: "Centering", value: sr.vgCentering },
+                ].filter(d => d.value).map(d => (
+                  <div key={d.label} style={{ padding: "0.4rem 0.55rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.4rem" }}>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.1rem" }}>{d.label}</div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--text-primary)", lineHeight: 1.4 }}>{d.value}</div>
+                  </div>
+                ))}
+              </div>
+              {sr.vgGradeReasoning && (
+                <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.55, margin: 0, fontStyle: "italic" }}>{sr.vgGradeReasoning}</p>
+              )}
+            </GlassCard>
+          )}
+
           {/* Card D — Market Intelligence */}
           {(sr.bestPlatform || sr.demandTrend || sr.demandReasoning) && (
-            <GlassCard>
+            <GlassCard borderLeft={`3px solid ${TEAL}`}>
               <SectionLabel>Market Intelligence</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div>
-                  {sr.bestPlatform && (
-                    <div style={{ marginBottom: "0.65rem" }}>
-                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Best Platform</div>
-                      <Badge bg="rgba(0,188,212,0.12)" color={TEAL} border="1px solid rgba(0,188,212,0.25)">{sr.bestPlatform}</Badge>
+              {/* KPI strip */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.65rem", marginBottom: "0.85rem" }}>
+                {sr.bestPlatform && (
+                  <div style={{
+                    padding: "0.65rem 0.75rem", borderRadius: "0.65rem",
+                    background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.18)",
+                    textAlign: "center" as const,
+                  }}>
+                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.3rem", fontWeight: 600 }}>Best Platform</div>
+                    <div style={{ fontSize: "1rem", fontWeight: 800, color: TEAL }}>{sr.bestPlatform}</div>
+                  </div>
+                )}
+                {sr.demandTrend && (() => {
+                  const dc = demandColor(sr.demandTrend);
+                  const arrow = sr.demandTrend.toLowerCase().includes("rising") ? "↑" : sr.demandTrend.toLowerCase().includes("declining") ? "↓" : "→";
+                  return (
+                    <div style={{
+                      padding: "0.65rem 0.75rem", borderRadius: "0.65rem",
+                      background: `${dc}08`, border: `1px solid ${dc}22`,
+                      textAlign: "center" as const,
+                    }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.3rem", fontWeight: 600 }}>Demand Trend</div>
+                      <div style={{ fontSize: "1rem", fontWeight: 800, color: dc }}>{arrow} {sr.demandTrend}</div>
                     </div>
-                  )}
-                  {sr.demandTrend && (
-                    <div style={{ marginBottom: "0.65rem" }}>
-                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Demand Trend</div>
-                      <Badge bg={`${demandColor(sr.demandTrend)}20`} color={demandColor(sr.demandTrend)} border={`1px solid ${demandColor(sr.demandTrend)}40`}>
-                        {sr.demandTrend.toLowerCase().includes("rising") ? "↑" : sr.demandTrend.toLowerCase().includes("declining") ? "↓" : "→"} {sr.demandTrend}
-                      </Badge>
-                    </div>
+                  );
+                })()}
+                {sr.market?.collector_community && (
+                  <div style={{
+                    padding: "0.65rem 0.75rem", borderRadius: "0.65rem",
+                    background: "rgba(139,92,246,0.05)", border: "1px solid rgba(139,92,246,0.15)",
+                    textAlign: "center" as const,
+                  }}>
+                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.3rem", fontWeight: 600 }}>Community</div>
+                    <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>{sr.market.collector_community}</div>
+                  </div>
+                )}
+              </div>
+              {/* Insight block */}
+              {(sr.demandReasoning || sr.platformReasoning) && (
+                <div style={{
+                  padding: "0.75rem 0.85rem", borderRadius: "0.55rem",
+                  background: "var(--ghost-bg)", borderLeft: `3px solid ${TEAL}`,
+                  marginBottom: "0.65rem",
+                }}>
+                  {sr.platformReasoning && (
+                    <p style={{ fontSize: "0.78rem", color: "var(--text-primary)", lineHeight: 1.55, margin: 0, fontWeight: 500 }}>{sr.platformReasoning}</p>
                   )}
                   {sr.demandReasoning && (
-                    <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.45, margin: 0 }}>{sr.demandReasoning}</p>
+                    <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: sr.platformReasoning ? "0.4rem 0 0 0" : 0 }}>{sr.demandReasoning}</p>
                   )}
                 </div>
+              )}
+              {/* Buyer types */}
+              {sr.market && Array.isArray(sr.market.buyer_types) && sr.market.buyer_types.length > 0 && (
                 <div>
-                  {sr.platformReasoning && (
-                    <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.45, margin: "0 0 0.5rem 0" }}>{sr.platformReasoning}</p>
-                  )}
-                  {/* Fallback: old market data */}
-                  {sr.market && (
-                    <>
-                      {sr.market.collector_community && (
-                        <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Community: {sr.market.collector_community}</div>
-                      )}
-                      {Array.isArray(sr.market.buyer_types) && sr.market.buyer_types.length > 0 && (
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem" }}>
-                          {sr.market.buyer_types.slice(0, 4).map((bt: string, i: number) => (
-                            <span key={i} style={{ padding: "0.1rem 0.35rem", borderRadius: 99, fontSize: "0.58rem", fontWeight: 600, background: "var(--ghost-bg)", color: "var(--text-muted)", border: "1px solid var(--border-default)" }}>{bt}</span>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
+                  <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.35rem", fontWeight: 600 }}>Target Buyers</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
+                    {sr.market.buyer_types.slice(0, 6).map((bt: string, i: number) => (
+                      <span key={i} style={{
+                        padding: "0.2rem 0.55rem", borderRadius: 99, fontSize: "0.65rem", fontWeight: 600,
+                        background: "rgba(0,188,212,0.08)", color: TEAL, border: "1px solid rgba(0,188,212,0.2)",
+                      }}>{bt}</span>
+                    ))}
+                  </div>
                 </div>
+              )}
+            </GlassCard>
+          )}
+
+          {/* Card D2 — Price History */}
+          {sr.ph && (sr.trend6mo || sr.trend1yr || sr.trend3yr || sr.peakPrice || sr.floorPrice) && (
+            <GlassCard borderLeft="3px solid rgba(245,158,11,0.5)">
+              <SectionLabel>Price History</SectionLabel>
+              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                {[
+                  { label: "6 Month", value: sr.trend6mo },
+                  { label: "1 Year", value: sr.trend1yr },
+                  { label: "3 Year", value: sr.trend3yr },
+                ].filter(t => t.value).map(t => {
+                  const isRising = t.value?.toLowerCase().includes("rising");
+                  const isDecline = t.value?.toLowerCase().includes("declin");
+                  const arrow = isRising ? "↑" : isDecline ? "↓" : "→";
+                  const tColor = isRising ? GREEN : isDecline ? RED : AMBER;
+                  const bg = isRising ? "rgba(16,185,129,0.08)" : isDecline ? "rgba(239,68,68,0.08)" : "rgba(245,158,11,0.08)";
+                  return (
+                    <div key={t.label} style={{ flex: 1, textAlign: "center" as const, padding: "0.5rem 0.4rem", borderRadius: "0.5rem", background: bg, border: `1px solid ${tColor}25` }}>
+                      <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, color: "var(--text-muted)", marginBottom: "0.15rem" }}>{t.label}</div>
+                      <div style={{ fontSize: "1rem", fontWeight: 800, color: tColor }}>{arrow}</div>
+                      <div style={{ fontSize: "0.65rem", fontWeight: 600, color: tColor }}>{t.value}</div>
+                    </div>
+                  );
+                })}
               </div>
+              <div style={{ display: "flex", gap: "0.75rem", marginBottom: "0.5rem" }}>
+                {sr.peakPrice && (
+                  <div style={{ flex: 1, fontSize: "0.75rem", color: GREEN }}>📈 Peak: <span style={{ fontWeight: 700 }}>{sr.peakPrice}</span></div>
+                )}
+                {sr.floorPrice && (
+                  <div style={{ flex: 1, fontSize: "0.75rem", color: "var(--text-muted)" }}>📉 Floor: <span style={{ fontWeight: 700 }}>{sr.floorPrice}</span></div>
+                )}
+              </div>
+              {sr.catalystEvents && (
+                <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.4rem", background: "rgba(245,158,11,0.06)", borderLeft: `3px solid ${AMBER}` }}>
+                  <div style={{ fontSize: "0.55rem", fontWeight: 700, color: AMBER, textTransform: "uppercase" as const, marginBottom: "0.1rem" }}>Upcoming Catalysts</div>
+                  <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: 0 }}>{sr.catalystEvents}</p>
+                </div>
+              )}
             </GlassCard>
           )}
 
           {/* Card E — Selling Strategy */}
           {(sr.sellingStrategy || sr.listingTitle || sr.buyItNowPrice || sr.strategy) && (
-            <GlassCard borderLeft={`3px solid rgba(0,188,212,0.5)`}>
+            <GlassCard borderLeft={`3px solid ${TEAL}`}>
               <SectionLabel>Selling Strategy</SectionLabel>
+              {/* Listing title with copy */}
               {sr.listingTitle && (
                 <div style={{
-                  display: "flex", alignItems: "center", gap: "0.5rem",
-                  padding: "0.65rem 0.85rem", borderRadius: "10px",
-                  background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.15)",
-                  marginBottom: "0.75rem",
+                  display: "flex", alignItems: "center", gap: "0.65rem",
+                  padding: "0.7rem 0.9rem", borderRadius: "0.65rem",
+                  background: "rgba(0,188,212,0.05)", border: "1px solid rgba(0,188,212,0.15)",
+                  marginBottom: "0.85rem",
                 }}>
-                  <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>{sr.listingTitle}</div>
+                  <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: TEAL, fontWeight: 700, flexShrink: 0 }}>Listing Title</div>
+                  <div style={{ flex: 1, fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.35 }}>{sr.listingTitle}</div>
                   <CopyButton text={sr.listingTitle} />
                 </div>
               )}
-              {typeof sr.sellingStrategy === "string" && sr.sellingStrategy && (
-                <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55, margin: "0 0 0.5rem 0" }}>{sr.sellingStrategy}</p>
-              )}
-              {sr.buyItNowPrice && (
-                <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>Suggested BIN: <span style={{ fontWeight: 700, color: GREEN }}>{_fp(sr.buyItNowPrice)}</span></div>
-              )}
-              {/* Old strategy section data */}
+              {/* Strategy insight + BIN price */}
+              <div style={{ display: "grid", gridTemplateColumns: sr.buyItNowPrice ? "1fr auto" : "1fr", gap: "1rem", alignItems: "start", marginBottom: "0.75rem" }}>
+                {typeof sr.sellingStrategy === "string" && sr.sellingStrategy && (
+                  <div style={{
+                    padding: "0.7rem 0.85rem", borderRadius: "0.55rem",
+                    background: "var(--ghost-bg)", borderLeft: `3px solid ${TEAL}`,
+                  }}>
+                    <p style={{ fontSize: "0.78rem", color: "var(--text-primary)", lineHeight: 1.55, margin: 0, fontWeight: 500 }}>{sr.sellingStrategy}</p>
+                  </div>
+                )}
+                {sr.buyItNowPrice && (
+                  <div style={{
+                    padding: "0.65rem 1rem", borderRadius: "0.65rem",
+                    background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.18)",
+                    textAlign: "center" as const, flexShrink: 0,
+                  }}>
+                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.2rem", fontWeight: 600 }}>Suggested BIN</div>
+                    <div style={{ fontSize: "1.3rem", fontWeight: 800, color: GREEN }}>{_fp(sr.buyItNowPrice)}</div>
+                  </div>
+                )}
+              </div>
+              {/* Strategy details grid */}
               {sr.strategy && typeof sr.strategy === "object" && (
-                <div style={{ marginTop: "0.5rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
-                  {sr.strategy.best_venue && !sr.bestPlatform && (
-                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>Best venue: <strong style={{ color: TEAL }}>{sr.strategy.best_venue}</strong></div>
-                  )}
-                  {sr.strategy.auction_vs_fixed && (
-                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>{sr.strategy.auction_vs_fixed}</div>
-                  )}
-                  {sr.strategy.timing && (
-                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>Timing: {sr.strategy.timing}</div>
-                  )}
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  {/* Venue + Timing + Format row */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.5rem" }}>
+                    {sr.strategy.best_venue && !sr.bestPlatform && (
+                      <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)" }}>
+                        <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.15rem", fontWeight: 600 }}>Best Venue</div>
+                        <div style={{ fontSize: "0.82rem", fontWeight: 700, color: TEAL }}>{sr.strategy.best_venue}</div>
+                      </div>
+                    )}
+                    {sr.strategy.timing && (
+                      <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)" }}>
+                        <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.15rem", fontWeight: 600 }}>Timing</div>
+                        <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{sr.strategy.timing}</div>
+                      </div>
+                    )}
+                    {sr.strategy.auction_vs_fixed && (
+                      <div style={{ padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)" }}>
+                        <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.15rem", fontWeight: 600 }}>Format</div>
+                        <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{sr.strategy.auction_vs_fixed}</div>
+                      </div>
+                    )}
+                  </div>
+                  {/* Listing tips */}
                   {Array.isArray(sr.strategy.listing_tips) && sr.strategy.listing_tips.length > 0 && (
-                    <div style={{ marginTop: "0.25rem" }}>
-                      {sr.strategy.listing_tips.slice(0, 4).map((tip: string, i: number) => (
-                        <div key={i} style={{ fontSize: "0.68rem", color: "var(--text-muted)", padding: "0.15rem 0" }}>{i + 1}. {tip}</div>
-                      ))}
+                    <div style={{ padding: "0.65rem 0.85rem", borderRadius: "0.55rem", background: "var(--ghost-bg)" }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.4rem", fontWeight: 600 }}>Listing Tips</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                        {sr.strategy.listing_tips.slice(0, 4).map((tip: string, i: number) => (
+                          <div key={i} style={{ display: "flex", gap: "0.4rem", alignItems: "flex-start" }}>
+                            <span style={{ fontSize: "0.65rem", fontWeight: 700, color: TEAL, flexShrink: 0, marginTop: "0.05rem" }}>{i + 1}.</span>
+                            <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.45 }}>{tip}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1069,34 +1434,66 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
 
           {/* Card F — Rarity & Population */}
           {(sr.rarity || sr.printRun || sr.populationNote || sr.notableVariations || sr.authenticationNotes) && (
-            <GlassCard>
+            <GlassCard borderLeft="3px solid rgba(139,92,246,0.5)">
               <SectionLabel>Rarity & Population</SectionLabel>
-              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.65rem" }}>
-                {sr.rarity && (
-                  <Badge
-                    bg={sr.rarity === "Ultra Rare" || sr.rarity === "Very Rare" ? "rgba(239,68,68,0.12)" : sr.rarity === "Rare" ? "rgba(245,158,11,0.1)" : "rgba(139,92,246,0.1)"}
-                    color={sr.rarity === "Ultra Rare" || sr.rarity === "Very Rare" ? RED : sr.rarity === "Rare" ? AMBER : PURPLE}
-                  >
-                    {sr.rarity}
-                  </Badge>
+              {/* Rarity hero strip */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.65rem", marginBottom: "0.85rem" }}>
+                {sr.rarity && (() => {
+                  const isUltra = sr.rarity === "Ultra Rare" || sr.rarity === "Very Rare";
+                  const isRare = sr.rarity === "Rare";
+                  const rc = isUltra ? RED : isRare ? AMBER : PURPLE;
+                  return (
+                    <div style={{
+                      padding: "0.65rem 0.75rem", borderRadius: "0.65rem",
+                      background: `${rc}0a`, border: `1px solid ${rc}22`,
+                      textAlign: "center" as const,
+                    }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.3rem", fontWeight: 600 }}>Rarity</div>
+                      <div style={{ fontSize: "1rem", fontWeight: 800, color: rc }}>{sr.rarity}</div>
+                    </div>
+                  );
+                })()}
+                {sr.printRun && (
+                  <div style={{
+                    padding: "0.65rem 0.75rem", borderRadius: "0.65rem",
+                    background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                    textAlign: "center" as const,
+                  }}>
+                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.3rem", fontWeight: 600 }}>Print Run</div>
+                    <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)" }}>{sr.printRun}</div>
+                  </div>
                 )}
-                {sr.printRun && <Badge bg="var(--ghost-bg)" color="var(--text-secondary)">Print Run: {sr.printRun}</Badge>}
               </div>
-              {sr.populationNote && (
-                <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
-                  <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>Population:</span> {sr.populationNote}
-                </div>
-              )}
-              {sr.notableVariations && (
-                <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "0.4rem" }}>
-                  <span style={{ fontWeight: 600, color: PURPLE_LIGHT }}>Notable Variations:</span> {sr.notableVariations}
-                </div>
-              )}
-              {sr.authenticationNotes && (
-                <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
-                  <span style={{ fontWeight: 600, color: TEAL }}>Authentication:</span> {sr.authenticationNotes}
-                </div>
-              )}
+              {/* Detail rows */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {sr.populationNote && (
+                  <div style={{
+                    padding: "0.6rem 0.75rem", borderRadius: "0.5rem",
+                    background: "var(--ghost-bg)", borderLeft: `3px solid ${PURPLE}`,
+                  }}>
+                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.2rem", fontWeight: 600 }}>Population Data</div>
+                    <div style={{ fontSize: "0.78rem", color: "var(--text-primary)", lineHeight: 1.5, fontWeight: 500 }}>{sr.populationNote}</div>
+                  </div>
+                )}
+                {sr.notableVariations && (
+                  <div style={{
+                    padding: "0.6rem 0.75rem", borderRadius: "0.5rem",
+                    background: "rgba(139,92,246,0.04)", borderLeft: `3px solid ${AMBER}`,
+                  }}>
+                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.2rem", fontWeight: 600 }}>Notable Variations</div>
+                    <div style={{ fontSize: "0.78rem", color: "var(--text-primary)", lineHeight: 1.5, fontWeight: 500 }}>{sr.notableVariations}</div>
+                  </div>
+                )}
+                {sr.authenticationNotes && (
+                  <div style={{
+                    padding: "0.6rem 0.75rem", borderRadius: "0.5rem",
+                    background: "rgba(0,188,212,0.04)", borderLeft: `3px solid ${TEAL}`,
+                  }}>
+                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.2rem", fontWeight: 600 }}>Authentication</div>
+                    <div style={{ fontSize: "0.78rem", color: "var(--text-primary)", lineHeight: 1.5, fontWeight: 500 }}>{sr.authenticationNotes}</div>
+                  </div>
+                )}
+              </div>
             </GlassCard>
           )}
 
@@ -1182,7 +1579,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                   { label: "Storage", value: sr.cond.storage_history },
                 ].filter(d => d.value).map(d => (
                   <div key={d.label} style={{ background: "var(--bg-card)", borderRadius: "8px", padding: "0.45rem 0.6rem", border: "1px solid var(--border-default)" }}>
-                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>{d.label}</div>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>{d.label}</div>
                     <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.1rem" }}>{typeof d.value === "string" && d.value.length > 60 ? d.value.slice(0, 60) + "..." : d.value}</div>
                   </div>
                 ))}
@@ -1190,29 +1587,254 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
             </GlassCard>
           )}
 
-          {sr.collection && (
-            <GlassCard>
+          {/* Collection Context — new CMD-COL-A fields with old fallback */}
+          {(sr.setName || sr.setTotal || sr.cardNumber || sr.isKeyCard || sr.collectionTag || sr.collection) && (
+            <GlassCard borderLeft="3px solid rgba(139,92,246,0.4)">
               <SectionLabel>Collection Context</SectionLabel>
-              {[
-                { label: "Set Completion", value: sr.collection.set_completion },
-                { label: "Key Card Status", value: sr.collection.key_card_status },
-                { label: "Investment Potential", value: sr.collection.investment_potential },
-              ].filter(d => d.value).map(d => (
-                <div key={d.label} style={{ marginBottom: "0.6rem" }}>
-                  <div style={{ fontSize: "0.55rem", fontWeight: 700, color: PURPLE, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.15rem" }}>{d.label}</div>
-                  <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55, margin: 0 }}>{d.value}</p>
-                </div>
-              ))}
-              {Array.isArray(sr.collection.related_items) && sr.collection.related_items.length > 0 && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem" }}>
-                  {sr.collection.related_items.map((ri: string, i: number) => (
-                    <Badge key={i} bg="rgba(139,92,246,0.08)" color={PURPLE_LIGHT}>{ri}</Badge>
+              {(sr.setName || sr.setTotal || sr.cardNumber || sr.isKeyCard) ? (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+                    {sr.setName && <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)" }}>{sr.setName}</span>}
+                    {sr.isKeyCard && <Badge bg="rgba(245,158,11,0.15)" color={AMBER} border={`1px solid ${AMBER}40`}>⭐ KEY CARD</Badge>}
+                    {sr.collectionTag && <Badge bg="rgba(139,92,246,0.08)" color={PURPLE_LIGHT}>{sr.collectionTag}</Badge>}
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                    {[
+                      { label: "Card Number", value: sr.cardNumber },
+                      { label: "Set Size", value: sr.setTotal ? `${sr.setTotal} cards` : null },
+                      { label: "Key Reason", value: sr.isKeyCard ? sr.keyCardReason : null },
+                    ].filter(d => d.value).map(d => (
+                      <div key={d.label} style={{ padding: "0.35rem 0.5rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.4rem" }}>
+                        <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)" }}>{d.label}</div>
+                        <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-primary)" }}>{d.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                  {sr.setCompletionHint && (
+                    <div style={{ padding: "0.45rem 0.6rem", borderRadius: "0.4rem", background: "rgba(139,92,246,0.04)", borderLeft: `3px solid ${PURPLE}40` }}>
+                      <div style={{ fontSize: "0.55rem", fontWeight: 700, color: PURPLE, textTransform: "uppercase" as const, marginBottom: "0.1rem" }}>Set Completion Tip</div>
+                      <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.5, margin: 0 }}>{sr.setCompletionHint}</p>
+                    </div>
+                  )}
+                </>
+              ) : sr.collection ? (
+                <>
+                  {[
+                    { label: "Set Completion", value: sr.collection.set_completion },
+                    { label: "Key Card Status", value: sr.collection.key_card_status },
+                    { label: "Investment Potential", value: sr.collection.investment_potential },
+                  ].filter(d => d.value).map(d => (
+                    <div key={d.label} style={{ marginBottom: "0.6rem" }}>
+                      <div style={{ fontSize: "0.55rem", fontWeight: 700, color: PURPLE, textTransform: "uppercase" as const, letterSpacing: "0.08em", marginBottom: "0.15rem" }}>{d.label}</div>
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55, margin: 0 }}>{d.value}</p>
+                    </div>
                   ))}
-                </div>
-              )}
+                  {Array.isArray(sr.collection.related_items) && sr.collection.related_items.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap" as const, gap: "0.25rem" }}>
+                      {sr.collection.related_items.map((ri: string, i: number) => (
+                        <Badge key={i} bg="rgba(139,92,246,0.08)" color={PURPLE_LIGHT}>{ri}</Badge>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : null}
             </GlassCard>
           )}
         </>
+      )}
+
+      {/* ═══ 4.5 — PROFESSIONAL REPORT ═══ */}
+      {sr && selected && (
+        <div style={{ marginTop: "0.75rem" }}>
+          <button onClick={() => setReportOpen(!reportOpen)} style={{
+            width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "0.65rem 1rem", borderRadius: "0.65rem",
+            background: "transparent", border: `2px solid ${PURPLE}`,
+            color: PURPLE, fontWeight: 700, fontSize: "0.82rem", cursor: "pointer", minHeight: "44px",
+          }}>
+            <span>📋 Professional Collectibles Assessment</span>
+            <span style={{ fontSize: "0.75rem" }}>{reportOpen ? "▴" : "▾"}</span>
+          </button>
+          {reportOpen && (
+            <div style={{ marginTop: "0.75rem", border: `2px solid ${PURPLE}`, borderRadius: "1rem", padding: "1.5rem", background: "var(--bg-card)" }}>
+              {/* Header */}
+              <div style={{ textAlign: "center" as const, marginBottom: "1rem", paddingBottom: "0.75rem", borderBottom: `1px dashed rgba(139,92,246,0.3)` }}>
+                <div style={{ fontSize: "0.6rem", fontWeight: 700, color: PURPLE, letterSpacing: "0.2em", textTransform: "uppercase" as const }}>═══ LegacyLoop Collectibles Assessment Report ═══</div>
+                <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.35rem" }}>
+                  Date: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })} · Item: {selected.title} · Report ID: {selectedId?.slice(0, 8)}
+                </div>
+              </div>
+
+              {/* § Item Identification */}
+              <div style={{ marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: `1px dashed rgba(139,92,246,0.3)` }}>
+                <div style={{ fontSize: "0.6rem", fontWeight: 700, color: PURPLE, letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: "0.35rem" }}>§ Item Identification</div>
+                {[
+                  { l: "Item", v: sr.itemName }, { l: "Year", v: sr.year }, { l: "Series", v: sr.brandSeries },
+                  { l: "Edition", v: sr.editionVariation }, { l: "Category", v: sr.category }, { l: "Rarity", v: sr.rarity },
+                ].filter(r => r.v).map(r => (
+                  <div key={r.l} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", padding: "0.1rem 0" }}>
+                    <span style={{ color: "var(--text-muted)" }}>{r.l}</span>
+                    <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{r.v}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* § Grading Assessment */}
+              {(sr.vgPsaGrade || sr.psaGrade || sr.vgBgsGrade) && (
+                <div style={{ marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: `1px dashed rgba(139,92,246,0.3)` }}>
+                  <div style={{ fontSize: "0.6rem", fontWeight: 700, color: PURPLE, letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: "0.35rem" }}>§ Grading Assessment</div>
+                  {[
+                    { l: "PSA Grade", v: sr.vgPsaGrade || sr.psaGrade },
+                    { l: "BGS Grade", v: sr.vgBgsGrade },
+                    { l: "Confidence", v: sr.vgGradeConfidence != null ? `${Math.round(Number(sr.vgGradeConfidence) * (Number(sr.vgGradeConfidence) <= 1 ? 100 : 1))}%` : null },
+                    { l: "Corners", v: sr.vgCorners }, { l: "Edges", v: sr.vgEdges },
+                    { l: "Surface", v: sr.vgSurface }, { l: "Centering", v: sr.vgCentering },
+                    { l: "Recommendation", v: sr.gradingRec },
+                  ].filter(r => r.v).map(r => (
+                    <div key={r.l} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", padding: "0.1rem 0" }}>
+                      <span style={{ color: "var(--text-muted)" }}>{r.l}</span>
+                      <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{r.v}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* § Valuation */}
+              {(sr.rawLow != null || sr.rawHigh != null) && (
+                <div style={{ marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: `1px dashed rgba(139,92,246,0.3)` }}>
+                  <div style={{ fontSize: "0.6rem", fontWeight: 700, color: PURPLE, letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: "0.35rem" }}>§ Valuation</div>
+                  <div style={{ fontSize: "0.82rem", color: "var(--text-primary)", fontWeight: 600 }}>Raw Value: {_fp(sr.rawLow)} – {_fp(sr.rawHigh)}{sr.rawMid ? ` (mid: ${_fp(sr.rawMid)})` : ""}</div>
+                  {(sr.psa5 || sr.psa6 || sr.psa7 || sr.psa8 || sr.psa9 || sr.psa10) && (
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginTop: "0.2rem" }}>
+                      PSA Ladder: {[{ g: "5", v: sr.psa5 }, { g: "6", v: sr.psa6 }, { g: "7", v: sr.psa7 }, { g: "8", v: sr.psa8 }, { g: "9", v: sr.psa9 }, { g: "10", v: sr.psa10 }].filter(x => x.v != null).map(x => `PSA ${x.g}: ${_fp(x.v)}`).join(", ")}
+                    </div>
+                  )}
+                  {sr.valueReasoning && <p style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginTop: "0.15rem" }}>{sr.valueReasoning}</p>}
+                  {sr.populationNote && <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Population: {sr.populationNote}</div>}
+                </div>
+              )}
+
+              {/* § Market Intelligence */}
+              {(sr.bestPlatform || sr.demandTrend) && (
+                <div style={{ marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: `1px dashed rgba(139,92,246,0.3)` }}>
+                  <div style={{ fontSize: "0.6rem", fontWeight: 700, color: PURPLE, letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: "0.35rem" }}>§ Market Intelligence</div>
+                  {[
+                    { l: "Best Platform", v: sr.bestPlatform }, { l: "Demand Trend", v: sr.demandTrend },
+                    { l: "Demand Reasoning", v: sr.demandReasoning }, { l: "Selling Strategy", v: sr.sellingStrategy },
+                    { l: "Listing Title", v: sr.listingTitle },
+                  ].filter(r => r.v).map(r => (
+                    <div key={r.l} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", padding: "0.1rem 0" }}>
+                      <span style={{ color: "var(--text-muted)" }}>{r.l}</span>
+                      <span style={{ color: "var(--text-primary)", fontWeight: 600, maxWidth: "60%", textAlign: "right" as const }}>{typeof r.v === "string" && r.v.length > 60 ? r.v.slice(0, 60) + "..." : r.v}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* § Collection Context */}
+              {(sr.setName || sr.cardNumber) && (
+                <div style={{ marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: `1px dashed rgba(139,92,246,0.3)` }}>
+                  <div style={{ fontSize: "0.6rem", fontWeight: 700, color: PURPLE, letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: "0.35rem" }}>§ Collection Context</div>
+                  {[
+                    { l: "Set", v: sr.setName },
+                    { l: "Card Number", v: sr.cardNumber && sr.setTotal ? `${sr.cardNumber} of ${sr.setTotal}` : sr.cardNumber },
+                    { l: "Key Card", v: sr.isKeyCard ? `Yes — ${sr.keyCardReason || "Key item in set"}` : sr.isKeyCard === false ? "No" : null },
+                    { l: "Completion Tip", v: sr.setCompletionHint },
+                  ].filter(r => r.v).map(r => (
+                    <div key={r.l} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", padding: "0.1rem 0" }}>
+                      <span style={{ color: "var(--text-muted)" }}>{r.l}</span>
+                      <span style={{ color: "var(--text-primary)", fontWeight: 600, maxWidth: "60%", textAlign: "right" as const }}>{typeof r.v === "string" && r.v.length > 80 ? r.v.slice(0, 80) + "..." : r.v}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* § Price History & Investment */}
+              {(sr.trend6mo || sr.trend1yr || sr.price1yr || sr.investmentVerdict) && (
+                <div style={{ marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: `1px dashed rgba(139,92,246,0.3)` }}>
+                  <div style={{ fontSize: "0.6rem", fontWeight: 700, color: PURPLE, letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: "0.35rem" }}>§ Price History & Investment</div>
+                  {[
+                    { l: "6mo Trend", v: sr.trend6mo }, { l: "1yr Trend", v: sr.trend1yr }, { l: "3yr Trend", v: sr.trend3yr },
+                    { l: "Peak", v: sr.peakPrice }, { l: "Floor", v: sr.floorPrice },
+                    { l: "Catalysts", v: sr.catalystEvents },
+                    { l: "1yr Projection", v: sr.price1yr }, { l: "5yr Projection", v: sr.price5yr },
+                    { l: "Verdict", v: sr.investmentVerdict },
+                  ].filter(r => r.v).map(r => (
+                    <div key={r.l} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", padding: "0.1rem 0" }}>
+                      <span style={{ color: "var(--text-muted)" }}>{r.l}</span>
+                      <span style={{ color: "var(--text-primary)", fontWeight: 600, maxWidth: "60%", textAlign: "right" as const }}>{typeof r.v === "string" && r.v.length > 60 ? r.v.slice(0, 60) + "..." : r.v}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* § Expert Summary */}
+              {sr.summary && (
+                <div style={{ marginBottom: "0.75rem" }}>
+                  <div style={{ fontSize: "0.6rem", fontWeight: 700, color: PURPLE, letterSpacing: "0.12em", textTransform: "uppercase" as const, marginBottom: "0.35rem" }}>§ Expert Summary</div>
+                  <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.65, margin: 0 }}>{sr.summary}</p>
+                </div>
+              )}
+
+              {/* Disclaimer */}
+              <div style={{ padding: "0.75rem", background: "rgba(139,92,246,0.04)", borderRadius: "0.5rem", fontSize: "0.68rem", color: "var(--text-muted)", fontStyle: "italic" as const, lineHeight: 1.5 }}>
+                ⚠️ This report is generated by LegacyLoop AI and is not a substitute for certified professional grading or authentication. Professional submission recommended for items valued over $500.
+                <div style={{ marginTop: "0.3rem", fontStyle: "normal" as const, fontSize: "0.6rem" }}>Report ID: {selectedId?.slice(0, 8)} · Generated by LegacyLoop.com</div>
+              </div>
+
+              {/* Action buttons */}
+              <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
+                <button onClick={() => window.print()} style={{
+                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.3rem",
+                  padding: "0.5rem 1rem", borderRadius: "0.75rem", minHeight: "44px",
+                  background: `linear-gradient(135deg, ${PURPLE}, #6d28d9)`, color: "#fff",
+                  fontWeight: 700, fontSize: "0.82rem", border: "none", cursor: "pointer",
+                }}>
+                  🖨️ Print Report
+                </button>
+                <button onClick={() => {
+                  const lines: string[] = [
+                    "═══ LEGACYLOOP COLLECTIBLES ASSESSMENT REPORT ═══",
+                    `Date: ${new Date().toLocaleDateString()}`,
+                    `Item: ${selected.title}`,
+                    `Report ID: ${selectedId?.slice(0, 8)}`,
+                    "",
+                    "§ ITEM IDENTIFICATION",
+                  ];
+                  if (sr.itemName) lines.push(`Item: ${sr.itemName}`);
+                  if (sr.year) lines.push(`Year: ${sr.year}`);
+                  if (sr.brandSeries) lines.push(`Series: ${sr.brandSeries}`);
+                  if (sr.rarity) lines.push(`Rarity: ${sr.rarity}`);
+                  lines.push("");
+                  if (sr.vgPsaGrade || sr.psaGrade) {
+                    lines.push("§ GRADING", `PSA: ${sr.vgPsaGrade || sr.psaGrade}`);
+                    if (sr.vgBgsGrade) lines.push(`BGS: ${sr.vgBgsGrade}`);
+                    if (sr.gradingRec) lines.push(`Rec: ${sr.gradingRec}`);
+                    lines.push("");
+                  }
+                  if (sr.rawLow != null) {
+                    lines.push("§ VALUATION", `Raw: ${_fp(sr.rawLow)} – ${_fp(sr.rawHigh)}`);
+                    lines.push("");
+                  }
+                  if (sr.bestPlatform) lines.push("§ MARKET", `Platform: ${sr.bestPlatform}`, `Demand: ${sr.demandTrend || "—"}`, "");
+                  if (sr.investmentVerdict) lines.push("§ INVESTMENT", `Verdict: ${sr.investmentVerdict}`, "");
+                  if (sr.summary) lines.push("§ EXPERT SUMMARY", sr.summary, "");
+                  lines.push("Generated by LegacyLoop.com");
+                  navigator.clipboard.writeText(lines.join("\n"));
+                  setReportCopied(true);
+                  setTimeout(() => setReportCopied(false), 2000);
+                }} style={{
+                  flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.3rem",
+                  padding: "0.5rem 1rem", borderRadius: "0.75rem", minHeight: "44px",
+                  background: "transparent", border: `2px solid ${PURPLE}`, color: PURPLE,
+                  fontWeight: 700, fontSize: "0.82rem", cursor: "pointer",
+                }}>
+                  {reportCopied ? "✅ Copied!" : "📋 Copy to Clipboard"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* ═══ 5 — MEGABOT DEEP DIVE ═══ */}
@@ -1239,8 +1861,27 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
             <span style={{ fontSize: "1.1rem" }}>⚡</span>
             <span style={{ fontSize: "0.78rem", fontWeight: 700, color: PURPLE, textTransform: "uppercase", letterSpacing: "0.06em" }}>MegaBot Collectibles Deep Dive</span>
           </div>
-          <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55, marginBottom: "1rem", maxWidth: 500, margin: "0 auto 1rem" }}>
-            Run 4 AI collectibles experts in parallel — OpenAI grades condition, Claude researches history, Gemini tracks market trends, Grok surfaces community demand.
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", maxWidth: 480, margin: "0 auto 1rem", textAlign: "left" as const }}>
+            {[
+              { key: "openai", desc: "Precise visual grading — corners, edges, surface, centering" },
+              { key: "claude", desc: "Historical research — provenance, rarity, cultural significance" },
+              { key: "gemini", desc: "Market data — recent sales, price trends, population reports" },
+              { key: "grok", desc: "Community pulse — social demand, trending categories, buyer intent" },
+            ].map(a => {
+              const pm = PROVIDER_META[a.key] || { icon: "🤖", label: a.key, color: "#888", specialty: "" };
+              return (
+                <div key={a.key} style={{ padding: "0.65rem", borderRadius: "10px", background: "var(--bg-card)", border: `1px solid ${pm.color}20` }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", marginBottom: "0.25rem" }}>
+                    <span style={{ fontSize: "0.85rem" }}>{pm.icon}</span>
+                    <span style={{ fontSize: "0.75rem", fontWeight: 700, color: pm.color }}>{pm.label}</span>
+                  </div>
+                  <div style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>{a.desc}</div>
+                </div>
+              );
+            })}
+          </div>
+          <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontStyle: "italic" as const, maxWidth: 420, margin: "0 auto 1rem", lineHeight: 1.4 }}>
+            All 4 agents analyze independently, then consensus is calculated.
           </p>
           <button onClick={runMegaBot} style={{
             padding: "0.65rem 1.5rem", fontSize: "0.85rem", borderRadius: "12px", fontWeight: 700,
@@ -1307,25 +1948,25 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
             }}>
               {consensusGrade && (
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Grade</div>
+                  <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Grade</div>
                   <div style={{ fontSize: "1rem", fontWeight: 800, color: PURPLE }}>{consensusGrade}</div>
                 </div>
               )}
               {avgRawMid && (
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Avg Value</div>
+                  <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Avg Value</div>
                   <div style={{ fontSize: "1rem", fontWeight: 800, color: AMBER }}>{_fp(avgRawMid)}</div>
                 </div>
               )}
               {consensusPlatform && (
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Platform</div>
+                  <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Platform</div>
                   <div style={{ fontSize: "0.82rem", fontWeight: 700, color: TEAL }}>{consensusPlatform}</div>
                 </div>
               )}
               {consensusVerdict && (
                 <div style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.45rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Verdict</div>
+                  <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Verdict</div>
                   <div style={{ fontSize: "0.82rem", fontWeight: 700, color: GREEN }}>{consensusVerdict}</div>
                 </div>
               )}
@@ -1371,9 +2012,9 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                           <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "10px", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.4rem" }}>Visual Grade Assessment</div>
                             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center", marginBottom: "0.35rem" }}>
-                              {agent.psaGrade && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>PSA Est.</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: PURPLE }}>{agent.psaGrade}</div></div>}
-                              {agent.bgsGrade && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>BGS</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: TEAL }}>{agent.bgsGrade}</div></div>}
-                              {agent.gradeConfidence != null && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Confidence</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--text-primary)" }}>{Math.round(Number(agent.gradeConfidence) * (Number(agent.gradeConfidence) <= 1 ? 100 : 1))}%</div></div>}
+                              {agent.psaGrade && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textTransform: "uppercase" }}>PSA Est.</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: PURPLE }}>{agent.psaGrade}</div></div>}
+                              {agent.bgsGrade && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textTransform: "uppercase" }}>BGS</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: TEAL }}>{agent.bgsGrade}</div></div>}
+                              {agent.gradeConfidence != null && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Confidence</div><div style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--text-primary)" }}>{Math.round(Number(agent.gradeConfidence) * (Number(agent.gradeConfidence) <= 1 ? 100 : 1))}%</div></div>}
                             </div>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.2rem 0.75rem" }}>
                               {agent.corners && <GridRow label="Corners" value={agent.corners} />}
@@ -1392,18 +2033,18 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.4rem" }}>Valuation Deep Dive</div>
                             {(agent.rawLow || agent.rawHigh) && (
                               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center", marginBottom: "0.35rem" }}>
-                                <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Raw Low</div><div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-secondary)" }}>{_fp(agent.rawLow)}</div></div>
-                                {agent.rawMid && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Raw Mid</div><div style={{ fontSize: "1rem", fontWeight: 800, color: AMBER }}>{_fp(agent.rawMid)}</div></div>}
-                                <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Raw High</div><div style={{ fontSize: "1rem", fontWeight: 800, color: GREEN }}>{_fp(agent.rawHigh)}</div></div>
+                                <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Raw Low</div><div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-secondary)" }}>{_fp(agent.rawLow)}</div></div>
+                                {agent.rawMid && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Raw Mid</div><div style={{ fontSize: "1rem", fontWeight: 800, color: AMBER }}>{_fp(agent.rawMid)}</div></div>}
+                                <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Raw High</div><div style={{ fontSize: "1rem", fontWeight: 800, color: GREEN }}>{_fp(agent.rawHigh)}</div></div>
                               </div>
                             )}
                             {(agent.psa6 || agent.psa7 || agent.psa8 || agent.psa9 || agent.psa10) && (
                               <div style={{ marginTop: "0.25rem" }}>
-                                <div style={{ fontSize: "0.45rem", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "0.2rem" }}>PSA Grade Ladder</div>
+                                <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textTransform: "uppercase", marginBottom: "0.2rem" }}>PSA Grade Ladder</div>
                                 <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
                                   {[{ g: "6", v: agent.psa6 }, { g: "7", v: agent.psa7 }, { g: "8", v: agent.psa8 }, { g: "9", v: agent.psa9 }, { g: "10", v: agent.psa10 }].filter(x => x.v).map(x => (
                                     <div key={x.g} style={{ textAlign: "center", padding: "0.2rem 0.4rem", borderRadius: "8px", background: x.g === "10" ? "rgba(139,92,246,0.12)" : "var(--bg-card)", border: `1px solid ${x.g === "10" ? "rgba(139,92,246,0.3)" : "var(--border-default)"}`, minWidth: "3rem" }}>
-                                      <div style={{ fontSize: "0.45rem", color: "var(--text-muted)" }}>PSA {x.g}</div>
+                                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>PSA {x.g}</div>
                                       <div style={{ fontSize: "0.72rem", fontWeight: 700, color: x.g === "10" ? PURPLE : "var(--text-primary)" }}>{_fp(x.v)}</div>
                                     </div>
                                   ))}
@@ -1597,10 +2238,11 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
 
       {/* ═══ 6 — ACTION FOOTER ═══ */}
       {selectedId && selected && (
-        <div style={{
+        <div data-no-print style={{
           position: "sticky", bottom: 0, zIndex: 100,
-          background: "rgba(10,10,15,0.95)", backdropFilter: "blur(20px)",
-          borderTop: "1px solid rgba(139,92,246,0.2)",
+          background: "var(--bg-card-solid)", backdropFilter: "blur(20px)",
+          borderTop: "1px solid var(--border-default)",
+          boxShadow: "0 -2px 12px rgba(0,0,0,0.08)",
           padding: "0.85rem 2rem",
           display: "flex", alignItems: "center", justifyContent: "space-between",
           gap: "1rem",

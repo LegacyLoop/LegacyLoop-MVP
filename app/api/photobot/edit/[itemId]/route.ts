@@ -32,22 +32,23 @@ export async function POST(
 
     const { itemId } = await params;
 
-    // ── Tier + Credit Gate ──
+    // ── Tier + Credit Gate (deduction happens AFTER DALL-E succeeds) ──
+    let isRerun = false;
+    let creditCost = 0;
     if (!isDemoMode()) {
       if (!canUseBotOnTier(user.tier, "photoBot")) {
         return NextResponse.json({ error: "upgrade_required", message: "Upgrade your plan to access PhotoBot.", upgradeUrl: "/pricing?upgrade=true" }, { status: 403 });
       }
-      const isRerun = await hasPriorBotRun(user.id, itemId, "PHOTOBOT");
-      const cost = isRerun ? BOT_CREDIT_COSTS.singleBotReRun : BOT_CREDIT_COSTS.singleBotRun;
-      const cc = await checkCredits(user.id, cost);
+      isRerun = await hasPriorBotRun(user.id, itemId, "PHOTOBOT");
+      creditCost = isRerun ? BOT_CREDIT_COSTS.singleBotReRun : BOT_CREDIT_COSTS.singleBotRun;
+      const cc = await checkCredits(user.id, creditCost);
       if (!cc.hasEnough) {
-        return NextResponse.json({ error: "insufficient_credits", message: "Not enough credits to run PhotoBot.", balance: cc.balance, required: cost, buyUrl: "/credits" }, { status: 402 });
+        return NextResponse.json({ error: "insufficient_credits", message: "Not enough credits to run PhotoBot.", balance: cc.balance, required: creditCost, buyUrl: "/credits" }, { status: 402 });
       }
-      await deductCredits(user.id, cost, isRerun ? "PhotoBot re-run" : "PhotoBot run", itemId);
     }
 
     const body = await req.json().catch(() => ({}));
-    const { photoId } = body;
+    const { photoId, customPrompt } = body;
 
     if (!photoId) {
       return NextResponse.json({ error: "photoId is required" }, { status: 400 });
@@ -56,10 +57,10 @@ export async function POST(
       return NextResponse.json({ error: "OpenAI not configured" }, { status: 500 });
     }
 
-    // ── STEP A: FETCH THE PHOTO ────────────────────────────────────────────
+    // ── STEP A: FETCH THE PHOTO + ENRICHMENT ───────────────────────────────
     const item = await prisma.item.findUnique({
       where: { id: itemId },
-      select: { userId: true },
+      include: { aiResult: true },
     });
     if (!item || item.userId !== user.id) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -80,6 +81,23 @@ export async function POST(
     const width = metadata.width ?? 1024;
     const height = metadata.height ?? 1024;
 
+    // Build enrichment context from AnalyzeBot data
+    let enrichmentHint = "";
+    if ((item as any).aiResult?.rawJson) {
+      try {
+        const ai = JSON.parse((item as any).aiResult.rawJson);
+        const parts = [
+          ai.item_name && `Item: ${ai.item_name}`,
+          ai.category && `Category: ${ai.category}`,
+          ai.brand && `Brand: ${ai.brand}`,
+          ai.material && `Material: ${ai.material}`,
+          ai.condition_guess && `Condition: ${ai.condition_guess}`,
+          ai.era && `Era: ${ai.era}`,
+        ].filter(Boolean);
+        if (parts.length) enrichmentHint = `\n\nKNOWN ITEM DATA: ${parts.join(". ")}`;
+      } catch {}
+    }
+
     console.log("[photobot-edit] Photo loaded:", photo.id, `${width}x${height}`);
 
     // ── STEP B: GPT-4O VISION SCAN ─────────────────────────────────────────
@@ -88,37 +106,47 @@ export async function POST(
     const base64 = imageBuffer.toString("base64");
     const dataUrl = `data:${mime};base64,${base64}`;
 
+    const userEditRequest = customPrompt
+      ? `\n\nUSER REQUEST: The user specifically asked: "${customPrompt}". Focus your analysis on fulfilling this request while protecting the item.`
+      : "";
+
     let vision: any = null;
     try {
-      console.log("[photobot-edit] Step B: GPT-4o vision scan...");
+      console.log("[photobot-edit] Step B: GPT-4o vision scan...", customPrompt ? `Custom: "${customPrompt}"` : "standard");
       const visionResp = await openai.responses.create({
         model: "gpt-4o",
         input: [
           {
             role: "system",
-            content: "You are a precise computer vision analyst for product photography. Your job is to identify distracting elements in listing photos that should be removed — backgrounds, people, faces, clutter, furniture that is not the sale item, pets, cables, garbage, personal items. You must identify the approximate bounding box of the MAIN SALE ITEM so it can be protected from any editing. The sale item itself must never be touched.",
+            content: `You are a world-class product photography editor and computer vision specialist. You have a PERFECT eye for identifying:
+1. The exact boundaries of the sale item (must be PROTECTED — never edited)
+2. Everything that is NOT the sale item (backgrounds, people, clutter, surfaces, walls, furniture, pets, cables, personal items)
+3. What specific edits would make this a professional, marketplace-ready listing photo
+
+IRON RULE: The sale item itself must NEVER be modified. You are identifying what to REMOVE or REPLACE around it.${enrichmentHint}`,
           },
           {
             role: "user",
             content: [
               {
                 type: "input_text",
-                text: `Analyze this product listing photo. Identify:
+                text: `Analyze this product listing photo with precision. Return flat JSON with:
 
-itemBoundingBox: The approximate location of the main sale item as percentages of image dimensions. Format: { top: 0-100, left: 0-100, bottom: 0-100, right: 0-100 }. Be generous — add 10% padding on all sides to ensure the item is fully protected.
-distractingElements: Array of what should be removed. Examples: 'cluttered background', 'person in background', 'face visible', 'unrelated furniture', 'carpet/floor visible', 'wall visible', 'cables', 'personal items'
-cleaningDescription: One sentence describing what will be removed. Example: 'Removing cluttered room background and person visible on left side, replacing with clean neutral background.'
-itemDescription: Brief description of the sale item itself. Example: '6-drawer wooden dresser'
-safeToAutoClean: true/false — is this photo safe to auto-clean without risk of accidentally affecting the item
+itemBoundingBox: The EXACT location of the main sale item as percentages { top: 0-100, left: 0-100, bottom: 0-100, right: 0-100 }. Add 10% padding on all sides. Be generous to fully protect the item.
+distractingElements: Array of specific things to remove. Be detailed: "person standing in background left side", "cluttered bookshelf behind item", "orange extension cord on floor", "reflection of photographer in glass"
+cleaningDescription: One precise sentence of what will be edited. Be specific about what replaces removed areas.
+itemDescription: Detailed description of the sale item. Include type, color, material, distinguishing features.
+backgroundReplacement: What the new background should look like — "clean soft-white gradient backdrop", "neutral light gray seamless background", "warm off-white studio backdrop"
+safeToAutoClean: true if the item has clear edges and can be isolated. false if the item blends into surroundings.${userEditRequest}
 
 Return flat JSON only. No wrapper keys.`,
               },
-              { type: "input_image", image_url: dataUrl, detail: "auto" },
+              { type: "input_image", image_url: dataUrl, detail: "high" },
             ],
           },
         ],
         text: { format: { type: "text" } },
-        max_output_tokens: 1500,
+        max_output_tokens: 2000,
       });
 
       const raw = visionResp.output_text;
@@ -164,37 +192,44 @@ Return flat JSON only. No wrapper keys.`,
     console.log("[photobot-edit] Vision result:", JSON.stringify(vision).slice(0, 200));
 
     // ── STEP C: GENERATE THE MASK ──────────────────────────────────────────
-    const bbox = vision.itemBoundingBox;
-    const itemTop = Math.max(0, Math.floor(((bbox.top ?? 0) / 100) * height));
-    const itemLeft = Math.max(0, Math.floor(((bbox.left ?? 0) / 100) * width));
-    const itemBottom = Math.min(height, Math.floor(((bbox.bottom ?? 100) / 100) * height));
-    const itemRight = Math.min(width, Math.floor(((bbox.right ?? 100) / 100) * width));
-    const itemW = Math.max(1, itemRight - itemLeft);
-    const itemH = Math.max(1, itemBottom - itemTop);
+    let resizedImage: Buffer;
+    let resizedMask: Buffer;
+    try {
+      const bbox = vision.itemBoundingBox;
+      const itemTop = Math.max(0, Math.floor(((bbox.top ?? 0) / 100) * height));
+      const itemLeft = Math.max(0, Math.floor(((bbox.left ?? 0) / 100) * width));
+      const itemBottom = Math.min(height, Math.floor(((bbox.bottom ?? 100) / 100) * height));
+      const itemRight = Math.min(width, Math.floor(((bbox.right ?? 100) / 100) * width));
+      const itemW = Math.max(1, itemRight - itemLeft);
+      const itemH = Math.max(1, itemBottom - itemTop);
 
-    console.log("[photobot-edit] Item bounding box px:", { itemTop, itemLeft, itemW, itemH });
+      console.log("[photobot-edit] Item bounding box px:", { itemTop, itemLeft, itemW, itemH });
 
-    // Mask: transparent (alpha=0) = editable, opaque (alpha=255) = protected
-    const protectedRect = await sharp({
-      create: { width: itemW, height: itemH, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 255 } },
-    }).png().toBuffer();
+      // Mask: transparent (alpha=0) = editable, opaque (alpha=255) = protected
+      const protectedRect = await sharp({
+        create: { width: itemW, height: itemH, channels: 4, background: { r: 255, g: 255, b: 255, alpha: 255 } },
+      }).png().toBuffer();
 
-    const maskBuffer = await sharp({
-      create: { width, height, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
-    })
-      .composite([{ input: protectedRect, top: itemTop, left: itemLeft }])
-      .png()
-      .toBuffer();
+      const maskBuffer = await sharp({
+        create: { width, height, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+      })
+        .composite([{ input: protectedRect, top: itemTop, left: itemLeft }])
+        .png()
+        .toBuffer();
 
-    // Resize both to 1024x1024 for DALL-E 2
-    const resizedImage = await sharp(imageBuffer)
-      .resize(1024, 1024, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 255 } })
-      .png()
-      .toBuffer();
-    const resizedMask = await sharp(maskBuffer)
-      .resize(1024, 1024, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .png()
-      .toBuffer();
+      // Resize both to 1024x1024 for DALL-E 2
+      resizedImage = await sharp(imageBuffer)
+        .resize(1024, 1024, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 255 } })
+        .png()
+        .toBuffer();
+      resizedMask = await sharp(maskBuffer)
+        .resize(1024, 1024, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+        .png()
+        .toBuffer();
+    } catch (maskErr: any) {
+      console.error("[photobot-edit] Mask generation failed:", maskErr?.message);
+      return NextResponse.json({ error: "Failed to generate image mask. Try a different photo." }, { status: 500 });
+    }
 
     console.log("[photobot-edit] Mask generated. Image:", resizedImage.length, "bytes. Mask:", resizedMask.length, "bytes.");
 
@@ -208,12 +243,33 @@ Return flat JSON only. No wrapper keys.`,
 
       const cleanDesc = vision.cleaningDescription || "distracting background elements";
       const itemDesc = vision.itemDescription || "the sale item";
+      const bgReplacement = vision.backgroundReplacement || "clean, neutral, softly-lit studio background";
+
+      // Build enriched DALL-E 2 prompt with context from AnalyzeBot + user custom prompt
+      // Core instructions first (always included), then optional enrichment (trimmed if too long)
+      const corePrompt = [
+        `Professional product photography. The subject is ${itemDesc}.`,
+        `Remove all distracting elements: ${cleanDesc}.`,
+        `Replace removed areas with: ${bgReplacement}.`,
+        `The ${itemDesc} must remain COMPLETELY unchanged.`,
+        "Preserve all visible condition details. No people, no clutter. Soft professional lighting.",
+      ].join(" ");
+
+      const extraParts = [
+        enrichmentHint ? `Context: ${enrichmentHint.replace("\n\nKNOWN ITEM DATA: ", "")}` : "",
+        customPrompt ? `User instruction: ${customPrompt}.` : "",
+      ].filter(Boolean).join(" ");
+
+      // DALL-E 2 has a ~1000 char prompt limit — prioritize core instructions
+      const fullPrompt = extraParts
+        ? `${corePrompt} ${extraParts}`.slice(0, 1000)
+        : corePrompt;
 
       const editResponse = await openai.images.edit({
         model: "dall-e-2",
         image: imageFile,
         mask: maskFile,
-        prompt: `Clean product photography background. Remove all distracting elements: ${cleanDesc}. Replace removed areas with a clean, neutral, softly-lit background appropriate for a professional product listing. The ${itemDesc} in the protected area must remain completely unchanged — do not alter the item in any way. No people, no clutter, no personal items in background.`,
+        prompt: fullPrompt,
         n: 1,
         size: "1024x1024",
       });
@@ -229,6 +285,11 @@ Return flat JSON only. No wrapper keys.`,
     }
 
     console.log("[photobot-edit] Edit complete:", editedUrl.slice(0, 80));
+
+    // ── Deduct credits AFTER DALL-E success ──────────────────────────────
+    if (!isDemoMode()) {
+      await deductCredits(user.id, creditCost, isRerun ? "PhotoBot re-run" : "PhotoBot run", itemId);
+    }
 
     // ── PERMANENT SAVE: Download and save edited image to disk ───────────
     let editedPhotoSavedPath: string | null = null;
@@ -247,7 +308,7 @@ Return flat JSON only. No wrapper keys.`,
     const result = {
       originalPhotoId: photoId,
       originalPhotoPath: photo.filePath,
-      editedPhotoUrl: editedUrl,
+      editedPhotoUrl: editedPhotoSavedPath || editedUrl,
       ...(editedPhotoSavedPath ? { editedPhotoSavedPath } : {}),
       itemBoundingBox: vision.itemBoundingBox,
       distractingElements: vision.distractingElements || [],

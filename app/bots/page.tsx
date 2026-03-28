@@ -82,7 +82,7 @@ const BOTS: BotDef[] = [
     desc: "Visual presentation \u2014 photo quality, lighting, staging tips to attract more buyers",
     detail: "AI-scored photo quality, lighting analysis, staging tips, before/after improvements, and platform-specific advice.",
     color: "#f06292",
-    route: "/bots/stylebot",
+    route: "/bots/photobot",
   },
   {
     id: "carbot",

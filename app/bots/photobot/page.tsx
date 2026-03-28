@@ -20,47 +20,63 @@ export default async function PhotoBotPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  // Fetch all PHOTOBOT_EDIT results for this user's items
+  // Fetch all PhotoBot event logs for this user's items
   const itemIds = rawItems.map((i) => i.id);
-  const editLogs = await prisma.eventLog.findMany({
-    where: { itemId: { in: itemIds }, eventType: "PHOTOBOT_EDIT" },
+  const botLogs = await prisma.eventLog.findMany({
+    where: {
+      itemId: { in: itemIds },
+      eventType: { in: ["PHOTOBOT_EDIT", "PHOTOBOT_ENHANCE", "PHOTOBOT_ASSESS", "PHOTOBOT_ENHANCE_VARIATION"] },
+    },
     orderBy: { createdAt: "desc" },
   });
 
+  // Build maps: per-photo edit results + per-item enhance results
   const editResultsByPhoto: Record<string, any> = {};
-  for (const log of editLogs) {
+  const enhanceResultsByItem: Record<string, any> = {};
+  const variationsByItem: Record<string, any[]> = {};
+
+  for (const log of botLogs) {
     try {
       const parsed = JSON.parse(log.payload || "{}");
-      if (parsed.originalPhotoId && !editResultsByPhoto[parsed.originalPhotoId]) {
+      if (log.eventType === "PHOTOBOT_EDIT" && parsed.originalPhotoId && !editResultsByPhoto[parsed.originalPhotoId]) {
         editResultsByPhoto[parsed.originalPhotoId] = parsed;
+      }
+      if ((log.eventType === "PHOTOBOT_ENHANCE" || log.eventType === "PHOTOBOT_ASSESS") && log.itemId && !enhanceResultsByItem[log.itemId]) {
+        enhanceResultsByItem[log.itemId] = parsed;
+      }
+      if (log.eventType === "PHOTOBOT_ENHANCE_VARIATION" && log.itemId) {
+        if (!variationsByItem[log.itemId]) variationsByItem[log.itemId] = [];
+        variationsByItem[log.itemId].push(parsed);
       }
     } catch { /* ignore */ }
   }
 
-  const serialized = rawItems.map((item) => ({
-    id: item.id,
-    title: item.title || `Item #${item.id.slice(0, 6)}`,
-    status: item.status,
-    hasAnalysis: !!item.aiResult,
-    photos: item.photos.map((p) => ({
-      id: p.id,
-      filePath: p.filePath,
-      isPrimary: p.isPrimary,
-      editResult: editResultsByPhoto[p.id] || null,
-    })),
-  }));
+  const serialized = rawItems.map((item) => {
+    const ai = item.aiResult?.rawJson ? (() => { try { return JSON.parse(item.aiResult!.rawJson); } catch { return null; } })() : null;
+    return {
+      id: item.id,
+      title: item.title || `Item #${item.id.slice(0, 6)}`,
+      status: item.status,
+      hasAnalysis: !!item.aiResult,
+      category: ai?.category || "general",
+      photoQualityScore: ai?.photo_quality_score ?? null,
+      photoTips: ai?.photo_improvement_tips ?? [],
+      photos: item.photos.map((p) => ({
+        id: p.id,
+        filePath: p.filePath,
+        isPrimary: p.isPrimary,
+        caption: p.caption,
+        order: p.order,
+        editResult: editResultsByPhoto[p.id] || null,
+      })),
+      enhanceResult: enhanceResultsByItem[item.id] || null,
+      variations: variationsByItem[item.id] || [],
+    };
+  });
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Bots", href: "/bots" }, { label: "PhotoBot" }]} />
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
-        <div style={{ width: 48, height: 48, borderRadius: "0.75rem", background: "rgba(240,98,146,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem" }}>📷</div>
-        <div>
-          <h1 className="h2">PhotoBot</h1>
-          <p className="muted" style={{ fontSize: "0.85rem" }}>AI photo enhancement, editing, and professional storefront imagery</p>
-        </div>
-      </div>
-      <Suspense><PhotoBotClient items={serialized} /></Suspense>
-    </div>
+    <Suspense fallback={<div style={{ background: "var(--bg-card-solid)", minHeight: "100vh" }} />}>
+      <PhotoBotClient items={serialized} />
+    </Suspense>
   );
 }

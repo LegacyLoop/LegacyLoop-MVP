@@ -161,6 +161,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
   const [showAllItems, setShowAllItems] = useState(false);
   const [reportCopied, setReportCopied] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [expandedStat, setExpandedStat] = useState<string | null>(null);
 
   // Auto-select from URL query
   useEffect(() => {
@@ -278,29 +279,175 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
   const docs = result?.documentation;
 
   return (
-    <div>
+    <div style={{ paddingBottom: selectedId ? "5rem" : "0" }}>
       {toast && <Toast message={toast} />}
 
-      {/* ── Section A: Stats Banner ── */}
-      <div style={{
-        display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem", marginBottom: "1.5rem",
-      }}>
-        {[
-          { label: "Total Items", value: items.length, icon: "📦" },
-          { label: "Analyzed", value: analyzedItems.length, icon: "🧠" },
-          { label: "Antiques Found", value: antiqueItems.length, icon: "🏺" },
-          { label: "Appraised", value: items.filter((i) => i.antiqueBotResult).length, icon: "📋" },
-        ].map((s) => (
-          <div key={s.label} style={{
-            background: "var(--bg-card)", border: `1px solid ${GOLD_BORDER}`,
-            borderRadius: "0.75rem", padding: "0.85rem", textAlign: "center",
-          }}>
-            <div style={{ fontSize: "1.1rem", marginBottom: "0.15rem" }}>{s.icon}</div>
-            <div style={{ fontSize: "1.25rem", fontWeight: 800, color: GOLD }}>{s.value}</div>
-            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>{s.label}</div>
+      {/* ── Section A: Stats Banner (clickable) ── */}
+      {(() => {
+        const appraisedItems = items.filter((i) => i.antiqueBotResult);
+        const valItems = analyzedItems.filter(i => i.valuationMid);
+        const totalVal = valItems.reduce((a, b) => a + (b.valuationMid ?? 0), 0);
+        const statPanels = [
+          { key: "total", label: "Total Items", value: items.length, icon: "📦" },
+          { key: "analyzed", label: "Analyzed", value: analyzedItems.length, icon: "🧠" },
+          { key: "antiques", label: "Antiques Found", value: antiqueItems.length, icon: "🏺" },
+          { key: "appraised", label: "Appraised", value: appraisedItems.length, icon: "📋" },
+        ];
+        return (
+          <div style={{ marginBottom: "1.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem" }}>
+              {statPanels.map((s) => (
+                <div
+                  key={s.key}
+                  onClick={() => setExpandedStat(expandedStat === s.key ? null : s.key)}
+                  style={{
+                    background: expandedStat === s.key ? `${GOLD}0F` : "var(--bg-card)",
+                    border: expandedStat === s.key ? `2px solid ${GOLD}` : `1px solid ${GOLD_BORDER}`,
+                    borderRadius: "0.75rem", padding: "0.85rem", textAlign: "center" as const,
+                    boxShadow: expandedStat === s.key ? `0 4px 16px rgba(251,191,36,0.15)` : "0 1px 3px rgba(0,0,0,0.06)",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                    transform: expandedStat === s.key ? "translateY(-2px)" : "none",
+                    userSelect: "none" as const,
+                  }}
+                >
+                  <div style={{ fontSize: "1.1rem", marginBottom: "0.15rem" }}>{s.icon}</div>
+                  <div style={{ fontSize: "1.25rem", fontWeight: 800, color: GOLD }}>{s.value}</div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.08em" }}>
+                    {s.label} <span style={{ fontSize: "0.5rem", opacity: 0.6 }}>{expandedStat === s.key ? "▲" : "▼"}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Expanded stat detail panel */}
+            {expandedStat && (
+              <div style={{
+                marginTop: "0.75rem", padding: "1rem 1.25rem", borderRadius: "0.75rem",
+                background: "var(--bg-card)", border: `1px solid ${GOLD_BORDER}`,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+              }}>
+                {expandedStat === "total" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: GOLD, fontWeight: 700, marginBottom: "0.65rem" }}>All Items Overview</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                      {[
+                        { l: "Analyzed", v: analyzedItems.length },
+                        { l: "Not Analyzed", v: items.length - analyzedItems.length },
+                        { l: "Antiques", v: antiqueItems.length },
+                        { l: "Appraised", v: appraisedItems.length },
+                      ].map(d => (
+                        <div key={d.l} style={{ padding: "0.45rem 0.5rem", borderRadius: "0.5rem", background: `${GOLD}08`, textAlign: "center" as const }}>
+                          <div style={{ fontSize: "1rem", fontWeight: 800, color: "var(--text-primary)" }}>{d.v}</div>
+                          <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>{d.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ maxHeight: "160px", overflowY: "auto" as const }}>
+                      {items.slice(0, 12).map(it => (
+                        <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                          display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.4rem",
+                          borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                        }}>
+                          {it.photo && <img src={it.photo} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: "cover" as const }} />}
+                          <span style={{ flex: 1, fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</span>
+                          <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", flexShrink: 0 }}>{it.status}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {expandedStat === "analyzed" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: GOLD, fontWeight: 700, marginBottom: "0.65rem" }}>Analyzed Items</div>
+                    {analyzedItems.length === 0 ? (
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>No analyzed items yet. Go to your dashboard to analyze items.</p>
+                    ) : (
+                      <div style={{ maxHeight: "200px", overflowY: "auto" as const }}>
+                        {analyzedItems.map(it => (
+                          <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                            display: "flex", alignItems: "center", gap: "0.65rem", padding: "0.45rem 0.4rem",
+                            borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                          }}>
+                            {it.photo && <img src={it.photo} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" as const }} />}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</div>
+                              <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{it.category}{it.era ? ` · ${it.era}` : ""}</div>
+                            </div>
+                            {it.valuationMid && <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "#10b981", flexShrink: 0 }}>${it.valuationMid.toLocaleString()}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {expandedStat === "antiques" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: GOLD, fontWeight: 700, marginBottom: "0.65rem" }}>Detected Antiques</div>
+                    {antiqueItems.length === 0 ? (
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>No antiques detected yet. Run analysis on your items first.</p>
+                    ) : (
+                      <div style={{ maxHeight: "200px", overflowY: "auto" as const }}>
+                        {antiqueItems.map(it => (
+                          <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                            display: "flex", alignItems: "center", gap: "0.65rem", padding: "0.45rem 0.4rem",
+                            borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                          }}>
+                            {it.photo && <img src={it.photo} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" as const }} />}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</div>
+                              <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{it.era || it.maker || it.category}</div>
+                            </div>
+                            {it.antique?.auctionLow != null && it.antique?.auctionHigh != null && (
+                              <span style={{ fontSize: "0.72rem", fontWeight: 700, color: GOLD, flexShrink: 0 }}>
+                                ${it.antique.auctionLow.toLocaleString()}-${it.antique.auctionHigh.toLocaleString()}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {expandedStat === "appraised" && (
+                  <>
+                    <div style={{ fontSize: "0.55rem", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: GOLD, fontWeight: 700, marginBottom: "0.65rem" }}>AntiqueBot Appraised Items</div>
+                    {appraisedItems.length === 0 ? (
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0 }}>No items appraised yet. Select an item and run AntiqueBot.</p>
+                    ) : (
+                      <div style={{ maxHeight: "200px", overflowY: "auto" as const }}>
+                        {appraisedItems.map(it => {
+                          const abr = safeJson(it.antiqueBotResult);
+                          const fmv = abr?.valuation?.fair_market_value;
+                          const fmvMid = fmv ? _extractPrice(fmv.mid) ?? _extractPrice(fmv.high) : null;
+                          return (
+                            <div key={it.id} onClick={() => { setSelectedId(it.id); setExpandedStat(null); }} style={{
+                              display: "flex", alignItems: "center", gap: "0.65rem", padding: "0.45rem 0.4rem",
+                              borderBottom: "1px solid var(--border-default)", cursor: "pointer",
+                            }}>
+                              {it.photo && <img src={it.photo} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" as const }} />}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis" }}>{it.title}</div>
+                                <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>
+                                  Appraised{it.antiqueBotRunAt ? ` ${new Date(it.antiqueBotRunAt).toLocaleDateString()}` : ""}
+                                </div>
+                              </div>
+                              {fmvMid != null && <span style={{ fontSize: "0.78rem", fontWeight: 700, color: GOLD, flexShrink: 0 }}>${Math.round(fmvMid).toLocaleString()}</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
-        ))}
-      </div>
+        );
+      })()}
 
       {/* ── Section B: Item Selector ── */}
       <div style={{
@@ -1828,6 +1975,71 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
           }}>
             🏺 Run Antique Appraisal — 1 credit
           </button>
+        </div>
+      )}
+
+      {/* ── Sticky Bottom Action Bar ── */}
+      {selectedId && selected && (
+        <div data-no-print style={{
+          position: "sticky", bottom: 0, zIndex: 100,
+          background: "var(--bg-card-solid)", backdropFilter: "blur(20px)",
+          borderTop: "1px solid var(--border-default)",
+          boxShadow: "0 -2px 12px rgba(0,0,0,0.08)",
+          padding: "0.85rem 2rem",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: "1rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", minWidth: 0, flex: 1 }}>
+            <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+              {selected.title}
+            </span>
+            {selected.antique?.isAntique && (
+              <span style={{
+                padding: "0.15rem 0.5rem", borderRadius: 99, fontSize: "0.58rem", fontWeight: 700, flexShrink: 0,
+                background: `${GOLD}15`, color: GOLD, border: `1px solid ${GOLD_BORDER}`,
+              }}>
+                🏺 Antique
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
+            <button
+              onClick={runAntiqueBot}
+              disabled={loading || !selected.hasAnalysis}
+              style={{
+                padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
+                borderRadius: "10px", cursor: loading ? "not-allowed" : "pointer",
+                background: loading ? "var(--ghost-bg)" : `linear-gradient(135deg, #d97706, ${GOLD_DARK})`,
+                border: "none", color: "#fff", minHeight: "44px",
+                boxShadow: loading ? "none" : `0 2px 10px rgba(251,191,36,0.3)`,
+              }}
+            >
+              {loading ? "Analyzing..." : result ? "🔄 Re-Run · 1 cr" : "🏺 Run · 1 cr"}
+            </button>
+            <button
+              onClick={runMegaAntiqueBot}
+              disabled={megaBotLoading}
+              style={{
+                padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
+                borderRadius: "10px", cursor: megaBotLoading ? "not-allowed" : "pointer",
+                background: megaBotLoading ? "var(--ghost-bg)" : `linear-gradient(135deg, ${GOLD}30, ${GOLD_DARK}40)`,
+                border: `1px solid ${GOLD}55`, color: GOLD, minHeight: "44px",
+              }}
+            >
+              {megaBotLoading ? "Running..." : megaBotData ? "🔄 Re-Run MegaBot · 3 cr" : "⚡ MegaBot · 3 cr"}
+            </button>
+            <Link
+              href={`/items/${selectedId}`}
+              style={{
+                padding: "0.45rem 0.85rem", fontSize: "0.72rem", fontWeight: 600,
+                borderRadius: "10px", textDecoration: "none", minHeight: "44px",
+                background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                color: "var(--text-secondary)", display: "flex", alignItems: "center",
+              }}
+            >
+              View Item →
+            </Link>
+          </div>
         </div>
       )}
 

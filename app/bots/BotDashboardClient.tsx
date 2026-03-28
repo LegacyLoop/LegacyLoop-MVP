@@ -164,7 +164,7 @@ const BOT_DEFINITIONS: BotDefinition[] = [
     subtitle: "Photo quality analysis, staging advice, and presentation optimization",
     learnMore:
       "PhotoBot analyzes your item photos for lighting, angle, background, and composition. It suggests specific improvements that increase buyer interest — better photos mean faster sales at higher prices. Includes staging tips for different item categories.",
-    viewResultsLink: "/bots/stylebot",
+    viewResultsLink: "/bots/photobot",
     viewResultsLabel: "View Details",
     defaultActive: false,
     stats: [

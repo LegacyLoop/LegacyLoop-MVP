@@ -901,7 +901,7 @@ function BotSummaryPanel({ aiData, valuation, antique, photos, megabotUsed, item
     { name: "ListBot", icon: "📝", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Ready to generate listing" : "Needs analysis first", link: `/bots/listbot?item=${itemId}` },
     { name: "BuyerBot", icon: "🎯", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Ready to scan for buyers" : "Analyze item first", link: `/bots/buyerbot?item=${itemId}` },
     { name: "Shipping Center", icon: "📦", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Shipping estimates available" : "Analyze item first", link: `/bots/shipbot?item=${itemId}` },
-    { name: "PhotoBot", icon: "📷", status: photos.length > 0 ? "Ready" : "No photos", finding: `${photos.length} photo${photos.length !== 1 ? "s" : ""} uploaded`, link: `/bots/stylebot?item=${itemId}` },
+    { name: "PhotoBot", icon: "📷", status: photos.length > 0 ? "Ready" : "No photos", finding: `${photos.length} photo${photos.length !== 1 ? "s" : ""} uploaded`, link: `/bots/photobot?item=${itemId}` },
     { name: "MegaBot", icon: "🤖", status: megabotUsed ? "Used" : "Available", finding: megabotUsed ? "Multi-agent analysis complete" : "Run MegaBot on any bot", link: `/bots/megabot?item=${itemId}` },
   ];
 

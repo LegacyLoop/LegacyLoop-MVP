@@ -11,8 +11,23 @@ interface DocRecord {
   docType: string;
   label: string | null;
   aiSummary: string | null;
+  aiAnalysis: string | null;
+  confidenceScore: number | null;
+  providerResults: string | null;
   createdAt: string;
 }
+
+function safeJson(s: string | null | undefined): any {
+  if (!s) return null;
+  try { return JSON.parse(s); } catch { return null; }
+}
+
+const PROVIDER_META: Record<string, { icon: string; label: string; color: string }> = {
+  openai: { icon: "🤖", label: "GPT-4o", color: "#10a37f" },
+  claude: { icon: "🧠", label: "Claude", color: "#d97706" },
+  gemini: { icon: "🔮", label: "Gemini", color: "#4285f4" },
+  grok: { icon: "🌀", label: "Grok", color: "#00DC82" },
+};
 
 const DOC_CATEGORIES = [
   { key: "RECEIPT", icon: "🧾", label: "Receipt" },
@@ -124,6 +139,15 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
   ].filter((b) => docTypes.has(b.type));
 
   const hasAiAnalyzed = docs.some((d) => d.aiSummary);
+
+  // Poll for AI analysis results after upload (fire-and-forget means we need to check back)
+  useEffect(() => {
+    const pending = docs.filter((d) => !d.aiSummary);
+    if (pending.length === 0) return;
+    const timer = setTimeout(() => fetchDocs(), 8000);
+    const timer2 = setTimeout(() => fetchDocs(), 20000);
+    return () => { clearTimeout(timer); clearTimeout(timer2); };
+  }, [docs, fetchDocs]);
 
   // Completeness
   const completedRecommended = RECOMMENDED.filter((r) => docTypes.has(r)).length;
@@ -475,7 +499,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
                     }}>
                       {doc.label || doc.fileName}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px", flexWrap: "wrap" }}>
                       <span style={{
                         padding: "1px 6px", borderRadius: "10px", fontSize: "0.58rem",
                         fontWeight: 700, textTransform: "uppercase",
@@ -484,6 +508,27 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
                       }}>
                         {catInfo?.icon} {catInfo?.label || doc.docType}
                       </span>
+                      {doc.confidenceScore != null && doc.confidenceScore > 0 && (
+                        <span style={{
+                          padding: "1px 6px", borderRadius: "10px", fontSize: "0.52rem",
+                          fontWeight: 700,
+                          background: doc.confidenceScore >= 70 ? "rgba(34,197,94,0.1)" : doc.confidenceScore >= 40 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.08)",
+                          color: doc.confidenceScore >= 70 ? "#22c55e" : doc.confidenceScore >= 40 ? "#f59e0b" : "#ef4444",
+                          border: `1px solid ${doc.confidenceScore >= 70 ? "rgba(34,197,94,0.2)" : doc.confidenceScore >= 40 ? "rgba(245,158,11,0.2)" : "rgba(239,68,68,0.15)"}`,
+                        }}>
+                          {doc.confidenceScore}% confidence
+                        </span>
+                      )}
+                      {!doc.aiSummary && (
+                        <span style={{
+                          padding: "1px 6px", borderRadius: "10px", fontSize: "0.52rem",
+                          fontWeight: 600, color: "var(--accent)",
+                          background: "rgba(0,188,212,0.08)",
+                          animation: "pulse 2s ease infinite",
+                        }}>
+                          analyzing...
+                        </span>
+                      )}
                       <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>
                         {formatSize(doc.fileSizeBytes)}
                       </span>
@@ -541,26 +586,161 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
                   </div>
                 </div>
 
-                {/* AI Summary expandable */}
-                {doc.aiSummary && expandedSummary === doc.id && (
-                  <div style={{
-                    padding: "10px 14px",
-                    background: "rgba(0,188,212,0.04)",
-                    border: "1px solid rgba(0,188,212,0.15)",
-                    borderTop: "none",
-                    borderRadius: "0 0 0.5rem 0.5rem",
-                  }}>
-                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.3rem" }}>
-                      🤖 AI Document Summary
-                    </div>
+                {/* AI Analysis expandable — multi-AI structured display */}
+                {doc.aiSummary && expandedSummary === doc.id && (() => {
+                  const analysis = safeJson(doc.aiAnalysis);
+                  const provResults = safeJson(doc.providerResults);
+                  const providers = provResults?.providers || [];
+
+                  return (
                     <div style={{
-                      fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55,
-                      whiteSpace: "pre-wrap",
+                      padding: "12px 14px",
+                      background: "rgba(0,188,212,0.04)",
+                      border: "1px solid rgba(0,188,212,0.15)",
+                      borderTop: "none",
+                      borderRadius: "0 0 0.5rem 0.5rem",
                     }}>
-                      {doc.aiSummary}
+                      {/* Header with provider status */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                        <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                          🤖 Multi-AI Document Intelligence
+                        </div>
+                        {providers.length > 0 && (
+                          <div style={{ display: "flex", gap: "4px" }}>
+                            {providers.map((p: any) => {
+                              const meta = PROVIDER_META[p.provider] || { icon: "🤖", label: p.provider, color: "#888" };
+                              return (
+                                <span key={p.provider} title={`${meta.label}: ${p.success ? `${p.responseTime}ms` : p.error || "failed"}`} style={{
+                                  fontSize: "0.75rem", opacity: p.success ? 1 : 0.3,
+                                  filter: p.success ? "none" : "grayscale(1)",
+                                }}>
+                                  {meta.icon}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Summary */}
+                      <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.55, marginBottom: "0.6rem" }}>
+                        {analysis?.summary || doc.aiSummary}
+                      </div>
+
+                      {/* Key Findings */}
+                      {analysis?.keyFindings?.length > 0 && (
+                        <div style={{ marginBottom: "0.6rem" }}>
+                          <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "#22c55e", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "0.25rem" }}>
+                            Key Findings
+                          </div>
+                          {analysis.keyFindings.slice(0, 5).map((f: string, i: number) => (
+                            <div key={i} style={{ display: "flex", gap: "0.3rem", fontSize: "0.72rem", color: "var(--text-secondary)", padding: "0.12rem 0", lineHeight: 1.45 }}>
+                              <span style={{ color: "#22c55e", flexShrink: 0 }}>•</span>
+                              <span>{f}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Structured Data Grid */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem", marginBottom: "0.5rem" }}>
+                        {/* Dates */}
+                        {analysis?.dates?.length > 0 && (
+                          <div style={{ padding: "0.4rem 0.55rem", borderRadius: "0.35rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                            <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", marginBottom: "0.15rem" }}>📅 Dates</div>
+                            {analysis.dates.slice(0, 4).map((d: any, i: number) => (
+                              <div key={i} style={{ fontSize: "0.68rem", color: "var(--text-secondary)" }}>
+                                <span style={{ fontWeight: 600 }}>{d.label}:</span> {d.value}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Prices */}
+                        {analysis?.prices?.length > 0 && (
+                          <div style={{ padding: "0.4rem 0.55rem", borderRadius: "0.35rem", background: "rgba(34,197,94,0.04)", border: "1px solid rgba(34,197,94,0.12)" }}>
+                            <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#22c55e", textTransform: "uppercase", marginBottom: "0.15rem" }}>💰 Prices</div>
+                            {analysis.prices.slice(0, 4).map((p: any, i: number) => (
+                              <div key={i} style={{ fontSize: "0.68rem", color: "var(--text-secondary)" }}>
+                                <span style={{ fontWeight: 600 }}>{p.label}:</span> ${typeof p.value === "number" ? p.value.toLocaleString() : p.value}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Identifiers */}
+                        {analysis?.identifiers?.length > 0 && (
+                          <div style={{ padding: "0.4rem 0.55rem", borderRadius: "0.35rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                            <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#8b5cf6", textTransform: "uppercase", marginBottom: "0.15rem" }}>🔢 Identifiers</div>
+                            {analysis.identifiers.slice(0, 4).map((id: any, i: number) => (
+                              <div key={i} style={{ fontSize: "0.68rem", color: "var(--text-secondary)", wordBreak: "break-all" }}>
+                                <span style={{ fontWeight: 600 }}>{id.label}:</span> {id.value}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Authenticity */}
+                        {analysis?.authenticityMarkers?.length > 0 && (
+                          <div style={{ padding: "0.4rem 0.55rem", borderRadius: "0.35rem", background: "rgba(245,158,11,0.04)", border: "1px solid rgba(245,158,11,0.12)" }}>
+                            <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#f59e0b", textTransform: "uppercase", marginBottom: "0.15rem" }}>🔐 Authenticity</div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "3px" }}>
+                              {analysis.authenticityMarkers.slice(0, 5).map((m: string, i: number) => (
+                                <span key={i} style={{ fontSize: "0.58rem", padding: "1px 6px", borderRadius: "999px", background: "rgba(245,158,11,0.08)", color: "#f59e0b", fontWeight: 600 }}>
+                                  {m}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Provenance */}
+                      {analysis?.provenanceDetails?.length > 0 && (
+                        <div style={{ padding: "0.4rem 0.55rem", borderRadius: "0.35rem", background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.12)", marginBottom: "0.5rem" }}>
+                          <div style={{ fontSize: "0.5rem", fontWeight: 700, color: "#8b5cf6", textTransform: "uppercase", marginBottom: "0.15rem" }}>🏛️ Provenance</div>
+                          {analysis.provenanceDetails.slice(0, 3).map((p: string, i: number) => (
+                            <div key={i} style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.45 }}>• {p}</div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* People & Organizations */}
+                      {(analysis?.people?.length > 0 || analysis?.organizations?.length > 0) && (
+                        <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+                          {analysis?.people?.slice(0, 4).map((p: string, i: number) => (
+                            <span key={`p-${i}`} style={{ fontSize: "0.58rem", padding: "1px 6px", borderRadius: "999px", background: "rgba(0,188,212,0.08)", color: "var(--accent)", fontWeight: 600, border: "1px solid rgba(0,188,212,0.15)" }}>
+                              👤 {p}
+                            </span>
+                          ))}
+                          {analysis?.organizations?.slice(0, 4).map((o: string, i: number) => (
+                            <span key={`o-${i}`} style={{ fontSize: "0.58rem", padding: "1px 6px", borderRadius: "999px", background: "var(--ghost-bg)", color: "var(--text-secondary)", fontWeight: 600, border: "1px solid var(--border-default)" }}>
+                              🏢 {o}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Trust Score + Provider Performance Bar */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.4rem 0.55rem", borderRadius: "0.35rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                          <span style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>Trust Score</span>
+                          <span style={{
+                            fontSize: "0.85rem", fontWeight: 800,
+                            color: (analysis?.trustScore ?? 0) >= 7 ? "#22c55e" : (analysis?.trustScore ?? 0) >= 4 ? "#f59e0b" : "#ef4444",
+                          }}>
+                            {analysis?.trustScore ?? "?"}/10
+                          </span>
+                        </div>
+                        {provResults && (
+                          <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>
+                            {provResults.successCount}/{(provResults.successCount || 0) + (provResults.failCount || 0)} AIs • {provResults.agreementScore ?? 0}% agreement
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             );
           })}
@@ -568,6 +748,9 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
       )}
     </div>
     )}
+    <style>{`
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    `}</style>
     </div>
   );
 }

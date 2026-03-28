@@ -7,7 +7,7 @@ const BOT_DEFS = [
   { id: "pricebot", name: "PriceBot", icon: "💰", desc: "Deep pricing intelligence with local vs national comparisons", route: "/bots/pricebot" },
   { id: "listbot", name: "ListBot", icon: "📝", desc: "Listing optimization assistant for marketplace titles and descriptions", route: "/bots/listbot" },
   { id: "shipbot", name: "ShipBot", icon: "📦", desc: "Shipping intelligence with carrier comparisons and packaging tips", route: "/bots/shipbot" },
-  { id: "stylebot", name: "PhotoBot", icon: "📷", desc: "Visual presentation assistant for photo quality and staging", route: "/bots/stylebot" },
+  { id: "photobot", name: "PhotoBot", icon: "📷", desc: "AI photo editor — background removal, enhancement, and professional storefront imagery", route: "/bots/photobot" },
 ];
 
 export async function GET() {
