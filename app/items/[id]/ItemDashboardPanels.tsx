@@ -7430,29 +7430,67 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
       <div style={{ padding: "1.25rem" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
 
-          {/* Stats bar */}
+          {/* ═══ STAT CARDS ═══ */}
+          <div style={{
+            display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.65rem",
+          }}>
+            {[
+              { label: "Bots Enhanced", value: `${boostedCount}/${allBots.length}`, color: "var(--accent)", icon: "🤖" },
+              { label: "Agreement", value: boostedCount > 0 ? `${avgAgreement}%` : "—", color: avgAgreement >= 75 ? "#4caf50" : avgAgreement > 0 ? "#ff9800" : "var(--text-muted)", icon: "📊" },
+              { label: "AI Engines", value: "4", color: "#a855f7", icon: "⚡" },
+              { label: "Remaining", value: `${remaining.length}`, color: remaining.length > 0 ? "#f59e0b" : "#4caf50", icon: remaining.length > 0 ? "⏳" : "✅" },
+            ].map((s) => (
+              <div key={s.label} style={{
+                textAlign: "center", padding: "0.75rem 0.5rem", borderRadius: "0.75rem",
+                background: "var(--bg-card)", border: "1px solid var(--border-default)",
+              }}>
+                <div style={{ fontSize: "0.85rem", marginBottom: "0.25rem" }}>{s.icon}</div>
+                <div style={{ fontSize: "1.15rem", fontWeight: 800, color: s.color }}>{s.value}</div>
+                <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: "0.15rem" }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* ═══ CONSENSUS BARS ═══ */}
           {boostedCount > 0 && (
             <div style={{
-              display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.75rem",
+              background: "linear-gradient(135deg, rgba(139,92,246,0.05), rgba(0,188,212,0.03))",
+              borderRadius: "0.75rem", padding: "0.85rem 1rem",
+              border: "1px solid rgba(139,92,246,0.12)",
             }}>
-              {[
-                { label: "Bots Enhanced", value: `${boostedCount}/${allBots.length}`, color: "var(--accent)" },
-                { label: "Cross-Bot Agreement", value: `${avgAgreement}%`, color: avgAgreement >= 75 ? "#4caf50" : "#ff9800" },
-                { label: "AI Agents Active", value: "4", color: "#a855f7" },
-              ].map((s) => (
-                <div key={s.label} style={{
-                  textAlign: "center", padding: "0.6rem", borderRadius: "0.65rem",
-                  background: "var(--bg-card)", border: "1px solid var(--border-default)",
-                }}>
-                  <div style={{ fontSize: "1.2rem", fontWeight: 800, color: s.color }}>{s.value}</div>
-                  <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: "0.15rem" }}>{s.label}</div>
-                </div>
-              ))}
+              <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.5rem" }}>
+                CONSENSUS BY BOT
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                {allBots.filter((b) => boostedBots.has(b.key)).map((b) => {
+                  const r = boostResults[b.key];
+                  const raw = r?.agreementScore || 0;
+                  const agree = Math.round(raw > 1 ? raw : raw * 100);
+                  return (
+                    <div key={b.key} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                      <span style={{ fontSize: "0.65rem", minWidth: 80, fontWeight: 600, color: b.color, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {b.icon} {b.label}
+                      </span>
+                      <div style={{ flex: 1, height: 6, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
+                        <div style={{
+                          height: "100%", width: `${agree}%`, borderRadius: 99,
+                          background: agree >= 80 ? "linear-gradient(90deg, #10b981, #34d399)" : agree >= 60 ? "linear-gradient(90deg, #f59e0b, #fbbf24)" : "linear-gradient(90deg, #ef4444, #f87171)",
+                          transition: "width 0.5s ease",
+                        }} />
+                      </div>
+                      <span style={{
+                        fontSize: "0.62rem", fontWeight: 700, minWidth: 30, textAlign: "right" as const,
+                        color: agree >= 80 ? "#10b981" : agree >= 60 ? "#f59e0b" : "#ef4444",
+                      }}>{agree}%</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
-          {/* Boost status grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "0.4rem" }}>
+          {/* ═══ BOT STATUS GRID ═══ */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "0.4rem" }}>
             {allBots.map((b) => {
               const isBoosted = boostedBots.has(b.key);
               const result = boostResults[b.key];
@@ -7460,91 +7498,130 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
               const agreeNum = agreement ? Math.round(agreement > 1 ? agreement : agreement * 100) : 0;
               return (
                 <div key={b.key} style={{
-                  padding: "0.45rem 0.5rem",
-                  borderRadius: "0.5rem",
-                  fontSize: "0.65rem",
+                  padding: "0.5rem 0.35rem",
+                  borderRadius: "0.6rem",
+                  fontSize: "0.6rem",
                   fontWeight: 600,
-                  background: isBoosted ? `${b.color}12` : "var(--bg-card)",
+                  background: isBoosted ? `${b.color}08` : "var(--bg-card)",
                   color: isBoosted ? b.color : "var(--text-muted)",
-                  border: `1px solid ${isBoosted ? `${b.color}40` : "var(--border-default)"}`,
+                  border: `1px solid ${isBoosted ? `${b.color}35` : "var(--border-default)"}`,
                   textAlign: "center",
+                  transition: "all 0.2s ease",
                 }}>
-                  <div>{b.icon} {b.label}</div>
+                  <div style={{ fontSize: "0.85rem", marginBottom: "0.15rem" }}>{b.icon}</div>
+                  <div style={{ fontSize: "0.55rem", fontWeight: 700, lineHeight: 1.2 }}>{b.label}</div>
                   {isBoosted ? (
-                    <div style={{ fontSize: "0.55rem", marginTop: "0.15rem", opacity: 0.8 }}>
-                      ✓ {agreeNum}% agree
+                    <div style={{ fontSize: "0.5rem", marginTop: "0.2rem" }}>
+                      <span style={{
+                        padding: "0.1rem 0.3rem", borderRadius: 99,
+                        background: agreeNum >= 75 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)",
+                        color: agreeNum >= 75 ? "#4caf50" : "#ff9800",
+                        fontWeight: 700,
+                      }}>✓ {agreeNum}%</span>
                     </div>
                   ) : (
-                    <div style={{ fontSize: "0.55rem", marginTop: "0.15rem", opacity: 0.5 }}>—</div>
+                    <div style={{ fontSize: "0.5rem", marginTop: "0.2rem", opacity: 0.4 }}>—</div>
                   )}
                 </div>
               );
             })}
           </div>
 
-          {/* Agent spotlight cards (only when results exist) */}
+          {/* ═══ AGENT PERFORMANCE CARDS ═══ */}
           {boostedCount > 0 && (
             <div>
-              <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.5rem", fontWeight: 600 }}>Agent Performance</div>
+              <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.5rem", fontWeight: 700 }}>AI ENGINE PERFORMANCE</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
-                {agentStats.map((a) => (
-                  <div key={a.key} style={{
-                    padding: "0.5rem", borderRadius: "0.5rem",
-                    background: "var(--bg-card)", border: `1px solid ${a.color}30`,
-                    textAlign: "center",
-                  }}>
-                    <div style={{ fontSize: "1rem" }}>{a.icon}</div>
-                    <div style={{ fontSize: "0.62rem", fontWeight: 700, color: a.color, marginTop: "0.15rem" }}>{a.label}</div>
-                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
-                      {a.successes}/{a.total} runs
-                    </div>
-                    {a.avgTime > 0 && (
-                      <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>
-                        ~{(a.avgTime / 1000).toFixed(1)}s avg
+                {agentStats.map((a) => {
+                  const rate = a.total > 0 ? Math.round((a.successes / a.total) * 100) : 0;
+                  return (
+                    <div key={a.key} style={{
+                      padding: "0.65rem 0.5rem", borderRadius: "0.65rem",
+                      background: a.successes > 0 ? `${a.color}06` : "var(--bg-card)",
+                      border: `1px solid ${a.successes > 0 ? `${a.color}25` : "var(--border-default)"}`,
+                      textAlign: "center",
+                    }}>
+                      <div style={{
+                        width: 28, height: 28, borderRadius: "50%", margin: "0 auto 0.35rem",
+                        background: a.successes > 0 ? `${a.color}18` : "var(--ghost-bg)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: "0.85rem",
+                        boxShadow: a.successes > 0 ? `0 0 8px ${a.color}25` : "none",
+                      }}>{a.icon}</div>
+                      <div style={{ fontSize: "0.65rem", fontWeight: 700, color: a.successes > 0 ? a.color : "var(--text-muted)" }}>{a.label}</div>
+                      <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", marginTop: "0.1rem", fontFamily: "monospace" }}>
+                        {a.key === "openai" ? "gpt-4o" : a.key === "claude" ? "haiku" : a.key === "gemini" ? "1.5-flash" : "grok-3"}
                       </div>
-                    )}
-                  </div>
-                ))}
+                      {/* Success rate bar */}
+                      <div style={{ margin: "0.3rem auto 0", width: "80%", height: 4, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
+                        <div style={{
+                          height: "100%", width: `${rate}%`, borderRadius: 99,
+                          background: a.color, transition: "width 0.4s ease",
+                        }} />
+                      </div>
+                      <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+                        {a.successes}/{a.total} · {a.avgTime > 0 ? `~${(a.avgTime / 1000).toFixed(1)}s` : "—"}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {/* Status / CTA */}
+          {/* ═══ EMPTY STATE ═══ */}
           {boostedCount === 0 && (
-            <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", textAlign: "center", lineHeight: 1.5, margin: 0 }}>
-              Run MegaBot on individual bots above, or boost all remaining at once for the best results.
-            </p>
+            <div style={{
+              padding: "1.5rem", textAlign: "center", borderRadius: "0.75rem",
+              background: "linear-gradient(135deg, rgba(139,92,246,0.04), rgba(0,188,212,0.02))",
+              border: "1px solid rgba(139,92,246,0.1)",
+            }}>
+              <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>⚡</div>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: 1.5, margin: "0 0 0.75rem 0" }}>
+                Run MegaBot on individual bots above, or boost all at once for maximum AI consensus.
+              </p>
+            </div>
           )}
 
-          {/* Boost All button */}
+          {/* ═══ BOOST ALL BUTTON ═══ */}
           {remaining.length > 0 && aiData && (
             <div style={{ display: "flex", justifyContent: "center" }}>
               <button
                 onClick={onBoostAll}
                 style={{
-                  padding: "0.55rem 1.5rem",
+                  padding: "0.65rem 2rem",
                   fontSize: "0.82rem",
                   fontWeight: 700,
-                  borderRadius: "0.6rem",
-                  border: "1px solid rgba(0,188,212,0.3)",
-                  background: "linear-gradient(135deg, rgba(0,188,212,0.1), rgba(255,215,0,0.05))",
-                  color: "var(--accent)",
+                  borderRadius: "10px",
+                  border: "none",
+                  background: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+                  color: "#fff",
                   cursor: "pointer",
+                  boxShadow: "0 4px 16px rgba(139,92,246,0.3)",
+                  transition: "all 0.2s ease",
                 }}>
-                ⚡ Boost All Remaining · {remaining.length * 5} credits
+                ⚡ Boost {remaining.length === allBots.length ? "All" : `${remaining.length} Remaining`} · {remaining.length * 5} credits
               </button>
             </div>
           )}
         </div>
       </div>
 
-      <div style={{ padding: "0.65rem 1.25rem", borderTop: "1px solid var(--border-default)" }}>
+      {/* ═══ FOOTER LINK ═══ */}
+      <div style={{ padding: "0.75rem 1.25rem", borderTop: "1px solid var(--border-default)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <a href={`/bots/megabot?item=${itemId}`} style={{
-          padding: "0.3rem 0.75rem", fontSize: "0.72rem", fontWeight: 600, borderRadius: "0.5rem",
-          border: "1px solid var(--accent)", background: "transparent", color: "var(--accent)", textDecoration: "none",
+          padding: "0.35rem 0.85rem", fontSize: "0.72rem", fontWeight: 600, borderRadius: "8px",
+          border: "1px solid rgba(139,92,246,0.3)", background: "rgba(139,92,246,0.06)",
+          color: "#8b5cf6", textDecoration: "none",
+          transition: "all 0.15s ease",
         }}>
-          Open MegaBot Dashboard →
+          Open MegaBot Console →
         </a>
+        {boostedCount > 0 && (
+          <span style={{ fontSize: "0.58rem", color: "var(--text-muted)" }}>
+            {boostedCount * 4} agent analyses completed
+          </span>
+        )}
       </div>
       </div>
     </GlassCard>

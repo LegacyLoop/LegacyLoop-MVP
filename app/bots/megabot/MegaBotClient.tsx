@@ -2681,6 +2681,123 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
             ))}
           </div>
 
+          {/* ═══ AI ENGINE STATUS DASHBOARD ═══ */}
+          <div style={{
+            background: "linear-gradient(135deg, rgba(139,92,246,0.06), rgba(0,188,212,0.04))",
+            borderRadius: "1rem", padding: "1.25rem",
+            border: "1px solid rgba(139,92,246,0.15)",
+          }}>
+            <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "#8b5cf6", fontWeight: 700, marginBottom: "0.75rem" }}>
+              AI ENGINE STATUS
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.65rem" }}>
+              {[
+                { key: "openai", name: "GPT-4o", icon: "🤖", color: "#10a37f", specialty: "Balanced & Data-Driven", model: "gpt-4o" },
+                { key: "claude", name: "Claude", icon: "🧠", color: "#d97706", specialty: "Craftsmanship & History", model: "claude-3.5-haiku" },
+                { key: "gemini", name: "Gemini", icon: "🔮", color: "#4285f4", specialty: "Market & Trends", model: "gemini-1.5-flash" },
+                { key: "grok", name: "Grok", icon: "🌀", color: "#00DC82", specialty: "Social & Viral", model: "grok-3-fast" },
+              ].map((engine) => {
+                const engineRuns = Object.values(megaResults || {}).reduce((count: number, result: any) => {
+                  const providers: any[] = result?.providers || [];
+                  return count + (providers.some((p: any) => p.provider === engine.key && !p.error) ? 1 : 0);
+                }, 0);
+                const avgTime = (() => {
+                  let total = 0, n = 0;
+                  for (const result of Object.values(megaResults || {})) {
+                    const providers: any[] = (result as any)?.providers || [];
+                    const matched = providers.find((pp: any) => pp.provider === engine.key && !pp.error);
+                    if (matched?.durationMs) { total += matched.durationMs; n++; }
+                  }
+                  return n > 0 ? (total / n / 1000).toFixed(1) : null;
+                })();
+                const isOnline = engineRuns > 0;
+                return (
+                  <div key={engine.key} style={{
+                    padding: "0.85rem 0.65rem", borderRadius: "0.75rem",
+                    background: isOnline ? `${engine.color}08` : "var(--bg-card)",
+                    border: `1px solid ${isOnline ? `${engine.color}30` : "var(--border-default)"}`,
+                    textAlign: "center", transition: "all 0.2s ease",
+                  }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: "50%", margin: "0 auto 0.5rem",
+                      background: isOnline ? `${engine.color}20` : "var(--ghost-bg)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "1rem",
+                      boxShadow: isOnline ? `0 0 12px ${engine.color}30` : "none",
+                    }}>
+                      {engine.icon}
+                    </div>
+                    <div style={{ fontSize: "0.78rem", fontWeight: 700, color: isOnline ? engine.color : "var(--text-muted)" }}>{engine.name}</div>
+                    <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", marginTop: "0.1rem", fontFamily: "monospace" }}>{engine.model}</div>
+                    <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontStyle: "italic", marginTop: "0.15rem" }}>{engine.specialty}</div>
+                    {isOnline && (
+                      <div style={{ marginTop: "0.35rem", fontSize: "0.55rem", color: "var(--text-secondary)" }}>
+                        {engineRuns} run{engineRuns !== 1 ? "s" : ""}{avgTime ? ` · ~${avgTime}s` : ""}
+                      </div>
+                    )}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.3rem", marginTop: "0.35rem" }}>
+                      <div style={{
+                        width: 6, height: 6, borderRadius: "50%",
+                        background: isOnline ? engine.color : "var(--text-muted)",
+                        opacity: isOnline ? 1 : 0.3,
+                        boxShadow: isOnline ? `0 0 6px ${engine.color}` : "none",
+                      }} />
+                      <span style={{ fontSize: "0.48rem", color: isOnline ? engine.color : "var(--text-muted)", fontWeight: 600 }}>
+                        {isOnline ? "ACTIVE" : "STANDBY"}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ═══ CONSENSUS STRENGTH VISUALIZATION ═══ */}
+          {totalBots >= 2 && (() => {
+            const allAgreements = botKeys.map((key) => {
+              const r = megaResults![key];
+              const raw = r?.agreementScore || 0;
+              return { key, agree: Math.round(raw > 1 ? raw : raw * 100), botMeta: BOT_META[key] || { label: key, icon: "🤖", color: "#888", href: "/bots" } };
+            }).sort((a, b) => b.agree - a.agree);
+            const high = allAgreements.filter((a) => a.agree >= 75);
+            const low = allAgreements.filter((a) => a.agree < 75 && a.agree > 0);
+            return (
+              <div style={{
+                background: "var(--bg-card)", borderRadius: "1rem", padding: "1.25rem",
+                border: "1px solid rgba(139,92,246,0.12)",
+              }}>
+                <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "#a855f7", fontWeight: 700, marginBottom: "0.75rem" }}>
+                  CONSENSUS STRENGTH
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
+                  {allAgreements.map((a) => (
+                    <div key={a.key} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <span style={{ fontSize: "0.72rem", minWidth: 95, fontWeight: 600, color: a.botMeta.color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {a.botMeta.icon} {a.botMeta.label}
+                      </span>
+                      <div style={{ flex: 1, height: 8, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
+                        <div style={{
+                          height: "100%", width: `${a.agree}%`, borderRadius: 99,
+                          background: a.agree >= 80 ? "linear-gradient(90deg, #10b981, #34d399)" : a.agree >= 60 ? "linear-gradient(90deg, #f59e0b, #fbbf24)" : "linear-gradient(90deg, #ef4444, #f87171)",
+                          transition: "width 0.6s ease",
+                        }} />
+                      </div>
+                      <span style={{
+                        fontSize: "0.7rem", fontWeight: 700, minWidth: 35, textAlign: "right",
+                        color: a.agree >= 80 ? "#10b981" : a.agree >= 60 ? "#f59e0b" : "#ef4444",
+                      }}>{a.agree}%</span>
+                    </div>
+                  ))}
+                </div>
+                {high.length > 0 && low.length > 0 && (
+                  <div style={{ marginTop: "0.75rem", padding: "0.6rem 0.85rem", borderRadius: "0.65rem", background: "rgba(255,152,0,0.06)", border: "1px solid rgba(255,152,0,0.12)", fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                    Strong agreement on {high.map((a) => a.botMeta.label).join(", ")}. Review {low.map((a) => a.botMeta.label).join(", ")} for differing AI perspectives.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {/* Bot tabs */}
           <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
             {botKeys.map((key) => {
@@ -2901,55 +3018,61 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
             );
           })()}
 
-          {/* How it works */}
+          {/* ═══ HOW MEGABOT WORKS ═══ */}
           <div style={{
-            background: "rgba(0,188,212,0.06)",
-            border: "1px solid rgba(0,188,212,0.12)",
-            borderRadius: "1.25rem",
-            padding: "1.5rem",
+            borderRadius: "1rem", padding: "3px",
+            background: "linear-gradient(135deg, rgba(0,188,212,0.4), rgba(139,92,246,0.3), rgba(0,188,212,0.4))",
           }}>
-            <div style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent)", marginBottom: "0.75rem", fontWeight: 600 }}>How MegaBot Works</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1rem" }}>
-              {[
-                { step: "1", title: "Pick a Bot", desc: "Go to any specialist bot (AnalyzeBot, PriceBot, etc.)" },
-                { step: "2", title: "Run MegaBot", desc: "Click 'MegaBot' to activate multi-agent mode" },
-                { step: "3", title: "4 Agents", desc: "OpenAI, Claude, Gemini, and Grok analyze simultaneously" },
-                { step: "4", title: "Master Summary", desc: "Results are merged into a consensus with recommendations" },
-              ].map((s) => (
-                <div key={s.step} style={{ display: "flex", gap: "0.75rem" }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
-                    background: "rgba(0,188,212,0.15)", display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: "0.75rem", fontWeight: 700, color: "var(--accent)",
-                  }}>{s.step}</div>
-                  <div>
-                    <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)" }}>{s.title}</div>
-                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.4 }}>{s.desc}</div>
+            <div style={{
+              borderRadius: "calc(1rem - 3px)", padding: "1.25rem 1.5rem",
+              background: "var(--bg-card-solid, var(--bg-card))",
+            }}>
+              <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--accent)", marginBottom: "1rem", fontWeight: 700 }}>
+                HOW MEGABOT WORKS
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.85rem" }}>
+                {[
+                  { step: "1", icon: "🎯", title: "Pick a Bot", desc: "Go to any specialist bot on the item page" },
+                  { step: "2", icon: "⚡", title: "Activate MegaBot", desc: "Click MegaBot to enter multi-agent mode" },
+                  { step: "3", icon: "🧠", title: "4 AI Engines", desc: "OpenAI, Claude, Gemini & Grok analyze in parallel" },
+                  { step: "4", icon: "✅", title: "Consensus", desc: "Results merged into a unified recommendation" },
+                ].map((s) => (
+                  <div key={s.step} style={{
+                    textAlign: "center", padding: "1rem 0.5rem", borderRadius: "0.75rem",
+                    background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                  }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: "50%", margin: "0 auto 0.5rem",
+                      background: "linear-gradient(135deg, rgba(0,188,212,0.15), rgba(139,92,246,0.1))",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "1rem",
+                    }}>{s.icon}</div>
+                    <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.2rem" }}>{s.title}</div>
+                    <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", lineHeight: 1.4 }}>{s.desc}</div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          {/* ═══ QUICK ACTIONS ═══ */}
+          <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
             {selectedId && (
-              <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>
-                <Link href={`/items/${selectedId}`} style={{
-                  display: "inline-flex", alignItems: "center", gap: "0.35rem",
-                  fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
-                  textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
-                  border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
-                }}>
-                  ← Back to Item
-                </Link>
-              </div>
+              <Link href={`/items/${selectedId}`} style={{
+                display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                fontSize: "0.75rem", fontWeight: 600, color: "var(--accent)",
+                textDecoration: "none", padding: "0.4rem 0.85rem", borderRadius: "0.5rem",
+                border: "1px solid rgba(0,188,212,0.25)", background: "rgba(0,188,212,0.06)",
+                transition: "all 0.15s ease",
+              }}>
+                📋 View Item Dashboard
+              </Link>
             )}
             <button onClick={() => setShowJson(!showJson)} style={{
-              padding: "0.35rem 0.85rem", fontSize: "0.75rem", fontWeight: 600, borderRadius: "0.5rem",
+              padding: "0.4rem 0.85rem", fontSize: "0.75rem", fontWeight: 600, borderRadius: "0.5rem",
               border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer",
             }}>
-              {showJson ? "Hide JSON" : "View Raw JSON"}
+              {showJson ? "Hide JSON" : "🔍 View Raw JSON"}
             </button>
           </div>
           {showJson && (
@@ -2960,109 +3083,66 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
         </div>
       )}
 
-      {/* ── FEATURE 2: Sticky Bottom Action Bar ── */}
+      {/* ═══ STICKY BOTTOM ACTION BAR ═══ */}
       {item && (
-        <div style={{
-          position: "fixed",
+        <div data-no-print style={{
+          position: "sticky" as const,
           bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50,
-          background: "var(--bg-card)",
-          borderTop: "1px solid var(--border-default)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          padding: "0.75rem 1.5rem",
+          zIndex: 100,
+          background: "var(--bg-card-solid, var(--bg-card))",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderTop: "1px solid rgba(139,92,246,0.2)",
+          boxShadow: "0 -2px 12px rgba(0,0,0,0.08)",
+          padding: "0.6rem 1.25rem",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "space-between",
           gap: "0.75rem",
         }}>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            maxWidth: "900px",
-            width: "100%",
-          }}>
-            {/* Item thumbnail + name */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1, minWidth: 0 }}>
-              {item.photo ? (
-                <img src={item.photo} alt="" style={{ width: 36, height: 36, borderRadius: "0.5rem", objectFit: "cover", flexShrink: 0 }} />
-              ) : (
-                <div style={{ width: 36, height: 36, borderRadius: "0.5rem", background: "rgba(139,92,246,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem", flexShrink: 0 }}>{"\uD83E\uDD16"}</div>
-              )}
-              <span style={{
-                fontSize: "0.82rem",
-                fontWeight: 600,
-                color: "var(--text-primary)",
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-              }}>{item.title}</span>
-            </div>
-
-            {/* View Item link */}
-            <Link href={`/items/${item.id}`} style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "0.35rem",
-              padding: "0 1.25rem",
-              minHeight: "44px",
-              borderRadius: "0.65rem",
-              border: "1px solid var(--border-default)",
-              background: "transparent",
-              color: "var(--text-secondary)",
-              fontSize: "0.82rem",
-              fontWeight: 600,
-              textDecoration: "none",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}>
-              View Item
-            </Link>
-
-            {/* Run MegaBot button */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flex: 1, minWidth: 0, maxWidth: "200px" }}>
+            {item.photo ? (
+              <img src={item.photo} alt="" style={{ width: 32, height: 32, borderRadius: "0.3rem", objectFit: "cover" as const, flexShrink: 0 }} />
+            ) : (
+              <div style={{ width: 32, height: 32, borderRadius: "0.3rem", background: "rgba(139,92,246,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.85rem", flexShrink: 0 }}>⚡</div>
+            )}
+            <span style={{
+              fontSize: "0.75rem", fontWeight: 600, color: "var(--text-primary)",
+              overflow: "hidden", whiteSpace: "nowrap" as const, textOverflow: "ellipsis",
+            }}>{item.title}</span>
+          </div>
+          <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
             <button
               onClick={handleRunMegaBot}
               disabled={megaRunning}
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "0.4rem",
-                padding: "0 1.5rem",
-                minHeight: "44px",
-                borderRadius: "0.65rem",
-                border: "none",
-                background: megaRunning ? "rgba(139,92,246,0.4)" : "linear-gradient(135deg, #8b5cf6, #6d28d9)",
-                color: "#fff",
-                fontSize: "0.85rem",
-                fontWeight: 700,
+                padding: "0.45rem 1rem", fontSize: "0.75rem", fontWeight: 700,
+                borderRadius: "10px", border: "none",
+                background: megaRunning ? "var(--ghost-bg)" : "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+                color: megaRunning ? "var(--text-muted)" : "#fff",
                 cursor: megaRunning ? "not-allowed" : "pointer",
-                whiteSpace: "nowrap",
-                boxShadow: megaRunning ? "none" : "0 4px 14px rgba(139,92,246,0.35)",
+                minHeight: "36px", whiteSpace: "nowrap" as const,
+                boxShadow: megaRunning ? "none" : "0 2px 10px rgba(139,92,246,0.3)",
                 transition: "all 0.2s ease",
               }}
             >
-              {megaRunning ? (
-                <>
-                  <span style={{ display: "inline-block", animation: "spin 1s linear infinite", fontSize: "1rem" }}>{"\u2699\uFE0F"}</span>
-                  Running...
-                </>
-              ) : (
-                <>
-                  {"\uD83E\uDD16"} Run MegaBot
-                </>
-              )}
+              {megaRunning ? "⏳ Running..." : "⚡ Run MegaBot · 5 cr"}
             </button>
+            <Link
+              href={`/items/${item.id}`}
+              style={{
+                padding: "0.45rem 0.85rem", fontSize: "0.72rem", fontWeight: 600,
+                borderRadius: "10px", textDecoration: "none", minHeight: "36px",
+                background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                color: "var(--text-secondary)", display: "flex", alignItems: "center",
+                whiteSpace: "nowrap" as const,
+              }}
+            >
+              View Item →
+            </Link>
           </div>
         </div>
       )}
-
-      {/* Spacer so content isn't hidden behind sticky bar */}
-      {item && <div style={{ height: "80px" }} />}
     </div>
   );
 }

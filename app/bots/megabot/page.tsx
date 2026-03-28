@@ -57,13 +57,74 @@ export default async function MegaBotPage() {
   return (
     <div style={{ maxWidth: "900px", margin: "0 auto" }}>
       <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Bots", href: "/bots" }, { label: "MegaBot Analysis" }]} />
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "2rem" }}>
-        <div style={{ width: 48, height: 48, borderRadius: "0.75rem", background: "rgba(0,188,212,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem" }}>🤖</div>
-        <div>
-          <h1 className="h2">MegaBot</h1>
-          <p className="muted" style={{ fontSize: "0.85rem" }}>Multi-agent power-up — orchestrates OpenAI, Claude, Gemini, and Grok across all specialist bots</p>
+
+      {/* ═══ PREMIUM HERO HEADER ═══ */}
+      <div style={{
+        borderRadius: "1rem",
+        padding: "3px",
+        background: "linear-gradient(135deg, #8b5cf6, #6d28d9, #8b5cf6)",
+        boxShadow: "0 4px 24px rgba(139,92,246,0.2)",
+        marginBottom: "1.5rem",
+      }}>
+        <div style={{
+          borderRadius: "calc(1rem - 3px)",
+          padding: "1.5rem 2rem",
+          background: "var(--bg-card-solid, #fff)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: "14px",
+                background: "linear-gradient(135deg, #8b5cf6, #6d28d9)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "1.6rem", flexShrink: 0,
+                boxShadow: "0 4px 16px rgba(139,92,246,0.3)",
+              }}>⚡</div>
+              <div>
+                <h1 style={{ fontSize: "1.4rem", fontWeight: 800, letterSpacing: "-0.02em", color: "var(--text-primary)", margin: 0 }}>
+                  MegaBot Console
+                </h1>
+                <p style={{ fontSize: "0.72rem", fontWeight: 500, color: "var(--text-muted)", margin: "0.15rem 0 0 0" }}>
+                  4-Engine AI Consensus — OpenAI + Claude + Gemini + Grok in parallel
+                </p>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              <span style={{
+                padding: "0.2rem 0.65rem", borderRadius: "999px", fontSize: "0.58rem", fontWeight: 700,
+                background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.25)", color: "#8b5cf6",
+              }}>
+                PREMIUM
+              </span>
+              <span style={{
+                padding: "0.2rem 0.65rem", borderRadius: "999px", fontSize: "0.58rem", fontWeight: 700,
+                background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.25)", color: "#00bcd4",
+              }}>
+                4 AI Engines
+              </span>
+              <span style={{
+                padding: "0.2rem 0.65rem", borderRadius: "999px", fontSize: "0.58rem", fontWeight: 700,
+                background: "rgba(76,175,80,0.1)", border: "1px solid rgba(76,175,80,0.25)", color: "#4caf50",
+              }}>
+                Multi-Agent
+              </span>
+            </div>
+          </div>
+          {/* Metrics strip */}
+          <div style={{ display: "flex", gap: "1.25rem", marginTop: "0.85rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border-default)" }}>
+            <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
+              Items: <strong style={{ color: "#8b5cf6", fontWeight: 800 }}>{serialized.length}</strong>
+            </span>
+            <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
+              Analyzed: <strong style={{ color: "#8b5cf6", fontWeight: 800 }}>{serialized.filter(i => i.hasAnalysis).length}</strong>
+            </span>
+            <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
+              With Valuation: <strong style={{ color: "#8b5cf6", fontWeight: 800 }}>{serialized.filter(i => i.valuation).length}</strong>
+            </span>
+          </div>
         </div>
       </div>
+
       <Suspense><MegaBotClient items={serialized} /></Suspense>
     </div>
   );
