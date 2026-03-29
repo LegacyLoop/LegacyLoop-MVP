@@ -8,6 +8,7 @@ import { suggestPackage, suggestShippingMethod } from "@/lib/shipping/package-su
 import { getMetroEstimates } from "@/lib/shipping/metro-estimates";
 import VehicleSpecsCard from "./VehicleSpecsCard";
 import { detectCollectible } from "@/lib/collectible-detect";
+import ItemIntelligenceSummary from "./ItemIntelligenceSummary";
 import { PROCESSING_FEE } from "@/lib/constants/pricing";
 import EnrichmentBadge from "@/app/components/EnrichmentBadge";
 import BotLoadingState from "@/app/components/BotLoadingState";
@@ -9595,6 +9596,37 @@ export default function ItemDashboardPanels({
           </div>
         </div>
       )}
+
+      {/* ── ITEM INTELLIGENCE SUMMARY (right after Control Center) ── */}
+      <div style={{ marginBottom: "1rem" }}>
+        <ItemIntelligenceSummary
+          itemId={itemId}
+          status={status}
+          aiData={aiData}
+          valuation={valuation}
+          antique={antique}
+          enriched={null}
+          engagement={{
+            totalViews: controlCenterExtra?.totalViews ?? 0,
+            inquiries: controlCenterExtra?.inquiries ?? 0,
+            buyersFound: controlCenterExtra?.buyersFound ?? 0,
+            documentCount: controlCenterExtra?.documentCount ?? 0,
+          }}
+          shippingData={{
+            weight: shippingData?.weight ?? null,
+            isFragile: shippingData?.isFragile ?? false,
+            preference: shippingData?.preference ?? "BUYER_PAYS",
+            aiShippingDifficulty: shippingData?.aiShippingDifficulty ?? null,
+          }}
+          saleMethod="BOTH"
+          listingPrice={listingPrice ?? null}
+          hasPhotos={(photos?.length ?? 0) > 0}
+          photoCount={photos?.length ?? 0}
+          isAntique={!!antique?.isAntique}
+          isCollectible={false}
+          authenticityScore={authenticityScore?.score ?? null}
+        />
+      </div>
 
       {/* ── ENRICHMENT STATUS BADGE ── */}
       {enrichmentStatus?.hasEnrichment && (
