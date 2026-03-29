@@ -192,6 +192,18 @@ CRITICAL: These are REAL comparable sales from actual marketplaces. Your revised
           )
         ).catch(() => null);
       }
+
+      // TikTok demand signal (runs regardless of comp count)
+      if (marketIntel?.tiktokDemand?.isTrending) {
+        realCompsContext += `\n\nTIKTOK DEMAND SIGNAL: This item is ${marketIntel.tiktokDemand.demandSignal.toUpperCase()} on TikTok (${marketIntel.tiktokDemand.videoCount} videos, ${marketIntel.tiktokDemand.totalViews.toLocaleString()} total views). Trending items command 10-30% premium pricing. Factor this into your demand_level assessment.`;
+      }
+
+      // Google Shopping retail anchor
+      const googleComps = (marketIntel?.comps || []).filter((c: any) => c.platform === "Google Shopping");
+      if (googleComps.length > 0) {
+        const avgRetail = Math.round(googleComps.reduce((s: number, c: any) => s + c.price, 0) / googleComps.length);
+        realCompsContext += `\n\nGOOGLE SHOPPING RETAIL: Average new retail price across ${googleComps.length} stores: $${avgRetail}. Used/secondhand should be 25-70% of this depending on condition and demand.`;
+      }
     } catch (e) {
       console.log("[PriceBot] Market intelligence unavailable — proceeding with AI-only pricing");
     }

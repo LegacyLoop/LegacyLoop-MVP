@@ -8,6 +8,14 @@ export interface MarketComp {
   location?: string | null;
 }
 
+export interface TikTokDemand {
+  isTrending: boolean;
+  demandSignal: "viral" | "trending" | "moderate" | "low" | "none";
+  videoCount: number;
+  totalViews: number;
+  topHashtags: string[];
+}
+
 export interface MarketIntelligence {
   comps: MarketComp[];
   median: number;
@@ -18,6 +26,7 @@ export interface MarketIntelligence {
   sources: string[];
   queriedAt: string;
   compCount: number;
+  tiktokDemand?: TikTokDemand | null;
 }
 
 export interface ScraperResult {

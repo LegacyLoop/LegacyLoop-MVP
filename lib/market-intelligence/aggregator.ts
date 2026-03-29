@@ -1,5 +1,6 @@
 import type { MarketIntelligence, ScraperResult, MarketComp } from "./types";
 import { deduplicateComps } from "./scraper-base";
+// Built-in scrapers (free, fast)
 import { scrapeEbaySold } from "./adapters/ebay-sold";
 import { scrapeTcgPlayer } from "./adapters/tcgplayer";
 import { queryDiscogs } from "./adapters/discogs";
@@ -7,6 +8,13 @@ import { scrapeHeritage } from "./adapters/heritage-auctions";
 import { scrapeCraigslist } from "./adapters/craigslist";
 import { scrapeUncleHenrys } from "./adapters/uncle-henrys";
 import { scrapeMercari } from "./adapters/mercari";
+import { scrapeOfferUp } from "./adapters/offerup";
+// Apify-powered scrapers (paid, reliable)
+import { scrapeFacebookMarketplace } from "./adapters/facebook-marketplace";
+import { scrapeEbayApify } from "./adapters/ebay-apify";
+import { scrapeGoogleShopping } from "./adapters/google-shopping";
+import { scrapeAmazonApify } from "./adapters/amazon-apify";
+import { checkTikTokTrend } from "./adapters/tiktok-trends";
 
 type ScraperFn = (query: string) => Promise<ScraperResult>;
 
@@ -53,11 +61,16 @@ export async function getMarketIntelligence(
   // Category-specific scrapers
   const categoryAdapters = CATEGORY_ADAPTER_MAP[category] || [];
 
-  // Always-run scrapers: eBay, Craigslist (local), Mercari
+  // Always-run scrapers: built-in (free) + Apify (paid, graceful fallback)
   const alwaysAdapters: Array<() => Promise<ScraperResult>> = [
+    // Built-in (free, fast)
     () => scrapeEbaySold(itemName),
     () => scrapeCraigslist(itemName, sellerZip),
     () => scrapeMercari(itemName),
+    () => scrapeOfferUp(itemName, sellerZip),
+    // Apify-powered (paid — returns success:false if no token/taskId)
+    () => scrapeFacebookMarketplace(itemName, sellerZip),
+    () => scrapeGoogleShopping(itemName),
   ];
 
   // Maine-specific: include Uncle Henry's
@@ -66,11 +79,14 @@ export async function getMarketIntelligence(
     alwaysAdapters.push(() => scrapeUncleHenrys(itemName));
   }
 
-  // Dedupe: if a category adapter is already in always-run, skip it
-  const alwaysFnNames = new Set(["scrapeEbaySold", "scrapeCraigslist", "scrapeMercari", "scrapeUncleHenrys"]);
+  // Dedupe: skip category adapters already covered by always-run
+  const alwaysFnNames = new Set([
+    "scrapeEbaySold", "scrapeCraigslist", "scrapeMercari", "scrapeUncleHenrys",
+    "scrapeOfferUp", "scrapeFacebookMarketplace", "scrapeGoogleShopping",
+  ]);
   const extraAdapters = categoryAdapters.filter((fn) => !alwaysFnNames.has(fn.name));
 
-  // Run all adapters in parallel with 15s overall timeout
+  // Run all scrapers in parallel
   const allFns = [
     ...alwaysAdapters,
     ...extraAdapters.map((fn) => () => fn(itemName)),
@@ -79,7 +95,7 @@ export async function getMarketIntelligence(
   const settled = await Promise.allSettled(
     allFns.map((fn) => {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      const timeout = setTimeout(() => controller.abort(), 45000);
       return fn().finally(() => clearTimeout(timeout));
     })
   );
@@ -92,6 +108,29 @@ export async function getMarketIntelligence(
       allComps.push(...result.value.comps);
       if (!sources.includes(result.value.source)) sources.push(result.value.source);
     }
+  }
+
+  // eBay Apify fallback: only fire if built-in eBay returned 0 results
+  const hasEbayComps = allComps.some((c) => c.platform.includes("eBay"));
+  if (!hasEbayComps && process.env.APIFY_TASK_EBAY) {
+    try {
+      const ebayBackup = await scrapeEbayApify(itemName);
+      if (ebayBackup.success) {
+        allComps.push(...ebayBackup.comps);
+        if (!sources.includes(ebayBackup.source)) sources.push(ebayBackup.source);
+      }
+    } catch { /* non-critical */ }
+  }
+
+  // Amazon Apify: run as supplementary retail anchor (not a comp source — retail prices)
+  if (process.env.APIFY_TASK_AMAZON) {
+    try {
+      const amazonResult = await scrapeAmazonApify(itemName);
+      if (amazonResult.success) {
+        allComps.push(...amazonResult.comps);
+        if (!sources.includes(amazonResult.source)) sources.push(amazonResult.source);
+      }
+    } catch { /* non-critical */ }
   }
 
   // Deduplicate and sort by date (newest first)
@@ -120,8 +159,25 @@ export async function getMarketIntelligence(
     trend = "Stable";
   }
 
-  // Confidence: 0.3 base + 0.05 per comp, max 0.95
-  const confidence = Math.min(0.95, 0.3 + comps.length * 0.05);
+  // Confidence: 0.3 base + 0.05 per comp + 0.05 per source, max 0.95
+  const confidence = Math.min(0.95, 0.3 + comps.length * 0.05 + sources.length * 0.05);
+
+  // TikTok demand signal (non-blocking — runs after comps are collected)
+  let tiktokDemand: MarketIntelligence["tiktokDemand"] = null;
+  if (process.env.APIFY_TASK_TIKTOK) {
+    try {
+      const tt = await checkTikTokTrend(itemName);
+      if (tt.success) {
+        tiktokDemand = {
+          isTrending: tt.isTrending,
+          demandSignal: tt.demandSignal,
+          videoCount: tt.videoCount,
+          totalViews: tt.totalViews,
+          topHashtags: tt.topHashtags,
+        };
+      }
+    } catch { /* non-critical */ }
+  }
 
   const result: MarketIntelligence = {
     comps,
@@ -133,9 +189,10 @@ export async function getMarketIntelligence(
     sources,
     queriedAt: new Date().toISOString(),
     compCount: comps.length,
+    tiktokDemand,
   };
 
   resultCache.set(cacheKey, { result, builtAt: Date.now() });
-  console.log(`[market-intel] Aggregated ${comps.length} comps from ${sources.join(", ")} for "${itemName.slice(0, 40)}" [${category}]${isMaine ? " (Maine — Uncle Henry's included)" : ""}`);
+  console.log(`[market-intel] Aggregated ${comps.length} comps from ${sources.join(", ")} for "${itemName.slice(0, 40)}" [${category}]${isMaine ? " (Maine)" : ""}${tiktokDemand?.isTrending ? ` [TikTok: ${tiktokDemand.demandSignal}]` : ""}`);
   return result;
 }
