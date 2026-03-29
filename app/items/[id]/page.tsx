@@ -402,27 +402,6 @@ export default async function ItemPage({ params }: { params: Params }) {
         />
       </div>
 
-      {/* ═══ Item Intelligence Summary ═══ */}
-      <div style={{ marginTop: "1.25rem" }}>
-        <ItemIntelligenceSummary
-          itemId={item.id}
-          status={item.status}
-          aiData={aiObj}
-          valuation={v}
-          antique={antique}
-          enriched={enriched}
-          engagement={{ totalViews: engagement?.totalViews ?? 0, inquiries: engagement?.inquiries ?? 0, buyersFound: engagement?.buyersFound ?? 0, documentCount: docCount }}
-          shippingData={{ weight: (item as any).shippingWeight ?? null, isFragile: (item as any).isFragile ?? false, preference: (item as any).shippingPreference ?? "BUYER_PAYS", aiShippingDifficulty: null }}
-          saleMethod={(item as any).saleMethod ?? "BOTH"}
-          listingPrice={(item as any).listingPrice ?? null}
-          hasPhotos={item.photos.length > 0}
-          photoCount={item.photos.length}
-          isAntique={showAntiqueUI}
-          isCollectible={showCollectibleUI}
-          authenticityScore={authenticityScore?.score ?? null}
-        />
-      </div>
-
       {/* ═══ Bot Dashboard Panels ═══ */}
       <div style={{ marginTop: "1.75rem" }}>
         <ItemDashboardPanels
@@ -510,6 +489,27 @@ export default async function ItemPage({ params }: { params: Params }) {
             shippingReady: !!((item as any).shippingWeight && (item as any).shippingLength),
           }}
           projectId={item.projectId ?? null}
+        />
+      </div>
+
+      {/* ═══ Item Intelligence Summary (below Item Control Center + bot panels) ═══ */}
+      <div style={{ marginTop: "1.25rem" }}>
+        <ItemIntelligenceSummary
+          itemId={item.id}
+          status={item.status}
+          aiData={aiObj}
+          valuation={v}
+          antique={antique}
+          enriched={enriched}
+          engagement={{ totalViews: engagement?.totalViews ?? 0, inquiries: engagement?.inquiries ?? 0, buyersFound: engagement?.buyersFound ?? 0, documentCount: docCount }}
+          shippingData={{ weight: (item as any).shippingWeight ?? null, isFragile: (item as any).isFragile ?? false, preference: (item as any).shippingPreference ?? "BUYER_PAYS", aiShippingDifficulty: null }}
+          saleMethod={(item as any).saleMethod ?? "BOTH"}
+          listingPrice={(item as any).listingPrice ?? null}
+          hasPhotos={item.photos.length > 0}
+          photoCount={item.photos.length}
+          isAntique={showAntiqueUI}
+          isCollectible={showCollectibleUI}
+          authenticityScore={authenticityScore?.score ?? null}
         />
       </div>
 
