@@ -6,6 +6,10 @@ import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { logUserEvent } from "@/lib/data/user-events";
 import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
+import { scrapeFacebookGroups } from "@/lib/market-intelligence/adapters/facebook-groups";
+import { scrapeReddit } from "@/lib/market-intelligence/adapters/reddit";
+import { scrapeRedditBuiltin } from "@/lib/market-intelligence/adapters/reddit-builtin";
+import { scrapeInstagram } from "@/lib/market-intelligence/adapters/instagram";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -185,8 +189,74 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "buyerbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
+    // ── REAL BUYER COMMUNITY DATA (parallel, non-blocking) ──
+    let realBuyerContext = "";
+    try {
+      const [fbGroups, redditBuiltinData, instaData] = await Promise.allSettled([
+        scrapeFacebookGroups(itemName, category),
+        scrapeRedditBuiltin(itemName),
+        scrapeInstagram(itemName, category),
+      ]);
+
+      const fbResult = fbGroups.status === "fulfilled" ? fbGroups.value : null;
+      const redditBuiltinResult = redditBuiltinData.status === "fulfilled" ? redditBuiltinData.value : null;
+
+      // Use built-in Reddit first; fall back to Apify if built-in found 0 WTB posts
+      let redditResult: any = null;
+      if (redditBuiltinResult?.success && redditBuiltinResult.posts.filter((p: any) => p.isWTB).length > 0) {
+        // Convert built-in format to match Apify format for prompt injection
+        redditResult = {
+          success: true,
+          wtbPosts: redditBuiltinResult.posts.filter((p: any) => p.isWTB).map((p: any) => ({
+            subreddit: p.subreddit, title: p.title, body: p.body, upvotes: p.score, url: p.url, date: p.date,
+          })),
+          discussionPosts: redditBuiltinResult.posts.filter((p: any) => !p.isWTB).map((p: any) => ({
+            subreddit: p.subreddit, title: p.title, upvotes: p.score, commentCount: 0, url: p.url,
+          })),
+        };
+      } else {
+        // Fallback to Apify Reddit
+        try {
+          redditResult = await scrapeReddit(itemName, category);
+        } catch { /* non-critical */ }
+      }
+
+      const instaResult = instaData.status === "fulfilled" ? instaData.value : null;
+
+      if (fbResult?.success && fbResult.groups.length > 0) {
+        realBuyerContext += `\n\nREAL FACEBOOK GROUPS (scraped data — these are REAL communities):
+${fbResult.groups.slice(0, 5).map((g: any, i: number) => `${i + 1}. "${g.name}" — ${g.memberCount.toLocaleString()} members`).join("\n")}
+${fbResult.relevantPosts.length > 0 ? `\nRecent relevant posts:\n${fbResult.relevantPosts.slice(0, 3).map((p: any) => `- [${p.groupName}] "${p.text.slice(0, 100)}..." (${p.engagement} engagement)`).join("\n")}` : ""}
+CRITICAL: Use these REAL groups in your buyer_profiles and platform_opportunities. Do NOT invent group names.`;
+      }
+
+      if (redditResult?.success && redditResult.wtbPosts.length > 0) {
+        realBuyerContext += `\n\nREAL REDDIT WTB POSTS (scraped data — people actively looking for this):
+${redditResult.wtbPosts.slice(0, 5).map((p: any, i: number) => `${i + 1}. r/${p.subreddit}: "${p.title}" (${p.upvotes} upvotes)`).join("\n")}
+These are REAL people who want to buy this type of item. Reference these communities in your outreach strategies.`;
+      }
+
+      if (redditResult?.success && redditResult.discussionPosts.length > 0) {
+        realBuyerContext += `\nRelated subreddits: ${[...new Set(redditResult.discussionPosts.map((p: any) => `r/${p.subreddit}`))].slice(0, 5).join(", ")}`;
+      }
+
+      if (instaResult?.success && instaResult.posts.length > 0) {
+        realBuyerContext += `\n\nINSTAGRAM DEMAND SIGNAL:
+Total engagement: ${instaResult.totalEngagement.toLocaleString()} across ${instaResult.posts.length} posts
+Top hashtags: ${instaResult.topHashtags.slice(0, 8).map((h: string) => `#${h}`).join(", ")}
+Demand level: ${instaResult.demandSignal.toUpperCase()}
+Use these hashtags in your outreach_strategies for Instagram-specific buyer targeting.`;
+      }
+
+      if (realBuyerContext) {
+        console.log(`[BuyerBot] Real community data: FB=${fbResult?.groups?.length ?? 0} groups, Reddit=${redditResult?.wtbPosts?.length ?? 0} WTB, IG=${instaResult?.posts?.length ?? 0} posts`);
+      }
+    } catch {
+      console.log("[BuyerBot] Community scrapers unavailable — proceeding with AI-only analysis");
+    }
+
     // ── BUYERBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + `You are a world-class buyer acquisition specialist and marketplace researcher. You have 15 years of experience finding buyers for every type of item — from antiques to electronics to vehicles. You know every platform, every community, every trick to find the RIGHT buyer who will pay the best price.
+    const systemPrompt = enrichmentPrefix + realBuyerContext + `You are a world-class buyer acquisition specialist and marketplace researcher. You have 15 years of experience finding buyers for every type of item — from antiques to electronics to vehicles. You know every platform, every community, every trick to find the RIGHT buyer who will pay the best price.
 
 You are finding buyers for: ${itemName} — ${category}${subcategory ? ` — ${subcategory}` : ""}
 Condition: ${condLabel} (${condScore}/10)

@@ -6,6 +6,8 @@ import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { logUserEvent } from "@/lib/data/user-events";
 import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
+import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
+import { scrapeRubyLane } from "@/lib/market-intelligence/adapters/ruby-lane";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -118,8 +120,36 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "antiquebot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
+    // ── REAL AUCTION & MARKET DATA ──
+    let auctionContext = "";
+    try {
+      const sellerZip = item.saleZip || "04901";
+      const marketIntel = await getMarketIntelligence(itemName, "antique", sellerZip);
+      if (marketIntel?.comps?.length > 0) {
+        const auctionComps = marketIntel.comps.filter((c: any) => c.platform.includes("Heritage") || c.platform.toLowerCase().includes("auction"));
+        const allComps = marketIntel.comps;
+        auctionContext = `\n\nREAL AUCTION & MARKET DATA (scraped from actual marketplaces):
+${allComps.slice(0, 10).map((c: any, i: number) => `${i + 1}. [${c.platform}] "${c.item}" — $${c.price}${c.date ? ` (${c.date})` : ""}`).join("\n")}
+${auctionComps.length > 0 ? `\nAuction house results: ${auctionComps.length} found` : "No auction house results found — eBay/marketplace data used as proxy"}
+Median: $${marketIntel.median} | Trend: ${marketIntel.trend}
+Use this REAL data to anchor your authentication assessment, valuation estimates, and selling recommendations.`;
+        console.log(`[AntiqueBot] ${allComps.length} real market comps, ${auctionComps.length} auction house results`);
+      }
+
+      // Supplement with Ruby Lane (premier antique marketplace)
+      const rubyLane = await scrapeRubyLane(itemName).catch(() => null);
+      if (rubyLane?.success && rubyLane.comps.length > 0) {
+        auctionContext += `\n\nRUBY LANE LISTINGS (premier antique marketplace — real data):
+${rubyLane.comps.slice(0, 5).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}`).join("\n")}
+Ruby Lane specializes in high-quality antiques and vintage. Use these prices as an upper-market reference.`;
+        console.log(`[AntiqueBot] Ruby Lane: ${rubyLane.comps.length} antique listings`);
+      }
+    } catch {
+      console.log("[AntiqueBot] Market intelligence unavailable — proceeding with AI-only analysis");
+    }
+
     // ── ANTIQUEBOT DEEP-DIVE PROMPT ──
-    const systemPrompt = enrichmentPrefix + `You are a world-class antique appraiser, auction specialist, and collector-market expert with 30+ years of experience in fine antiques, collectibles, decorative arts, and estate appraisal. You have been given an item that has ALREADY been identified and flagged as a potential antique by another AI.
+    const systemPrompt = enrichmentPrefix + auctionContext + `You are a world-class antique appraiser, auction specialist, and collector-market expert with 30+ years of experience in fine antiques, collectibles, decorative arts, and estate appraisal. You have been given an item that has ALREADY been identified and flagged as a potential antique by another AI.
 
 Your ONLY job is ANTIQUE DEEP-DIVE — authentication, provenance, history, collector market, and selling strategy.
 

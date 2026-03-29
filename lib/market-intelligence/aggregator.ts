@@ -9,6 +9,9 @@ import { scrapeCraigslist } from "./adapters/craigslist";
 import { scrapeUncleHenrys } from "./adapters/uncle-henrys";
 import { scrapeMercari } from "./adapters/mercari";
 import { scrapeOfferUp } from "./adapters/offerup";
+import { scrapePoshmark } from "./adapters/poshmark";
+import { scrapeRubyLane } from "./adapters/ruby-lane";
+import { scrapeReverb } from "./adapters/reverb";
 // Apify-powered scrapers (paid, reliable)
 import { scrapeFacebookMarketplace } from "./adapters/facebook-marketplace";
 import { scrapeEbayApify } from "./adapters/ebay-apify";
@@ -79,10 +82,23 @@ export async function getMarketIntelligence(
     alwaysAdapters.push(() => scrapeUncleHenrys(itemName));
   }
 
+  // Dynamic category routing — add specialty scrapers based on item category
+  const cat = (category || "").toLowerCase();
+  if (cat.match(/fashion|clothing|shoes|accessories|handbag|dress|jacket|coat|shirt|pants|jeans/)) {
+    alwaysAdapters.push(() => scrapePoshmark(itemName));
+  }
+  if (cat.match(/antique|vintage|estate|furniture|silver|porcelain|glass|pottery|china|crystal/)) {
+    alwaysAdapters.push(() => scrapeRubyLane(itemName));
+  }
+  if (cat.match(/music|instrument|guitar|pedal|amp|keyboard|drum|bass|synth|violin|trumpet|saxophone|piano|ukulele/)) {
+    alwaysAdapters.push(() => scrapeReverb(itemName));
+  }
+
   // Dedupe: skip category adapters already covered by always-run
   const alwaysFnNames = new Set([
     "scrapeEbaySold", "scrapeCraigslist", "scrapeMercari", "scrapeUncleHenrys",
     "scrapeOfferUp", "scrapeFacebookMarketplace", "scrapeGoogleShopping",
+    "scrapePoshmark", "scrapeRubyLane", "scrapeReverb",
   ]);
   const extraAdapters = categoryAdapters.filter((fn) => !alwaysFnNames.has(fn.name));
 

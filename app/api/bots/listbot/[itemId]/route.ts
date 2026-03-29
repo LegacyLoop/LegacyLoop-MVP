@@ -6,6 +6,9 @@ import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { logUserEvent } from "@/lib/data/user-events";
 import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
+import { scrapeEtsy } from "@/lib/market-intelligence/adapters/etsy";
+import { scrapePoshmark } from "@/lib/market-intelligence/adapters/poshmark";
+import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import fs from "fs";
 import path from "path";
 
@@ -156,8 +159,61 @@ export async function POST(
     const searchKeywords = "";
     const amazonContext = amazonFindings ? `\nAMAZON CONTEXT: ${amazonFindings}` : "";
 
+    // ── REAL LISTING INTELLIGENCE FROM SCRAPERS ──
+    let realListingContext = "";
+    try {
+      const [etsyResult, marketIntelResult] = await Promise.allSettled([
+        scrapeEtsy(itemName),
+        getMarketIntelligence(itemName, category, sellerZip),
+      ]);
+
+      const etsy = etsyResult.status === "fulfilled" ? etsyResult.value : null;
+      const intel = marketIntelResult.status === "fulfilled" ? marketIntelResult.value : null;
+
+      if (etsy && etsy.topListings && etsy.topListings.length > 0) {
+        realListingContext += `\n\nREAL ETSY TOP LISTINGS (for copy and SEO analysis):
+${etsy.topListings.slice(0, 3).map((l: any, i: number) =>
+  `${i + 1}. Title: "${l.title}" | Price: $${l.price} | Reviews: ${l.reviews} | Favorites: ${l.favorites}
+   Tags: ${(l.tags || []).slice(0, 8).join(", ")}`
+).join("\n")}
+Study these REAL successful listings. Mirror their title format, keyword density, and pricing strategy.`;
+      }
+
+      if (intel && intel.comps && intel.comps.length > 0) {
+        const platformPrices: Record<string, number[]> = {};
+        for (const c of intel.comps) {
+          if (!platformPrices[c.platform]) platformPrices[c.platform] = [];
+          platformPrices[c.platform].push(c.price);
+        }
+        realListingContext += `\n\nREAL PLATFORM PRICING (for platform-specific price recommendations):
+${Object.entries(platformPrices).map(([platform, prices]) =>
+  `${platform}: ${prices.length} listings, avg $${Math.round(prices.reduce((s, p) => s + p, 0) / prices.length)}, range $${Math.min(...prices)}–$${Math.max(...prices)}`
+).join("\n")}
+Use these REAL price points when recommending listing prices per platform.`;
+      }
+
+      // Poshmark listing patterns for fashion items
+      const catLower = (category || "").toLowerCase();
+      if (catLower.match(/fashion|clothing|shoes|accessories|handbag|dress|jacket/)) {
+        try {
+          const poshData = await scrapePoshmark(itemName);
+          if (poshData?.success && poshData.comps.length > 0) {
+            realListingContext += `\n\nPOSHMARK LISTINGS (real fashion marketplace data):
+${poshData.comps.slice(0, 5).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}`).join("\n")}
+Study these titles and pricing for your Poshmark-specific listing copy. Mirror successful title patterns.`;
+          }
+        } catch { /* non-critical */ }
+      }
+
+      if (realListingContext) {
+        console.log(`[ListBot] Real listing data: Etsy=${etsy?.topListings?.length ?? 0} templates, Market=${intel?.comps?.length ?? 0} comps`);
+      }
+    } catch {
+      console.log("[ListBot] Listing scrapers unavailable — proceeding with AI-only analysis");
+    }
+
     // ── LISTBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.
+    const systemPrompt = enrichmentPrefix + realListingContext + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.
 
 You are creating listings for: ${itemName} — ${category}${subcategory ? ` — ${subcategory}` : ""}
 Condition: ${condLabel} (${condScore}/10)

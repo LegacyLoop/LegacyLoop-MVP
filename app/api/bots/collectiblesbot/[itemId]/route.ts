@@ -118,7 +118,31 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "collectiblesbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
-    const systemPrompt = enrichmentPrefix + `You are a world-class collectibles specialist with deep expertise across ALL major collector markets. You have encyclopedic knowledge of grading standards, auction records, population reports, and current market conditions.
+    // ── REAL COLLECTIBLES MARKET DATA ──
+    let collectiblesMarketContext = "";
+    try {
+      const sellerZip = item.saleZip || "04901";
+      const marketIntel = await getMarketIntelligence(itemName, category, sellerZip);
+      if (marketIntel?.comps?.length > 0) {
+        const specialtyComps = marketIntel.comps.filter((c: any) =>
+          c.platform.includes("TCGPlayer") || c.platform.includes("Discogs") ||
+          c.platform.includes("Heritage") || c.platform.includes("eBay")
+        );
+        collectiblesMarketContext = `\n\nREAL COLLECTIBLES MARKET DATA (scraped from actual marketplaces):
+${(specialtyComps.length > 0 ? specialtyComps : marketIntel.comps).slice(0, 10).map((c: any, i: number) =>
+  `${i + 1}. [${c.platform}] "${c.item}" — $${c.price}${c.date ? ` (${c.date})` : ""}${c.condition ? ` [${c.condition}]` : ""}`
+).join("\n")}
+Median: $${marketIntel.median} | Range: $${marketIntel.low}–$${marketIntel.high} | Trend: ${marketIntel.trend}
+Sources: ${marketIntel.sources?.join(", ")}
+
+CRITICAL: These are REAL comparable sales. Your grading assessment, value estimates, and platform recommendations MUST be anchored to this real data. If your estimate differs >30% from the median, explain WHY.`;
+        console.log(`[CollectiblesBot] ${marketIntel.comps.length} real comps from ${marketIntel.sources?.join(", ")}`);
+      }
+    } catch {
+      console.log("[CollectiblesBot] Market intelligence unavailable — proceeding with AI-only analysis");
+    }
+
+    const systemPrompt = enrichmentPrefix + collectiblesMarketContext + `You are a world-class collectibles specialist with deep expertise across ALL major collector markets. You have encyclopedic knowledge of grading standards, auction records, population reports, and current market conditions.
 
 YOUR SPECIALTY MARKETS — you must actively reference these in every analysis:
 - Sports Cards: PSA, BGS/Beckett, SGC grading scales. eBay sold listings, PWCC Marketplace, Goldin Auctions, Beckett Marketplace, SportLots, Comc.com, MySlabs

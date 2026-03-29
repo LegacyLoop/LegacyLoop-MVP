@@ -10,6 +10,7 @@ import {
 } from "@/lib/services/recon-bot";
 import { logUserEvent } from "@/lib/data/user-events";
 import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 
 const openai = process.env.OPENAI_API_KEY
@@ -155,8 +156,27 @@ export async function POST(
       }
     } catch { /* non-critical */ }
 
+    // ── REAL COMPETITOR LISTINGS FROM SCRAPERS ──
+    let realCompContext = "";
+    try {
+      const marketIntel = await getMarketIntelligence(itemName, category, sellerZip);
+      if (marketIntel?.comps?.length > 0) {
+        console.log(`[ReconBot] ${marketIntel.comps.length} real competitors from ${marketIntel.sources?.join(", ")}`);
+        realCompContext = `\n\nREAL COMPETITOR LISTINGS (scraped from actual marketplaces — NOT AI-generated):
+${marketIntel.comps.slice(0, 15).map((c: any, i: number) =>
+  `${i + 1}. [${c.platform}] "${c.item}" — $${c.price}${c.location ? ` (${c.location})` : ""}${c.condition ? ` [${c.condition}]` : ""}`
+).join("\n")}
+Median: $${marketIntel.median} | Range (25th-75th): $${marketIntel.low}–$${marketIntel.high} | Trend: ${marketIntel.trend}
+Sources: ${marketIntel.sources?.join(", ")}
+
+CRITICAL: These are REAL listings scraped from actual marketplaces. Use them as your competitor_listings data. Do NOT invent fictional competitors when real data is available. Analyze these REAL prices for your price_intelligence and strategic_recommendations.`;
+      }
+    } catch {
+      console.log("[ReconBot] Market intelligence unavailable — AI will estimate competitors");
+    }
+
     // ── RECONBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + amazonContext + `You are a world-class competitive intelligence analyst specializing in resale markets. You monitor every marketplace continuously — eBay, Facebook Marketplace, Craigslist, Mercari, OfferUp, Etsy, Ruby Lane, auction houses, and local shops. Your job is to provide a comprehensive competitive scan.
+    const systemPrompt = enrichmentPrefix + amazonContext + realCompContext + `You are a world-class competitive intelligence analyst specializing in resale markets. You monitor every marketplace continuously — eBay, Facebook Marketplace, Craigslist, Mercari, OfferUp, Etsy, Ruby Lane, auction houses, and local shops. Your job is to provide a comprehensive competitive scan.
 
 You are scanning for: ${itemName} — ${category} — ${material} — ${era} — ${condLabel} (${condScore}/10)
 Seller location: ZIP ${sellerZip} (Maine, USA)
