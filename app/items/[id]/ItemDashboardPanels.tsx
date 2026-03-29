@@ -3231,11 +3231,27 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
     pr.sellerNet = { local: localNet, national: nationalNet, bestMarket: shippedNet };
     pr.commissionPct = commPct;
 
-    // Recalculate recommendation with current tier
+    // Recalculate recommendation with current tier + shipping method gate
+    const aiWeight = aiData?.weight_estimate_lbs ?? null;
+    const aiDifficulty = aiData?.shipping_difficulty ?? null;
+    const isHeavyItem = (aiWeight != null && aiWeight > 100) || /freight|difficult/i.test(aiDifficulty || "");
+    const isLocalOnlyItem = (aiWeight != null && aiWeight > 150) || /local.only|vehicle|riding.mow|lawn.tractor/i.test((aiData?.category || "").toLowerCase());
+    const sellerChoseLocal = shippingPreference === "LOCAL_ONLY" || shippingPreference === "local_only";
+
     if (localMid <= 0) {
       pr.recommendation = "This item has no resale value. We recommend donating it to charity or recycling.";
     } else if (localMid < 5) {
       pr.recommendation = `At $${localMid} estimated value, this item is barely worth listing individually. Consider bundling with similar items or donating.`;
+    } else if (isLocalOnlyItem || sellerChoseLocal) {
+      pr.recommendation = `Sell locally for $${localMid}. This item is best sold via local pickup — you'd net $${localNet.toFixed(2)} after ${commPct}% commission. Too large/heavy for cost-effective shipping.`;
+    } else if (isHeavyItem) {
+      const realFreightCost = Math.max(shippingCost, (aiWeight ?? 100) * 1.5 + 100);
+      const freightNet = Math.round((bestMid - bestMid * commRate - realFreightCost) * 100) / 100;
+      if (freightNet > localNet && realFreightCost < bestMid * 0.25) {
+        pr.recommendation = `Could ship freight to ${bestCity} (~$${Math.round(realFreightCost)} est.), netting ~$${freightNet.toFixed(0)}. But local pickup at $${localMid} is simpler — net $${localNet.toFixed(2)}. Consider both.`;
+      } else {
+        pr.recommendation = `Sell locally for $${localMid}. Freight shipping ($${Math.round(realFreightCost)}+) eats too much margin. Local pickup nets $${localNet.toFixed(2)} after ${commPct}% commission.`;
+      }
     } else if (shippedNet > localNet && shippingCost < bestMid * 0.3) {
       pr.recommendation = `Ship to ${bestCity} for best return. You'd net $${shippedNet.toFixed(2)} shipped vs $${localNet.toFixed(2)} locally (after $${shippingCost} shipping + ${commPct}% commission).`;
     } else {
@@ -3299,6 +3315,13 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
         ) : pr ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {/* 3 price cards */}
+            {/* Low confidence warning */}
+            {v.confidence != null && Math.round(v.confidence > 1 ? v.confidence : v.confidence * 100) < 50 && (
+              <div style={{ padding: "0.35rem 0.5rem", background: "rgba(245,158,11,0.08)", borderRadius: "0.35rem", border: "1px solid rgba(245,158,11,0.2)", marginBottom: "0.5rem" }}>
+                <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "#f59e0b" }}>⚠️ Low Confidence ({Math.round(v.confidence > 1 ? v.confidence : v.confidence * 100)}%)</span>
+                <span style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginLeft: "0.3rem" }}>— Run MegaBot or PriceBot for a more accurate estimate</span>
+              </div>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
               <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                 <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Local</div>
@@ -3329,10 +3352,25 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               </div>
             </div>
 
-            {/* Recommendation */}
-            {pr.recommendation && (
-              <div style={{ background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "0.5rem", padding: "0.5rem 0.7rem", fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: 1.45 }}>
-                <span style={{ color: "var(--accent)", fontWeight: 600 }}>Tip: </span>{pr.recommendation}
+            {/* Selling Options + Recommendation */}
+            {pr?.sellerNet && (
+              <div style={{ borderRadius: "0.5rem", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "0.35rem 0.6rem", borderBottom: "1px solid var(--border-default)", background: "var(--ghost-bg)" }}>
+                  <span style={{ fontSize: "0.68rem", color: "var(--text-secondary)" }}>🤝 Local Pickup</span>
+                  <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4ade80" }}>Net ${Math.round(pr.sellerNet.local)}</span>
+                </div>
+                {pr.sellerNet.bestMarket > 0 && pr.sellerNet.bestMarket > pr.sellerNet.local * 0.8 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "0.35rem 0.6rem", borderBottom: "1px solid var(--border-default)" }}>
+                    <span style={{ fontSize: "0.68rem", color: "var(--text-secondary)" }}>📦 Ship to Best Market</span>
+                    <span style={{ fontSize: "0.68rem", fontWeight: 700, color: pr.sellerNet.bestMarket > pr.sellerNet.local ? "#4ade80" : "var(--text-muted)" }}>Net ${Math.round(pr.sellerNet.bestMarket)}</span>
+                  </div>
+                )}
+                {pr.recommendation && (
+                  <div style={{ padding: "0.4rem 0.6rem", background: "rgba(0,188,212,0.04)", borderLeft: "3px solid var(--accent)" }}>
+                    <span style={{ fontSize: "0.62rem", color: "var(--accent)", fontWeight: 700 }}>AI Tip: </span>
+                    <span style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>{pr.recommendation}</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -3396,11 +3434,19 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
             {priceBotResult && (() => {
               const pb = typeof priceBotResult === "string" ? (() => { try { return JSON.parse(priceBotResult); } catch { return null; } })() : priceBotResult;
               if (!pb) return null;
-              const revised = pb.revised_estimate || pb.price_overview;
-              const comps = (pb.comparable_sales || []).slice(0, 3);
+              const revised = pb.revised_estimate || pb.price_overview || pb.price_validation;
+              const rawComps = (pb.comparable_sales || []).slice(0, 8);
+              const revisedMid = pb.price_validation?.revised_mid || revised?.mid || null;
+              const filteredComps = revisedMid
+                ? rawComps.filter((c: any) => {
+                    const price = c.sold_price ?? c.price ?? 0;
+                    return price > 0 && price < revisedMid * 5 && price > revisedMid * 0.1;
+                  })
+                : rawComps;
+              const displayComps = filteredComps.slice(0, 3);
               const bestPlatform = (pb.platform_breakdown || []).sort((a: any, b: any) => (b.recommended_score || 0) - (a.recommended_score || 0))[0];
               const demand = pb.market_analysis?.demand_level || pb.demand_level;
-              const demandColor = demand === "high" ? "#4caf50" : demand === "low" ? "#ef4444" : "#f59e0b";
+              const demandColor = demand === "high" || demand === "Hot" || demand === "Strong" ? "#4caf50" : demand === "low" || demand === "Weak" || demand === "Dead" ? "#ef4444" : "#f59e0b";
               return (
                 <div style={{ background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "0.65rem", padding: "0.7rem", marginTop: "0.25rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.5rem" }}>
@@ -3411,17 +3457,22 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   {revised && (
                     <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem", marginBottom: "0.45rem" }}>
                       <span style={{ fontSize: "0.6rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Revised</span>
-                      <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--accent)" }}>${revised.low ?? revised.mid ?? "—"} – ${revised.high ?? revised.mid ?? "—"}</span>
+                      <span style={{ fontSize: "1rem", fontWeight: 800, color: "var(--accent)" }}>${revised.revised_low ?? revised.low ?? revised.mid ?? "—"} – ${revised.revised_high ?? revised.high ?? revised.mid ?? "—"}</span>
                     </div>
                   )}
-                  {comps.length > 0 && (
+                  {displayComps.length > 0 && (
                     <div style={{ display: "flex", gap: "0.35rem", marginBottom: "0.45rem", flexWrap: "wrap" }}>
-                      {comps.map((c: any, i: number) => (
+                      {displayComps.map((c: any, i: number) => (
                         <div key={i} style={{ flex: "1 1 0", minWidth: 0, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.45rem", padding: "0.3rem 0.4rem", fontSize: "0.62rem" }}>
                           <div style={{ fontWeight: 700, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>${c.sold_price ?? c.price ?? "?"}</div>
                           <div style={{ color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.platform || c.source || "—"}</div>
                         </div>
                       ))}
+                    </div>
+                  )}
+                  {displayComps.length === 0 && rawComps.length > 0 && (
+                    <div style={{ fontSize: "0.62rem", color: "#f59e0b", fontStyle: "italic", marginBottom: "0.35rem" }}>
+                      Comparable sales had inconsistent pricing — run MegaBot for more accurate data
                     </div>
                   )}
                   {bestPlatform && (

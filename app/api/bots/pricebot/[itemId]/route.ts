@@ -3,6 +3,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import OpenAI from "openai";
 import { getItemEnrichmentContext } from "@/lib/enrichment";
+import { getMarketInfo } from "@/lib/pricing/market-data";
 import { populateFromPriceBot } from "@/lib/data/populate-intelligence";
 import { logUserEvent } from "@/lib/data/user-events";
 import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
@@ -112,6 +113,9 @@ export async function POST(
     const estimatedMid = v.mid ? Math.round(v.mid) : Math.round((v.low + v.high) / 2);
     const pricingRationale = v.rationale || "No rationale available";
     const sellerZip = item.saleZip || "04901";
+    const saleMethod = (item as any).saleMethod || "BOTH";
+    const saleRadius = (item as any).saleRadiusMi || 250;
+    const marketInfo = getMarketInfo(sellerZip);
     const isAntique = item.antiqueCheck?.isAntique || false;
 
     // ── CROSS-BOT ENRICHMENT ──
@@ -120,6 +124,7 @@ export async function POST(
 
     // ── AMAZON ENRICHMENT FROM RAINFOREST ──
     let amazonContext = "";
+    let amazonRetailAvg = 0;
     try {
       const rainforestLog = await prisma.eventLog.findFirst({
         where: { itemId: item.id, eventType: "RAINFOREST_RESULT" },
@@ -129,6 +134,7 @@ export async function POST(
       if (rainforestLog?.payload) {
         const amazon = JSON.parse(rainforestLog.payload);
         const topProducts = (amazon.products || amazon.topProducts || []).slice(0, 3);
+        amazonRetailAvg = Number(amazon.priceAvg ?? amazon.price_avg ?? 0) || 0;
         amazonContext = `\n\nAMAZON MARKET DATA (from Rainforest API — real data):
 Search term: ${amazon.searchTerm || "N/A"}
 Results found: ${amazon.resultCount || amazon.result_count || 0}
@@ -136,6 +142,13 @@ New retail price range: $${amazon.priceLow ?? amazon.price_low ?? "?"} — $${am
 Average retail: $${amazon.priceAvg ?? amazon.price_avg ?? "?"}
 ${topProducts.map((p: any, i: number) => `Product ${i + 1}: ${p.title || p.name || "N/A"} — $${p.price ?? "?"} (${p.rating ?? "?"} stars, ${p.reviews ?? "?"} reviews)`).join("\n")}
 NOTE: These are NEW retail prices. Used/secondhand items typically sell for 30-70% of retail depending on condition. Use this Amazon data as an ANCHOR for bounding the used price.`;
+        if (amazonRetailAvg > 0) {
+          const ceiling = /antique|vintage|collectible|rare/i.test(category) ? amazonRetailAvg * 1.5 : amazonRetailAvg * 0.75;
+          amazonContext += `\n\nAMAZON PRICE CEILING RULE:
+Amazon sells this item NEW for ~$${Math.round(amazonRetailAvg)}. Your USED price estimate MUST NOT exceed 75% of that ($${Math.round(ceiling)}) — UNLESS the item is antique/vintage/collectible and may appreciate in value.
+If your revised_high exceeds this ceiling, REDUCE IT and explain why in revision_reasoning.
+This is a HARD RULE — do not ignore it.`;
+        }
       }
     } catch { /* non-critical */ }
 
@@ -243,6 +256,36 @@ Return a JSON object with ALL of the following fields:
   "executive_summary": "A 4-6 sentence plain-language summary for a senior citizen. No jargon. Clear advice. Include recommended list price, where to sell, expected timeline. Be warm, honest, and helpful."
 }
 
+CRITICAL ACCURACY RULES:
+1. ONLY include comparable sales you found via web search. Do NOT invent fictional sales.
+2. If you cannot find real comparable sales, set comparable_sales to an empty array [] — do NOT fabricate data.
+3. Every comparable sale MUST have a realistic price. If an item sells for $50-$100 typically, a $2200 comp is WRONG.
+4. All prices must be for USED/SECONDHAND items unless explicitly noted as "new".
+5. Your revised_low and revised_high MUST be within 2x of each other. A range of $8-$2200 is NEVER acceptable.
+6. If unsure, narrow your range and lower your confidence — do NOT give a wide range to seem safe.
+7. Cross-check: your comparable_sales prices should be WITHIN your revised_low to revised_high range. If a comp is 10x outside your range, remove it.
+
+SELLER LOCATION CONTEXT:
+- Seller ZIP: ${sellerZip}
+- Sale method: ${saleMethod} (LOCAL_PICKUP = local only, ONLINE_SHIPPING = ship anywhere, BOTH = either)
+- Sale radius: ${saleRadius} miles
+- Local market: ${marketInfo.label} (${marketInfo.tier} demand, ${marketInfo.multiplier}x multiplier)
+
+LOCATION PRICING RULES:
+- If sale method is LOCAL_PICKUP: price for LOCAL market only. Do NOT reference national or distant city prices.
+- If sale method is ONLINE_SHIPPING: price for national market.
+- If sale method is BOTH: show both local and national pricing.
+- Local price should reflect what buyers in ${sellerZip} actually pay, not NYC or LA prices.
+- For large/heavy items (>50 lbs or freight-required): ALWAYS recommend local pickup pricing as primary.
+
+COMPARABLE SALES VALIDATION:
+Before returning your comparable_sales array, verify each entry:
+- Is the price realistic for a USED item in this category?
+- Is the price within 3x of your revised_mid estimate?
+- Would a real person actually pay this price?
+If any comparable fails these checks, REMOVE IT from the array.
+Minimum 3 comparables, maximum 8. Quality over quantity.
+
 IMPORTANT:
 - Be SPECIFIC with comparables. Use real platform knowledge.
 - eBay fees ~13.25%, FB Marketplace 0% local or ~6% shipped, Etsy ~6.5%, Mercari ~10%.
@@ -250,7 +293,7 @@ IMPORTANT:
 ${isAntique ? "- This IS an antique: consider auction houses, specialty dealers, collector markets." : ""}
 - If uncertain: say so. Don't fabricate sales.
 - All prices in USD, realistic for 2024-2025 US resale market.
-- Provide 5-12 comparable sales.
+- Provide 3-8 comparable sales (quality over quantity).
 - pricing_rationale from general analysis: "${pricingRationale}"
 ${amazonContext}
 
@@ -272,18 +315,35 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60_000);
       try {
-        // Build photo content for the prompt
-        const photoContent: any[] = [];
-        for (const photo of item.photos) {
-          // For local file paths, describe them instead of sending as images
-          photoContent.push(`[Photo: ${photo.filePath}${photo.caption ? ` — ${photo.caption}` : ""}]`);
+        // Build real photo content for AI vision
+        const fs = await import("fs");
+        const path = await import("path");
+        const imageContent: any[] = [];
+        for (const photo of item.photos.slice(0, 4)) {
+          try {
+            const absPath = path.join(process.cwd(), "public", photo.filePath);
+            if (fs.existsSync(absPath) && fs.statSync(absPath).size <= 10 * 1024 * 1024) {
+              const base64 = fs.readFileSync(absPath, "base64");
+              const ext = photo.filePath.split(".").pop()?.toLowerCase() || "jpg";
+              const mime = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+              imageContent.push({ type: "input_image", image_url: `data:${mime};base64,${base64}`, detail: "high" });
+            }
+          } catch { /* skip unreadable */ }
         }
+
+        const userContent: any[] = [
+          { type: "input_text", text: `${imageContent.length > 0 ? `${imageContent.length} photo(s) attached — examine condition, brand marks, material quality, and completeness for pricing accuracy. ` : ""}Analyze the pricing for this item in detail. Return ONLY valid JSON.` },
+          ...imageContent,
+        ];
 
         const response = await openai.responses.create({
           model: "gpt-4o-mini",
-          instructions: systemPrompt,
-          input: `Analyze the pricing for this item in detail. Item photos available: ${photoContent.join(", ")}. Return ONLY valid JSON.`,
+          input: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userContent },
+          ],
           tools: [{ type: "web_search_preview" as any }],
+          max_output_tokens: 16384,
         }, { signal: controller.signal });
 
         const text = typeof response.output === "string"
@@ -349,6 +409,57 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
     ];
     for (const key of requiredTopLevel) {
       if (pricebotResult[key] === undefined) pricebotResult[key] = null;
+    }
+
+    // ── SERVER-SIDE POST-VALIDATION ──
+    if (pricebotResult) {
+      const pv = pricebotResult.price_validation;
+
+      // 1. Enforce max 2.5x range — narrow if too wide
+      if (pv?.revised_low > 0 && pv?.revised_high > 0 && pv.revised_high > pv.revised_low * 2.5) {
+        console.warn(`[PriceBot] Range too wide: $${pv.revised_low}-$${pv.revised_high}. Narrowing.`);
+        const mid = pv.revised_mid || Math.round((pv.revised_low + pv.revised_high) / 2);
+        pv.revised_low = Math.round(mid * 0.7);
+        pv.revised_high = Math.round(mid * 1.3);
+        pv.revised_mid = mid;
+        pricebotResult._rangeNarrowed = true;
+      }
+
+      // 2. Amazon ceiling check
+      if (amazonRetailAvg > 0 && pv?.revised_high > 0) {
+        const isAppreciating = /antique|vintage|collectible|rare/i.test(category);
+        const ceiling = isAppreciating ? amazonRetailAvg * 1.5 : amazonRetailAvg * 0.75;
+        if (pv.revised_high > ceiling) {
+          console.warn(`[PriceBot] Price $${pv.revised_high} exceeds Amazon ceiling $${Math.round(ceiling)} (retail $${Math.round(amazonRetailAvg)}). Capping.`);
+          pv.revised_high = Math.round(ceiling);
+          pv.revised_mid = Math.round((pv.revised_low + pv.revised_high) / 2);
+          pricebotResult._amazonCapped = true;
+        }
+      }
+
+      // 3. Filter comparable outliers
+      if (Array.isArray(pricebotResult.comparable_sales) && pv?.revised_mid > 0) {
+        const before = pricebotResult.comparable_sales.length;
+        pricebotResult.comparable_sales = pricebotResult.comparable_sales.filter((c: any) => {
+          const price = c.sold_price ?? c.price ?? 0;
+          return price > 0 && price <= pv.revised_mid * 4 && price >= pv.revised_mid * 0.15;
+        });
+        if (pricebotResult.comparable_sales.length < before) {
+          pricebotResult._compsFiltered = before - pricebotResult.comparable_sales.length;
+        }
+      }
+
+      // 4. Confidence cap when zero comps found
+      if (pricebotResult.confidence) {
+        const conf = pricebotResult.confidence.overall_confidence ?? pricebotResult.confidence;
+        const compCount = (pricebotResult.comparable_sales || []).length;
+        if (compCount === 0 && typeof conf === "number" && conf > 55) {
+          if (typeof pricebotResult.confidence === "object") {
+            pricebotResult.confidence.overall_confidence = Math.min(conf, 55);
+            pricebotResult.confidence._cappedReason = "No comparable sales found";
+          }
+        }
+      }
     }
 
     // Store in EventLog

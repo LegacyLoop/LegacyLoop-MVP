@@ -13,6 +13,7 @@ import {
   estimateShippingCost,
   type MarketInfo,
 } from "@/lib/pricing/market-data";
+import { suggestShippingMethod } from "@/lib/shipping/package-suggestions";
 import { getCommissionRate } from "@/lib/commission";
 import { PROCESSING_FEE } from "@/lib/constants/pricing";
 
@@ -395,18 +396,31 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
       : `Sell locally to avoid $${shippingCost} shipping cost`,
   };
 
-  // ── Recommendation (prefer AI verdict, fallback to calculated) ────────────
+  // ── Recommendation (shipping-method-aware) ────────────────────────────────
+  const maxDim = ai.dimensions_estimate ? Math.max(...(String(ai.dimensions_estimate).match(/\d+/g) || ["0"]).map(Number)) : undefined;
+  const shippingMethod = suggestShippingMethod(category || ai.category, aiWeight ?? undefined, maxDim, undefined);
+
   let recommendation: string;
   if (baseMid <= 0) {
     recommendation = "This item has no resale value. We recommend donating it to charity or recycling.";
   } else if (baseMid < 5) {
     recommendation = `At $${baseMid} estimated value, this item is barely worth listing individually. Consider bundling with similar items or donating.`;
+  } else if (shippingMethod === "local_only") {
+    recommendation = `Sell locally for $${localMid}. This item is too large/heavy for standard shipping. Local pickup nets you $${localNet.toFixed(2)} after ${commissionPct}% commission.`;
+  } else if (shippingMethod === "freight" || shippingMethod === "local_recommended") {
+    const realFreightCost = Math.max(shippingCost, (aiWeight ?? 100) * 1.5 + 100);
+    const freightNet = Math.round((bestMid - bestMid * commissionRate - realFreightCost) * 100) / 100;
+    if (freightNet > localNet && realFreightCost < bestMid * 0.25) {
+      recommendation = `Could ship via freight to ${bestMarketRaw.label} (~$${Math.round(realFreightCost)} est.), netting ~$${freightNet.toFixed(0)}. But local pickup at $${localMid} is simpler — net $${localNet.toFixed(2)}. Consider both.`;
+    } else {
+      recommendation = `Sell locally for $${localMid}. Freight shipping ($${Math.round(realFreightCost)}+) eats too much margin. Local pickup nets $${localNet.toFixed(2)} after ${commissionPct}% commission.`;
+    }
   } else if (ai.regional_ship_or_local) {
     recommendation = ai.regional_ship_or_local;
   } else if (shippedNet > localNet && shippingCost < bestMid * 0.3) {
-    recommendation = `Ship to ${bestMarketRaw.label} for best return. You'd net $${shippedNet.toFixed(2)} shipped vs $${localNet.toFixed(2)} locally (after $${shippingCost} shipping + ${commissionPct}% commission).`;
+    recommendation = `Ship to ${bestMarketRaw.label} for best return. Net $${shippedNet.toFixed(2)} shipped vs $${localNet.toFixed(2)} locally (after $${shippingCost} shipping + ${commissionPct}% commission).`;
   } else {
-    recommendation = `Sell locally for $${localMid}. You'd net $${localNet.toFixed(2)} after ${commissionPct}% commission. Shipping costs ($${shippingCost}) eat into the margin for this item.`;
+    recommendation = `Sell locally for $${localMid}. Net $${localNet.toFixed(2)} after ${commissionPct}% commission. Shipping ($${shippingCost}) eats into margin.`;
   }
 
   // ── Build recommendations list ────────────────────────────────────────────

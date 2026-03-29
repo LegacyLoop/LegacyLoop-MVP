@@ -319,15 +319,22 @@ export function estimateShippingCost(
   buyerZip: string | null,
   weightLbs?: number
 ): number {
-  // Default weight estimate for estate items: ~10-15 lbs
-  const weight = weightLbs ?? 12;
+  // Default weight: 5 lbs (realistic for average resale item)
+  const weight = weightLbs ?? 5;
 
-  if (!sellerZip || !buyerZip) return 15; // default
+  if (!sellerZip || !buyerZip) return 10 + weight * 0.4;
 
-  // Same region (first digit match) = cheaper
+  // Heavy items — realistic cost tiers
+  if (weight > 70) {
+    // LTL/freight territory
+    return 100 + weight * 1.2;
+  } else if (weight > 30) {
+    // Heavy parcel — UPS/FedEx ground
+    return 15 + weight * 0.8;
+  }
+
+  // Standard parcel
   if (sellerZip[0] === buyerZip[0]) return 8 + weight * 0.3;
-
-  // Cross-country = more expensive
   return 12 + weight * 0.5;
 }
 

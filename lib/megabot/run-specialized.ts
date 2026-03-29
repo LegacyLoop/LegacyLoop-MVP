@@ -374,13 +374,28 @@ function debugAgentShape(label: string, data: any) {
 
 async function callOpenAI(
   prompt: string,
-  photoPath: string
+  photoPath: string,
+  allPhotoPaths?: string[]
 ): Promise<{ data: any; raw: string; webSources?: Array<{ url: string; title: string }> }> {
   const key = process.env.OPENAI_API_KEY;
   if (!key || key.length < 10) throw new Error("No OPENAI_API_KEY");
   const openai = new OpenAI({ apiKey: key });
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
-  const { dataUrl } = fileToDataUrl(photoPath);
+
+  // Build multi-photo content (up to 4 photos)
+  const photoPaths = allPhotoPaths && allPhotoPaths.length > 0 ? allPhotoPaths.slice(0, 4) : [photoPath];
+  const imageContent: any[] = [];
+  for (const p of photoPaths) {
+    try {
+      const absP = p.startsWith("/") ? p : publicUrlToAbsPath(p);
+      const { dataUrl: du } = fileToDataUrl(absP);
+      imageContent.push({ type: "input_image", image_url: du, detail: "auto" });
+    } catch { /* skip unreadable */ }
+  }
+  if (imageContent.length === 0) {
+    const { dataUrl } = fileToDataUrl(photoPath);
+    imageContent.push({ type: "input_image", image_url: dataUrl, detail: "auto" });
+  }
 
   let resp;
   try {
@@ -391,7 +406,7 @@ async function callOpenAI(
           role: "user",
           content: [
             { type: "input_text", text: prompt + AGENT_SUFFIXES.openai },
-            { type: "input_image", image_url: dataUrl, detail: "auto" },
+            ...imageContent,
           ],
         },
       ],
@@ -408,7 +423,7 @@ async function callOpenAI(
           role: "user",
           content: [
             { type: "input_text", text: prompt + AGENT_SUFFIXES.openai },
-            { type: "input_image", image_url: dataUrl, detail: "auto" },
+            ...imageContent,
           ],
         },
       ],
@@ -565,17 +580,32 @@ async function callClaude(
 
 async function callGemini(
   prompt: string,
-  photoPath: string
+  photoPath: string,
+  allPhotoPaths?: string[]
 ): Promise<{ data: any; raw: string; webSources?: Array<{ url: string; title: string }> }> {
   const key = process.env.GEMINI_API_KEY;
   if (!key || key.length < 10) throw new Error("No GEMINI_API_KEY");
-  const { base64, mime } = fileToDataUrl(photoPath);
+
+  // Build multi-photo parts (up to 4 photos)
+  const photoPaths = allPhotoPaths && allPhotoPaths.length > 0 ? allPhotoPaths.slice(0, 4) : [photoPath];
+  const imageParts: any[] = [];
+  for (const p of photoPaths) {
+    try {
+      const absP = p.startsWith("/") ? p : publicUrlToAbsPath(p);
+      const { base64: b64, mime: m } = fileToDataUrl(absP);
+      imageParts.push({ inline_data: { mime_type: m, data: b64 } });
+    } catch { /* skip unreadable */ }
+  }
+  if (imageParts.length === 0) {
+    const { base64, mime } = fileToDataUrl(photoPath);
+    imageParts.push({ inline_data: { mime_type: mime, data: base64 } });
+  }
 
   const baseReqBody = {
     contents: [
       {
         parts: [
-          { inline_data: { mime_type: mime, data: base64 } },
+          ...imageParts,
           { text: prompt + AGENT_SUFFIXES.gemini },
         ],
       },
@@ -850,7 +880,17 @@ function buildConsensus(agents: MegaBotAgentResult[]): { consensus: any; agreeme
     const first = values[0];
     if (typeof first === "number") {
       const nums = values.filter((v): v is number => typeof v === "number");
-      merged[key] = Math.round((nums.reduce((s, n) => s + n, 0) / nums.length) * 100) / 100;
+      // Pricing fields use median (resists outliers); others use average
+      const PRICING_FIELDS = new Set(["revised_low", "revised_mid", "revised_high", "estimated_value_low", "estimated_value_mid", "estimated_value_high", "local_price_estimate", "recommended_list_price", "expected_sell_price", "minimum_accept", "sweet_spot", "list_price", "seller_net_after_fees", "seller_net", "recommended_price", "estimated_hammer_price", "recommended_reserve"]);
+      if (PRICING_FIELDS.has(key)) {
+        const sorted = [...nums].sort((a, b) => a - b);
+        const mid = Math.floor(sorted.length / 2);
+        merged[key] = sorted.length % 2 === 0
+          ? Math.round(((sorted[mid - 1] + sorted[mid]) / 2) * 100) / 100
+          : sorted[mid];
+      } else {
+        merged[key] = Math.round((nums.reduce((s, n) => s + n, 0) / nums.length) * 100) / 100;
+      }
       if (nums.length >= 2 && AGREEMENT_FIELDS.has(key)) {
         totalChecks++;
         const max = Math.max(...nums);
@@ -877,6 +917,17 @@ function buildConsensus(agents: MegaBotAgentResult[]): { consensus: any; agreeme
         }
       }
       merged[key] = result;
+      // Post-merge comp validation: filter outliers against consensus price
+      if (key === "comparable_sales" && Array.isArray(merged[key]) && merged[key].length > 0) {
+        const consensusMid = merged["revised_mid"] || merged["estimated_value_mid"] || null;
+        if (consensusMid && consensusMid > 0) {
+          merged[key] = merged[key].filter((comp: any) => {
+            const price = comp?.sold_price ?? comp?.price ?? 0;
+            if (price <= 0) return false;
+            return price <= consensusMid * 4 && price >= consensusMid * 0.15;
+          });
+        }
+      }
     } else if (typeof first === "object" && first !== null) {
       const objs = values.filter((v) => typeof v === "object" && v !== null);
       merged[key] = objs.sort((a, b) => JSON.stringify(b).length - JSON.stringify(a).length)[0];
@@ -956,14 +1007,18 @@ export async function runSpecializedMegaBot(
   botType: string,
   prompt: string,
   photoPublicUrl: string,
-  itemId: string
+  itemId: string,
+  allPhotoUrls?: string[]
 ): Promise<MegaBotResult> {
   const absPath = publicUrlToAbsPath(photoPublicUrl);
+  const allAbsPaths = allPhotoUrls?.map(u => {
+    try { return publicUrlToAbsPath(u); } catch { return null; }
+  }).filter((p): p is string => p !== null);
 
   const agentCalls = [
-    { provider: "openai" as const, fn: callOpenAI },
+    { provider: "openai" as const, fn: (prompt: string, path: string) => callOpenAI(prompt, path, allAbsPaths) },
     { provider: "claude" as const, fn: callClaude },
-    { provider: "gemini" as const, fn: callGemini },
+    { provider: "gemini" as const, fn: (prompt: string, path: string) => callGemini(prompt, path, allAbsPaths) },
     { provider: "grok" as const, fn: callGrok },
   ];
 

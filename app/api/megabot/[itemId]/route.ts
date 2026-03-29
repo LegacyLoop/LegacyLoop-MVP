@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { runSpecializedMegaBot } from "@/lib/megabot/run-specialized";
 import { MEGA_PROMPT_MAP, type PromptContext } from "@/lib/megabot/prompts";
 import { getItemEnrichmentContext } from "@/lib/enrichment/item-context";
+import { getMarketInfo } from "@/lib/pricing/market-data";
 import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 
@@ -192,6 +193,10 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     auctionHigh: item.antiqueCheck?.auctionHigh ? Number(item.antiqueCheck.auctionHigh) : undefined,
     description: item.description || undefined,
     title: item.title || undefined,
+    saleMethod: (item as any).saleMethod || "BOTH",
+    saleRadiusMi: (item as any).saleRadiusMi || 250,
+    marketTier: getMarketInfo(item.saleZip || "04901").tier,
+    marketLabel: getMarketInfo(item.saleZip || "04901").label,
     enrichmentContext: enrichment?.hasEnrichment ? enrichment.contextBlock : undefined,
   };
 
@@ -205,7 +210,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   let result;
   try {
     const photoPaths = item.photos.slice(0, 6).map((p: any) => p.filePath);
-    result = await runSpecializedMegaBot(botType, prompt, photoPaths[0], itemId);
+    result = await runSpecializedMegaBot(botType, prompt, photoPaths[0], itemId, photoPaths);
   } catch (e: any) {
     console.error(`[megabot/${botType}]`, e);
     return new Response(`MegaBot ${botType} failed: ${e.message}`, { status: 422 });

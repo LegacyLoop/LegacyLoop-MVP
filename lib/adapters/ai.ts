@@ -281,7 +281,7 @@ ${sellerBlock}
 
 Return ONLY the JSON object matching the schema.`.trim();
 
-    const model = process.env.OPENAI_MODEL || "gpt-4.1-mini";
+    const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
     const resp = await openai.responses.create({
       model,

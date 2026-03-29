@@ -33,6 +33,10 @@ export interface PromptContext {
   auctionHigh?: number;
   description?: string;
   title?: string;
+  saleMethod?: string;
+  saleRadiusMi?: number;
+  marketTier?: string;
+  marketLabel?: string;
   /** Prior single-run bot result (if available) to use as foundation context */
   priorBotResult?: any;
   /** Cross-bot enrichment context block (from lib/enrichment) */
@@ -961,8 +965,53 @@ ABSOLUTE FINAL RULES — READ CAREFULLY:
    - A COMPLETE shorter response beats a truncated longer one.
 6. Start with { — end with } — no text before or after.`;
 
-// Override pricebot mega prompt to append the final directive
+// ─── PRICING ACCURACY HARDENING ─────────────────────────────────────────────
+// Anti-hallucination, location sensitivity, and comparable validation rules
+// appended to the PriceBot mega prompt for trustworthy pricing.
+
+function getPricingAccuracyRules(ctx: PromptContext): string {
+  const saleMethod = ctx.saleMethod || "BOTH";
+  const saleRadius = ctx.saleRadiusMi || 250;
+  const marketLabel = ctx.marketLabel || "Unknown";
+  const marketTier = ctx.marketTier || "MEDIUM";
+
+  return `
+
+CRITICAL ACCURACY RULES:
+1. ONLY include comparable sales you found via web search. Do NOT invent fictional sales.
+2. If you cannot find real comparable sales, set comparable_sales to an empty array [] — do NOT fabricate data.
+3. Every comparable sale MUST have a realistic price. If an item sells for $50-$100 typically, a $2200 comp is WRONG.
+4. All prices must be for USED/SECONDHAND items unless explicitly noted as "new".
+5. Your revised_low and revised_high MUST be within 2x of each other. A range of $8-$2200 is NEVER acceptable.
+6. If unsure, narrow your range and lower your confidence — do NOT give a wide range to seem safe.
+7. Cross-check: your comparable_sales prices should be WITHIN your revised_low to revised_high range. If a comp is 10x outside your range, remove it.
+
+SELLER LOCATION CONTEXT:
+- Seller ZIP: ${ctx.sellerZip}
+- Sale method: ${saleMethod} (LOCAL_PICKUP = local only, ONLINE_SHIPPING = ship anywhere, BOTH = either)
+- Sale radius: ${saleRadius} miles
+- Local market: ${marketLabel} (${marketTier} demand)
+
+LOCATION PRICING RULES:
+- If sale method is LOCAL_PICKUP: price for LOCAL market only. Do NOT reference national or distant city prices.
+- If sale method is ONLINE_SHIPPING: price for national market.
+- If sale method is BOTH: show both local and national pricing.
+- Local price should reflect what buyers in ${ctx.sellerZip} actually pay, not NYC or LA prices.
+- For large/heavy items (>50 lbs or freight-required): ALWAYS recommend local pickup pricing as primary.
+
+COMPARABLE SALES VALIDATION:
+Before returning your comparable_sales array, verify each entry:
+- Is the price realistic for a USED item in this category?
+- Is the price within 3x of your revised_mid estimate?
+- Would a real person actually pay this price?
+If any comparable fails these checks, REMOVE IT from the array.
+Minimum 3 comparables, maximum 8. Quality over quantity.
+
+You have web search capability — USE IT to find real sold prices. Do not guess.`;
+}
+
+// Override pricebot mega prompt to append accuracy rules + JSON resilience directive
 const _originalPricebotMega = MEGA_PROMPT_MAP.pricebot;
 MEGA_PROMPT_MAP.pricebot = (ctx: PromptContext) => {
-  return _originalPricebotMega(ctx) + PRICING_JSON_FINAL_DIRECTIVE;
+  return _originalPricebotMega(ctx) + getPricingAccuracyRules(ctx) + PRICING_JSON_FINAL_DIRECTIVE;
 };

@@ -180,29 +180,56 @@ async function getAiPriceEstimate(
 }
 
 // ─── Amazon resale anchor ─────────────────────────────────────────────────────
-// Amazon retail price is a ceiling reference — resale is typically 40-70% of retail
-const AMAZON_RESALE_MULTIPLIER = 0.55;
+// Amazon retail price is a ceiling reference — resale varies by category
+
+function getResaleMultiplier(category: string | undefined): number {
+  const cat = (category || "").toLowerCase();
+  if (cat.match(/electronic|computer|phone|tablet|gaming/)) return 0.35;
+  if (cat.match(/clothing|fashion|shoes/)) return 0.25;
+  if (cat.match(/furniture|home/)) return 0.40;
+  if (cat.match(/antique|vintage|collectible/)) return 0.80;
+  if (cat.match(/art|painting|sculpture/)) return 0.70;
+  if (cat.match(/jewelry|watch/)) return 0.50;
+  if (cat.match(/book|vinyl|record/)) return 0.30;
+  if (cat.match(/tool|equipment|outdoor/)) return 0.45;
+  if (cat.match(/musical|instrument/)) return 0.55;
+  return 0.45;
+}
 
 function applyAmazonAnchor(
   low: number,
   high: number,
-  amazonData: RainforestEnrichmentData | null | undefined
+  amazonData: RainforestEnrichmentData | null | undefined,
+  category?: string
 ): { low: number; high: number; amazonSource: { retailAvg: number; resaleEstimate: number; resultCount: number } | null } {
   if (!amazonData?.priceRange?.avg || amazonData.priceRange.avg <= 0) {
     return { low, high, amazonSource: null };
   }
 
   const retailAvg = amazonData.priceRange.avg;
-  const resaleEstimate = Math.round(retailAvg * AMAZON_RESALE_MULTIPLIER);
+  const resaleMultiplier = getResaleMultiplier(category);
+  const resaleEstimate = Math.round(retailAvg * resaleMultiplier);
   const resultCount = amazonData.resultCount;
 
-  console.log(`[Pricing] Amazon anchor: $${retailAvg} retail → $${resaleEstimate} estimated resale`);
+  console.log(`[Pricing] Amazon anchor: $${retailAvg} retail × ${resaleMultiplier} → $${resaleEstimate} estimated resale (category: ${category || "default"})`);
 
   // Blend Amazon resale estimate into the range (20% weight — real data anchor)
   const amazonWeight = 0.2;
   const existingWeight = 1 - amazonWeight;
-  const anchoredLow = Math.round(low * existingWeight + resaleEstimate * 0.85 * amazonWeight);
-  const anchoredHigh = Math.round(high * existingWeight + resaleEstimate * 1.15 * amazonWeight);
+  let anchoredLow = Math.round(low * existingWeight + resaleEstimate * 0.85 * amazonWeight);
+  let anchoredHigh = Math.round(high * existingWeight + resaleEstimate * 1.15 * amazonWeight);
+
+  // Hard ceiling: used item should NEVER exceed 75% of Amazon new retail
+  // Exception: antiques/collectibles/vintage can exceed retail (they appreciate)
+  const isAppreciatingCategory = (category || "").toLowerCase().match(/antique|vintage|collectible|art|rare|coin|stamp|first edition/);
+  if (!isAppreciatingCategory) {
+    const retailCeiling = Math.round(retailAvg * 0.75);
+    if (anchoredHigh > retailCeiling) {
+      console.log(`[Amazon Anchor] Capping high from $${anchoredHigh} to $${retailCeiling} (75% of retail $${Math.round(retailAvg)})`);
+      anchoredHigh = retailCeiling;
+      anchoredLow = Math.min(anchoredLow, Math.round(retailCeiling * 0.6));
+    }
+  }
 
   return {
     low: anchoredLow,
@@ -279,7 +306,7 @@ export const pricingAdapter = {
       const primaryHigh = method === "LOCAL_PICKUP" ? localHigh : onlineHigh;
 
       // Apply Amazon anchor if available (additive — enhances blend)
-      const amazonAnchor = applyAmazonAnchor(onlineLow, onlineHigh, amazonData);
+      const amazonAnchor = applyAmazonAnchor(onlineLow, onlineHigh, amazonData, ai.category);
       const finalOnlineLow = amazonAnchor.amazonSource ? amazonAnchor.low : onlineLow;
       const finalOnlineHigh = amazonAnchor.amazonSource ? amazonAnchor.high : onlineHigh;
       const finalPrimaryLow = method === "LOCAL_PICKUP" ? localLow : finalOnlineLow;
@@ -328,7 +355,7 @@ export const pricingAdapter = {
       const baseOnlineHigh = Math.round(aiHigh);
 
       // Apply Amazon anchor if available
-      const amazonAnchor = applyAmazonAnchor(baseOnlineLow, baseOnlineHigh, amazonData);
+      const amazonAnchor = applyAmazonAnchor(baseOnlineLow, baseOnlineHigh, amazonData, ai.category);
       const onlineLow = amazonAnchor.amazonSource ? amazonAnchor.low : baseOnlineLow;
       const onlineHigh = amazonAnchor.amazonSource ? amazonAnchor.high : baseOnlineHigh;
 
