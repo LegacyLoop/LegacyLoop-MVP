@@ -9,6 +9,9 @@ import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import fs from "fs";
 import path from "path";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
+import { scrapeChrono24 } from "@/lib/market-intelligence/adapters/chrono24";
+import { scrapeStockX } from "@/lib/market-intelligence/adapters/stockx";
+import { scrapeGoat } from "@/lib/market-intelligence/adapters/goat";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -144,7 +147,27 @@ CRITICAL: These are REAL comparable sales. Your grading assessment, value estima
       console.log("[CollectiblesBot] Market intelligence unavailable — proceeding with AI-only analysis");
     }
 
-    const systemPrompt = enrichmentPrefix + collectiblesMarketContext + `You are a world-class collectibles specialist with deep expertise across ALL major collector markets. You have encyclopedic knowledge of grading standards, auction records, population reports, and current market conditions.
+    // ── CATEGORY-SPECIFIC SPECIALTY SCRAPERS ──
+    let specialtyContext = "";
+    try {
+      const catLower = (category || "").toLowerCase();
+      if (catLower.match(/watch|horol|timepiece|rolex|omega|breitling|patek|cartier/)) {
+        const chrono = await scrapeChrono24(itemName).catch(() => null);
+        if (chrono?.success && chrono.comps.length > 0) {
+          specialtyContext += `\n\nCHRONO24 WATCH MARKET (${chrono.comps.length} listings):
+${chrono.comps.slice(0, 6).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}${c.condition ? ` [${c.condition}]` : ""}`).join("\n")}`;
+        }
+      }
+      if (catLower.match(/sneaker|shoe|jordan|nike|yeezy|streetwear|supreme/)) {
+        const [sxResult, gtResult] = await Promise.allSettled([scrapeStockX(itemName), scrapeGoat(itemName)]);
+        const sx = sxResult.status === "fulfilled" ? sxResult.value : null;
+        const gt = gtResult.status === "fulfilled" ? gtResult.value : null;
+        if (sx?.success && sx.comps.length > 0) specialtyContext += `\n\nSTOCKX (${sx.comps.length} results): ${sx.comps.slice(0, 4).map((c: any) => `$${c.price}`).join(", ")}`;
+        if (gt?.success && gt.comps.length > 0) specialtyContext += `\n\nGOAT (${gt.comps.length} results): ${gt.comps.slice(0, 4).map((c: any) => `$${c.price}`).join(", ")}`;
+      }
+    } catch { /* non-critical */ }
+
+    const systemPrompt = enrichmentPrefix + collectiblesMarketContext + specialtyContext + `You are a world-class collectibles specialist with deep expertise across ALL major collector markets. You have encyclopedic knowledge of grading standards, auction records, population reports, and current market conditions.
 
 YOUR SPECIALTY MARKETS — you must actively reference these in every analysis:
 - Sports Cards: PSA, BGS/Beckett, SGC grading scales. eBay sold listings, PWCC Marketplace, Goldin Auctions, Beckett Marketplace, SportLots, Comc.com, MySlabs

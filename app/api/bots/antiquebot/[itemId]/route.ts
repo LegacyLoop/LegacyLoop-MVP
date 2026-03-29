@@ -8,6 +8,8 @@ import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/p
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { scrapeRubyLane } from "@/lib/market-intelligence/adapters/ruby-lane";
+import { scrapeShopGoodwill } from "@/lib/market-intelligence/adapters/shop-goodwill";
+import { scrapeLiveAuctioneers } from "@/lib/market-intelligence/adapters/live-auctioneers";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -142,14 +144,31 @@ Use this REAL data to anchor your authentication assessment, valuation estimates
         console.log(`[AntiqueBot] ${allComps.length} real market comps, ${auctionComps.length} auction house results`);
       }
 
-      // Supplement with Ruby Lane (premier antique marketplace)
-      const rubyLane = await scrapeRubyLane(itemName).catch(() => null);
+      // Supplement with specialty antique scrapers (parallel)
+      const [rubyLaneResult, sgwResult, laResult] = await Promise.allSettled([
+        scrapeRubyLane(itemName),
+        scrapeShopGoodwill(itemName),
+        scrapeLiveAuctioneers(itemName),
+      ]);
+
+      const rubyLane = rubyLaneResult.status === "fulfilled" ? rubyLaneResult.value : null;
+      const sgw = sgwResult.status === "fulfilled" ? sgwResult.value : null;
+      const la = laResult.status === "fulfilled" ? laResult.value : null;
+
       if (rubyLane?.success && rubyLane.comps.length > 0) {
         auctionContext += `\n\nRUBY LANE LISTINGS (premier antique marketplace — real data):
-${rubyLane.comps.slice(0, 5).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}`).join("\n")}
-Ruby Lane specializes in high-quality antiques and vintage. Use these prices as an upper-market reference.`;
-        console.log(`[AntiqueBot] Ruby Lane: ${rubyLane.comps.length} antique listings`);
+${rubyLane.comps.slice(0, 5).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}`).join("\n")}`;
       }
+      if (sgw?.success && sgw.comps.length > 0) {
+        auctionContext += `\n\nSHOPGOODWILL AUCTIONS (${sgw.comps.length} results):
+${sgw.comps.slice(0, 5).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}`).join("\n")}`;
+      }
+      if (la?.success && la.comps.length > 0) {
+        auctionContext += `\n\nLIVEAUCTIONEERS (${la.comps.length} past results):
+${la.comps.slice(0, 5).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}`).join("\n")}`;
+      }
+      const totalAntiqueSources = [rubyLane, sgw, la].filter(r => r?.success).length;
+      if (totalAntiqueSources > 0) console.log(`[AntiqueBot] ${totalAntiqueSources} specialty antique sources returned data`);
     } catch {
       console.log("[AntiqueBot] Market intelligence unavailable — proceeding with AI-only analysis");
     }

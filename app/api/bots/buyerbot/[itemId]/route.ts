@@ -10,6 +10,10 @@ import { scrapeFacebookGroups } from "@/lib/market-intelligence/adapters/faceboo
 import { scrapeReddit } from "@/lib/market-intelligence/adapters/reddit";
 import { scrapeRedditBuiltin } from "@/lib/market-intelligence/adapters/reddit-builtin";
 import { scrapeInstagram } from "@/lib/market-intelligence/adapters/instagram";
+import { scrapePinterest } from "@/lib/market-intelligence/adapters/pinterest";
+import { scrapeYoutube } from "@/lib/market-intelligence/adapters/youtube";
+import { scrapeTwitter } from "@/lib/market-intelligence/adapters/twitter-x";
+import { scrapeFacebookPages } from "@/lib/market-intelligence/adapters/facebook-pages";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -193,10 +197,14 @@ export async function POST(
     // ── REAL BUYER COMMUNITY DATA (parallel, non-blocking) ──
     let realBuyerContext = "";
     try {
-      const [fbGroups, redditBuiltinData, instaData] = await Promise.allSettled([
+      const [fbGroups, redditBuiltinData, instaData, pinterestData, youtubeData, twitterData, fbPagesData] = await Promise.allSettled([
         scrapeFacebookGroups(itemName, category),
         scrapeRedditBuiltin(itemName),
         scrapeInstagram(itemName, category),
+        scrapePinterest(itemName, category),
+        scrapeYoutube(itemName, category),
+        scrapeTwitter(itemName, category),
+        scrapeFacebookPages(itemName, category),
       ]);
 
       const fbResult = fbGroups.status === "fulfilled" ? fbGroups.value : null;
@@ -249,8 +257,39 @@ Demand level: ${instaResult.demandSignal.toUpperCase()}
 Use these hashtags in your outreach_strategies for Instagram-specific buyer targeting.`;
       }
 
+      // Pinterest
+      const pinterest = pinterestData.status === "fulfilled" ? pinterestData.value : null;
+      if (pinterest?.success && pinterest.pins.length > 0) {
+        realBuyerContext += `\n\nPINTEREST DEMAND (${pinterest.pins.length} pins, ${pinterest.totalSaves.toLocaleString()} total saves):
+Signal: ${pinterest.demandSignal.toUpperCase()}
+Top boards: ${pinterest.topBoards.slice(0, 5).join(", ")}
+Pinterest buyers tend to be decorators, gift-givers, and visual shoppers.`;
+      }
+
+      // YouTube
+      const youtube = youtubeData.status === "fulfilled" ? youtubeData.value : null;
+      if (youtube?.success && youtube.videos.length > 0) {
+        realBuyerContext += `\n\nYOUTUBE INTEREST (${youtube.videos.length} videos, ${youtube.totalViews.toLocaleString()} total views):
+Signal: ${youtube.demandSignal.toUpperCase()}
+Top channels: ${youtube.videos.slice(0, 3).map((v: any) => v.channelName).filter(Boolean).join(", ")}`;
+      }
+
+      // Twitter/X
+      const twitter = twitterData.status === "fulfilled" ? twitterData.value : null;
+      if (twitter?.success && twitter.wtbTweets.length > 0) {
+        realBuyerContext += `\n\nTWITTER/X WTB SIGNALS (${twitter.wtbTweets.length} "want to buy" tweets):
+${twitter.wtbTweets.slice(0, 3).map((t: any) => `@${t.username}: "${t.text.slice(0, 100)}"`).join("\n")}`;
+      }
+
+      // Facebook Pages
+      const fbPages = fbPagesData.status === "fulfilled" ? fbPagesData.value : null;
+      if (fbPages?.success && fbPages.sellers.length > 0) {
+        realBuyerContext += `\n\nFACEBOOK SELLER PAGES (${fbPages.sellers.length} relevant):
+${fbPages.sellers.slice(0, 5).map((s: any) => `${s.name} (${s.followers.toLocaleString()} followers)`).join(", ")}`;
+      }
+
       if (realBuyerContext) {
-        console.log(`[BuyerBot] Real community data: FB=${fbResult?.groups?.length ?? 0} groups, Reddit=${redditResult?.wtbPosts?.length ?? 0} WTB, IG=${instaResult?.posts?.length ?? 0} posts`);
+        console.log(`[BuyerBot] Real community data: FB=${fbResult?.groups?.length ?? 0} groups, Reddit=${redditResult?.wtbPosts?.length ?? 0} WTB, IG=${instaResult?.posts?.length ?? 0} posts, Pin=${pinterest?.pins?.length ?? 0}, YT=${youtube?.videos?.length ?? 0}, X=${twitter?.wtbTweets?.length ?? 0}, FBP=${fbPages?.sellers?.length ?? 0}`);
       }
     } catch {
       console.log("[BuyerBot] Community scrapers unavailable — proceeding with AI-only analysis");

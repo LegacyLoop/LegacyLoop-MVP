@@ -12,12 +12,25 @@ import { scrapeOfferUp } from "./adapters/offerup";
 import { scrapePoshmark } from "./adapters/poshmark";
 import { scrapeRubyLane } from "./adapters/ruby-lane";
 import { scrapeReverb } from "./adapters/reverb";
+import { scrapeShopGoodwill } from "./adapters/shop-goodwill";
+import { scrapeLiveAuctioneers } from "./adapters/live-auctioneers";
+import { scrapeCraigslistVehicles } from "./adapters/craigslist-vehicles";
+import { scrapeCraigslistAntiques } from "./adapters/craigslist-antiques";
 // Apify-powered scrapers (paid, reliable)
 import { scrapeFacebookMarketplace } from "./adapters/facebook-marketplace";
 import { scrapeEbayApify } from "./adapters/ebay-apify";
 import { scrapeGoogleShopping } from "./adapters/google-shopping";
 import { scrapeAmazonApify } from "./adapters/amazon-apify";
 import { checkTikTokTrend } from "./adapters/tiktok-trends";
+import { scrapeEbayMotors } from "./adapters/ebay-motors";
+import { scrapeAutoTrader } from "./adapters/autotrader";
+import { scrapeCarsCom } from "./adapters/cars-com";
+import { scrapeCarGurus } from "./adapters/cargurus";
+import { scrapeBringATrailer } from "./adapters/bat-auctions";
+import { scrapeChrono24 } from "./adapters/chrono24";
+import { scrapeStockX } from "./adapters/stockx";
+import { scrapeGoat } from "./adapters/goat";
+import { scrapeSothebys } from "./adapters/sothebys";
 
 type ScraperFn = (query: string) => Promise<ScraperResult>;
 
@@ -93,12 +106,43 @@ export async function getMarketIntelligence(
   if (cat.match(/music|instrument|guitar|pedal|amp|keyboard|drum|bass|synth|violin|trumpet|saxophone|piano|ukulele/)) {
     alwaysAdapters.push(() => scrapeReverb(itemName));
   }
+  // Vehicle routing
+  if (cat.match(/vehicle|automobile|car|truck|motorcycle|atv|boat|suv|van|rv|camper/)) {
+    alwaysAdapters.push(
+      () => scrapeCraigslistVehicles(itemName, sellerZip),
+      () => scrapeEbayMotors(itemName),
+      () => scrapeAutoTrader(itemName, sellerZip),
+      () => scrapeCarsCom(itemName, sellerZip),
+      () => scrapeCarGurus(itemName, sellerZip),
+      () => scrapeBringATrailer(itemName),
+    );
+  }
+  // Antique/auction routing
+  if (cat.match(/antique|vintage|estate|auction|furniture.*old|silver|porcelain|glass.*art|pottery|china/)) {
+    alwaysAdapters.push(
+      () => scrapeShopGoodwill(itemName),
+      () => scrapeLiveAuctioneers(itemName),
+      () => scrapeCraigslistAntiques(itemName, sellerZip),
+      () => scrapeSothebys(itemName),
+    );
+  }
+  // Watch routing
+  if (cat.match(/watch|horol|timepiece|rolex|omega|breitling|patek|cartier/)) {
+    alwaysAdapters.push(() => scrapeChrono24(itemName));
+  }
+  // Sneaker/streetwear routing
+  if (cat.match(/sneaker|shoe|jordan|nike|yeezy|streetwear|supreme/)) {
+    alwaysAdapters.push(() => scrapeStockX(itemName), () => scrapeGoat(itemName));
+  }
 
   // Dedupe: skip category adapters already covered by always-run
   const alwaysFnNames = new Set([
     "scrapeEbaySold", "scrapeCraigslist", "scrapeMercari", "scrapeUncleHenrys",
     "scrapeOfferUp", "scrapeFacebookMarketplace", "scrapeGoogleShopping",
     "scrapePoshmark", "scrapeRubyLane", "scrapeReverb",
+    "scrapeShopGoodwill", "scrapeLiveAuctioneers", "scrapeCraigslistVehicles", "scrapeCraigslistAntiques",
+    "scrapeEbayMotors", "scrapeAutoTrader", "scrapeCarsCom", "scrapeCarGurus", "scrapeBringATrailer",
+    "scrapeChrono24", "scrapeStockX", "scrapeGoat", "scrapeSothebys",
   ]);
   const extraAdapters = categoryAdapters.filter((fn) => !alwaysFnNames.has(fn.name));
 

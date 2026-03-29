@@ -9,6 +9,8 @@ import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { scrapeEtsy } from "@/lib/market-intelligence/adapters/etsy";
 import { scrapePoshmark } from "@/lib/market-intelligence/adapters/poshmark";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
+import { scrapePinterest } from "@/lib/market-intelligence/adapters/pinterest";
+import { scrapeYoutube } from "@/lib/market-intelligence/adapters/youtube";
 import fs from "fs";
 import path from "path";
 
@@ -215,8 +217,22 @@ Study these titles and pricing for your Poshmark-specific listing copy. Mirror s
         } catch { /* non-critical */ }
       }
 
+      // Social demand signals for listing optimization
+      const [pinterestResult, youtubeResult] = await Promise.allSettled([
+        scrapePinterest(itemName, category),
+        scrapeYoutube(itemName, category),
+      ]);
+      const pin = pinterestResult.status === "fulfilled" ? pinterestResult.value : null;
+      const yt = youtubeResult.status === "fulfilled" ? youtubeResult.value : null;
+      if (pin?.success && pin.demandSignal !== "none") {
+        realListingContext += `\nPinterest demand: ${pin.demandSignal} (${pin.totalSaves.toLocaleString()} saves). Use visual-first listing strategies.`;
+      }
+      if (yt?.success && yt.demandSignal !== "none") {
+        realListingContext += `\nYouTube interest: ${yt.demandSignal} (${yt.totalViews.toLocaleString()} views). Consider video marketing or referencing popular reviews.`;
+      }
+
       if (realListingContext) {
-        console.log(`[ListBot] Real listing data: Etsy=${etsy?.topListings?.length ?? 0} templates, Market=${intel?.comps?.length ?? 0} comps`);
+        console.log(`[ListBot] Real listing data: Etsy=${etsy?.topListings?.length ?? 0} templates, Market=${intel?.comps?.length ?? 0} comps, Pin=${pin?.demandSignal ?? "none"}, YT=${yt?.demandSignal ?? "none"}`);
       }
     } catch {
       console.log("[ListBot] Listing scrapers unavailable — proceeding with AI-only analysis");

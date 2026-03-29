@@ -6,6 +6,7 @@ import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { logUserEvent } from "@/lib/data/user-events";
 import { getVehicleHistoryReport, decodeVinNHTSA } from "@/lib/vehicle/nhtsa";
 import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 
 const openai = process.env.OPENAI_API_KEY
@@ -205,7 +206,33 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "carbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
-    const systemPrompt = enrichmentPrefix + `You are an elite automotive appraiser, mechanic, and vehicle market analyst with 25 years of experience. You've evaluated thousands of vehicles — from classic cars to modern trucks to motorcycles to boats. You know every make, model, year, common problem, market value, and selling strategy.
+    // ── REAL VEHICLE MARKET DATA ──
+    let vehicleCompsContext = "";
+    try {
+      const query = `${vehicleYear} ${vehicleMake} ${vehicleModel}`.trim();
+      const marketIntel = await getMarketIntelligence(query || ai.item_name || item.title || "", "vehicle", sellerZip);
+      if (marketIntel?.comps?.length > 0) {
+        vehicleCompsContext = `\n\nREAL VEHICLE MARKET DATA (${marketIntel.comps.length} listings from ${marketIntel.sources?.join(", ")}):
+${marketIntel.comps.slice(0, 12).map((c: any, i: number) =>
+  `${i + 1}. [${c.platform}] "${c.item}" — $${c.price}${c.location ? ` (${c.location})` : ""}`
+).join("\n")}
+Median price: $${marketIntel.median}
+Range: $${marketIntel.low}–$${marketIntel.high} | Trend: ${marketIntel.trend}
+
+CRITICAL: Use these REAL comparable vehicles to anchor your valuation. Do NOT guess when real data is available.`;
+        console.log(`[CarBot] ${marketIntel.comps.length} real vehicle comps from ${marketIntel.sources?.join(", ")}`);
+
+        Promise.all(marketIntel.comps.slice(0, 10).map((comp: any) =>
+          prisma.marketComp.create({
+            data: { itemId, platform: comp.platform, title: comp.item, price: comp.price, currency: "USD", url: comp.url || "" },
+          }).catch(() => null)
+        )).catch(() => null);
+      }
+    } catch {
+      console.log("[CarBot] Vehicle market intelligence unavailable — proceeding with AI-only analysis");
+    }
+
+    const systemPrompt = enrichmentPrefix + vehicleCompsContext + `You are an elite automotive appraiser, mechanic, and vehicle market analyst with 25 years of experience. You've evaluated thousands of vehicles — from classic cars to modern trucks to motorcycles to boats. You know every make, model, year, common problem, market value, and selling strategy.
 
 You are evaluating a vehicle from photos and seller-provided data.${sellerContext ? `\n\nSELLER-PROVIDED VEHICLE DATA:${sellerContext}\n\nUse this seller data to provide a more accurate and specific evaluation.` : ""}
 
