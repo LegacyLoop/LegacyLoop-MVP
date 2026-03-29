@@ -60,6 +60,8 @@ type Change = {
 type Props = {
   subscription: Subscription;
   changes: Change[];
+  itemCount?: number;
+  projectCount?: number;
 };
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -68,23 +70,41 @@ type Props = {
 
 function SectionHeader({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
-      <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #00bcd4, #009688)", borderRadius: 2, margin: "0 auto 1rem auto" }} />
-      <div style={{ color: "var(--text-primary)", fontSize: "1.75rem", fontWeight: 700, marginBottom: "0.5rem" }}>{title}</div>
-      <div style={{ color: "var(--text-secondary)", fontSize: "1rem" }}>{subtitle}</div>
+    <div style={{ textAlign: "center", marginBottom: "3rem", position: "relative", padding: "2rem 0 0" }}>
+      {/* Atmospheric glow — wider, more prominent */}
+      <div style={{ position: "absolute", top: "-40px", left: "50%", transform: "translateX(-50%)", width: "500px", height: "250px", background: "radial-gradient(ellipse 70% 55% at 50% 50%, rgba(0,188,212,0.1), transparent 70%)", pointerEvents: "none" }} />
+
+      {/* Accent bar — wider with glow */}
+      <div style={{ width: 64, height: 4, background: "linear-gradient(90deg, #00bcd4, #009688)", borderRadius: 2, margin: "0 auto 1.25rem auto", boxShadow: "0 2px 12px rgba(0,188,212,0.3)" }} />
+
+      {/* Title — larger, bolder gradient */}
+      <h1 style={{
+        fontSize: "2.25rem", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.15,
+        backgroundImage: "linear-gradient(135deg, var(--text-primary) 30%, #00bcd4 100%)",
+        backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+        marginBottom: "0.65rem", position: "relative",
+      }}>{title}</h1>
+
+      {/* Subtitle — refined typography */}
+      <p style={{
+        color: "var(--text-secondary)", fontSize: "1.05rem",
+        letterSpacing: "0.015em", fontWeight: 400, lineHeight: 1.5,
+        maxWidth: "480px", margin: "0 auto",
+        position: "relative",
+      }}>{subtitle}</p>
     </div>
   );
 }
 
 function FeatureTable({ headers, rows }: { headers: string[]; rows: { label: string; values: string[] }[] }) {
   return (
-    <div style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, overflow: "hidden" }}>
+    <div style={{ background: "var(--bg-card)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
           <thead>
-            <tr style={{ background: "rgba(0,188,212,0.08)" }}>
+            <tr style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.1), rgba(0,188,212,0.04))" }}>
               {headers.map((h, i) => (
-                <th key={h} style={{ textAlign: i === 0 ? "left" : "center", padding: "0.75rem 1rem", color: "#00bcd4", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>{h}</th>
+                <th key={h} style={{ textAlign: i === 0 ? "left" : "center", padding: "0.75rem 1rem", color: "#00bcd4", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -157,10 +177,12 @@ const WG_CARDS: { key: string; accent: string; borderColor: string; bg: string; 
    Main Component
    ═══════════════════════════════════════════════════════════════════════════ */
 
-export default function SubscriptionClient({ subscription, changes }: Props) {
+export default function SubscriptionClient({ subscription, changes, itemCount = 0, projectCount = 0 }: Props) {
   const [tab, setTab] = useState<"plan" | "history">("plan");
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
+  const [confirmingDowngrade, setConfirmingDowngrade] = useState<number | null>(null);
   const [upgradeTarget, setUpgradeTarget] = useState<string>("PLUS");
   const [activeSlide, setActiveSlide] = useState(0);
 
@@ -217,15 +239,17 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
               key={t}
               onClick={() => setTab(t)}
               style={{
-                padding: "0.4rem 1.25rem",
-                borderRadius: 20,
-                border: tab === t ? "1px solid rgba(0,188,212,0.3)" : "1px solid var(--border-default)",
-                background: tab === t ? "rgba(0,188,212,0.15)" : "transparent",
+                padding: "0.65rem 1.75rem",
+                borderRadius: 12,
+                border: tab === t ? "1px solid rgba(0,188,212,0.3)" : "1px solid transparent",
+                background: tab === t ? "linear-gradient(135deg, rgba(0,188,212,0.15), rgba(0,188,212,0.08))" : "transparent",
                 color: tab === t ? "#00bcd4" : "var(--text-muted)",
-                fontWeight: tab === t ? 600 : 500,
+                fontWeight: tab === t ? 700 : 500,
                 cursor: "pointer",
-                fontSize: "0.85rem",
-                transition: "all 0.2s",
+                fontSize: "0.88rem",
+                transition: "all 0.2s ease",
+                letterSpacing: "0.02em",
+                boxShadow: tab === t ? "0 2px 12px rgba(0,188,212,0.15)" : "none",
               }}
             >
               {t === "plan" ? "Current Plan" : "Change History"}
@@ -237,55 +261,103 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
           <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
 
             {/* ── Current plan card ── */}
-            <div style={{ background: "var(--ghost-bg)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: 20, padding: "2rem", position: "relative", overflow: "hidden" }}>
-              {/* Decorative glow */}
-              <div style={{ position: "absolute", top: -40, right: -40, width: 160, height: 160, background: "radial-gradient(circle, rgba(0,188,212,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+            <div style={{
+              background: "linear-gradient(135deg, var(--bg-card), rgba(0,188,212,0.03))",
+              backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
+              border: "1px solid rgba(0,188,212,0.2)", borderRadius: 24,
+              padding: "2.25rem", position: "relative", overflow: "hidden",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.06)",
+            }}>
+              {/* Decorative glows */}
+              <div style={{ position: "absolute", top: -50, right: -50, width: 220, height: 220, background: "radial-gradient(circle, rgba(0,188,212,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ position: "absolute", bottom: -30, left: -30, width: 140, height: 140, background: "radial-gradient(circle, rgba(0,188,212,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap", position: "relative" }}>
-                <div>
-                  <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.4rem" }}>Current Plan</div>
-                  <div style={{ color: "var(--text-primary)", fontWeight: 800, fontSize: "1.75rem", marginBottom: "0.25rem" }}>
-                    {TIER_NAMES[tier] || tier}
-                  </div>
-                  {preLaunchPrice != null && preLaunchPrice !== normalPrice ? (
-                    <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem" }}>
-                      <span style={{ color: "#00bcd4", fontWeight: 700, fontSize: "2rem" }}>
-                        ${preLaunchPrice}<span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span>
-                      </span>
-                      <span style={{ color: "var(--text-muted)", fontSize: "1rem", textDecoration: "line-through" }}>
-                        ${normalPrice}/mo
-                      </span>
-                    </div>
-                  ) : (
-                    <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "2rem" }}>
-                      ${normalPrice}<span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span>
-                    </div>
-                  )}
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginTop: "0.25rem" }}>
-                    {getTierCommission(tier)}% commission on sales
-                  </div>
-                  {periodEnd && (
-                    <div style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginTop: "0.25rem" }}>
-                      Next billing: {periodEnd.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
-                    </div>
-                  )}
-                  <div style={{ marginTop: "0.75rem" }}>
-                    <span style={{
-                      display: "inline-block",
-                      background: subscription?.status === "ACTIVE" ? "rgba(16,185,129,0.15)" : subscription ? "rgba(239,68,68,0.15)" : "var(--text-muted)",
-                      color: subscription?.status === "ACTIVE" ? "#10b981" : subscription ? "#ef4444" : "var(--text-muted)",
-                      border: subscription?.status === "ACTIVE" ? "1px solid rgba(16,185,129,0.3)" : subscription ? "1px solid rgba(239,68,68,0.3)" : "1px solid var(--border-default)",
-                      borderRadius: 20,
-                      padding: "0.25rem 0.75rem",
-                      fontSize: "0.75rem",
-                      fontWeight: 700,
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1.5rem", flexWrap: "wrap", position: "relative" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {/* Tier icon + label row */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.75rem" }}>
+                    <div style={{
+                      width: 44, height: 44, borderRadius: 12,
+                      background: "linear-gradient(135deg, rgba(0,188,212,0.15), rgba(0,188,212,0.06))",
+                      border: "1px solid rgba(0,188,212,0.2)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "1.4rem", flexShrink: 0,
                     }}>
-                      {subscription?.status || "No subscription"}
+                      {tier === "PRO" ? "👑" : tier === "PLUS" ? "⚡" : tier === "STARTER" ? "🚀" : "🆓"}
+                    </div>
+                    <div>
+                      <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.12em" }}>Current Plan</div>
+                      <div style={{
+                        fontWeight: 800, fontSize: "1.75rem", letterSpacing: "-0.02em",
+                        backgroundImage: "linear-gradient(135deg, var(--text-primary), #00bcd4)",
+                        backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                      }}>
+                        {TIER_NAMES[tier] || tier}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Price display */}
+                  <div style={{ marginBottom: "0.75rem" }}>
+                    {preLaunchPrice != null && preLaunchPrice !== normalPrice ? (
+                      <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem" }}>
+                        <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "#00bcd4", letterSpacing: "-0.03em" }}>
+                          ${preLaunchPrice}
+                        </span>
+                        <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span>
+                        <span style={{ fontSize: "1rem", color: "var(--text-muted)", textDecoration: "line-through", marginLeft: "0.25rem" }}>
+                          ${normalPrice}/mo
+                        </span>
+                        <span style={{
+                          fontSize: "0.65rem", fontWeight: 700, padding: "2px 8px", borderRadius: 9999,
+                          background: "rgba(34,197,94,0.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)",
+                        }}>
+                          {Math.round((1 - preLaunchPrice / normalPrice) * 100)}% OFF
+                        </span>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", alignItems: "baseline", gap: "0.35rem" }}>
+                        <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "#00bcd4", letterSpacing: "-0.03em" }}>${normalPrice}</span>
+                        <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info pills row */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                      padding: "0.25rem 0.75rem", borderRadius: 8,
+                      background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.12)",
+                      fontSize: "0.78rem", color: "var(--text-secondary)", fontWeight: 600,
+                    }}>
+                      💎 {getTierCommission(tier)}% commission
+                    </span>
+                    {periodEnd && (
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", gap: "0.3rem",
+                        padding: "0.25rem 0.75rem", borderRadius: 8,
+                        background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
+                        fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: 500,
+                      }}>
+                        📅 Next billing: {periodEnd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </span>
+                    )}
+                    <span style={{
+                      display: "inline-flex", alignItems: "center",
+                      padding: "0.25rem 0.75rem", borderRadius: 8,
+                      background: subscription?.status === "ACTIVE" ? "rgba(16,185,129,0.1)" : subscription ? "rgba(239,68,68,0.1)" : "var(--ghost-bg)",
+                      color: subscription?.status === "ACTIVE" ? "#10b981" : subscription ? "#ef4444" : "var(--text-muted)",
+                      border: subscription?.status === "ACTIVE" ? "1px solid rgba(16,185,129,0.2)" : subscription ? "1px solid rgba(239,68,68,0.2)" : "1px solid var(--border-default)",
+                      fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.04em",
+                    }}>
+                      {subscription?.status === "ACTIVE" ? "● ACTIVE" : subscription?.status || "No subscription"}
                     </span>
                   </div>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {/* Action buttons */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flexShrink: 0 }}>
                   {isActive && tier !== "PRO" && (
                     <button
                       onClick={() => {
@@ -293,42 +365,114 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                         setUpgradeTarget(TIER_KEYS[Math.min(idx + 1, TIER_KEYS.length - 1)]);
                         setShowUpgradeModal(true);
                       }}
-                      style={{ background: "linear-gradient(135deg, #00bcd4, #009688)", border: "none", borderRadius: 12, padding: "0.75rem 1.75rem", color: "white", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer", boxShadow: "0 4px 15px rgba(0,188,212,0.3)" }}
+                      style={{
+                        background: "linear-gradient(135deg, #00bcd4, #009688)", border: "none", borderRadius: 14,
+                        padding: "0.8rem 2rem", color: "white", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer",
+                        boxShadow: "0 4px 16px rgba(0,188,212,0.3)", transition: "all 0.2s ease", letterSpacing: "0.01em",
+                      }}
+                      onMouseEnter={(e) => { (e.target as HTMLElement).style.boxShadow = "0 6px 24px rgba(0,188,212,0.4)"; (e.target as HTMLElement).style.transform = "translateY(-1px)"; }}
+                      onMouseLeave={(e) => { (e.target as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,188,212,0.3)"; (e.target as HTMLElement).style.transform = "translateY(0)"; }}
                     >
-                      Upgrade Plan
+                      ⬆ Upgrade Plan
                     </button>
                   )}
                   {isActive && displayPrice > 0 && (
                     <button
                       onClick={() => setShowCancelModal(true)}
-                      style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 12, padding: "0.75rem 1.75rem", color: "rgba(239,68,68,0.7)", fontWeight: 600, fontSize: "0.9rem", cursor: "pointer" }}
+                      style={{
+                        background: "transparent", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 14,
+                        padding: "0.75rem 1.75rem", color: "rgba(239,68,68,0.6)", fontWeight: 500, fontSize: "0.82rem",
+                        cursor: "pointer", transition: "all 0.2s ease",
+                      }}
+                      onMouseEnter={(e) => { (e.target as HTMLElement).style.borderColor = "rgba(239,68,68,0.4)"; (e.target as HTMLElement).style.color = "#ef4444"; }}
+                      onMouseLeave={(e) => { (e.target as HTMLElement).style.borderColor = "rgba(239,68,68,0.2)"; (e.target as HTMLElement).style.color = "rgba(239,68,68,0.6)"; }}
                     >
                       Cancel subscription
                     </button>
                   )}
                   {isCancelled && (
-                    <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", maxWidth: 220 }}>
+                    <div style={{
+                      fontSize: "0.82rem", color: "var(--text-muted)", maxWidth: 220,
+                      padding: "0.75rem 1rem", background: "rgba(239,68,68,0.04)",
+                      border: "1px solid rgba(239,68,68,0.1)", borderRadius: 12,
+                    }}>
                       Your plan has been cancelled. Choose a new plan below to reactivate.
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Features */}
-              <div style={{ marginTop: "1.25rem", paddingTop: "1.25rem", borderTop: "1px solid var(--border-default)", position: "relative" }}>
-                <div style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.75rem" }}>{"What's included"}</div>
-                <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+              {/* Features — 2 column grid */}
+              <div style={{
+                marginTop: "1.5rem", paddingTop: "1.5rem",
+                borderTop: "1px solid var(--border-default)", position: "relative",
+              }}>
+                <div style={{
+                  color: "var(--text-secondary)", fontWeight: 700, fontSize: "0.75rem",
+                  textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem",
+                }}>{"What's included"}</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem 1.5rem" }}>
                   {getTierFeatures(tier).map((f) => (
-                    <li key={f} style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-                      <span style={{ color: "#00bcd4", fontWeight: 700, flexShrink: 0 }}>{"\u2713"}</span> {f}
-                    </li>
+                    <div key={f} style={{
+                      display: "flex", alignItems: "center", gap: "0.5rem",
+                      color: "var(--text-secondary)", fontSize: "0.85rem",
+                      padding: "0.3rem 0",
+                    }}>
+                      <span style={{
+                        width: 20, height: 20, borderRadius: 6,
+                        background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.15)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: "0.65rem", color: "#00bcd4", fontWeight: 700, flexShrink: 0,
+                      }}>✓</span>
+                      {f}
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             </div>
 
+            {/* ── Usage Meters ── */}
+            {(() => {
+              const tierIdx = TIER_KEYS.indexOf(tier);
+              const limits = [
+                { label: "Items", current: itemCount, max: tierIdx <= 0 ? 3 : tierIdx === 1 ? 25 : tierIdx === 2 ? 100 : Infinity },
+                { label: "Projects", current: projectCount, max: tierIdx <= 0 ? 0 : tierIdx === 1 ? 3 : tierIdx === 2 ? 10 : Infinity },
+              ];
+              return (
+                <div style={{ padding: "1.25rem", background: "var(--bg-card)", backdropFilter: "blur(16px)", border: "1px solid var(--border-default)", borderRadius: 16, boxShadow: "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>📊 Usage</div>
+                  {limits.map(l => {
+                    const pct = l.max === Infinity ? 0 : Math.min(100, Math.round((l.current / Math.max(1, l.max)) * 100));
+                    return (
+                      <div key={l.label} style={{ marginBottom: "0.75rem" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.8rem", marginBottom: 4 }}>
+                          <span style={{ color: "var(--text-secondary)" }}>{l.label}</span>
+                          <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{l.current} of {l.max === Infinity ? "Unlimited" : l.max}</span>
+                        </div>
+                        {l.max !== Infinity && (
+                          <div style={{ height: 8, borderRadius: 4, background: "rgba(0,188,212,0.08)", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+                            <div style={{ height: "100%", width: `${pct}%`, borderRadius: 4, background: pct >= 90 ? "linear-gradient(90deg, #ef4444, #dc2626)" : pct >= 70 ? "linear-gradient(90deg, #eab308, #f59e0b)" : "linear-gradient(90deg, #00bcd4, #009688)", transition: "width 0.5s ease", boxShadow: pct >= 90 ? "0 0 8px rgba(239,68,68,0.4)" : pct >= 70 ? "0 0 8px rgba(234,179,8,0.3)" : "0 0 8px rgba(0,188,212,0.3)" }} />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* ── Billing Period Toggle ── */}
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "12px" }}>
+              <span onClick={() => setBillingPeriod("monthly")} style={{ fontSize: "0.88rem", fontWeight: billingPeriod === "monthly" ? 700 : 400, color: billingPeriod === "monthly" ? "#00bcd4" : "var(--text-muted)", cursor: "pointer", transition: "all 0.2s" }}>Monthly</span>
+              <button onClick={() => setBillingPeriod(p => p === "monthly" ? "annual" : "monthly")} style={{ width: 52, height: 28, borderRadius: 14, border: "none", cursor: "pointer", position: "relative", background: billingPeriod === "annual" ? "linear-gradient(135deg, #00bcd4, #009688)" : "var(--border-default)", boxShadow: billingPeriod === "annual" ? "0 2px 8px rgba(0,188,212,0.3)" : "none", transition: "all 0.2s ease" }}>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: billingPeriod === "annual" ? 27 : 3, transition: "left 0.2s ease", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
+              </button>
+              <span onClick={() => setBillingPeriod("annual")} style={{ fontSize: "0.88rem", fontWeight: billingPeriod === "annual" ? 700 : 400, color: billingPeriod === "annual" ? "#00bcd4" : "var(--text-muted)", cursor: "pointer", transition: "all 0.2s" }}>Annual</span>
+              {billingPeriod === "annual" && <span style={{ fontSize: "0.68rem", fontWeight: 700, padding: "3px 10px", borderRadius: 9999, background: "rgba(34,197,94,0.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>Save 17%</span>}
+            </div>
+
             {/* ── Founders banner ── */}
-            <div style={{ background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.3)", borderRadius: 12, padding: "0.75rem 1.5rem", textAlign: "center", color: "#00bcd4", fontWeight: 600, fontSize: "0.9rem" }}>
+            <div style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.1), rgba(0,188,212,0.04))", border: "1px solid rgba(0,188,212,0.25)", borderRadius: 16, padding: "1rem 1.75rem", textAlign: "center", color: "#00bcd4", fontWeight: 600, fontSize: "0.9rem", boxShadow: "0 4px 20px rgba(0,188,212,0.08), inset 0 1px 0 rgba(255,255,255,0.04)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", position: "relative", overflow: "hidden" }}>
               {"\uD83D\uDE80"} Founders Early Access — Pre-launch pricing locked in forever for founding members. Normal prices shown crossed out.
             </div>
 
@@ -337,29 +481,89 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
               <div>
                 <div style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.75rem" }}>Choose a Plan</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.25rem" }}>
-                  {TIER_KEYS.map((t) => {
+                  {TIER_KEYS.map((t, idx) => {
                     const tp = getTierPrice(t);
                     const pl = getPreLaunchPrice(t);
                     const isFree = tp === 0;
+                    const isPopular = t === "PLUS";
+                    const features = getTierFeatures(t);
+                    const TIER_ICONS: Record<string, string> = { FREE: "🆓", STARTER: "🚀", PLUS: "⚡", PRO: "👑" };
+                    const TIER_TAGLINES: Record<string, string> = { FREE: "Get started free", STARTER: "For active sellers", PLUS: "Most popular choice", PRO: "Full estate power" };
                     return (
                       <div
                         key={t}
-                        style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}
+                        style={{
+                          background: isPopular ? "linear-gradient(135deg, rgba(0,188,212,0.1), rgba(0,188,212,0.03))" : "var(--bg-card)",
+                          backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+                          border: isPopular ? "2px solid rgba(0,188,212,0.4)" : "1px solid var(--border-default)",
+                          borderRadius: 20, padding: "1.75rem",
+                          display: "flex", flexDirection: "column", gap: "0.5rem",
+                          position: "relative", overflow: "hidden",
+                          transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                          boxShadow: isPopular
+                            ? "0 8px 32px rgba(0,188,212,0.15), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"
+                            : "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 16px 48px rgba(0,188,212,0.2), 0 4px 12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.08)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = isPopular ? "0 8px 32px rgba(0,188,212,0.15), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06)" : "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
                       >
-                        <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.1rem" }}>{TIER_NAMES[t]}</div>
-                        <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem" }}>
+                        {/* Corner glow */}
+                        <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: `radial-gradient(circle, ${isPopular ? "rgba(0,188,212,0.12)" : "rgba(0,188,212,0.05)"} 0%, transparent 70%)`, pointerEvents: "none" }} />
+
+                        {/* Popular badge */}
+                        {isPopular && (
+                          <div style={{
+                            position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+                            background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
+                            padding: "0.2rem 1.25rem", borderRadius: "0 0 10px 10px",
+                            fontSize: "0.62rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase",
+                            boxShadow: "0 4px 12px rgba(0,188,212,0.35)",
+                          }}>
+                            MOST POPULAR
+                          </div>
+                        )}
+
+                        {/* Icon + Name */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: isPopular ? "0.5rem" : 0 }}>
+                          <span style={{ fontSize: "1.5rem" }}>{TIER_ICONS[t] || "📦"}</span>
+                          <div>
+                            <div style={{ color: "var(--text-primary)", fontWeight: 800, fontSize: "1.15rem", letterSpacing: "-0.01em" }}>{TIER_NAMES[t]}</div>
+                            <div style={{ color: "var(--text-muted)", fontSize: "0.72rem", fontWeight: 500 }}>{TIER_TAGLINES[t]}</div>
+                          </div>
+                        </div>
+
+                        {/* Price */}
+                        <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem", marginTop: "0.5rem" }}>
                           {pl != null && pl !== tp ? (
                             <>
-                              <span style={{ color: "#00bcd4", fontWeight: 800, fontSize: "1.75rem" }}>${pl}/mo</span>
-                              <span style={{ color: "var(--text-muted)", fontSize: "0.9rem", textDecoration: "line-through" }}>${tp}/mo</span>
+                              <span style={{ fontSize: "2rem", fontWeight: 800, color: "#00bcd4", letterSpacing: "-0.03em" }}>${pl}</span>
+                              <span style={{ fontSize: "0.9rem", color: "var(--text-muted)", fontWeight: 400 }}>/mo</span>
+                              <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", textDecoration: "line-through", marginLeft: "0.25rem" }}>${tp}/mo</span>
                             </>
                           ) : (
-                            <span style={{ color: "#00bcd4", fontWeight: 800, fontSize: "1.75rem" }}>${tp}/mo</span>
+                            <>
+                              <span style={{ fontSize: "2rem", fontWeight: 800, color: "#00bcd4", letterSpacing: "-0.03em" }}>${tp}</span>
+                              <span style={{ fontSize: "0.9rem", color: "var(--text-muted)", fontWeight: 400 }}>/mo</span>
+                            </>
                           )}
                         </div>
-                        <div style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>
+
+                        {/* Commission */}
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", padding: "0.2rem 0.6rem", borderRadius: "6px", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.1)", width: "fit-content", fontSize: "0.75rem", color: "var(--text-secondary)", fontWeight: 600 }}>
                           {getTierCommission(t)}% commission
                         </div>
+
+                        {/* Feature highlights */}
+                        <div style={{ marginTop: "0.5rem", flex: 1, display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                          {(features || []).slice(0, 5).map((f, fi) => (
+                            <div key={fi} style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                              <span style={{ color: "#00bcd4", fontSize: "0.75rem" }}>✓</span>
+                              {f}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* CTA Button */}
                         <button
                           onClick={() => {
                             if (isFree) {
@@ -375,16 +579,17 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                           }}
                           style={{
                             background: isFree ? "transparent" : "linear-gradient(135deg, #00bcd4, #009688)",
-                            border: isFree ? "1px solid rgba(0,188,212,0.4)" : "none",
-                            borderRadius: 10,
-                            padding: "0.65rem 1.25rem",
+                            border: isFree ? "1px solid rgba(0,188,212,0.3)" : "none",
+                            borderRadius: 12, padding: "0.75rem 1.25rem",
                             color: isFree ? "#00bcd4" : "white",
-                            fontWeight: 600,
-                            fontSize: "0.85rem",
-                            cursor: "pointer",
-                            marginTop: "auto",
-                            boxShadow: isFree ? "none" : "0 2px 12px rgba(0,188,212,0.2)",
+                            fontWeight: 700, fontSize: "0.88rem", cursor: "pointer",
+                            marginTop: "0.75rem",
+                            boxShadow: isFree ? "none" : "0 4px 16px rgba(0,188,212,0.25)",
+                            transition: "all 0.2s ease",
+                            letterSpacing: "0.01em",
                           }}
+                          onMouseEnter={(e) => { if (!isFree) { (e.target as HTMLElement).style.boxShadow = "0 6px 24px rgba(0,188,212,0.35)"; (e.target as HTMLElement).style.transform = "translateY(-1px)"; }}}
+                          onMouseLeave={(e) => { if (!isFree) { (e.target as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,188,212,0.25)"; (e.target as HTMLElement).style.transform = "translateY(0)"; }}}
                         >
                           {isFree ? "Continue on Free" : `Subscribe to ${TIER_NAMES[t]}`}
                         </button>
@@ -403,32 +608,58 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                   {TIER_KEYS.filter((t) => TIER_KEYS.indexOf(t) > currentTierIndex).map((t) => {
                     const tierPrice = getTierPrice(t);
                     const preLaunch = getPreLaunchPrice(t);
+                    const features = getTierFeatures(t);
+                    const TIER_ICONS: Record<string, string> = { FREE: "🆓", STARTER: "🚀", PLUS: "⚡", PRO: "👑" };
                     return (
                       <div
                         key={t}
-                        style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}
+                        style={{
+                          background: "var(--bg-card)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+                          border: "1px solid rgba(0,188,212,0.2)", borderRadius: 20, padding: "1.75rem",
+                          display: "flex", flexDirection: "column", gap: "0.5rem",
+                          position: "relative", overflow: "hidden",
+                          transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                          boxShadow: "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 16px 48px rgba(0,188,212,0.18), inset 0 1px 0 rgba(255,255,255,0.08)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
                       >
-                        <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.1rem" }}>{TIER_NAMES[t]}</div>
-                        <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem" }}>
+                        <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: "radial-gradient(circle, rgba(0,188,212,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <span style={{ fontSize: "1.4rem" }}>{TIER_ICONS[t] || "📦"}</span>
+                          <div style={{ color: "var(--text-primary)", fontWeight: 800, fontSize: "1.15rem", letterSpacing: "-0.01em" }}>{TIER_NAMES[t]}</div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem", marginTop: "0.25rem" }}>
                           {preLaunch != null && (
-                            <span style={{ color: "#00bcd4", fontWeight: 800, fontSize: "1.75rem" }}>${preLaunch}/mo</span>
+                            <span style={{ fontSize: "1.85rem", fontWeight: 800, color: "#00bcd4", letterSpacing: "-0.03em" }}>${preLaunch}<span style={{ fontSize: "0.85rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span></span>
                           )}
                           <span style={{
                             color: preLaunch != null ? "var(--text-muted)" : "#00bcd4",
                             fontWeight: preLaunch != null ? 500 : 800,
-                            fontSize: preLaunch != null ? "0.9rem" : "1.75rem",
+                            fontSize: preLaunch != null ? "0.85rem" : "1.85rem",
                             textDecoration: preLaunch != null ? "line-through" : "none",
-                            verticalAlign: "middle",
                           }}>
                             ${tierPrice}/mo
                           </span>
                         </div>
-                        <div style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>
+                        <div style={{ display: "inline-flex", alignItems: "center", padding: "0.2rem 0.6rem", borderRadius: "6px", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.1)", width: "fit-content", fontSize: "0.75rem", color: "var(--text-secondary)", fontWeight: 600 }}>
                           {getTierCommission(t)}% commission
                         </div>
+                        {(features || []).slice(0, 4).map((f, fi) => (
+                          <div key={fi} style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
+                            <span style={{ color: "#00bcd4", fontSize: "0.75rem" }}>✓</span> {f}
+                          </div>
+                        ))}
                         <button
                           onClick={() => { setUpgradeTarget(t); setShowUpgradeModal(true); }}
-                          style={{ background: "linear-gradient(135deg, #00bcd4, #009688)", border: "none", borderRadius: 10, padding: "0.65rem 1.25rem", color: "white", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", marginTop: "auto", boxShadow: "0 2px 12px rgba(0,188,212,0.2)" }}
+                          style={{
+                            background: "linear-gradient(135deg, #00bcd4, #009688)", border: "none", borderRadius: 12,
+                            padding: "0.75rem 1.25rem", color: "white", fontWeight: 700, fontSize: "0.88rem",
+                            cursor: "pointer", marginTop: "auto",
+                            boxShadow: "0 4px 16px rgba(0,188,212,0.25)", transition: "all 0.2s ease",
+                          }}
+                          onMouseEnter={(e) => { (e.target as HTMLElement).style.boxShadow = "0 6px 24px rgba(0,188,212,0.35)"; }}
+                          onMouseLeave={(e) => { (e.target as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,188,212,0.25)"; }}
                         >
                           Upgrade to {TIER_NAMES[t]}
                         </button>
@@ -450,7 +681,9 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                     return (
                       <div
                         key={t}
-                        style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid var(--border-default)", borderRadius: 16, padding: "1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}
+                        style={{ background: "var(--bg-card)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--border-default)", borderRadius: 20, padding: "1.75rem", display: "flex", flexDirection: "column", gap: "0.5rem", position: "relative", overflow: "hidden", transition: "transform 0.25s ease, box-shadow 0.25s ease", boxShadow: "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)" }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(0,0,0,0.1)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)"; }}
                       >
                         <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.1rem" }}>{TIER_NAMES[t]}</div>
                         <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem" }}>
@@ -616,7 +849,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                 if (!wg) return null;
                 const isRecommended = wg.recommended === true;
                 return (
-                  <div key={card.key} style={{ background: card.bg, backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: `1px solid ${card.borderColor}`, borderRadius: 16, padding: isRecommended ? "2.25rem 1.75rem 1.75rem 1.75rem" : "1.75rem", position: "relative", overflow: "visible" }}>
+                  <div key={card.key} style={{ background: card.bg, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: `1px solid ${card.borderColor}`, borderRadius: 20, padding: isRecommended ? "2.25rem 1.75rem 1.75rem 1.75rem" : "1.75rem", position: "relative", overflow: "visible", transition: "transform 0.25s ease, box-shadow 0.25s ease", boxShadow: "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(0,188,212,0.12)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)"; }}>
                     {isRecommended && (
                       <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "white", borderRadius: 20, padding: "0.3rem 1.25rem", fontSize: "0.72rem", fontWeight: 700, whiteSpace: "nowrap", letterSpacing: "0.06em", boxShadow: "0 2px 12px rgba(0,188,212,0.4)", zIndex: 10 }}>RECOMMENDED</div>
                     )}
@@ -635,7 +868,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                       </div>
                     ))}
 
-                    <button style={{ background: "transparent", border: `1px solid ${card.accent}`, borderRadius: 10, padding: "0.65rem 1.5rem", color: card.accent, fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", width: "100%", marginTop: "1.25rem" }}>
+                    <button onClick={() => window.location.href = `/quote?tier=${card.key}`} style={{ background: "transparent", border: `1px solid ${card.accent}`, borderRadius: 12, padding: "0.75rem 1.5rem", color: card.accent, fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", width: "100%", marginTop: "1.25rem", transition: "all 0.2s ease" }}>
                       {card.cta}
                     </button>
                   </div>
@@ -690,7 +923,7 @@ export default function SubscriptionClient({ subscription, changes }: Props) {
                     </div>
                   </div>
 
-                  <button style={{ background: "linear-gradient(135deg, #00bcd4, #009688)", border: "none", borderRadius: 12, padding: "0.85rem 2rem", color: "white", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", width: "100%", boxShadow: "0 4px 20px rgba(0,188,212,0.3)" }}>
+                  <button onClick={() => window.location.href = "/services/neighborhood-bundle"} style={{ background: "linear-gradient(135deg, #00bcd4, #009688)", border: "none", borderRadius: 12, padding: "0.85rem 2rem", color: "white", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", width: "100%", boxShadow: "0 4px 20px rgba(0,188,212,0.3)", transition: "all 0.2s ease" }}>
                     Start a Neighborhood Bundle
                   </button>
                 </div>

@@ -160,6 +160,7 @@ export const BOT_ACCESS: Record<number, {
   collectiblesBot: boolean;
   carBot: boolean;
   megaBot: boolean;
+  videoBot: boolean;
 }> = {
   [TIER.FREE]: {
     analyzeBot: true,
@@ -172,6 +173,7 @@ export const BOT_ACCESS: Record<number, {
     collectiblesBot: false,
     carBot: false,
     megaBot: false,
+    videoBot: false,
   },
   [TIER.DIY_SELLER]: {
     analyzeBot: true,
@@ -184,6 +186,7 @@ export const BOT_ACCESS: Record<number, {
     collectiblesBot: false,
     carBot: false,
     megaBot: true,
+    videoBot: false,
   },
   [TIER.POWER_SELLER]: {
     analyzeBot: true,
@@ -196,6 +199,7 @@ export const BOT_ACCESS: Record<number, {
     collectiblesBot: true,
     carBot: false,
     megaBot: true,
+    videoBot: true,
   },
   [TIER.ESTATE_MANAGER]: {
     analyzeBot: true,
@@ -208,6 +212,7 @@ export const BOT_ACCESS: Record<number, {
     collectiblesBot: true,
     carBot: true,
     megaBot: true,
+    videoBot: true,
   },
 };
 
@@ -240,6 +245,10 @@ export const BOT_CREDIT_COSTS = {
   megaBotReRun: 3,
   antiqueDeepDive: 5,
   analyzeBotFirstRun: 0,
+  videoBotStandard: 8,
+  videoBotPro: 15,
+  megaBotVideo: 25,
+  saleVideo: 35,
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -813,6 +822,10 @@ export const ADD_ONS = {
   extra_photos: { credits: 2, name: "Extra Photos (6-10)" },
   shipping_kit: { credits: 10, name: "Shipping Materials Kit" },
   print_book: { credits: 50, name: "Print Story Book" },
+  video_ad_standard: { credits: 8, name: "AI Video Ad — Standard" },
+  video_ad_pro: { credits: 15, name: "AI Video Ad — Pro" },
+  video_ad_mega: { credits: 25, name: "AI Video Ad — MegaBot" },
+  video_ad_sale: { credits: 35, name: "Sale Promo Video" },
 } as const;
 
 // ── Legacy ESTATE_CONTRACTS ─────────────────────────────────────────────────

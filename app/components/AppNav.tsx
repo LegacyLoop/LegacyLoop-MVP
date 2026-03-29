@@ -75,7 +75,8 @@ const CENTER_LINKS = [
 ];
 
 // Full dropdown menu — 6 sections matching the spec
-const MENU_SECTIONS = [
+// ═══ AVATAR DROPDOWN — Selling + Action (the money-making stuff) ═══
+const DROPDOWN_SECTIONS = [
   {
     id: "stuff",
     heading: "Your Stuff",
@@ -92,11 +93,15 @@ const MENU_SECTIONS = [
     heading: "Tools",
     items: [
       { href: "/bots",        label: "AI Bots",         icon: Bot },
-      { href: "/marketplace", label: "Add-On Store",    icon: ShoppingBag },
+      { href: "/marketplace", label: "Add-On Store",    icon: Sparkles },
       { href: "/analytics",   label: "Analytics",       icon: BarChart3 },
       { href: "/shipping",    label: "Shipping Center", icon: Truck },
     ],
   },
+];
+
+// ═══ SETTINGS PANEL — Admin + Account (Claude-style settings hub) ═══
+const SETTINGS_SECTIONS = [
   {
     id: "account",
     heading: "Account",
@@ -118,6 +123,9 @@ const MENU_SECTIONS = [
     ],
   },
 ];
+
+// Combined for mobile full-screen menu
+const MENU_SECTIONS = [...DROPDOWN_SECTIONS, ...SETTINGS_SECTIONS];
 
 /* ── Shared styles ────────────────────────────────────────────────────────── */
 
@@ -158,6 +166,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [bellOpen,     setBellOpen]     = useState(false);
   const [mobileOpen,   setMobileOpen]   = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotifItem[]>([]);
   const [notifsLoaded,  setNotifsLoaded]  = useState(false);
 
@@ -169,6 +178,9 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false);
       if (bellRef.current && !bellRef.current.contains(e.target as Node)) setBellOpen(false);
+      // Close settings panel on outside click (settings button wraps in its own div)
+      const settingsEl = document.querySelector('[aria-label="Settings menu"]')?.parentElement;
+      if (settingsEl && !settingsEl.contains(e.target as Node)) setSettingsOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -178,6 +190,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
   useEffect(() => {
     setMobileOpen(false);
     setDropdownOpen(false);
+    setSettingsOpen(false);
     setBellOpen(false);
   }, [pathname]);
 
@@ -387,69 +400,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   {creditBalance}
                 </Link>
 
-                {/* Settings icon (desktop only) */}
-                <Link
-                  href="/settings"
-                  className="hidden md:flex"
-                  title="Settings"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "2.75rem",
-                    height: "2.75rem",
-                    borderRadius: "0.55rem",
-                    background: "rgba(255,255,255,0.06)",
-                    border: `1px solid ${pathname === "/settings" ? "rgba(0,188,212,0.35)" : "rgba(255,255,255,0.09)"}`,
-                    color: pathname === "/settings" ? TEAL : "rgba(255,255,255,0.7)",
-                    transition: "all 0.15s ease",
-                    textDecoration: "none",
-                    flexShrink: 0,
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)";
-                    (e.currentTarget as HTMLElement).style.color = TEAL;
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
-                    (e.currentTarget as HTMLElement).style.color = pathname === "/settings" ? TEAL : "rgba(255,255,255,0.7)";
-                  }}
-                  aria-label="Settings"
-                >
-                  <Settings size={16} />
-                </Link>
-
-                {/* Help icon (desktop only) */}
-                <Link
-                  href="/help"
-                  className="hidden md:flex"
-                  title="Help & Support"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    width: "2.75rem",
-                    height: "2.75rem",
-                    borderRadius: "0.55rem",
-                    background: "rgba(255,255,255,0.06)",
-                    border: `1px solid ${pathname === "/help" ? "rgba(0,188,212,0.35)" : "rgba(255,255,255,0.09)"}`,
-                    color: pathname === "/help" ? TEAL : "rgba(255,255,255,0.7)",
-                    transition: "all 0.15s ease",
-                    textDecoration: "none",
-                    flexShrink: 0,
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)";
-                    (e.currentTarget as HTMLElement).style.color = TEAL;
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
-                    (e.currentTarget as HTMLElement).style.color = pathname === "/help" ? TEAL : "rgba(255,255,255,0.7)";
-                  }}
-                  aria-label="Help & Support"
-                >
-                  <HelpCircle size={16} />
-                </Link>
+                {/* (Settings + Help icons moved to settings panel) */}
 
                 {/* Notifications bell */}
                 <div ref={bellRef} style={{ position: "relative" }}>
@@ -515,7 +466,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
                 {/* User avatar dropdown */}
                 <div ref={dropdownRef} style={{ position: "relative" }}>
-                  <button onClick={() => setDropdownOpen((v) => !v)} style={{
+                  <button onClick={() => { setDropdownOpen((v) => !v); setSettingsOpen(false); }} style={{
                     display: "flex", alignItems: "center", gap: "0.45rem", padding: "0.35rem 0.55rem",
                     borderRadius: "0.6rem",
                     background: dropdownOpen ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.06)",
@@ -576,8 +527,8 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                         </div>
                       </div>
 
-                      {/* Menu sections */}
-                      {MENU_SECTIONS.map((section) => (
+                      {/* Selling sections only */}
+                      {DROPDOWN_SECTIONS.map((section) => (
                         <div key={section.id} style={{ padding: "0.375rem 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                           <div style={{
                             padding: "0.35rem 1rem 0.25rem", fontSize: "0.6rem", fontWeight: 700,
@@ -586,31 +537,56 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                           {section.items.map((item) => renderMenuItem(item))}
                         </div>
                       ))}
+                    </div>
+                  )}
+                </div>
 
-                      {/* Session section */}
-                      <div style={{ padding: "0.375rem 0" }}>
-                        <div style={{
-                          padding: "0.35rem 1rem 0.25rem", fontSize: "0.6rem", fontWeight: 700,
-                          letterSpacing: "0.14em", color: "rgba(255,255,255,0.45)", textTransform: "uppercase",
-                        }}>Session</div>
+                {/* Settings panel button — always visible (replaces mobile-only hamburger) */}
+                <div style={{ position: "relative" }}>
+                  <button onClick={() => { setSettingsOpen((v) => !v); setDropdownOpen(false); }} style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
+                    background: settingsOpen ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.06)",
+                    border: `1px solid ${settingsOpen ? "rgba(0,188,212,0.3)" : "rgba(255,255,255,0.09)"}`,
+                    color: settingsOpen ? TEAL : "rgba(255,255,255,0.7)",
+                    cursor: "pointer", transition: "all 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = settingsOpen ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.06)"; }}
+                  aria-label="Settings menu">
+                    <Settings size={16} />
+                  </button>
 
-                        {/* Theme toggle */}
-                        <button onClick={toggleTheme} style={{
-                          ...menuItemBase, color: "rgba(255,255,255,0.6)",
-                        }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
-                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.82)"; }}>
-                          {resolved === "dark" ? <Sun size={18} style={{ flexShrink: 0, color: "rgba(255,255,255,0.6)" }} /> : <Moon size={18} style={{ flexShrink: 0, color: "rgba(255,255,255,0.6)" }} />}
-                          <span style={{ flex: 1 }}>{resolved === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                  {/* Settings Panel — Claude-style admin menu */}
+                  {settingsOpen && (
+                    <div style={{ ...glassPanel, position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "16rem", maxHeight: "calc(100vh - 80px)", overflowY: "auto", zIndex: 200 }}>
+                      <div style={{ padding: "0.75rem 0.75rem 0.5rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                        <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.5)" }}>{user.email}</div>
+                      </div>
+
+                      {SETTINGS_SECTIONS.map((section) => (
+                        <div key={section.id} style={{ padding: "0.375rem 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                          <div style={{ padding: "0.35rem 1rem 0.25rem", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.14em", color: "rgba(255,255,255,0.45)", textTransform: "uppercase" }}>
+                            {section.heading}
+                          </div>
+                          {section.items.map((item) => renderMenuItem(item))}
+                        </div>
+                      ))}
+
+                      {/* Session — Theme + Sign Out */}
+                      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "0.375rem 0" }}>
+                        <button onClick={toggleTheme} style={{ ...menuItemBase, color: "rgba(255,255,255,0.6)", width: "100%", justifyContent: "space-between" }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.82)"; }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                            {resolved === "dark" ? <Sun size={18} style={{ flexShrink: 0 }} /> : <Moon size={18} style={{ flexShrink: 0 }} />}
+                            {resolved === "dark" ? "Light Mode" : "Dark Mode"}
+                          </span>
                           <span style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.25)" }}>{resolved === "dark" ? "Dark" : "Light"}</span>
                         </button>
-
-                        {/* Logout */}
-                        <button onClick={handleLogout} style={{
-                          ...menuItemBase, color: "rgba(248, 113, 113, 0.75)",
-                        }}
-                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(220, 38, 38, 0.08)"; (e.currentTarget as HTMLElement).style.color = "#fca5a5"; }}
-                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(248, 113, 113, 0.75)"; }}>
+                        <button onClick={handleLogout} style={{ ...menuItemBase, color: "rgba(248, 113, 113, 0.75)", width: "100%" }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(220, 38, 38, 0.08)"; (e.currentTarget as HTMLElement).style.color = "#fca5a5"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(248, 113, 113, 0.75)"; }}>
                           <LogOut size={18} style={{ flexShrink: 0 }} />
                           <span>Sign Out</span>
                         </button>
@@ -618,21 +594,6 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                     </div>
                   )}
                 </div>
-
-                {/* Mobile hamburger */}
-                <button className="md:hidden" onClick={() => setMobileOpen((v) => !v)} style={{
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
-                  background: mobileOpen ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.06)",
-                  border: `1px solid ${mobileOpen ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.09)"}`,
-                  color: "rgba(255,255,255,0.85)", cursor: "pointer", transition: "all 0.15s ease",
-                }} aria-label="Toggle mobile menu">
-                  {mobileOpen ? <X size={16} /> : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                  )}
-                </button>
               </>
             ) : (
               <>

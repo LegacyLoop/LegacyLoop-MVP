@@ -12,6 +12,11 @@ export default async function SubscriptionPage() {
     orderBy: { createdAt: "desc" },
   }).catch((e) => { console.error("[subscription] findFirst failed:", e); return null; });
 
+  const [itemCount, projectCount] = await Promise.all([
+    prisma.item.count({ where: { userId: user.id } }).catch(() => 0),
+    prisma.project.count({ where: { userId: user.id } }).catch(() => 0),
+  ]);
+
   const changes = await prisma.subscriptionChange.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },
@@ -46,5 +51,5 @@ export default async function SubscriptionPage() {
     changeDate: c.changeDate.toISOString(),
   }));
 
-  return <SubscriptionClient subscription={serializedSub} changes={serializedChanges} />;
+  return <SubscriptionClient subscription={serializedSub} changes={serializedChanges} itemCount={itemCount} projectCount={projectCount} />;
 }

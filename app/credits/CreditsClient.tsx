@@ -20,11 +20,12 @@ type Props = {
   transactions: Transaction[];
 };
 
+// Credit packages — synced with lib/constants/pricing.ts ADD_ONS
 const PACKAGES = [
-  { id: "starter",  name: "Starter",   credits: 30,  bonusCredits: 0,   price: 25,  popular: false, label: null },
-  { id: "plus",     name: "Plus",      credits: 50,  bonusCredits: 15,  price: 50,  popular: true,  label: "MOST POPULAR" },
-  { id: "power",    name: "Power",     credits: 100, bonusCredits: 40,  price: 100, popular: false, label: "BEST VALUE" },
-  { id: "pro",      name: "Pro",       credits: 200, bonusCredits: 100, price: 200, popular: false, label: "MAX SAVINGS" },
+  { id: "starter",  name: "Starter",   credits: 30,  bonusCredits: 0,   price: 25,  popular: false, label: null as string | null },
+  { id: "plus",     name: "Plus",      credits: 50,  bonusCredits: 15,  price: 50,  popular: true,  label: "MOST POPULAR" as string | null },
+  { id: "power",    name: "Power",     credits: 100, bonusCredits: 40,  price: 100, popular: false, label: "BEST VALUE" as string | null },
+  { id: "pro",      name: "Pro",       credits: 200, bonusCredits: 100, price: 200, popular: false, label: "MAX SAVINGS" as string | null },
 ];
 
 const PACK_ID_MAP: Record<string, string> = {
@@ -174,10 +175,11 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
 
       {/* Balance card */}
       <div style={{
-        background: "linear-gradient(135deg, rgba(0,188,212,0.15), rgba(0,188,212,0.08))",
-        border: "1px solid rgba(0,188,212,0.3)",
-        borderRadius: "1.25rem",
-        padding: "1.5rem",
+        background: "linear-gradient(135deg, rgba(0,188,212,0.12), rgba(0,188,212,0.04))",
+        backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
+        border: "1px solid rgba(0,188,212,0.25)",
+        borderRadius: "20px",
+        padding: "1.75rem 2rem",
         color: "var(--text-primary)",
         marginBottom: "2rem",
         display: "flex",
@@ -185,12 +187,15 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
         justifyContent: "space-between",
         flexWrap: "wrap",
         gap: "1rem",
+        position: "relative", overflow: "hidden",
+        boxShadow: "0 8px 32px rgba(0,188,212,0.1), 0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.05)",
       }}>
+        <div style={{ position: "absolute", top: -40, right: -40, width: 180, height: 180, background: "radial-gradient(circle, rgba(0,188,212,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <div style={{ fontSize: "3rem" }}>💎</div>
           <div>
             <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Current Balance</div>
-            <div style={{ fontSize: "3rem", fontWeight: 900, lineHeight: 1, color: "var(--accent)" }}>{balance}</div>
+            <div style={{ fontSize: "3rem", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.03em", backgroundImage: "linear-gradient(135deg, #00bcd4, #009688)", backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{balance}</div>
             <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>credits</div>
           </div>
         </div>
@@ -210,23 +215,39 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
         </div>
       </div>
 
+      {/* Credit Meter */}
+      {(() => {
+        const recentSpends = txList.filter((t: any) => t.type === "spend" && Date.now() - new Date(t.createdAt).getTime() < 30 * 86400000);
+        const totalSpent30d = recentSpends.reduce((sum: number, t: any) => sum + Math.abs(t.amount), 0);
+        const weeklyRate = Math.round(totalSpent30d / 4);
+        const runway = weeklyRate > 0 ? Math.round(balance / weeklyRate) : null;
+        if (weeklyRate === 0) return null;
+        return (
+          <div style={{ padding: "12px 20px", marginBottom: "1.5rem", background: "var(--bg-card)", backdropFilter: "blur(12px)", border: "1px solid var(--border-default)", borderRadius: 14, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.82rem" }}>
+            <span style={{ color: "var(--text-secondary)" }}>📊 ~{weeklyRate} credits/week</span>
+            {runway && <span style={{ color: "var(--text-secondary)" }}>📅 ~{runway} week{runway !== 1 ? "s" : ""} remaining</span>}
+          </div>
+        );
+      })()}
+
       {/* Tabs */}
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", borderBottom: "2px solid var(--border-default)", paddingBottom: "0" }}>
+      <div style={{ display: "inline-flex", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 16, padding: 4, gap: 4, marginBottom: "1.5rem" }}>
         {(["store", "services", "history"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             style={{
               padding: "0.6rem 1.5rem",
-              background: "none",
-              border: "none",
-              borderBottom: tab === t ? "2px solid var(--accent)" : "2px solid transparent",
-              marginBottom: "-2px",
-              color: tab === t ? "var(--accent)" : "var(--text-muted)",
+              background: tab === t ? "linear-gradient(135deg, rgba(0,188,212,0.15), rgba(0,188,212,0.08))" : "transparent",
+              border: tab === t ? "1px solid rgba(0,188,212,0.3)" : "1px solid transparent",
+              borderRadius: 12,
+              color: tab === t ? "#00bcd4" : "var(--text-muted)",
               fontWeight: tab === t ? 700 : 500,
-              fontSize: "0.9rem",
+              fontSize: "0.88rem",
               cursor: "pointer",
-              textTransform: "capitalize",
+              transition: "all 0.2s ease",
+              letterSpacing: "0.02em",
+              boxShadow: tab === t ? "0 2px 12px rgba(0,188,212,0.12)" : "none",
             }}
           >
             {t === "store" ? "💳 Buy Credits" : t === "services" ? "🛒 Services" : "📋 History"}
@@ -245,26 +266,38 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                   key={pkg.id}
                   style={{
                     background: pkg.popular
-                      ? "linear-gradient(135deg, rgba(0,188,212,0.12), rgba(0,188,212,0.05))"
-                      : "var(--bg-card-solid)",
-                    border: pkg.popular ? "2px solid var(--accent)" : "1px solid var(--border-default)",
+                      ? "linear-gradient(135deg, rgba(0,188,212,0.1), rgba(0,188,212,0.03))"
+                      : "var(--bg-card)",
+                    backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+                    border: pkg.popular ? "2px solid rgba(0,188,212,0.4)" : "1px solid var(--border-default)",
                     borderRadius: "1.25rem",
-                    padding: "1.5rem",
+                    padding: "1.75rem",
                     position: "relative",
+                    overflow: "hidden",
+                    transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                    boxShadow: pkg.popular
+                      ? "0 8px 32px rgba(0,188,212,0.15), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"
+                      : "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
                   }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 16px 48px rgba(0,188,212,0.2), 0 4px 12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.08)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = pkg.popular ? "0 8px 32px rgba(0,188,212,0.15), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06)" : "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
                 >
+                  {/* Corner glow */}
+                  <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: `radial-gradient(circle, ${pkg.popular ? "rgba(0,188,212,0.12)" : "rgba(0,188,212,0.06)"} 0%, transparent 70%)`, pointerEvents: "none" }} />
+
                   {pkg.label && (
                     <div style={{
-                      position: "absolute", top: "-12px", left: "50%", transform: "translateX(-50%)",
-                      background: pkg.popular ? "var(--accent)" : "rgba(0,188,212,0.8)",
-                      color: "#fff", padding: "0.2rem 0.75rem",
-                      borderRadius: "9999px", fontSize: "0.7rem", fontWeight: 700,
-                      boxShadow: pkg.popular ? "0 2px 12px rgba(0,188,212,0.4)" : "none",
+                      position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
+                      background: "linear-gradient(135deg, #00bcd4, #009688)",
+                      color: "#fff", padding: "0.2rem 1rem",
+                      borderRadius: "0 0 10px 10px", fontSize: "0.62rem", fontWeight: 800,
+                      letterSpacing: "0.1em", textTransform: "uppercase",
+                      boxShadow: "0 4px 12px rgba(0,188,212,0.3)",
                     }}>
                       {pkg.label}
                     </div>
                   )}
-                  <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary)" }}>{pkg.name}</div>
+                  <div style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--text-primary)", marginTop: pkg.label ? "0.5rem" : 0, letterSpacing: "-0.01em" }}>{pkg.name}</div>
                   <div style={{ marginTop: "0.75rem", display: "flex", alignItems: "baseline", gap: "0.4rem" }}>
                     <span style={{ fontSize: "2.5rem", fontWeight: 900, color: "var(--accent)" }}>{total}</span>
                     <span style={{ fontSize: "1rem", color: "var(--text-secondary)", fontWeight: 600 }}>credits</span>
@@ -317,14 +350,14 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
             {/* Bulk promo banner */}
             <div style={{
               background: parsedAmount >= 500
-                ? "linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,215,0,0.04))"
-                : "rgba(255,215,0,0.04)",
-              borderLeft: `3px solid ${parsedAmount >= 500 ? "#ffd700" : "rgba(255,215,0,0.4)"}`,
+                ? "linear-gradient(135deg, rgba(184,134,11,0.1), rgba(184,134,11,0.04))"
+                : "rgba(184,134,11,0.04)",
+              borderLeft: `3px solid ${parsedAmount >= 500 ? "#b8860b" : "rgba(184,134,11,0.4)"}`,
               borderRadius: "0 0.75rem 0.75rem 0",
               padding: "0.65rem 1rem",
               marginBottom: "1.25rem",
               fontSize: "0.82rem",
-              color: parsedAmount >= 500 ? "#ffd700" : "rgba(255,215,0,0.7)",
+              color: parsedAmount >= 500 ? "#b8860b" : "var(--text-secondary)",
               fontWeight: 600,
             }}>
               {parsedAmount >= 500
@@ -348,14 +381,16 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                     placeholder="Enter amount"
                     style={{
                       width: "100%",
-                      padding: "0.75rem 0.75rem 0.75rem 2rem",
+                      padding: "1rem 1rem 1rem 2.25rem",
                       background: "var(--ghost-bg)",
-                      border: `1.5px solid ${isValidAmount ? "rgba(0,188,212,0.5)" : customAmount && !isValidAmount ? "rgba(239,68,68,0.4)" : "var(--border-default)"}`,
-                      borderRadius: "0.75rem",
+                      border: `2px solid ${isValidAmount ? "rgba(0,188,212,0.5)" : customAmount && !isValidAmount ? "rgba(239,68,68,0.4)" : "var(--border-default)"}`,
+                      borderRadius: "14px",
                       color: "var(--text-primary)",
-                      fontSize: "1.1rem",
+                      fontSize: "1.25rem",
                       fontWeight: 700,
                       outline: "none",
+                      transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+                      boxShadow: isValidAmount ? "0 0 0 3px rgba(0,188,212,0.08)" : "none",
                     }}
                   />
                 </div>
@@ -370,18 +405,21 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                 onClick={purchaseCustom}
                 disabled={!isValidAmount || customPurchasing}
                 style={{
-                  padding: "0.75rem 1.5rem",
+                  padding: "1rem 2rem",
                   background: isValidAmount && !customPurchasing
-                    ? "linear-gradient(135deg, #00bcd4, #0097a7)"
-                    : "rgba(0,188,212,0.2)",
+                    ? "linear-gradient(135deg, #00bcd4, #009688)"
+                    : "rgba(0,188,212,0.15)",
                   border: "none",
-                  borderRadius: "0.75rem",
-                  color: isValidAmount && !customPurchasing ? "#000" : "rgba(0,0,0,0.3)",
+                  borderRadius: "14px",
+                  color: isValidAmount && !customPurchasing ? "#fff" : "var(--text-muted)",
                   fontWeight: 700,
-                  fontSize: "0.95rem",
+                  fontSize: "1rem",
+                  letterSpacing: "0.01em",
                   cursor: isValidAmount && !customPurchasing ? "pointer" : "not-allowed",
                   whiteSpace: "nowrap",
                   flexShrink: 0,
+                  boxShadow: isValidAmount ? "0 4px 16px rgba(0,188,212,0.25)" : "none",
+                  transition: "all 0.2s ease",
                 }}
               >
                 {customPurchasing ? "Processing..." : isValidAmount ? `Buy for $${parsedAmount}` : "Buy"}
@@ -404,7 +442,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
               }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem" }}>
-                    <span style={{ fontSize: "2.25rem", fontWeight: 900, color: customCalc.tierName === "Bulk" ? "#ffd700" : "var(--accent)" }}>
+                    <span style={{ fontSize: "2.25rem", fontWeight: 900, color: customCalc.tierName === "Bulk" ? "#b8860b" : "var(--accent)" }}>
                       {customCalc.credits}
                     </span>
                     <span style={{ fontSize: "1rem", color: "var(--text-secondary)", fontWeight: 600 }}>credits</span>
@@ -415,9 +453,9 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.35rem" }}>
                   <span style={{
-                    background: customCalc.tierName === "Bulk" ? "rgba(255,215,0,0.15)" : "rgba(0,188,212,0.12)",
-                    border: `1px solid ${customCalc.tierName === "Bulk" ? "rgba(255,215,0,0.35)" : "rgba(0,188,212,0.3)"}`,
-                    color: customCalc.tierName === "Bulk" ? "#ffd700" : "#00bcd4",
+                    background: customCalc.tierName === "Bulk" ? "rgba(184,134,11,0.12)" : "rgba(0,188,212,0.12)",
+                    border: `1px solid ${customCalc.tierName === "Bulk" ? "rgba(184,134,11,0.3)" : "rgba(0,188,212,0.3)"}`,
+                    color: customCalc.tierName === "Bulk" ? "#b8860b" : "#00bcd4",
                     padding: "0.2rem 0.75rem",
                     borderRadius: "9999px",
                     fontSize: "0.72rem",
@@ -443,16 +481,16 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                   <div key={s.tierName} style={{
                     flex: isBulk ? 2 : 1,
                     background: isActive
-                      ? (isBulk ? "rgba(255,215,0,0.2)" : "rgba(0,188,212,0.15)")
-                      : "var(--text-muted)",
-                    borderTop: isActive ? `2px solid ${isBulk ? "#ffd700" : "#00bcd4"}` : "2px solid transparent",
+                      ? (isBulk ? "rgba(184,134,11,0.15)" : "rgba(0,188,212,0.15)")
+                      : "var(--ghost-bg)",
+                    borderTop: isActive ? `2px solid ${isBulk ? "#b8860b" : "#00bcd4"}` : "2px solid var(--border-default)",
                     padding: "0.5rem 0.35rem",
                     textAlign: "center",
                   }}>
                     <div style={{
                       fontSize: "0.68rem",
                       fontWeight: isActive ? 700 : 500,
-                      color: isActive ? (isBulk ? "#ffd700" : "#00bcd4") : "var(--text-muted)",
+                      color: isActive ? (isBulk ? "#b8860b" : "#00bcd4") : "var(--text-secondary)",
                     }}>
                       {s.tierName}
                     </div>
@@ -544,12 +582,13 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
       {tab === "services" && (
         <div>
           {/* Hero */}
-          <div style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.08), transparent)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 14, padding: "20px 24px", marginBottom: 24 }}>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>🚀 LegacyLoop Add-On Store</div>
-            <div style={{ fontSize: 12, color: "rgba(207,216,220,0.6)", marginTop: 6, lineHeight: 1.5 }}>Premium AI tools powered by 4 engines working in parallel. MegaBot-level power on every add-on.</div>
+          <div style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.08), rgba(0,188,212,0.02))", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 20, padding: "24px 28px", marginBottom: 24, position: "relative", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+            <div style={{ position: "absolute", top: -30, right: -30, width: 140, height: 140, background: "radial-gradient(circle, rgba(0,188,212,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
+            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)" }}>🚀 LegacyLoop Add-On Store</div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>Premium AI tools powered by 4 engines working in parallel. MegaBot-level power on every add-on.</div>
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               {["16 Add-Ons", "4 AI Engines", "All Parallel"].map((s, i) => (
-                <span key={i} style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: 20, padding: "4px 12px", fontSize: 10, color: "rgba(207,216,220,0.6)" }}>{s}</span>
+                <span key={i} style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: 20, padding: "4px 12px", fontSize: 10, color: "var(--text-muted)" }}>{s}</span>
               ))}
             </div>
           </div>
@@ -571,17 +610,17 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                 }, {})
               ).map(([cat, items]) => (
                 <div key={cat} style={{ marginBottom: 28 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#fff", letterSpacing: 0.5, marginBottom: 4, textTransform: "capitalize" }}>{cat === "ai" ? "🤖 AI Power Tools" : cat === "legacy" ? "📖 Legacy & Storytelling" : cat === "valuation" ? "💎 Valuation" : cat === "reporting" ? "📊 Reports" : cat === "service" ? "⚡ Services" : cat === "photos" ? "📸 Photos" : cat === "shipping" ? "📦 Shipping" : cat === "support" ? "🎓 Support" : `📁 ${cat}`}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", letterSpacing: 0.5, marginBottom: 4, textTransform: "capitalize" }}>{cat === "ai" ? "🤖 AI Power Tools" : cat === "legacy" ? "📖 Legacy & Storytelling" : cat === "valuation" ? "💎 Valuation" : cat === "reporting" ? "📊 Reports" : cat === "service" ? "⚡ Services" : cat === "photos" ? "📸 Photos" : cat === "shipping" ? "📦 Shipping" : cat === "support" ? "🎓 Support" : `📁 ${cat}`}</div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
                     {(items as any[]).map((addon: any) => {
                       const owned = purchasedIds.includes(addon.id);
                       const buying = purchasingId === addon.id;
                       return (
-                        <div key={addon.id} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 14, padding: "18px 20px", transition: "all 0.2s" }}>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{addon.name}</div>
-                          <div style={{ fontSize: 11, color: "rgba(207,216,220,0.7)", lineHeight: 1.6, marginBottom: 12 }}>{addon.description}</div>
+                        <div key={addon.id} style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", border: "1px solid var(--border-default)", borderRadius: 16, padding: "20px", transition: "transform 0.25s ease, box-shadow 0.25s ease", boxShadow: "0 2px 12px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.04)" }} onMouseEnter={(e: any) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(0,188,212,0.1)"; }} onMouseLeave={(e: any) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.04)"; }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 6 }}>{addon.name}</div>
+                          <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 12 }}>{addon.description}</div>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>💎 {addon.credits} credits</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>💎 {addon.credits} credits</span>
                             {owned ? (
                               ADDON_TOOL_ROUTES[addon.id] ? (
                                 <a href={ADDON_TOOL_ROUTES[addon.id]} style={{ fontSize: 11, fontWeight: 700, padding: "5px 14px", borderRadius: 7, background: "rgba(76,175,80,0.15)", border: "1px solid #4caf50", color: "#4caf50", textDecoration: "none" }}>Launch Tool →</a>
@@ -630,7 +669,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                 <button onClick={() => setPurchaseSuccess(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer", fontSize: 16, padding: 0 }}>×</button>
               </div>
               {ADDON_TOOL_ROUTES[purchaseSuccess.id] && (
-                <a href={ADDON_TOOL_ROUTES[purchaseSuccess.id]} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--bg-card-hover)", border: "1px solid var(--border-default)", color: "#fff", fontWeight: 700, fontSize: 12, padding: "8px 16px", borderRadius: 8, textDecoration: "none", justifyContent: "center" }}>Launch Tool Now →</a>
+                <a href={ADDON_TOOL_ROUTES[purchaseSuccess.id]} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--bg-card-hover)", border: "1px solid var(--border-default)", color: "var(--text-primary)", fontWeight: 700, fontSize: 12, padding: "8px 16px", borderRadius: 8, textDecoration: "none", justifyContent: "center" }}>Launch Tool Now →</a>
               )}
             </div>
           )}

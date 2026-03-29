@@ -1,34 +1,54 @@
 export default function WhatsNewPage() {
   const updates = [
-    { date: "Mar 2, 2026", title: "Shipping System Overhaul", desc: "Complete shipping pipeline: AI-suggested packaging, carrier comparison, label creation, tracking timeline, and delivery notifications." },
-    { date: "Mar 2, 2026", title: "Connected Accounts Hub", desc: "Link your social media, marketplaces, payment processors, and cloud storage in one place." },
-    { date: "Mar 2, 2026", title: "Recon Bot Intelligence", desc: "Real-time competitor price monitoring across Facebook, eBay, and Craigslist with smart alerts." },
-    { date: "Mar 1, 2026", title: "MegaBot Multi-AI", desc: "Four AI models analyze your items simultaneously for a consensus price estimate with higher confidence." },
-    { date: "Mar 1, 2026", title: "Enhanced Photo Upload", desc: "Camera capture, drag-to-reorder, rotate, client-side compression, and multi-source upload." },
-    { date: "Mar 1, 2026", title: "Location-Based Pricing", desc: "Prices now adjust based on local market demand. Ship to high-demand metros for better returns." },
+    { date: "Mar 30, 2026", badge: "NEW", title: "🤖 AI Help Center", desc: "AI chatbot answers questions instantly. 50 help articles covering every feature. Support ticket system with email confirmations." },
+    { date: "Mar 30, 2026", badge: null, title: "📧 Business Email Unification", desc: "7 professional @legacy-loop.com emails placed across all pages. Unified business phone number." },
+    { date: "Mar 30, 2026", badge: null, title: "📊 Subscription & Credits Upgrade", desc: "Usage meters, annual billing toggle, credit spend analytics, downgrade confirmation flow, and cancel route." },
+    { date: "Mar 29, 2026", badge: null, title: "🧠 Bot Intelligence Engine", desc: "Auto-sequencer cascades bots automatically. Disagreement detection flags pricing conflicts. Unified demand scoring. Bot accuracy tracking." },
+    { date: "Mar 29, 2026", badge: null, title: "🦇 Batman & Robin Synergy", desc: "ListBot reads BuyerBot profiles to tailor listings. BuyerBot reads ListBot SEO keywords to find matching buyers." },
+    { date: "Mar 29, 2026", badge: null, title: "📧 Outreach System", desc: "One-click buyer outreach with SendGrid email integration. Coming Soon badges for auto-post platforms." },
+    { date: "Mar 29, 2026", badge: null, title: "🃏 Beckett-Equivalent Scrapers", desc: "PriceCharting.com for cards, games, comics, coins, Funko, LEGO. PSAcard.com for graded card auction history." },
+    { date: "Mar 29, 2026", badge: null, title: "✍️ Bot Prompt Polish", desc: "ListBot: urgency language, defect framing, 16K tokens. BuyerBot: location preference, outreach specificity." },
+    { date: "Mar 28, 2026", badge: null, title: "👁️ Bot Vision Upgrade", desc: "AntiqueBot and CarBot now use real photo vision. AntiqueBot upgraded to GPT-4o for detailed antique inspection." },
+    { date: "Mar 28, 2026", badge: null, title: "🔧 Critical Bug Fixes", desc: "PriceSnapshot pricing consistency. ReconBot live mode fix. Cancel flow and downgrade bugs fixed." },
+    { date: "Mar 28, 2026", badge: null, title: "📡 42-Platform Scraper System", desc: "14 built-in scrapers + 28 Apify adapters covering eBay, Craigslist, Facebook, Amazon, StockX, Chrono24, and more." },
+    { date: "Mar 27, 2026", badge: null, title: "📦 Pricing Pipeline Overhaul", desc: "Anti-hallucination rules. Location-sensitive pricing. Weighted median consensus. Amazon hard ceiling enforcement." },
+    { date: "Mar 3, 2026", badge: null, title: "💳 Square Payment Integration", desc: "Square sandbox for subscriptions, credits, and purchases. PaymentLedger and SellerEarnings models." },
+    { date: "Mar 2, 2026", badge: null, title: "📦 Shipping System Overhaul", desc: "AI-suggested packaging, carrier comparison, label creation, 5-step tracking timeline, delivery notifications." },
+    { date: "Mar 2, 2026", badge: null, title: "🔗 Connected Accounts Hub", desc: "Link social media, marketplaces, payment processors, and cloud storage in one place." },
+    { date: "Mar 2, 2026", badge: null, title: "🔍 ReconBot Intelligence", desc: "Real-time competitor price monitoring across platforms with smart alerts." },
+    { date: "Mar 2, 2026", badge: null, title: "🌙 Theme System", desc: "Light, dark, and auto theme with zero flash. Tesla-inspired design system." },
+    { date: "Mar 2, 2026", badge: null, title: "📸 Enhanced Photo Upload", desc: "Camera capture, drag-to-reorder, rotate, client-side compression, and multi-source upload." },
+    { date: "Mar 1, 2026", badge: null, title: "🤖 MegaBot Multi-AI", desc: "Four AI models analyze items simultaneously for consensus pricing with higher confidence." },
+    { date: "Mar 1, 2026", badge: null, title: "🚀 Platform Launch", desc: "LegacyLoop MVP goes live with 11 AI bots, messaging, shipping, credits, subscriptions, and storefront." },
   ];
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <div className="section-title">Updates</div>
-      <h1 className="h2 mt-2">What&apos;s New</h1>
-      <p className="muted mt-3">Recent features and improvements.</p>
+    <div style={{ maxWidth: "720px", margin: "0 auto", padding: "2rem 1rem" }}>
+      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <div style={{ fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent, #00bcd4)", marginBottom: "0.5rem" }}>Updates</div>
+        <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--text-primary)" }}>What&apos;s New</h1>
+        <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", marginTop: "0.5rem" }}>Recent features and improvements to LegacyLoop.</p>
+      </div>
 
-      <div className="mt-8 space-y-4">
+      <div>
         {updates.map((u, i) => (
-          <div key={i} className="card p-6">
+          <div key={i} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "12px", padding: "1.25rem", marginBottom: "0.75rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
-              <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 500 }}>{u.date}</span>
-              {i === 0 && (
-                <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "var(--accent)", border: "1px solid rgba(0,188,212,0.2)" }}>
-                  NEW
+              <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontWeight: 500 }}>{u.date}</span>
+              {u.badge && (
+                <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "var(--accent, #00bcd4)", border: "1px solid rgba(0,188,212,0.2)" }}>
+                  {u.badge}
                 </span>
               )}
             </div>
-            <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--text-primary)" }}>{u.title}</div>
-            <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginTop: "0.25rem", lineHeight: 1.5 }}>{u.desc}</div>
+            <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--text-primary)" }}>{u.title}</div>
+            <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginTop: "0.35rem", lineHeight: 1.55 }}>{u.desc}</div>
           </div>
         ))}
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
+        LegacyLoop is updated daily. Follow us for the latest.
       </div>
     </div>
   );

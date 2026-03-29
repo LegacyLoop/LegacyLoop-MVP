@@ -8,10 +8,10 @@ interface Props {
   onCancelled: () => void;
 }
 
-const DOWNGRADE_MAP: Record<number, { tierKey: string; name: string; price: string; commission: string }> = {
-  4: { tierKey: "PLUS", name: "Power Seller", price: "$25/mo", commission: "5%" },
-  3: { tierKey: "STARTER", name: "DIY Seller", price: "$10/mo", commission: "8%" },
-  2: { tierKey: "FREE", name: "Free", price: "$0/mo", commission: "12%" },
+const DOWNGRADE_MAP: Record<number, { tierKey: number; name: string; price: string; commission: string }> = {
+  4: { tierKey: 3, name: "Power Seller", price: "$25/mo", commission: "5%" },
+  3: { tierKey: 2, name: "DIY Seller", price: "$10/mo", commission: "8%" },
+  2: { tierKey: 1, name: "Free", price: "$0/mo", commission: "12%" },
 };
 
 export default function CancelFlowModal({ planName, currentTier, onClose, onCancelled }: Props) {

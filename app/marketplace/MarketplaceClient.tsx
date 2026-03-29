@@ -82,34 +82,35 @@ export default function MarketplaceClient({ initialBalance, lifetime, spent }: P
       )}
 
       {/* HERO */}
-      <div style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.12), transparent)", borderBottom: "1px solid rgba(0,188,212,0.2)", padding: "40px 40px 32px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 24 }}>
+      <div style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.1), rgba(0,188,212,0.03))", backdropFilter: "blur(24px)", borderBottom: "1px solid rgba(0,188,212,0.2)", borderRadius: "20px 20px 0 0", padding: "2rem 2.5rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 24, position: "relative", overflow: "hidden", boxShadow: "0 8px 32px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
+        <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, background: "radial-gradient(circle, rgba(0,188,212,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div>
           <div style={{ fontSize: 10, fontWeight: 700, color: "#00bcd4", letterSpacing: 3, marginBottom: 8 }}>TOOLS & SERVICES</div>
-          <h1 style={{ fontSize: 32, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>Add-On Store</h1>
-          <p style={{ fontSize: 14, color: "rgba(207,216,220,0.8)", maxWidth: 500, lineHeight: 1.6, margin: 0 }}>Premium AI tools that supercharge your selling. All powered by 4 AI engines working in parallel.</p>
+          <h1 style={{ fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em", backgroundImage: "linear-gradient(135deg, var(--text-primary), #00bcd4)", backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", margin: "0 0 8px" }}>Add-On Store</h1>
+          <p style={{ fontSize: 14, color: "var(--text-secondary)", maxWidth: 500, lineHeight: 1.6, margin: 0 }}>Premium AI tools that supercharge your selling. All powered by 4 AI engines working in parallel.</p>
         </div>
         <div style={{ background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: 14, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 28 }}>💎</span>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: "#fff" }}>{balance}</div>
-            <div style={{ fontSize: 10, color: "rgba(207,216,220,0.5)" }}>Credits available</div>
+            <div style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)" }}>{balance}</div>
+            <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Credits available</div>
           </div>
           <a href="/credits" style={{ marginLeft: 12, padding: "8px 16px", background: "linear-gradient(135deg, #00bcd4, #0097a7)", color: "#000", fontWeight: 700, fontSize: 11, borderRadius: 8, textDecoration: "none" }}>+ Buy</a>
         </div>
       </div>
 
       {/* STATS BAR */}
-      <div style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border-default)", padding: "12px 40px", display: "flex", gap: 32, fontSize: 11, color: "rgba(207,216,220,0.5)" }}>
-        <span><strong style={{ color: "#fff" }}>{addons.length}</strong> Add-Ons</span>
-        <span><strong style={{ color: "#fff" }}>4</strong> AI Engines</span>
-        <span><strong style={{ color: "#fff" }}>{featured.length}</strong> Working Now</span>
+      <div style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border-default)", padding: "12px 40px", display: "flex", gap: 32, fontSize: 11, color: "var(--text-muted)" }}>
+        <span><strong style={{ color: "var(--text-primary)" }}>{addons.length}</strong> Add-Ons</span>
+        <span><strong style={{ color: "var(--text-primary)" }}>4</strong> AI Engines</span>
+        <span><strong style={{ color: "var(--text-primary)" }}>{featured.length}</strong> Working Now</span>
         <span>New tools added regularly</span>
       </div>
 
       {/* CATEGORY FILTER */}
       <div style={{ padding: "20px 40px 0", display: "flex", gap: 8, flexWrap: "wrap" }}>
         {["All", ...categories].map(cat => (
-          <button key={cat} onClick={() => setFilter(cat)} style={{ padding: "7px 16px", fontSize: 12, borderRadius: 20, border: filter === cat ? "1px solid #00bcd4" : "1px solid var(--border-default)", background: filter === cat ? "#00bcd4" : "var(--border-default)", color: filter === cat ? "#000" : "var(--text-secondary)", fontWeight: filter === cat ? 700 : 400, cursor: "pointer", transition: "all 0.15s" }}>
+          <button key={cat} onClick={() => setFilter(cat)} style={{ padding: "8px 18px", fontSize: 12, borderRadius: 10, border: filter === cat ? "1px solid rgba(0,188,212,0.3)" : "1px solid var(--border-default)", background: filter === cat ? "linear-gradient(135deg, rgba(0,188,212,0.15), rgba(0,188,212,0.08))" : "var(--ghost-bg)", color: filter === cat ? "#00bcd4" : "var(--text-secondary)", fontWeight: filter === cat ? 700 : 500, cursor: "pointer", transition: "all 0.2s ease", boxShadow: filter === cat ? "0 2px 8px rgba(0,188,212,0.15)" : "none" }}>
             {CATEGORY_LABELS[cat] || cat}
           </button>
         ))}
@@ -125,11 +126,11 @@ export default function MarketplaceClient({ initialBalance, lifetime, spent }: P
               const buying = purchasing === addon.id;
               const toolUrl = TOOL_URLS[addon.id];
               return (
-                <div key={addon.id} style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.08), transparent)", border: "1px solid rgba(0,188,212,0.3)", borderRadius: 16, padding: 24, position: "relative", transition: "all 0.2s", cursor: "pointer" }}>
+                <div key={addon.id} style={{ background: "var(--bg-card)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: 20, padding: 24, position: "relative", overflow: "hidden", transition: "transform 0.25s ease, box-shadow 0.25s ease", cursor: "pointer", boxShadow: "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)" }} onMouseEnter={(e: any) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(0,188,212,0.12)"; }} onMouseLeave={(e: any) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)"; }}>
                   <div style={{ position: "absolute", top: 12, right: 12, background: "#f5a623", color: "#000", fontSize: 8, fontWeight: 800, padding: "3px 10px", borderRadius: 20, letterSpacing: 1 }}>✓ WORKING NOW</div>
                   <div style={{ width: 52, height: 52, borderRadius: 12, background: "rgba(0,188,212,0.15)", border: "1px solid rgba(0,188,212,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24 }}>{ADDON_ICONS[addon.id] || "🔧"}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginTop: 14, marginBottom: 8 }}>{addon.name}</div>
-                  <div style={{ fontSize: 12, color: "rgba(207,216,220,0.7)", lineHeight: 1.7, marginBottom: 14 }}>{addon.description}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", marginTop: 14, marginBottom: 8 }}>{addon.name}</div>
+                  <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: 14 }}>{addon.description}</div>
                   <div style={{ marginBottom: 14 }}>
                     <div style={{ fontSize: 9, color: "var(--text-muted)", marginBottom: 6 }}>Powered by:</div>
                     <div style={{ display: "flex", gap: 4 }}>
@@ -137,7 +138,7 @@ export default function MarketplaceClient({ initialBalance, lifetime, spent }: P
                     </div>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>💎 {addon.credits} credits</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>💎 {addon.credits} credits</span>
                     {owned ? (
                       <a href={toolUrl || "#"} style={{ padding: "0 20px", height: 40, display: "inline-flex", alignItems: "center", background: "rgba(76,175,80,0.15)", border: "1px solid #4caf50", color: "#4caf50", fontWeight: 700, fontSize: 12, borderRadius: 8, textDecoration: "none" }}>Launch Tool →</a>
                     ) : (
@@ -159,7 +160,7 @@ export default function MarketplaceClient({ initialBalance, lifetime, spent }: P
             <span>{purchaseBanner.name} activated!</span>
             <button onClick={() => setPurchaseBanner(null)} style={{ marginLeft: "auto", background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer", fontSize: 16, padding: 0 }}>×</button>
           </div>
-          <a href={TOOL_URLS[purchaseBanner.id]} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--bg-card-hover)", border: "1px solid var(--border-default)", color: "#fff", fontWeight: 700, fontSize: 12, padding: "8px 16px", borderRadius: 8, textDecoration: "none", justifyContent: "center" }}>Launch Tool Now →</a>
+          <a href={TOOL_URLS[purchaseBanner.id]} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--bg-card-hover)", border: "1px solid var(--border-default)", color: "var(--text-primary)", fontWeight: 700, fontSize: 12, padding: "8px 16px", borderRadius: 8, textDecoration: "none", justifyContent: "center" }}>Launch Tool Now →</a>
         </div>
       )}
 
@@ -178,15 +179,15 @@ export default function MarketplaceClient({ initialBalance, lifetime, spent }: P
               const isFeatured = FEATURED_IDS.includes(addon.id);
               const toolUrl = TOOL_URLS[addon.id];
               return (
-                <div key={addon.id} style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 14, padding: 20, transition: "all 0.2s" }}>
+                <div key={addon.id} style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", border: "1px solid var(--border-default)", borderRadius: 16, padding: 20, transition: "transform 0.25s ease, box-shadow 0.25s ease", boxShadow: "0 2px 12px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.04)" }} onMouseEnter={(e: any) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(0,188,212,0.08)"; }} onMouseLeave={(e: any) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.04)"; }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div style={{ width: 44, height: 44, borderRadius: 10, background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>{ADDON_ICONS[addon.id] || "🔧"}</div>
                     {isFeatured && <span style={{ fontSize: 8, padding: "3px 8px", borderRadius: 20, background: "#f5a623", color: "#000", fontWeight: 700 }}>WORKING NOW</span>}
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginTop: 10, marginBottom: 6 }}>{addon.name}</div>
-                  <div style={{ fontSize: 11, color: "rgba(207,216,220,0.7)", lineHeight: 1.6, marginBottom: 12 }}>{addon.description}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginTop: 10, marginBottom: 6 }}>{addon.name}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 12 }}>{addon.description}</div>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>💎 {addon.credits}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>💎 {addon.credits}</span>
                     {owned ? (
                       toolUrl ? <a href={toolUrl} style={{ fontSize: 11, fontWeight: 700, padding: "5px 14px", borderRadius: 7, background: "rgba(76,175,80,0.15)", border: "1px solid #4caf50", color: "#4caf50", textDecoration: "none" }}>Launch →</a>
                       : <span style={{ fontSize: 11, fontWeight: 700, padding: "5px 14px", borderRadius: 7, background: "rgba(76,175,80,0.15)", border: "1px solid #4caf50", color: "#4caf50" }}>✓ Owned</span>

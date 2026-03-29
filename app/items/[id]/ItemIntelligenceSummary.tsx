@@ -108,8 +108,8 @@ export default function ItemIntelligenceSummary(props: Props) {
           <button key={s.key} onClick={() => setActiveSection(s.key)} style={{
             flex: 1, padding: "0.55rem 0.35rem", display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.1rem",
             background: activeSection === s.key ? "rgba(0,188,212,0.06)" : "transparent",
+            borderTop: "none", borderLeft: "none", borderRight: "none",
             borderBottom: activeSection === s.key ? "2px solid var(--accent)" : "2px solid transparent",
-            border: "none", borderTop: "none", borderLeft: "none", borderRight: "none",
             cursor: "pointer", transition: "all 0.15s",
             color: activeSection === s.key ? "var(--accent)" : "var(--text-muted)",
           }}>

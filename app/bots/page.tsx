@@ -124,6 +124,16 @@ const BOTS: BotDef[] = [
     route: "/bots/reconbot",
     badge: "Real-Time Intel",
   },
+  {
+    id: "videobot",
+    name: "VideoBot",
+    icon: "\uD83C\uDFAC",
+    desc: "AI video ads — TikTok, Reels, Shorts, Facebook — from your item photos",
+    detail: "Generate professional 15-60 second video ads with AI narration, trending music, and platform-optimized formatting.",
+    color: "#ef4444",
+    route: "/bots/videobot",
+    badge: "NEW",
+  },
 ];
 
 const COMING_SOON_BOTS = [

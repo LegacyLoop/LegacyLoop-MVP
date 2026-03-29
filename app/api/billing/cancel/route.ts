@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       let uc = await prisma.userCredits.findUnique({ where: { userId: user.id } });
       if (!uc) uc = await prisma.userCredits.create({ data: { userId: user.id, balance: 0, lifetime: 0, spent: 0 } });
       await prisma.userCredits.update({ where: { id: uc.id }, data: { balance: uc.balance + proRate.creditsEquivalent, lifetime: uc.lifetime + proRate.creditsEquivalent } });
-      await prisma.creditTransaction.create({ data: { userCreditsId: uc.id, type: "refund", amount: proRate.creditsEquivalent, balance: uc.balance + proRate.creditsEquivalent, description: `Subscription cancellation refund (${proRate.daysRemaining} days)` } });
+      await prisma.creditTransaction.create({ data: { userCreditsId: uc.id, type: "REFUND", amount: proRate.creditsEquivalent, balance: uc.balance + proRate.creditsEquivalent, description: `Subscription cancellation refund (${proRate.daysRemaining} days)` } });
       refundAmount = proRate.creditsEquivalent;
     } else if (refundType === "cash") {
       refundAmount = proRate.cashRefundAmount;

@@ -149,255 +149,154 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
   megaData?: any;
   buttons?: React.ReactNode;
 }) {
+  // ═══ HUD Design Tokens ═══
+  const hL: React.CSSProperties = { fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(148,163,184,0.8)", textAlign: "center" };
+  const hH: React.CSSProperties = { fontSize: "1.15rem", fontWeight: 800, letterSpacing: "-0.02em", textAlign: "center" };
+  const hS: React.CSSProperties = { padding: "0.35rem 0.6rem", borderRadius: "8px", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.1)", textAlign: "center", minWidth: "65px", flex: "1 1 0" };
+  const hSL: React.CSSProperties = { fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(148,163,184,0.7)", marginBottom: "2px" };
+  const hSV: React.CSSProperties = { fontSize: "0.72rem", fontWeight: 700 };
+  const hM: React.CSSProperties = { fontSize: "0.58rem", padding: "3px 10px", borderRadius: "9999px", background: "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.06))", border: "1px solid rgba(139,92,246,0.2)", color: "#a78bfa", fontWeight: 700, letterSpacing: "0.02em", display: "inline-block" };
+  const hR: React.CSSProperties = { display: "flex", gap: "0.35rem", alignItems: "stretch", justifyContent: "center", flexWrap: "wrap" };
+  const hWrap: React.CSSProperties = { width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" };
+
   const summaries: Record<string, () => React.ReactNode> = {
     analyze: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)", textAlign: "center", maxWidth: "90%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{data?.itemName || "—"}</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", flexWrap: "wrap" as const, justifyContent: "center" }}>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Condition</div><div style={{ fontSize: "0.82rem", fontWeight: 800, color: (data?.conditionScore ?? 5) >= 7 ? "#22c55e" : (data?.conditionScore ?? 5) >= 4 ? "#f59e0b" : "#ef4444" }}>{data?.conditionScore ?? "?"}/10</div></div>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Category</div><div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>{data?.category || "—"}</div></div>
-          {data?.confidence && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Confidence</div><div style={{ fontSize: "0.65rem", fontWeight: 600, color: "#00bcd4" }}>{Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%</div></div>}
+      <div style={hWrap}>
+        <div style={hL}>AI Analysis</div>
+        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, maxWidth: "95%", textAlign: "center" }}>{data?.itemName || "—"}</div>
+        <div style={hR}>
+          <div style={hS}><div style={hSL}>Condition</div><div style={{ ...hSV, color: (data?.conditionScore ?? 5) >= 7 ? "#22c55e" : (data?.conditionScore ?? 5) >= 4 ? "#f59e0b" : "#ef4444" }}>{data?.conditionScore ?? "?"}/10</div></div>
+          <div style={hS}><div style={hSL}>Category</div><div style={{ ...hSV, color: "var(--text-secondary)", fontSize: "0.65rem" }}>{data?.category || "—"}</div></div>
+          {data?.confidence && <div style={hS}><div style={hSL}>Confidence</div><div style={{ ...hSV, color: "#00bcd4" }}>{Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%</div></div>}
         </div>
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+        {megaData && <span style={hM}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
       </div>
     ),
     pricing: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Estimated Value</div>
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>{data?.low != null && data?.high != null ? `$${Math.round(data.low)} — $${Math.round(data.high)}` : "—"}</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Confidence</div><div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)" }}>{data?.confidence != null ? `${Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%` : "?"}</div></div>
-          {data?.demand && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Demand</div><div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.demand === "High" || data.demand === "high" ? "#22c55e" : data.demand === "Low" || data.demand === "low" ? "#ef4444" : "#f59e0b" }}>{data.demand}</div></div>}
-          {data?.netPayout && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>You Keep</div><div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#22c55e" }}>${Math.round(data.netPayout)}</div></div>}
+      <div style={hWrap}>
+        <div style={hL}>Estimated Value</div>
+        <div style={{ ...hH, color: "#00bcd4", textShadow: "0 0 20px rgba(0,188,212,0.3)" }}>{data?.low != null && data?.high != null ? `$${Math.round(data.low)} — $${Math.round(data.high)}` : "—"}</div>
+        <div style={hR}>
+          <div style={hS}><div style={hSL}>Confidence</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data?.confidence != null ? `${Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%` : "?"}</div></div>
+          {data?.demand && <div style={hS}><div style={hSL}>Demand</div><div style={{ ...hSV, color: data.demand === "High" || data.demand === "Strong" || data.demand === "high" ? "#22c55e" : data.demand === "Low" || data.demand === "low" ? "#ef4444" : "#f59e0b" }}>{data.demand}</div></div>}
+          {data?.netPayout && <div style={hS}><div style={hSL}>You Keep</div><div style={{ ...hSV, color: "#22c55e" }}>${Math.round(data.netPayout)}</div></div>}
         </div>
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+        {megaData && <span style={hM}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
       </div>
     ),
     buyers: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Buyer Intelligence</div>
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#22c55e" }}>🎯 {data?.leadCount ?? 0} leads found</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.hotCount > 0 && <span style={{ fontSize: "0.62rem", color: "#ef4444", fontWeight: 600 }}>🔥 {data.hotCount} hot</span>}
-          {data?.bestPlatform && <span style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>Best: {data.bestPlatform}</span>}
-          {data?.platformCount > 0 && <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{data.platformCount} platforms</span>}
+      <div style={hWrap}>
+        <div style={hL}>Buyer Intelligence</div>
+        <div style={{ ...hH, color: "#22c55e", textShadow: "0 0 20px rgba(34,197,94,0.2)" }}>{data?.leadCount ?? 0} leads found</div>
+        <div style={hR}>
+          {data?.hotCount > 0 && <div style={hS}><div style={hSL}>Hot Leads</div><div style={{ ...hSV, color: "#ef4444" }}>{data.hotCount}</div></div>}
+          {data?.bestPlatform && <div style={hS}><div style={hSL}>Best Platform</div><div style={{ ...hSV, color: "var(--text-secondary)", fontSize: "0.65rem" }}>{data.bestPlatform}</div></div>}
+          {data?.platformCount > 0 && <div style={hS}><div style={hSL}>Platforms</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data.platformCount}</div></div>}
         </div>
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}%</span>}
+        {megaData && <span style={hM}>⚡ MegaBot: {megaData.agreementScore ?? "?"}%</span>}
       </div>
     ),
     listing: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.35rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Listing Status</div>
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>📋 {data?.platformCount ?? 0} platforms ready</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.bestPlatform && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Best Platform</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#22c55e" }}>{data.bestPlatform}</div>
-            </div>
-          )}
-          {data?.topPlatforms && data.topPlatforms.length > 1 && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Active On</div>
-              <div style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>{data.topPlatforms.slice(0, 3).map((p: string) => p.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())).join(", ")}{data.topPlatforms.length > 3 ? ` +${data.topPlatforms.length - 3}` : ""}</div>
-            </div>
-          )}
-          {data?.copiedCount > 0 && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Launched</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#22c55e" }}>{data.copiedCount}/13</div>
-            </div>
-          )}
+      <div style={hWrap}>
+        <div style={hL}>Listing Status</div>
+        <div style={{ ...hH, color: "#00bcd4" }}>{data?.platformCount ?? 0} platforms ready</div>
+        <div style={hR}>
+          {data?.bestPlatform && <div style={hS}><div style={hSL}>Best Platform</div><div style={{ ...hSV, color: "#22c55e", fontSize: "0.65rem" }}>{data.bestPlatform}</div></div>}
+          {data?.topPlatforms && data.topPlatforms.length > 1 && <div style={hS}><div style={hSL}>Active On</div><div style={{ ...hSV, color: "var(--text-secondary)", fontSize: "0.6rem" }}>{data.topPlatforms.slice(0, 3).map((p: string) => p.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())).join(", ")}</div></div>}
+          {data?.copiedCount > 0 && <div style={hS}><div style={hSL}>Launched</div><div style={{ ...hSV, color: "#22c55e" }}>{data.copiedCount}/13</div></div>}
         </div>
-        {data?.summary && (
-          <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", lineHeight: 1.4, textAlign: "center", maxWidth: "90%", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{data.summary}</div>
-        )}
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+        {data?.summary && <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", lineHeight: 1.4, textAlign: "center" as const, maxWidth: "92%", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{data.summary}</div>}
+        {megaData && <span style={hM}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
       </div>
     ),
     recon: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.35rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Market Intelligence</div>
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#f59e0b" }}>🔍 {data?.competitorCount ?? 0} competitors</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.alertCount > 0 && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Alerts</div>
-              <div style={{ fontSize: "0.72rem", fontWeight: 800, color: "#ef4444" }}>🚨 {data.alertCount}</div>
-            </div>
-          )}
-          {data?.marketHeat && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Market</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.marketHeat === "Hot" ? "#ef4444" : data.marketHeat === "Warm" ? "#f59e0b" : "#00bcd4" }}>{data.marketHeat === "Hot" ? "🔥" : "🌤️"} {data.marketHeat}</div>
-            </div>
-          )}
-          {data?.pricePosition && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Position</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.pricePosition === "Well-Priced" ? "#22c55e" : "#f59e0b" }}>{data.pricePosition}</div>
-            </div>
-          )}
-          {data?.avgPrice && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Avg Price</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)" }}>${typeof data.avgPrice === "number" ? Math.round(data.avgPrice) : data.avgPrice}</div>
-            </div>
-          )}
+      <div style={hWrap}>
+        <div style={hL}>Market Intelligence</div>
+        <div style={{ ...hH, color: "#f59e0b", textShadow: "0 0 20px rgba(245,158,11,0.2)" }}>{data?.competitorCount ?? 0} competitors</div>
+        <div style={hR}>
+          {data?.alertCount > 0 && <div style={{ ...hS, background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}><div style={hSL}>Alerts</div><div style={{ ...hSV, color: "#ef4444" }}>{data.alertCount}</div></div>}
+          {data?.marketHeat && <div style={hS}><div style={hSL}>Market</div><div style={{ ...hSV, color: data.marketHeat === "Hot" ? "#ef4444" : data.marketHeat === "Warm" ? "#f59e0b" : "#00bcd4" }}>{data.marketHeat}</div></div>}
+          {data?.pricePosition && <div style={hS}><div style={hSL}>Position</div><div style={{ ...hSV, color: data.pricePosition === "Well-Priced" ? "#22c55e" : "#f59e0b" }}>{data.pricePosition}</div></div>}
+          {data?.avgPrice && <div style={hS}><div style={hSL}>Avg Price</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>${typeof data.avgPrice === "number" ? Math.round(data.avgPrice) : data.avgPrice}</div></div>}
         </div>
-        {data?.recommendation && (
-          <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", lineHeight: 1.4, textAlign: "center", maxWidth: "90%", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>💡 {data.recommendation}</div>
-        )}
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+        {data?.recommendation && <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", lineHeight: 1.4, textAlign: "center" as const, maxWidth: "92%", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>💡 {data.recommendation}</div>}
+        {megaData && <span style={hM}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
       </div>
     ),
     shipping: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Shipping Profile</div>
-        <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "#00bcd4" }}>📦 {data?.method || "—"}</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.weight && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Weight</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>⚖️ {data.weight}</div>
-            </div>
-          )}
-          {data?.dims && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Dims</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>📐 {data.dims}</div>
-            </div>
-          )}
-          {data?.difficulty && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Handling</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.difficulty === "Heavy" ? "#ef4444" : data.difficulty === "Fragile" ? "#f59e0b" : "#00bcd4" }}>{data.difficulty}</div>
-            </div>
-          )}
+      <div style={hWrap}>
+        <div style={hL}>Shipping Profile</div>
+        <div style={{ ...hH, color: "#00bcd4", fontSize: "0.95rem" }}>{data?.method || "—"}</div>
+        <div style={hR}>
+          {data?.weight && <div style={hS}><div style={hSL}>Weight</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data.weight}</div></div>}
+          {data?.dims && <div style={hS}><div style={hSL}>Dims</div><div style={{ ...hSV, color: "var(--text-secondary)", fontSize: "0.6rem" }}>{data.dims}</div></div>}
+          {data?.difficulty && <div style={hS}><div style={hSL}>Handling</div><div style={{ ...hSV, color: data.difficulty === "Heavy" ? "#ef4444" : data.difficulty === "Fragile" ? "#f59e0b" : "#00bcd4" }}>{data.difficulty}</div></div>}
         </div>
       </div>
     ),
     photos: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Photo Quality</div>
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: (data?.score ?? 5) >= 7 ? "#22c55e" : (data?.score ?? 5) >= 4 ? "#f59e0b" : "#ef4444" }}>📸 {data?.score ?? "?"}/10</div>
-        <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>{data?.count ?? 0} photo{(data?.count ?? 0) !== 1 ? "s" : ""} uploaded</div>
+      <div style={hWrap}>
+        <div style={hL}>Photo Quality</div>
+        <div style={{ ...hH, color: (data?.score ?? 5) >= 7 ? "#22c55e" : (data?.score ?? 5) >= 4 ? "#f59e0b" : "#ef4444", textShadow: `0 0 20px ${(data?.score ?? 5) >= 7 ? "rgba(34,197,94,0.2)" : "rgba(245,158,11,0.2)"}` }}>{data?.score ?? "?"}/10</div>
+        <div style={hR}>
+          <div style={hS}><div style={hSL}>Photos</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data?.count ?? 0}</div></div>
+        </div>
       </div>
     ),
     carbot: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Vehicle</div>
-        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>🚗 {data?.label || "Assessment available"}</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.grade && data.grade !== "—" && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Grade</div>
-              <div style={{ fontSize: "0.72rem", fontWeight: 800, color: data.gradeColor || "var(--text-secondary)" }}>{data.grade}</div>
-            </div>
-          )}
-          {data?.valueLow != null && data?.valueHigh != null && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Value</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#00bcd4" }}>${Math.round(data.valueLow / 1000)}K–${Math.round(data.valueHigh / 1000)}K</div>
-            </div>
-          )}
-          {data?.demand && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Demand</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>{data.demand}</div>
-            </div>
-          )}
+      <div style={hWrap}>
+        <div style={hL}>Vehicle Assessment</div>
+        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)", textAlign: "center" as const }}>{data?.label || "Assessment available"}</div>
+        <div style={hR}>
+          {data?.grade && data.grade !== "—" && <div style={hS}><div style={hSL}>Grade</div><div style={{ ...hSV, color: data.gradeColor || "var(--text-secondary)" }}>{data.grade}</div></div>}
+          {data?.valueLow != null && data?.valueHigh != null && <div style={hS}><div style={hSL}>Value</div><div style={{ ...hSV, color: "#00bcd4" }}>${Math.round(data.valueLow / 1000)}K–${Math.round(data.valueHigh / 1000)}K</div></div>}
+          {data?.demand && <div style={hS}><div style={hSL}>Demand</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data.demand}</div></div>}
         </div>
       </div>
     ),
     antique: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.35rem", width: "100%" }}>
+      <div style={{ width: "100%" }}>
         {data?.verdict ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <span style={{ fontSize: "1rem" }}>
-              {data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "✅" : data.verdict === "Uncertain" ? "⚠️" : "❌"}
-            </span>
-            <div style={{ fontSize: "0.82rem", fontWeight: 800, color: data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "#16a34a" : data.verdict === "Uncertain" ? "#d97706" : "#dc2626" }}>
-              {data.verdict}
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "4px" }}>
+            <span style={{ fontSize: "1rem" }}>{data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "✅" : data.verdict === "Uncertain" ? "⚠️" : "❌"}</span>
+            <div style={{ fontSize: "0.82rem", fontWeight: 800, color: data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "#16a34a" : data.verdict === "Uncertain" ? "#d97706" : "#dc2626" }}>{data.verdict}</div>
             {data?.confidence && <span style={{ fontSize: "0.58rem", color: "var(--text-muted)", fontWeight: 600 }}>{data.confidence}%</span>}
           </div>
-        ) : (
-          <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Antique Detected</div>
-        )}
+        ) : <div style={{ ...hL, marginBottom: "4px" }}>Antique Detected</div>}
         {(data?.fmvLow != null || data?.auctionLow != null) && (
-          <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#fbbf24" }}>
-            {data.fmvLow != null && data.fmvHigh != null
-              ? `$${Math.round(data.fmvLow).toLocaleString()} — $${Math.round(data.fmvHigh).toLocaleString()}`
-              : data.auctionLow != null && data.auctionHigh != null
-              ? `$${Math.round(data.auctionLow).toLocaleString()} — $${Math.round(data.auctionHigh).toLocaleString()}`
-              : "—"}
+          <div style={{ ...hH, color: "#fbbf24", textShadow: "0 0 20px rgba(251,191,36,0.2)", marginBottom: "6px" }}>
+            {data.fmvLow != null && data.fmvHigh != null ? `$${Math.round(data.fmvLow).toLocaleString()} — $${Math.round(data.fmvHigh).toLocaleString()}` : data.auctionLow != null && data.auctionHigh != null ? `$${Math.round(data.auctionLow).toLocaleString()} — $${Math.round(data.auctionHigh).toLocaleString()}` : "—"}
           </div>
         )}
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.period && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Period</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)" }}>{data.period}</div>
-            </div>
-          )}
-          {data?.rarity && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Rarity</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.rarity === "Rare" || data.rarity === "Very Rare" ? "#f59e0b" : "var(--text-secondary)" }}>{data.rarity}</div>
-            </div>
-          )}
-          {data?.overallGrade && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Condition</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#00bcd4" }}>{data.overallGrade}</div>
-            </div>
-          )}
-          {data?.collectorDemand && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Demand</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.collectorDemand === "High" || data.collectorDemand === "Strong" ? "#22c55e" : "#f59e0b" }}>{data.collectorDemand}</div>
-            </div>
-          )}
-          {data?.insuranceValue != null && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Insurance</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)" }}>${Math.round(data.insuranceValue).toLocaleString()}</div>
-            </div>
-          )}
+        <div style={hR}>
+          {data?.period && <div style={hS}><div style={hSL}>Period</div><div style={{ ...hSV, color: "var(--text-secondary)", fontSize: "0.6rem" }}>{data.period}</div></div>}
+          {data?.rarity && <div style={hS}><div style={hSL}>Rarity</div><div style={{ ...hSV, color: data.rarity === "Rare" || data.rarity === "Very Rare" ? "#f59e0b" : "var(--text-secondary)" }}>{data.rarity}</div></div>}
+          {data?.overallGrade && <div style={hS}><div style={hSL}>Condition</div><div style={{ ...hSV, color: "#00bcd4" }}>{data.overallGrade}</div></div>}
+          {data?.collectorDemand && <div style={hS}><div style={hSL}>Demand</div><div style={{ ...hSV, color: data.collectorDemand === "High" || data.collectorDemand === "Strong" ? "#22c55e" : "#f59e0b" }}>{data.collectorDemand}</div></div>}
         </div>
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+        {megaData && <div style={{ marginTop: "6px", textAlign: "center" as const }}><span style={hM}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span></div>}
       </div>
     ),
     collectibles: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Collectible</div>
-        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#8b5cf6" }}>⭐ {data?.name || "Evaluation available"}</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.rarity && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Rarity</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#8b5cf6" }}>{data.rarity}</div>
-            </div>
-          )}
-          {data?.value && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Value</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#00bcd4" }}>{data.value}</div>
-            </div>
-          )}
-          {data?.grade && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Grade</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>PSA {data.grade}</div>
-            </div>
-          )}
-          {data?.demand && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Trend</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>{data.demand}</div>
-            </div>
-          )}
+      <div style={{ width: "100%" }}>
+        <div style={{ ...hL, marginBottom: "2px" }}>Collectible</div>
+        <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#8b5cf6", marginBottom: "6px" }}>⭐ {data?.name || "Evaluation available"}</div>
+        <div style={hR}>
+          {data?.rarity && <div style={hS}><div style={hSL}>Rarity</div><div style={{ ...hSV, color: "#8b5cf6" }}>{data.rarity}</div></div>}
+          {data?.value && <div style={hS}><div style={hSL}>Value</div><div style={{ ...hSV, color: "#00bcd4" }}>{data.value}</div></div>}
+          {data?.grade && <div style={hS}><div style={hSL}>Grade</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>PSA {data.grade}</div></div>}
+          {data?.demand && <div style={hS}><div style={hSL}>Trend</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data.demand}</div></div>}
+        </div>
+      </div>
+    ),
+    video: () => (
+      <div style={{ width: "100%" }}>
+        <div style={{ ...hL, marginBottom: "2px" }}>Video Ad</div>
+        <div style={{ ...hH, color: "#ef4444", textShadow: "0 0 20px rgba(239,68,68,0.2)" }}>🎬 {data?.status === "ready" ? "Video Ready" : data?.status === "generating" ? "Generating..." : "Generate Video"}</div>
+        <div style={hR}>
+          {data?.duration && <div style={hS}><div style={hSL}>Duration</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data.duration}s</div></div>}
+          {data?.platform && <div style={hS}><div style={hSL}>Platform</div><div style={{ ...hSV, color: "#00bcd4" }}>{data.platform}</div></div>}
+          {data?.tier && <div style={hS}><div style={hSL}>Tier</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data.tier}</div></div>}
         </div>
       </div>
     ),
@@ -406,16 +305,19 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
   const render = summaries[botType];
   return (
     <div style={{
-      padding: "0.65rem 1rem",
-      display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "space-between",
+      padding: "0.75rem 1rem",
+      display: "flex", flexDirection: "column" as const, alignItems: "stretch", justifyContent: "space-between",
       flex: 1,
+      background: "linear-gradient(135deg, rgba(0,188,212,0.03), transparent)",
+      borderRadius: "12px",
+      position: "relative",
     }}>
       {render ? render() : <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>Expand for full details</span>}
       {buttons && (
         <div style={{
           display: "flex", gap: "0.4rem", justifyContent: "center",
-          flexWrap: "wrap" as const, marginTop: "auto", paddingTop: "0.4rem",
-          borderTop: "1px solid var(--border-default)", width: "100%",
+          flexWrap: "wrap" as const, marginTop: "auto", paddingTop: "0.5rem",
+          borderTop: "1px solid rgba(0,188,212,0.1)", width: "100%",
         }}>
           {buttons}
         </div>
@@ -7486,6 +7388,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
     { key: "carbot", label: "CarBot", icon: "🚗", color: "#2196f3" },
     { key: "antique", label: "AntiqueBot", icon: "🏺", color: "#d97706" },
     { key: "collectibles", label: "CollectiblesBot", icon: "🎴", color: "#3b82f6" },
+    { key: "video", label: "VideoBot", icon: "🎬", color: "#ef4444" },
   ];
 
   const boostedCount = allBots.filter((b) => boostedBots.has(b.key)).length;
@@ -9116,6 +9019,7 @@ export default function ItemDashboardPanels({
     carbot: "carbot",
     antique: "antiquebot",
     collectibles: "collectiblesbot",
+    video: "videobot",
   };
 
   // Map EventLog bot keys back to panel keys (same as mount-time fetch)
@@ -9129,6 +9033,7 @@ export default function ItemDashboardPanels({
     carbot: "carbot",
     antiquebot: "antique", antique: "antique",
     collectiblesbot: "collectibles", collectibles: "collectibles",
+    videobot: "video", video: "video",
   };
 
   async function superBoost(botType: string) {

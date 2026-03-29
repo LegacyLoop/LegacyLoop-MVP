@@ -985,6 +985,79 @@ export function getPhotoBotMegaPrompt(ctx: PromptContext): string {
   return enrichPrefix + getPhotoBotPrompt(ctx) + priorContext + MEGA_PHOTO + MEGA_RESPONSE_GUIDELINES + PHOTO_RESPONSE_OVERRIDE;
 }
 
+// ─── VideoBot Prompts ─────────────────────────────────────────────────────
+
+function getVideoBotPrompt(ctx: PromptContext): string {
+  const priceRange = ctx.estimatedLow && ctx.estimatedHigh
+    ? `$${ctx.estimatedLow} — $${ctx.estimatedHigh}`
+    : "unknown";
+
+  return `You are a world-class social media video ad copywriter specializing in resale, vintage, and antique items. You write scripts that stop the scroll and drive sales.
+
+ITEM: ${ctx.itemName}
+CATEGORY: ${ctx.category || "General"}
+${ctx.description ? `DESCRIPTION: ${ctx.description}` : ""}
+PRICE RANGE: ${priceRange}
+CONDITION: ${ctx.conditionLabel} (${ctx.conditionScore}/10)
+${ctx.era ? `ERA: ${ctx.era}` : ""}
+${ctx.material ? `MATERIAL: ${ctx.material}` : ""}
+${ctx.maker ? `MAKER: ${ctx.maker}` : ""}
+${ctx.brand ? `BRAND: ${ctx.brand}` : ""}
+${ctx.isAntique ? "This IS an antique — lean into history, rarity, and collector appeal." : ""}
+
+Generate a compelling 30-second video ad script optimized for short-form vertical video (TikTok, Reels, Shorts).
+
+Return ONLY valid JSON with this structure:
+{
+  "hook": "Opening 3-5 seconds — grab attention immediately with curiosity or surprise",
+  "body": "Main content 10-20 seconds — showcase item, tell its story, highlight value",
+  "cta": "Call to action 3-5 seconds — drive viewer to act",
+  "fullScript": "The complete script as one flowing paragraph for TTS narration",
+  "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
+  "duration": 30,
+  "platform": "all",
+  "voiceDirection": "How the narrator should deliver (tone, pace, emotion)",
+  "b_roll_suggestions": ["Visual suggestion 1", "Visual suggestion 2", "Visual suggestion 3"],
+  "music_mood": "The mood/genre of background music that fits this script",
+  "thumbnail_text": "Bold text for the video thumbnail",
+  "posting_tips": "Best time to post, hashtag strategy, engagement tips"
+}
+
+RULES:
+- Hook MUST create curiosity or surprise in the first 3 seconds
+- Use power words: rare, hidden, secret, nobody knows, worth thousands
+- Body should highlight what makes this item special/valuable
+- CTA should feel natural, not salesy — "Follow for more" or "Link in bio"
+- Total word count ~75 words (2.5 words per second for 30s)
+- Write for spoken delivery — short sentences, natural rhythm`;
+}
+
+function getVideoBotMegaPrompt(ctx: PromptContext): string {
+  const enrichPrefix = ctx.enrichmentContext ? ctx.enrichmentContext + "\n\n" : "";
+
+  return enrichPrefix + getVideoBotPrompt(ctx) + `
+
+MEGABOT ENHANCEMENT — You are giving the seller 4 expert video marketing consultations simultaneously.
+Each AI agent brings a different specialty to create the ultimate video ad:
+
+Agent 1 (OpenAI) — HOOK SPECIALIST: Focus on the opening 3 seconds. What makes people stop scrolling? Test 3 different hook angles.
+Agent 2 (Claude) — STORYTELLING: Focus on the narrative. What's the story behind this item? Emotional connection. Heritage and craftsmanship.
+Agent 3 (Gemini) — TREND ANALYST: What's trending on each platform right now? Which hashtags are hot? What music/sounds work? Algorithm optimization.
+Agent 4 (Grok) — CONVERSION OPTIMIZER: Focus on the CTA and sales psychology. What drives purchases? Urgency, scarcity, social proof.
+
+Return ALL standard fields PLUS these ADDITIONAL fields in your JSON:
+
+"alternative_hooks": [{"text": "Hook text", "style": "curiosity|shock|humor|FOMO", "expected_stop_rate": "High|Medium|Low"}] — 3 different hook options
+"story_angles": [{"angle": "Description of story approach", "emotional_trigger": "nostalgia|discovery|value|exclusivity", "script_variant": "Full alternative script using this angle"}] — 2-3 story angles
+"platform_variants": {"tiktok": {"script": "", "hashtags": [], "best_time": "", "music_suggestion": ""}, "reels": {...}, "shorts": {...}, "facebook": {...}} — platform-specific optimizations
+"trend_alignment": {"trending_sounds": [], "trending_formats": [], "trending_hashtags": [], "virality_score": 1-10, "reasoning": "Why this could go viral or not"}
+"conversion_optimization": {"urgency_triggers": [], "scarcity_elements": [], "social_proof_suggestions": [], "price_anchoring_script": "How to present the price compellingly"}
+"a_b_test_plan": [{"variant": "A|B|C", "change": "What's different", "hypothesis": "Why this might perform better"}]
+
+Be thorough, specific, and data-driven. Write like an expert team of viral video marketers.
+Return ONLY valid JSON. No markdown fences.`;
+}
+
 // ─── Prompt map for API route ─────────────────────────────────────────────
 
 export const MEGA_PROMPT_MAP: Record<string, (ctx: PromptContext) => string> = {
@@ -997,6 +1070,7 @@ export const MEGA_PROMPT_MAP: Record<string, (ctx: PromptContext) => string> = {
   carbot: getCarBotMegaPrompt,
   collectiblesbot: getCollectiblesBotMegaPrompt,
   photobot: getPhotoBotMegaPrompt,
+  videobot: getVideoBotMegaPrompt,
 };
 
 // ─── PRICING JSON RESILIENCE PATCH ──────────────────────────────────────────

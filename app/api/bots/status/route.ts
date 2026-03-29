@@ -14,6 +14,7 @@ const BOT_DEFS = [
   { id: "shipbot", name: "ShipBot", icon: "📦", desc: "Shipping intelligence with carrier comparisons and packaging suggestions", route: "/bots/shipbot" },
   { id: "photobot", name: "PhotoBot", icon: "📷", desc: "AI photo editor — background removal, enhancement, and professional imagery", route: "/bots/photobot" },
   { id: "stylebot", name: "StyleBot", icon: "🎨", desc: "Style analysis and presentation recommendations for maximum appeal", route: "/bots/stylebot" },
+  { id: "videobot", name: "VideoBot", icon: "🎬", desc: "AI video ads for TikTok, Reels, Shorts — narration, music, trending hooks", route: "/bots/videobot" },
 ];
 
 export async function GET() {
