@@ -493,86 +493,100 @@ async function callClaude(
   const models = [...new Set(CLAUDE_MODELS)];
 
   for (const model of models) {
-    const { signal, clear } = withTimeout(CLAUDE_TIMEOUT);
-    try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "x-api-key": key,
-          "anthropic-version": "2023-06-01",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: 16384,
-          messages: [
-            { role: "user", content: claudePrompt },
-            { role: "assistant", content: "{" }, // PREFILL — forces raw JSON, no markdown fences
-          ],
-        }),
-        signal,
-      });
-      clear();
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const { signal, clear } = withTimeout(CLAUDE_TIMEOUT);
+      try {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "x-api-key": key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
+            max_tokens: 16384,
+            messages: [
+              { role: "user", content: claudePrompt },
+              { role: "assistant", content: "{" }, // PREFILL — forces raw JSON, no markdown fences
+            ],
+          }),
+          signal,
+        });
+        clear();
 
-      if (!res.ok) {
-        const t = await res.text();
-        // If primary model fails, try fallback
-        if (models.indexOf(model) < models.length - 1) {
-          console.log(`[MegaBot][Claude] ${model} failed (${res.status}), trying next model...`);
-          continue;
+        if (!res.ok) {
+          const t = await res.text();
+          const retryable = [429, 500, 503].includes(res.status);
+          // Retry transient errors once with 3s delay
+          if (retryable && attempt === 0) {
+            console.log(`[MegaBot][Claude] ${model} ${res.status} — retrying in 3s...`);
+            await new Promise(r => setTimeout(r, 3000));
+            continue; // retry same model
+          }
+          // If primary model fails, try fallback model
+          if (models.indexOf(model) < models.length - 1) {
+            console.log(`[MegaBot][Claude] ${model} failed (${res.status}), trying next model...`);
+            break; // break inner loop → try next model
+          }
+          throw new Error(`Claude ${res.status}: ${t.slice(0, 200)}`);
         }
-        throw new Error(`Claude ${res.status}: ${t.slice(0, 200)}`);
-      }
 
-      const json = await res.json();
+        const json = await res.json();
 
-      // Check for truncation via stop_reason
-      if (json.stop_reason === "max_tokens") {
-        console.log(`[MegaBot][Claude] Response hit max_tokens on ${model} — may be truncated`);
-      }
-
-      // Extract text from response
-      let raw = "";
-      if (json.content && Array.isArray(json.content)) {
-        raw = json.content
-          .filter((c: any) => c.type === "text")
-          .map((c: any) => c.text || "")
-          .join("");
-      } else if (typeof json === "string") {
-        raw = json;
-      }
-
-      // Prepend { if prefill was consumed (Anthropic API returns text AFTER the prefill)
-      raw = raw.trim();
-      if (!raw.startsWith("{")) {
-        raw = "{" + raw;
-      }
-
-      console.log(`[MegaBot][Claude] Model: ${model}, Response length: ${raw.length} chars, stop: ${json.stop_reason || "unknown"}`);
-
-      const parsed = parseAgentResponse(raw, "Claude");
-      const data = normalizeKeys(unwrapAgentData(normalizeKeys(parsed)));
-      data._claudeMode = "text";
-      data._claudeModel = model;
-      console.log(`[MEGABOT DEBUG][Claude] Top keys: ${Object.keys(data || {}).slice(0, 15).join(", ")}`);
-      debugAgentShape("Claude", data);
-      return { data, raw };
-    } catch (err: any) {
-      clear();
-      if (err.name === "AbortError") {
-        // If primary timed out, try fallback
-        if (models.indexOf(model) < models.length - 1) {
-          console.log(`[MegaBot][Claude] ${model} timed out, trying next model...`);
-          continue;
+        // Check for truncation via stop_reason
+        if (json.stop_reason === "max_tokens") {
+          console.log(`[MegaBot][Claude] Response hit max_tokens on ${model} — may be truncated`);
         }
-        throw new Error("Claude timed out after 120s");
+
+        // Extract text from response
+        let raw = "";
+        if (json.content && Array.isArray(json.content)) {
+          raw = json.content
+            .filter((c: any) => c.type === "text")
+            .map((c: any) => c.text || "")
+            .join("");
+        } else if (typeof json === "string") {
+          raw = json;
+        }
+
+        // Prepend { if prefill was consumed (Anthropic API returns text AFTER the prefill)
+        raw = raw.trim();
+        if (!raw.startsWith("{")) {
+          raw = "{" + raw;
+        }
+
+        console.log(`[MegaBot][Claude] Model: ${model}, Response length: ${raw.length} chars, stop: ${json.stop_reason || "unknown"}`);
+
+        const parsed = parseAgentResponse(raw, "Claude");
+        const data = normalizeKeys(unwrapAgentData(normalizeKeys(parsed)));
+        data._claudeMode = "text";
+        data._claudeModel = model;
+        console.log(`[MEGABOT DEBUG][Claude] Top keys: ${Object.keys(data || {}).slice(0, 15).join(", ")}`);
+        debugAgentShape("Claude", data);
+        return { data, raw };
+      } catch (err: any) {
+        clear();
+        if (err.name === "AbortError") {
+          // Retry on timeout once before falling to next model
+          if (attempt === 0) {
+            console.log(`[MegaBot][Claude] ${model} timed out — retrying...`);
+            continue;
+          }
+          // If primary timed out twice, try fallback
+          if (models.indexOf(model) < models.length - 1) {
+            console.log(`[MegaBot][Claude] ${model} timed out twice, trying next model...`);
+            break;
+          }
+          throw new Error("Claude timed out after 120s");
+        }
+        // If primary had other error, try fallback
+        if (models.indexOf(model) < models.length - 1) {
+          console.log(`[MegaBot][Claude] ${model} error: ${err.message}, trying next model...`);
+          break;
+        }
+        throw err;
       }
-      // If primary had other error, try fallback
-      if (models.indexOf(model) < models.length - 1) {
-        console.log(`[MegaBot][Claude] ${model} error: ${err.message}, trying next model...`);
-        continue;
-      }
-      throw err;
     }
   }
   throw new Error("All Claude models failed");

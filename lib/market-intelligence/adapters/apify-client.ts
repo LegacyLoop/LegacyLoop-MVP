@@ -1,6 +1,22 @@
 const APIFY_TOKEN = process.env.APIFY_API_TOKEN;
 const APIFY_BASE = "https://api.apify.com/v2";
 
+// ── Cost tracking + budget safeguard ──
+let apifyCallCount = 0;
+let apifyTotalCost = 0;
+const APIFY_COST_PER_CALL = 0.01; // Conservative estimate per task run
+const APIFY_MAX_CALLS_PER_HOUR = 50;
+const callTimestamps: number[] = [];
+
+/** Get current Apify usage stats for this process. */
+export function getApifyUsage() {
+  return {
+    calls: apifyCallCount,
+    estimatedCost: Math.round(apifyTotalCost * 100) / 100,
+    callsThisHour: callTimestamps.filter((t) => Date.now() - t < 3600000).length,
+  };
+}
+
 export interface ApifyRunResult {
   success: boolean;
   items: any[];
@@ -9,7 +25,7 @@ export interface ApifyRunResult {
 
 /**
  * Trigger an Apify task and wait for results.
- * Returns { success: false } gracefully when token is missing or task fails.
+ * Returns { success: false } gracefully when token is missing, task fails, or budget exceeded.
  */
 export async function runApifyTask(
   taskId: string,
@@ -20,7 +36,25 @@ export async function runApifyTask(
     return { success: false, items: [], runId: null };
   }
 
+  // Budget safeguard — prune old timestamps
+  const now = Date.now();
+  while (callTimestamps.length > 0 && now - callTimestamps[0] > 3600000) {
+    callTimestamps.shift();
+  }
+  const callsThisHour = callTimestamps.length;
+  if (callsThisHour >= APIFY_MAX_CALLS_PER_HOUR) {
+    console.warn(`[Apify] Budget safeguard: ${callsThisHour} calls this hour (max ${APIFY_MAX_CALLS_PER_HOUR}). Skipping.`);
+    return { success: false, items: [], runId: null };
+  }
+
+  // Track cost
+  apifyCallCount++;
+  apifyTotalCost += APIFY_COST_PER_CALL;
+  callTimestamps.push(now);
+
   try {
+    console.log(`[Apify] Task ${taskId} triggered (call #${apifyCallCount}, ~$${apifyTotalCost.toFixed(2)} est. session total, ${callsThisHour + 1}/hr)`);
+
     // 1. Trigger the task
     const runRes = await fetch(`${APIFY_BASE}/actor-tasks/${taskId}/runs`, {
       method: "POST",

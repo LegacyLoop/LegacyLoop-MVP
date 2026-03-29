@@ -149,15 +149,21 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "listbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
-    // Extract key values from enrichment summary (consolidated from PriceBot, BuyerBot, Amazon)
-    const priceBotFindings = enrichment?.summary?.priceBotFindings || "";
-    const buyerBotFindings = enrichment?.summary?.buyerBotFindings || "";
+    // Structured enrichment data (replaces fragile regex parsing)
     const amazonFindings = enrichment?.summary?.amazonFindings || "";
-    const bestPlatform = priceBotFindings.match(/Best Platform:\s*([^·\n]+)/)?.[1]?.trim() || "";
-    const targetBuyers = buyerBotFindings.match(/\d+\s*leads?\b/i)?.[0] || "";
-    const valueDrivers = "";
-    const searchKeywords = "";
     const amazonContext = amazonFindings ? `\nAMAZON CONTEXT: ${amazonFindings}` : "";
+    let bestPlatform = "";
+    let targetBuyers = "";
+    let valueDrivers = "";
+    let searchKeywords = "";
+    try {
+      const { enrichItemContext } = await import("@/lib/addons/enrich-item-context");
+      const enrichedData = await enrichItemContext(itemId, (item as any).listingPrice ?? null);
+      bestPlatform = enrichedData.bestPlatform || "";
+      targetBuyers = (enrichedData.targetBuyerProfiles || []).join(", ");
+      valueDrivers = (enrichedData.valueDrivers || []).join(", ");
+      searchKeywords = (enrichedData.topSearchKeywords || []).join(", ");
+    } catch { /* non-critical — proceed without structured data */ }
 
     // ── REAL LISTING INTELLIGENCE FROM SCRAPERS ──
     let realListingContext = "";
