@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
         currentPrice: Math.round(Number(amount) * 100),
         originalPrice: Math.round(Number(amount) * 100),
         round: 1,
-        expiresAt: getOfferExpiry(),
+        expiresAt: getOfferExpiry(body.expiryHours ? Number(body.expiryHours) : undefined),
       },
     });
 

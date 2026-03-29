@@ -60,13 +60,14 @@ export default function ItemPhotoStrip({
           <div style={{ display: "flex", justifyContent: "center" }}>
             <div
               style={{
-                position: "relative",
+                position: "relative" as const,
                 borderRadius: "1rem",
                 overflow: "hidden",
                 border: "1px solid var(--border-default)",
-                maxWidth: 420,
+                maxWidth: 480,
                 width: "100%",
                 cursor: "pointer",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
               }}
               onMouseEnter={() => setHoveredId(primaryPhoto.id)}
               onMouseLeave={() => setHoveredId(null)}
@@ -83,11 +84,24 @@ export default function ItemPhotoStrip({
                 alt={displayTitle}
                 style={{
                   width: "100%",
-                  maxHeight: 380,
+                  maxHeight: 420,
                   objectFit: "cover",
                   display: "block",
+                  transition: "transform 0.3s ease",
+                  transform: hoveredId === primaryPhoto.id ? "scale(1.02)" : "scale(1)",
                 }}
               />
+              {/* Photo counter badge */}
+              {photos.length > 1 && (
+                <div style={{
+                  position: "absolute", bottom: "8px", right: "8px",
+                  background: "rgba(0,0,0,0.6)", color: "#fff",
+                  borderRadius: "0.35rem", padding: "0.15rem 0.45rem",
+                  fontSize: "0.65rem", fontWeight: 700, backdropFilter: "blur(4px)",
+                }}>
+                  1/{photos.length}
+                </div>
+              )}
               {/* Hover magnifier overlay */}
               <div
                 style={{

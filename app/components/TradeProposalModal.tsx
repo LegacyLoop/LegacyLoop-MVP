@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface TradeItem {
   title: string;
@@ -16,6 +16,14 @@ export default function TradeProposalModal({ itemId, itemTitle, onClose }: { ite
   const [buyerEmail, setBuyerEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [minCashRequired, setMinCashRequired] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch(`/api/items/${itemId}/trade-settings`).then(r => r.json()).then(d => {
+      if (d.minCashAdded && Number(d.minCashAdded) > 0) setMinCashRequired(Number(d.minCashAdded));
+    }).catch(() => {});
+  }, [itemId]);
 
   function updateItem(idx: number, field: string, value: string) {
     setItems(prev => prev.map((it, i) => i === idx ? { ...it, [field]: value } : it));
@@ -31,7 +39,12 @@ export default function TradeProposalModal({ itemId, itemTitle, onClose }: { ite
 
   async function handleSubmit() {
     if (items.some(i => !i.title || !i.estimatedValue || Number(i.estimatedValue) <= 0)) return;
+    if (minCashRequired && (Number(cashAdded) || 0) < minCashRequired) {
+      setError(`This seller requires at least $${minCashRequired} cash added to any trade.`);
+      return;
+    }
     setSubmitting(true);
+    setError(null);
     try {
       const res = await fetch("/api/trades/propose", {
         method: "POST",
@@ -45,8 +58,13 @@ export default function TradeProposalModal({ itemId, itemTitle, onClose }: { ite
           buyerEmail: buyerEmail || null,
         }),
       });
-      if (res.ok) setSuccess(true);
-    } catch { /* ignore */ }
+      if (res.ok) {
+        setSuccess(true);
+      } else {
+        const d = await res.json().catch(() => null);
+        setError(d?.error || `Failed to submit trade proposal (${res.status})`);
+      }
+    } catch { setError("Network error — please try again."); }
     setSubmitting(false);
   }
 
@@ -111,6 +129,16 @@ export default function TradeProposalModal({ itemId, itemTitle, onClose }: { ite
               <div style={{ fontSize: 12, color: "rgba(207,216,220,0.6)", marginBottom: 12 }}>Total trade value: <span style={{ color: "#00bcd4", fontWeight: 700 }}>${Math.round(totalValue)}</span></div>
             )}
 
+            {minCashRequired != null && minCashRequired > 0 && (
+              <div style={{ fontSize: 11, color: "#f59e0b", marginBottom: 8, padding: "4px 8px", borderRadius: 6, background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.2)" }}>
+                ⚠️ This seller requires at least ${minCashRequired} cash added to any trade
+              </div>
+            )}
+            {error && (
+              <div style={{ fontSize: 12, color: "#ef4444", marginBottom: 8, padding: "6px 10px", borderRadius: 6, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                {error}
+              </div>
+            )}
             <button onClick={handleSubmit} disabled={submitting || items.some(i => !i.title || !i.estimatedValue)} style={{ width: "100%", height: 52, background: "linear-gradient(135deg, #00bcd4, #0097a7)", color: "#000", fontWeight: 700, fontSize: 14, borderRadius: 10, border: "none", cursor: submitting ? "wait" : "pointer", opacity: items.some(i => !i.title || !i.estimatedValue) ? 0.5 : 1 }}>
               {submitting ? "Sending..." : "Send Trade Proposal"}
             </button>

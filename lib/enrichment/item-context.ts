@@ -25,7 +25,7 @@ const enrichmentCache = new Map<
   string,
   { result: ItemEnrichmentContext; builtAt: number }
 >();
-const CACHE_TTL_MS = 60_000; // 60 seconds
+const CACHE_TTL_MS = 10_000; // 10 seconds — fresh data for sequential bot runs
 
 // ─────────────────────────────────────────────
 // TYPES
@@ -74,7 +74,7 @@ export async function getItemEnrichmentContext(
     }
 
     // ── Parallel DB queries (independent — safe to batch) ──
-    const [item, botEventLogs, megaBotLogs, docs, marketComps] = await Promise.all([
+    const [item, botEventLogs, megaBotLogs, docs, marketComps, offers, tradeLogs] = await Promise.all([
       // 1. Item with direct relations
       prisma.item.findUnique({
         where: { id: itemId },
@@ -125,6 +125,20 @@ export async function getItemEnrichmentContext(
         where: { itemId },
         orderBy: { createdAt: "desc" },
         take: 10,
+      }).catch(() => [] as any[]),
+      // 6. Offer history
+      prisma.offer.findMany({
+        where: { itemId },
+        select: { currentPrice: true, originalPrice: true, status: true, round: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }).catch(() => [] as any[]),
+      // 7. Trade proposal EventLogs
+      prisma.eventLog.findMany({
+        where: { itemId, eventType: { in: ["TRADE_PROPOSED", "TRADE_RESPONDED"] } },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        select: { eventType: true, payload: true, createdAt: true },
       }).catch(() => [] as any[]),
     ]);
 
@@ -188,7 +202,7 @@ export async function getItemEnrichmentContext(
     summary.priorRunCount = countPriorRuns(summary, item, botEventLogs, megaBotLogs);
     summary.confidenceLevel = calculateConfidence(summary.priorRunCount);
 
-    const contextBlock = buildContextBlock(summary, excludeBot, item, marketComps);
+    const contextBlock = buildContextBlock(summary, excludeBot, item, marketComps, botEventLogs, offers, tradeLogs);
     const hasEnrichment = summary.priorRunCount > 0;
 
     // Auto-populate structured intelligence fields if missing
@@ -203,8 +217,15 @@ export async function getItemEnrichmentContext(
 
     if (hasEnrichment) {
       const findingsCount = contextBlock.split("\n").filter((l) => l.startsWith("•")).length;
+      const hasAnalysis = !!item?.aiResult;
+      const hasValuation = !!item?.valuation;
+      const hasAmazon = !!summary.amazonFindings;
+      const missingBots = ["analyze", "price", "antique", "collectibles", "car", "recon", "list", "buyer", "photo"].filter(b => {
+        const key = b === "analyze" ? "analyzeBotFindings" : b === "price" ? "priceBotFindings" : `${b}BotFindings`;
+        return !(summary as any)[key];
+      });
       console.log(
-        `[Enrichment] ${itemId} — confidence: ${summary.confidenceLevel} — ${summary.priorRunCount} sources — ${findingsCount} context lines injected${excludeBot ? ` (excluding ${excludeBot})` : ""}`
+        `[Enrichment] ${itemId} — confidence: ${summary.confidenceLevel} — ${summary.priorRunCount} sources — ${findingsCount} findings — analysis:${hasAnalysis ? "✓" : "✗"} valuation:${hasValuation ? "✓" : "✗"} amazon:${hasAmazon ? "✓" : "✗"} — missing: ${missingBots.length > 0 ? missingBots.join(",") : "none"}${excludeBot ? ` (excluding ${excludeBot})` : ""}`
       );
     }
 
@@ -677,16 +698,44 @@ function extractAmazonData(d: any): string | null {
 function extractMegaBot(megaBotLogs: any[]): string | null {
   if (!megaBotLogs?.length) return null;
   const parts: string[] = [];
-  // Summarize which MegaBot specialists have run
-  const specialists = megaBotLogs.map((l: any) => l.eventType.replace("MEGABOT_", "").toLowerCase());
-  parts.push(`MegaBot Specialists: ${[...new Set(specialists)].join(", ")}`);
 
-  // Extract key findings from the most recent specialist
-  const d = safeJson(megaBotLogs[0]?.payload);
-  if (d) {
-    if (d.expertSummary) parts.push(`Expert Summary: ${String(d.expertSummary).slice(0, 200)}`);
-    if (d.executive_summary) parts.push(`Expert: ${String(d.executive_summary).slice(0, 200)}`);
+  // Group by specialist type, keep most recent per type
+  const byType: Record<string, any> = {};
+  for (const log of megaBotLogs) {
+    const type = log.eventType.replace("MEGABOT_", "").toLowerCase();
+    if (!byType[type]) {
+      byType[type] = safeJson(log.payload);
+    }
   }
+
+  const types = Object.keys(byType);
+  parts.push(`MegaBot Enhanced: ${types.length} specialist${types.length !== 1 ? "s" : ""} (${types.join(", ")})`);
+
+  // Extract agreement scores per specialist
+  const agreements: string[] = [];
+  let totalAgreement = 0;
+  let agreementCount = 0;
+  for (const [type, data] of Object.entries(byType)) {
+    if (data?.agreementScore) {
+      const score = data.agreementScore > 1 ? Math.round(data.agreementScore) : Math.round(data.agreementScore * 100);
+      agreements.push(`${type}:${score}%`);
+      totalAgreement += score;
+      agreementCount++;
+    }
+  }
+  if (agreements.length > 0) {
+    const avg = Math.round(totalAgreement / agreementCount);
+    parts.push(`Agreement: ${agreements.join(", ")} (avg ${avg}%)`);
+  }
+
+  // Extract executive summary from each specialist (first 120 chars each)
+  for (const [type, data] of Object.entries(byType)) {
+    const summary = data?.summary || data?.executive_summary || data?.expertSummary || data?.consensus?.executive_summary;
+    if (summary && typeof summary === "string" && summary.length > 20) {
+      parts.push(`${type}: ${summary.slice(0, 120)}${summary.length > 120 ? "..." : ""}`);
+    }
+  }
+
   return parts.length ? parts.join(" · ") : null;
 }
 
@@ -694,7 +743,7 @@ function extractMegaBot(megaBotLogs: any[]): string | null {
 // CONTEXT BLOCK BUILDER
 // ─────────────────────────────────────────────
 
-function buildContextBlock(summary: EnrichmentSummary, excludeBot?: string, item?: any, marketComps?: any[]): string {
+function buildContextBlock(summary: EnrichmentSummary, excludeBot?: string, item?: any, marketComps?: any[], botEventLogs?: any[], offers?: any[], tradeLogs?: any[]): string {
   const findings: string[] = [];
 
   // ── Structured Intelligence (from Item fields) ──
@@ -721,6 +770,19 @@ function buildContextBlock(summary: EnrichmentSummary, excludeBot?: string, item
       return `${date} ${s.source}: ${range || "N/A"}${s.confidence ? ` (${s.confidence})` : ""}`;
     });
     findings.push(`• PRICE HISTORY (${item.priceSnapshots.length} snapshots): ${snapLines.join(" | ")}`);
+    // Add trend summary
+    if (item.priceSnapshots.length >= 2) {
+      const newest = item.priceSnapshots[0];
+      const oldest = item.priceSnapshots[item.priceSnapshots.length - 1];
+      const newestPrice = (newest.priceMedian ?? ((newest.priceLow ?? 0) + (newest.priceHigh ?? 0)) / 2) / 100;
+      const oldestPrice = (oldest.priceMedian ?? ((oldest.priceLow ?? 0) + (oldest.priceHigh ?? 0)) / 2) / 100;
+      if (oldestPrice > 0 && newestPrice > 0) {
+        const direction = newestPrice > oldestPrice * 1.05 ? "RISING" : newestPrice < oldestPrice * 0.95 ? "FALLING" : "STABLE";
+        const changePct = Math.round(((newestPrice - oldestPrice) / oldestPrice) * 100);
+        const days = Math.round((new Date(newest.createdAt).getTime() - new Date(oldest.createdAt).getTime()) / 86400000);
+        findings.push(`• PRICE TREND: ${direction} (${changePct > 0 ? "+" : ""}${changePct}%) over ${days} days. Latest: $${Math.round(newestPrice)}, Earliest: $${Math.round(oldestPrice)}. Use this trend to inform pricing recommendations.`);
+      }
+    }
   }
 
   if (summary.analyzeBotFindings && excludeBot !== "analyzebot")
@@ -745,10 +807,24 @@ function buildContextBlock(summary: EnrichmentSummary, excludeBot?: string, item
     findings.push(`• PhotoBot: ${summary.photoBotFindings}`);
   if (summary.megaBotFindings && excludeBot !== "megabot")
     findings.push(`• MegaBot Expert Panel: ${summary.megaBotFindings}`);
-  if (summary.amazonFindings)
-    findings.push(`• Amazon Market Data: ${summary.amazonFindings}`);
-  if (summary.documentVaultFindings)
+  if (summary.amazonFindings) {
+    // Check Amazon data freshness from EventLog timestamp
+    let amazonAge = "";
+    try {
+      const amazonLog = botEventLogs?.find((l: any) => l.eventType === "RAINFOREST_RESULT");
+      if (amazonLog?.createdAt) {
+        const ageDays = Math.round((Date.now() - new Date(amazonLog.createdAt).getTime()) / 86400000);
+        if (ageDays > 14) amazonAge = ` [🚨 VERY STALE: ${ageDays} days old — recommend re-running analysis for fresh market data]`;
+        else if (ageDays > 7) amazonAge = ` [⚠️ STALE: ${ageDays} days old — prices may have changed]`;
+      }
+    } catch { /* ignore */ }
+    findings.push(`• Amazon Market Data: ${summary.amazonFindings}${amazonAge}`);
+  }
+  if (summary.documentVaultFindings) {
     findings.push(`• Document Vault Intelligence: ${summary.documentVaultFindings}`);
+  } else {
+    findings.push(`• DOCUMENT VAULT: Empty — no documents uploaded. Provenance documents, receipts, certificates, and authentication records would improve AI accuracy and buyer confidence.`);
+  }
 
   // ── SELLER-PROVIDED CONTEXT (Gap 6) ──
   try {
@@ -832,6 +908,29 @@ function buildContextBlock(summary: EnrichmentSummary, excludeBot?: string, item
       }
     }
   } catch { /* shipping data optional */ }
+
+  // ── OFFER HISTORY (buyer demand signal) ──
+  try {
+    if (offers && offers.length > 0) {
+      const activeOffers = offers.filter((o: any) => ["PENDING", "COUNTERED"].includes(o.status));
+      const highestOffer = Math.max(...offers.map((o: any) => o.currentPrice)) / 100;
+      const avgOffer = Math.round(offers.reduce((s: number, o: any) => s + o.currentPrice, 0) / offers.length) / 100;
+      findings.push(`• OFFER HISTORY: ${offers.length} offer(s) received. ${activeOffers.length} active. Highest: $${Math.round(highestOffer)}. Average: $${Math.round(avgOffer)}. This shows real buyer demand — use it to validate pricing.`);
+    }
+  } catch { /* offer data optional */ }
+
+  // ── TRADE PROPOSALS (barter demand signal) ──
+  try {
+    if (tradeLogs && tradeLogs.length > 0) {
+      const proposals = tradeLogs.filter((l: any) => l.eventType === "TRADE_PROPOSED");
+      const responses = tradeLogs.filter((l: any) => l.eventType === "TRADE_RESPONDED");
+      const pendingCount = Math.max(0, proposals.length - responses.length);
+      const totalTradeValue = proposals.reduce((sum: number, l: any) => {
+        try { const d = JSON.parse(l.payload || "{}"); return sum + (d?.totalValue || 0); } catch { return sum; }
+      }, 0);
+      findings.push(`• TRADE PROPOSALS: ${proposals.length} received, ${pendingCount} pending. Total trade value offered: $${Math.round(totalTradeValue)}.${pendingCount > 0 ? " Active trade interest indicates demand." : ""}`);
+    }
+  } catch { /* trade data optional */ }
 
   if (!findings.length) return "";
 

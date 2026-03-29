@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { isDemoMode } from "@/lib/constants/pricing";
+import { sendTradeNotification } from "@/lib/email/send";
+import { tradeAcceptedEmail, tradeDeclinedEmail, tradeCounteredEmail } from "@/lib/email/templates";
 
 export async function POST(req: NextRequest) {
   try {
@@ -39,6 +41,55 @@ export async function POST(req: NextRequest) {
         }),
       },
     });
+
+    // Create counter-proposal event so buyer can see it
+    if (body.action === "COUNTER" && (body.counterItems?.length > 0 || body.counterCash)) {
+      await prisma.eventLog.create({
+        data: {
+          itemId: tradeLog.itemId,
+          eventType: "TRADE_COUNTER_PROPOSED",
+          payload: JSON.stringify({
+            originalTradeId: body.tradeId,
+            counterItems: body.counterItems || [],
+            counterCash: Number(body.counterCash) || 0,
+            counterTotal: (body.counterItems || []).reduce((s: number, i: any) => s + (Number(i.estimatedValue) || 0), 0) + (Number(body.counterCash) || 0),
+            sellerNote: body.sellerNote || null,
+            proposedBy: user.id,
+          }),
+        },
+      });
+    }
+
+    // Create in-app notification for buyer
+    if (proposal.proposerEmail || proposal.proposerId) {
+      const buyerMsg = body.action === "ACCEPT" ? `Your trade proposal was accepted!`
+        : body.action === "DECLINE" ? `Your trade proposal was declined.`
+        : `The seller sent a counter-proposal — check the details.`;
+      await prisma.notification.create({
+        data: {
+          userId: proposal.proposerId || "unknown",
+          title: `Trade ${body.action.toLowerCase()}`,
+          message: buyerMsg,
+          type: "trade",
+          link: `/items/${tradeLog.itemId}`,
+        },
+      }).catch(() => {}); // Non-critical — don't fail the response
+
+      // Send trade email notification to buyer
+      if (proposal.proposerEmail) {
+        try {
+          const itemRecord = await prisma.item.findUnique({ where: { id: tradeLog.itemId }, select: { title: true } });
+          const itemTitle = itemRecord?.title || "your item";
+          if (body.action === "ACCEPT") {
+            await sendTradeNotification(proposal.proposerEmail, `Trade Accepted — ${itemTitle}`, tradeAcceptedEmail(itemTitle, proposal.totalValue || 0));
+          } else if (body.action === "DECLINE") {
+            await sendTradeNotification(proposal.proposerEmail, `Trade Declined — ${itemTitle}`, tradeDeclinedEmail(itemTitle));
+          } else if (body.action === "COUNTER") {
+            await sendTradeNotification(proposal.proposerEmail, `Counter-Proposal — ${itemTitle}`, tradeCounteredEmail(itemTitle, Number(body.counterCash) || 0, body.sellerNote || null));
+          }
+        } catch { /* email is non-critical */ }
+      }
+    }
 
     if (body.action === "ACCEPT") {
       const soldPrice = Math.round(proposal.totalValue || 0);

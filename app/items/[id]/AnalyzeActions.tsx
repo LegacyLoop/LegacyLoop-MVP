@@ -47,12 +47,13 @@ export default function AnalyzeActions({ itemId, hasPhotos, isAnalyzed, megabotU
   const disabled = !hasPhotos;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
+    <div style={{ marginTop: "1.25rem" }}>
       {/* Action buttons row */}
       <div style={{
         display: "flex",
         gap: "0.75rem",
         justifyContent: "center",
+        alignItems: "center",
         flexWrap: "wrap",
       }}>
         {/* Button 1: Analyze with AI */}

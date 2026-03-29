@@ -152,23 +152,32 @@ export default async function ItemPage({ params }: { params: Params }) {
 
 
 
-      {/* ═══ Clean Header ═══ */}
+      {/* ═══ Premium Header Card ═══ */}
+      <div style={{
+        background: "var(--bg-card)",
+        border: "1px solid var(--border-default)",
+        borderRadius: "1rem",
+        padding: "1.5rem",
+        marginBottom: "0.75rem",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+      }}>
       <div style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-start",
-        gap: "1rem",
+        gap: "1.5rem",
         flexWrap: "wrap",
       }}>
         {/* Left: Title + Status + Subtitle */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", flexWrap: "wrap" }}>
             <h1 style={{
-              fontSize: "1.65rem",
+              fontSize: "1.85rem",
               fontWeight: 800,
               color: "var(--text-primary)",
               margin: 0,
-              lineHeight: 1.2,
+              lineHeight: 1.15,
+              letterSpacing: "-0.01em",
             }}>
               {displayTitle}
             </h1>
@@ -180,9 +189,10 @@ export default async function ItemPage({ params }: { params: Params }) {
               fontSize: "0.65rem",
               fontWeight: 700,
               letterSpacing: "0.04em",
-              textTransform: "uppercase",
+              textTransform: "uppercase" as const,
               background: statusStyle.bg,
               color: statusStyle.color,
+              boxShadow: `0 0 8px ${statusStyle.color}25`,
             }}>
               {item.status}
             </span>
@@ -261,8 +271,10 @@ export default async function ItemPage({ params }: { params: Params }) {
               color: "var(--text-secondary)",
               marginTop: "0.6rem",
               margin: "0.6rem 0 0 0",
-              lineHeight: 1.5,
+              lineHeight: 1.6,
               maxWidth: "600px",
+              paddingLeft: "0.75rem",
+              borderLeft: "3px solid rgba(0,188,212,0.25)",
             }}>
               {displayDescription}
             </p>
@@ -279,60 +291,67 @@ export default async function ItemPage({ params }: { params: Params }) {
           ) : null}
         </div>
 
-        {/* Right: Actions */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          flexShrink: 0,
-          paddingTop: "0.25rem",
-        }}>
-          <span style={{
-            padding: "0.2rem 0.55rem",
-            borderRadius: "9999px",
-            fontSize: "0.62rem",
-            fontWeight: 600,
-            background: "var(--ghost-bg)",
-            color: "var(--text-muted)",
-            border: "1px solid var(--border-default)",
-          }}>
-            Tier {user.tier}
-          </span>
-
-          <Link
-            className="btn-ghost"
-            href={`/items/${item.id}/edit`}
-            style={{ padding: "0.35rem 0.85rem", fontSize: "0.78rem" }}
-          >
-            Edit
-          </Link>
-
-          {isPublic && (
-            <a
-              href={`/store/${user.id}/item/${item.id}`}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                padding: "0.35rem 0.85rem",
-                fontSize: "0.72rem",
-                fontWeight: 600,
-                borderRadius: "0.5rem",
-                border: "1px solid var(--accent)",
-                background: "transparent",
-                color: "var(--accent)",
-                textDecoration: "none",
-              }}
-            >
-              View Listing
-            </a>
+        {/* Right: Quick Stats + Actions */}
+        <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "flex-end", gap: "0.75rem", flexShrink: 0 }}>
+          {/* Quick Stats */}
+          {v && (
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", minWidth: "70px" }}>
+                <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Value</div>
+                <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "var(--accent)" }}>${Math.round(v.low || 0)}–${Math.round(v.high || 0)}</div>
+              </div>
+              {v.confidence != null && (
+                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Confidence</div>
+                  <div style={{ fontSize: "0.92rem", fontWeight: 800, color: (v.confidence > 0.7 || v.confidence > 70) ? "#22c55e" : "#f59e0b" }}>{Math.round(v.confidence > 1 ? v.confidence : v.confidence * 100)}%</div>
+                </div>
+              )}
+            </div>
           )}
 
-          <ShareDropdown
-            url={shareUrl}
-            title={displayTitle}
-            description={item.description || "Check out this item on LegacyLoop"}
-          />
+          {/* Action Bar */}
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{
+              padding: "0.2rem 0.55rem", borderRadius: "9999px",
+              fontSize: "0.62rem", fontWeight: 600,
+              background: "var(--ghost-bg)", color: "var(--text-muted)",
+              border: "1px solid var(--border-default)",
+            }}>
+              Tier {user.tier}
+            </span>
+
+            <Link
+              className="btn-ghost"
+              href={`/items/${item.id}/edit`}
+              style={{ padding: "0.35rem 0.85rem", fontSize: "0.78rem" }}
+            >
+              Edit
+            </Link>
+
+            {isPublic && (
+              <a
+                href={`/store/${user.id}/item/${item.id}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  padding: "0.35rem 0.85rem", fontSize: "0.72rem", fontWeight: 600,
+                  borderRadius: "0.5rem", border: "1px solid var(--accent)",
+                  background: "transparent", color: "var(--accent)",
+                  textDecoration: "none",
+                }}
+              >
+                View Listing
+              </a>
+            )}
+
+            <ShareDropdown
+              url={shareUrl}
+              title={displayTitle}
+              description={item.description || "Check out this item on LegacyLoop"}
+            />
+          </div>
         </div>
+      </div>
       </div>
 
       {/* ═══ Photo Display ═══ */}
@@ -355,7 +374,7 @@ export default async function ItemPage({ params }: { params: Params }) {
 
       {/* ═══ Amazon Price Badge (passive — auto-enriched) ═══ */}
       {aiObj && (
-        <div style={{ marginTop: "0.5rem", display: "flex", justifyContent: "center" }}>
+        <div style={{ marginTop: "0.5rem", marginBottom: "0.25rem", display: "flex", justifyContent: "center" }}>
           <AmazonPriceBadge itemId={item.id} />
         </div>
       )}

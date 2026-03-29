@@ -225,6 +225,37 @@ export function ltlQuoteRequestEmail(
   };
 }
 
+// ─── Trade Notification Templates ────────────────────────────────────────
+
+export function tradeAcceptedEmail(itemTitle: string, totalValue: number): string {
+  return wrapper(`
+    <h2 style="color:${TEXT_PRIMARY};font-size:22px;margin:0 0 8px">Trade Accepted! 🎉</h2>
+    <p style="color:${TEXT_SECONDARY};font-size:15px;line-height:1.6;margin:0 0 20px">Your trade proposal for <strong style="color:${TEXT_PRIMARY}">${itemTitle}</strong> (valued at $${Math.round(totalValue)}) has been accepted by the seller.</p>
+    <p style="color:${TEXT_SECONDARY};font-size:14px;line-height:1.5;margin:0 0 24px">Next steps: coordinate with the seller to arrange the exchange. Check your messages for details.</p>
+    ${ctaButton("View Trade Details", `${APP_URL}/messages`)}
+  `);
+}
+
+export function tradeDeclinedEmail(itemTitle: string): string {
+  return wrapper(`
+    <h2 style="color:${TEXT_PRIMARY};font-size:22px;margin:0 0 8px">Trade Proposal Declined</h2>
+    <p style="color:${TEXT_SECONDARY};font-size:15px;line-height:1.6;margin:0 0 20px">Your trade proposal for <strong style="color:${TEXT_PRIMARY}">${itemTitle}</strong> was declined by the seller.</p>
+    <p style="color:${TEXT_SECONDARY};font-size:14px;line-height:1.5;margin:0 0 24px">You can submit a new offer or browse other items on LegacyLoop.</p>
+    ${ctaButton("Browse Items", `${APP_URL}/search`)}
+  `);
+}
+
+export function tradeCounteredEmail(itemTitle: string, counterCash: number, counterNote: string | null): string {
+  return wrapper(`
+    <h2 style="color:${TEXT_PRIMARY};font-size:22px;margin:0 0 8px">Counter-Proposal Received 🔄</h2>
+    <p style="color:${TEXT_SECONDARY};font-size:15px;line-height:1.6;margin:0 0 12px">The seller responded to your trade proposal for <strong style="color:${TEXT_PRIMARY}">${itemTitle}</strong> with a counter-offer.</p>
+    ${counterCash > 0 ? `<p style="color:${ACCENT};font-size:16px;font-weight:700;margin:0 0 12px">Counter: $${Math.round(counterCash)} cash requested</p>` : ""}
+    ${counterNote ? `<p style="color:${TEXT_MUTED};font-size:14px;font-style:italic;margin:0 0 20px">"${counterNote}"</p>` : ""}
+    <p style="color:${TEXT_SECONDARY};font-size:14px;line-height:1.5;margin:0 0 24px">Review the counter-proposal and respond.</p>
+    ${ctaButton("View Counter-Proposal", `${APP_URL}/messages`)}
+  `);
+}
+
 // ─── Exports ──────────────────────────────────────────────────────────────
 
 export { wrapper as emailWrapper, ctaButton, ACCENT, APP_URL, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, BG_DARK, BG_CARD, BORDER };

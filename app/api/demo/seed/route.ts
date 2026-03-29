@@ -7,6 +7,7 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { DIGITAL_TIERS, TIER_NUMBER_TO_KEY } from "@/lib/pricing/constants";
+import { generateBuyerToken, getOfferExpiry } from "@/lib/offers/expiry";
 
 const PHOTOS = {
   laptop:    "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=800&q=80",
@@ -1261,6 +1262,67 @@ export async function POST() {
     // Pending:   $55.20 ✓
     // Total earned (non-refunded): $230.00 + $55.20 = $285.20 ✓
     // Total commissions (non-refunded): $6.80 + $9.60 + $3.60 + $4.80 = $24.80 ✓
+  }
+
+  // ── TRADE + OFFER DEMO DATA ──
+  const tradeItems = await prisma.item.findMany({ where: { userId: user.id }, select: { id: true, title: true } });
+  const tradeTeaItem = tradeItems.find((i) => i.title?.includes("Tea"));
+  if (tradeTeaItem) {
+    await prisma.eventLog.create({
+      data: { itemId: tradeTeaItem.id, eventType: "TRADE_SETTINGS_UPDATED", payload: JSON.stringify({ tradeEnabled: true, minCashAdded: null, updatedBy: user.id }) },
+    }).catch(() => {});
+    await prisma.eventLog.create({
+      data: { itemId: tradeTeaItem.id, eventType: "TRADE_PROPOSED", payload: JSON.stringify({
+        proposerId: "demo-michael", proposerName: "Michael from Portland", proposerEmail: "michael@example.com",
+        proposedItems: [{ title: "Vintage Copper Kettle", estimatedValue: 85, condition: "Good" }, { title: "Antique Tea Strainer", estimatedValue: 45, condition: "Excellent" }],
+        cashAdded: 50, totalValue: 180, buyerNote: "These are genuine vintage pieces — happy to send photos!", status: "PENDING",
+      }) },
+    }).catch(() => {});
+  }
+
+  // Enable trades on Rolex
+  const tradeRolexItem = tradeItems.find((i) => i.title?.includes("Rolex"));
+  if (tradeRolexItem) {
+    await prisma.eventLog.create({
+      data: { itemId: tradeRolexItem.id, eventType: "TRADE_SETTINGS_UPDATED", payload: JSON.stringify({ tradeEnabled: true, minCashAdded: null, updatedBy: user.id }) },
+    }).catch(() => {});
+  }
+
+  // ── DEMO OFFER RECORDS ──
+  if (tradeTeaItem) {
+    const existingOffer1 = await prisma.offer.findFirst({ where: { itemId: tradeTeaItem.id, buyerEmail: "sarah.chen@example.com" } });
+    if (!existingOffer1) {
+      const offer1 = await prisma.offer.create({
+        data: {
+          itemId: tradeTeaItem.id, sellerId: user.id,
+          buyerName: "Sarah Chen", buyerEmail: "sarah.chen@example.com",
+          buyerToken: generateBuyerToken(), status: "PENDING",
+          currentPrice: 15000, originalPrice: 15000, round: 1,
+          expiresAt: getOfferExpiry(36),
+        },
+      }).catch(() => null);
+      if (offer1) {
+        await prisma.offerEvent.create({ data: { offerId: offer1.id, action: "SUBMITTED", actorType: "BUYER", price: 15000, message: "Interested in your tea service!" } }).catch(() => {});
+      }
+    }
+  }
+  if (tradeRolexItem) {
+    const existingOffer2 = await prisma.offer.findFirst({ where: { itemId: tradeRolexItem.id, buyerEmail: "david.b@example.com" } });
+    if (!existingOffer2) {
+      const offer2 = await prisma.offer.create({
+        data: {
+          itemId: tradeRolexItem.id, sellerId: user.id,
+          buyerName: "David Brooks", buyerEmail: "david.b@example.com",
+          buyerToken: generateBuyerToken(), status: "COUNTERED",
+          currentPrice: 420000, originalPrice: 380000, round: 2,
+          expiresAt: getOfferExpiry(12),
+        },
+      }).catch(() => null);
+      if (offer2) {
+        await prisma.offerEvent.create({ data: { offerId: offer2.id, action: "SUBMITTED", actorType: "BUYER", price: 380000, message: "Would you take $3,800?" } }).catch(() => {});
+        await prisma.offerEvent.create({ data: { offerId: offer2.id, action: "COUNTERED", actorType: "SELLER", price: 420000, message: "I can do $4,200 — firm." } }).catch(() => {});
+      }
+    }
   }
 
   return Response.json({

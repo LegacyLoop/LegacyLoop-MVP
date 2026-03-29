@@ -142,31 +142,19 @@ export async function POST(
       }
     }
 
-    // Fetch PriceBot + BuyerBot + Amazon results if available
-    const [pricebotLog, buyerbotLog, rainforestLog] = await Promise.all([
-      prisma.eventLog.findFirst({ where: { itemId, eventType: "PRICEBOT_RESULT" }, orderBy: { createdAt: "desc" } }),
-      prisma.eventLog.findFirst({ where: { itemId, eventType: "BUYERBOT_RESULT" }, orderBy: { createdAt: "desc" } }),
-      prisma.eventLog.findFirst({ where: { itemId, eventType: "RAINFOREST_RESULT" }, orderBy: { createdAt: "desc" }, select: { payload: true } }),
-    ]);
-    const pricebotData = safeJson(pricebotLog?.payload);
-    const buyerbotData = safeJson(buyerbotLog?.payload);
-    const amazonData = safeJson(rainforestLog?.payload);
-
-    const bestPlatform = pricebotData?.platform_pricing?.best_platform || "";
-    const targetBuyers = buyerbotData?.buyer_profiles?.slice(0, 3).map((b: any) => b.profile_name).join(", ") || "";
-    const valueDrivers = pricebotData?.price_factors?.value_adders?.slice(0, 3).map((v: any) => v.factor).join(", ") || "";
-    const searchKeywords = buyerbotData?.platform_opportunities?.slice(0, 2).flatMap((p: any) => p.search_terms_buyers_use || []).slice(0, 6).join(", ") || "";
-
-    // Amazon enrichment context
-    let amazonContext = "";
-    if (amazonData) {
-      const topProducts = (amazonData.products || amazonData.topProducts || []).slice(0, 3);
-      amazonContext = `\nAMAZON CONTEXT: New retail avg $${amazonData.priceAvg ?? amazonData.price_avg ?? "?"}, ${amazonData.resultCount ?? amazonData.result_count ?? 0} results. ${topProducts.map((p: any) => p.title || "").filter(Boolean).slice(0, 2).join(" | ")}. Use Amazon product titles/features as writing reference for professional descriptions.`;
-    }
-
-    // ── CROSS-BOT ENRICHMENT ──
+    // ── CROSS-BOT ENRICHMENT (single source of truth — replaces direct EventLog fetches) ──
     const enrichment = await getItemEnrichmentContext(itemId, "listbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
+
+    // Extract key values from enrichment summary (consolidated from PriceBot, BuyerBot, Amazon)
+    const priceBotFindings = enrichment?.summary?.priceBotFindings || "";
+    const buyerBotFindings = enrichment?.summary?.buyerBotFindings || "";
+    const amazonFindings = enrichment?.summary?.amazonFindings || "";
+    const bestPlatform = priceBotFindings.match(/Best Platform:\s*([^·\n]+)/)?.[1]?.trim() || "";
+    const targetBuyers = buyerBotFindings.match(/\d+\s*leads?\b/i)?.[0] || "";
+    const valueDrivers = "";
+    const searchKeywords = "";
+    const amazonContext = amazonFindings ? `\nAMAZON CONTEXT: ${amazonFindings}` : "";
 
     // ── LISTBOT PROMPT ──
     const systemPrompt = enrichmentPrefix + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.

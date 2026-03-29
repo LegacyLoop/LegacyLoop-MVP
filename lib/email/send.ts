@@ -56,3 +56,8 @@ export async function sendEmail(msg: EmailMessage): Promise<boolean> {
     return false;
   }
 }
+
+/** Convenience wrapper for trade notification emails */
+export async function sendTradeNotification(to: string, subject: string, html: string): Promise<boolean> {
+  return sendEmail({ to, subject, html });
+}

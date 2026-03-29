@@ -241,6 +241,31 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     data: { megabotUsed: true },
   });
 
+  // Post-run alignment check: compare MegaBot consensus to PriceBot estimate
+  if (botType === "pricebot" || botType === "pricing") {
+    try {
+      const priceBotLog = await prisma.eventLog.findFirst({
+        where: { itemId, eventType: "PRICEBOT_RESULT" },
+        orderBy: { createdAt: "desc" },
+        select: { payload: true },
+      });
+      if (priceBotLog?.payload) {
+        const pbData = JSON.parse(priceBotLog.payload);
+        const pbMid = pbData?.revised_estimate?.mid || pbData?.price_overview?.mid || ((pbData?.revised_estimate?.low || 0) + (pbData?.revised_estimate?.high || 0)) / 2;
+        const mbMid = result.consensus?.revised_mid || result.consensus?.estimated_value_mid || 0;
+        if (pbMid > 0 && mbMid > 0) {
+          const deviationPct = Math.round(Math.abs(mbMid - pbMid) / pbMid * 100);
+          console.log(`[MegaBot Alignment] PriceBot: $${Math.round(pbMid)} vs MegaBot: $${Math.round(mbMid)} — ${deviationPct}% deviation${deviationPct > 20 ? " ⚠️ SIGNIFICANT" : " ✓"}`);
+          if (deviationPct > 15) {
+            await prisma.eventLog.create({
+              data: { itemId, eventType: "MEGABOT_ALIGNMENT_FLAG", payload: JSON.stringify({ priceBotMid: Math.round(pbMid), megaBotMid: Math.round(mbMid), deviationPct, botType, flagged: deviationPct > 20 }) },
+            }).catch(() => {});
+          }
+        }
+      }
+    } catch { /* non-critical alignment check */ }
+  }
+
   // TEMPORARY DEBUG: log what formatAgentForClient produces for each agent
   const clientProviders = [
     result.agents.openai ? { provider: "openai", ...formatAgentForClient(result.agents.openai) } : null,

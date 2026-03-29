@@ -133,8 +133,30 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "reconbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
+    // ── AMAZON MARKET CONTEXT ──
+    let amazonContext = "";
+    try {
+      const amazonLog = await prisma.eventLog.findFirst({
+        where: { itemId, eventType: "RAINFOREST_RESULT" },
+        orderBy: { createdAt: "desc" },
+        select: { payload: true, createdAt: true },
+      });
+      if (amazonLog?.payload) {
+        const ad = JSON.parse(amazonLog.payload);
+        const ageDays = Math.round((Date.now() - new Date(amazonLog.createdAt).getTime()) / 86400000);
+        const staleNote = ageDays > 7 ? ` (${ageDays} days old — may be stale)` : "";
+        if (ad.averagePrice || ad.priceRange || ad.topResult) {
+          amazonContext = `\n\nAMAZON MARKET DATA${staleNote}:\n`;
+          if (ad.priceRange) amazonContext += `Price range: $${ad.priceRange.low}–$${ad.priceRange.high} (avg $${Math.round(ad.priceRange.avg || (ad.priceRange.low + ad.priceRange.high) / 2)})\n`;
+          else if (ad.averagePrice) amazonContext += `Average price: $${ad.averagePrice}\n`;
+          if (ad.resultCount) amazonContext += `Listings found: ${ad.resultCount}\n`;
+          if (ad.topResult?.title) amazonContext += `Top result: ${ad.topResult.title} at $${ad.topResult.price || "N/A"}\n`;
+        }
+      }
+    } catch { /* non-critical */ }
+
     // ── RECONBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + `You are a world-class competitive intelligence analyst specializing in resale markets. You monitor every marketplace continuously — eBay, Facebook Marketplace, Craigslist, Mercari, OfferUp, Etsy, Ruby Lane, auction houses, and local shops. Your job is to provide a comprehensive competitive scan.
+    const systemPrompt = enrichmentPrefix + amazonContext + `You are a world-class competitive intelligence analyst specializing in resale markets. You monitor every marketplace continuously — eBay, Facebook Marketplace, Craigslist, Mercari, OfferUp, Etsy, Ruby Lane, auction houses, and local shops. Your job is to provide a comprehensive competitive scan.
 
 You are scanning for: ${itemName} — ${category} — ${material} — ${era} — ${condLabel} (${condScore}/10)
 Seller location: ZIP ${sellerZip} (Maine, USA)

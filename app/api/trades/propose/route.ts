@@ -16,8 +16,28 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const item = await prisma.item.findUnique({ where: { id: body.itemId }, select: { userId: true, title: true } });
+    const item = await prisma.item.findUnique({ where: { id: body.itemId }, select: { userId: true, title: true, status: true } });
     if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
+
+    const TRADE_ALLOWED = ["LISTED", "INTERESTED", "READY", "ANALYZED"];
+    if (!TRADE_ALLOWED.includes(item.status)) {
+      return NextResponse.json({ error: `Trades are not available for items with status "${item.status}". Item must be listed or ready.` }, { status: 400 });
+    }
+
+    // Check minCashAdded from seller trade settings
+    const settingsLog = await prisma.eventLog.findFirst({
+      where: { itemId: body.itemId, eventType: "TRADE_SETTINGS_UPDATED" },
+      orderBy: { createdAt: "desc" },
+    });
+    if (settingsLog) {
+      try {
+        const settings = JSON.parse(settingsLog.payload || "{}");
+        const minCash = Number(settings.minCashAdded) || 0;
+        if (minCash > 0 && (Number(body.cashAdded) || 0) < minCash) {
+          return NextResponse.json({ error: `This seller requires at least $${minCash} cash added to any trade.`, minCashRequired: minCash }, { status: 400 });
+        }
+      } catch { /* settings parse error — proceed */ }
+    }
 
     const totalValue = body.proposedItems.reduce((sum: number, i: any) => sum + Number(i.estimatedValue), 0) + (Number(body.cashAdded) || 0);
 

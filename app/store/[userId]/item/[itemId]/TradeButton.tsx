@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import TradeProposalModal from "@/app/components/TradeProposalModal";
 
-export default function TradeButton({ itemId, itemTitle }: { itemId: string; itemTitle: string }) {
+export default function TradeButton({ itemId, itemTitle, itemStatus }: { itemId: string; itemTitle: string; itemStatus?: string }) {
   const [enabled, setEnabled] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
@@ -12,7 +12,8 @@ export default function TradeButton({ itemId, itemTitle }: { itemId: string; ite
     }).catch(() => {});
   }, [itemId]);
 
-  if (!enabled) return null;
+  const TRADE_ALLOWED = ["LISTED", "INTERESTED", "READY", "ANALYZED"];
+  if (!enabled || (itemStatus && !TRADE_ALLOWED.includes(itemStatus))) return null;
 
   return (
     <>
