@@ -99,18 +99,16 @@ export function detectAntiqueFromAi(ai: AiAnalysis): AntiqueResult {
     .join(" ")
     .toLowerCase();
 
-  // ═══ STEP 1: Check AI explicit antique flag (highest trust) ═══
-  // If AI explicitly says NOT antique, trust it — return early
-  if (ai.is_antique === false) {
-    return {
-      isAntique: false,
-      reason: "AI analysis determined this is not an antique or collectible.",
-      auctionLow: null,
-      auctionHigh: null,
-      markers: [],
-      score: 0,
-    };
+  // ═══ STEP 1: AI flag as bonus points (NOT terminator) ═══
+  // The 78-signal keyword/brand/material scoring ALWAYS runs.
+  // AI flag contributes to score but never short-circuits detection.
+  let aiBonus = 0;
+  if (ai.is_antique === true) {
+    aiBonus = 10; // Strong AI signal — add 10 points
+  } else if (ai.is_antique === false) {
+    aiBonus = -3; // AI says no, but still run scoring — AI can be wrong
   }
+  // aiBonus is applied in STEP 3 below
 
   // ═══ STEP 2: Negative signals — modern/electronic items ═══
   let negativeScore = 0;
@@ -134,9 +132,9 @@ export function detectAntiqueFromAi(ai: AiAnalysis): AntiqueResult {
   let score = 0;
   const matchedMarkers: string[] = [];
 
-  // AI explicit antique flag = strongest signal (+10)
+  // AI flag applied as bonus points (from STEP 1)
+  score += aiBonus;
   if (ai.is_antique === true) {
-    score += 10;
     matchedMarkers.push("AI: Antique Detected");
   }
 

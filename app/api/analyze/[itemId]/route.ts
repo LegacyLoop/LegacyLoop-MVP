@@ -305,20 +305,81 @@ export async function POST(
     console.error("Market comp save error (non-fatal):", compErr);
   }
 
+  // ── POST-ANALYSIS VALIDATION ──
+  // 1. Age vs is_antique consistency
+  if (analysis.estimated_age_years != null && analysis.estimated_age_years >= 50 && analysis.is_antique !== true) {
+    console.warn(`[Validation] Age=${analysis.estimated_age_years} years but is_antique=${analysis.is_antique}. Forcing is_antique=true.`);
+    analysis.is_antique = true;
+    if (!Array.isArray(analysis.antique_markers)) (analysis as any).antique_markers = [];
+    (analysis as any).antique_markers.push(`Age-based: estimated ${analysis.estimated_age_years} years old`);
+  }
+
+  // 2. Antique markers present but is_antique=false
+  if (Array.isArray(analysis.antique_markers) && analysis.antique_markers.length >= 3 && analysis.is_antique !== true) {
+    console.warn(`[Validation] ${analysis.antique_markers.length} antique markers but is_antique=${analysis.is_antique}. Forcing is_antique=true.`);
+    analysis.is_antique = true;
+  }
+
+  // 3. is_collectible fallback — detect from category/keywords if AI didn't provide
+  if ((analysis as any).is_collectible == null) {
+    const collectibleCategories = /trading card|sports card|coin|stamp|comic|vinyl|record|sneaker|watch|figurine|toy|game|memorabilia/i;
+    if (collectibleCategories.test(analysis.category || "") || collectibleCategories.test(analysis.item_name || "")) {
+      (analysis as any).is_collectible = true;
+    }
+  }
+
+  // 4. Condition score sanity (redundant safety — ai.ts also clamps, but protects against bypasses)
+  if (analysis.condition_score != null) analysis.condition_score = Math.max(1, Math.min(10, Math.round(analysis.condition_score)));
+  if (analysis.condition_cosmetic != null) analysis.condition_cosmetic = Math.max(1, Math.min(10, Math.round(analysis.condition_cosmetic)));
+  if (analysis.condition_functional != null) analysis.condition_functional = Math.max(1, Math.min(10, Math.round(analysis.condition_functional)));
+
+  // 5. Price range sanity
+  if (analysis.estimated_value_low != null && analysis.estimated_value_high != null) {
+    if (analysis.estimated_value_low > analysis.estimated_value_high) {
+      const temp = analysis.estimated_value_low;
+      analysis.estimated_value_low = analysis.estimated_value_high;
+      analysis.estimated_value_high = temp;
+    }
+    if (analysis.estimated_value_mid == null) {
+      analysis.estimated_value_mid = Math.round((analysis.estimated_value_low + analysis.estimated_value_high) / 2);
+    }
+  }
+
   // 5) Enhanced antique detection
   let antiqueResult: any = { isAntique: false, reason: "Detection skipped", markers: [], score: 0, auctionLow: null, auctionHigh: null };
   try {
     antiqueResult = detectAntiqueFromAi(analysis);
-
-    // Boost score if AI directly detected antique
-    if (analysis.is_antique === true) {
-      antiqueResult.score = Math.min(100, (antiqueResult.score ?? 0) + 5);
-      if (!antiqueResult.isAntique && antiqueResult.score >= 3) {
-        antiqueResult.isAntique = true;
-      }
-    }
   } catch (antiqueErr: any) {
     console.error("Antique detection error (non-fatal):", antiqueErr);
+  }
+
+  // ── ANTIQUE PRESERVATION ──
+  // If prior analysis confirmed antique AND new analysis is ambiguous, preserve prior
+  let priorAntiqueCheck: { isAntique: boolean; score: number | null; reason: string | null } | null = null;
+  try {
+    priorAntiqueCheck = await prisma.antiqueCheck.findUnique({
+      where: { itemId: item.id },
+      select: { isAntique: true, reason: true },
+    }) as any;
+    // Extract score from prior reason JSON if stored
+    if (priorAntiqueCheck?.reason) {
+      try {
+        const parsed = JSON.parse(priorAntiqueCheck.reason);
+        (priorAntiqueCheck as any).score = parsed.score ?? null;
+      } catch { /* reason is plain text, no score */ }
+    }
+  } catch { /* non-critical */ }
+
+  if (priorAntiqueCheck?.isAntique === true && !antiqueResult.isAntique) {
+    if ((antiqueResult.score ?? 0) >= 3) {
+      console.log(`[Antique Preservation] Prior=true, new score=${antiqueResult.score}. Preserving antique status.`);
+      antiqueResult.isAntique = true;
+      antiqueResult.reason = `Prior analysis confirmed antique (preserved). New scan score: ${antiqueResult.score}. ${antiqueResult.reason || ""}`;
+      antiqueResult._preserved = true;
+    } else {
+      console.warn(`[Antique Preservation] Prior=true, new score=${antiqueResult.score}. ALLOWING downgrade — low confidence.`);
+      antiqueResult._downgraded = true;
+    }
   }
 
   const reasonWithMeta = antiqueResult.isAntique
@@ -344,6 +405,61 @@ export async function POST(
     });
   } catch (antiqueDbErr: any) {
     console.error("Antique check save error (non-fatal):", antiqueDbErr);
+  }
+
+  // ── AUDIT TRAIL: Log every antique/collectible detection decision ──
+  await prisma.eventLog.create({
+    data: {
+      itemId: item.id,
+      eventType: "ANTIQUE_DETECTION",
+      payload: JSON.stringify({
+        aiFlag: analysis.is_antique,
+        aiAge: analysis.estimated_age_years,
+        aiMarkers: analysis.antique_markers,
+        detectorResult: antiqueResult.isAntique,
+        detectorScore: antiqueResult.score,
+        detectorMarkers: antiqueResult.markers,
+        preserved: antiqueResult._preserved || false,
+        downgraded: antiqueResult._downgraded || false,
+        priorWasAntique: priorAntiqueCheck?.isAntique || false,
+        auctionLow: antiqueResult.auctionLow,
+        auctionHigh: antiqueResult.auctionHigh,
+      }),
+    },
+  }).catch(() => {});
+
+  // Collectible detection audit
+  if ((analysis as any).is_collectible != null) {
+    await prisma.eventLog.create({
+      data: {
+        itemId: item.id,
+        eventType: "COLLECTIBLE_DETECTION",
+        payload: JSON.stringify({
+          aiFlag: (analysis as any).is_collectible,
+          category: analysis.category,
+          subcategory: analysis.subcategory,
+        }),
+      },
+    }).catch(() => {});
+  }
+
+  // ── Collectible detection (server-side storage) ──
+  let collectibleResult = { isCollectible: false, category: null as string | null, confidence: 0, signals: [] as string[] };
+  try {
+    const { detectCollectible } = await import("@/lib/collectible-detect");
+    collectibleResult = detectCollectible(analysis);
+  } catch (e) {
+    console.error("Collectible detection error (non-fatal):", e);
+  }
+
+  if (collectibleResult.isCollectible) {
+    await prisma.eventLog.create({
+      data: {
+        itemId: item.id,
+        eventType: "COLLECTIBLE_DETECTED",
+        payload: JSON.stringify(collectibleResult),
+      },
+    }).catch(() => {});
   }
 
   // 6) Auto-fill blanks + set status to ANALYZED

@@ -76,6 +76,9 @@ const ANALYSIS_SCHEMA = {
     appraisal_recommended: { type: ["boolean", "null"], description: "Should the seller get a professional appraisal? true if item may have significant hidden value. null if not applicable." },
     potential_value_if_authenticated: { type: ["number", "null"], description: "If professionally appraised/authenticated, estimated high-end value in USD. null if appraisal not relevant." },
 
+    // ── Collectible Detection ────────────────────────────────────────────
+    is_collectible: { type: ["boolean", "null"], description: "Is this item a collectible (trading cards, sports cards, coins, stamps, comics, vinyl records, sneakers, watches, figurines, vintage toys, video games, memorabilia)? true if it would be graded by PSA/BGS/CGC/WATA or tracked on StockX/TCGPlayer/Discogs. null if unclear." },
+
     // ── Listing Suggestions ──────────────────────────────────────────────
     recommended_title: { type: ["string", "null"], description: "Optimized listing title for eBay/Facebook Marketplace (max 80 chars, include key searchable terms). null if unable." },
     recommended_description: { type: ["string", "null"], description: "2-3 sentence listing description highlighting key selling points. null if unable." },
@@ -97,6 +100,10 @@ const ANALYSIS_SCHEMA = {
     vehicle_model: { type: ["string", "null"], description: "If this is a vehicle, the model name (e.g. 'F-150', 'Camry'). null if not a vehicle." },
     vehicle_mileage: { type: ["string", "null"], description: "If visible on odometer, the mileage reading. null if not visible or not a vehicle." },
     vin_visible: { type: ["boolean", "null"], description: "Whether a VIN number is visible in any photo. null if not a vehicle." },
+    vehicle_transmission: { type: ["string", "null"], description: "Transmission type if vehicle: Automatic, Manual, CVT, Dual-Clutch. null if not a vehicle or not visible." },
+    vehicle_fuel_type: { type: ["string", "null"], description: "Fuel type if vehicle: Gasoline, Diesel, Electric, Hybrid, Flex-Fuel. null if not a vehicle." },
+    vehicle_engine: { type: ["string", "null"], description: "Engine description if vehicle: e.g. '5.7L V8', '2.0L Turbo 4-cyl', 'Electric Motor'. null if not a vehicle." },
+    vehicle_drivetrain: { type: ["string", "null"], description: "Drivetrain if vehicle: FWD, RWD, AWD, 4WD. null if not a vehicle." },
 
     // ── Shipping & Weight ────────────────────────────────────────────────
     weight_estimate_lbs: { type: ["number", "null"], description: "Estimated weight in pounds. Be realistic: a guitar pedal weighs 0.5-1.5 lbs, a wooden rocking chair weighs 20-30 lbs, a cast iron skillet weighs 5-8 lbs. null if cannot estimate." },
@@ -125,7 +132,9 @@ const ANALYSIS_SCHEMA = {
     "recommended_title", "recommended_description", "best_platforms",
     "photo_quality_score", "photo_improvement_tips",
     "summary", "keywords", "notes", "confidence",
+    "is_collectible",
     "vehicle_year", "vehicle_make", "vehicle_model", "vehicle_mileage", "vin_visible",
+    "vehicle_transmission", "vehicle_fuel_type", "vehicle_engine", "vehicle_drivetrain",
     "weight_estimate_lbs", "shipping_difficulty", "shipping_notes",
     "regional_best_city", "regional_best_state", "regional_best_price_low", "regional_best_price_high",
     "regional_best_why", "regional_local_demand", "regional_local_reasoning", "regional_ship_or_local",
@@ -259,10 +268,36 @@ SECTION 3C — WEIGHT & SHIPPING:
 - Rate shipping difficulty: Easy (small/light), Moderate (needs padding), Difficult (large/fragile), Freight only.
 - Give specific packing advice for THIS item (box size, materials, fragility concerns).
 
-SECTION 4 — ANTIQUE DETECTION:
-- is_antique: true if the item is likely 50+ years old.
-- List specific evidence in antique_markers (construction methods, materials, wear patterns, style indicators).
-- Recommend appraisal only if the item may have significant hidden value (rare maker, valuable material, etc.).
+SECTION 4 — ANTIQUE & VINTAGE DETECTION (BE AGGRESSIVE):
+- is_antique: true if the item is likely 50+ years old OR shows evidence of pre-1975 hand-craftsmanship, vintage construction, or period-specific materials.
+- BE AGGRESSIVE: When in doubt, flag as antique. False positives are better than missed antiques — a missed antique costs the seller hundreds or thousands in underpricing.
+
+CONSTRUCTION METHODS THAT ALWAYS INDICATE ANTIQUE:
+• Dovetail joints in drawers (hand-cut = pre-1870, machine-cut = 1870-1950)
+• Mortise-and-tenon joinery (visible on furniture edges, chairs, tables)
+• Hand-forged hardware (irregular shape, visible hammer marks, uneven patina)
+• Square-cut nails or rose-head nails (pre-1900)
+• Hand-turned spindles or legs (slight irregularities, tool marks)
+• Hand-carved decorative elements (chisel marks, slight asymmetry)
+• Pegged/pinned joints (wooden dowels instead of screws)
+• Hand-planed surfaces (subtle scalloping visible in raking light)
+
+MATERIALS THAT INDICATE AGE:
+• Solid hardwoods with no plywood/MDF (oak, walnut, mahogany, rosewood, cherry)
+• Sterling silver or coin silver (hallmarks, tarnish patterns)
+• Hand-blown or art glass (pontil marks, bubbles, slight irregularities)
+• Bakelite, celluloid, or early plastics (pre-1960)
+• Cast iron with gate marks (pre-1900 casting methods)
+• Milk paint, shellac, or early lacquer finishes
+• Hand-woven textiles (silk, wool with natural dyes)
+
+ERA PHRASES TO CATCH:
+If you see ANY of these in the item or its context, flag is_antique=true:
+Victorian, Edwardian, Art Nouveau, Art Deco, Arts & Crafts, Mission, Colonial, Federal, Empire, Chippendale, Queen Anne, Sheraton, Hepplewhite, Georgian, Regency, Mid-Century Modern (if pre-1970), Primitive, Early American, Depression Era, Pre-War, Antebellum
+
+- List ALL evidence in antique_markers[] array — be specific about what you see.
+- Recommend appraisal if the item may have significant hidden value (rare maker, valuable material, museum quality, etc.).
+- estimated_age_years: Be as precise as possible. If you see dovetail joints + square nails, that's 1800-1880. If you see machine dovetails + round nails, that's 1880-1950.
 
 SECTION 5 — LISTING SUGGESTIONS:
 - recommended_title: optimized for search (max 80 chars), include key terms buyers actually search for.
