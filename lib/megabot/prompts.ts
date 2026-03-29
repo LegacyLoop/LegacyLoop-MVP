@@ -526,6 +526,9 @@ Return a JSON object with ALL of: price_validation (agrees_with_estimate, revise
 IMPORTANT: Be SPECIFIC with comparables. eBay fees ~13.25%, FB Marketplace 0% local / ~6% shipped, Etsy ~6.5%, Mercari ~10%.
 Seller in ZIP ${ctx.sellerZip}. ${ctx.isAntique ? "This IS an antique: include auction houses, specialty dealers." : ""}
 Pricing rationale: "${ctx.pricingRationale || "none"}"
+${ctx.dimensionsEstimate ? `Dimensions: ${ctx.dimensionsEstimate}` : ""}
+${ctx.weightEstimateLbs ? `Weight: ${ctx.weightEstimateLbs} lbs` : ""}
+${ctx.shippingDifficulty ? `Shipping difficulty: ${ctx.shippingDifficulty}` : ""}
 Provide 5-12 comparable sales. All prices USD. Return ONLY valid JSON.`;
 }
 
@@ -538,6 +541,9 @@ Location: ZIP ${ctx.sellerZip} (Maine, USA)
 Value: $${ctx.estimatedLow} — $${ctx.estimatedHigh} (mid: $${ctx.estimatedMid})
 Era: ${ctx.era || "Unknown"}, Material: ${ctx.material || "Unknown"}
 Keywords: ${ctx.keywords || "none"}
+${ctx.bestPlatforms?.length ? `Recommended platforms: ${ctx.bestPlatforms.join(", ")}` : ""}
+${ctx.recommendedTitle ? `Suggested title: ${ctx.recommendedTitle}` : ""}
+${ctx.countryOfOrigin ? `Origin: ${ctx.countryOfOrigin}` : ""}
 
 Return JSON with: buyer_profiles[] (6-12 profiles: profile_name, buyer_type, motivation, price_sensitivity, likelihood_to_buy, estimated_offer_range, platforms_active_on[], best_approach), platform_opportunities[] (5-10: platform, opportunity_level, estimated_buyers, avg_sale_price_here, search_terms_buyers_use[], groups_or_communities[], best_time_to_post), outreach_strategies[] (3-6: strategy_name, channel, message_template, expected_response_rate, effort_level), local_opportunities (antique_shops_nearby, flea_markets, consignment_options), hot_leads[] (3-8: lead_description, evidence, urgency, how_to_reach, estimated_price_theyd_pay), competitive_landscape (similar_items_listed, price_range_of_competitors, your_advantage, differentiation_tip), timing_advice (best_day_to_list, seasonal_peak, urgency_recommendation), executive_summary (4-6 sentences for senior).
 
@@ -555,6 +561,10 @@ Material: ${ctx.material || "Unknown"}, Era: ${ctx.era || "Unknown"}, Style: ${c
 Brand/Maker: ${ctx.brand || ctx.maker || "Unknown"}
 Location: ZIP ${ctx.sellerZip}, Price: $${ctx.estimatedMid} (range: $${ctx.estimatedLow} — $${ctx.estimatedHigh})
 Photos: ${ctx.photoCount || 1} uploaded
+${ctx.bestPlatforms?.length ? `Best platforms: ${ctx.bestPlatforms.join(", ")}` : ""}
+${ctx.recommendedTitle ? `AI-suggested title: ${ctx.recommendedTitle}` : ""}
+${ctx.shippingDifficulty ? `Shipping profile: ${ctx.shippingDifficulty}` : ""}
+${ctx.dimensionsEstimate ? `Dimensions: ${ctx.dimensionsEstimate}` : ""}
 
 Return JSON with: listings (ebay{title max 80ch, description_html, starting_price, buy_it_now_price, best_offer_enabled, minimum_offer, seo_keywords[]}, facebook_marketplace{title, description, price, tags[]}, facebook_groups{post_text, suggested_groups[], hashtags[]}, instagram{caption, hashtags[30], reel_concept}, tiktok{video_concept, caption, hook_line, trend_tie_in}, etsy{title max 140ch, description, tags[13], price}, craigslist{title, body, price}, mercari{title max 40ch, description, price}, offerup{title, description, price}, poshmark{title, description, price}), cross_platform_strategy (posting_order[], price_differentiation, cross_promotion), photo_strategy (hero_image, photos_needed[], editing_tips[]), seo_master (primary_keywords[], long_tail_keywords[], trending_keywords[]), pricing_strategy_per_platform (highest_price_platform, negotiation_platforms), executive_summary (4-6 sentences).
 
@@ -567,6 +577,8 @@ export function getReconBotPrompt(ctx: PromptContext): string {
 
 Scanning for: ${ctx.itemName} — ${ctx.category} — ${ctx.material || "Unknown"} — ${ctx.era || "Unknown"} — ${ctx.conditionLabel} (${ctx.conditionScore}/10)
 Location: ZIP ${ctx.sellerZip} (Maine, USA)
+${ctx.countryOfOrigin ? `Origin: ${ctx.countryOfOrigin}` : ""}
+${ctx.dimensionsEstimate ? `Dimensions: ${ctx.dimensionsEstimate}` : ""}
 Value: $${ctx.estimatedLow} — $${ctx.estimatedHigh} (mid: $${ctx.estimatedMid})
 ${ctx.listingPrice ? `Current listing price: $${ctx.listingPrice}` : "Not yet listed"}
 
@@ -598,6 +610,9 @@ Brand/Maker: ${ctx.brand || ctx.maker || "Unknown"}, Markings: ${ctx.markings ||
 Condition: ${ctx.conditionLabel} (${ctx.conditionScore}/10)${ctx.conditionDetails ? `, Details: ${ctx.conditionDetails}` : ""}
 Estimate: $${ctx.estimatedLow} - $${ctx.estimatedHigh} (mid $${ctx.estimatedMid})
 ${ctx.keywords ? `Keywords: ${ctx.keywords}` : ""}
+${ctx.isCollectible ? `AI confirmed collectible` : ""}
+${ctx.estimatedAgeYears ? `Estimated age: ${ctx.estimatedAgeYears} years` : ""}
+${ctx.countryOfOrigin ? `Origin: ${ctx.countryOfOrigin}` : ""}
 
 VALUATION METHODOLOGY — follow exactly:
 1. Identify the EXACT item — full name, year, set, variation, print run if applicable
@@ -621,6 +636,9 @@ Style: ${ctx.style || "Unknown"}, Maker: ${ctx.maker || ctx.brand || "Unknown"},
 Condition: ${ctx.conditionLabel} (${ctx.conditionScore}/10)${ctx.conditionDetails ? `, Details: ${ctx.conditionDetails}` : ""}
 General estimate: $${ctx.estimatedLow} – $${ctx.estimatedHigh} (mid $${ctx.estimatedMid})
 ${ctx.auctionLow ? `Preliminary auction estimate: $${ctx.auctionLow} – $${ctx.auctionHigh}` : ""}
+${ctx.estimatedAgeYears ? `Estimated age: ${ctx.estimatedAgeYears} years` : ""}
+${ctx.isCollectible ? `Also flagged as collectible` : ""}
+${ctx.countryOfOrigin ? `Country of origin: ${ctx.countryOfOrigin}` : ""}
 
 Return JSON with: authentication (verdict: Authentic|Likely Authentic|Uncertain|Likely Reproduction|Reproduction, confidence 1-100, reasoning, red_flags[], positive_indicators[], recommended_tests[], appraiser_recommendation), identification (item_type, period, origin, maker_info{name, active_period, notable_for}, material_analysis{primary, secondary[], construction}, rarity), historical_context (era_overview, cultural_significance, notable_examples), condition_assessment (overall_grade, age_appropriate_wear, restoration_detected, conservation_recommendations[]), valuation (fair_market_value{low,mid,high}, replacement_value, insurance_value, auction_estimate{low,high,reserve_recommendation}, dealer_buy_price, value_trend, value_trend_reasoning), collector_market (collector_demand, collector_organizations[], recent_auction_results[], market_outlook), selling_strategy (best_venue, venue_options[], timing, presentation_tips[], documentation_needed[]), documentation (provenance_importance 1-10, provenance_tips[], recommended_references[]), executive_summary (5-8 sentences for senior, warm, clear advice).
 
@@ -641,6 +659,8 @@ export function getCarBotPrompt(ctx: PromptContext): string {
 
 Vehicle data: Year: ${ctx.vehicleYear || "Unknown"}, Make: ${ctx.vehicleMake || "Unknown"}, Model: ${ctx.vehicleModel || "Unknown"}
 Mileage: ${ctx.vehicleMileage || "Unknown"}
+${ctx.weightEstimateLbs ? `Estimated weight: ${ctx.weightEstimateLbs} lbs` : ""}
+${ctx.dimensionsEstimate ? `Dimensions: ${ctx.dimensionsEstimate}` : ""}
 Description: ${ctx.title || "none"} — ${ctx.description || "none"}
 Condition claim: ${ctx.conditionLabel}
 Estimated value: $${ctx.estimatedLow} – $${ctx.estimatedHigh}
@@ -664,6 +684,8 @@ export function getPhotoBotPrompt(ctx: PromptContext): string {
     ctx.conditionDetails && `Condition details: ${ctx.conditionDetails}`,
     ctx.isAntique && "NOTE: This is an antique item — photograph condition evidence carefully for authentication",
     ctx.isVehicle && "NOTE: This is a vehicle — focus on exterior angles, interior, engine bay, mileage/VIN shots",
+    ctx.dimensionsEstimate && `Dimensions: ${ctx.dimensionsEstimate}`,
+    ctx.shippingDifficulty && `Shipping: ${ctx.shippingDifficulty}`,
   ].filter(Boolean).join("\n");
 
   const priceContext = ctx.estimatedMid > 0
@@ -789,7 +811,33 @@ CRITICAL RESPONSE FORMAT RULES:
 
 export function getAnalyzeBotMegaPrompt(ctx: PromptContext): string {
   const enrichPrefix = ctx.enrichmentContext ? ctx.enrichmentContext + "\n\n" : "";
-  return enrichPrefix + getAnalyzeBotPrompt(ctx) + MEGA_ANALYZE + MEGA_RESPONSE_GUIDELINES;
+
+  // Build prior analysis context from Tier 1 results
+  let priorContext = "";
+  if (ctx.priorBotResult) {
+    const prior = ctx.priorBotResult;
+    const priorParts: string[] = [
+      "\n\nPRIOR AI ANALYSIS (Tier 1 — single AI run):",
+      "This item was already analyzed by a single AI. Your 4-agent panel must GO DEEPER.",
+    ];
+    if (prior.item_name) priorParts.push(`Identified as: ${prior.item_name}`);
+    if (prior.category) priorParts.push(`Category: ${prior.category}${prior.subcategory ? ` > ${prior.subcategory}` : ""}`);
+    if (prior.material) priorParts.push(`Material: ${prior.material}`);
+    if (prior.era) priorParts.push(`Era: ${prior.era}`);
+    if (prior.condition_score) priorParts.push(`Condition: ${prior.condition_score}/10`);
+    if (prior.is_antique != null) priorParts.push(`Antique status: ${prior.is_antique ? "CONFIRMED" : "Not detected"}`);
+    if (prior.estimated_age_years) priorParts.push(`Estimated age: ${prior.estimated_age_years} years`);
+    if (prior.antique_markers?.length) priorParts.push(`Antique markers: ${prior.antique_markers.join(", ")}`);
+    if (prior.is_collectible) priorParts.push(`Collectible: CONFIRMED`);
+    if (prior.estimated_value_low != null) priorParts.push(`Prior estimate: $${prior.estimated_value_low}–$${prior.estimated_value_high}`);
+    if (prior.pricing_rationale) priorParts.push(`Pricing rationale: ${String(prior.pricing_rationale).slice(0, 200)}`);
+    if (prior.summary) priorParts.push(`Prior summary: ${String(prior.summary).slice(0, 300)}`);
+    priorParts.push("");
+    priorParts.push("YOUR MISSION: Confirm, refine, or CHALLENGE these findings. If you agree, explain WHY with deeper evidence. If you disagree, explain what the prior analysis missed.");
+    priorContext = priorParts.join("\n") + "\n\n";
+  }
+
+  return enrichPrefix + priorContext + getAnalyzeBotPrompt(ctx) + MEGA_ANALYZE + MEGA_RESPONSE_GUIDELINES;
 }
 
 export function getPriceBotMegaPrompt(ctx: PromptContext): string {
@@ -815,6 +863,10 @@ Location: ZIP ${ctx.sellerZip} | Photos: ${ctx.photoCount || 1}
 ${ctx.description ? `Seller notes: ${ctx.description.slice(0, 200)}` : ""}
 ${ctx.isAntique ? "This IS an antique — emphasize provenance, collector value, and auction houses." : ""}
 ${ctx.keywords ? `Keywords: ${ctx.keywords}` : ""}
+${ctx.bestPlatforms?.length ? `Best platforms: ${ctx.bestPlatforms.join(", ")}` : ""}
+${ctx.recommendedTitle ? `AI-suggested title: ${ctx.recommendedTitle}` : ""}
+${ctx.shippingDifficulty ? `Shipping: ${ctx.shippingDifficulty}` : ""}
+${ctx.dimensionsEstimate ? `Dimensions: ${ctx.dimensionsEstimate}` : ""}
 `;
   return base + MEGA_LISTING + MEGA_RESPONSE_GUIDELINES;
 }

@@ -398,7 +398,7 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
 
   // ── Recommendation (shipping-method-aware) ────────────────────────────────
   const maxDim = ai.dimensions_estimate ? Math.max(...(String(ai.dimensions_estimate).match(/\d+/g) || ["0"]).map(Number)) : undefined;
-  const shippingMethod = suggestShippingMethod(category || ai.category, aiWeight ?? undefined, maxDim, undefined);
+  const shippingMethod = suggestShippingMethod(category || ai.category, aiWeight ?? undefined, maxDim, undefined, ai.shipping_difficulty ?? undefined);
 
   let recommendation: string;
   if (baseMid <= 0) {

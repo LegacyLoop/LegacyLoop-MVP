@@ -3880,6 +3880,7 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
       suggestion?.weightEstimate,
       maxDim,
       undefined,
+      aiData?.shipping_difficulty ?? undefined,
     );
   }, [aiData, category, suggestion]);
 

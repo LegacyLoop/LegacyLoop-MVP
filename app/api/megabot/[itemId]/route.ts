@@ -161,6 +161,22 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   // Fetch cross-bot enrichment context (non-blocking — falls back to undefined)
   const enrichment = await getItemEnrichmentContext(itemId, "megabot").catch(() => undefined);
 
+  // Fetch Amazon/Rainforest data for MegaBot context
+  let amazonContext = "";
+  try {
+    const rainforestLog = await prisma.eventLog.findFirst({
+      where: { itemId, eventType: "RAINFOREST_RESULT" },
+      orderBy: { createdAt: "desc" },
+      select: { payload: true },
+    });
+    if (rainforestLog?.payload) {
+      const amazon = JSON.parse(rainforestLog.payload);
+      if (amazon.priceRange) {
+        amazonContext = `\nAMAZON MARKET DATA: Retail range $${amazon.priceRange.low}–$${amazon.priceRange.high} (avg $${Math.round(amazon.priceRange.avg)}). ${amazon.resultCount || 0} listings found. Used/secondhand typically 30-70% of retail.`;
+      }
+    }
+  } catch { /* non-critical */ }
+
   // Build prompt context from item data
   const ctx: PromptContext = {
     itemName: ai?.item_name || item.title || "Unknown item",
@@ -206,7 +222,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     shippingDifficulty: ai?.shipping_difficulty || undefined,
     shippingNotes: ai?.shipping_notes || undefined,
     countryOfOrigin: ai?.country_of_origin || undefined,
-    enrichmentContext: enrichment?.hasEnrichment ? enrichment.contextBlock : undefined,
+    priorBotResult: botType === "analyzebot" ? ai : undefined,
+    enrichmentContext: (enrichment?.hasEnrichment ? enrichment.contextBlock : "") + amazonContext || undefined,
   };
 
   const getPrompt = MEGA_PROMPT_MAP[botType];
@@ -254,6 +271,57 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     where: { id: itemId },
     data: { megabotUsed: true },
   });
+
+  // ── CONSENSUS CASCADE: Update AiResult if MegaBot consensus is stronger ──
+  if (botType === "analyzebot" && result.consensus && result.agreementScore >= 70) {
+    try {
+      const consensus = result.consensus;
+      const currentAi = ai || {};
+      const updates: Record<string, any> = {};
+
+      // Cascade antique detection if MegaBot confirms
+      if (consensus.is_antique === true && currentAi.is_antique !== true) {
+        updates.is_antique = true;
+        console.log(`[MegaBot Cascade] Antique upgraded: Tier 1 said ${currentAi.is_antique}, MegaBot consensus says true (${result.agreementScore}% agreement)`);
+      }
+
+      // Cascade collectible detection
+      if (consensus.is_collectible === true && !currentAi.is_collectible) {
+        updates.is_collectible = true;
+      }
+
+      // Cascade deep knowledge fields (additive — never overwrite with less)
+      const deepFields = ["product_history", "maker_history", "construction_analysis", "special_features", "tips_and_facts", "common_issues", "care_instructions", "similar_items", "collector_info"];
+      for (const field of deepFields) {
+        if (consensus[field] && (!currentAi[field] || String(consensus[field]).length > String(currentAi[field] || "").length)) {
+          updates[field] = consensus[field];
+        }
+      }
+
+      if (Object.keys(updates).length > 0) {
+        const updatedJson = { ...currentAi, ...updates, _megabotEnhanced: true, _megabotAgreement: result.agreementScore };
+        await prisma.aiResult.update({
+          where: { itemId },
+          data: { rawJson: JSON.stringify(updatedJson) },
+        });
+        console.log(`[MegaBot Cascade] ${Object.keys(updates).length} fields cascaded to AiResult (${result.agreementScore}% agreement)`);
+
+        await prisma.eventLog.create({
+          data: {
+            itemId,
+            eventType: "MEGABOT_CASCADE",
+            payload: JSON.stringify({
+              fieldsUpdated: Object.keys(updates),
+              agreementScore: result.agreementScore,
+              botType,
+            }),
+          },
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.error("[MegaBot Cascade] Error:", (e as Error).message);
+    }
+  }
 
   // Post-run alignment check: compare MegaBot consensus to PriceBot estimate
   if (botType === "pricebot" || botType === "pricing") {
