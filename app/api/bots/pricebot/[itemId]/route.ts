@@ -8,6 +8,7 @@ import { populateFromPriceBot } from "@/lib/data/populate-intelligence";
 import { logUserEvent } from "@/lib/data/user-events";
 import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
+import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -152,8 +153,51 @@ This is a HARD RULE — do not ignore it.`;
       }
     } catch { /* non-critical */ }
 
+    // ── REAL MARKET DATA FROM SCRAPERS ──
+    let realCompsContext = "";
+    let marketIntel: any = null;
+    try {
+      marketIntel = await getMarketIntelligence(itemName, category, sellerZip);
+      console.log(`[PriceBot] Market intelligence: ${marketIntel?.comps?.length ?? 0} real comps from ${marketIntel?.sources?.join(", ") || "none"}`);
+
+      if (marketIntel?.comps?.length > 0) {
+        const compLines = marketIntel.comps.slice(0, 10).map((c: any, i: number) =>
+          `${i + 1}. ${c.platform}: "${c.item}" — $${c.price}${c.date ? ` (${c.date})` : ""}${c.condition ? ` [${c.condition}]` : ""}${c.location ? ` (${c.location})` : ""}`
+        ).join("\n");
+
+        realCompsContext = `\n\nREAL MARKET DATA (from actual marketplace scraping — NOT AI-generated):
+${compLines}
+Median price: $${marketIntel.median ?? "?"}
+Price range (25th-75th percentile): $${marketIntel.low ?? "?"} – $${marketIntel.high ?? "?"}
+Trend: ${marketIntel.trend ?? "Unknown"}
+Sources: ${marketIntel.sources?.join(", ") || "various"}
+Data confidence: ${Math.round((marketIntel.confidence ?? 0) * 100)}%
+
+CRITICAL: These are REAL comparable sales from actual marketplaces. Your revised estimates MUST be anchored to this data. Do NOT ignore real market data in favor of your training knowledge. If your estimate differs >30% from the median real comp, explain WHY in detail.`;
+
+        // Store real comps in MarketComp table (fire-and-forget)
+        Promise.all(
+          marketIntel.comps.slice(0, 10).map((comp: any) =>
+            prisma.marketComp.create({
+              data: {
+                itemId,
+                platform: comp.platform,
+                title: comp.item,
+                price: comp.price,
+                currency: "USD",
+                url: comp.url || "",
+                shipping: null,
+              },
+            }).catch(() => null)
+          )
+        ).catch(() => null);
+      }
+    } catch (e) {
+      console.log("[PriceBot] Market intelligence unavailable — proceeding with AI-only pricing");
+    }
+
     // ── PRICEBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + `You are a world-class resale pricing analyst and market researcher with 20 years of experience in antiques, collectibles, electronics, furniture, and general resale. You have been given an item that has ALREADY been identified by another AI. Your ONLY job is pricing — go as deep as possible.
+    const systemPrompt = enrichmentPrefix + realCompsContext + `You are a world-class resale pricing analyst and market researcher with 20 years of experience in antiques, collectibles, electronics, furniture, and general resale. You have been given an item that has ALREADY been identified by another AI. Your ONLY job is pricing — go as deep as possible.
 
 You are analyzing: ${itemName} — ${category} — ${material} — ${era} — ${conditionLabel} (${conditionScore}/10)
 

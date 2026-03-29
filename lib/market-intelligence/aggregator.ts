@@ -4,8 +4,15 @@ import { scrapeEbaySold } from "./adapters/ebay-sold";
 import { scrapeTcgPlayer } from "./adapters/tcgplayer";
 import { queryDiscogs } from "./adapters/discogs";
 import { scrapeHeritage } from "./adapters/heritage-auctions";
+import { scrapeCraigslist } from "./adapters/craigslist";
+import { scrapeUncleHenrys } from "./adapters/uncle-henrys";
+import { scrapeMercari } from "./adapters/mercari";
 
 type ScraperFn = (query: string) => Promise<ScraperResult>;
+
+const MAINE_ZIP_PREFIXES = new Set([
+  "039", "040", "041", "042", "043", "044", "045", "046", "047", "048", "049",
+]);
 
 const CATEGORY_ADAPTER_MAP: Record<string, ScraperFn[]> = {
   "Sports Cards": [scrapeEbaySold, scrapeHeritage],
@@ -36,17 +43,45 @@ function percentile(sorted: number[], p: number): number {
 
 export async function getMarketIntelligence(
   itemName: string,
-  category: string
+  category: string,
+  sellerZip?: string
 ): Promise<MarketIntelligence> {
-  const cacheKey = `${category.toLowerCase()}:${itemName.toLowerCase().slice(0, 80)}`;
+  const cacheKey = `${category.toLowerCase()}:${itemName.toLowerCase().slice(0, 80)}:${sellerZip || ""}`;
   const cached = resultCache.get(cacheKey);
   if (cached && Date.now() - cached.builtAt < RESULT_TTL) return cached.result;
 
-  const adapters = CATEGORY_ADAPTER_MAP[category] || [scrapeEbaySold];
+  // Category-specific scrapers
+  const categoryAdapters = CATEGORY_ADAPTER_MAP[category] || [];
 
-  // Run all adapters in parallel
+  // Always-run scrapers: eBay, Craigslist (local), Mercari
+  const alwaysAdapters: Array<() => Promise<ScraperResult>> = [
+    () => scrapeEbaySold(itemName),
+    () => scrapeCraigslist(itemName, sellerZip),
+    () => scrapeMercari(itemName),
+  ];
+
+  // Maine-specific: include Uncle Henry's
+  const isMaine = sellerZip && MAINE_ZIP_PREFIXES.has(sellerZip.slice(0, 3));
+  if (isMaine) {
+    alwaysAdapters.push(() => scrapeUncleHenrys(itemName));
+  }
+
+  // Dedupe: if a category adapter is already in always-run, skip it
+  const alwaysFnNames = new Set(["scrapeEbaySold", "scrapeCraigslist", "scrapeMercari", "scrapeUncleHenrys"]);
+  const extraAdapters = categoryAdapters.filter((fn) => !alwaysFnNames.has(fn.name));
+
+  // Run all adapters in parallel with 15s overall timeout
+  const allFns = [
+    ...alwaysAdapters,
+    ...extraAdapters.map((fn) => () => fn(itemName)),
+  ];
+
   const settled = await Promise.allSettled(
-    adapters.map((fn) => fn(itemName))
+    allFns.map((fn) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+      return fn().finally(() => clearTimeout(timeout));
+    })
   );
 
   const allComps: MarketComp[] = [];
@@ -101,6 +136,6 @@ export async function getMarketIntelligence(
   };
 
   resultCache.set(cacheKey, { result, builtAt: Date.now() });
-  console.log(`[market-intel] Aggregated ${comps.length} comps from ${sources.join(", ")} for "${itemName.slice(0, 40)}" [${category}]`);
+  console.log(`[market-intel] Aggregated ${comps.length} comps from ${sources.join(", ")} for "${itemName.slice(0, 40)}" [${category}]${isMaine ? " (Maine — Uncle Henry's included)" : ""}`);
   return result;
 }

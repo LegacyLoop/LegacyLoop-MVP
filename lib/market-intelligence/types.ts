@@ -5,6 +5,7 @@ export interface MarketComp {
   platform: string;
   condition: string;
   url?: string;
+  location?: string | null;
 }
 
 export interface MarketIntelligence {
