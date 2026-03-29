@@ -37,6 +37,15 @@ export interface PromptContext {
   saleRadiusMi?: number;
   marketTier?: string;
   marketLabel?: string;
+  dimensionsEstimate?: string;
+  weightEstimateLbs?: number;
+  estimatedAgeYears?: number;
+  isCollectible?: boolean;
+  bestPlatforms?: string[];
+  recommendedTitle?: string;
+  shippingDifficulty?: string;
+  shippingNotes?: string;
+  countryOfOrigin?: string;
   /** Prior single-run bot result (if available) to use as foundation context */
   priorBotResult?: any;
   /** Cross-bot enrichment context block (from lib/enrichment) */

@@ -54,6 +54,8 @@ const MODERN_CATEGORIES = [
   "appliance", "tv", "television", "monitor", "speaker", "headphone",
   "drone", "camera digital", "smart home", "router", "cable", "charger",
   "power tool", "electric tool", "3d printer", "vr headset",
+  "smartphone", "wireless", "bluetooth", "usb-c", "usb c", "led light",
+  "smart watch", "smartwatch", "airpod", "earbud", "webcam", "streamer",
 ];
 
 const MODERN_BRANDS = [

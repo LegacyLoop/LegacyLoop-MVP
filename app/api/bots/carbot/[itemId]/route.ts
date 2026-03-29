@@ -138,6 +138,10 @@ export async function POST(
     const estimatedHigh = v ? Math.round(v.high) : 0;
     const estimatedMid = v?.mid ? Math.round(v.mid) : v ? Math.round((v.low + v.high) / 2) : 0;
     const sellerZip = item.saleZip || "04901";
+    const transmission = ai.vehicle_transmission || "";
+    const fuelType = ai.vehicle_fuel_type || "";
+    const engine = ai.vehicle_engine || "";
+    const drivetrain = ai.vehicle_drivetrain || "";
 
     // ── NHTSA VEHICLE HISTORY (recalls, complaints, safety ratings) ──
     let nhtsaReport: any = null;
@@ -211,6 +215,10 @@ Vehicle data from seller/AI:
 - Model: ${vehicleModel}
 - Mileage: ${vehicleMileage}
 - VIN visible: ${vinVisible ? "Yes" : "Not visible in photos"}
+${transmission ? `- Transmission: ${transmission}` : ""}
+${fuelType ? `- Fuel Type: ${fuelType}` : ""}
+${engine ? `- Engine: ${engine}` : ""}
+${drivetrain ? `- Drivetrain: ${drivetrain}` : ""}
 - Seller's description: ${item.title} — ${item.description || "No description"}
 - Seller's condition claim: ${ai.condition_guess || condLabel}
 - Seller's estimated value: $${estimatedLow} – $${estimatedHigh}

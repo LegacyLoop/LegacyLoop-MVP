@@ -197,6 +197,15 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     saleRadiusMi: (item as any).saleRadiusMi || 250,
     marketTier: getMarketInfo(item.saleZip || "04901").tier,
     marketLabel: getMarketInfo(item.saleZip || "04901").label,
+    dimensionsEstimate: ai?.dimensions_estimate || undefined,
+    weightEstimateLbs: ai?.weight_estimate_lbs || undefined,
+    estimatedAgeYears: ai?.estimated_age_years || undefined,
+    isCollectible: ai?.is_collectible || undefined,
+    bestPlatforms: ai?.best_platforms || undefined,
+    recommendedTitle: ai?.recommended_title || undefined,
+    shippingDifficulty: ai?.shipping_difficulty || undefined,
+    shippingNotes: ai?.shipping_notes || undefined,
+    countryOfOrigin: ai?.country_of_origin || undefined,
     enrichmentContext: enrichment?.hasEnrichment ? enrichment.contextBlock : undefined,
   };
 

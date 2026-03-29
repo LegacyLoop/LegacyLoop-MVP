@@ -112,7 +112,7 @@ export async function POST(
     const category = ai.category || "General";
     const subcategory = ai.subcategory || "";
     const material = ai.material || "Unknown";
-    const era = ai.era || ai.estimated_age || "Unknown";
+    const era = ai.era || (ai.estimated_age_years ? `~${ai.estimated_age_years} years old` : "Unknown");
     const style = ai.style || "";
     const brand = ai.maker || ai.brand || "";
     const condScore = ai.condition_score || 7;
@@ -124,6 +124,10 @@ export async function POST(
     const isAntique = item.antiqueCheck?.isAntique || false;
     const photoCount = item.photos.length;
     const sellerPrice = item.listingPrice ? Number(item.listingPrice) : null;
+    const recommendedTitle = ai.recommended_title || "";
+    const recommendedDescription = ai.recommended_description || "";
+    const aiBestPlatforms = ai.best_platforms || [];
+    const photoTips = ai.photo_improvement_tips || [];
 
     // Build vision content from item photos (base64 for API access)
     const photoImageContent: Array<{ type: "input_image"; image_url: string; detail: "auto" }> = [];
@@ -230,7 +234,11 @@ Brand/Maker: ${brand}
 Seller location: ZIP ${sellerZip} (Maine, USA)
 Recommended price: $${midPrice} (range: $${lowPrice} — $${highPrice})
 ${sellerPrice !== null ? `SELLER ASKING PRICE: $${sellerPrice} — Use this as the anchor price in all listing copy. Do not suggest a different price.` : `SELLER ASKING PRICE: Not set — use AI valuation range: $${lowPrice}–$${highPrice}`}
-${bestPlatform ? `Best platforms: ${bestPlatform}` : ""}
+${bestPlatform ? `Best platforms (from PriceBot): ${bestPlatform}` : ""}
+${aiBestPlatforms.length > 0 ? `AI-recommended platforms: ${aiBestPlatforms.join(", ")}` : ""}
+${recommendedTitle ? `AI-suggested title (improve on this): "${recommendedTitle}"` : ""}
+${recommendedDescription ? `AI-suggested description (reference): "${recommendedDescription.slice(0, 300)}"` : ""}
+${photoTips.length > 0 ? `Photo improvement tips: ${photoTips.join("; ")}` : ""}
 ${targetBuyers ? `Target buyers: ${targetBuyers}` : ""}
 ${valueDrivers ? `Value drivers: ${valueDrivers}` : ""}
 ${searchKeywords ? `Keywords buyers search: ${searchKeywords}` : ""}${amazonContext}

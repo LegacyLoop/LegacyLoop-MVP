@@ -113,7 +113,7 @@ export async function POST(
     const itemName = ai.item_name || item.title || "Unknown item";
     const category = ai.category || "General";
     const material = ai.material || "Unknown";
-    const era = ai.era || ai.estimated_age || "Unknown";
+    const era = ai.era || ai.estimated_age_years ? `~${ai.estimated_age_years} years old` : "Unknown";
     const condScore = ai.condition_score || 5;
     const condLabel = condScore >= 8 ? "Excellent" : condScore >= 5 ? "Good" : "Fair";
     const lowPrice = Math.round(v.low);
@@ -122,6 +122,8 @@ export async function POST(
     const sellerZip = item.saleZip || "04901";
     const isAntique = item.antiqueCheck?.isAntique || false;
     const listingPrice = (item as any).listingPrice ?? null;
+    const origin = ai.country_of_origin || "";
+    const completeness = ai.completeness || "";
 
     // Check if previous scan exists (update scan vs initial scan)
     const prevScan = await prisma.eventLog.findFirst({
@@ -182,6 +184,8 @@ You are scanning for: ${itemName} — ${category} — ${material} — ${era} —
 Seller location: ZIP ${sellerZip} (Maine, USA)
 Estimated value: $${lowPrice} — $${highPrice} (mid: $${midPrice})
 ${listingPrice ? `Current listing price: $${listingPrice}` : "Not yet listed"}
+${origin ? `Country of origin: ${origin}` : ""}
+${completeness ? `Item completeness: ${completeness}` : ""}
 ${isUpdate ? "This is an UPDATE scan — compare to previous market conditions and highlight changes." : "This is the INITIAL scan — provide a comprehensive baseline analysis."}
 
 Return a JSON object with ALL of the following:

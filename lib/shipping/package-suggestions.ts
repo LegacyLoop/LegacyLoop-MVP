@@ -275,8 +275,16 @@ export function suggestShippingMethod(
   weight: number | undefined,
   maxDimension: number | undefined,
   saleMethod: string | undefined,
+  shippingDifficulty?: string | null,
 ): ShippingMethodSuggestion {
   const cat = (category ?? "").toLowerCase();
+
+  // AI shipping_difficulty as strong signal (if provided)
+  if (shippingDifficulty) {
+    const diff = shippingDifficulty.toLowerCase();
+    if (diff.includes("freight")) return "freight";
+    if (diff === "local only" || diff.includes("local only")) return "local_only";
+  }
 
   // Check LOCAL_ONLY categories first
   if (LOCAL_ONLY_CATEGORIES.some(term => cat.includes(term))) {

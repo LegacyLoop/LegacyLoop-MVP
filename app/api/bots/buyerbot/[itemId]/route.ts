@@ -182,7 +182,8 @@ export async function POST(
     const midPrice = v.mid ? Math.round(v.mid) : Math.round((v.low + v.high) / 2);
     const sellerZip = item.saleZip || "04901";
     const isAntique = item.antiqueCheck?.isAntique || false;
-    const keywords = (ai.best_keywords || ai.keywords || []).join(", ");
+    const keywords = (ai.keywords || ai.best_keywords || []).join(", ");
+    const bestPlatforms = ai.best_platforms || [];
     const isVehicle = category.toLowerCase().includes("vehicle");
 
     // ── CROSS-BOT ENRICHMENT ──
@@ -265,6 +266,7 @@ Estimated value: $${lowPrice} — $${highPrice} (mid: $${midPrice})
 Era/Age: ${era}
 Material: ${material}
 Keywords: ${keywords || "none provided"}
+${bestPlatforms.length > 0 ? `AI-recommended selling platforms: ${bestPlatforms.join(", ")}` : ""}
 
 Your job: Find the BEST buyers for this item. Be specific about WHERE they are and HOW to reach them.
 

@@ -118,6 +118,9 @@ export async function POST(
     const saleRadius = (item as any).saleRadiusMi || 250;
     const marketInfo = getMarketInfo(sellerZip);
     const isAntique = item.antiqueCheck?.isAntique || false;
+    const valueDrivers = ai.value_drivers || [];
+    const comparableDesc = ai.comparable_description || "";
+    const completeness = ai.completeness || "";
 
     // ── CROSS-BOT ENRICHMENT ──
     const enrichment = await getItemEnrichmentContext(itemId, "pricebot").catch(() => null);
@@ -351,6 +354,9 @@ ${isAntique ? "- This IS an antique: consider auction houses, specialty dealers,
 - All prices in USD, realistic for 2024-2025 US resale market.
 - Provide 3-8 comparable sales (quality over quantity).
 - pricing_rationale from general analysis: "${pricingRationale}"
+${valueDrivers.length > 0 ? `- Value drivers identified by initial AI: ${valueDrivers.join(", ")}` : ""}
+${comparableDesc ? `- Comparable items: ${comparableDesc}` : ""}
+${completeness ? `- Item completeness: ${completeness}` : ""}
 ${amazonContext}
 
 WEB SEARCH INSTRUCTIONS:

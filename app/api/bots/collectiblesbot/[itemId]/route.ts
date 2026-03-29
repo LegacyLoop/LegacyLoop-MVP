@@ -113,6 +113,8 @@ export async function POST(
     const estimatedLow = v ? Math.round(v.low) : 0;
     const estimatedHigh = v ? Math.round(v.high) : 0;
     const estimatedMid = v?.mid ? Math.round(v.mid) : v ? Math.round((v.low + v.high) / 2) : 0;
+    const isCollectible = ai.is_collectible || false;
+    const aiKeywords = ai.keywords || [];
 
     // ── CROSS-BOT ENRICHMENT ──
     const enrichment = await getItemEnrichmentContext(itemId, "collectiblesbot").catch(() => null);
@@ -168,6 +170,8 @@ Era: ${era}
 Brand/Maker: ${brand}
 Condition: ${conditionLabel} (${conditionScore}/10)
 Price range: $${estimatedLow} - $${estimatedHigh} (mid $${estimatedMid})
+${isCollectible ? `AI pre-identified this as a COLLECTIBLE. Confirm and provide grading assessment.` : ""}
+${aiKeywords.length > 0 ? `Relevant keywords: ${aiKeywords.join(", ")}` : ""}
 
 VALUATION METHODOLOGY — you must follow this exactly:
 1. Identify the EXACT item — full name, year, set, variation, print run if applicable

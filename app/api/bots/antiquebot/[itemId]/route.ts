@@ -115,6 +115,12 @@ export async function POST(
     const estimatedMid = v?.mid ? Math.round(v.mid) : v ? Math.round((v.low + v.high) / 2) : 0;
     const auctionLow = antique?.auctionLow || null;
     const auctionHigh = antique?.auctionHigh || null;
+    const isAntiqueFlag = ai.is_antique || false;
+    const estimatedAge = ai.estimated_age_years || null;
+    const antiqueMarkers = ai.antique_markers || [];
+    const origin = ai.country_of_origin || "";
+    const restorationPotential = ai.restoration_potential || "";
+    const dimensions = ai.dimensions_estimate || "";
 
     // ── CROSS-BOT ENRICHMENT ──
     const enrichment = await getItemEnrichmentContext(itemId, "antiquebot").catch(() => null);
@@ -164,6 +170,16 @@ Condition: ${conditionLabel} (${conditionScore}/10)
 ${conditionDetails ? `Condition details: ${conditionDetails}` : ""}
 General estimate: $${estimatedLow} – $${estimatedHigh} (mid $${estimatedMid})
 ${auctionLow ? `Preliminary auction estimate: $${auctionLow} – $${auctionHigh}` : ""}
+
+PRIOR AI ANTIQUE ASSESSMENT:
+- AI flagged as antique: ${isAntiqueFlag ? "YES" : "NO"}
+- Estimated age: ${estimatedAge ? `${estimatedAge} years` : "Unknown"}
+- Antique markers already identified: ${antiqueMarkers.length > 0 ? antiqueMarkers.join(", ") : "None"}
+- Country of origin: ${origin || "Unknown"}
+- Restoration potential: ${restorationPotential || "Not assessed"}
+- Dimensions: ${dimensions || "Not estimated"}
+
+Your job is to GO DEEPER than this initial assessment. Confirm or challenge the AI's antique determination with expert-level analysis. Look for evidence the initial scan may have missed.
 
 Return a JSON object with ALL of the following fields:
 
