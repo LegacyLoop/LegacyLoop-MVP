@@ -146,255 +146,146 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
   megaData?: any;
   buttons?: React.ReactNode;
 }) {
+  // Mini stat card helper
+  const MC = ({ label, value, color }: { label: string; value: string | number | null | undefined; color?: string }) => {
+    if (value == null || value === "" || value === "—") return null;
+    return (
+      <div style={{ padding: "0.25rem 0.45rem", background: "var(--ghost-bg)", borderRadius: "0.35rem", border: "1px solid var(--border-default)" }}>
+        <div style={{ fontSize: "0.45rem", textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 700 }}>{label}</div>
+        <div style={{ fontSize: "0.75rem", fontWeight: 700, color: color || "var(--text-primary)" }}>{value}</div>
+      </div>
+    );
+  };
   const summaries: Record<string, () => React.ReactNode> = {
     analyze: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)", textAlign: "center", maxWidth: "90%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{data?.itemName || "—"}</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", flexWrap: "wrap" as const, justifyContent: "center" }}>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Condition</div><div style={{ fontSize: "0.82rem", fontWeight: 800, color: (data?.conditionScore ?? 5) >= 7 ? "#22c55e" : (data?.conditionScore ?? 5) >= 4 ? "#f59e0b" : "#ef4444" }}>{data?.conditionScore ?? "?"}/10</div></div>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Category</div><div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>{data?.category || "—"}</div></div>
-          {data?.confidence && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Confidence</div><div style={{ fontSize: "0.65rem", fontWeight: 600, color: "#00bcd4" }}>{Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%</div></div>}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", width: "100%", padding: "0.5rem 0" }}>
+        <div style={{ minWidth: "70px" }}>
+          <div style={{ fontSize: "0.45rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Condition</div>
+          <div style={{ fontSize: "1.1rem", fontWeight: 800, color: (data?.conditionScore ?? 5) >= 7 ? "#22c55e" : (data?.conditionScore ?? 5) >= 4 ? "#f59e0b" : "#ef4444" }}>{data?.conditionScore ?? "?"}/10</div>
         </div>
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+        <div style={{ display: "flex", gap: "0.5rem", flex: 1, flexWrap: "wrap" as const }}>
+          <MC label="Category" value={data?.category} />
+          {data?.confidence && <MC label="Confidence" value={`${Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%`} color="#00bcd4" />}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 6px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#a855f7", fontWeight: 700, whiteSpace: "nowrap" as const }}>⚡ {megaData.agreementScore ?? "?"}%</span>}
       </div>
     ),
     pricing: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Estimated Value</div>
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>{data?.low != null && data?.high != null ? `$${Math.round(data.low)} — $${Math.round(data.high)}` : "—"}</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Confidence</div><div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)" }}>{data?.confidence != null ? `${Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%` : "?"}</div></div>
-          {data?.demand && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Demand</div><div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.demand === "High" || data.demand === "high" ? "#22c55e" : data.demand === "Low" || data.demand === "low" ? "#ef4444" : "#f59e0b" }}>{data.demand}</div></div>}
-          {data?.netPayout && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>You Keep</div><div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#22c55e" }}>${Math.round(data.netPayout)}</div></div>}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", width: "100%", padding: "0.5rem 0" }}>
+        <div style={{ minWidth: "90px" }}>
+          <div style={{ fontSize: "0.45rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Value</div>
+          <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>{data?.low != null && data?.high != null ? `$${Math.round(data.low)}–$${Math.round(data.high)}` : "—"}</div>
         </div>
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+        <div style={{ display: "flex", gap: "0.5rem", flex: 1, flexWrap: "wrap" as const }}>
+          {data?.confidence != null && <MC label="Confidence" value={`${Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%`} />}
+          {data?.demand && <MC label="Demand" value={data.demand} color={data.demand === "High" || data.demand === "high" || data.demand === "Strong" ? "#22c55e" : data.demand === "Low" || data.demand === "low" ? "#ef4444" : "#f59e0b"} />}
+          {data?.netPayout && <MC label="Net" value={`$${Math.round(data.netPayout)}`} color="#4caf50" />}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 6px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#a855f7", fontWeight: 700, whiteSpace: "nowrap" as const }}>⚡ {megaData.agreementScore ?? "?"}%</span>}
       </div>
     ),
     buyers: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Buyer Intelligence</div>
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#22c55e" }}>🎯 {data?.leadCount ?? 0} leads found</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.hotCount > 0 && <span style={{ fontSize: "0.62rem", color: "#ef4444", fontWeight: 600 }}>🔥 {data.hotCount} hot</span>}
-          {data?.bestPlatform && <span style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>Best: {data.bestPlatform}</span>}
-          {data?.platformCount > 0 && <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{data.platformCount} platforms</span>}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", width: "100%", padding: "0.5rem 0" }}>
+        <div style={{ minWidth: "70px" }}>
+          <div style={{ fontSize: "0.45rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Leads</div>
+          <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>🎯 {data?.leadCount ?? 0}</div>
         </div>
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}%</span>}
+        <div style={{ display: "flex", gap: "0.5rem", flex: 1, flexWrap: "wrap" as const }}>
+          {data?.hotCount > 0 && <MC label="Hot" value={data.hotCount} color="#ef4444" />}
+          {data?.bestPlatform && <MC label="Best" value={data.bestPlatform} />}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 6px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#a855f7", fontWeight: 700, whiteSpace: "nowrap" as const }}>⚡ {megaData.agreementScore ?? "?"}%</span>}
       </div>
     ),
     listing: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.35rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Listing Status</div>
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>📋 {data?.platformCount ?? 0} platforms ready</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.bestPlatform && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Best Platform</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#22c55e" }}>{data.bestPlatform}</div>
-            </div>
-          )}
-          {data?.topPlatforms && data.topPlatforms.length > 1 && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Active On</div>
-              <div style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>{data.topPlatforms.slice(0, 3).map((p: string) => p.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())).join(", ")}{data.topPlatforms.length > 3 ? ` +${data.topPlatforms.length - 3}` : ""}</div>
-            </div>
-          )}
-          {data?.copiedCount > 0 && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Launched</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#22c55e" }}>{data.copiedCount}/13</div>
-            </div>
-          )}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", width: "100%", padding: "0.5rem 0" }}>
+        <div style={{ minWidth: "80px" }}>
+          <div style={{ fontSize: "0.45rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Platforms</div>
+          <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>📋 {data?.platformCount ?? 0}</div>
         </div>
-        {data?.summary && (
-          <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", lineHeight: 1.4, textAlign: "center", maxWidth: "90%", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>{data.summary}</div>
-        )}
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+        <div style={{ display: "flex", gap: "0.5rem", flex: 1, flexWrap: "wrap" as const }}>
+          {data?.bestPlatform && <MC label="Best" value={data.bestPlatform} color="#22c55e" />}
+          {data?.topPlatforms?.length > 1 && <MC label="Active" value={data.topPlatforms.slice(0, 3).map((p: string) => p.replace(/_/g, " ")).join(", ")} />}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 6px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#a855f7", fontWeight: 700, whiteSpace: "nowrap" as const }}>⚡ {megaData.agreementScore ?? "?"}%</span>}
       </div>
     ),
     recon: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.35rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>Market Intelligence</div>
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#f59e0b" }}>🔍 {data?.competitorCount ?? 0} competitors</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.alertCount > 0 && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Alerts</div>
-              <div style={{ fontSize: "0.72rem", fontWeight: 800, color: "#ef4444" }}>🚨 {data.alertCount}</div>
-            </div>
-          )}
-          {data?.marketHeat && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Market</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.marketHeat === "Hot" ? "#ef4444" : data.marketHeat === "Warm" ? "#f59e0b" : "#00bcd4" }}>{data.marketHeat === "Hot" ? "🔥" : "🌤️"} {data.marketHeat}</div>
-            </div>
-          )}
-          {data?.pricePosition && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Position</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.pricePosition === "Well-Priced" ? "#22c55e" : "#f59e0b" }}>{data.pricePosition}</div>
-            </div>
-          )}
-          {data?.avgPrice && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Avg Price</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)" }}>${typeof data.avgPrice === "number" ? Math.round(data.avgPrice) : data.avgPrice}</div>
-            </div>
-          )}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", width: "100%", padding: "0.5rem 0" }}>
+        <div style={{ minWidth: "80px" }}>
+          <div style={{ fontSize: "0.45rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Competitors</div>
+          <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>🔍 {data?.competitorCount ?? 0}</div>
         </div>
-        {data?.recommendation && (
-          <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", lineHeight: 1.4, textAlign: "center", maxWidth: "90%", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>💡 {data.recommendation}</div>
-        )}
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+        <div style={{ display: "flex", gap: "0.5rem", flex: 1, flexWrap: "wrap" as const }}>
+          {data?.alertCount > 0 && <MC label="Alerts" value={data.alertCount} color="#ef4444" />}
+          {data?.marketHeat && <MC label="Market" value={data.marketHeat} color={data.marketHeat === "Hot" ? "#ef4444" : data.marketHeat === "Warm" ? "#f59e0b" : "#00bcd4"} />}
+          {data?.pricePosition && <MC label="Position" value={data.pricePosition} color={data.pricePosition === "Well-Priced" ? "#22c55e" : "#f59e0b"} />}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 6px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#a855f7", fontWeight: 700, whiteSpace: "nowrap" as const }}>⚡ {megaData.agreementScore ?? "?"}%</span>}
       </div>
     ),
     shipping: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Shipping Profile</div>
-        <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "#00bcd4" }}>📦 {data?.method || "—"}</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.weight && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Weight</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>⚖️ {data.weight}</div>
-            </div>
-          )}
-          {data?.dims && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Dims</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>📐 {data.dims}</div>
-            </div>
-          )}
-          {data?.difficulty && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Handling</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.difficulty === "Heavy" ? "#ef4444" : data.difficulty === "Fragile" ? "#f59e0b" : "#00bcd4" }}>{data.difficulty}</div>
-            </div>
-          )}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", width: "100%", padding: "0.5rem 0" }}>
+        <div style={{ minWidth: "80px" }}>
+          <div style={{ fontSize: "0.45rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Method</div>
+          <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>📦 {data?.method || "—"}</div>
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem", flex: 1, flexWrap: "wrap" as const }}>
+          {data?.weight && <MC label="Weight" value={data.weight} />}
+          {data?.dims && <MC label="Dims" value={data.dims} />}
+          {data?.difficulty && <MC label="Handling" value={data.difficulty} color={data.difficulty === "Heavy" ? "#ef4444" : data.difficulty === "Fragile" ? "#f59e0b" : "#00bcd4"} />}
         </div>
       </div>
     ),
     photos: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Photo Quality</div>
-        <div style={{ fontSize: "1.1rem", fontWeight: 800, color: (data?.score ?? 5) >= 7 ? "#22c55e" : (data?.score ?? 5) >= 4 ? "#f59e0b" : "#ef4444" }}>📸 {data?.score ?? "?"}/10</div>
-        <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)" }}>{data?.count ?? 0} photo{(data?.count ?? 0) !== 1 ? "s" : ""} uploaded</div>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", width: "100%", padding: "0.5rem 0" }}>
+        <div style={{ minWidth: "70px" }}>
+          <div style={{ fontSize: "0.45rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Quality</div>
+          <div style={{ fontSize: "1.1rem", fontWeight: 800, color: (data?.score ?? 5) >= 7 ? "#22c55e" : (data?.score ?? 5) >= 4 ? "#f59e0b" : "#ef4444" }}>📸 {data?.score ?? "?"}/10</div>
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem", flex: 1, flexWrap: "wrap" as const }}>
+          <MC label="Photos" value={`${data?.count ?? 0} uploaded`} />
+        </div>
       </div>
     ),
     carbot: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Vehicle</div>
-        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)" }}>🚗 {data?.label || "Assessment available"}</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.grade && data.grade !== "—" && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Grade</div>
-              <div style={{ fontSize: "0.72rem", fontWeight: 800, color: data.gradeColor || "var(--text-secondary)" }}>{data.grade}</div>
-            </div>
-          )}
-          {data?.valueLow != null && data?.valueHigh != null && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Value</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#00bcd4" }}>${Math.round(data.valueLow / 1000)}K–${Math.round(data.valueHigh / 1000)}K</div>
-            </div>
-          )}
-          {data?.demand && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Demand</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>{data.demand}</div>
-            </div>
-          )}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", width: "100%", padding: "0.5rem 0" }}>
+        <div style={{ minWidth: "80px" }}>
+          <div style={{ fontSize: "0.45rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Vehicle</div>
+          <div style={{ fontSize: "0.88rem", fontWeight: 800, color: "var(--text-primary)" }}>🚗 {data?.label || "—"}</div>
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem", flex: 1, flexWrap: "wrap" as const }}>
+          {data?.grade && data.grade !== "—" && <MC label="Grade" value={data.grade} color={data.gradeColor || "var(--text-secondary)"} />}
+          {data?.valueLow != null && data?.valueHigh != null && <MC label="Value" value={`$${Math.round(data.valueLow / 1000)}K–$${Math.round(data.valueHigh / 1000)}K`} color="#00bcd4" />}
+          {data?.demand && <MC label="Demand" value={data.demand} />}
         </div>
       </div>
     ),
     antique: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.35rem", width: "100%" }}>
-        {data?.verdict ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <span style={{ fontSize: "1rem" }}>
-              {data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "✅" : data.verdict === "Uncertain" ? "⚠️" : "❌"}
-            </span>
-            <div style={{ fontSize: "0.82rem", fontWeight: 800, color: data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "#16a34a" : data.verdict === "Uncertain" ? "#d97706" : "#dc2626" }}>
-              {data.verdict}
-            </div>
-            {data?.confidence && <span style={{ fontSize: "0.58rem", color: "var(--text-muted)", fontWeight: 600 }}>{data.confidence}%</span>}
-          </div>
-        ) : (
-          <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Antique Detected</div>
-        )}
-        {(data?.fmvLow != null || data?.auctionLow != null) && (
-          <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#fbbf24" }}>
-            {data.fmvLow != null && data.fmvHigh != null
-              ? `$${Math.round(data.fmvLow).toLocaleString()} — $${Math.round(data.fmvHigh).toLocaleString()}`
-              : data.auctionLow != null && data.auctionHigh != null
-              ? `$${Math.round(data.auctionLow).toLocaleString()} — $${Math.round(data.auctionHigh).toLocaleString()}`
-              : "—"}
-          </div>
-        )}
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.period && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Period</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)" }}>{data.period}</div>
-            </div>
-          )}
-          {data?.rarity && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Rarity</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.rarity === "Rare" || data.rarity === "Very Rare" ? "#f59e0b" : "var(--text-secondary)" }}>{data.rarity}</div>
-            </div>
-          )}
-          {data?.overallGrade && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Condition</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#00bcd4" }}>{data.overallGrade}</div>
-            </div>
-          )}
-          {data?.collectorDemand && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Demand</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: data.collectorDemand === "High" || data.collectorDemand === "Strong" ? "#22c55e" : "#f59e0b" }}>{data.collectorDemand}</div>
-            </div>
-          )}
-          {data?.insuranceValue != null && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Insurance</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-secondary)" }}>${Math.round(data.insuranceValue).toLocaleString()}</div>
-            </div>
-          )}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", width: "100%", padding: "0.5rem 0" }}>
+        <div style={{ minWidth: "80px" }}>
+          <div style={{ fontSize: "0.45rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Verdict</div>
+          <div style={{ fontSize: "0.88rem", fontWeight: 800, color: data?.verdict === "Authentic" || data?.verdict === "Likely Authentic" ? "#16a34a" : data?.verdict === "Uncertain" ? "#d97706" : data?.verdict ? "#dc2626" : "#fbbf24" }}>{data?.verdict || "Detected"}</div>
         </div>
-        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 8px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#8b5cf6", fontWeight: 600 }}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
+        <div style={{ display: "flex", gap: "0.5rem", flex: 1, flexWrap: "wrap" as const }}>
+          {data?.period && <MC label="Period" value={data.period} />}
+          {data?.rarity && <MC label="Rarity" value={data.rarity} color={data.rarity === "Rare" || data.rarity === "Very Rare" ? "#f59e0b" : undefined} />}
+          {(data?.fmvLow != null || data?.auctionLow != null) && <MC label="Value" value={data.fmvLow != null && data.fmvHigh != null ? `$${Math.round(data.fmvLow).toLocaleString()}–$${Math.round(data.fmvHigh).toLocaleString()}` : data.auctionLow != null ? `$${Math.round(data.auctionLow).toLocaleString()}–$${Math.round(data.auctionHigh).toLocaleString()}` : "—"} color="#fbbf24" />}
+        </div>
+        {megaData && <span style={{ fontSize: "0.52rem", padding: "2px 6px", borderRadius: "9999px", background: "rgba(139,92,246,0.1)", color: "#a855f7", fontWeight: 700, whiteSpace: "nowrap" as const }}>⚡ {megaData.agreementScore ?? "?"}%</span>}
       </div>
     ),
     collectibles: () => (
-      <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.3rem", width: "100%" }}>
-        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Collectible</div>
-        <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#8b5cf6" }}>⭐ {data?.name || "Evaluation available"}</div>
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", justifyContent: "center", flexWrap: "wrap" as const }}>
-          {data?.rarity && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Rarity</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#8b5cf6" }}>{data.rarity}</div>
-            </div>
-          )}
-          {data?.value && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Value</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#00bcd4" }}>{data.value}</div>
-            </div>
-          )}
-          {data?.grade && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Grade</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>PSA {data.grade}</div>
-            </div>
-          )}
-          {data?.demand && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase" as const }}>Trend</div>
-              <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-secondary)" }}>{data.demand}</div>
-            </div>
-          )}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", width: "100%", padding: "0.5rem 0" }}>
+        <div style={{ minWidth: "70px" }}>
+          <div style={{ fontSize: "0.45rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Rarity</div>
+          <div style={{ fontSize: "0.88rem", fontWeight: 800, color: "#a855f7" }}>⭐ {data?.name || "Evaluated"}</div>
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem", flex: 1, flexWrap: "wrap" as const }}>
+          {data?.rarity && <MC label="Tier" value={data.rarity} color="#a855f7" />}
+          {data?.value && <MC label="Value" value={data.value} color="#00bcd4" />}
+          {data?.grade && <MC label="Grade" value={`PSA ${data.grade}`} />}
+          {data?.demand && <MC label="Trend" value={data.demand} />}
         </div>
       </div>
     ),
@@ -404,13 +295,13 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
   return (
     <div style={{
       padding: "0.65rem 1rem",
-      display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "space-between",
+      display: "flex", flexDirection: "column" as const, justifyContent: "space-between",
       flex: 1,
     }}>
       {render ? render() : <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>Expand for full details</span>}
       {buttons && (
         <div style={{
-          display: "flex", gap: "0.4rem", justifyContent: "center",
+          display: "flex", gap: "0.4rem", justifyContent: "flex-end",
           flexWrap: "wrap" as const, marginTop: "auto", paddingTop: "0.4rem",
           borderTop: "1px solid var(--border-default)", width: "100%",
         }}>
@@ -420,6 +311,7 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
     </div>
   );
 }
+
 
 function GlassCard({ children, premium, fullWidth }: {
   children: React.ReactNode;
@@ -2750,19 +2642,15 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
         <a href="/bots/analyzebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AnalyzeBot →</a>
       </>} />}
       {collapsed && !hasData && (
-        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
-          <span style={{ fontSize: "1.5rem" }}>🧠</span>
-          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>AI Analysis</div>
-          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Upload photos to identify your item, assess condition, and get pricing.</p>
-          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
-            {[{ icon: "🔍", text: "Item identification" }, { icon: "📋", text: "Condition scoring" }, { icon: "💰", text: "Price estimate" }].map((b: any, i: number) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
-            ))}
+        <div style={{ padding: "0.65rem 0.85rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
+          <span style={{ fontSize: "1.3rem" }}>🧠</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>AI Analysis</div>
+            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>AI identification, condition scoring, and valuation</div>
           </div>
-          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
-            <button onClick={() => analyze(false)} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🧠 Analyze · 1 cr</button>
-            <a href="/bots/analyzebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AnalyzeBot →</a>
+          <div style={{ display: "flex", gap: "0.3rem", flexShrink: 0 }}>
+            <button onClick={() => analyze(false)} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🧠 Analyze</button>
+            <a href="/bots/analyzebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>→</a>
           </div>
         </div>
       )}
@@ -2773,28 +2661,34 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
           <BotLoadingState botName="AnalyzeBot" />
         ) : !hasData ? (
           /* ── BEFORE ANALYSIS ── */
-          <div style={{ textAlign: "center", padding: isDraft ? "1.5rem 0" : "0.5rem 0" }}>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", marginBottom: "1.25rem", lineHeight: 1.55, maxWidth: 480, margin: "0 auto 1.25rem" }}>
-              {isDraft
-                ? "Our AI will identify your item, assess condition, estimate pricing, and calculate shipping — all in one scan."
-                : "Run AI analysis to identify your item."}
-            </p>
-            <button
-              onClick={() => analyze()}
-              disabled={analyzing}
-              className="btn-primary"
-              style={{
-                padding: isDraft ? "0.9rem 2.5rem" : "0.6rem 1.5rem",
-                fontSize: isDraft ? "1.05rem" : "0.88rem",
-                fontWeight: 700,
-                ...(isDraft && !analyzing ? {
-                  animation: "pulse 2s ease-in-out infinite",
-                  boxShadow: "0 0 24px rgba(0,188,212,0.4)",
-                } : {}),
-              }}
-            >
-              {analyzing ? "Analyzing... (10-30 seconds)" : isDraft ? "Analyze This Item with AI" : "Run AI Analysis"}
-            </button>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center", padding: "1.25rem", gap: "0.5rem" }}>
+            <span style={{ fontSize: "1.5rem" }}>🧠</span>
+            <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>AI Analysis</div>
+            <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>AI-powered item identification, condition scoring, and market valuation.</p>
+            <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" }}>
+              <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "🔍", text: "Item identification + category" }, { icon: "📊", text: "Condition scoring (1-10)" }, { icon: "💰", text: "Market valuation range" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+              <button
+                onClick={() => analyze()}
+                disabled={analyzing}
+                className="btn-primary"
+                style={{
+                  padding: isDraft ? "0.9rem 2.5rem" : "0.6rem 1.5rem",
+                  fontSize: isDraft ? "1.05rem" : "0.88rem",
+                  fontWeight: 700,
+                  ...(isDraft && !analyzing ? {
+                    animation: "pulse 2s ease-in-out infinite",
+                    boxShadow: "0 0 24px rgba(0,188,212,0.4)",
+                  } : {}),
+                }}
+              >
+                {analyzing ? "Analyzing... (10-30 seconds)" : isDraft ? "Analyze This Item with AI" : "Run AI Analysis"}
+              </button>
+            </div>
             {error && (
               <div style={{ marginTop: "0.75rem", padding: "0.6rem 1rem", borderRadius: "0.75rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontSize: "0.8rem", textAlign: "left", maxWidth: 400, margin: "0.75rem auto 0" }}>
                 {error}
@@ -3259,17 +3153,13 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
         <a href="/bots/pricebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PriceBot →</a>
       </>} />}
       {collapsed && !hasData && (
-        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
-          <span style={{ fontSize: "1.5rem" }}>💰</span>
-          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Price Estimate</div>
-          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>AI-powered pricing from market data and comparable sales.</p>
-          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
-            {[{ icon: "📊", text: "Market comparable sales" }, { icon: "📈", text: "Demand analysis" }, { icon: "🏪", text: "Best selling platforms" }].map((b: any, i: number) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
-            ))}
+        <div style={{ padding: "0.65rem 0.85rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
+          <span style={{ fontSize: "1.3rem" }}>💰</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>Price Estimate</div>
+            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>Market pricing from comps, platforms, and demand data</div>
           </div>
-          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+          <div style={{ display: "flex", gap: "0.3rem", flexShrink: 0 }}>
             {onPriceBotRun && <button onClick={onPriceBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>💰 PriceBot · 1 cr</button>}
             <a href="/bots/pricebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PriceBot →</a>
           </div>
@@ -3281,7 +3171,21 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
         {priceBotLoading ? (
           <BotLoadingState botName="PriceBot" />
         ) : !hasData ? (
-          <EmptyState message="Run analysis for pricing estimates." />
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center", padding: "1.25rem", gap: "0.5rem" }}>
+            <span style={{ fontSize: "1.5rem" }}>💰</span>
+            <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Price Estimate</div>
+            <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Market pricing from comparable sales, platform data, and demand analysis.</p>
+            <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" }}>
+              <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "📊", text: "Comparable sales from 5+ platforms" }, { icon: "🏪", text: "Platform-specific pricing" }, { icon: "💵", text: "Net earnings calculation" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+              {onPriceBotRun && <button onClick={onPriceBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>💰 PriceBot · 1 cr</button>}
+              <a href="/bots/pricebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PriceBot →</a>
+            </div>
+          </div>
         ) : pr ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {/* 3 price cards */}
@@ -3826,17 +3730,13 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
         <a href="/shipping" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open Shipping →</a>
       </>} />}
       {collapsed && !hasAnalysis && (
-        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
-          <span style={{ fontSize: "1.5rem" }}>📦</span>
-          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Shipping Estimates</div>
-          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>AI-powered shipping profile with carrier comparison.</p>
-          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
-            {[{ icon: "📐", text: "AI package sizing" }, { icon: "🚚", text: "Carrier rate comparison" }, { icon: "📋", text: "Packing tips" }].map((b: any, i: number) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
-            ))}
+        <div style={{ padding: "0.65rem 0.85rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
+          <span style={{ fontSize: "1.3rem" }}>📦</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>Shipping Estimates</div>
+            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>Carrier rates, package suggestions, and metro estimates</div>
           </div>
-          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+          <div style={{ display: "flex", gap: "0.3rem", flexShrink: 0 }}>
             <a href="/shipping" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open Shipping →</a>
           </div>
         </div>
@@ -3845,34 +3745,18 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
       <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "0.75rem 1.25rem 1.25rem" }}>
         {!hasAnalysis ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center", padding: "0.5rem 0", flex: 1, justifyContent: "space-evenly" }}>
-            <div style={{ fontSize: "1.5rem" }}>📦</div>
-            <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 360, margin: 0 }}>Run AI analysis to generate your shipping profile and carrier comparison.</p>
-            <div style={{ marginTop: "0.25rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360 }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
-              {[{ icon: "📦", text: "AI-recommended box size and packing materials" }, { icon: "🚚", text: "Real-time carrier rate comparison (USPS, UPS, FedEx)" }, { icon: "📋", text: "Professional packing tips to prevent damage" }, { icon: "💰", text: "Cost estimates to the 5 largest metro areas" }].map((b, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
-                  <span>{b.text}</span>
-                </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center", padding: "1.25rem", gap: "0.5rem" }}>
+            <span style={{ fontSize: "1.5rem" }}>📦</span>
+            <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Shipping Estimates</div>
+            <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Carrier rates, AI package suggestions, and delivery estimates to major metros.</p>
+            <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" }}>
+              <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "📦", text: "AI package size + weight" }, { icon: "🚚", text: "Carrier rate comparison" }, { icon: "🏙️", text: "Metro delivery estimates" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
               ))}
             </div>
-            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
-              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
-              {["AI measures and weighs your item", "Compare carrier rates side by side", "Get packing tips to prevent damage"].map((step, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
-                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
-                  <span>{step}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
-              {[{ value: "4+", label: "Carriers" }, { value: "AI", label: "Box sizing" }, { value: "5", label: "Metro estimates" }].map((m, i) => (
-                <div key={i} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
-                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
-                </div>
-              ))}
+            <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+              <a href="/shipping" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open Shipping →</a>
             </div>
           </div>
         ) : (
@@ -4276,17 +4160,13 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
         <a href={`/bots/photobot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PhotoBot →</a>
       </>} />}
       {collapsed && !hasAnalysis && (
-        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
-          <span style={{ fontSize: "1.5rem" }}>📸</span>
-          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Photo Assessment</div>
-          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>AI analysis of your listing photos with improvement tips.</p>
-          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
-            {[{ icon: "📷", text: "Photo quality score" }, { icon: "💡", text: "Improvement tips" }, { icon: "🎯", text: "Listing readiness check" }].map((b: any, i: number) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
-            ))}
+        <div style={{ padding: "0.65rem 0.85rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
+          <span style={{ fontSize: "1.3rem" }}>📸</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>Photo Assessment</div>
+            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>Photo quality scoring and enhancement recommendations</div>
           </div>
-          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+          <div style={{ display: "flex", gap: "0.3rem", flexShrink: 0 }}>
             <button onClick={runAssessOnly} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📸 PhotoBot · 1 cr</button>
             <a href={`/bots/photobot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PhotoBot →</a>
           </div>
@@ -4296,34 +4176,19 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
       <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "1.25rem" }}>
         {!hasAnalysis ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center", padding: "0.5rem 0", flex: 1, justifyContent: "space-evenly" }}>
-            <div style={{ fontSize: "1.5rem" }}>📸</div>
-            <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 360, margin: 0 }}>Run AI analysis for photo quality assessment and improvement tips.</p>
-            <div style={{ marginTop: "0.25rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360 }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
-              {[{ icon: "📷", text: "Photo quality score with specific improvement tips" }, { icon: "💡", text: "Lighting, angle, and composition recommendations" }, { icon: "🎯", text: "Platform-specific photo requirements checklist" }, { icon: "📈", text: "Better photos = faster sales and higher prices" }].map((b, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
-                  <span>{b.text}</span>
-                </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center", padding: "1.25rem", gap: "0.5rem" }}>
+            <span style={{ fontSize: "1.5rem" }}>📸</span>
+            <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Photo Assessment</div>
+            <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Photo quality scoring, enhancement tips, and cover photo optimization.</p>
+            <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" }}>
+              <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "📸", text: "Quality scoring (1-10)" }, { icon: "✨", text: "Enhancement recommendations" }, { icon: "🖼️", text: "Cover photo optimization" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
               ))}
             </div>
-            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
-              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
-              {["AI analyzes your listing photos", "Get quality score and improvement tips", "Retake and re-score for better results"].map((step, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
-                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
-                  <span>{step}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
-              {[{ value: "1-10", label: "Quality score" }, { value: "AI", label: "Analysis" }, { value: "Tips", label: "Per photo" }].map((m, i) => (
-                <div key={i} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
-                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
-                </div>
-              ))}
+            <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+              <button onClick={runAssessOnly} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📸 PhotoBot · 1 cr</button>
+              <a href={`/bots/photobot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PhotoBot →</a>
             </div>
           </div>
         ) : (
@@ -4860,17 +4725,13 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
         <a href="/bots/buyerbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open BuyerBot →</a>
       </>} />}
       {collapsed && !hasResult && (
-        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
-          <span style={{ fontSize: "1.5rem" }}>🎯</span>
-          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Buyer Finder</div>
-          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Scans 15+ platforms to find people actively searching for items like yours.</p>
-          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
-            {[{ icon: "🎯", text: "Targeted buyer profiles" }, { icon: "📊", text: "Platform analysis" }, { icon: "📤", text: "Outreach templates" }].map((b: any, i: number) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
-            ))}
+        <div style={{ padding: "0.65rem 0.85rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
+          <span style={{ fontSize: "1.3rem" }}>🎯</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>Buyer Finder</div>
+            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>Targeted buyer profiles and platform opportunities</div>
           </div>
-          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+          <div style={{ display: "flex", gap: "0.3rem", flexShrink: 0 }}>
             {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 BuyerBot · 1 cr</button>}
             <a href="/bots/buyerbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open BuyerBot →</a>
           </div>
@@ -4885,42 +4746,19 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
           <BotLoadingState botName="BuyerBot" />
         ) : !hasResult ? (
           /* ── NOT RUN ── */
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "space-evenly" }}>
-            <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 360, margin: 0 }}>
-              Scans 15+ platforms to find people actively searching for items like yours.
-            </p>
-            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", justifyContent: "center", fontSize: "0.65rem", color: "var(--text-muted)" }}>
-              <span>📡 15+ platforms</span>
-              <span>·</span>
-              <span>🎯 Targeted buyers</span>
-              <span>·</span>
-              <span>📤 Outreach templates</span>
-            </div>
-            <div style={{ marginTop: "0.75rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
-              {[{ icon: "🎯", text: "Targeted buyer profiles matched to your exact item" }, { icon: "📊", text: "Platform-by-platform opportunity analysis" }, { icon: "📝", text: "Ready-to-use outreach templates for each buyer" }, { icon: "💰", text: "Buyer budget estimates so you know who's serious" }].map((b, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
-                  <span>{b.text}</span>
-                </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center", padding: "1.25rem", gap: "0.5rem" }}>
+            <span style={{ fontSize: "1.5rem" }}>🎯</span>
+            <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Buyer Finder</div>
+            <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Targeted buyer profiles matched to your item across 15+ platforms.</p>
+            <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" }}>
+              <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "🎯", text: "Targeted buyer profiles" }, { icon: "🏪", text: "Platform opportunity analysis" }, { icon: "📧", text: "Ready-to-use outreach templates" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
               ))}
             </div>
-            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
-              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
-              {["Run scan — AI searches 15+ platforms", "Review matched buyers with scores", "Send outreach with one click"].map((step, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
-                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
-                  <span>{step}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
-              {[{ value: "8+", label: "Avg buyers found" }, { value: "15+", label: "Platforms scanned" }, { value: "< 30s", label: "Scan time" }].map((m, i) => (
-                <div key={i} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
-                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
-                </div>
-              ))}
+            <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+              {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 BuyerBot · 1 cr</button>}
+              <a href="/bots/buyerbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open BuyerBot →</a>
             </div>
           </div>
         ) : (
@@ -5321,17 +5159,13 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
         <a href="/bots/listbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ListBot →</a>
       </>} />}
       {collapsed && !hasListBotData && (
-        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
-          <span style={{ fontSize: "1.5rem" }}>📋</span>
-          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Listing Creator</div>
-          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Auto-generates optimized listings for 10+ platforms in one click.</p>
-          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
-            {[{ icon: "📝", text: "Platform-optimized listings" }, { icon: "🏷️", text: "SEO keywords" }, { icon: "🚀", text: "One-click publish" }].map((b: any, i: number) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
-            ))}
+        <div style={{ padding: "0.65rem 0.85rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
+          <span style={{ fontSize: "1.3rem" }}>📋</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>Listing Creator</div>
+            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>Optimized listings for 13+ selling platforms</div>
           </div>
-          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+          <div style={{ display: "flex", gap: "0.3rem", flexShrink: 0 }}>
             {onListBotRun && <button onClick={onListBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📋 ListBot · 1 cr</button>}
             <a href="/bots/listbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ListBot →</a>
           </div>
@@ -5346,7 +5180,7 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
           <BotLoadingState botName="ListBot" />
         ) : !hasListBotData ? (
           /* ── NOT RUN or ERROR ── */
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "space-evenly" }}>
+          <>
             {listBotError && (
               <div style={{
                 padding: "0.5rem 0.75rem", borderRadius: "0.4rem", width: "100%",
@@ -5356,39 +5190,22 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
                 {listBotError}
               </div>
             )}
-            <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 360 }}>
-              Auto-generate listings for 10+ platforms in one click — eBay, Facebook, Instagram, Etsy, and more.
-            </p>
-            <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", lineHeight: 1.4, maxWidth: 360 }}>
-              Each listing is optimized for that platform&apos;s audience, format, and algorithm. Ready to copy &amp; paste.
-            </p>
-            <div style={{ marginTop: "0.25rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
-              {[{ icon: "📝", text: "Professional listings optimized for each platform's algorithm" }, { icon: "🏷️", text: "SEO keywords and hashtags for maximum visibility" }, { icon: "📊", text: "Character-perfect titles and descriptions per platform" }, { icon: "🚀", text: "One-click copy to all 13 platforms via Publish Hub" }].map((b, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
-                  <span>{b.text}</span>
-                </div>
-              ))}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center", padding: "1.25rem", gap: "0.5rem" }}>
+              <span style={{ fontSize: "1.5rem" }}>📋</span>
+              <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Listing Creator</div>
+              <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>SEO-optimized listings formatted for 13+ selling platforms.</p>
+              <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" }}>
+                <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+                {[{ icon: "📋", text: "SEO-optimized descriptions" }, { icon: "🏪", text: "13+ platform formatting" }, { icon: "📋", text: "One-click copy to clipboard" }].map((b, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+                {onListBotRun && <button onClick={onListBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📋 ListBot · 1 cr</button>}
+                <a href="/bots/listbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ListBot →</a>
+              </div>
             </div>
-            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
-              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
-              {["Generate — AI creates optimized listings", "Review and customize per platform", "Publish to all 13 platforms instantly"].map((step, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
-                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
-                  <span>{step}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
-              {[{ value: "13", label: "Platforms" }, { value: "< 10s", label: "Generation time" }, { value: "SEO", label: "Optimized" }].map((m, i) => (
-                <div key={i} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
-                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          </>
         ) : (
           /* ── HAS LISTBOT DATA ── */
           <>
@@ -5721,17 +5538,13 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
         <a href={`/bots/carbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CarBot →</a>
       </>} />}
       {collapsed && !hasData && (
-        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
-          <span style={{ fontSize: "1.5rem" }}>🚗</span>
-          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Vehicle Specialist</div>
-          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Condition grading, market pricing, and local pickup planning for vehicles.</p>
-          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
-            {[{ icon: "🔑", text: "Full VIN decode" }, { icon: "📊", text: "Market pricing" }, { icon: "🤝", text: "Pickup planning" }].map((b: any, i: number) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
-            ))}
+        <div style={{ padding: "0.65rem 0.85rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
+          <span style={{ fontSize: "1.3rem" }}>🚗</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>Vehicle Specialist</div>
+            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>VIN decode, condition grading, and market valuation</div>
           </div>
-          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+          <div style={{ display: "flex", gap: "0.3rem", flexShrink: 0 }}>
             {onCarBotRun && <button onClick={onCarBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🚗 CarBot · 1 cr</button>}
             <a href={`/bots/carbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CarBot →</a>
           </div>
@@ -6434,37 +6247,19 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
         )}
         <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
           <div style={{ padding: "1.25rem" }}>
-            <div style={{ textAlign: "center", padding: "1rem 0.5rem" }}>
-              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🎴</div>
-              <div style={{ fontSize: "0.88rem", fontWeight: 700, color: PURPLE, marginBottom: "0.3rem" }}>Collectibles Specialist</div>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: "0.75rem", maxWidth: 400, margin: "0 auto 0.75rem" }}>
-                Sports cards, trading cards, vinyl records, coins, comics, vintage toys, and more. Run CollectiblesBot for expert evaluation including rarity assessment, grading recommendations, and collector market analysis.
-              </p>
-              <div style={{ marginTop: "0.5rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left", margin: "0.5rem auto 0" }}>
-                <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
-                {[{ icon: "⭐", text: "Rarity tier assessment from Common to Ultra Rare" }, { icon: "🏅", text: "Professional grade estimate (PSA, BGS, CGC scale)" }, { icon: "📈", text: "Collector market trends and demand forecasting" }].map((b, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                    <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
-                    <span>{b.text}</span>
-                  </div>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center", padding: "1.25rem", gap: "0.5rem" }}>
+              <span style={{ fontSize: "1.5rem" }}>⭐</span>
+              <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Collectibles Specialist</div>
+              <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Rarity assessment, grading recommendations, and collector market analysis.</p>
+              <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" }}>
+                <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+                {[{ icon: "⭐", text: "Rarity tier assessment" }, { icon: "🏅", text: "Grade estimate (PSA/BGS)" }, { icon: "📈", text: "Collector market trends" }].map((b, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
                 ))}
               </div>
-              <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left", margin: "0.5rem auto 0" }}>
-                <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
-                {["Run AI analysis to detect collectibles", "AI grades rarity and condition", "Get market value and grading ROI"].map((step, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
-                    <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
-                    <span>{step}</span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360, margin: "0.4rem auto 0" }}>
-                {[{ value: "PSA", label: "Grade scale" }, { value: "ROI", label: "Analysis" }, { value: "Live", label: "Market data" }].map((m, i) => (
-                  <div key={i} style={{ textAlign: "center" }}>
-                    <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
-                    <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
-                  </div>
-                ))}
+              <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+                {onCollectiblesBotRun && <button onClick={onCollectiblesBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎴 CollectiblesBot · 1 cr</button>}
+                <a href={`/bots/collectiblesbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CollectiblesBot →</a>
               </div>
             </div>
           </div>
@@ -6515,17 +6310,13 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
         <a href={`/bots/collectiblesbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CollectiblesBot →</a>
       </>} />}
       {collapsed && !hasResult && (
-        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
-          <span style={{ fontSize: "1.5rem" }}>⭐</span>
-          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>CollectiblesBot</div>
-          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Rarity assessment, grading recommendations, and collector market analysis.</p>
-          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
-            {[{ icon: "⭐", text: "Rarity tier assessment" }, { icon: "🏅", text: "Grade estimate" }, { icon: "📈", text: "Market trends" }].map((b: any, i: number) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
-            ))}
+        <div style={{ padding: "0.65rem 0.85rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
+          <span style={{ fontSize: "1.3rem" }}>⭐</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>CollectiblesBot</div>
+            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>Rarity grading, PSA estimates, and collector demand</div>
           </div>
-          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+          <div style={{ display: "flex", gap: "0.3rem", flexShrink: 0 }}>
             {onCollectiblesBotRun && <button onClick={onCollectiblesBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>⭐ CollectiblesBot · 1 cr</button>}
             <a href={`/bots/collectiblesbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CollectiblesBot →</a>
           </div>
@@ -6550,35 +6341,19 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
         {collectiblesBotLoading ? (
           <BotLoadingState botName="CollectiblesBot" />
         ) : !hasResult ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "space-evenly" }}>
-            <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.5, margin: 0 }}>
-              Run CollectiblesBot for rarity assessment, grading, and collector market analysis.
-            </p>
-            <div style={{ padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
-              {[{ icon: "⭐", text: "Rarity tier assessment from Common to Ultra Rare" }, { icon: "🏅", text: "Professional grade estimate (PSA, BGS, CGC scale)" }, { icon: "📈", text: "Collector market trends and demand forecasting" }, { icon: "💎", text: "Grading ROI analysis — is it worth getting graded?" }].map((b, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
-                  <span>{b.text}</span>
-                </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center", padding: "1.25rem", gap: "0.5rem" }}>
+            <span style={{ fontSize: "1.5rem" }}>⭐</span>
+            <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Collectibles Specialist</div>
+            <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Rarity assessment, grading recommendations, and collector market analysis.</p>
+            <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" }}>
+              <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "⭐", text: "Rarity tier assessment" }, { icon: "🏅", text: "Grade estimate (PSA/BGS)" }, { icon: "📈", text: "Collector market trends" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
               ))}
             </div>
-            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", width: "100%", maxWidth: 360, textAlign: "left" as const }}>
-              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
-              {["Submit your collectible for evaluation", "AI grades rarity and condition", "Get market value and grading ROI"].map((step, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
-                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
-                  <span>{step}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)", width: "100%", maxWidth: 360 }}>
-              {[{ value: "PSA", label: "Grade scale" }, { value: "ROI", label: "Analysis" }, { value: "Live", label: "Market data" }].map((m, i) => (
-                <div key={i} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
-                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
-                </div>
-              ))}
+            <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+              {onCollectiblesBotRun && <button onClick={onCollectiblesBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎴 CollectiblesBot · 1 cr</button>}
+              <a href={`/bots/collectiblesbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CollectiblesBot →</a>
             </div>
           </div>
         ) : (
@@ -6751,8 +6526,8 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
               <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.25rem" }}>Market Intelligence</div>
                 <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-primary)" }}>Best Platform: {bestPlatform}</div>
-                {platformReasoning && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", marginTop: "0.1rem", lineHeight: 1.4 }}>{platformReasoning}</div>}
-                {demandTrend && <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Demand: {demandTrend}{demandReasoning ? ` — ${demandReasoning}` : ""}</div>}
+                {platformReasoning && <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", paddingTop: "0.1rem", lineHeight: 1.4 }}>{platformReasoning}</div>}
+                {demandTrend && <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", paddingTop: "0.1rem" }}>Demand: {demandTrend}{demandReasoning ? ` — ${demandReasoning}` : ""}</div>}
               </div>
             )}
 
@@ -6983,11 +6758,10 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
         )}
         <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
           <div style={{ padding: "1.25rem" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", alignItems: "center", textAlign: "center" }}>
-              <div style={{ fontSize: "2rem" }}>🏺</div>
-              <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.4, maxWidth: 380 }}>
-                Antique Evaluation
-              </p>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center", padding: "1.25rem", gap: "0.5rem" }}>
+              <span style={{ fontSize: "1.5rem" }}>🏺</span>
+              <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Antique Evaluation</div>
+              <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Authentication, historical research, and auction value estimation.</p>
               {antiqueBotError && (
                 <div style={{
                   padding: "0.5rem 0.75rem", borderRadius: "0.4rem", width: "100%",
@@ -6997,12 +6771,16 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
                   {antiqueBotError}
                 </div>
               )}
-              <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.6, maxWidth: 380 }}>
-                Think this might be an antique? AntiqueBot provides authentication, historical research, condition deep-dive, and collector market analysis.
-              </p>
-              <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.5, maxWidth: 360 }}>
-                Run AntiqueBot for a professional-grade antique assessment.
-              </p>
+              <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" }}>
+                <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+                {[{ icon: "🏛️", text: "Authentication analysis" }, { icon: "📚", text: "Historical research" }, { icon: "🔨", text: "Auction value estimate" }].map((b, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+                {onAntiqueBotRun && <button onClick={onAntiqueBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🏺 AntiqueBot · 1 cr</button>}
+                <a href={`/bots/antiquebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AntiqueBot →</a>
+              </div>
             </div>
           </div>
           {/* MegaBot boost results if already run */}
@@ -7052,17 +6830,13 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
         <a href={`/bots/antiquebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AntiqueBot →</a>
       </>} />}
       {collapsed && !hasData && (
-        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
-          <span style={{ fontSize: "1.5rem" }}>🏺</span>
-          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Antique Evaluation</div>
-          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Authentication, historical research, and collector market analysis.</p>
-          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
-            {[{ icon: "🏛️", text: "Authentication analysis" }, { icon: "📜", text: "Historical research" }, { icon: "💰", text: "Auction estimate" }].map((b: any, i: number) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
-            ))}
+        <div style={{ padding: "0.65rem 0.85rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
+          <span style={{ fontSize: "1.3rem" }}>🏺</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>Antique Evaluation</div>
+            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>Authentication, history research, and auction estimates</div>
           </div>
-          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+          <div style={{ display: "flex", gap: "0.3rem", flexShrink: 0 }}>
             {onAntiqueBotRun && <button onClick={onAntiqueBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🏺 AntiqueBot · 1 cr</button>}
             <a href={`/bots/antiquebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AntiqueBot →</a>
           </div>
@@ -7193,25 +6967,11 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
               </div>
             )}
 
-            {/* What AntiqueBot Will Analyze — item-specific */}
-            <div style={{
-              padding: "0.65rem 0.85rem", background: "var(--ghost-bg)",
-              borderRadius: "0.6rem", border: "1px solid var(--border-default)",
-            }}>
-              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "#fbbf24", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>
-                What AntiqueBot Will Analyze
-              </div>
-              {[
-                { icon: "🔍", text: `Authentication — Is this ${aiData?.era || "antique"} ${aiData?.category || "item"} genuine or reproduction?` },
-                { icon: "📜", text: `Historical provenance — ${aiData?.maker ? `${aiData.maker} production history and catalog verification` : "Origin, maker marks, and period dating"}` },
-                { icon: "💰", text: "Expert valuation — Fair market, insurance, auction, and dealer buy prices" },
-                { icon: "🏛️", text: "Collector market — Demand level, comparable auction results, and market outlook" },
-                { icon: "📋", text: "Selling strategy — Best venue, timing, presentation tips, and reserve strategy" },
-              ].map((b, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                  <span style={{ flexShrink: 0, fontSize: "0.65rem" }}>{b.icon}</span>
-                  <span>{b.text}</span>
-                </div>
+            {/* What You'll Get — standardized */}
+            <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" }}>
+              <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "🏛️", text: "Authentication analysis" }, { icon: "📚", text: "Historical research" }, { icon: "🔨", text: "Auction value estimate" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
               ))}
             </div>
           </div>
@@ -7565,19 +7325,37 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
         preview={boostedCount > 0 ? `${boostedCount}/${allBots.length} boosted · ${avgAgreement}% avg agreement` : "No bots enhanced yet"}
       />
       {collapsed && (
-        <div style={{
-          padding: "0.65rem 1rem", display: "flex",
-          alignItems: "center", justifyContent: "center", gap: "0.75rem",
-          flexWrap: "wrap" as const,
-        }}>
-          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#8b5cf6" }}>
-            ⚡ {boostedCount} of {allBots.length} bots boosted
-          </span>
-          {boostedCount > 0 && (
-            <span style={{ fontSize: "0.58rem", color: "var(--text-muted)" }}>
-              Click to view Multi-AI results
-            </span>
-          )}
+        <div style={{ padding: "0.5rem 0.85rem" }}>
+          <div style={{ display: "flex", gap: "0.35rem", justifyContent: "center", marginBottom: "0.4rem", flexWrap: "wrap" as const }}>
+            {allBots.map((b) => {
+              const isBoosted = boostedBots.has(b.key);
+              const agreeRaw = boostResults[b.key]?.agreementScore;
+              const agreeNum = agreeRaw ? Math.round(agreeRaw > 1 ? agreeRaw : agreeRaw * 100) : 0;
+              return (
+                <div key={b.key} style={{
+                  display: "flex", flexDirection: "column" as const, alignItems: "center",
+                  padding: "0.25rem 0.35rem", borderRadius: "0.35rem", minWidth: "36px",
+                  background: isBoosted ? "rgba(139,92,246,0.08)" : "var(--ghost-bg)",
+                  border: `1px solid ${isBoosted ? "rgba(139,92,246,0.25)" : "var(--border-default)"}`,
+                }}>
+                  <span style={{ fontSize: "0.7rem" }}>{b.icon}</span>
+                  <span style={{ fontSize: "0.48rem", fontWeight: 700, color: isBoosted ? "#a855f7" : "var(--text-muted)" }}>
+                    {isBoosted ? `${agreeNum}%` : "—"}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            {remaining.length > 0 && aiData && onBoostAll && (
+              <button onClick={onBoostAll} disabled={!!boostingBot} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: boostingBot ? "var(--ghost-bg)" : "linear-gradient(135deg, #8b5cf6, #6d28d9)", color: boostingBot ? "var(--text-muted)" : "#fff", cursor: boostingBot ? "not-allowed" : "pointer", minHeight: "32px" }}>
+                {boostingBot ? "⏳ Boosting..." : `⚡ Boost ${remaining.length} Remaining`}
+              </button>
+            )}
+            <a href={`/bots/megabot?item=${itemId}`} style={{ fontSize: "0.62rem", fontWeight: 600, color: "#00bcd4", textDecoration: "none", marginLeft: "auto" }}>
+              Open Console →
+            </a>
+          </div>
         </div>
       )}
 
@@ -8642,17 +8420,13 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
         <a href={`/bots/reconbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ReconBot →</a>
       </>} />}
       {collapsed && !hasData && (
-        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
-          <span style={{ fontSize: "1.5rem" }}>🔍</span>
-          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>ReconBot</div>
-          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Scan marketplaces to find competing listings, track prices, and get alerts.</p>
-          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
-            {[{ icon: "🔍", text: "Competitor listings" }, { icon: "💰", text: "Price tracking" }, { icon: "🚨", text: "Market alerts" }].map((b: any, i: number) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
-            ))}
+        <div style={{ padding: "0.65rem 0.85rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
+          <span style={{ fontSize: "1.3rem" }}>🔍</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>ReconBot</div>
+            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>Competitive intelligence and price position tracking</div>
           </div>
-          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+          <div style={{ display: "flex", gap: "0.3rem", flexShrink: 0 }}>
             {onReconBotRun && <button onClick={onReconBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🔍 ReconBot · 1 cr</button>}
             <a href={`/bots/reconbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ReconBot →</a>
           </div>
@@ -8660,48 +8434,20 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
       )}
       <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
         {!hasData && !reconBotLoading ? (
-          <div style={{ padding: "1.25rem", textAlign: "center", display: "flex", flexDirection: "column" as const, alignItems: "center", flex: 1, justifyContent: "space-evenly" }}>
-            <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>🔍</div>
-            <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.3rem" }}>
-              Competitive Intelligence Scanner
-            </div>
-            <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.75rem", lineHeight: 1.5 }}>
-              Scan all major marketplaces to find competing listings, track prices, and get strategic alerts.
-            </div>
-            <div style={{ marginBottom: "1rem", padding: "0.65rem 0.85rem", background: "var(--ghost-bg)", borderRadius: "0.6rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.4rem" }}>What You&apos;ll Get</div>
-              {[{ icon: "🔍", text: "Real competitor listings found across 5+ marketplaces" }, { icon: "💰", text: "Price comparison showing where you stand in the market" }, { icon: "🚨", text: "Strategic alerts when competitors change prices" }, { icon: "📈", text: "Market heat score and optimal pricing recommendation" }].map((b, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", padding: "0.3rem 0", fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                  <span style={{ flexShrink: 0, fontSize: "0.7rem" }}>{b.icon}</span>
-                  <span>{b.text}</span>
-                </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", flex: 1, justifyContent: "center", padding: "1.25rem", gap: "0.5rem" }}>
+            <span style={{ fontSize: "1.5rem" }}>🔍</span>
+            <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>ReconBot</div>
+            <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Competitive intelligence scanning across 5+ marketplaces.</p>
+            <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" }}>
+              <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+              {[{ icon: "🔍", text: "Competitor listing scan" }, { icon: "💰", text: "Price position tracking" }, { icon: "🚨", text: "Market alert monitoring" }].map((b, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
               ))}
             </div>
-            <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
-              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.35rem" }}>How It Works</div>
-              {["Scan — AI searches competing listings", "Review competitor prices and strategies", "Get alerts when the market shifts"].map((step, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.25rem 0", fontSize: "0.65rem", color: "var(--text-secondary)" }}>
-                  <span style={{ width: "20px", height: "20px", borderRadius: "50%", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", fontSize: "0.55rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
-                  <span>{step}</span>
-                </div>
-              ))}
+            <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
+              {onReconBotRun && <button onClick={onReconBotRun} disabled={!aiData} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: aiData ? "pointer" : "not-allowed", minHeight: "32px" }}>🔍 ReconBot · 1 cr</button>}
+              <a href={`/bots/reconbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ReconBot →</a>
             </div>
-            <div style={{ marginTop: "0.4rem", display: "flex", justifyContent: "center", gap: "0.75rem", fontSize: "0.58rem", color: "var(--text-muted)" }}>
-              {[{ value: "5+", label: "Marketplaces" }, { value: "Live", label: "Price tracking" }, { value: "24/7", label: "Alert monitoring" }].map((m, i) => (
-                <div key={i} style={{ textAlign: "center" }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{m.value}</div>
-                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{m.label}</div>
-                </div>
-              ))}
-            </div>
-            <button onClick={onReconBotRun} disabled={!aiData} style={{
-              padding: "0.5rem 1.2rem", borderRadius: "0.5rem", fontSize: "0.78rem", fontWeight: 700,
-              background: aiData ? "linear-gradient(135deg, #8b5cf6, #7c3aed)" : "var(--ghost-bg)",
-              border: "none", color: aiData ? "#fff" : "var(--text-muted)", cursor: aiData ? "pointer" : "not-allowed",
-            }}>
-              🔍 Run Competitive Scan
-            </button>
-            <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.4rem" }}>1 credit · Scans 5+ platforms</div>
           </div>
         ) : reconBotLoading ? (
           <BotLoadingState botName="ReconBot" />
@@ -8888,9 +8634,27 @@ export default function ItemDashboardPanels({
     setBotGateError((prev) => ({ ...prev, [bot]: err }));
   const bypassGates = isDemoMode();
 
-  // Panel collapse state — all expanded by default
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  // Panel collapse state — smart defaults, localStorage persistence
+  const DEFAULT_COLLAPSED: Record<string, boolean> = {
+    control: false, analysis: false, pricing: false,
+    shipping: true, photos: true, buyers: true, listing: true,
+    recon: true, carbot: true, antique: true, collectibles: true, megabot: true,
+  };
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(`ll-panels-${itemId}`);
+      if (saved) { try { return JSON.parse(saved); } catch { /* use defaults */ } }
+    }
+    return DEFAULT_COLLAPSED;
+  });
   const togglePanel = (id: string) => setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
+
+  // Persist panel layout to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`ll-panels-${itemId}`, JSON.stringify(collapsed));
+    }
+  }, [collapsed, itemId]);
 
   // PriceBot state
   const [priceBotResult, setPriceBotResult] = useState<any>(null);
@@ -8990,6 +8754,7 @@ export default function ItemDashboardPanels({
       if (res.ok) {
         const data = await res.json();
         setPriceBotResult(data.result);
+        setCollapsed(prev => ({ ...prev, pricing: false }));
       } else if (res.status === 402 || res.status === 403) {
         const err = await res.json().catch(() => ({ error: "error", message: "Something went wrong." }));
         setBotError("pricing", { type: err.error, message: err.message, balance: err.balance, required: err.required });
@@ -9006,6 +8771,7 @@ export default function ItemDashboardPanels({
       if (res.ok) {
         const data = await res.json();
         setBuyerBotResult(data.result);
+        setCollapsed(prev => ({ ...prev, buyers: false }));
       } else {
         const err = await res.json().catch(() => ({ error: "error", message: "BuyerBot failed. Please try again." }));
         setBotError("buyers", { type: err.error || "error", message: err.message || `BuyerBot failed (${res.status})` });
@@ -9024,6 +8790,7 @@ export default function ItemDashboardPanels({
       if (res.ok) {
         const data = await res.json();
         setReconBotResult(data.result);
+        setCollapsed(prev => ({ ...prev, recon: false }));
       } else if (res.status === 402 || res.status === 403) {
         const err = await res.json().catch(() => ({ error: "error", message: "Something went wrong." }));
         setBotError("recon", { type: err.error, message: err.message, balance: err.balance, required: err.required });
@@ -9042,6 +8809,7 @@ export default function ItemDashboardPanels({
         const data = await res.json();
         if (data.result) {
           setListBotResult(data.result);
+          setCollapsed(prev => ({ ...prev, listing: false }));
         } else {
           setListBotError("ListBot returned no data. Try again.");
         }
@@ -9068,6 +8836,7 @@ export default function ItemDashboardPanels({
         const data = await res.json();
         if (data.result) {
           setAntiqueBotResult(data.result);
+          setCollapsed(prev => ({ ...prev, antique: false }));
         } else {
           setAntiqueBotError("AntiqueBot returned no data. Try again.");
         }
@@ -9092,6 +8861,7 @@ export default function ItemDashboardPanels({
       if (res.ok) {
         const data = await res.json();
         setCarBotResult(data.result);
+        setCollapsed(prev => ({ ...prev, carbot: false }));
       } else if (res.status === 402 || res.status === 403) {
         const err = await res.json().catch(() => ({ error: "error", message: "Something went wrong." }));
         setBotError("carbot", { type: err.error, message: err.message, balance: err.balance, required: err.required });
@@ -9108,7 +8878,7 @@ export default function ItemDashboardPanels({
       const res = await fetch(`/api/bots/collectiblesbot/${itemId}`, { method: "POST" });
       if (res.ok) {
         const data = await res.json();
-        if (data.result) setCollectiblesBotResult(data.result);
+        if (data.result) { setCollectiblesBotResult(data.result); setCollapsed(prev => ({ ...prev, collectibles: false })); }
       } else if (res.status === 402 || res.status === 403) {
         const err = await res.json().catch(() => ({ error: "error", message: "Something went wrong." }));
         setBotError("collectibles", { type: err.error, message: err.message, balance: err.balance, required: err.required });
