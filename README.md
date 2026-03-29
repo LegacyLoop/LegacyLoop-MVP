@@ -67,5 +67,5 @@ Vercel is recommended. Set all env vars from `.env.example` in the Vercel dashbo
 
 ## Contact
 
-- Email: legacyloopmaine@gmail.com
-- Phone: (512) 758-0518
+- Email: ryan@legacy-loop.com
+- Phone: (207) 555-0127

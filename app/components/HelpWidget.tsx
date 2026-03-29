@@ -1,137 +1,147 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
+
+const HelpChatWidget = dynamic(() => import("@/app/help/HelpChatWidget"), { ssr: false });
 
 export default function HelpWidget() {
   const [open, setOpen] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "/") {
+        e.preventDefault();
+        setOpen(prev => !prev);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  // Context-aware suggestions
+  const [suggestions, setSuggestions] = useState<{ label: string; href: string }[]>([]);
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path.includes("/items/")) {
+      setSuggestions([
+        { label: "How AnalyzeBot identifies items", href: "/help/how-analyzebot-works" },
+        { label: "How AI pricing works", href: "/help/understanding-ai-pricing" },
+      ]);
+    } else if (path.includes("/shipping")) {
+      setSuggestions([
+        { label: "Complete shipping guide", href: "/help/complete-shipping-guide" },
+        { label: "Shipping center overview", href: "/help/shipping-center-overview" },
+      ]);
+    } else if (path.includes("/bots")) {
+      setSuggestions([
+        { label: "What is Bot Hub?", href: "/help/what-is-bot-hub" },
+        { label: "What is MegaBot?", href: "/help/how-megabot-works" },
+      ]);
+    } else if (path.includes("/credits")) {
+      setSuggestions([
+        { label: "Bot tiers and credits", href: "/help/bot-tiers-and-credits" },
+        { label: "Add-on marketplace", href: "/help/addon-marketplace" },
+      ]);
+    } else {
+      setSuggestions([
+        { label: "Getting started guide", href: "/help/first-item-listing" },
+        { label: "How AI pricing works", href: "/help/understanding-ai-pricing" },
+      ]);
+    }
+  }, [open]);
 
   return (
-    <div
-      className="no-print"
-      style={{
-        position: "fixed",
-        bottom: "1.5rem",
-        right: "1.5rem",
-        zIndex: 200,
-      }}
-    >
-      {/* Popover */}
+    <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 200 }}>
       {open && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: "60px",
-            right: 0,
-            width: "280px",
-            background: "var(--bg-card-solid)",
-            borderRadius: "1.25rem",
-            boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
-            border: "1px solid var(--border-default)",
-            overflow: "hidden",
-          }}
-        >
+        <div style={{
+          position: "absolute", bottom: 64, right: 0, width: 340,
+          background: "var(--bg-card, #161b22)", border: "1px solid var(--border-default, rgba(0,188,212,0.15))",
+          borderRadius: 16, boxShadow: "0 8px 32px rgba(0,0,0,0.3)", overflow: "hidden",
+        }}>
           {/* Header */}
-          <div
-            style={{
-              background: "linear-gradient(135deg, #0097a7, #00bcd4)",
-              padding: "1rem 1.25rem",
-              color: "#fff",
-            }}
-          >
-            <div style={{ fontWeight: 700, fontSize: "0.9rem" }}>Need help?</div>
-            <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.8)", marginTop: "0.1rem" }}>
-              We&apos;re here for you
-            </div>
+          <div style={{ background: "linear-gradient(135deg, #00bcd4, #0097a7)", padding: "14px 16px" }}>
+            <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "#fff" }}>Need help?</div>
+            <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.8)" }}>Mon–Sat, 8am–8pm EST</div>
           </div>
 
-          {/* Options */}
-          <div style={{ padding: "0.75rem" }}>
+          <div style={{ padding: "12px", display: "flex", flexDirection: "column", gap: "8px", maxHeight: 420, overflowY: "auto" }}>
+            {/* Search Help Center */}
+            <a href="/help" style={{
+              display: "flex", alignItems: "center", gap: "8px", padding: "10px 12px", borderRadius: "8px",
+              background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.15)", textDecoration: "none",
+              color: "var(--accent, #00bcd4)", fontSize: "0.82rem", fontWeight: 600,
+            }}>
+              🔍 Search Help Center
+            </a>
+
+            {/* Chat toggle */}
+            <button onClick={() => setShowChat(!showChat)} style={{
+              display: "flex", alignItems: "center", gap: "8px", padding: "10px 12px", borderRadius: "8px",
+              background: showChat ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.03)", border: "1px solid var(--border-default, rgba(0,188,212,0.1))",
+              color: "var(--text-primary, #e2e8f0)", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", width: "100%", textAlign: "left",
+            }}>
+              🤖 {showChat ? "Hide AI Chat" : "Chat with AI"}
+            </button>
+
+            {showChat && (
+              <div style={{ borderRadius: "8px", overflow: "hidden" }}>
+                <HelpChatWidget compact />
+              </div>
+            )}
+
+            {/* Divider */}
+            <div style={{ height: "1px", background: "var(--border-default, rgba(0,188,212,0.1))", margin: "2px 0" }} />
+
+            {/* Context-aware suggestions */}
+            {suggestions.map(s => (
+              <a key={s.href} href={s.href} style={{
+                display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", borderRadius: "6px",
+                textDecoration: "none", color: "var(--text-secondary, #8b949e)", fontSize: "0.78rem",
+              }}>
+                📄 {s.label}
+              </a>
+            ))}
+
+            {/* Divider */}
+            <div style={{ height: "1px", background: "var(--border-default, rgba(0,188,212,0.1))", margin: "2px 0" }} />
+
+            {/* Contact options */}
             {[
-              { icon: "📞", label: "Call Us", sub: "(512) 758-0518", href: "tel:5127580518" },
-              { icon: "💬", label: "Text Us", sub: "(512) 758-0518", href: "sms:5127580518" },
-              { icon: "✉️", label: "Email Support", sub: "legacyloopmaine@gmail.com", href: "mailto:legacyloopmaine@gmail.com" },
-              { icon: "🎯", label: "Take the Quiz", sub: "Find the right plan", href: "/onboarding/quiz" },
-              { icon: "📋", label: "View Pricing", sub: "See all plans", href: "/pricing" },
-            ].map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.75rem",
-                  padding: "0.625rem 0.75rem",
-                  borderRadius: "0.75rem",
-                  textDecoration: "none",
-                  transition: "background 0.15s",
-                  marginBottom: "0.15rem",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "var(--bg-card-hover)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "transparent";
-                }}
-              >
-                <span style={{ fontSize: "1.1rem", flexShrink: 0 }}>{item.icon}</span>
+              { icon: "📞", label: "Call Us", sub: "(207) 555-0127", href: "tel:2075550127" },
+              { icon: "💬", label: "Text Us", sub: "(207) 555-0127", href: "sms:2075550127" },
+              { icon: "✉️", label: "Email Support", sub: "support@legacy-loop.com", href: "mailto:support@legacy-loop.com" },
+            ].map(item => (
+              <a key={item.label} href={item.href} style={{
+                display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", borderRadius: "6px",
+                textDecoration: "none", color: "var(--text-primary, #e2e8f0)", fontSize: "0.78rem",
+              }}>
+                <span style={{ fontSize: "1rem" }}>{item.icon}</span>
                 <div>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)" }}>
-                    {item.label}
-                  </div>
-                  <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{item.sub}</div>
+                  <div style={{ fontWeight: 600 }}>{item.label}</div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--text-muted, #64748b)" }}>{item.sub}</div>
                 </div>
               </a>
             ))}
-          </div>
 
-          {/* Keyboard hint */}
-          <div
-            style={{
-              padding: "0.5rem 1.25rem 0.875rem",
-              fontSize: "0.68rem",
-              color: "var(--text-muted)",
-              borderTop: "1px solid var(--border-default)",
-            }}
-          >
-            Tip: Press{" "}
-            <kbd
-              style={{
-                background: "var(--bg-card-hover)",
-                padding: "0.05rem 0.3rem",
-                borderRadius: "3px",
-                fontSize: "0.65rem",
-                border: "1px solid var(--border-default)",
-              }}
-            >
-              Ctrl+/
-            </kbd>{" "}
-            to open this anytime
+            {/* Keyboard hint */}
+            <div style={{ textAlign: "center", fontSize: "0.65rem", color: "var(--text-muted, #64748b)", padding: "4px 0" }}>
+              Press <kbd style={{ padding: "1px 4px", borderRadius: "3px", border: "1px solid var(--border-default)", fontSize: "0.6rem" }}>Ctrl</kbd>+<kbd style={{ padding: "1px 4px", borderRadius: "3px", border: "1px solid var(--border-default)", fontSize: "0.6rem" }}>/</kbd> to toggle
+            </div>
           </div>
         </div>
       )}
 
       {/* Toggle button */}
-      <button
-        onClick={() => setOpen((p) => !p)}
-        title="Help & Support (Ctrl+/)"
-        style={{
-          width: "48px",
-          height: "48px",
-          borderRadius: "50%",
-          background: open ? "var(--text-primary)" : "var(--accent-theme)",
-          color: open ? "var(--bg-primary)" : "#fff",
-          border: "none",
-          cursor: "pointer",
-          boxShadow: "0 4px 16px var(--accent-theme-glow)",
-          fontSize: "1.25rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          transition: "background 0.2s, transform 0.2s",
-          transform: open ? "rotate(45deg)" : "rotate(0)",
-        }}
-        aria-label="Help"
-      >
+      <button onClick={() => setOpen(!open)} style={{
+        width: 52, height: 52, borderRadius: "50%", border: "none", cursor: "pointer",
+        background: open ? "var(--accent, #00bcd4)" : "linear-gradient(135deg, #00bcd4, #0097a7)",
+        color: "#fff", fontSize: "1.25rem", fontWeight: 700,
+        boxShadow: "0 4px 16px rgba(0,188,212,0.3)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        transition: "transform 0.2s", transform: open ? "rotate(45deg)" : "none",
+      }}>
         {open ? "✕" : "?"}
       </button>
     </div>

@@ -66,3 +66,7 @@ export async function sendTradeNotification(to: string, subject: string, html: s
 export async function sendReturnNotification(to: string, subject: string, html: string): Promise<boolean> {
   return sendEmail({ to, subject, html });
 }
+
+export async function sendBuyerOutreach(to: string, subject: string, html: string): Promise<boolean> {
+  return sendEmail({ to, subject, html });
+}

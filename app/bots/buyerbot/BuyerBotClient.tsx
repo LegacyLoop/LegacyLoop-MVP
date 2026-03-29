@@ -364,6 +364,7 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(["hot-leads", "profiles", "outreach"]));
   const toggleSection = (id: string) => { setOpenSections(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; }); };
   const [expandedStat, setExpandedStat] = useState<string | null>(null);
+  const [outreachHistory, setOutreachHistory] = useState<any[]>([]);
 
   const item = useMemo(() => items.find((i) => i.id === selectedId) || null, [items, selectedId]);
   const ai = useMemo(() => item ? safeJson(item.aiResult) : null, [item]);
@@ -406,6 +407,15 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
         else setMegaBotData(null);
       })
       .catch(() => setMegaBotData(null));
+  }, [selectedId]);
+
+  // Load outreach history
+  useEffect(() => {
+    if (!selectedId) { setOutreachHistory([]); return; }
+    fetch(`/api/outreach/status?itemId=${selectedId}`)
+      .then(r => r.ok ? r.json() : { history: [] })
+      .then(d => setOutreachHistory(d.history || []))
+      .catch(() => setOutreachHistory([]));
   }, [selectedId]);
 
   const runMegaBuyerBot = useCallback(async () => {
@@ -751,11 +761,24 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
                       <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
                         💡 {lead.how_to_reach}
                       </span>
-                      {lead.estimated_price_theyd_pay && (
-                        <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#4ade80" }}>
-                          ~${lead.estimated_price_theyd_pay}
-                        </span>
-                      )}
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                        {lead.estimated_price_theyd_pay && (
+                          <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#4ade80" }}>
+                            ~${lead.estimated_price_theyd_pay}
+                          </span>
+                        )}
+                        <button onClick={() => {
+                          const msg = `Hi! I saw you might be interested in a ${ai?.item_name || item?.title || "item"}. It's in ${ai?.condition_score >= 8 ? "excellent" : "good"} condition. $${item?.valuation?.mid || 0}. Let me know!`;
+                          navigator.clipboard.writeText(msg);
+                          fetch("/api/outreach/status", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ itemId: item?.id, channel: "clipboard", status: "COPIED", leadProfile: lead.lead_description?.slice(0, 60) }) }).catch(() => {});
+                        }} style={{
+                          padding: "0.25rem 0.55rem", borderRadius: "0.35rem",
+                          border: "1px solid rgba(0,188,212,0.3)", background: "rgba(0,188,212,0.06)",
+                          color: "var(--accent)", fontSize: "0.6rem", fontWeight: 600, cursor: "pointer",
+                        }}>
+                          📧 Reach Out
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -802,6 +825,19 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
                     <p style={{ fontSize: "0.62rem", color: "var(--text-muted)", margin: "0.3rem 0 0", fontStyle: "italic", lineHeight: 1.3 }}>
                       {p.best_approach}
                     </p>
+                    <button onClick={() => {
+                      const template = result?.outreach_strategies?.[0]?.message_template || `Hi! I have a ${ai?.item_name || item?.title || "item"} in ${ai?.condition_score >= 8 ? "excellent" : "good"} condition. Asking $${item?.valuation?.mid || 0}. Interested?`;
+                      navigator.clipboard.writeText(template);
+                      fetch("/api/outreach/status", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ itemId: item?.id, channel: "clipboard", status: "COPIED", leadProfile: p.profile_name }) }).catch(() => {});
+                    }} style={{
+                      marginTop: "0.4rem", padding: "0.3rem 0.7rem", borderRadius: "0.4rem",
+                      border: "1px solid rgba(0,188,212,0.3)", background: "rgba(0,188,212,0.06)",
+                      color: "var(--accent)", fontSize: "0.65rem", fontWeight: 600, cursor: "pointer",
+                      display: "flex", alignItems: "center", gap: "0.2rem",
+                    }}>
+                      📧 Reach Out
+                    </button>
+                    {(() => { const sent = outreachHistory.find((e: any) => e.leadProfile === p.profile_name); if (!sent) return null; const ago = Math.round((Date.now() - new Date(sent.createdAt).getTime()) / 60000); const label = ago < 60 ? `${ago}m ago` : ago < 1440 ? `${Math.round(ago/60)}h ago` : `${Math.round(ago/1440)}d ago`; return <div style={{ fontSize: "0.55rem", color: "#4ade80", marginTop: "0.2rem" }}>📧 Contacted {label}</div>; })()}
                   </div>
                 ))}
               </div>

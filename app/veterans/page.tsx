@@ -341,7 +341,7 @@ export default function VeteransPage() {
       </div>
 
       <div style={{ textAlign: "center", padding: "1.5rem", background: "#eff6ff", borderRadius: "1rem", fontSize: "0.88rem", color: "#1e40af" }}>
-        Questions? Contact our veteran liaison directly: <strong>veterans@legacyloop.com</strong> or call <strong>(207) 555-VETS</strong>
+        Questions? Contact our veteran liaison directly: <strong>support@legacy-loop.com</strong> or call <strong>(207) 555-VETS</strong>
       </div>
     </div>
   );

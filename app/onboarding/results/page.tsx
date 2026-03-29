@@ -771,7 +771,7 @@ function ResultsContent() {
               </div>
               <p style={{ fontSize: "0.85rem", color: "#1e3a8a", lineHeight: 1.5 }}>
                 Vehicles (cars, boats, RVs) are handled separately. Contact us at{" "}
-                <strong>hello@legacyloop.com</strong> and we{"\u2019"}ll connect you with the right buyer
+                <strong>hello@legacy-loop.com</strong> and we{"\u2019"}ll connect you with the right buyer
                 network.
               </p>
             </div>

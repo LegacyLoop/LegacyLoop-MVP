@@ -82,6 +82,8 @@ type Props = {
     quotedShippingRate?: number | null;
     quotedShippingAt?: string | null;
   };
+  demandScore?: { score: number; label: string; signals?: any[] } | null;
+  botDisagreement?: { disagreements?: { botA: string; botB: string; priceA: number; priceB: number; diffPercent: number }[]; summary?: string } | null;
   controlCenterExtra?: {
     totalViews: number;
     inquiries: number;
@@ -2699,7 +2701,7 @@ function MegaBotBoostResults(props: { botType: string; result: any; aiData: any 
    PANEL 1: AI Analysis (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boosted, boostResult, collapsed, onToggle }: {
+function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boosted, boostResult, collapsed, onToggle, demandScore, botDisagreement }: {
   aiData: any;
   itemId: string;
   status: string;
@@ -2709,6 +2711,8 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
   boostResult: any;
   collapsed?: boolean;
   onToggle?: () => void;
+  demandScore?: { score: number; label: string; signals?: any[] } | null;
+  botDisagreement?: { disagreements?: any[]; summary?: string } | null;
 }) {
   const router = useRouter();
   const [analyzing, setAnalyzing] = useState(false);
@@ -2902,6 +2906,27 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
             {/* ── SECTION: PRICING & VALUATION ── */}
             <AccordionHeader id="ai-pricing" icon="💰" title="PRICING & CONFIDENCE" subtitle={aiData?.confidence != null ? `${Math.round(Math.min(100, (aiData.confidence || 0) * 100))}% confident` : ""} isOpen={aiOpenSections.has("ai-pricing")} onToggle={toggleAiSection} accentColor="#00bcd4" />
             {aiOpenSections.has("ai-pricing") && (<>
+            {/* Bot disagreement warning */}
+            {botDisagreement && botDisagreement.disagreements && botDisagreement.disagreements.length > 0 && (
+              <div style={{ background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.3)", borderRadius: "8px", padding: "10px 14px", marginBottom: "12px", fontSize: "13px", color: "#eab308" }}>
+                <div style={{ fontWeight: 700, marginBottom: "4px" }}>⚠️ Bot Pricing Disagreement Detected</div>
+                {botDisagreement.disagreements.map((d: any, i: number) => (
+                  <div key={i} style={{ fontSize: "12px", color: "var(--text-secondary, #94a3b8)", marginTop: "2px" }}>
+                    {d.botA}: ${d.priceA?.toLocaleString()} vs {d.botB}: ${d.priceB?.toLocaleString()} — {d.diffPercent}% difference
+                  </div>
+                ))}
+                <div style={{ fontSize: "11px", color: "var(--text-muted, #64748b)", marginTop: "6px" }}>Consider running MegaBot for consensus pricing.</div>
+              </div>
+            )}
+            {/* Demand score badge */}
+            {demandScore && (
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "2px 10px", borderRadius: "12px", fontSize: "12px", fontWeight: 600, marginBottom: "8px",
+                background: demandScore.score >= 80 ? "rgba(239,68,68,0.15)" : demandScore.score >= 60 ? "rgba(34,197,94,0.15)" : demandScore.score >= 40 ? "rgba(234,179,8,0.15)" : "rgba(148,163,184,0.15)",
+                color: demandScore.score >= 80 ? "#ef4444" : demandScore.score >= 60 ? "#22c55e" : demandScore.score >= 40 ? "#eab308" : "#94a3b8",
+              }}>
+                {demandScore.score >= 80 ? "🔥" : demandScore.score >= 60 ? "📈" : demandScore.score >= 40 ? "📊" : "❄️"}{" "}{demandScore.label} ({demandScore.score}/100)
+              </div>
+            )}
             {/* Confidence bar */}
             {aiData.confidence != null && (() => {
               const confPct = Math.round(Math.min(100, (aiData.confidence || 0) * 100));
@@ -8805,7 +8830,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
    ═══════════════════════════════════════════ */
 
 export default function ItemDashboardPanels({
-  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra, projectId,
+  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra, projectId, demandScore, botDisagreement,
 }: Props) {
   // Track which bots have been enhanced with MegaBot
   const [boostedBots, setBoostedBots] = useState<Set<string>>(new Set());
@@ -9653,6 +9678,8 @@ export default function ItemDashboardPanels({
           boostResult={boostResults.analysis}
           collapsed={collapsed.analysis}
           onToggle={() => togglePanel("analysis")}
+          demandScore={demandScore}
+          botDisagreement={botDisagreement}
         />
 
         {/* Pricing */}

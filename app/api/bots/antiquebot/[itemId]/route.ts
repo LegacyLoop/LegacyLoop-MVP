@@ -10,6 +10,8 @@ import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { scrapeRubyLane } from "@/lib/market-intelligence/adapters/ruby-lane";
 import { scrapeShopGoodwill } from "@/lib/market-intelligence/adapters/shop-goodwill";
 import { scrapeLiveAuctioneers } from "@/lib/market-intelligence/adapters/live-auctioneers";
+import fs from "fs";
+import path from "path";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -379,15 +381,33 @@ IMPORTANT:
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60_000);
       try {
-        const photoContent: string[] = [];
-        for (const photo of item.photos) {
-          photoContent.push(`[Photo: ${photo.filePath}${photo.caption ? ` — ${photo.caption}` : ""}]`);
+        // Build real image content for Vision (antiques NEED visual inspection)
+        const imageContent: any[] = [];
+        for (const photo of item.photos.slice(0, 4)) {
+          try {
+            const clean = photo.filePath.startsWith("/") ? photo.filePath.slice(1) : photo.filePath;
+            const absPath = path.join(process.cwd(), "public", clean);
+            if (fs.existsSync(absPath) && fs.statSync(absPath).size <= 10 * 1024 * 1024) {
+              const base64 = fs.readFileSync(absPath, "base64");
+              const ext = path.extname(absPath).toLowerCase();
+              const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
+              imageContent.push({ type: "input_image", image_url: `data:${mime};base64,${base64}`, detail: "high" });
+            }
+          } catch { /* skip unreadable */ }
         }
 
+        const userContent: any[] = [
+          { type: "input_text", text: `Perform a deep antique analysis.${imageContent.length > 0 ? ` ${imageContent.length} photo(s) attached — examine maker marks, patina, construction, material, wear patterns, and authenticity indicators.` : " No photos — assess from item data only."} Return ONLY valid JSON.` },
+          ...imageContent,
+        ];
+
         const response = await openai.responses.create({
-          model: "gpt-4o-mini",
-          instructions: systemPrompt,
-          input: `Perform a deep antique analysis of this item. Photos: ${photoContent.join(", ")}. Return ONLY valid JSON.`,
+          model: "gpt-4o",
+          input: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userContent },
+          ],
+          max_output_tokens: 6000,
         }, { signal: controller.signal });
 
         const text = typeof response.output === "string"
@@ -444,15 +464,19 @@ IMPORTANT:
       data: {
         itemId,
         source: "ANTIQUEBOT",
-        priceLow: abFmv?.low != null ? Math.round(Number(abFmv.low) * 100) : null,
-        priceHigh: abFmv?.high != null ? Math.round(Number(abFmv.high) * 100) : null,
-        priceMedian: abFmv?.mid != null ? Math.round(Number(abFmv.mid) * 100) : null,
+        priceLow: abFmv?.low != null ? Math.round(Number(abFmv.low)) : null,
+        priceHigh: abFmv?.high != null ? Math.round(Number(abFmv.high)) : null,
+        priceMedian: abFmv?.mid != null ? Math.round(Number(abFmv.mid)) : null,
         confidence: antiquebotResult.authentication?.confidence != null ? `auth_confidence: ${antiquebotResult.authentication.confidence}` : null,
       },
     }).catch(() => null);
 
     // Fire-and-forget: log user event
     logUserEvent(user.id, "BOT_RUN", { itemId, metadata: { botType: "ANTIQUEBOT", success: true } }).catch(() => null);
+
+    // Fire-and-forget: intelligence systems
+    import("@/lib/bots/disagreement").then(m => m.checkBotDisagreement(itemId)).catch(() => null);
+    import("@/lib/bots/demand-score").then(m => m.calculateDemandScore(itemId)).catch(() => null);
 
     return NextResponse.json({
       success: true,

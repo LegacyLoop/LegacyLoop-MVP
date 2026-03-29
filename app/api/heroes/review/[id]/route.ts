@@ -80,7 +80,7 @@ export async function PATCH(
               : "Hero verification update",
             message: action === "approve"
               ? "Your service has been verified. Your 25% hero discount is now active on all plans."
-              : `Your verification application needs attention. ${notes ? `Note: ${notes}` : "Please contact heroes@legacyloop.com for details."}`,
+              : `Your verification application needs attention. ${notes ? `Note: ${notes}` : "Please contact support@legacy-loop.com for details."}`,
             link: "/heroes",
           },
         });

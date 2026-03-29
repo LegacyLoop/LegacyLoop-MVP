@@ -8,6 +8,8 @@ import { getVehicleHistoryReport, decodeVinNHTSA } from "@/lib/vehicle/nhtsa";
 import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
+import fs from "fs";
+import path from "path";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -395,15 +397,33 @@ IMPORTANT:
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60_000);
       try {
-        const photoContent: string[] = [];
-        for (const photo of item.photos) {
-          photoContent.push(`[Photo: ${photo.filePath}${photo.caption ? ` — ${photo.caption}` : ""}]`);
+        // Build real image content for Vision (vehicles need visual inspection)
+        const imageContent: any[] = [];
+        for (const photo of item.photos.slice(0, 6)) {
+          try {
+            const clean = photo.filePath.startsWith("/") ? photo.filePath.slice(1) : photo.filePath;
+            const absPath = path.join(process.cwd(), "public", clean);
+            if (fs.existsSync(absPath) && fs.statSync(absPath).size <= 10 * 1024 * 1024) {
+              const base64 = fs.readFileSync(absPath, "base64");
+              const ext = path.extname(absPath).toLowerCase();
+              const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
+              imageContent.push({ type: "input_image", image_url: `data:${mime};base64,${base64}`, detail: "auto" });
+            }
+          } catch { /* skip unreadable */ }
         }
+
+        const userContent: any[] = [
+          { type: "input_text", text: `Evaluate this vehicle comprehensively.${imageContent.length > 0 ? ` ${imageContent.length} photo(s) attached — examine body condition, paint, tires, interior, rust, dents, modifications, VIN plate, and odometer if visible.` : " No photos — assess from data only."} Return ONLY valid JSON.` },
+          ...imageContent,
+        ];
 
         const response = await openai.responses.create({
           model: "gpt-4o-mini",
-          instructions: systemPrompt,
-          input: `Evaluate this vehicle comprehensively. Photos: ${photoContent.join(", ")}. Return ONLY valid JSON.`,
+          input: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userContent },
+          ],
+          max_output_tokens: 8192,
         }, { signal: controller.signal });
 
         const text = typeof response.output === "string"
@@ -454,15 +474,19 @@ IMPORTANT:
       data: {
         itemId,
         source: "CARBOT",
-        priceLow: cbPP?.low != null ? Math.round(Number(cbPP.low) * 100) : null,
-        priceHigh: cbPP?.high != null ? Math.round(Number(cbPP.high) * 100) : null,
-        priceMedian: cbPP?.mid != null ? Math.round(Number(cbPP.mid) * 100) : null,
+        priceLow: cbPP?.low != null ? Math.round(Number(cbPP.low)) : null,
+        priceHigh: cbPP?.high != null ? Math.round(Number(cbPP.high)) : null,
+        priceMedian: cbPP?.mid != null ? Math.round(Number(cbPP.mid)) : null,
         confidence: carbotResult.identification?.identification_confidence != null ? `id_confidence: ${carbotResult.identification.identification_confidence}` : null,
       },
     }).catch(() => null);
 
     // Fire-and-forget: log user event
     logUserEvent(user.id, "BOT_RUN", { itemId, metadata: { botType: "CARBOT", success: true } }).catch(() => null);
+
+    // Fire-and-forget: intelligence systems
+    import("@/lib/bots/disagreement").then(m => m.checkBotDisagreement(itemId)).catch(() => null);
+    import("@/lib/bots/demand-score").then(m => m.calculateDemandScore(itemId)).catch(() => null);
 
     return NextResponse.json({
       success: true,

@@ -418,9 +418,38 @@ ${isAntique ? "- This IS an antique: include auction houses, specialty dealers, 
     // Also activate/update the ReconBot DB model for persistent tracking
     try {
       const existingBot = await prisma.reconBot.findFirst({ where: { itemId, userId: user.id } });
-      const competitors = generateMockCompetitors(itemName, category, midPrice);
-      const analysis = analyzeMarket(competitors, listingPrice);
-      const alerts = generateAlerts(competitors, analysis, listingPrice);
+
+      let competitors: any[];
+      let analysis: any;
+      let alerts: any[];
+
+      if (isDemoMode() || reconbotResult._isDemo) {
+        competitors = generateMockCompetitors(itemName, category, midPrice);
+        analysis = analyzeMarket(competitors, listingPrice);
+        alerts = generateAlerts(competitors, analysis, listingPrice);
+      } else {
+        const aiCompetitors = reconbotResult.competitor_listings || reconbotResult.competitors || [];
+        competitors = aiCompetitors.slice(0, 10).map((c: any) => ({
+          title: c.title || c.name || "Competitor listing",
+          price: c.price || c.asking_price || 0,
+          platform: c.platform || c.source || "Unknown",
+          url: c.url || c.link || "",
+          condition: c.condition || "Unknown",
+          daysListed: c.days_listed || c.time_on_market || null,
+        }));
+        const prices = competitors.map((c: any) => c.price).filter((p: number) => p > 0).sort((a: number, b: number) => a - b);
+        analysis = {
+          competitorCount: competitors.length,
+          lowestPrice: prices[0] || 0,
+          highestPrice: prices[prices.length - 1] || 0,
+          averagePrice: prices.length > 0 ? Math.round(prices.reduce((a: number, b: number) => a + b, 0) / prices.length) : 0,
+          medianPrice: prices.length > 0 ? prices[Math.floor(prices.length / 2)] : 0,
+          currentStatus: reconbotResult.scan_summary?.market_heat || "WARM",
+          recommendation: reconbotResult.scan_summary?.recommendation || reconbotResult.executive_summary || "",
+          confidenceScore: reconbotResult.scan_summary?.data_quality || 0.7,
+        };
+        alerts = [];
+      }
 
       if (existingBot) {
         await prisma.reconBot.update({

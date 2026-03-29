@@ -375,8 +375,8 @@ export default async function HomePage() {
           <div>
             <div style={{ fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.75rem" }}>Contact</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-              <a href="tel:5127580518" style={{ fontSize: "0.82rem", color: "var(--text-secondary)", textDecoration: "none" }}>(512) 758-0518</a>
-              <a href="mailto:legacyloopmaine@gmail.com" style={{ fontSize: "0.82rem", color: "var(--text-secondary)", textDecoration: "none" }}>legacyloopmaine@gmail.com</a>
+              <a href="tel:2075550127" style={{ fontSize: "0.82rem", color: "var(--text-secondary)", textDecoration: "none" }}>(207) 555-0127</a>
+              <a href="mailto:support@legacy-loop.com" style={{ fontSize: "0.82rem", color: "var(--text-secondary)", textDecoration: "none" }}>support@legacy-loop.com</a>
             </div>
             <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.75rem" }}>
               <span style={{ fontSize: "1.1rem", opacity: 0.5, cursor: "pointer" }} title="Facebook">f</span>

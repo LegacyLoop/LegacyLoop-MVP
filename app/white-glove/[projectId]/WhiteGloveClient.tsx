@@ -414,7 +414,7 @@ export default function WhiteGloveClient({ project, items }: { project: Project;
           <div style={{ marginTop: "1.5rem", padding: "1rem 1.25rem", background: "#f0fdfa", border: "1.5px solid #99f6e4", borderRadius: "0.875rem" }}>
             <div style={{ fontWeight: 600, color: "#0f766e", marginBottom: "0.25rem" }}>Need to add or change team members?</div>
             <div style={{ fontSize: "0.82rem", color: "#374151" }}>
-              Contact your project manager or call (207) 555-0100 to update the team for this project.
+              Contact your project manager or call (207) 555-0127 to update the team for this project.
             </div>
           </div>
         </div>

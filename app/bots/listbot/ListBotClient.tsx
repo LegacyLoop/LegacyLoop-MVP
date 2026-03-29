@@ -1078,8 +1078,16 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
 
                         {/* Action buttons */}
                         <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem", flexWrap: "wrap" }}>
-                          <CopyButton text={fullText} label={`📋 Copy ${meta.name} Listing`} />
-                          <button onClick={() => { trackCopy(p); navigator.clipboard.writeText(fullText); setToast(`✅ Copied ${meta.name} listing!`); setTimeout(() => setToast(null), 2000); }} style={{ display: "none" }} />
+                          <CopyButton text={fullText} label={`📋 Copy ${p === "ebay" ? "Plain Text" : meta.name + " Listing"}`} />
+                          {p === "ebay" && listing.description_html && (
+                            <button onClick={() => { navigator.clipboard.writeText(listing.description_html); trackCopy(p); setToast("🌐 HTML copied — paste in eBay editor!"); setTimeout(() => setToast(null), 2000); }} style={{
+                              padding: "0.3rem 0.75rem", fontSize: "0.72rem", fontWeight: 600,
+                              borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)",
+                              background: "rgba(0,188,212,0.06)", color: "var(--accent)", cursor: "pointer",
+                            }}>
+                              🌐 Copy HTML
+                            </button>
+                          )}
                           <button onClick={() => trackOpen(p)} style={{
                             padding: "0.3rem 0.75rem", fontSize: "0.72rem", fontWeight: 600,
                             borderRadius: "0.4rem", border: `1px solid ${meta.color}44`,
@@ -1096,14 +1104,14 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
                               ✅ I Posted This
                             </button>
                           )}
-                          <a href="/integrations" style={{
-                            padding: "0.3rem 0.75rem", fontSize: "0.68rem", fontWeight: 600,
-                            borderRadius: "0.4rem", border: "1px solid var(--border-default)",
-                            background: "transparent", color: "var(--text-muted)", textDecoration: "none",
-                            display: "flex", alignItems: "center",
+                          <span style={{
+                            display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                            padding: "0.15rem 0.5rem", borderRadius: "9999px",
+                            background: "rgba(139,92,246,0.08)", border: "1px solid rgba(139,92,246,0.2)",
+                            fontSize: "0.52rem", fontWeight: 700, color: "#a855f7",
                           }}>
-                            🔗 Connect {meta.name} →
-                          </a>
+                            🔜 Auto-Post Coming Soon
+                          </span>
                         </div>
 
                         {t?.copiedAt && (

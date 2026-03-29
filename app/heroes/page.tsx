@@ -324,7 +324,7 @@ export default function HeroesPage() {
       {/* Contact */}
       <div style={{ textAlign: "center", padding: "1.5rem", background: "var(--bg-secondary)", borderRadius: "1rem", fontSize: "0.88rem", color: "var(--text-secondary)" }}>
         Questions? Contact our hero liaison directly:{" "}
-        <strong>heroes@legacyloop.com</strong> or call <strong>(207) 555-HERO</strong>
+        <strong>support@legacy-loop.com</strong> or call <strong>(207) 555-HERO</strong>
       </div>
     </div>
   );

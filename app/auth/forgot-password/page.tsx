@@ -453,9 +453,9 @@ export default function ForgotPasswordPage() {
             lineHeight: 1.5,
           }}
         >
-          <span>Phone: (207) 555-0100</span>
-          <span>Text: (207) 555-0101</span>
-          <span>Email: help@legacy-loop.com</span>
+          <span>Phone: (207) 555-0127</span>
+          <span>Text: (207) 555-0127</span>
+          <span>Email: support@legacy-loop.com</span>
         </div>
       </div>
     </div>

@@ -562,5 +562,20 @@ export async function POST(
     metadata: { botType: "ANALYZEBOT", success: true },
   }).catch(() => null);
 
+  // Fire-and-forget: auto-sequence → trigger PriceBot
+  const cookieHeader = req.headers.get("cookie") || "";
+  import("@/lib/bots/sequencer").then(m => m.triggerNextBots({
+    itemId: item.id,
+    completedBot: "analyze",
+    category: analysis.category || "General",
+    isAntique: !!antiqueResult?.isAntique,
+    isCollectible: !!collectibleResult?.isCollectible,
+    isVehicle: !!(analysis.vehicle_year || analysis.vehicle_make),
+    cookie: cookieHeader,
+  })).catch(() => null);
+
+  // Fire-and-forget: demand score
+  import("@/lib/bots/demand-score").then(m => m.calculateDemandScore(item.id)).catch(() => null);
+
   return new Response("OK", { status: 200 });
 }

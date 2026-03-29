@@ -155,6 +155,42 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "listbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
+    // ══ BATMAN READS ROBIN — BuyerBot intelligence for smarter listings ══
+    let buyerIntelligence = "";
+    try {
+      const buyerBotLog = await prisma.eventLog.findFirst({
+        where: { itemId, eventType: "BUYERBOT_RESULT" },
+        orderBy: { createdAt: "desc" },
+      });
+      if (buyerBotLog?.payload) {
+        const buyerData = safeJson(buyerBotLog.payload);
+        if (buyerData) {
+          const bProfiles = buyerData.buyer_profiles || [];
+          const bHotLeads = buyerData.hot_leads || [];
+          const bPlatforms = buyerData.platform_opportunities || [];
+          const bOutreach = buyerData.outreach_strategies || [];
+          const bTiming = buyerData.timing_advice;
+
+          if (bProfiles.length > 0 || bHotLeads.length > 0) {
+            buyerIntelligence = `\n\nBUYER INTELLIGENCE FROM BUYERBOT (TAILOR LISTINGS TO THESE BUYERS):
+Top Buyer Profiles:
+${bProfiles.slice(0, 4).map((p: any, i: number) => `${i + 1}. ${p.profile_name || "Buyer"}: ${p.motivation || ""} | Platforms: ${(p.platforms_active_on || []).join(", ")} | Budget: ${p.estimated_offer_range || "unknown"}`).join("\n")}
+${bHotLeads.length > 0 ? `\nHot Leads:\n${bHotLeads.slice(0, 3).map((l: any, i: number) => `${i + 1}. ${l.lead_description || "Lead"}: ${l.how_to_reach || ""}`).join("\n")}` : ""}
+${bPlatforms.length > 0 ? `\nBest Platforms by Buyer Activity:\n${bPlatforms.slice(0, 4).map((p: any, i: number) => `${i + 1}. ${p.platform || "Platform"}: ${p.opportunity_level || ""} — ${p.how_to_list || ""}`).join("\n")}` : ""}
+${bOutreach.length > 0 ? `\nOutreach Hooks:\n${bOutreach.slice(0, 2).map((o: any, i: number) => `${i + 1}. ${o.strategy_name || ""}: ${(o.message_template || "").slice(0, 100)}`).join("\n")}` : ""}
+${bTiming ? `\nTiming: ${typeof bTiming === "string" ? bTiming.slice(0, 150) : (bTiming.best_day_to_list ? `Best day: ${bTiming.best_day_to_list}, Peak: ${bTiming.seasonal_peak || "N/A"}` : "")}` : ""}
+
+INSTRUCTION: Use these buyer profiles to tailor your listing language.
+- If collectors are top buyers, emphasize provenance, rarity, and grading.
+- If bargain hunters dominate, emphasize value, condition, and bundle deals.
+- Match SEO keywords to what these specific buyers search for.
+- Prioritize platforms where BuyerBot found the most active buyers.`;
+            console.log(`[ListBot] Batman reads Robin: ${bProfiles.length} buyer profiles, ${bHotLeads.length} hot leads`);
+          }
+        }
+      }
+    } catch { /* non-critical */ }
+
     // Structured enrichment data (replaces fragile regex parsing)
     const amazonFindings = enrichment?.summary?.amazonFindings || "";
     const amazonContext = amazonFindings ? `\nAMAZON CONTEXT: ${amazonFindings}` : "";
@@ -239,7 +275,7 @@ Study these titles and pricing for your Poshmark-specific listing copy. Mirror s
     }
 
     // ── LISTBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + realListingContext + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.
+    const systemPrompt = enrichmentPrefix + buyerIntelligence + realListingContext + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.
 
 You are creating listings for: ${itemName} — ${category}${subcategory ? ` — ${subcategory}` : ""}
 Condition: ${condLabel} (${condScore}/10)
@@ -413,14 +449,31 @@ IMPORTANT:
 - Use REAL prices from the data above, not placeholders.
 - ${isAntique ? "This IS an antique: emphasize history, provenance, collector value." : ""}
 - SEO: every title must include terms buyers actually search for.
-- All prices in USD.`;
+- All prices in USD.
+
+URGENCY & SCARCITY LANGUAGE:
+Where contextually appropriate, include urgency language in listings:
+- "Limited availability" for rare/antique items
+- "Spring cleaning special" for seasonal items
+- "Won't last — similar items sold quickly in the last 30 days" when demand data shows velocity
+- "Act fast" for hot items with multiple inquiries
+- Do NOT overuse — only where it genuinely applies. Fake urgency erodes trust.
+
+HANDLING DEFECTS & DAMAGE:
+When an item has cosmetic or functional issues, frame them POSITIVELY:
+- "Authentic patina consistent with age" (not "scratched and worn")
+- "Shows honest wear from years of faithful use" (not "damaged")
+- "Perfect candidate for restoration" (not "needs work")
+- "Original finish — never refinished" (not "old finish")
+- ALWAYS disclose damage honestly but frame it as character, provenance, or opportunity.
+- Never hide defects — just present them in the best light.`;
 
     let listbotResult: any;
     let webSources: Array<{ url: string; title: string }> = [];
 
     if (openai) {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120_000);
+      const timeoutId = setTimeout(() => controller.abort(), 90_000);
       try {
         const photoDescs = item.photos.map((p) =>
           `[Photo: ${p.filePath}${p.caption ? ` — ${p.caption}` : ""}]`
@@ -441,7 +494,7 @@ IMPORTANT:
               }]
             : inputText,
           tools: [{ type: "web_search_preview" } as any],
-          max_output_tokens: 8192,
+          max_output_tokens: 16384,
         }, { signal: controller.signal });
 
         const text = typeof response.output === "string"
@@ -541,6 +594,9 @@ IMPORTANT:
 
     // Fire-and-forget: log user event
     logUserEvent(user.id, "BOT_RUN", { itemId, metadata: { botType: "LISTBOT", success: true } }).catch(() => null);
+
+    // Fire-and-forget: demand score recalculation
+    import("@/lib/bots/demand-score").then(m => m.calculateDemandScore(itemId)).catch(() => null);
 
     return NextResponse.json({
       success: true,

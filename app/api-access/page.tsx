@@ -226,7 +226,7 @@ export default function ApiAccessPage() {
             View API Plans →
           </a>
           <a
-            href="mailto:api@legacyloop.com"
+            href="mailto:support@legacy-loop.com"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -350,7 +350,7 @@ export default function ApiAccessPage() {
 
                 <div style={{ padding: "1rem 1.75rem 1.75rem", background: isDark ? "#1c1917" : "var(--bg-card-solid)" }}>
                   <a
-                    href="mailto:api@legacyloop.com"
+                    href="mailto:support@legacy-loop.com"
                     style={{
                       display: "block",
                       textAlign: "center",
@@ -390,7 +390,7 @@ export default function ApiAccessPage() {
             </div>
           </div>
           <a
-            href="mailto:api@legacyloop.com"
+            href="mailto:support@legacy-loop.com"
             style={{ background: "var(--bg-secondary)", color: "var(--text-primary)", padding: "0.7rem 1.25rem", borderRadius: "0.75rem", fontWeight: 700, textDecoration: "none", fontSize: "0.88rem", flexShrink: 0 }}
           >
             Request PAYG Key →
@@ -408,10 +408,10 @@ export default function ApiAccessPage() {
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
           <a
-            href="mailto:api@legacyloop.com"
+            href="mailto:support@legacy-loop.com"
             style={{ background: "#0f766e", color: "#fff", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 800, textDecoration: "none", fontSize: "0.95rem" }}
           >
-            Email api@legacyloop.com
+            Email support@legacy-loop.com
           </a>
           <Link
             href="/pricing"

@@ -869,7 +869,7 @@ export default function QuoteClient() {
                 <input
                   className="input"
                   type="tel"
-                  placeholder="(207) 555-0100"
+                  placeholder="(207) 555-0127"
                   value={contact.phone}
                   onChange={(e) =>
                     setContact((c) => ({ ...c, phone: e.target.value }))

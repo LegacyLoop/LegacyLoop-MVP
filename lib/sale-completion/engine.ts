@@ -146,6 +146,17 @@ export async function runSaleCompletionChain(
     console.warn("[SaleCompletion] Chain completed with errors:", errors);
   }
 
+  // ── STEP 6: Track Bot Accuracy ──────────────────────────────────────────
+  try {
+    const soldItem = await prisma.item.findUnique({
+      where: { id: itemId },
+      select: { soldPrice: true },
+    });
+    if (soldItem?.soldPrice && soldItem.soldPrice > 0) {
+      import("@/lib/bots/accuracy").then(m => m.trackBotAccuracy(itemId, soldItem.soldPrice!)).catch(() => null);
+    }
+  } catch { /* non-critical */ }
+
   return {
     success: !criticalFailed,
     closedAt,

@@ -25,7 +25,7 @@ export default function NotFound() {
         </Link>
       </div>
       <div style={{ marginTop: "2rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
-        Need help? <a href="tel:5127580518" style={{ color: "var(--accent)" }}>(512) 758-0518</a>
+        Need help? <a href="tel:2075550127" style={{ color: "var(--accent)" }}>(207) 555-0127</a>
       </div>
     </div>
   );

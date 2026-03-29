@@ -548,6 +548,17 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
     // Fire-and-forget: log user event
     logUserEvent(user.id, "BOT_RUN", { itemId, metadata: { botType: "PRICEBOT", success: true } }).catch(() => null);
 
+    // Fire-and-forget: intelligence systems
+    import("@/lib/bots/disagreement").then(m => m.checkBotDisagreement(itemId)).catch(() => null);
+    import("@/lib/bots/demand-score").then(m => m.calculateDemandScore(itemId)).catch(() => null);
+    const cookieHeader = _req.headers.get("cookie") || "";
+    import("@/lib/bots/sequencer").then(m => m.triggerNextBots({
+      itemId, completedBot: "pricebot", category, isAntique,
+      isCollectible: !!(ai as any).is_collectible,
+      isVehicle: category.toLowerCase().includes("vehicle"),
+      cookie: cookieHeader,
+    })).catch(() => null);
+
     return NextResponse.json({
       success: true,
       result: pricebotResult,

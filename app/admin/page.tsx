@@ -64,6 +64,30 @@ export default async function AdminPage() {
     console.error("[admin] DB queries failed:", e);
   }
 
+  // Bot accuracy leaderboard
+  let accuracyLogs: { payload: string | null }[] = [];
+  try {
+    accuracyLogs = await prisma.eventLog.findMany({
+      where: { eventType: "BOT_ACCURACY" },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      select: { payload: true },
+    });
+  } catch { /* non-critical */ }
+
+  const botAccuracyStats: Record<string, { totalError: number; count: number }> = {};
+  for (const log of accuracyLogs) {
+    try {
+      const data = log.payload ? JSON.parse(log.payload) : null;
+      if (!data?.results) continue;
+      for (const r of data.results) {
+        if (!botAccuracyStats[r.bot]) botAccuracyStats[r.bot] = { totalError: 0, count: 0 };
+        botAccuracyStats[r.bot].totalError += r.errorPercent || 0;
+        botAccuracyStats[r.bot].count++;
+      }
+    } catch { /* skip malformed */ }
+  }
+
   const MODULES = [
     {
       icon: "👥",
@@ -371,6 +395,42 @@ export default async function AdminPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ═══ Bot Accuracy Leaderboard ═══ */}
+      <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "12px", padding: "1.5rem", marginTop: "1.5rem" }}>
+        <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "1rem" }}>🏆 Bot Accuracy Leaderboard</h2>
+        {Object.keys(botAccuracyStats).length === 0 ? (
+          <p style={{ fontSize: "13px", color: "var(--text-muted, #64748b)" }}>No accuracy data yet — populates when items sell and bot predictions are compared to actual prices.</p>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
+                  <th style={{ textAlign: "left", padding: "8px", color: "var(--text-secondary)" }}>Bot</th>
+                  <th style={{ textAlign: "center", padding: "8px", color: "var(--text-secondary)" }}>Avg Error</th>
+                  <th style={{ textAlign: "center", padding: "8px", color: "var(--text-secondary)" }}>Grade</th>
+                  <th style={{ textAlign: "center", padding: "8px", color: "var(--text-secondary)" }}>Predictions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(botAccuracyStats).sort(([, a], [, b]) => (a.totalError / a.count) - (b.totalError / b.count)).map(([bot, stats]) => {
+                  const avgError = Math.round(stats.totalError / stats.count);
+                  const grade = avgError <= 10 ? "A" : avgError <= 20 ? "B" : avgError <= 35 ? "C" : avgError <= 50 ? "D" : "F";
+                  const gradeColor = grade === "A" ? "#22c55e" : grade === "B" ? "#00bcd4" : grade === "C" ? "#eab308" : "#ef4444";
+                  return (
+                    <tr key={bot} style={{ borderBottom: "1px solid var(--border-default)" }}>
+                      <td style={{ padding: "8px", fontWeight: 600, color: "var(--text-primary)" }}>{bot}</td>
+                      <td style={{ padding: "8px", textAlign: "center", color: "var(--text-secondary)" }}>{avgError}%</td>
+                      <td style={{ padding: "8px", textAlign: "center", fontWeight: 700, color: gradeColor }}>{grade}</td>
+                      <td style={{ padding: "8px", textAlign: "center", color: "var(--text-secondary)" }}>{stats.count}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

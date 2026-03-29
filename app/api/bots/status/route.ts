@@ -3,11 +3,17 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 
 const BOT_DEFS = [
-  { id: "megabot", name: "MegaBot", icon: "🤖", desc: "Comprehensive AI analysis combining all bot outputs into one master report", route: "/bots/megabot" },
-  { id: "pricebot", name: "PriceBot", icon: "💰", desc: "Deep pricing intelligence with local vs national comparisons", route: "/bots/pricebot" },
-  { id: "listbot", name: "ListBot", icon: "📝", desc: "Listing optimization assistant for marketplace titles and descriptions", route: "/bots/listbot" },
-  { id: "shipbot", name: "ShipBot", icon: "📦", desc: "Shipping intelligence with carrier comparisons and packaging tips", route: "/bots/shipbot" },
-  { id: "photobot", name: "PhotoBot", icon: "📷", desc: "AI photo editor — background removal, enhancement, and professional storefront imagery", route: "/bots/photobot" },
+  { id: "megabot", name: "MegaBot", icon: "🤖", desc: "4-AI consensus engine combining all bot outputs into one master report", route: "/bots/megabot" },
+  { id: "pricebot", name: "PriceBot", icon: "💰", desc: "Deep pricing intelligence with local vs national market data from 42 platforms", route: "/bots/pricebot" },
+  { id: "listbot", name: "ListBot", icon: "📝", desc: "Listing optimization for 10+ marketplace platforms with SEO and copy", route: "/bots/listbot" },
+  { id: "buyerbot", name: "BuyerBot", icon: "🎯", desc: "Buyer acquisition specialist — finds real buyers across social platforms", route: "/bots/buyerbot" },
+  { id: "antiquebot", name: "AntiqueBot", icon: "🏺", desc: "Antique authentication, provenance research, and auction valuation", route: "/bots/antiquebot" },
+  { id: "carbot", name: "CarBot", icon: "🚗", desc: "Vehicle evaluation with NHTSA data, VIN decoding, and market pricing", route: "/bots/carbot" },
+  { id: "collectiblesbot", name: "CollectiblesBot", icon: "🃏", desc: "Collectible grading, PSA/BGS assessment, and specialty marketplace pricing", route: "/bots/collectiblesbot" },
+  { id: "reconbot", name: "ReconBot", icon: "🔍", desc: "Competitor intelligence — monitors listings, prices, and market position", route: "/bots/reconbot" },
+  { id: "shipbot", name: "ShipBot", icon: "📦", desc: "Shipping intelligence with carrier comparisons and packaging suggestions", route: "/bots/shipbot" },
+  { id: "photobot", name: "PhotoBot", icon: "📷", desc: "AI photo editor — background removal, enhancement, and professional imagery", route: "/bots/photobot" },
+  { id: "stylebot", name: "StyleBot", icon: "🎨", desc: "Style analysis and presentation recommendations for maximum appeal", route: "/bots/stylebot" },
 ];
 
 export async function GET() {

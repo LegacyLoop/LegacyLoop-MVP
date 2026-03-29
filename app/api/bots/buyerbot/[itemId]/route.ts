@@ -194,6 +194,43 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "buyerbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
+    // ══ ROBIN READS BATMAN — ListBot intelligence for smarter buyer targeting ══
+    let listingIntelligence = "";
+    try {
+      const listBotLog = await prisma.eventLog.findFirst({
+        where: { itemId, eventType: "LISTBOT_RESULT" },
+        orderBy: { createdAt: "desc" },
+      });
+      if (listBotLog?.payload) {
+        const listData = safeJson(listBotLog.payload);
+        if (listData) {
+          const seo = listData.seo_master || {};
+          const strategy = listData.cross_platform_strategy || {};
+          const listings = listData.listings || {};
+
+          const platformSnippets: string[] = [];
+          for (const [platform, listing] of Object.entries(listings)) {
+            const l = listing as any;
+            if (l?.title) {
+              platformSnippets.push(`- ${platform}: "${String(l.title).slice(0, 80)}" | $${l.price || l.starting_price || l.buy_it_now_price || "TBD"}`);
+            }
+          }
+
+          if (platformSnippets.length > 0 || (seo.primary_keywords && seo.primary_keywords.length > 0)) {
+            listingIntelligence = `\n\nLISTING INTELLIGENCE FROM LISTBOT (USE TO FIND MATCHING BUYERS):
+${seo.primary_keywords ? `SEO Keywords (what buyers search for):\n- Primary: ${(seo.primary_keywords || []).join(", ")}\n- Long-tail: ${(seo.long_tail_keywords || []).join(", ")}\n- Trending: ${(seo.trending_keywords || seo.trending_terms || []).join(", ")}` : ""}
+${platformSnippets.length > 0 ? `\nActive Listings:\n${platformSnippets.slice(0, 6).join("\n")}` : ""}
+
+INSTRUCTION: Use these SEO keywords to find buyers who would search for this item.
+- Target buyers on platforms where ListBot created the strongest listings.
+- Match outreach messaging to the listing titles and descriptions.
+- Use trending terms to identify communities discussing this type of item.`;
+            console.log(`[BuyerBot] Robin reads Batman: ${platformSnippets.length} platform listings, ${(seo.primary_keywords || []).length} SEO keywords`);
+          }
+        }
+      }
+    } catch { /* non-critical */ }
+
     // ── REAL BUYER COMMUNITY DATA (parallel, non-blocking) ──
     let realBuyerContext = "";
     try {
@@ -296,7 +333,7 @@ ${fbPages.sellers.slice(0, 5).map((s: any) => `${s.name} (${s.followers.toLocale
     }
 
     // ── BUYERBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + realBuyerContext + `You are a world-class buyer acquisition specialist and marketplace researcher. You have 15 years of experience finding buyers for every type of item — from antiques to electronics to vehicles. You know every platform, every community, every trick to find the RIGHT buyer who will pay the best price.
+    const systemPrompt = enrichmentPrefix + listingIntelligence + realBuyerContext + `You are a world-class buyer acquisition specialist and marketplace researcher. You have 15 years of experience finding buyers for every type of item — from antiques to electronics to vehicles. You know every platform, every community, every trick to find the RIGHT buyer who will pay the best price.
 
 You are finding buyers for: ${itemName} — ${category}${subcategory ? ` — ${subcategory}` : ""}
 Condition: ${condLabel} (${condScore}/10)
@@ -323,7 +360,9 @@ Return a JSON object with this structure:
       "likelihood_to_buy": "Very High | High | Medium",
       "estimated_offer_range": "$X — $Y",
       "platforms_active_on": ["platform1", "platform2"],
-      "best_approach": "1 sentence how to reach them"
+      "best_approach": "1 sentence how to reach them",
+      "location_preference": "Local Only | Regional | National | International",
+      "time_sensitivity": "Buys immediately | Takes time to decide | Seasonal buyer"
     }
   ],
 
@@ -392,6 +431,16 @@ ${isAntique ? "- This IS an antique: include auction houses, collector forums, s
 ${isVehicle ? "- This IS a vehicle: focus on LOCAL buyers, dealerships, enthusiast groups within 100 miles. LOCAL PICKUP ONLY." : ""}
 - Every recommendation must be actionable — the seller should be able to DO something immediately.
 - All prices in USD.
+
+OUTREACH SPECIFICITY RULES:
+- For EVERY outreach strategy, include a SPECIFIC action the seller can take RIGHT NOW:
+  • "Join the Facebook group '[GROUP NAME]' and post your item with these photos"
+  • "Search Reddit r/[SUBREDDIT] for 'WTB [ITEM]' posts from the last 30 days and reply"
+  • "Email [TYPE OF DEALER] shops in [AREA] with this template"
+  • "Message @[HANDLE] on Instagram — they post [CATEGORY] items regularly"
+- Message templates must include the ITEM NAME ($${midPrice}), PRICE, and CONDITION — not generic placeholders.
+- Include specific URLs, group names, subreddit names, and handles where the scraper data found real communities.
+- Every outreach action should be completable in under 2 minutes.
 
 WEB SEARCH INSTRUCTIONS:
 If you have web search capability, USE IT AGGRESSIVELY to find real buyers:
@@ -518,6 +567,9 @@ Include a "web_sources" array in your response with {"url": "...", "title": "...
 
     // Fire-and-forget: log user event
     logUserEvent(user.id, "BOT_RUN", { itemId, metadata: { botType: "BUYERBOT", success: true } }).catch(() => null);
+
+    // Fire-and-forget: demand score recalculation
+    import("@/lib/bots/demand-score").then(m => m.calculateDemandScore(itemId)).catch(() => null);
 
     return NextResponse.json({
       success: true,

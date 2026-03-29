@@ -12,6 +12,10 @@ import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { scrapeChrono24 } from "@/lib/market-intelligence/adapters/chrono24";
 import { scrapeStockX } from "@/lib/market-intelligence/adapters/stockx";
 import { scrapeGoat } from "@/lib/market-intelligence/adapters/goat";
+import { scrapeTcgplayerApify } from "@/lib/market-intelligence/adapters/tcgplayer-apify";
+import { scrapeCourtyard } from "@/lib/market-intelligence/adapters/courtyard";
+import { scrapePriceCharting } from "@/lib/market-intelligence/adapters/pricecharting";
+import { scrapePsaCard } from "@/lib/market-intelligence/adapters/psacard";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -164,6 +168,59 @@ ${chrono.comps.slice(0, 6).map((c: any, i: number) => `${i + 1}. "${c.item}" —
         const gt = gtResult.status === "fulfilled" ? gtResult.value : null;
         if (sx?.success && sx.comps.length > 0) specialtyContext += `\n\nSTOCKX (${sx.comps.length} results): ${sx.comps.slice(0, 4).map((c: any) => `$${c.price}`).join(", ")}`;
         if (gt?.success && gt.comps.length > 0) specialtyContext += `\n\nGOAT (${gt.comps.length} results): ${gt.comps.slice(0, 4).map((c: any) => `$${c.price}`).join(", ")}`;
+      }
+      // Trading cards / sports cards / collectible cards routing
+      if (catLower.match(/card|pokemon|magic|yugioh|tcg|trading|sports.?card|baseball|football|basketball|hockey/)) {
+        const [tcgApifyResult, courtyardResult] = await Promise.allSettled([
+          scrapeTcgplayerApify(itemName),
+          scrapeCourtyard(itemName),
+        ]);
+        const tcgApify = tcgApifyResult.status === "fulfilled" ? tcgApifyResult.value : null;
+        const courtyard = courtyardResult.status === "fulfilled" ? courtyardResult.value : null;
+        if (tcgApify?.success && tcgApify.comps.length > 0) {
+          specialtyContext += `\n\nTCGPLAYER DEEP DATA (${tcgApify.comps.length} listings — Apify):
+${tcgApify.comps.slice(0, 8).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}${c.condition ? ` [${c.condition}]` : ""}`).join("\n")}`;
+        }
+        if (courtyard?.success && courtyard.comps.length > 0) {
+          specialtyContext += `\n\nCOURTYARD.IO FRACTIONAL MARKET (${courtyard.comps.length} assets):
+${courtyard.comps.slice(0, 6).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price} (full value)${c.condition ? ` [${c.condition}]` : ""}`).join("\n")}
+NOTE: Courtyard tokenizes physical cards — these prices reflect total asset value, indicating institutional/fractional investor interest.`;
+        }
+      }
+      // PriceCharting + PSAcard — Beckett equivalent for graded + ungraded price guide data
+      if (catLower.match(/card|pokemon|magic|yugioh|tcg|trading|sports.?card|video.?game|comic|coin|funko|lego/)) {
+        const pcCategory = catLower.match(/video.?game/) ? "video-games"
+          : catLower.match(/comic/) ? "comics"
+          : catLower.match(/coin|numismatic/) ? "coins"
+          : catLower.match(/funko/) ? "funko"
+          : catLower.match(/lego/) ? "lego-sets"
+          : "trading-cards";
+
+        const [pcResult, psaResult] = await Promise.allSettled([
+          scrapePriceCharting(itemName, pcCategory),
+          scrapePsaCard(itemName),
+        ]);
+
+        const pc = pcResult.status === "fulfilled" ? pcResult.value : null;
+        const psa = psaResult.status === "fulfilled" ? psaResult.value : null;
+
+        if (pc?.success && pc.comps.length > 0) {
+          const ungraded = pc.comps.filter((c: any) => c.condition?.includes("Ungraded"));
+          const graded7 = pc.comps.filter((c: any) => c.condition?.includes("~7"));
+          const graded8 = pc.comps.filter((c: any) => c.condition?.includes("~8"));
+
+          specialtyContext += `\n\nPRICECHARTING PRICE GUIDE — BECKETT EQUIVALENT (${pc.comps.length} results):`;
+          if (ungraded.length > 0) specialtyContext += `\nUngraded/Raw:\n${ungraded.slice(0, 5).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}`).join("\n")}`;
+          if (graded7.length > 0) specialtyContext += `\nGraded ~PSA 7:\n${graded7.slice(0, 3).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}`).join("\n")}`;
+          if (graded8.length > 0) specialtyContext += `\nGraded ~PSA 8+:\n${graded8.slice(0, 3).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}`).join("\n")}`;
+          specialtyContext += `\nCRITICAL: PriceCharting is the industry standard price guide (like Beckett). Use these as your PRIMARY valuation anchor.`;
+        }
+
+        if (psa?.success && psa.comps.length > 0) {
+          specialtyContext += `\n\nPSACARD AUCTION HISTORY (${psa.comps.length} graded card sales):
+${psa.comps.slice(0, 8).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price} [${c.condition}]${c.date ? ` (${c.date})` : ""}`).join("\n")}
+These are REAL PSA graded card auction results. Use these to validate your graded value estimates at each PSA tier.`;
+        }
       }
     } catch { /* non-critical */ }
 
@@ -618,15 +675,19 @@ Be specific to the actual collectible category. All prices USD. Return ONLY JSON
       data: {
         itemId,
         source: "COLLECTIBLESBOT",
-        priceLow: result.raw_value_low != null ? Math.round(Number(result.raw_value_low) * 100) : null,
-        priceHigh: result.raw_value_high != null ? Math.round(Number(result.raw_value_high) * 100) : null,
-        priceMedian: result.raw_value_mid != null ? Math.round(Number(result.raw_value_mid) * 100) : null,
+        priceLow: result.raw_value_low != null ? Math.round(Number(result.raw_value_low)) : null,
+        priceHigh: result.raw_value_high != null ? Math.round(Number(result.raw_value_high)) : null,
+        priceMedian: result.raw_value_mid != null ? Math.round(Number(result.raw_value_mid)) : null,
         confidence: result.grade_confidence != null ? `grade_confidence: ${result.grade_confidence}` : null,
       },
     }).catch(() => null);
 
     // Fire-and-forget: log user event
     logUserEvent(user.id, "BOT_RUN", { itemId, metadata: { botType: "COLLECTIBLESBOT", success: true } }).catch(() => null);
+
+    // Fire-and-forget: intelligence systems
+    import("@/lib/bots/disagreement").then(m => m.checkBotDisagreement(itemId)).catch(() => null);
+    import("@/lib/bots/demand-score").then(m => m.calculateDemandScore(itemId)).catch(() => null);
 
     return NextResponse.json({ success: true, result });
   } catch (e) {

@@ -235,7 +235,7 @@ export default async function BillingPage() {
           you'll receive a prorated credit toward your next billing cycle.
         </p>
         <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: 1.6, marginTop: "0.5rem" }}>
-          To cancel, contact support at <a href="mailto:legacyloopmaine@gmail.com" style={{ color: "var(--accent)" }}>legacyloopmaine@gmail.com</a> or call <a href="tel:5127580518" style={{ color: "var(--accent)" }}>(512) 758-0518</a>.
+          To cancel, contact support at <a href="mailto:support@legacy-loop.com" style={{ color: "var(--accent)" }}>support@legacy-loop.com</a> or call <a href="tel:2075550127" style={{ color: "var(--accent)" }}>(207) 555-0127</a>.
         </p>
       </div>
 

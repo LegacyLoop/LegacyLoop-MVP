@@ -31,6 +31,10 @@ import { scrapeChrono24 } from "./adapters/chrono24";
 import { scrapeStockX } from "./adapters/stockx";
 import { scrapeGoat } from "./adapters/goat";
 import { scrapeSothebys } from "./adapters/sothebys";
+import { scrapeTcgplayerApify } from "./adapters/tcgplayer-apify";
+import { scrapeCourtyard } from "./adapters/courtyard";
+import { scrapePriceCharting } from "./adapters/pricecharting";
+import { scrapePsaCard } from "./adapters/psacard";
 
 type ScraperFn = (query: string) => Promise<ScraperResult>;
 
@@ -39,20 +43,20 @@ const MAINE_ZIP_PREFIXES = new Set([
 ]);
 
 const CATEGORY_ADAPTER_MAP: Record<string, ScraperFn[]> = {
-  "Sports Cards": [scrapeEbaySold, scrapeHeritage],
-  "Trading Cards": [scrapeTcgPlayer, scrapeEbaySold],
-  "Comics": [scrapeHeritage, scrapeEbaySold],
-  "Coins & Currency": [scrapeHeritage, scrapeEbaySold],
+  "Sports Cards": [scrapeEbaySold, scrapeHeritage, scrapeTcgplayerApify, scrapeCourtyard, scrapePsaCard, (q) => scrapePriceCharting(q, "trading-cards")],
+  "Trading Cards": [scrapeTcgPlayer, scrapeEbaySold, scrapeTcgplayerApify, scrapeCourtyard, scrapePsaCard, (q) => scrapePriceCharting(q, "trading-cards")],
+  "Comics": [scrapeHeritage, scrapeEbaySold, (q) => scrapePriceCharting(q, "comics")],
+  "Coins & Currency": [scrapeHeritage, scrapeEbaySold, (q) => scrapePriceCharting(q, "coins")],
   "Vinyl Records": [queryDiscogs, scrapeEbaySold],
   "Watches": [scrapeEbaySold, scrapeHeritage],
   "Sneakers": [scrapeEbaySold],
   "Rare Books": [scrapeHeritage, scrapeEbaySold],
   "Jewelry": [scrapeHeritage, scrapeEbaySold],
-  "Memorabilia": [scrapeHeritage, scrapeEbaySold],
+  "Memorabilia": [scrapeHeritage, scrapeEbaySold, scrapeCourtyard],
   "Vintage Toys": [scrapeEbaySold, scrapeHeritage],
   "Minerals": [scrapeHeritage, scrapeEbaySold],
-  "Video Games": [scrapeEbaySold],
-  "Funko": [scrapeEbaySold],
+  "Video Games": [scrapeEbaySold, (q) => scrapePriceCharting(q, "video-games")],
+  "Funko": [scrapeEbaySold, (q) => scrapePriceCharting(q, "funko")],
 };
 
 // Result cache — 4h TTL
@@ -134,6 +138,31 @@ export async function getMarketIntelligence(
   if (cat.match(/sneaker|shoe|jordan|nike|yeezy|streetwear|supreme/)) {
     alwaysAdapters.push(() => scrapeStockX(itemName), () => scrapeGoat(itemName));
   }
+  // Trading cards / collectible cards routing
+  if (cat.match(/card|pokemon|magic|yugioh|tcg|trading|sports.?card|baseball.?card|football.?card|basketball.?card|hockey.?card/)) {
+    alwaysAdapters.push(() => scrapeTcgplayerApify(itemName), () => scrapeCourtyard(itemName));
+    alwaysAdapters.push(() => scrapePriceCharting(itemName, "trading-cards"), () => scrapePsaCard(itemName));
+  }
+  // Memorabilia with fractional market
+  if (cat.match(/memorabilia|autograph|game.?worn|signed/)) {
+    alwaysAdapters.push(() => scrapeCourtyard(itemName));
+  }
+  // PriceCharting category-specific routing (Beckett equivalent)
+  if (cat.match(/video.?game|nintendo|playstation|xbox|sega|atari|gameboy/)) {
+    alwaysAdapters.push(() => scrapePriceCharting(itemName, "video-games"));
+  }
+  if (cat.match(/comic|marvel|dc.?comics|graphic.?novel/)) {
+    alwaysAdapters.push(() => scrapePriceCharting(itemName, "comics"));
+  }
+  if (cat.match(/funko|pop!|bobblehead/)) {
+    alwaysAdapters.push(() => scrapePriceCharting(itemName, "funko"));
+  }
+  if (cat.match(/lego|building.?block|brick/)) {
+    alwaysAdapters.push(() => scrapePriceCharting(itemName, "lego-sets"));
+  }
+  if (cat.match(/coin|numismatic|currency|bullion|silver.?dollar|gold.?coin/)) {
+    alwaysAdapters.push(() => scrapePriceCharting(itemName, "coins"));
+  }
 
   // Dedupe: skip category adapters already covered by always-run
   const alwaysFnNames = new Set([
@@ -143,6 +172,8 @@ export async function getMarketIntelligence(
     "scrapeShopGoodwill", "scrapeLiveAuctioneers", "scrapeCraigslistVehicles", "scrapeCraigslistAntiques",
     "scrapeEbayMotors", "scrapeAutoTrader", "scrapeCarsCom", "scrapeCarGurus", "scrapeBringATrailer",
     "scrapeChrono24", "scrapeStockX", "scrapeGoat", "scrapeSothebys",
+    "scrapeTcgplayerApify", "scrapeCourtyard",
+    "scrapePriceCharting", "scrapePsaCard",
   ]);
   const extraAdapters = categoryAdapters.filter((fn) => !alwaysFnNames.has(fn.name));
 

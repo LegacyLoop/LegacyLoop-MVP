@@ -83,7 +83,7 @@ export default function PrivacyPage() {
           <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>7. Contact</h2>
           <p className="mt-2">
             For privacy-related questions or requests, contact us at{" "}
-            <a href="mailto:privacy@legacyloop.com" style={{ color: "var(--accent)" }}>privacy@legacyloop.com</a>.
+            <a href="mailto:support@legacy-loop.com" style={{ color: "var(--accent)" }}>support@legacy-loop.com</a>.
           </p>
         </section>
       </div>

@@ -80,7 +80,7 @@ export default function TermsPage() {
           <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>9. Contact</h2>
           <p className="mt-2">
             Questions about these terms? Contact us at{" "}
-            <a href="mailto:legal@legacyloop.com" style={{ color: "var(--accent)" }}>legal@legacyloop.com</a>.
+            <a href="mailto:support@legacy-loop.com" style={{ color: "var(--accent)" }}>support@legacy-loop.com</a>.
           </p>
         </section>
       </div>

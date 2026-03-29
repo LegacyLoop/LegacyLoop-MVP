@@ -299,6 +299,23 @@ export function returnDeniedBuyerEmail(itemTitle: string, reason: string): strin
   `);
 }
 
+// ─── Buyer Outreach ─────────────────────────────────────────────────────
+
+export function buyerOutreachEmail(message: string, itemName: string, itemUrl: string): string {
+  return wrapper(`
+    <h2 style="color:${ACCENT};font-size:22px;margin:0 0 16px">About: ${itemName}</h2>
+    <div style="font-size:15px;line-height:1.6;color:${TEXT_SECONDARY}">
+      ${message.replace(/\n/g, "<br>")}
+    </div>
+    <div style="margin-top:24px;text-align:center">
+      ${ctaButton("View Item Details", itemUrl)}
+    </div>
+    <p style="color:${TEXT_MUTED};font-size:12px;margin-top:20px">
+      Sent via LegacyLoop — AI-powered estate resale platform
+    </p>
+  `);
+}
+
 // ─── Exports ──────────────────────────────────────────────────────────────
 
 export { wrapper as emailWrapper, ctaButton, ACCENT, APP_URL, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, BG_DARK, BG_CARD, BORDER };

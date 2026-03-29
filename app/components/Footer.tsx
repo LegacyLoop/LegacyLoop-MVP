@@ -184,9 +184,9 @@ export default function Footer() {
               Support
             </div>
             {[
-              { label: "(207) 555-0100", href: "tel:2075550100" },
-              { label: "(207) 555-0101", href: "sms:2075550101" },
-              { label: "help@legacy-loop.com", href: "mailto:help@legacy-loop.com" },
+              { label: "📞 (207) 555-0127", href: "tel:2075550127" }, // TODO: Replace with real Google Voice number
+              { label: "💬 Text Us", href: "sms:2075550127" }, // TODO: Replace with real Google Voice number
+              { label: "support@legacy-loop.com", href: "mailto:support@legacy-loop.com" },
             ].map((l) => (
               <a
                 key={l.label}
