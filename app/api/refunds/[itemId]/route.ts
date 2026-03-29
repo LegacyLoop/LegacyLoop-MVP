@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
+import { sendReturnNotification } from "@/lib/email/send";
+import { returnApprovedBuyerEmail, returnDeniedBuyerEmail } from "@/lib/email/templates";
 
 type Params = Promise<{ itemId: string }>;
 
@@ -95,6 +97,23 @@ export async function PATCH(
       link: `/items/${item.id}`,
     },
   }).catch(() => {});
+
+  // Send email to buyer (if email exists in original refund request)
+  try {
+    const refundLog = await prisma.eventLog.findFirst({
+      where: { itemId, eventType: "refund_requested" },
+      orderBy: { createdAt: "desc" },
+      select: { payload: true },
+    });
+    const refundPayload = refundLog?.payload ? JSON.parse(refundLog.payload) : null;
+    if (refundPayload?.buyerEmail) {
+      if (action === "approve") {
+        await sendReturnNotification(refundPayload.buyerEmail, `Return approved — ${item.title}`, returnApprovedBuyerEmail(item.title || "your item", refundPayload.refundAmount || 0));
+      } else {
+        await sendReturnNotification(refundPayload.buyerEmail, `Return request update — ${item.title}`, returnDeniedBuyerEmail(item.title || "your item", reason || ""));
+      }
+    }
+  } catch { /* email non-critical */ }
 
   return NextResponse.json({
     ok: true,

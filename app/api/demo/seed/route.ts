@@ -8,6 +8,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { DIGITAL_TIERS, TIER_NUMBER_TO_KEY } from "@/lib/pricing/constants";
 import { generateBuyerToken, getOfferExpiry } from "@/lib/offers/expiry";
+import crypto from "crypto";
 
 const PHOTOS = {
   laptop:    "https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=800&q=80",
@@ -1322,6 +1323,40 @@ export async function POST() {
         await prisma.offerEvent.create({ data: { offerId: offer2.id, action: "SUBMITTED", actorType: "BUYER", price: 380000, message: "Would you take $3,800?" } }).catch(() => {});
         await prisma.offerEvent.create({ data: { offerId: offer2.id, action: "COUNTERED", actorType: "SELLER", price: 420000, message: "I can do $4,200 — firm." } }).catch(() => {});
       }
+    }
+  }
+
+  // ── DEMO RETURN REQUEST ──
+  if (typewriterItem) {
+    const existingReturn = await prisma.eventLog.findFirst({ where: { itemId: typewriterItem.id, eventType: "refund_requested" } });
+    if (!existingReturn) {
+      await prisma.eventLog.create({
+        data: {
+          itemId: typewriterItem.id,
+          eventType: "refund_requested",
+          payload: JSON.stringify({
+            reason: "Item not as described",
+            description: "The typewriter is missing the ribbon cartridge that was shown in the listing photos.",
+            buyerEmail: "margaret.w@example.com",
+            buyerName: "Margaret Wilson",
+            returnToken: crypto.randomBytes(32).toString("hex"),
+            saleAmount: 285,
+            processingFee: 4.99,
+            refundAmount: 280.01,
+            processingFeeNote: "NON-REFUNDABLE",
+            requestedAt: new Date().toISOString(),
+          }),
+        },
+      }).catch(() => {});
+      await prisma.notification.create({
+        data: {
+          userId: user.id,
+          title: "Return requested",
+          message: 'A buyer requested a return for "Royal Quiet De Luxe Typewriter"',
+          type: "refund",
+          link: `/items/${typewriterItem.id}`,
+        },
+      }).catch(() => {});
     }
   }
 

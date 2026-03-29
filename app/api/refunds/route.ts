@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { PROCESSING_FEE } from "@/lib/constants/pricing";
+import crypto from "crypto";
+import { sendReturnNotification } from "@/lib/email/send";
+import { returnRequestedSellerEmail, returnRequestedBuyerEmail } from "@/lib/email/templates";
 
 /**
  * POST /api/refunds — Buyer requests a return/refund
@@ -71,6 +74,9 @@ export async function POST(req: NextRequest) {
       },
     }).catch(() => {});
 
+    // Generate return token for buyer magic link
+    const returnToken = crypto.randomBytes(32).toString("hex");
+
     // Log the event
     await prisma.eventLog.create({
       data: {
@@ -80,13 +86,38 @@ export async function POST(req: NextRequest) {
           reason,
           description,
           buyerEmail,
+          buyerName: body.buyerName || null,
+          returnToken,
           saleAmount,
           processingFee,
           refundAmount,
           processingFeeNote: "NON-REFUNDABLE",
+          requestedAt: new Date().toISOString(),
         }),
       },
     }).catch(() => {});
+
+    // Send email notifications (non-critical)
+    const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const returnUrl = `${APP_URL}/returns/${returnToken}`;
+    try {
+      if (item.userId) {
+        await sendReturnNotification(
+          buyerEmail || "",
+          `Return request submitted — ${item.title}`,
+          returnRequestedBuyerEmail(item.title || "your item", reason, refundAmount)
+        );
+      }
+      // Notify seller via email (seller email from user record)
+      const seller = await prisma.user.findUnique({ where: { id: item.userId }, select: { email: true } });
+      if (seller?.email) {
+        await sendReturnNotification(
+          seller.email,
+          `Return requested for ${item.title}`,
+          returnRequestedSellerEmail(item.title || "item", buyerEmail || "Unknown buyer", reason, refundAmount, returnUrl)
+        );
+      }
+    } catch { /* email non-critical */ }
 
     return NextResponse.json({
       ok: true,

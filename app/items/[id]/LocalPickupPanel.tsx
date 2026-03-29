@@ -185,6 +185,7 @@ export default function LocalPickupPanel({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "set",
           status: "INVITE_SENT",
           location: JSON.stringify({
             type: location,

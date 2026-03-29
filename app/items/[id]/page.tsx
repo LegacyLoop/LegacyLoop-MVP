@@ -12,6 +12,8 @@ import { detectCollectible } from "@/lib/collectible-detect";
 import AmazonPriceBadge from "./AmazonPriceBadge";
 import SoldPriceWidget from "./SoldPriceWidget";
 import SaleCongratsBar from "./SaleCongratsBar";
+import { enrichItemContext } from "@/lib/addons/enrich-item-context";
+import ItemIntelligenceSummary from "./ItemIntelligenceSummary";
 
 type Params = Promise<{ id: string }>;
 
@@ -72,6 +74,7 @@ export default async function ItemPage({ params }: { params: Params }) {
     }).catch(() => null),
   ]);
 
+  const enriched = await enrichItemContext(item.id, (item as any).listingPrice ?? null).catch(() => null);
   const aiObj = item.aiResult?.rawJson ? safeJsonParse(item.aiResult.rawJson) : null;
   const displayTitle = item.title || aiObj?.item_name || (item.status === "DRAFT" ? "New Item — Awaiting Analysis" : `Item #${item.id.slice(0, 8)}`);
   const antique = item.antiqueCheck;
@@ -396,6 +399,27 @@ export default async function ItemPage({ params }: { params: Params }) {
           status={item.status}
           existingSoldPrice={item.soldPrice ?? null}
           existingEstimatedValue={item.valuation ? Math.round((item.valuation.low + item.valuation.high) / 2) : null}
+        />
+      </div>
+
+      {/* ═══ Item Intelligence Summary ═══ */}
+      <div style={{ marginTop: "1.25rem" }}>
+        <ItemIntelligenceSummary
+          itemId={item.id}
+          status={item.status}
+          aiData={aiObj}
+          valuation={v}
+          antique={antique}
+          enriched={enriched}
+          engagement={{ totalViews: engagement?.totalViews ?? 0, inquiries: engagement?.inquiries ?? 0, buyersFound: engagement?.buyersFound ?? 0, documentCount: docCount }}
+          shippingData={{ weight: (item as any).shippingWeight ?? null, isFragile: (item as any).isFragile ?? false, preference: (item as any).shippingPreference ?? "BUYER_PAYS", aiShippingDifficulty: null }}
+          saleMethod={(item as any).saleMethod ?? "BOTH"}
+          listingPrice={(item as any).listingPrice ?? null}
+          hasPhotos={item.photos.length > 0}
+          photoCount={item.photos.length}
+          isAntique={showAntiqueUI}
+          isCollectible={showCollectibleUI}
+          authenticityScore={authenticityScore?.score ?? null}
         />
       </div>
 

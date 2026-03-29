@@ -256,6 +256,49 @@ export function tradeCounteredEmail(itemTitle: string, counterCash: number, coun
   `);
 }
 
+// ─── Return/Refund Notification Templates ────────────────────────────────
+
+export function returnRequestedSellerEmail(itemTitle: string, buyerEmail: string, reason: string, refundAmount: number, returnUrl: string): string {
+  return wrapper(`
+    <h2 style="color:${TEXT_PRIMARY};font-size:22px;margin:0 0 8px">Return Requested 📦</h2>
+    <p style="color:${TEXT_SECONDARY};font-size:15px;line-height:1.6;margin:0 0 12px">A buyer has requested a return for <strong style="color:${TEXT_PRIMARY}">${itemTitle}</strong>.</p>
+    <p style="color:${TEXT_SECONDARY};font-size:14px;margin:0 0 8px">Buyer: <strong style="color:${TEXT_PRIMARY}">${buyerEmail}</strong></p>
+    <p style="color:${TEXT_SECONDARY};font-size:14px;margin:0 0 8px">Reason: <strong style="color:${TEXT_PRIMARY}">${reason}</strong></p>
+    <p style="color:${TEXT_SECONDARY};font-size:14px;margin:0 0 20px">Refund amount: <strong style="color:${ACCENT}">$${Math.round(refundAmount)}</strong> (processing fee non-refundable)</p>
+    <p style="color:${TEXT_MUTED};font-size:13px;margin:0 0 24px">Please review and respond within 48 hours.</p>
+    ${ctaButton("Review Return Request", returnUrl)}
+  `);
+}
+
+export function returnRequestedBuyerEmail(itemTitle: string, reason: string, refundAmount: number): string {
+  return wrapper(`
+    <h2 style="color:${TEXT_PRIMARY};font-size:22px;margin:0 0 8px">Return Request Submitted ✅</h2>
+    <p style="color:${TEXT_SECONDARY};font-size:15px;line-height:1.6;margin:0 0 12px">Your return request for <strong style="color:${TEXT_PRIMARY}">${itemTitle}</strong> has been submitted.</p>
+    <p style="color:${TEXT_SECONDARY};font-size:14px;margin:0 0 8px">Reason: ${reason}</p>
+    <p style="color:${TEXT_SECONDARY};font-size:14px;margin:0 0 20px">If approved, you'll receive a refund of <strong style="color:${ACCENT}">$${Math.round(refundAmount)}</strong>.</p>
+    <p style="color:${TEXT_MUTED};font-size:13px;margin:0 0 24px">The seller will review your request within 48 hours. Processing fee is non-refundable.</p>
+  `);
+}
+
+export function returnApprovedBuyerEmail(itemTitle: string, refundAmount: number): string {
+  return wrapper(`
+    <h2 style="color:${TEXT_PRIMARY};font-size:22px;margin:0 0 8px">Return Approved 🎉</h2>
+    <p style="color:${TEXT_SECONDARY};font-size:15px;line-height:1.6;margin:0 0 12px">Your return for <strong style="color:${TEXT_PRIMARY}">${itemTitle}</strong> has been approved!</p>
+    <p style="color:${ACCENT};font-size:18px;font-weight:700;margin:0 0 12px">Refund: $${Math.round(refundAmount)}</p>
+    <p style="color:${TEXT_SECONDARY};font-size:14px;line-height:1.5;margin:0 0 24px">Please ship the item back to the seller using a tracked shipping method within 7 days. Your refund will be processed once the seller confirms receipt.</p>
+  `);
+}
+
+export function returnDeniedBuyerEmail(itemTitle: string, reason: string): string {
+  return wrapper(`
+    <h2 style="color:${TEXT_PRIMARY};font-size:22px;margin:0 0 8px">Return Request Update</h2>
+    <p style="color:${TEXT_SECONDARY};font-size:15px;line-height:1.6;margin:0 0 12px">Your return request for <strong style="color:${TEXT_PRIMARY}">${itemTitle}</strong> was not approved.</p>
+    ${reason ? `<p style="color:${TEXT_SECONDARY};font-size:14px;margin:0 0 20px">Reason: ${reason}</p>` : ""}
+    <p style="color:${TEXT_MUTED};font-size:13px;margin:0 0 24px">If you believe this is an error, please contact our support team.</p>
+    ${ctaButton("Contact Support", `${APP_URL}/messages`)}
+  `);
+}
+
 // ─── Exports ──────────────────────────────────────────────────────────────
 
 export { wrapper as emailWrapper, ctaButton, ACCENT, APP_URL, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, BG_DARK, BG_CARD, BORDER };

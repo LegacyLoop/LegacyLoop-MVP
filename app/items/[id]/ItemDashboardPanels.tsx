@@ -3169,7 +3169,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
    PANEL 2: Pricing (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt }: {
+function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt, shippingPreference, sellerListingPrice }: {
   valuation: any;
   antique: any;
   aiData: any;
@@ -3186,6 +3186,8 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   onToggle?: () => void;
   quotedShippingRate?: number | null;
   quotedShippingAt?: string | null;
+  shippingPreference?: string;
+  sellerListingPrice?: number | null;
 }) {
   const [showCalc, setShowCalc] = useState(false);
   const [priceOpenSections, setPriceOpenSections] = useState<Set<string>>(
@@ -3452,19 +3454,41 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
           const tName = TIER_NAMES[userTier] ?? "Free";
 
           // ── ADDITION 1: Best net payout scenario ──
-          // Priority for shipping cost: 1) Real quoted rate from carrier, 2) AI/market estimate, 3) fallback
+          // Priority: 1) Seller's listing price if set, 2) AI valuation mid
+          // Shipping: respect shippingPreference — LOCAL_ONLY/customer pickup = $0
+          const isLocalOnly = shippingPreference === "LOCAL_ONLY" || shippingPreference === "local_only";
           let salePrice = 0, shipCost = 0, isLocal = false, scenario = "";
           const realQuotedRate = quotedShippingRate ?? null;
-          if (pr) {
+
+          // Use listing price if set, otherwise use AI estimate
+          const listPrice = sellerListingPrice ?? null;
+          const useListingPrice = listPrice != null && listPrice > 0;
+
+          if (isLocalOnly) {
+            // Seller chose local pickup only — no shipping cost
+            salePrice = useListingPrice ? listPrice : (pr ? (pr.localPrice?.mid ?? 0) : (v?.mid ?? Math.round((v?.low + v?.high) / 2)));
+            isLocal = true;
+            scenario = "Local pickup";
+          } else if (pr) {
             const lm = pr.localPrice?.mid ?? 0, bm = pr.bestMarket?.mid ?? 0;
             const sc = realQuotedRate ?? pr.bestMarket?.shippingCost ?? pr.shippingEstimate ?? 25;
             const ln = lm - lm * cRate, sn = bm - bm * cRate - sc;
-            if (sn > ln && bm > 0) { salePrice = bm; shipCost = sc; scenario = `Ship to ${pr.bestMarket?.label ?? "best market"}`; }
-            else { salePrice = lm; isLocal = true; scenario = "Local pickup"; }
+            if (sn > ln && bm > 0) {
+              salePrice = useListingPrice ? listPrice : bm;
+              shipCost = sc;
+              scenario = useListingPrice ? `Ship to ${pr.bestMarket?.label ?? "best market"}` : `Ship to ${pr.bestMarket?.label ?? "best market"}`;
+            } else {
+              salePrice = useListingPrice ? listPrice : lm;
+              isLocal = true;
+              scenario = "Local pickup";
+            }
           } else if (v) {
-            salePrice = v.mid ?? Math.round((v.low + v.high) / 2);
+            salePrice = useListingPrice ? listPrice : (v.mid ?? Math.round((v.low + v.high) / 2));
             isLocal = true; scenario = "Local sale";
           }
+
+          // Override sale price with listing price if set (always takes priority for display)
+          if (useListingPrice && salePrice !== listPrice) salePrice = listPrice;
           const comm = Math.round(salePrice * cRate * 100) / 100;
           const sellerProcessingFee = Math.round(salePrice * 0.0175 * 100) / 100;
           const net = Math.round((salePrice - shipCost - comm - sellerProcessingFee) * 100) / 100;
@@ -9561,6 +9585,8 @@ export default function ItemDashboardPanels({
           onToggle={() => togglePanel("pricing")}
           quotedShippingRate={shippingData?.quotedShippingRate ?? null}
           quotedShippingAt={shippingData?.quotedShippingAt ?? null}
+          shippingPreference={shippingData?.preference ?? "BUYER_PAYS"}
+          sellerListingPrice={listingPrice ?? null}
         />
 
         {/* Shipping */}

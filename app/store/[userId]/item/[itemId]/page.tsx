@@ -192,6 +192,14 @@ export default async function PublicItemPage({ params }: { params: Params }) {
               itemStatus={item.status}
             />
             <TradeButton itemId={item.id} itemTitle={title} />
+
+            {/* Buyer Protection */}
+            <div style={{ marginTop: "0.75rem", padding: "0.65rem 0.75rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "0.5rem" }}>
+              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.2rem" }}>🛡️ Buyer Protection</div>
+              <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                14-day return window · Full refund (minus processing fee) · Seller reviews within 48 hours
+              </div>
+            </div>
           </div>
 
           {/* Contact seller */}

@@ -34,6 +34,12 @@ export interface EnrichedItemContext {
   };
   dataCompleteness: number;
   enrichedAt: Date;
+  // Structured bot insights (avoids regex parsing)
+  bestPlatform: string | null;
+  targetBuyerProfiles: string[];
+  valueDrivers: string[];
+  topSearchKeywords: string[];
+  demandLevel: string | null;
 }
 
 function safeJsonParse(s: any): any {
@@ -122,5 +128,10 @@ export async function enrichItemContext(itemId: string, listingPrice?: number | 
     },
     dataCompleteness,
     enrichedAt: new Date(),
+    bestPlatform: parseBot(pbR)?.platform_pricing?.best_platform || parseBot(pbR)?.best_platform || null,
+    targetBuyerProfiles: (parseBot(bbR)?.buyer_profiles || []).slice(0, 3).map((b: any) => b.profile_name).filter(Boolean),
+    valueDrivers: (parseBot(pbR)?.price_factors?.value_adders || []).slice(0, 3).map((v: any) => v.factor || v.name || String(v)).filter(Boolean),
+    topSearchKeywords: (parseBot(bbR)?.platform_opportunities || []).slice(0, 2).flatMap((p: any) => p.search_terms_buyers_use || []).slice(0, 6),
+    demandLevel: parseBot(pbR)?.market_analysis?.demand_level || parseBot(rbR)?.scan_summary?.demand_level || null,
   };
 }
