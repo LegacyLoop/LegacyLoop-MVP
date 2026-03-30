@@ -4837,15 +4837,19 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
         <a href="/bots/buyerbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open BuyerBot →</a>
       </>} />}
       {collapsed && !hasResult && (
-        <div style={{ padding: "0.65rem 0.85rem", display: "flex", alignItems: "center", gap: "0.65rem" }}>
-          <span style={{ fontSize: "1.3rem" }}>🎯</span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>Buyer Finder</div>
-            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>Targeted buyer profiles and platform opportunities</div>
+        <div style={{ padding: "0.75rem 1rem", textAlign: "center" as const, display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.4rem", flex: 1, justifyContent: "space-evenly" }}>
+          <span style={{ fontSize: "1.5rem" }}>🎯</span>
+          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Buyer Finder</div>
+          <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", lineHeight: 1.5, maxWidth: 300, margin: 0 }}>Targeted buyer profiles and platform opportunities across 15+ marketplaces.</p>
+          <div style={{ width: "100%", maxWidth: 300, padding: "0.5rem 0.65rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "left" as const }}>
+            <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>What You&apos;ll Get</div>
+            {[{ icon: "🎯", text: "Targeted buyer profiles" }, { icon: "🏪", text: "Platform opportunity analysis" }, { icon: "📧", text: "Ready-to-use outreach templates" }].map((b, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.3rem", padding: "0.15rem 0", fontSize: "0.62rem", color: "var(--text-secondary)" }}><span style={{ fontSize: "0.6rem", flexShrink: 0 }}>{b.icon}</span><span>{b.text}</span></div>
+            ))}
           </div>
-          <div style={{ display: "flex", gap: "0.3rem", flexShrink: 0 }}>
+          <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap" as const, marginTop: "0.25rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
             {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 BuyerBot · 1 cr</button>}
-            <a href="/bots/buyerbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open BuyerBot →</a>
+            <a href={`/bots/buyerbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open BuyerBot →</a>
           </div>
         </div>
       )}
@@ -8791,6 +8795,10 @@ export default function ItemDashboardPanels({
   // ListBot state
   const [listBotResult, setListBotResult] = useState<any>(null);
   const [listBotLoading, setListBotLoading] = useState(false);
+
+  // VideoBot state
+  const [videoBotResult, setVideoBotResult] = useState<any>(null);
+  const [videoBotLoading, setVideoBotLoading] = useState(false);
   const [listBotError, setListBotError] = useState<string | null>(null);
 
   // AntiqueBot state
@@ -8836,6 +8844,9 @@ export default function ItemDashboardPanels({
     }).catch(() => {});
     fetch(`/api/bots/carbot/${itemId}`).then((r) => r.json()).then((d) => {
       if (d.hasResult) setCarBotResult(d.result);
+    }).catch(() => {});
+    fetch(`/api/bots/videobot/${itemId}`).then((r) => r.json()).then((d) => {
+      if (d.hasResult && d.result) setVideoBotResult(d.result);
     }).catch(() => {});
     fetch(`/api/bots/collectiblesbot/${itemId}`).then((r) => r.json()).then((d) => {
       if (d.hasResult && d.result) setCollectiblesBotResult(d.result);
@@ -8900,6 +8911,27 @@ export default function ItemDashboardPanels({
       setBotError("buyers", { type: "error", message: e?.message || "Network error — check connection and retry." });
     }
     setBuyerBotLoading(false);
+  }
+
+  async function runVideoBot(tier: string = "standard") {
+    if (videoBotLoading) return;
+    setVideoBotLoading(true);
+    setBotError("video", null);
+    try {
+      const res = await fetch(`/api/bots/videobot/${itemId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier, platform: "all" }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.result) { setVideoBotResult(data.result); setCollapsed(prev => ({ ...prev, video: false })); }
+      } else if (res.status === 402 || res.status === 403) {
+        const err = await res.json().catch(() => ({ error: "error", message: "Something went wrong." }));
+        setBotError("video", { type: err.error, message: err.message, balance: err.balance, required: err.required });
+      }
+    } catch (e) { console.error("[videobot]", e); }
+    setVideoBotLoading(false);
   }
 
   async function runReconBot() {
@@ -9741,12 +9773,79 @@ export default function ItemDashboardPanels({
 
         {/* ── DOCUMENT VAULT (full width) ── */}
         <div style={{ gridColumn: "1 / -1" }}>
+          {/* VideoBot Panel */}
+          <GlassCard>
+            <AccordionHeader
+              id="video"
+              icon="🎬"
+              title="VideoBot"
+              subtitle={videoBotResult ? "Video ad ready" : "Generate AI video ads"}
+              isOpen={!collapsed.video}
+              onToggle={() => togglePanel("video")}
+              accentColor="#ef4444"
+            />
+            {collapsed.video ? (
+              <CollapsedSummary
+                botType="video"
+                data={videoBotResult ? { status: videoBotResult.videoUrl ? "ready" : "done", duration: videoBotResult.script?.duration, platform: videoBotResult.script?.platform, tier: "standard" } : null}
+                buttons={
+                  <button onClick={() => runVideoBot("standard")} disabled={videoBotLoading} style={{ padding: "0.25rem 0.55rem", fontSize: "0.6rem", fontWeight: 600, borderRadius: "0.35rem", border: "none", background: videoBotLoading ? "var(--ghost-bg)" : "linear-gradient(135deg, #ef4444, #dc2626)", color: videoBotLoading ? "var(--text-muted)" : "#fff", cursor: videoBotLoading ? "not-allowed" : "pointer", minHeight: "28px" }}>
+                    {videoBotLoading ? "Generating..." : videoBotResult ? "🔄 Re-generate" : "🎬 Generate"}
+                  </button>
+                }
+              />
+            ) : (
+              <div style={{ padding: "1rem" }}>
+                {!videoBotResult ? (
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🎬</div>
+                    <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.3rem" }}>AI Video Ad Generator</div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "1rem", lineHeight: 1.5 }}>Professional narration (ElevenLabs), trending music, photo-synced timing, platform-optimized formatting.</div>
+                    <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center", flexWrap: "wrap" }}>
+                      {[{ label: "Standard", tier: "standard", cost: 8, color: "#00bcd4" }, { label: "Pro", tier: "pro", cost: 15, color: "#8b5cf6" }, { label: "MegaBot", tier: "mega", cost: 25, color: "#f59e0b" }].map(t => (
+                        <button key={t.tier} onClick={() => runVideoBot(t.tier)} disabled={videoBotLoading} style={{ padding: "0.5rem 1rem", borderRadius: "10px", border: `1px solid ${t.color}40`, background: `${t.color}10`, color: t.color, fontWeight: 700, fontSize: "0.78rem", cursor: videoBotLoading ? "not-allowed" : "pointer", minHeight: "44px" }}>
+                          {videoBotLoading ? "..." : `${t.label} (${t.cost} cr)`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    {/* Script Preview */}
+                    {videoBotResult.script && (
+                      <div style={{ background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.1)", borderRadius: "10px", padding: "0.75rem", marginBottom: "0.75rem" }}>
+                        <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.4rem" }}>Script</div>
+                        <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#f59e0b", marginBottom: "0.3rem" }}>{videoBotResult.script.hook}</div>
+                        <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginBottom: "0.3rem", lineHeight: 1.5 }}>{videoBotResult.script.body}</div>
+                        <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "#22c55e" }}>{videoBotResult.script.cta}</div>
+                        {videoBotResult.script.hashtags && (
+                          <div style={{ marginTop: "0.4rem", fontSize: "0.62rem", color: "var(--text-muted)" }}>{videoBotResult.script.hashtags.join(" ")}</div>
+                        )}
+                      </div>
+                    )}
+                    {/* Status + Voice */}
+                    <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+                      <span style={{ padding: "0.15rem 0.5rem", borderRadius: "9999px", fontSize: "0.58rem", fontWeight: 700, background: "rgba(34,197,94,0.1)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>✅ Generated</span>
+                      {videoBotResult.voiceName && <span style={{ padding: "0.15rem 0.5rem", borderRadius: "9999px", fontSize: "0.58rem", fontWeight: 600, background: "rgba(139,92,246,0.08)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.15)" }}>🎙️ {videoBotResult.voiceName}</span>}
+                      {videoBotResult.script?.duration && <span style={{ padding: "0.15rem 0.5rem", borderRadius: "9999px", fontSize: "0.58rem", fontWeight: 600, background: "rgba(0,188,212,0.08)", color: "#00bcd4" }}>{videoBotResult.script.duration}s</span>}
+                    </div>
+                    {/* Re-generate */}
+                    <div style={{ display: "flex", gap: "0.4rem" }}>
+                      <button onClick={() => runVideoBot("standard")} disabled={videoBotLoading} style={{ padding: "0.35rem 0.65rem", fontSize: "0.65rem", fontWeight: 600, borderRadius: "0.35rem", border: "1px solid rgba(0,188,212,0.3)", background: "rgba(0,188,212,0.06)", color: "#00bcd4", cursor: "pointer" }}>🔄 Re-generate</button>
+                      <a href={`/bots/videobot?item=${itemId}`} style={{ padding: "0.35rem 0.65rem", fontSize: "0.65rem", fontWeight: 600, borderRadius: "0.35rem", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none" }}>Open VideoBot →</a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </GlassCard>
+
           <DocumentVault itemId={itemId} />
         </div>
 
         {/* ── MEGABOT POWER CENTER (full width) ── */}
         <MegaBotPowerCenter itemId={itemId} boostedBots={boostedBots} boostResults={boostResults} aiData={aiData} onBoostAll={async () => {
-          const remaining = ["analysis","pricing","shipping","photos","buyers","listing","recon","carbot","antique","collectibles"].filter((k) => !boostedBots.has(k));
+          const remaining = ["analysis","pricing","shipping","photos","buyers","listing","recon","carbot","antique","collectibles","video"].filter((k) => !boostedBots.has(k));
           for (const k of remaining) {
             await superBoost(k);
           }

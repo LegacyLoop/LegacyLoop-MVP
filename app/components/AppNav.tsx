@@ -26,6 +26,7 @@ import {
   Gift,
   Sun,
   Moon,
+  Monitor,
   Coins,
   Search,
   Trophy,
@@ -161,7 +162,7 @@ const menuItemBase: React.CSSProperties = {
 export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBalance = 0 }: Props) {
   const pathname  = usePathname();
   const router    = useRouter();
-  const { resolved, setMode } = useTheme();
+  const { mode, resolved, setMode } = useTheme();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [bellOpen,     setBellOpen]     = useState(false);
@@ -200,7 +201,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
 
-  const toggleTheme = () => setMode(resolved === "dark" ? "light" : "dark");
+  const cycleTheme = () => { if (mode === "light") setMode("dark"); else if (mode === "dark") setMode("auto"); else setMode("light"); };
 
   const loadNotifications = async () => {
     if (notifsLoaded) return;
@@ -575,15 +576,12 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
                       {/* Session — Theme + Sign Out */}
                       <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "0.375rem 0" }}>
-                        <button onClick={toggleTheme} style={{ ...menuItemBase, color: "rgba(255,255,255,0.6)", width: "100%", justifyContent: "space-between" }}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLElement).style.color = "#fff"; }}
-                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.82)"; }}>
-                          <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                            {resolved === "dark" ? <Sun size={18} style={{ flexShrink: 0 }} /> : <Moon size={18} style={{ flexShrink: 0 }} />}
-                            {resolved === "dark" ? "Light Mode" : "Dark Mode"}
-                          </span>
-                          <span style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.25)" }}>{resolved === "dark" ? "Dark" : "Light"}</span>
-                        </button>
+                        {/* Theme Picker — Light / Dark / Auto */}
+                        <div style={{ display: "flex", gap: "2px", padding: "0.25rem", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", margin: "0.25rem 0.5rem" }}>
+                          {([{ m: "light" as const, icon: <Sun size={14} />, label: "Light" }, { m: "dark" as const, icon: <Moon size={14} />, label: "Dark" }, { m: "auto" as const, icon: <Monitor size={14} />, label: "Auto" }]).map((opt) => (
+                            <button key={opt.m} onClick={() => setMode(opt.m)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", padding: "0.4rem 0.5rem", borderRadius: "8px", border: "none", background: mode === opt.m ? "rgba(0,188,212,0.15)" : "transparent", color: mode === opt.m ? "#00bcd4" : "rgba(255,255,255,0.5)", fontSize: "0.72rem", fontWeight: mode === opt.m ? 700 : 500, cursor: "pointer", transition: "all 0.15s ease" }}>{opt.icon}{opt.label}</button>
+                          ))}
+                        </div>
                         <button onClick={handleLogout} style={{ ...menuItemBase, color: "rgba(248, 113, 113, 0.75)", width: "100%" }}
                           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(220, 38, 38, 0.08)"; (e.currentTarget as HTMLElement).style.color = "#fca5a5"; }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(248, 113, 113, 0.75)"; }}>
@@ -666,12 +664,11 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
           {/* Session */}
           <div style={{ padding: "0.25rem 0.5rem" }}>
-            <button onClick={toggleTheme} style={{ ...menuItemBase, width: "100%" }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-              {resolved === "dark" ? <Sun size={18} style={{ flexShrink: 0, color: "rgba(255,255,255,0.6)" }} /> : <Moon size={18} style={{ flexShrink: 0, color: "rgba(255,255,255,0.6)" }} />}
-              <span style={{ flex: 1 }}>{resolved === "dark" ? "Switch to Light" : "Switch to Dark"}</span>
-            </button>
+            <div style={{ display: "flex", gap: "2px", padding: "0.25rem", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              {([{ m: "light" as const, icon: <Sun size={16} />, label: "Light" }, { m: "dark" as const, icon: <Moon size={16} />, label: "Dark" }, { m: "auto" as const, icon: <Monitor size={16} />, label: "Auto" }]).map((opt) => (
+                <button key={opt.m} onClick={() => setMode(opt.m)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", padding: "0.5rem", borderRadius: "8px", border: "none", background: mode === opt.m ? "rgba(0,188,212,0.15)" : "transparent", color: mode === opt.m ? "#00bcd4" : "rgba(255,255,255,0.5)", fontSize: "0.78rem", fontWeight: mode === opt.m ? 700 : 500, cursor: "pointer", minHeight: "44px" }}>{opt.icon}{opt.label}</button>
+              ))}
+            </div>
             <button onClick={handleLogout} style={{ ...menuItemBase, color: "rgba(248,113,113,0.75)", width: "100%" }}>
               <LogOut size={18} style={{ flexShrink: 0 }} /><span>Sign Out</span>
             </button>
@@ -715,10 +712,11 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
           {/* Theme toggle */}
           <div style={{ padding: "0.25rem 0.5rem", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-            <button onClick={toggleTheme} style={{ ...menuItemBase, width: "100%" }}>
-              {resolved === "dark" ? <Sun size={18} style={{ flexShrink: 0, color: "rgba(255,255,255,0.6)" }} /> : <Moon size={18} style={{ flexShrink: 0, color: "rgba(255,255,255,0.6)" }} />}
-              <span style={{ flex: 1 }}>{resolved === "dark" ? "Switch to Light" : "Switch to Dark"}</span>
-            </button>
+            <div style={{ display: "flex", gap: "2px", padding: "0.25rem", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              {([{ m: "light" as const, icon: <Sun size={16} />, label: "Light" }, { m: "dark" as const, icon: <Moon size={16} />, label: "Dark" }, { m: "auto" as const, icon: <Monitor size={16} />, label: "Auto" }]).map((opt) => (
+                <button key={opt.m} onClick={() => setMode(opt.m)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", padding: "0.5rem", borderRadius: "8px", border: "none", background: mode === opt.m ? "rgba(0,188,212,0.15)" : "transparent", color: mode === opt.m ? "#00bcd4" : "rgba(255,255,255,0.5)", fontSize: "0.78rem", fontWeight: mode === opt.m ? 700 : 500, cursor: "pointer", minHeight: "44px" }}>{opt.icon}{opt.label}</button>
+              ))}
+            </div>
           </div>
 
           {/* Auth CTAs */}

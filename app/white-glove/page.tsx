@@ -3,6 +3,9 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { WHITE_GLOVE, PROCESSING_FEE, calculateProcessingFee } from "@/lib/constants/pricing";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "White-Glove Services · LegacyLoop", description: "Full-service estate liquidation with dedicated managers" };
 
 const TIER_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   ESSENTIALS:    { label: "Essentials",    color: "#92400e", bg: "#fef3c7" },

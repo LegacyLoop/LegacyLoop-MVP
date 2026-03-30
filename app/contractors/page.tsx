@@ -2,6 +2,9 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import ContractorsClient from "./ContractorsClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Contractors · LegacyLoop", description: "Local contractors for estate services and logistics" };
 
 export default async function ContractorsPage() {
   const user = await authAdapter.getSession();

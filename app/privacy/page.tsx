@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <div className="mx-auto max-w-3xl card p-8">
       <div className="section-title">Legal</div>
       <h1 className="h1 mt-2">Privacy Policy</h1>
-      <p className="muted mt-2">Last updated: March 2, 2026</p>
+      <p className="muted mt-2">Last updated: March 2026</p>
 
       <div className="mt-8 space-y-6" style={{ color: "var(--text-secondary)", lineHeight: 1.8 }}>
         <section>
@@ -80,7 +80,41 @@ export default function PrivacyPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>7. Contact</h2>
+          <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>7. Payment Processing</h2>
+          <p className="mt-2">
+            Payments are processed by Square, Inc. We do not store your full credit card number. Square processes and stores payment information in accordance with PCI-DSS standards. When you make a purchase, Square collects your payment details directly.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>8. Facebook & Instagram (Meta) Data</h2>
+          <p className="mt-2">
+            If you connect your Facebook or Instagram account to LegacyLoop, we may access your public profile information and Marketplace listings as permitted by Meta Platform Policy. We do not post on your behalf without explicit permission. You can revoke access at any time via Facebook Settings → Apps and Websites.
+          </p>
+        </section>
+
+        <section id="cookies">
+          <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>9. Cookies</h2>
+          <p className="mt-2">LegacyLoop uses the following types of cookies:</p>
+          <ul className="mt-2 list-disc pl-6 space-y-1">
+            <li><strong>Essential cookies:</strong> Required for authentication and security (JWT session token)</li>
+            <li><strong>Preference cookies:</strong> Remember your theme choice (light/dark/auto) and panel layout</li>
+            <li><strong>Analytics cookies:</strong> Help us understand how the platform is used (aggregated, anonymized)</li>
+          </ul>
+          <p className="mt-2">You can disable non-essential cookies in your browser settings. Disabling essential cookies will prevent you from logging in.</p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>10. Data Deletion</h2>
+          <p className="mt-2">
+            You can request complete deletion of your account and all associated data. Visit our{" "}
+            <a href="/data-deletion" style={{ color: "var(--accent)" }}>Data Deletion page</a>{" "}
+            for full instructions. We comply with GDPR and CCPA deletion requirements within 30 days.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>11. Contact</h2>
           <p className="mt-2">
             For privacy-related questions or requests, contact us at{" "}
             <a href="mailto:support@legacy-loop.com" style={{ color: "var(--accent)" }}>support@legacy-loop.com</a>.

@@ -6,6 +6,9 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import SettingsClient from "./SettingsClient";
 import ThemeSettings from "./ThemeSettings";
 import ChangePasswordSection from "./ChangePasswordSection";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Settings · LegacyLoop", description: "Manage privacy, notifications, theme, and account preferences" };
 
 export default async function SettingsPage() {
   const user = await authAdapter.getSession();

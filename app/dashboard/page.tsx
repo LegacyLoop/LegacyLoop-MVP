@@ -9,6 +9,9 @@ import { DISCOUNTS } from "@/lib/pricing/constants";
 import { computeAuthenticityScore, getTierFromScore } from "@/lib/antique-score";
 import { computeCollectiblesScore } from "@/lib/collectibles-score";
 import { detectCollectible } from "@/lib/collectible-detect";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Dashboard · LegacyLoop", description: "Your selling command center — items, analytics, and AI bot insights" };
 
 /** Check both AntiqueCheck table AND AI analysis rawJson for antique detection */
 function isAntiqueItem(item: { antiqueCheck?: { isAntique: boolean } | null; aiResult?: { rawJson: string | null } | null }): boolean {

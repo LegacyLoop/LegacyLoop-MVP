@@ -5,6 +5,9 @@ import MessagesClient from "./MessagesClient";
 import MessagesAgentWrapper from "./MessagesAgentWrapper";
 import { safeJson } from "@/lib/utils/json";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Messages · LegacyLoop", description: "Your inbox — buyer inquiries, offers, and conversations" };
 
 export default async function MessagesPage() {
   const user = await authAdapter.getSession();

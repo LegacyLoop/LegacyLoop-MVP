@@ -93,9 +93,11 @@ export default function Footer() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+            gridTemplateColumns: "repeat(4, 1fr)",
             gap: "2rem",
             marginBottom: "2rem",
+            maxWidth: "900px",
+            margin: "0 auto 2rem auto",
           }}
         >
           <div>
@@ -153,6 +155,7 @@ export default function Footer() {
               { label: "Donate Items", href: "/donate" },
               { label: "Referral Program", href: "/referral" },
               { label: "API Access", href: "/api-access" },
+              { label: "Support Our Mission", href: "/donate#support" },
             ].map((l) => (
               <Link
                 key={l.label}
@@ -218,10 +221,11 @@ export default function Footer() {
               Company
             </div>
             {[
-              { label: "About LegacyLoop", href: "#" },
+              { label: "About LegacyLoop", href: "/about" },
               { label: "Privacy Policy", href: "/privacy" },
               { label: "Terms of Service", href: "/terms" },
-              { label: "Cookie Policy", href: "#" },
+              { label: "Data Deletion", href: "/data-deletion" },
+              { label: "Cookie Policy", href: "/privacy#cookies" },
             ].map((l) => (
               <a
                 key={l.label}
@@ -277,7 +281,7 @@ export default function Footer() {
             >
               v1.0.0-beta
             </span>
-            <span>Built: March 2, 2026</span>
+            <span>Built with purpose in Maine</span>
           </span>
         </div>
       </div>

@@ -126,10 +126,10 @@ function BuyerOutreachInner() {
           }}
         >
           <div>
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: "#fff", margin: 0 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>
               Buyer Outreach Blast
             </h1>
-            <p style={{ fontSize: 13, color: "rgba(207,216,220,0.6)", marginTop: 6 }}>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>
               4 AI engines finding your ideal buyers and crafting personalized outreach messages
             </p>
           </div>
@@ -165,7 +165,7 @@ function BuyerOutreachInner() {
             marginBottom: 24,
           }}
         >
-          <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 16 }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginBottom: 16 }}>
             Select an item to find buyers for
           </div>
           <div
@@ -194,10 +194,10 @@ function BuyerOutreachInner() {
                   (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)";
                 }}
               >
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
                   {item.title || "Untitled"}
                 </div>
-                <div style={{ fontSize: 11, color: "rgba(207,216,220,0.5)", marginTop: 4 }}>
+                <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
                   {item.status}
                   {item.listingPrice ? ` · $${item.listingPrice}` : ""}
                 </div>
@@ -211,9 +211,9 @@ function BuyerOutreachInner() {
       {selectedItemId && !result && !loading && (
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           {selectedItem && (
-            <div style={{ fontSize: 14, color: "rgba(207,216,220,0.6)", marginBottom: 12 }}>
+            <div style={{ fontSize: 14, color: "var(--text-muted)", marginBottom: 12 }}>
               Finding buyers for:{" "}
-              <strong style={{ color: "#fff" }}>{selectedItem.title || "Selected Item"}</strong>
+              <strong style={{ color: "var(--text-primary)" }}>{selectedItem.title || "Selected Item"}</strong>
             </div>
           )}
           <button
@@ -240,7 +240,7 @@ function BuyerOutreachInner() {
               margin: "12px auto 0",
               background: "none",
               border: "none",
-              color: "rgba(207,216,220,0.5)",
+              color: "var(--text-muted)",
               fontSize: 12,
               cursor: "pointer",
             }}
@@ -258,7 +258,7 @@ function BuyerOutreachInner() {
               textAlign: "center",
               fontSize: 18,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--text-primary)",
               marginBottom: 20,
             }}
           >
@@ -295,7 +295,7 @@ function BuyerOutreachInner() {
                   <div style={{ fontSize: 12, fontWeight: 700, color: e.color, marginBottom: 4 }}>
                     {e.name}
                   </div>
-                  <div style={{ fontSize: 11, color: "rgba(207,216,220,0.6)" }}>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
                     {status === "running"
                       ? `Finding ${e.persona}...`
                       : status === "complete"
@@ -356,7 +356,7 @@ function BuyerOutreachInner() {
               <div style={{ fontSize: 28, fontWeight: 800, color: "#00bcd4" }}>
                 {result.personas?.length || 0}
               </div>
-              <div style={{ fontSize: 10, color: "rgba(207,216,220,0.5)" }}>Buyer Personas</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Buyer Personas</div>
             </div>
             <div
               style={{
@@ -370,7 +370,7 @@ function BuyerOutreachInner() {
               <div style={{ fontSize: 28, fontWeight: 800, color: "#4caf50" }}>
                 {result.totalMessages || 0}
               </div>
-              <div style={{ fontSize: 10, color: "rgba(207,216,220,0.5)" }}>Outreach Messages</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Outreach Messages</div>
             </div>
             <div
               style={{
@@ -384,7 +384,7 @@ function BuyerOutreachInner() {
               <div style={{ fontSize: 28, fontWeight: 800, color: "#ff9800" }}>
                 {result.topPersona?.likelihood_to_buy || 0}%
               </div>
-              <div style={{ fontSize: 10, color: "rgba(207,216,220,0.5)" }}>Top Match Score</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Top Match Score</div>
             </div>
           </div>
 
@@ -410,10 +410,10 @@ function BuyerOutreachInner() {
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: 11, fontWeight: 700, color: engine?.color || "#fff" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: engine?.color || "var(--text-primary)" }}>
                     {engine?.name || agent.provider}
                   </div>
-                  <div style={{ fontSize: 10, color: "rgba(207,216,220,0.5)", margin: "4px 0" }}>
+                  <div style={{ fontSize: 10, color: "var(--text-muted)", margin: "4px 0" }}>
                     {agent.personaName || "—"}
                   </div>
                   <div
@@ -430,7 +430,7 @@ function BuyerOutreachInner() {
           </div>
 
           {/* Persona Cards — 2x2 grid */}
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
             Buyer Personas
           </div>
           <div
@@ -494,13 +494,13 @@ function BuyerOutreachInner() {
                       {engine?.icon || "👤"}
                     </div>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
                         {persona.name || "Unknown Persona"}
                       </div>
                       <div
                         style={{
                           fontSize: 10,
-                          color: "rgba(207,216,220,0.5)",
+                          color: "var(--text-muted)",
                           textTransform: "uppercase",
                           letterSpacing: 1,
                         }}
@@ -514,7 +514,7 @@ function BuyerOutreachInner() {
                   <div
                     style={{
                       fontSize: 12,
-                      color: "rgba(207,216,220,0.7)",
+                      color: "var(--text-secondary)",
                       lineHeight: 1.6,
                       marginBottom: 12,
                     }}
@@ -552,10 +552,10 @@ function BuyerOutreachInner() {
                         marginBottom: 4,
                       }}
                     >
-                      <span style={{ fontSize: 10, color: "rgba(207,216,220,0.5)" }}>
+                      <span style={{ fontSize: 10, color: "var(--text-muted)" }}>
                         Likelihood to Buy
                       </span>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-primary)" }}>
                         {persona.likelihood_to_buy || 0}%
                       </span>
                     </div>
@@ -594,7 +594,7 @@ function BuyerOutreachInner() {
                       marginBottom: 12,
                     }}
                   >
-                    <span style={{ fontSize: 9, color: "rgba(207,216,220,0.4)" }}>Best on:</span>
+                    <span style={{ fontSize: 9, color: "var(--text-muted)" }}>Best on:</span>
                     {(persona.best_platforms || []).map((p: string, i: number) => (
                       <span
                         key={i}
@@ -604,7 +604,7 @@ function BuyerOutreachInner() {
                           borderRadius: 20,
                           background: "var(--ghost-bg)",
                           border: "1px solid var(--border-default)",
-                          color: "rgba(207,216,220,0.7)",
+                          color: "var(--text-secondary)",
                         }}
                       >
                         {p}
@@ -719,7 +719,7 @@ function BuyerOutreachInner() {
                               <span
                                 style={{
                                   fontSize: 9,
-                                  color: "rgba(207,216,220,0.5)",
+                                  color: "var(--text-muted)",
                                   marginLeft: "auto",
                                 }}
                               >
@@ -733,7 +733,7 @@ function BuyerOutreachInner() {
                                 style={{
                                   fontSize: 12,
                                   fontWeight: 700,
-                                  color: "#fff",
+                                  color: "var(--text-primary)",
                                   marginBottom: 6,
                                 }}
                               >
@@ -745,7 +745,7 @@ function BuyerOutreachInner() {
                             <div
                               style={{
                                 fontSize: 12,
-                                color: "rgba(207,216,220,0.8)",
+                                color: "var(--text-secondary)",
                                 lineHeight: 1.7,
                                 marginBottom: 10,
                                 borderLeft: "2px solid rgba(0,188,212,0.2)",
@@ -816,7 +816,7 @@ function BuyerOutreachInner() {
                                   borderRadius: 6,
                                   background: "var(--ghost-bg)",
                                   border: "1px solid var(--border-default)",
-                                  color: "rgba(207,216,220,0.6)",
+                                  color: "var(--text-muted)",
                                   cursor: "pointer",
                                 }}
                               >
@@ -853,7 +853,7 @@ function BuyerOutreachInner() {
                           <div
                             style={{
                               fontSize: 11,
-                              color: "rgba(207,216,220,0.7)",
+                              color: "var(--text-secondary)",
                               lineHeight: 1.7,
                             }}
                           >
@@ -888,7 +888,7 @@ function BuyerOutreachInner() {
                 }}
               >
                 <span style={{ fontSize: 18 }}>⭐</span>
-                <span style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
                   Top Match: {result.topPersona.name}
                 </span>
                 <span
@@ -909,7 +909,7 @@ function BuyerOutreachInner() {
               <div
                 style={{
                   fontSize: 12,
-                  color: "rgba(207,216,220,0.7)",
+                  color: "var(--text-secondary)",
                   lineHeight: 1.6,
                 }}
               >
@@ -919,7 +919,7 @@ function BuyerOutreachInner() {
           )}
 
           {/* Action Center */}
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
             Action Center
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -978,7 +978,7 @@ function BuyerOutreachInner() {
           <div
             style={{
               fontSize: 10,
-              color: "rgba(207,216,220,0.4)",
+              color: "var(--text-muted)",
               textAlign: "center",
               marginTop: 16,
             }}
@@ -1005,7 +1005,7 @@ export default function BuyerOutreachPage() {
             textAlign: "center",
           }}
         >
-          <div style={{ fontSize: 14, color: "rgba(207,216,220,0.5)" }}>
+          <div style={{ fontSize: 14, color: "var(--text-muted)" }}>
             Loading outreach blast...
           </div>
         </div>

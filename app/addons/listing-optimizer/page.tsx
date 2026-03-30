@@ -127,7 +127,7 @@ function ListingOptimizerInner() {
               style={{
                 fontSize: 26,
                 fontWeight: 800,
-                color: "#fff",
+                color: "var(--text-primary)",
                 margin: 0,
               }}
             >
@@ -136,7 +136,7 @@ function ListingOptimizerInner() {
             <p
               style={{
                 fontSize: 13,
-                color: "rgba(207,216,220,0.6)",
+                color: "var(--text-muted)",
                 marginTop: 6,
               }}
             >
@@ -180,7 +180,7 @@ function ListingOptimizerInner() {
             style={{
               fontSize: 16,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--text-primary)",
               marginBottom: 16,
             }}
           >
@@ -214,14 +214,14 @@ function ListingOptimizerInner() {
                 }}
               >
                 <div
-                  style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}
+                  style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}
                 >
                   {item.title || "Untitled"}
                 </div>
                 <div
                   style={{
                     fontSize: 11,
-                    color: "rgba(207,216,220,0.5)",
+                    color: "var(--text-muted)",
                     marginTop: 4,
                   }}
                 >
@@ -240,12 +240,12 @@ function ListingOptimizerInner() {
             <div
               style={{
                 fontSize: 14,
-                color: "rgba(207,216,220,0.6)",
+                color: "var(--text-muted)",
                 marginBottom: 12,
               }}
             >
               Optimizing:{" "}
-              <strong style={{ color: "#fff" }}>
+              <strong style={{ color: "var(--text-primary)" }}>
                 {selectedItem.title || "Selected Item"}
               </strong>
             </div>
@@ -278,7 +278,7 @@ function ListingOptimizerInner() {
               textAlign: "center",
               fontSize: 18,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--text-primary)",
               marginBottom: 20,
             }}
           >
@@ -331,7 +331,7 @@ function ListingOptimizerInner() {
                   <div
                     style={{
                       fontSize: 10,
-                      color: "rgba(207,216,220,0.5)",
+                      color: "var(--text-muted)",
                       marginTop: 4,
                     }}
                   >
@@ -399,7 +399,7 @@ function ListingOptimizerInner() {
                 </span>
               </div>
               <div
-                style={{ fontSize: 11, color: "rgba(207,216,220,0.5)" }}
+                style={{ fontSize: 11, color: "var(--text-muted)" }}
               >
                 Before
               </div>
@@ -420,7 +420,7 @@ function ListingOptimizerInner() {
                 }}
               >
                 <span
-                  style={{ fontSize: 32, fontWeight: 800, color: "#fff" }}
+                  style={{ fontSize: 32, fontWeight: 800, color: "var(--text-primary)" }}
                 >
                   {result.optimizedScore}
                 </span>
@@ -472,7 +472,7 @@ function ListingOptimizerInner() {
                     fontWeight: 700,
                     color:
                       AI_ENGINES.find((e) => e.key === agent.provider)
-                        ?.color || "#fff",
+                        ?.color || "var(--text-primary)",
                   }}
                 >
                   {AI_ENGINES.find((e) => e.key === agent.provider)
@@ -482,7 +482,7 @@ function ListingOptimizerInner() {
                   style={{
                     fontSize: 18,
                     fontWeight: 800,
-                    color: "#fff",
+                    color: "var(--text-primary)",
                     margin: "4px 0",
                   }}
                 >
@@ -506,7 +506,7 @@ function ListingOptimizerInner() {
             style={{
               fontSize: 14,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--text-primary)",
               marginBottom: 12,
             }}
           >
@@ -552,7 +552,7 @@ function ListingOptimizerInner() {
                       style={{
                         fontSize: 13,
                         fontWeight: 700,
-                        color: "#fff",
+                        color: "var(--text-primary)",
                       }}
                     >
                       {plat.name}
@@ -560,7 +560,7 @@ function ListingOptimizerInner() {
                     <span
                       style={{
                         fontSize: 10,
-                        color: "rgba(207,216,220,0.4)",
+                        color: "var(--text-muted)",
                       }}
                     >
                       {p.current_score} → {p.optimized_score}
@@ -604,7 +604,7 @@ function ListingOptimizerInner() {
                           style={{
                             fontSize: 9,
                             fontWeight: 700,
-                            color: "rgba(207,216,220,0.4)",
+                            color: "var(--text-muted)",
                             marginBottom: 6,
                           }}
                         >
@@ -613,7 +613,7 @@ function ListingOptimizerInner() {
                         <div
                           style={{
                             fontSize: 12,
-                            color: "rgba(207,216,220,0.5)",
+                            color: "var(--text-muted)",
                             lineHeight: 1.5,
                           }}
                         >
@@ -642,7 +642,7 @@ function ListingOptimizerInner() {
                           style={{
                             fontSize: 13,
                             fontWeight: 600,
-                            color: "#fff",
+                            color: "var(--text-primary)",
                             marginBottom: 4,
                           }}
                         >
@@ -651,7 +651,7 @@ function ListingOptimizerInner() {
                         <div
                           style={{
                             fontSize: 11,
-                            color: "rgba(207,216,220,0.8)",
+                            color: "var(--text-secondary)",
                             lineHeight: 1.6,
                             marginBottom: 6,
                           }}
@@ -703,7 +703,7 @@ function ListingOptimizerInner() {
                           <div
                             style={{
                               fontSize: 10,
-                              color: "rgba(207,216,220,0.5)",
+                              color: "var(--text-muted)",
                               fontStyle: "italic",
                             }}
                           >
@@ -831,7 +831,7 @@ function ListingOptimizerInner() {
           <div
             style={{
               fontSize: 10,
-              color: "rgba(207,216,220,0.4)",
+              color: "var(--text-muted)",
               textAlign: "center",
               marginTop: 16,
             }}
@@ -865,7 +865,7 @@ export default function ListingOptimizerPage() {
           <div
             style={{
               fontSize: 14,
-              color: "rgba(207,216,220,0.5)",
+              color: "var(--text-muted)",
             }}
           >
             Loading optimizer...

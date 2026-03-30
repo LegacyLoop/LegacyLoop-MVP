@@ -132,7 +132,7 @@ export default function DonateClient({ items }: Props) {
           <div style={{ fontSize: "3.5rem", marginBottom: "0.75rem" }}>🤝</div>
           <h2 className="h2 mb-3">Donation Scheduled!</h2>
           <div
-            style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "1rem", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "left" }}
+            style={{ background: "rgba(34,197,94,0.06)", border: "1.5px solid #86efac", borderRadius: "1rem", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "left" }}
           >
             <div style={{ fontWeight: 700, color: "#15803d", marginBottom: "0.5rem" }}>
               {selectedIds.size} item{selectedIds.size !== 1 ? "s" : ""} donated to {charityObj?.name}
@@ -186,7 +186,7 @@ export default function DonateClient({ items }: Props) {
               flex: 1,
               height: "4px",
               borderRadius: "4px",
-              background: step >= s ? "#0f766e" : "#e7e5e4",
+              background: step >= s ? "#00bcd4" : "var(--border-default)",
               transition: "background 0.2s",
             }}
           />
@@ -231,10 +231,10 @@ export default function DonateClient({ items }: Props) {
                     display: "flex",
                     gap: "0.75rem",
                     padding: "0.875rem",
-                    border: `2px solid ${selectedIds.has(item.id) ? "#0f766e" : "#e7e5e4"}`,
+                    border: `2px solid ${selectedIds.has(item.id) ? "#00bcd4" : "var(--border-default)"}`,
                     borderRadius: "1rem",
                     cursor: "pointer",
-                    background: selectedIds.has(item.id) ? "#f0fdfa" : "#fff",
+                    background: selectedIds.has(item.id) ? "rgba(0,188,212,0.06)" : "#fff",
                     alignItems: "flex-start",
                   }}
                 >
@@ -257,7 +257,7 @@ export default function DonateClient({ items }: Props) {
                       <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{item.condition}</div>
                     )}
                     {item.estimatedHigh != null && (
-                      <div style={{ fontSize: "0.78rem", color: "#0f766e", fontWeight: 600, marginTop: "0.2rem" }}>
+                      <div style={{ fontSize: "0.78rem", color: "#00bcd4", fontWeight: 600, marginTop: "0.2rem" }}>
                         ~${Math.round(item.estimatedHigh).toLocaleString()} deduction
                       </div>
                     )}
@@ -272,18 +272,18 @@ export default function DonateClient({ items }: Props) {
               style={{
                 marginTop: "1.25rem",
                 padding: "0.875rem 1.25rem",
-                background: "#f0fdfa",
-                border: "1.5px solid #99f6e4",
+                background: "rgba(0,188,212,0.06)",
+                border: "1.5px solid rgba(0,188,212,0.25)",
                 borderRadius: "0.875rem",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
               }}
             >
-              <span style={{ fontSize: "0.88rem", color: "#0f766e" }}>
+              <span style={{ fontSize: "0.88rem", color: "#00bcd4" }}>
                 {selectedIds.size} item{selectedIds.size !== 1 ? "s" : ""} selected
               </span>
-              <span style={{ fontWeight: 700, color: "#0f766e" }}>
+              <span style={{ fontWeight: 700, color: "#00bcd4" }}>
                 Est. deduction: ${Math.round(totalDeduction).toLocaleString()}
               </span>
             </div>
@@ -312,9 +312,9 @@ export default function DonateClient({ items }: Props) {
                 style={{
                   textAlign: "left",
                   padding: "1rem",
-                  border: `2px solid ${selectedCharity === c.id ? "#0f766e" : "#e7e5e4"}`,
+                  border: `2px solid ${selectedCharity === c.id ? "#00bcd4" : "var(--border-default)"}`,
                   borderRadius: "1rem",
-                  background: selectedCharity === c.id ? "#f0fdfa" : "#fff",
+                  background: selectedCharity === c.id ? "rgba(0,188,212,0.06)" : "#fff",
                   cursor: "pointer",
                   transition: "border-color 0.15s, background 0.15s",
                 }}
@@ -406,12 +406,12 @@ export default function DonateClient({ items }: Props) {
             style={{
               marginTop: "1.25rem",
               padding: "0.875rem 1.25rem",
-              background: "#f0fdfa",
-              border: "1.5px solid #99f6e4",
+              background: "rgba(0,188,212,0.06)",
+              border: "1.5px solid rgba(0,188,212,0.25)",
               borderRadius: "0.875rem",
             }}
           >
-            <div style={{ fontWeight: 600, color: "#0f766e", marginBottom: "0.25rem" }}>
+            <div style={{ fontWeight: 600, color: "#00bcd4", marginBottom: "0.25rem" }}>
               {selectedIds.size} item{selectedIds.size !== 1 ? "s" : ""} — Est. tax deduction: ${Math.round(totalDeduction).toLocaleString()}
             </div>
             <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
@@ -440,6 +440,43 @@ export default function DonateClient({ items }: Props) {
           </div>
         </div>
       )}
+      {/* ═══ Support Our Mission ═══ */}
+      <div id="support" style={{ marginTop: "2.5rem", background: "var(--bg-card)", backdropFilter: "blur(16px)", borderLeft: "4px solid #b8860b", borderRadius: "0 16px 16px 0", padding: "1.75rem 2rem", boxShadow: "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: "radial-gradient(circle, rgba(184,134,11,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#b8860b", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>Support Our Mission</div>
+        <p style={{ fontSize: "0.92rem", color: "var(--text-primary)", lineHeight: 1.7, marginBottom: "1rem" }}>
+          LegacyLoop is more than a platform &mdash; it&apos;s a mission to serve families, seniors, veterans, and communities in need.
+        </p>
+        <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: "1rem" }}>
+          A portion of every transaction funds:
+        </p>
+        <ul style={{ paddingLeft: "1.25rem", fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.8, marginBottom: "1.25rem" }}>
+          <li>Affordable veteran housing programs in central Maine</li>
+          <li>Community property and local initiatives</li>
+          <li>Item donations to families in need from unsold inventory</li>
+        </ul>
+        <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1rem" }}>Want to help us grow faster? Every dollar goes directly toward building technology that serves people who need it most.</p>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+          {[
+            { label: "☕ Buy Us a Coffee", amount: "$5", color: "#b8860b" },
+            { label: "💛 Support the Mission", amount: "$25", color: "#b8860b" },
+            { label: "🚀 Fuel the Future", amount: "$100", color: "#b8860b" },
+          ].map(opt => (
+            <a key={opt.amount} href={`mailto:hello@legacy-loop.com?subject=Supporting LegacyLoop (${opt.amount})&body=I'd like to support LegacyLoop's mission with a ${opt.amount} contribution.`} style={{
+              padding: "0.6rem 1.25rem", borderRadius: "10px",
+              border: `1px solid ${opt.color}40`, background: `${opt.color}10`,
+              color: opt.color, fontWeight: 700, fontSize: "0.82rem",
+              textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.35rem",
+              transition: "all 0.2s ease", minHeight: "44px",
+            }}>
+              {opt.label} &mdash; {opt.amount}
+            </a>
+          ))}
+        </div>
+        <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "0.75rem", fontStyle: "italic" }}>
+          Online giving coming soon. For now, reach out at hello@legacy-loop.com.
+        </p>
+      </div>
     </div>
   );
 }

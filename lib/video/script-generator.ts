@@ -26,6 +26,11 @@ export interface ScriptInput {
   material?: string;
   platform: string;
   style?: "professional" | "ugc" | "dramatic" | "casual";
+  brand?: string;
+  enrichmentContext?: string;
+  marketContext?: string;
+  photoContext?: string;
+  photoCount?: number;
 }
 
 export interface ScriptResult {
@@ -34,12 +39,12 @@ export interface ScriptResult {
   error?: string;
 }
 
-const PLATFORM_SPECS: Record<string, { maxSeconds: number; tone: string }> = {
-  tiktok: { maxSeconds: 30, tone: "fast-paced, trendy, hook-first" },
-  reels: { maxSeconds: 30, tone: "visually-driven, lifestyle" },
-  shorts: { maxSeconds: 60, tone: "informative, search-optimized" },
-  facebook: { maxSeconds: 45, tone: "warm, storytelling, community" },
-  all: { maxSeconds: 30, tone: "versatile, works across platforms" },
+const PLATFORM_SPECS: Record<string, { maxSeconds: number; tone: string; hookRule: string }> = {
+  tiktok: { maxSeconds: 30, tone: "fast-paced, trendy, hook-first", hookRule: "3-second hook — the viewer decides in 3 seconds whether to stay or swipe" },
+  reels: { maxSeconds: 30, tone: "visually-driven, lifestyle, storytelling", hookRule: "Open with a visual reveal or storytelling hook — Reels reward narrative arcs" },
+  shorts: { maxSeconds: 60, tone: "informative, search-optimized", hookRule: "Lead with value — state the item and why it matters within 5 seconds" },
+  facebook: { maxSeconds: 45, tone: "warm, storytelling, community", hookRule: "Conversational opening — talk to the viewer like a friend showing them a treasure" },
+  all: { maxSeconds: 30, tone: "versatile, works across platforms", hookRule: "Universal hook — curiosity or surprise in the first 3 seconds" },
 };
 
 /**
@@ -74,9 +79,38 @@ export async function generateVideoScript(input: ScriptInput): Promise<ScriptRes
       ? `$${input.priceLow} — $${input.priceHigh}`
       : "unknown";
 
+    const photoCount = input.photoCount || 1;
+
+    // Build enrichment block
+    let enrichmentBlock = "";
+    if (input.enrichmentContext) {
+      enrichmentBlock = `
+ENRICHMENT CONTEXT (from prior AI bot analyses):
+${input.enrichmentContext}
+Use these findings to make the script more specific and authoritative.`;
+    }
+
+    // Build market context block
+    let marketBlock = "";
+    if (input.marketContext) {
+      marketBlock = `
+MARKET COMPARABLES:
+${input.marketContext}
+Reference real market data to build buyer confidence (e.g., "similar pieces are selling for...").`;
+    }
+
+    // Build photo awareness block
+    const photoBlock = `
+PHOTO AWARENESS:
+The viewer will see ${photoCount} photo${photoCount !== 1 ? "s" : ""} during this video.
+${input.photoContext || ""}
+Use voiceover language that references what the viewer is seeing: "Notice the...", "Look at this...", "See how the light catches...", "Check out the detail on...".
+Each sentence should loosely correspond to what the viewer sees at that moment.`;
+
     const prompt = `Generate a ${spec.maxSeconds}-second video ad script for selling this item on ${input.platform}.
 
 ITEM: ${input.itemName}
+${input.brand ? `BRAND/MAKER: ${input.brand}` : ""}
 CATEGORY: ${input.category || "General"}
 ${input.description ? `DESCRIPTION: ${input.description}` : ""}
 PRICE RANGE: ${priceRange}
@@ -85,6 +119,12 @@ ${input.era ? `ERA: ${input.era}` : ""}
 ${input.material ? `MATERIAL: ${input.material}` : ""}
 STYLE: ${input.style || "professional"}
 TONE: ${spec.tone}
+${enrichmentBlock}
+${marketBlock}
+${photoBlock}
+
+PLATFORM RULES for ${input.platform.toUpperCase()}:
+${spec.hookRule}
 
 Return ONLY valid JSON with this exact structure:
 {
@@ -104,12 +144,14 @@ RULES:
 - CTA should feel natural, not salesy
 - Hashtags should be relevant and trending
 - Write for spoken delivery — short sentences, natural rhythm
-- Total word count ~${Math.round(spec.maxSeconds * 2.5)} words (2.5 words per second)`;
+- PACE: ~2.5 words per second. Total word count ~${Math.round(spec.maxSeconds * 2.5)} words
+- PERIOD-TERMINATE every sentence. Every sentence must end with a period, exclamation mark, or question mark. This is critical for narration timing.
+- ${input.brand ? `Mention the brand/maker "${input.brand}" naturally` : ""}`;
 
     const response = await openai.responses.create({
       model: "gpt-4o-mini",
       input: [
-        { role: "system", content: "You are an expert social media video ad copywriter specializing in resale, vintage, and antique items. You write scripts that stop the scroll and drive sales." },
+        { role: "system", content: "You are an expert social media video ad copywriter specializing in resale, vintage, and antique items. You write scripts that stop the scroll and drive sales. Every sentence you write MUST end with punctuation (. ! or ?) — this is required for narration timing sync." },
         { role: "user", content: prompt },
       ],
       max_output_tokens: 1024,

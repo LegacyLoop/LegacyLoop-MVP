@@ -232,7 +232,7 @@ export default function ApiAccessPage() {
               alignItems: "center",
               gap: "0.5rem",
               background: "var(--bg-card-hover)",
-              color: "#fff",
+              color: "var(--text-primary)",
               padding: "0.85rem 2rem",
               borderRadius: "9999px",
               fontWeight: 700,
@@ -357,7 +357,7 @@ export default function ApiAccessPage() {
                       padding: "0.75rem 1rem",
                       borderRadius: "0.75rem",
                       background: isDark ? "var(--bg-card-hover)" : plan.color,
-                      color: "#fff",
+                      color: isDark ? "var(--text-primary)" : "#fff",
                       border: `2px solid ${isDark ? "var(--border-default)" : plan.color}`,
                       fontWeight: 700,
                       fontSize: "0.9rem",
@@ -415,7 +415,7 @@ export default function ApiAccessPage() {
           </a>
           <Link
             href="/pricing"
-            style={{ background: "var(--bg-card-hover)", color: "#fff", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem", border: "1px solid var(--border-default)" }}
+            style={{ background: "var(--bg-card-hover)", color: "var(--text-primary)", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem", border: "1px solid var(--border-default)" }}
           >
             View Platform Pricing
           </Link>

@@ -127,7 +127,7 @@ export default function VeteransPage() {
               alignItems: "center",
               gap: "0.5rem",
               background: "var(--bg-card-hover)",
-              color: "#fff",
+              color: "var(--text-primary)",
               padding: "0.85rem 2rem",
               borderRadius: "9999px",
               fontWeight: 700,
@@ -273,15 +273,15 @@ export default function VeteransPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.5rem" }}>
             <input
               placeholder="Your name"
-              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "var(--bg-card-hover)", color: "#fff", outline: "1px solid var(--border-default)" }}
+              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "var(--bg-card-hover)", color: "var(--text-primary)", outline: "1px solid var(--border-default)" }}
             />
             <input
               placeholder="Email address"
               type="email"
-              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "var(--bg-card-hover)", color: "#fff", outline: "1px solid var(--border-default)" }}
+              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "var(--bg-card-hover)", color: "var(--text-primary)", outline: "1px solid var(--border-default)" }}
             />
             <select
-              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "var(--bg-card-hover)", color: "#fff", outline: "1px solid var(--border-default)" }}
+              style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", border: "none", fontSize: "0.9rem", background: "var(--bg-card-hover)", color: "var(--text-primary)", outline: "1px solid var(--border-default)" }}
             >
               <option value="" style={{ color: "#1c1917" }}>Status / Branch</option>
               <option style={{ color: "#1c1917" }}>Army Veteran</option>

@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { runVideoPipeline } from "@/lib/video/pipeline";
+import { getItemEnrichmentContext } from "@/lib/enrichment";
+import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 
 function safeJson(s: string | null | undefined): any {
   if (!s) return null;
@@ -59,7 +61,7 @@ export async function POST(
     const { itemId } = await params;
 
     // Parse request body
-    let body: { tier?: string; platform?: string } = {};
+    let body: { tier?: string; platform?: string; voiceMode?: string } = {};
     try {
       body = await _req.json();
     } catch {
@@ -82,7 +84,13 @@ export async function POST(
         pro: BOT_CREDIT_COSTS.videoBotPro,
         mega: BOT_CREDIT_COSTS.megaBotVideo,
       };
-      const cost = creditCostMap[tier] ?? BOT_CREDIT_COSTS.videoBotStandard;
+      let cost = creditCostMap[tier] ?? BOT_CREDIT_COSTS.videoBotStandard;
+
+      // Re-run discount: 50% off if the user has run VideoBot on this item before
+      const isRerun = await hasPriorBotRun(user.id, itemId, "VIDEOBOT_RESULT");
+      if (isRerun) {
+        cost = Math.ceil(cost * 0.5);
+      }
 
       const cc = await checkCredits(user.id, cost);
       if (!cc.hasEnough) {
@@ -91,7 +99,7 @@ export async function POST(
           { status: 402 }
         );
       }
-      await deductCredits(user.id, cost, `VideoBot ${tier} run`, itemId);
+      await deductCredits(user.id, cost, `VideoBot ${tier} run${isRerun ? " (re-run 50% off)" : ""}`, itemId);
     }
 
     // Fetch item with analysis data
@@ -123,6 +131,17 @@ export async function POST(
     const conditionLabel = conditionScore >= 8 ? "Excellent" : conditionScore >= 5 ? "Good" : "Fair";
     const photoPaths = item.photos.map((p) => p.filePath);
 
+    // ── Gather enrichment + market intelligence (non-blocking failures) ──
+    const [enrichment, marketIntel] = await Promise.all([
+      getItemEnrichmentContext(itemId, "videobot").catch(() => null),
+      getMarketIntelligence(itemName, category, item.saleZip || "04901").catch(() => null),
+    ]);
+
+    // Build photo context from AI analysis
+    const photoContext = ai.photo_quality_score
+      ? `${item.photos.length} photos, quality ${ai.photo_quality_score}/10`
+      : `${item.photos.length} photos`;
+
     // ── Demo mode fast path ──
     if (isDemoMode()) {
       const demoResult = {
@@ -145,12 +164,14 @@ export async function POST(
           { name: "Intelligence Gathering", status: "done", durationMs: 120 },
           { name: "Script Generation", status: "done", durationMs: 450 },
           { name: "Video Assembly", status: "skipped", durationMs: 0 },
-          { name: "Narration (TTS)", status: "skipped", durationMs: 0 },
+          { name: "Narration (ElevenLabs TTS)", status: "skipped", durationMs: 0 },
           { name: "Final Assembly", status: "done", durationMs: 80 },
         ],
         totalDurationMs: 650,
         tier,
         platform,
+        voiceMode: body.voiceMode || "warm",
+        voiceName: "demo",
       };
 
       // Store in EventLog
@@ -178,22 +199,33 @@ export async function POST(
       photos: photoPaths,
       platform,
       tier,
+      enrichmentContext: enrichment?.hasEnrichment ? enrichment.contextBlock : undefined,
+      marketContext: marketIntel?.comps?.length ? `${marketIntel.comps.length} real comparables, median $${marketIntel.median}` : undefined,
+      photoContext,
+      brand: ai.maker || ai.brand || undefined,
+      voiceMode: body.voiceMode || undefined,
+      sellerZip: item.saleZip || undefined,
     });
 
-    // Store in EventLog
+    // Store in EventLog (includes voice info)
     const resultPayload = {
       ...pipelineResult,
       tier,
       platform,
       itemName,
       category,
+      voiceMode: pipelineResult.voiceMode,
+      voiceName: pipelineResult.voiceName,
+      hasEnrichment: !!enrichment?.hasEnrichment,
+      hasMarketIntel: !!(marketIntel?.comps?.length),
+      marketCompCount: marketIntel?.comps?.length || 0,
     };
 
     await prisma.eventLog.create({
       data: { itemId, eventType: "VIDEOBOT_RESULT", payload: JSON.stringify(resultPayload) },
     });
     await prisma.eventLog.create({
-      data: { itemId, eventType: "VIDEOBOT_RUN", payload: JSON.stringify({ userId: user.id, tier, platform, timestamp: new Date().toISOString() }) },
+      data: { itemId, eventType: "VIDEOBOT_RUN", payload: JSON.stringify({ userId: user.id, tier, platform, voiceMode: pipelineResult.voiceMode, timestamp: new Date().toISOString() }) },
     });
 
     return NextResponse.json({

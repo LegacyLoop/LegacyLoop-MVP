@@ -172,7 +172,7 @@ export default function HeroesPage() {
               alignItems: "center",
               gap: "0.5rem",
               background: "var(--bg-card-hover)",
-              color: "#fff",
+              color: "var(--text-primary)",
               padding: "0.85rem 2rem",
               borderRadius: "9999px",
               fontWeight: 700,

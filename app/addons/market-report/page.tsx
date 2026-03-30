@@ -123,7 +123,7 @@ function MarketReportInner() {
   if (initialLoading) {
     return (
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "80px 20px", textAlign: "center" }}>
-        <div style={{ fontSize: 14, color: "rgba(207,216,220,0.5)" }}>Loading market report...</div>
+        <div style={{ fontSize: 14, color: "var(--text-muted)" }}>Loading market report...</div>
       </div>
     );
   }
@@ -151,14 +151,14 @@ function MarketReportInner() {
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
           <div>
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: "#fff", margin: 0 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)", margin: 0 }}>
               AI Market Intelligence Report
             </h1>
-            <p style={{ fontSize: 13, color: "rgba(207,216,220,0.6)", marginTop: 6 }}>
+            <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>
               4 AI engines analyzing your full inventory for pricing, value, demand, and trends
             </p>
             {cachedDate && !loading && (
-              <p style={{ fontSize: 11, color: "rgba(207,216,220,0.4)", marginTop: 4 }}>
+              <p style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
                 Last generated: {cachedDate}
               </p>
             )}
@@ -197,10 +197,10 @@ function MarketReportInner() {
           }}
         >
           <div style={{ fontSize: 40, marginBottom: 16 }}>📊</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 8 }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: "var(--text-primary)", marginBottom: 8 }}>
             Generate Your Market Report
           </div>
-          <p style={{ fontSize: 13, color: "rgba(207,216,220,0.6)", marginBottom: 24, maxWidth: 500, margin: "0 auto 24px" }}>
+          <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 24, maxWidth: 500, margin: "0 auto 24px" }}>
             Analyze your entire inventory across all 4 AI engines for pricing accuracy, hidden value, market demand, and social trends.
           </p>
 
@@ -216,7 +216,7 @@ function MarketReportInner() {
               }}
             >
               <div style={{ fontSize: 24, fontWeight: 800, color: "#00bcd4" }}>{itemCount || 0}</div>
-              <div style={{ fontSize: 10, color: "rgba(207,216,220,0.5)" }}>Items in Inventory</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Items in Inventory</div>
             </div>
             <div
               style={{
@@ -228,7 +228,7 @@ function MarketReportInner() {
               }}
             >
               <div style={{ fontSize: 24, fontWeight: 800, color: "#8b5cf6" }}>4</div>
-              <div style={{ fontSize: 10, color: "rgba(207,216,220,0.5)" }}>AI Engines</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>AI Engines</div>
             </div>
             <div
               style={{
@@ -240,7 +240,7 @@ function MarketReportInner() {
               }}
             >
               <div style={{ fontSize: 24, fontWeight: 800, color: "#ff9800" }}>~30s</div>
-              <div style={{ fontSize: 10, color: "rgba(207,216,220,0.5)" }}>Est. Time</div>
+              <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Est. Time</div>
             </div>
           </div>
 
@@ -273,7 +273,7 @@ function MarketReportInner() {
       {/* AI ENGINES RUNNING */}
       {loading && (
         <div style={{ marginBottom: 28 }}>
-          <div style={{ textAlign: "center", fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 20 }}>
+          <div style={{ textAlign: "center", fontSize: 18, fontWeight: 700, color: "var(--text-primary)", marginBottom: 20 }}>
             4 AI Engines Analyzing Your Inventory...
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
@@ -292,7 +292,7 @@ function MarketReportInner() {
                 >
                   <div style={{ fontSize: 20, marginBottom: 4 }}>{e.icon}</div>
                   <div style={{ fontSize: 12, fontWeight: 700, color: e.color, marginBottom: 4 }}>{e.name}</div>
-                  <div style={{ fontSize: 11, color: "rgba(207,216,220,0.6)" }}>
+                  <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
                     {status === "running" ? e.runLabel : status === "complete" ? "Done" : "Failed"}
                   </div>
                   <div style={{ fontSize: 18, marginTop: 4 }}>
@@ -356,8 +356,8 @@ function MarketReportInner() {
                   textAlign: "center",
                 }}
               >
-                <div style={{ fontSize: 36, fontWeight: 800, color: "#fff", lineHeight: 1 }}>{healthScore}</div>
-                <div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)", marginTop: 2 }}>HEALTH</div>
+                <div style={{ fontSize: 36, fontWeight: 800, color: "var(--text-primary)", lineHeight: 1 }}>{healthScore}</div>
+                <div style={{ fontSize: 9, color: "var(--text-muted)", marginTop: 2 }}>HEALTH</div>
               </div>
             </div>
 
@@ -365,21 +365,21 @@ function MarketReportInner() {
             <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 20, flexWrap: "wrap" }}>
               <div style={{ background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: 10, padding: "10px 18px", textAlign: "center" }}>
                 <div style={{ fontSize: 20, fontWeight: 800, color: "#00bcd4" }}>{report.totalItems}</div>
-                <div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>Items</div>
+                <div style={{ fontSize: 9, color: "var(--text-muted)" }}>Items</div>
               </div>
               <div style={{ background: "rgba(76,175,80,0.1)", border: "1px solid rgba(76,175,80,0.2)", borderRadius: 10, padding: "10px 18px", textAlign: "center" }}>
                 <div style={{ fontSize: 20, fontWeight: 800, color: "#4caf50" }}>${(report.totalEstimatedValue || 0).toLocaleString()}</div>
-                <div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>Est. Value</div>
+                <div style={{ fontSize: 9, color: "var(--text-muted)" }}>Est. Value</div>
               </div>
               <div style={{ background: "rgba(255,152,0,0.1)", border: "1px solid rgba(255,152,0,0.2)", borderRadius: 10, padding: "10px 18px", textAlign: "center" }}>
                 <div style={{ fontSize: 20, fontWeight: 800, color: "#ff9800" }}>${(report.revenuePotential || 0).toLocaleString()}</div>
-                <div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>Revenue Potential</div>
+                <div style={{ fontSize: 9, color: "var(--text-muted)" }}>Revenue Potential</div>
               </div>
               <div style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: 10, padding: "10px 18px", textAlign: "center" }}>
                 <div style={{ fontSize: 20, fontWeight: 800, color: report.revenueGap > 0 ? "#4caf50" : "#f44336" }}>
                   {report.revenueGap > 0 ? "+" : ""}${(report.revenueGap || 0).toLocaleString()}
                 </div>
-                <div style={{ fontSize: 9, color: "rgba(207,216,220,0.5)" }}>Revenue Gap</div>
+                <div style={{ fontSize: 9, color: "var(--text-muted)" }}>Revenue Gap</div>
               </div>
             </div>
 
@@ -412,10 +412,10 @@ function MarketReportInner() {
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: 11, fontWeight: 700, color: engine?.color || "#fff" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: engine?.color || "var(--text-primary)" }}>
                     {engine?.name || agent.provider}
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", margin: "4px 0" }}>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "4px 0" }}>
                     {agent.score || "—"}
                   </div>
                   <div style={{ fontSize: 9, color: agent.status === "success" ? "#4caf50" : "#f44336" }}>
@@ -437,7 +437,7 @@ function MarketReportInner() {
                 marginBottom: 28,
               }}
             >
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 14 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 14 }}>
                 AI Executive Summaries
               </div>
               {report.summaries.map((s: any, i: number) => {
@@ -458,9 +458,9 @@ function MarketReportInner() {
                       <span style={{ fontSize: 9, padding: "2px 8px", borderRadius: 20, background: `${engine?.color || "#00bcd4"}22`, border: `1px solid ${engine?.color || "#00bcd4"}44`, color: engine?.color || "#00bcd4", fontWeight: 700 }}>
                         {engine?.name || s.provider}
                       </span>
-                      <span style={{ fontSize: 9, color: "rgba(207,216,220,0.4)" }}>{Math.round(s.ms / 1000)}s</span>
+                      <span style={{ fontSize: 9, color: "var(--text-muted)" }}>{Math.round(s.ms / 1000)}s</span>
                     </div>
-                    <div style={{ fontSize: 12, color: "rgba(207,216,220,0.8)", lineHeight: 1.7 }}>
+                    <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.7 }}>
                       {s.summary || "No summary provided."}
                     </div>
                   </div>
@@ -482,7 +482,7 @@ function MarketReportInner() {
                     background: activeTab === tab.key ? `${tab.color}18` : "var(--text-muted)",
                     border: `1px solid ${activeTab === tab.key ? `${tab.color}44` : "var(--text-muted)"}`,
                     borderRadius: 10,
-                    color: activeTab === tab.key ? tab.color : "rgba(207,216,220,0.5)",
+                    color: activeTab === tab.key ? tab.color : "var(--text-muted)",
                     fontSize: 12,
                     fontWeight: 700,
                     cursor: "pointer",
@@ -498,11 +498,11 @@ function MarketReportInner() {
             {/* Tab Content: Pricing */}
             {activeTab === "pricing" && (
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
                   Price Adjustments
                 </div>
                 {(report.priceAdjustments || []).length === 0 && (
-                  <div style={{ fontSize: 12, color: "rgba(207,216,220,0.5)", padding: 20, textAlign: "center" }}>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", padding: 20, textAlign: "center" }}>
                     No price adjustments recommended.
                   </div>
                 )}
@@ -527,17 +527,17 @@ function MarketReportInner() {
                       }}
                     >
                       <div style={{ flex: 1, minWidth: 200 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{adj.title || "Item"}</div>
-                        <div style={{ fontSize: 11, color: "rgba(207,216,220,0.6)", marginTop: 4 }}>{adj.reasoning || ""}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{adj.title || "Item"}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>{adj.reasoning || ""}</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <div style={{ textAlign: "center" }}>
-                          <div style={{ fontSize: 10, color: "rgba(207,216,220,0.4)" }}>Current</div>
+                          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Current</div>
                           <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-muted)" }}>${adj.current || 0}</div>
                         </div>
                         <div style={{ fontSize: 16, color: isUp ? "#4caf50" : "#f44336" }}>{isUp ? "→" : "→"}</div>
                         <div style={{ textAlign: "center" }}>
-                          <div style={{ fontSize: 10, color: "rgba(207,216,220,0.4)" }}>Suggested</div>
+                          <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Suggested</div>
                           <div style={{ fontSize: 16, fontWeight: 700, color: isUp ? "#4caf50" : "#f44336" }}>${adj.recommended || 0}</div>
                         </div>
                         <span
@@ -563,11 +563,11 @@ function MarketReportInner() {
             {/* Tab Content: Value */}
             {activeTab === "value" && (
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
                   Hidden Value & Story Opportunities
                 </div>
                 {(report.topOpportunities || []).length === 0 && (
-                  <div style={{ fontSize: 12, color: "rgba(207,216,220,0.5)", padding: 20, textAlign: "center" }}>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", padding: 20, textAlign: "center" }}>
                     No hidden value opportunities found.
                   </div>
                 )}
@@ -584,7 +584,7 @@ function MarketReportInner() {
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                       <span style={{ fontSize: 14 }}>📖</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{opp.title || "Opportunity"}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{opp.title || "Opportunity"}</span>
                       {opp.priority && (
                         <span
                           style={{
@@ -606,7 +606,7 @@ function MarketReportInner() {
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize: 12, color: "rgba(207,216,220,0.7)", lineHeight: 1.6 }}>
+                    <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6 }}>
                       {opp.action || ""}
                     </div>
                   </div>
@@ -617,11 +617,11 @@ function MarketReportInner() {
             {/* Tab Content: Demand */}
             {activeTab === "demand" && (
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
                   Category Trends & Demand Signals
                 </div>
                 {(report.categoryTrends || []).length === 0 && (
-                  <div style={{ fontSize: 12, color: "rgba(207,216,220,0.5)", padding: 20, textAlign: "center" }}>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", padding: 20, textAlign: "center" }}>
                     No demand trends detected.
                   </div>
                 )}
@@ -638,7 +638,7 @@ function MarketReportInner() {
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                         <span style={{ fontSize: 16 }}>{getTrendIcon(trend.trend)}</span>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{trend.category || "Category"}</span>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{trend.category || "Category"}</span>
                         <span
                           style={{
                             fontSize: 9,
@@ -655,7 +655,7 @@ function MarketReportInner() {
                           {trend.trend || "stable"}
                         </span>
                       </div>
-                      <div style={{ fontSize: 12, color: "rgba(207,216,220,0.7)", lineHeight: 1.6 }}>
+                      <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6 }}>
                         {trend.insight || ""}
                       </div>
                     </div>
@@ -667,12 +667,12 @@ function MarketReportInner() {
             {/* Tab Content: Social */}
             {activeTab === "social" && (
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
                   Social & Viral Potential
                 </div>
                 {/* Use opportunities tagged from Grok or show all opportunities as social angle */}
                 {(report.topOpportunities || []).length === 0 && (report.categoryTrends || []).length === 0 && (
-                  <div style={{ fontSize: 12, color: "rgba(207,216,220,0.5)", padding: 20, textAlign: "center" }}>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", padding: 20, textAlign: "center" }}>
                     No social trending data detected.
                   </div>
                 )}
@@ -689,14 +689,14 @@ function MarketReportInner() {
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                       <span style={{ fontSize: 14 }}>📱</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{opp.title || "Trend"}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>{opp.title || "Trend"}</span>
                       {opp.impact && (
                         <span style={{ fontSize: 11, color: "#ff6600", fontWeight: 700, marginLeft: "auto" }}>
                           {opp.impact}
                         </span>
                       )}
                     </div>
-                    <div style={{ fontSize: 12, color: "rgba(207,216,220,0.7)", lineHeight: 1.6 }}>
+                    <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6 }}>
                       {opp.action || ""}
                     </div>
                   </div>
@@ -717,8 +717,8 @@ function MarketReportInner() {
                   >
                     <span style={{ fontSize: 16 }}>🔥</span>
                     <div>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{trend.category}</div>
-                      <div style={{ fontSize: 11, color: "rgba(207,216,220,0.6)" }}>{trend.insight}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>{trend.category}</div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{trend.insight}</div>
                     </div>
                   </div>
                 ))}
@@ -728,7 +728,7 @@ function MarketReportInner() {
 
           {/* TOP OPPORTUNITIES */}
           <div style={{ marginBottom: 28 }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
               Top Opportunities
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 12 }}>
@@ -766,10 +766,10 @@ function MarketReportInner() {
                     >
                       {opp.priority || "?"}
                     </div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 8, paddingRight: 32 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 8, paddingRight: 32 }}>
                       {opp.title || "Opportunity"}
                     </div>
-                    <div style={{ fontSize: 12, color: "rgba(207,216,220,0.7)", lineHeight: 1.6, marginBottom: 10 }}>
+                    <div style={{ fontSize: 12, color: "var(--text-secondary)", lineHeight: 1.6, marginBottom: 10 }}>
                       {opp.action || ""}
                     </div>
                     {opp.impact && (
@@ -786,7 +786,7 @@ function MarketReportInner() {
           {/* RECOMMENDATIONS */}
           {(report.recommendations || []).length > 0 && (
             <div style={{ marginBottom: 28 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", marginBottom: 12 }}>
                 Recommendations
               </div>
               <div
@@ -829,10 +829,10 @@ function MarketReportInner() {
                         {i + 1}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 4 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>
                           {rec.action || "Action"}
                         </div>
-                        <div style={{ fontSize: 11, color: "rgba(207,216,220,0.6)", marginBottom: 6 }}>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 6 }}>
                           {rec.impact || ""}
                         </div>
                         {rec.items?.length > 0 && (
@@ -910,7 +910,7 @@ function MarketReportInner() {
                   height: 44,
                   background: "transparent",
                   border: "1px solid var(--border-default)",
-                  color: copiedId === "__summary__" ? "#4caf50" : "rgba(207,216,220,0.6)",
+                  color: copiedId === "__summary__" ? "#4caf50" : "var(--text-muted)",
                   fontWeight: 700,
                   fontSize: 13,
                   borderRadius: 10,
@@ -923,7 +923,7 @@ function MarketReportInner() {
           </div>
 
           {/* Timestamp */}
-          <div style={{ fontSize: 10, color: "rgba(207,216,220,0.4)", textAlign: "center", marginTop: 16 }}>
+          <div style={{ fontSize: 10, color: "var(--text-muted)", textAlign: "center", marginTop: 16 }}>
             Analyzed by {(report.agentResults || []).filter((a: any) => a.status === "success").length} AI engines · {report.totalItems} items · {cachedDate || new Date().toLocaleString()}
           </div>
         </>
@@ -944,7 +944,7 @@ export default function MarketReportPage() {
             textAlign: "center",
           }}
         >
-          <div style={{ fontSize: 14, color: "rgba(207,216,220,0.5)" }}>
+          <div style={{ fontSize: 14, color: "var(--text-muted)" }}>
             Loading market report...
           </div>
         </div>

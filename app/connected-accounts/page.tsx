@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import ConnectedAccountsClient from "./ConnectedAccountsClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Connected Accounts · LegacyLoop", description: "Link your marketplace and social media accounts" };
 
 export default async function ConnectedAccountsPage() {
   const user = await authAdapter.getSession();

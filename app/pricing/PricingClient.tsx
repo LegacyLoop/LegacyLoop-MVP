@@ -828,7 +828,7 @@ export default function PricingClient() {
           </div>
 
           {/* How It Works */}
-          <div style={{ marginBottom: "3rem" }}>
+          <div id="how" style={{ marginBottom: "3rem" }}>
             <div className="section-title mb-1 text-center">Process</div>
             <h2 style={{ textAlign: "center", fontSize: "1.5rem", fontWeight: 700, marginBottom: "2rem", color: "var(--text-primary)" }}>
               How White-Glove Service Works

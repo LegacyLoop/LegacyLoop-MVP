@@ -3,6 +3,9 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "My Profile · LegacyLoop", description: "Your account overview and activity" };
 
 const TIER_NAMES: Record<number, string> = {
   1: "Free",

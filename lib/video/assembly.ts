@@ -12,6 +12,13 @@ try {
   // fluent-ffmpeg or ffmpeg-static not installed — assembly will use fallback
 }
 
+export interface SentenceTimecodeInput {
+  sentence: string;
+  startSeconds: number;
+  endSeconds: number;
+  photoIndex: number;
+}
+
 export interface AssemblyInput {
   photos: string[];
   narrationPath?: string;
@@ -19,6 +26,7 @@ export interface AssemblyInput {
   outputDir: string;
   itemId: string;
   duration?: number;
+  sentenceTimecodes?: SentenceTimecodeInput[];
 }
 
 export interface AssemblyResult {
@@ -30,14 +38,63 @@ export interface AssemblyResult {
 }
 
 /**
+ * Calculate per-photo durations from sentence timecodes.
+ *
+ * When timecodes are provided, each photo's duration is determined by the
+ * sentences mapped to it. When not provided, photos share time equally.
+ */
+function calculatePhotoDurations(
+  photoCount: number,
+  totalDuration: number,
+  sentenceTimecodes?: SentenceTimecodeInput[]
+): number[] {
+  if (!sentenceTimecodes || sentenceTimecodes.length === 0) {
+    // Equal distribution fallback
+    const perPhoto = totalDuration / photoCount;
+    return Array(photoCount).fill(perPhoto);
+  }
+
+  // Group timecodes by photoIndex
+  const grouped = new Map<number, { start: number; end: number }>();
+
+  for (const tc of sentenceTimecodes) {
+    const idx = Math.min(tc.photoIndex, photoCount - 1);
+    const existing = grouped.get(idx);
+    if (existing) {
+      existing.start = Math.min(existing.start, tc.startSeconds);
+      existing.end = Math.max(existing.end, tc.endSeconds);
+    } else {
+      grouped.set(idx, { start: tc.startSeconds, end: tc.endSeconds });
+    }
+  }
+
+  // Build durations array — minimum 1 second per photo
+  const durations: number[] = [];
+  for (let i = 0; i < photoCount; i++) {
+    const range = grouped.get(i);
+    if (range) {
+      durations.push(Math.max(1, range.end - range.start));
+    } else {
+      // Photo has no assigned sentences — give it a minimum duration
+      durations.push(Math.max(1, totalDuration / photoCount));
+    }
+  }
+
+  return durations;
+}
+
+/**
  * Assemble a vertical (9:16) video ad from photos with Ken Burns effect,
  * text overlays, and optional narration audio.
+ *
+ * When sentenceTimecodes are provided, photo durations are calculated from
+ * sentence boundaries for narration-synced transitions.
  *
  * Requires fluent-ffmpeg and ffmpeg-static to be installed.
  * Returns a graceful error if ffmpeg is not available.
  */
 export async function assembleVideo(input: AssemblyInput): Promise<AssemblyResult> {
-  const { photos, narrationPath, overlayText, outputDir, itemId, duration } = input;
+  const { photos, narrationPath, overlayText, outputDir, itemId, duration, sentenceTimecodes } = input;
 
   // Ensure output directory
   const videosDir = path.join(process.cwd(), "public", "videos");
@@ -85,21 +142,25 @@ export async function assembleVideo(input: AssemblyInput): Promise<AssemblyResul
     };
   }
 
+  // Calculate per-photo durations
+  const baseDuration = duration || 30;
+  const photoDurations = calculatePhotoDurations(validPhotos.length, baseDuration, sentenceTimecodes);
+  const totalDuration = photoDurations.reduce((sum, d) => sum + d, 0);
+
   const filename = `videobot-${itemId}-${Date.now()}.mp4`;
   const outputPath = path.join(outDir, filename);
-  const perPhotoSeconds = duration ? Math.floor(duration / validPhotos.length) : 5;
-  const totalDuration = perPhotoSeconds * validPhotos.length;
 
   try {
-    console.log(`[videobot] Assembly: ${validPhotos.length} photos, ${perPhotoSeconds}s each, ${totalDuration}s total`);
+    console.log(`[videobot] Assembly: ${validPhotos.length} photos, total ${totalDuration.toFixed(1)}s${sentenceTimecodes ? " (timecode-synced)" : " (equal split)"}`);
 
     await new Promise<void>((resolve, reject) => {
       // Build ffmpeg command with Ken Burns (zoompan), crossfade, and text overlay
       let cmd = ffmpeg();
 
-      // Add each photo as an input
-      for (const photo of validPhotos) {
-        cmd = cmd.input(photo).inputOptions(["-loop", "1", "-t", String(perPhotoSeconds)]);
+      // Add each photo as an input with its specific duration
+      for (let i = 0; i < validPhotos.length; i++) {
+        const photoDur = Math.ceil(photoDurations[i]);
+        cmd = cmd.input(validPhotos[i]).inputOptions(["-loop", "1", "-t", String(photoDur)]);
       }
 
       // Add narration if provided
@@ -112,10 +173,11 @@ export async function assembleVideo(input: AssemblyInput): Promise<AssemblyResul
       const concatInputs: string[] = [];
 
       validPhotos.forEach((_, i) => {
+        const photoDur = Math.ceil(photoDurations[i]);
         // Scale to 1080x1920 (9:16) and apply zoompan for Ken Burns
         filterParts.push(
           `[${i}:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,` +
-          `zoompan=z='min(zoom+0.0015,1.5)':d=${perPhotoSeconds * 25}:s=1080x1920:fps=25` +
+          `zoompan=z='min(zoom+0.0015,1.5)':d=${photoDur * 25}:s=1080x1920:fps=25` +
           `[v${i}]`
         );
         concatInputs.push(`[v${i}]`);
@@ -149,7 +211,7 @@ export async function assembleVideo(input: AssemblyInput): Promise<AssemblyResul
           "-crf", "23",
           "-pix_fmt", "yuv420p",
           "-movflags", "+faststart",
-          "-t", String(totalDuration),
+          "-t", String(Math.ceil(totalDuration)),
         ])
         .output(outputPath)
         .on("end", () => resolve())
@@ -159,7 +221,7 @@ export async function assembleVideo(input: AssemblyInput): Promise<AssemblyResul
     });
 
     const videoUrl = `/videos/${filename}`;
-    console.log(`[videobot] Assembly: video saved to ${videoUrl} (${totalDuration}s)`);
+    console.log(`[videobot] Assembly: video saved to ${videoUrl} (${totalDuration.toFixed(1)}s)`);
 
     return {
       success: true,

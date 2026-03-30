@@ -1,3 +1,7 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "What's New · LegacyLoop", description: "Latest features and improvements" };
+
 export default function WhatsNewPage() {
   const updates = [
     { date: "Mar 30, 2026", badge: "NEW", title: "🤖 AI Help Center", desc: "AI chatbot answers questions instantly. 50 help articles covering every feature. Support ticket system with email confirmations." },

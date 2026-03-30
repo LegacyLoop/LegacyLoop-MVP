@@ -2,6 +2,9 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import DonateClient from "./DonateClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Donate Items · LegacyLoop", description: "Donate unsold items to local charities and support our mission" };
 
 export default async function DonatePage() {
   const user = await authAdapter.getSession();

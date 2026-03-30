@@ -2,6 +2,9 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import SubscriptionClient from "./SubscriptionClient";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Subscription Plans · LegacyLoop", description: "Manage your plan, upgrade, or view billing history" };
 
 export default async function SubscriptionPage() {
   const user = await authAdapter.getSession();

@@ -1,3 +1,7 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Keyboard Shortcuts · LegacyLoop", description: "Navigate faster with keyboard shortcuts" };
+
 export default function ShortcutsPage() {
   const sections = [
     { title: "Navigation", icon: "🧭", shortcuts: [

@@ -123,7 +123,7 @@ export default function NeighborhoodBundlePage() {
               alignItems: "center",
               gap: "0.5rem",
               background: "var(--bg-card-hover)",
-              color: "#fff",
+              color: "var(--text-primary)",
               padding: "0.85rem 2rem",
               borderRadius: "9999px",
               fontWeight: 700,
@@ -331,7 +331,7 @@ export default function NeighborhoodBundlePage() {
             Start Bundle Free
           </Link>
           <a href="mailto:hello@legacy-loop.com"
-            style={{ background: "var(--bg-card-hover)", color: "#fff", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem", border: "1px solid var(--border-default)" }}>
+            style={{ background: "var(--bg-card-hover)", color: "var(--text-primary)", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem", border: "1px solid var(--border-default)" }}>
             Email Us About Your Group
           </a>
         </div>

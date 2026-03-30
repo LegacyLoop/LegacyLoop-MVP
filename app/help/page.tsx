@@ -1,6 +1,9 @@
 import { helpArticles, helpCategories } from "@/lib/help-articles";
 import HelpClient from "./HelpClient";
 import HelpContact from "./HelpContact";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Help Center · LegacyLoop", description: "Get answers from our AI assistant or browse 50+ help articles" };
 
 export default function HelpPage() {
   return (

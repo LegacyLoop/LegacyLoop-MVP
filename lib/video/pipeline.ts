@@ -1,7 +1,9 @@
+import * as path from "path";
 import { prisma } from "@/lib/db";
 import { generateVideoScript, type VideoScript, type ScriptInput } from "./script-generator";
-import { generateNarration } from "./narration";
 import { assembleVideo } from "./assembly";
+import { generateNarrationWithFallback } from "@/lib/elevenlabs/generateNarration";
+import { resolveVoiceMode } from "@/lib/elevenlabs/voiceConfig";
 import { scrapeTikTokAds } from "@/lib/market-intelligence/adapters/tiktok-ads";
 import { scrapeFbAdsLibrary } from "@/lib/market-intelligence/adapters/fb-ads-library";
 import { scrapeSocialTrends } from "@/lib/market-intelligence/adapters/social-trends";
@@ -22,6 +24,12 @@ export interface VideoPipelineInput {
   photos: string[];
   platform: string;
   tier: "standard" | "pro" | "mega";
+  brand?: string;
+  enrichmentContext?: string;
+  marketContext?: string;
+  photoContext?: string;
+  sellerZip?: string;
+  voiceMode?: string;
 }
 
 export interface VideoPipelineResult {
@@ -37,6 +45,8 @@ export interface VideoPipelineResult {
   } | null;
   steps: PipelineStep[];
   totalDurationMs: number;
+  voiceMode?: string;
+  voiceName?: string;
   error?: string;
   _isDemo?: boolean;
 }
@@ -48,8 +58,8 @@ export interface PipelineStep {
   error?: string;
 }
 
-function logStep(itemId: string, step: string, payload: Record<string, any>) {
-  prisma.eventLog.create({
+async function logStep(itemId: string, step: string, payload: Record<string, any>) {
+  await prisma.eventLog.create({
     data: {
       itemId,
       eventType: "VIDEOBOT_STEP",
@@ -76,6 +86,7 @@ export async function runVideoPipeline(input: VideoPipelineInput): Promise<Video
   // Demo mode — return mock result
   if (isDemoMode()) {
     console.log(`[videobot] Pipeline: demo mode for item ${input.itemId}`);
+    const resolvedVoice = resolveVoiceMode(input.voiceMode, input.category, input.priceLow);
     return {
       success: true,
       videoUrl: null,
@@ -100,10 +111,12 @@ export async function runVideoPipeline(input: VideoPipelineInput): Promise<Video
         { name: "Intelligence Gathering", status: "done", durationMs: 120 },
         { name: "Script Generation", status: "done", durationMs: 450 },
         { name: "Video Assembly", status: "skipped", durationMs: 0 },
-        { name: "Narration (TTS)", status: "skipped", durationMs: 0 },
+        { name: "Narration (ElevenLabs TTS)", status: "skipped", durationMs: 0 },
         { name: "Final Assembly", status: "done", durationMs: 80 },
       ],
       totalDurationMs: Date.now() - startTime,
+      voiceMode: resolvedVoice,
+      voiceName: "demo",
       _isDemo: true,
     };
   }
@@ -144,6 +157,9 @@ async function runPipelineSteps(
   let script: VideoScript | null = null;
   let narrationUrl: string | null = null;
   let videoUrl: string | null = null;
+  let voiceMode: string | undefined;
+  let voiceName: string | undefined;
+  let sentenceTimecodes: { sentence: string; startSeconds: number; endSeconds: number; photoIndex: number }[] | undefined;
 
   // ── Step 1: Intelligence Gathering (Apify scrapers) ──
   const step1Start = Date.now();
@@ -153,7 +169,7 @@ async function runPipelineSteps(
   try {
     if (input.tier === "pro" || input.tier === "mega") {
       console.log(`[videobot] Pipeline step 1: intelligence gathering (${input.tier})`);
-      logStep(input.itemId, "intelligence", { tier: input.tier, status: "started" });
+      await logStep(input.itemId, "intelligence", { tier: input.tier, status: "started" });
 
       const [tiktokAds, fbAds, socialTrends, trendingAudio] = await Promise.all([
         scrapeTikTokAds(input.itemName).catch(() => ({ success: false, data: null, source: "tiktok-ads" })),
@@ -170,18 +186,18 @@ async function runPipelineSteps(
   } catch (e: any) {
     step1.status = "error";
     step1.error = e.message;
-    logStep(input.itemId, "intelligence", { error: e.message });
+    await logStep(input.itemId, "intelligence", { error: e.message });
   }
   step1.durationMs = Date.now() - step1Start;
 
-  // ── Step 2: Script Generation ──
+  // ── Step 2: Script Generation (with enrichment/market/photo context) ──
   const step2Start = Date.now();
   const step2: PipelineStep = { name: "Script Generation", status: "running", durationMs: 0 };
   steps.push(step2);
 
   try {
     console.log(`[videobot] Pipeline step 2: script generation`);
-    logStep(input.itemId, "script", { platform: input.platform, tier: input.tier });
+    await logStep(input.itemId, "script", { platform: input.platform, tier: input.tier });
 
     const scriptInput: ScriptInput = {
       itemName: input.itemName,
@@ -194,6 +210,11 @@ async function runPipelineSteps(
       material: input.material,
       platform: input.platform,
       style: input.tier === "mega" ? "dramatic" : "professional",
+      brand: input.brand,
+      enrichmentContext: input.enrichmentContext,
+      marketContext: input.marketContext,
+      photoContext: input.photoContext,
+      photoCount: input.photos.length,
     };
 
     const scriptResult = await generateVideoScript(scriptInput);
@@ -207,7 +228,7 @@ async function runPipelineSteps(
   } catch (e: any) {
     step2.status = "error";
     step2.error = e.message;
-    logStep(input.itemId, "script", { error: e.message });
+    await logStep(input.itemId, "script", { error: e.message });
   }
   step2.durationMs = Date.now() - step2Start;
 
@@ -216,11 +237,13 @@ async function runPipelineSteps(
   const step3: PipelineStep = { name: "Video Assembly", status: "running", durationMs: 0 };
   steps.push(step3);
 
+  const outputDir = path.join(process.cwd(), "public", "videos");
+
   try {
     if (input.tier === "pro" || input.tier === "mega") {
       // Pro/Mega: try Apify AI video generation first
       console.log(`[videobot] Pipeline step 3: AI video assembly (${input.tier})`);
-      logStep(input.itemId, "assembly", { mode: "ai", tier: input.tier });
+      await logStep(input.itemId, "assembly", { mode: "ai", tier: input.tier });
 
       const aiVideo = await generateAiVideoAd(input.photos, script?.fullScript || input.itemName);
       if (aiVideo.success && aiVideo.data?.videoUrl) {
@@ -232,7 +255,7 @@ async function runPipelineSteps(
         const assembly = await assembleVideo({
           photos: input.photos,
           overlayText: script?.hook || input.itemName,
-          outputDir: "",
+          outputDir,
           itemId: input.itemId,
           duration: script?.duration || 30,
         });
@@ -243,12 +266,12 @@ async function runPipelineSteps(
     } else {
       // Standard: FFmpeg only
       console.log("[videobot] Pipeline step 3: FFmpeg assembly (standard)");
-      logStep(input.itemId, "assembly", { mode: "ffmpeg" });
+      await logStep(input.itemId, "assembly", { mode: "ffmpeg" });
 
       const assembly = await assembleVideo({
         photos: input.photos,
         overlayText: script?.hook || input.itemName,
-        outputDir: "",
+        outputDir,
         itemId: input.itemId,
         duration: script?.duration || 30,
       });
@@ -259,23 +282,36 @@ async function runPipelineSteps(
   } catch (e: any) {
     step3.status = "error";
     step3.error = e.message;
-    logStep(input.itemId, "assembly", { error: e.message });
+    await logStep(input.itemId, "assembly", { error: e.message });
   }
   step3.durationMs = Date.now() - step3Start;
 
-  // ── Step 4: Narration (TTS) ──
+  // ── Step 4: Narration (ElevenLabs TTS with OpenAI fallback) ──
   const step4Start = Date.now();
-  const step4: PipelineStep = { name: "Narration (TTS)", status: "running", durationMs: 0 };
+  const step4: PipelineStep = { name: "Narration (ElevenLabs TTS)", status: "running", durationMs: 0 };
   steps.push(step4);
 
   try {
     if (script?.fullScript) {
-      console.log("[videobot] Pipeline step 4: TTS narration");
-      logStep(input.itemId, "narration", { scriptLength: script.fullScript.length });
+      console.log("[videobot] Pipeline step 4: ElevenLabs TTS narration");
+      await logStep(input.itemId, "narration", { scriptLength: script.fullScript.length, voiceMode: input.voiceMode });
 
-      const narration = await generateNarration(script.fullScript, input.itemId);
+      const resolvedVoice = resolveVoiceMode(input.voiceMode, input.category, input.priceLow, input.platform);
+      const audioDir = path.join(process.cwd(), "public", "audio");
+
+      const narration = await generateNarrationWithFallback(
+        script.fullScript,
+        resolvedVoice,
+        input.itemId,
+        audioDir,
+        input.photos.length
+      );
+
       if (narration.success) {
         narrationUrl = narration.audioUrl;
+        voiceMode = narration.voiceMode;
+        voiceName = narration.voiceName;
+        sentenceTimecodes = narration.sentenceTimecodes;
         step4.status = "done";
       } else {
         step4.status = "error";
@@ -287,30 +323,31 @@ async function runPipelineSteps(
   } catch (e: any) {
     step4.status = "error";
     step4.error = e.message;
-    logStep(input.itemId, "narration", { error: e.message });
+    await logStep(input.itemId, "narration", { error: e.message });
   }
   step4.durationMs = Date.now() - step4Start;
 
-  // ── Step 5: Final Assembly (combine video + narration if both exist) ──
+  // ── Step 5: Final Assembly (combine video + narration + sentence timecodes) ──
   const step5Start = Date.now();
   const step5: PipelineStep = { name: "Final Assembly", status: "running", durationMs: 0 };
   steps.push(step5);
 
   try {
     if (videoUrl && narrationUrl) {
-      // Re-assemble with narration audio
+      // Re-assemble with narration audio and sentence timecodes
       console.log("[videobot] Pipeline step 5: final assembly with narration");
       const narrationPath = narrationUrl.startsWith("/")
-        ? require("path").join(process.cwd(), "public", narrationUrl)
+        ? path.join(process.cwd(), "public", narrationUrl)
         : narrationUrl;
 
       const finalAssembly = await assembleVideo({
         photos: input.photos,
         narrationPath,
         overlayText: script?.hook || input.itemName,
-        outputDir: "",
+        outputDir,
         itemId: input.itemId,
         duration: script?.duration || 30,
+        sentenceTimecodes,
       });
       if (finalAssembly.success && finalAssembly.videoUrl) {
         videoUrl = finalAssembly.videoUrl;
@@ -322,12 +359,12 @@ async function runPipelineSteps(
   } catch (e: any) {
     step5.status = "error";
     step5.error = e.message;
-    logStep(input.itemId, "final-assembly", { error: e.message });
+    await logStep(input.itemId, "final-assembly", { error: e.message });
   }
   step5.durationMs = Date.now() - step5Start;
 
   const totalDurationMs = Date.now() - startTime;
-  console.log(`[videobot] Pipeline complete: ${totalDurationMs}ms, video=${!!videoUrl}, script=${!!script}, narration=${!!narrationUrl}`);
+  console.log(`[videobot] Pipeline complete: ${totalDurationMs}ms, video=${!!videoUrl}, script=${!!script}, narration=${!!narrationUrl}, voice=${voiceMode || "none"}`);
 
   return {
     success: !!(script || videoUrl),
@@ -337,5 +374,7 @@ async function runPipelineSteps(
     intelligence,
     steps,
     totalDurationMs,
+    voiceMode,
+    voiceName,
   };
 }
