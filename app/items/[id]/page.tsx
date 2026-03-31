@@ -168,6 +168,14 @@ export default async function ItemPage({ params }: { params: Params }) {
 
 
 
+      {/* Hero photo warning */}
+      {item.photos.length > 0 && !item.photos.some((p: any) => p.isPrimary) && (
+        <div style={{ background: "rgba(234,179,8,0.08)", border: "1px solid rgba(234,179,8,0.25)", borderRadius: "10px", padding: "0.65rem 1rem", marginBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem", color: "#eab308" }}>
+          <span>⚠️</span>
+          <span>No primary photo set — <strong>set a cover photo</strong> for best listing results.</span>
+        </div>
+      )}
+
       {/* ═══ Premium Header Card ═══ */}
       <div style={{
         background: "var(--bg-card)",

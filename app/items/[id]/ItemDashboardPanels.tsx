@@ -152,9 +152,9 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
   // ═══ HUD Design Tokens ═══
   const hL: React.CSSProperties = { fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(148,163,184,0.8)", textAlign: "center" };
   const hH: React.CSSProperties = { fontSize: "1.15rem", fontWeight: 800, letterSpacing: "-0.02em", textAlign: "center" };
-  const hS: React.CSSProperties = { padding: "0.35rem 0.6rem", borderRadius: "8px", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.1)", textAlign: "center", minWidth: "65px", flex: "1 1 0" };
-  const hSL: React.CSSProperties = { fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(148,163,184,0.7)", marginBottom: "2px" };
-  const hSV: React.CSSProperties = { fontSize: "0.72rem", fontWeight: 700 };
+  const hS: React.CSSProperties = { padding: "0.3rem 0.5rem", borderRadius: "8px", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.1)", textAlign: "center", minWidth: "55px", flex: "1 1 auto", maxWidth: "120px" };
+  const hSL: React.CSSProperties = { fontSize: "0.48rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(148,163,184,0.7)", marginBottom: "1px" };
+  const hSV: React.CSSProperties = { fontSize: "0.68rem", fontWeight: 700, lineHeight: 1.2, wordBreak: "break-word" as const };
   const hM: React.CSSProperties = { fontSize: "0.58rem", padding: "3px 10px", borderRadius: "9999px", background: "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.06))", border: "1px solid rgba(139,92,246,0.2)", color: "#a78bfa", fontWeight: 700, letterSpacing: "0.02em", display: "inline-block" };
   const hR: React.CSSProperties = { display: "flex", gap: "0.35rem", alignItems: "stretch", justifyContent: "center", flexWrap: "wrap" };
   const hWrap: React.CSSProperties = { width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" };
@@ -229,7 +229,7 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
         <div style={{ ...hH, color: "#00bcd4", fontSize: "0.95rem" }}>{data?.method || "—"}</div>
         <div style={hR}>
           {data?.weight && <div style={hS}><div style={hSL}>Weight</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data.weight}</div></div>}
-          {data?.dims && <div style={hS}><div style={hSL}>Dims</div><div style={{ ...hSV, color: "var(--text-secondary)", fontSize: "0.6rem" }}>{data.dims}</div></div>}
+          {data?.dims && <div style={hS}><div style={hSL}>Dims</div><div style={{ ...hSV, color: "var(--text-secondary)", fontSize: String(data.dims).length > 10 ? "0.55rem" : "0.65rem" }}>{data.dims}</div></div>}
           {data?.difficulty && <div style={hS}><div style={hSL}>Handling</div><div style={{ ...hSV, color: data.difficulty === "Heavy" ? "#ef4444" : data.difficulty === "Fragile" ? "#f59e0b" : "#00bcd4" }}>{data.difficulty}</div></div>}
         </div>
       </div>
@@ -5219,6 +5219,11 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
   const platformKeys = Object.keys(listings);
   const platformCount = platformKeys.length;
 
+  // Auto-post readiness
+  const autoReady = listBotResult?.auto_post_readiness;
+  const readyCount = (autoReady?.platforms_ready || []).length;
+  const needsWorkCount = (autoReady?.platforms_need_tweaks || []).length;
+
   const PLAT_META: Record<string, { icon: string; name: string }> = {
     ebay: { icon: "🏷️", name: "eBay" },
     facebook_marketplace: { icon: "📘", name: "Facebook" },
@@ -5268,6 +5273,13 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
       <PanelHeader icon="📋" title="Listing Creator" hasData={hasListBotData} badge={hasListBotData ? `${platformCount} LISTINGS` : "LISTBOT"} collapsed={collapsed} onToggle={onToggle}
         preview={hasListBotData ? `${platformCount} platform listings ready` : "Ready to generate"}
       />
+      {hasListBotData && autoReady && readyCount > 0 && (
+        <div style={{ padding: "0 0.85rem 0.35rem", display: "flex" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", padding: "0.2rem 0.65rem", borderRadius: "8px", fontSize: "0.72rem", fontWeight: 600, background: needsWorkCount === 0 ? "rgba(34,197,94,0.1)" : "rgba(234,179,8,0.1)", border: `1px solid ${needsWorkCount === 0 ? "rgba(34,197,94,0.2)" : "rgba(234,179,8,0.2)"}`, color: needsWorkCount === 0 ? "#22c55e" : "#eab308" }}>
+            {needsWorkCount === 0 ? "✅" : "⚠️"} {readyCount} platform{readyCount !== 1 ? "s" : ""} ready{needsWorkCount > 0 ? `, ${needsWorkCount} need tweaks` : ""}
+          </span>
+        </div>
+      )}
 
       {collapsed && hasListBotData && <CollapsedSummary botType="listing" data={{ platformCount, bestPlatform: listBotResult?.best_platform || listBotResult?.top_platforms?.[0] || null, topPlatforms: platformKeys.slice(0, 5), summary: listBotResult?.executive_summary || null }} megaData={boosted ? boostResult : undefined} buttons={<>
         {onListBotRun && <button onClick={onListBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📋 Re-Run · 0.5 cr</button>}

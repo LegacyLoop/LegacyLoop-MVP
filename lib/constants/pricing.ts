@@ -241,6 +241,11 @@ export const FREE_TIER_RULES = {
 export const BOT_CREDIT_COSTS = {
   singleBotRun: 1,
   singleBotReRun: 0.5,
+  // Specialist bots: GPT-4o full + heavy scraping
+  antiqueBotRun: 2,
+  antiqueBotReRun: 1,
+  collectiblesBotRun: 2,
+  collectiblesBotReRun: 1,
   megaBotRun: 5,
   megaBotReRun: 3,
   antiqueDeepDive: 5,

@@ -4,9 +4,32 @@ const APIFY_BASE = "https://api.apify.com/v2";
 // ── Cost tracking + budget safeguard ──
 let apifyCallCount = 0;
 let apifyTotalCost = 0;
-const APIFY_COST_PER_CALL = 0.01; // Conservative estimate per task run
 const APIFY_MAX_CALLS_PER_HOUR = 50;
 const callTimestamps: number[] = [];
+
+// Per-actor cost tiers (real estimates, not flat)
+const ACTOR_COST_TIERS: Record<string, number> = {
+  default: 0.01,
+  // Subscription actors (amortized monthly cost)
+  APIFY_TASK_AUTOTRADER: 0.05,
+  APIFY_TASK_ETSY: 0.10,
+  APIFY_TASK_TIKTOK_ADS: 0.10,
+  // Expensive AI actors
+  APIFY_TASK_AI_VIDEO_ADS: 0.50,
+  APIFY_TASK_AI_VOICEOVER: 0.75,
+  APIFY_TASK_AI_UGC_VIDEO: 0.50,
+};
+
+function getActorCost(taskId: string): number {
+  for (const [envKey, cost] of Object.entries(ACTOR_COST_TIERS)) {
+    if (envKey !== "default" && process.env[envKey] === taskId) return cost;
+  }
+  return ACTOR_COST_TIERS.default;
+}
+
+function isDemoMode(): boolean {
+  return process.env.DEMO_MODE === "true" || process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+}
 
 /** Get current Apify usage stats for this process. */
 export function getApifyUsage() {
@@ -47,10 +70,23 @@ export async function runApifyTask(
     return { success: false, items: [], runId: null };
   }
 
-  // Track cost
+  // Per-actor cost tracking
+  const actualCost = getActorCost(taskId);
+
+  // Block expensive actors in demo mode
+  if (isDemoMode() && actualCost > 0.10) {
+    console.log(`[Apify] Skipping expensive actor in demo mode (est. $${actualCost}/run)`);
+    return { success: false, items: [], runId: null };
+  }
+
   apifyCallCount++;
-  apifyTotalCost += APIFY_COST_PER_CALL;
+  apifyTotalCost += actualCost;
   callTimestamps.push(now);
+
+  // Session cost warning
+  if (apifyTotalCost > 1.0 && apifyCallCount % 10 === 0) {
+    console.warn(`[Apify] ⚠️ Session cost: $${apifyTotalCost.toFixed(2)} across ${apifyCallCount} calls`);
+  }
 
   try {
     console.log(`[Apify] Task ${taskId} triggered (call #${apifyCallCount}, ~$${apifyTotalCost.toFixed(2)} est. session total, ${callsThisHour + 1}/hr)`);

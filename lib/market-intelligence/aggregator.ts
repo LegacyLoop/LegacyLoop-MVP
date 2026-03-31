@@ -81,147 +81,127 @@ export async function getMarketIntelligence(
   // Category-specific scrapers
   const categoryAdapters = CATEGORY_ADAPTER_MAP[category] || [];
 
-  // Always-run scrapers: built-in (free) + Apify (paid, graceful fallback)
-  const alwaysAdapters: Array<() => Promise<ScraperResult>> = [
-    // Built-in (free, fast)
+  const SUBSCRIPTION_ACTORS_ENABLED = process.env.ENABLE_SUBSCRIPTION_SCRAPERS === "true";
+  const isMaine = sellerZip && MAINE_ZIP_PREFIXES.has(sellerZip.slice(0, 3));
+  const cat = (category || "").toLowerCase();
+
+  // ═══ PHASE 1: FREE built-in + cheap essential Apify scrapers ═══
+  const freeAdapters: Array<() => Promise<ScraperResult>> = [
+    // Built-in (free)
     () => scrapeEbaySold(itemName),
     () => scrapeCraigslist(itemName, sellerZip),
     () => scrapeMercari(itemName),
     () => scrapeOfferUp(itemName, sellerZip),
-    // Apify-powered (paid — returns success:false if no token/taskId)
+    // Always-run Apify (cheap, critical data — ~$0.01 each)
     () => scrapeFacebookMarketplace(itemName, sellerZip),
     () => scrapeGoogleShopping(itemName),
   ];
 
-  // Maine-specific: include Uncle Henry's
-  const isMaine = sellerZip && MAINE_ZIP_PREFIXES.has(sellerZip.slice(0, 3));
-  if (isMaine) {
-    alwaysAdapters.push(() => scrapeUncleHenrys(itemName));
+  if (isMaine) freeAdapters.push(() => scrapeUncleHenrys(itemName));
+  if (cat.match(/fashion|clothing|shoes|accessories|handbag|dress|jacket|coat|shirt|pants|jeans/)) freeAdapters.push(() => scrapePoshmark(itemName));
+  if (cat.match(/antique|vintage|estate|furniture|silver|porcelain|glass|pottery|china|crystal/)) freeAdapters.push(() => scrapeRubyLane(itemName));
+  if (cat.match(/music|instrument|guitar|pedal|amp|keyboard|drum|bass|synth|violin|trumpet|saxophone|piano|ukulele/)) freeAdapters.push(() => scrapeReverb(itemName));
+  if (cat.match(/vehicle|automobile|car|truck|motorcycle|atv|boat|suv|van|rv|camper/)) freeAdapters.push(() => scrapeCraigslistVehicles(itemName, sellerZip));
+  if (cat.match(/antique|vintage|estate|auction/)) {
+    freeAdapters.push(() => scrapeShopGoodwill(itemName), () => scrapeLiveAuctioneers(itemName), () => scrapeCraigslistAntiques(itemName, sellerZip));
   }
+  // PriceCharting — free built-in Beckett equivalent
+  if (cat.match(/card|pokemon|magic|yugioh|tcg|trading|sports.?card/)) freeAdapters.push(() => scrapePriceCharting(itemName, "trading-cards"));
+  if (cat.match(/video.?game|nintendo|playstation|xbox|sega|atari|gameboy/)) freeAdapters.push(() => scrapePriceCharting(itemName, "video-games"));
+  if (cat.match(/comic|marvel|dc.?comics/)) freeAdapters.push(() => scrapePriceCharting(itemName, "comics"));
+  if (cat.match(/funko|pop!/)) freeAdapters.push(() => scrapePriceCharting(itemName, "funko"));
+  if (cat.match(/lego|building.?block/)) freeAdapters.push(() => scrapePriceCharting(itemName, "lego-sets"));
+  if (cat.match(/coin|numismatic|currency|bullion/)) freeAdapters.push(() => scrapePriceCharting(itemName, "coins"));
 
-  // Dynamic category routing — add specialty scrapers based on item category
-  const cat = (category || "").toLowerCase();
-  if (cat.match(/fashion|clothing|shoes|accessories|handbag|dress|jacket|coat|shirt|pants|jeans/)) {
-    alwaysAdapters.push(() => scrapePoshmark(itemName));
-  }
-  if (cat.match(/antique|vintage|estate|furniture|silver|porcelain|glass|pottery|china|crystal/)) {
-    alwaysAdapters.push(() => scrapeRubyLane(itemName));
-  }
-  if (cat.match(/music|instrument|guitar|pedal|amp|keyboard|drum|bass|synth|violin|trumpet|saxophone|piano|ukulele/)) {
-    alwaysAdapters.push(() => scrapeReverb(itemName));
-  }
-  // Vehicle routing
-  if (cat.match(/vehicle|automobile|car|truck|motorcycle|atv|boat|suv|van|rv|camper/)) {
-    alwaysAdapters.push(
-      () => scrapeCraigslistVehicles(itemName, sellerZip),
-      () => scrapeEbayMotors(itemName),
-      () => scrapeAutoTrader(itemName, sellerZip),
-      () => scrapeCarsCom(itemName, sellerZip),
-      () => scrapeCarGurus(itemName, sellerZip),
-      () => scrapeBringATrailer(itemName),
-    );
-  }
-  // Antique/auction routing
-  if (cat.match(/antique|vintage|estate|auction|furniture.*old|silver|porcelain|glass.*art|pottery|china/)) {
-    alwaysAdapters.push(
-      () => scrapeShopGoodwill(itemName),
-      () => scrapeLiveAuctioneers(itemName),
-      () => scrapeCraigslistAntiques(itemName, sellerZip),
-      () => scrapeSothebys(itemName),
-    );
-  }
-  // Watch routing
-  if (cat.match(/watch|horol|timepiece|rolex|omega|breitling|patek|cartier/)) {
-    alwaysAdapters.push(() => scrapeChrono24(itemName));
-  }
-  // Sneaker/streetwear routing
-  if (cat.match(/sneaker|shoe|jordan|nike|yeezy|streetwear|supreme/)) {
-    alwaysAdapters.push(() => scrapeStockX(itemName), () => scrapeGoat(itemName));
-  }
-  // Trading cards / collectible cards routing
-  if (cat.match(/card|pokemon|magic|yugioh|tcg|trading|sports.?card|baseball.?card|football.?card|basketball.?card|hockey.?card/)) {
-    alwaysAdapters.push(() => scrapeTcgplayerApify(itemName), () => scrapeCourtyard(itemName));
-    alwaysAdapters.push(() => scrapePriceCharting(itemName, "trading-cards"), () => scrapePsaCard(itemName));
-  }
-  // Memorabilia with fractional market
-  if (cat.match(/memorabilia|autograph|game.?worn|signed/)) {
-    alwaysAdapters.push(() => scrapeCourtyard(itemName));
-  }
-  // PriceCharting category-specific routing (Beckett equivalent)
-  if (cat.match(/video.?game|nintendo|playstation|xbox|sega|atari|gameboy/)) {
-    alwaysAdapters.push(() => scrapePriceCharting(itemName, "video-games"));
-  }
-  if (cat.match(/comic|marvel|dc.?comics|graphic.?novel/)) {
-    alwaysAdapters.push(() => scrapePriceCharting(itemName, "comics"));
-  }
-  if (cat.match(/funko|pop!|bobblehead/)) {
-    alwaysAdapters.push(() => scrapePriceCharting(itemName, "funko"));
-  }
-  if (cat.match(/lego|building.?block|brick/)) {
-    alwaysAdapters.push(() => scrapePriceCharting(itemName, "lego-sets"));
-  }
-  if (cat.match(/coin|numismatic|currency|bullion|silver.?dollar|gold.?coin/)) {
-    alwaysAdapters.push(() => scrapePriceCharting(itemName, "coins"));
-  }
+  // Also add category-specific free scrapers from CATEGORY_ADAPTER_MAP
+  const extraCatAdapters = categoryAdapters.filter(fn => {
+    const n = fn.name;
+    return !["scrapeEbaySold","scrapeCraigslist","scrapeMercari","scrapeOfferUp","scrapePoshmark","scrapeRubyLane","scrapeReverb","scrapeShopGoodwill","scrapeLiveAuctioneers","scrapeCraigslistVehicles","scrapeCraigslistAntiques","scrapePriceCharting","scrapeTcgPlayer","queryDiscogs","scrapeHeritage","scrapeUncleHenrys"].includes(n);
+  });
 
-  // Dedupe: skip category adapters already covered by always-run
-  const alwaysFnNames = new Set([
-    "scrapeEbaySold", "scrapeCraigslist", "scrapeMercari", "scrapeUncleHenrys",
-    "scrapeOfferUp", "scrapeFacebookMarketplace", "scrapeGoogleShopping",
-    "scrapePoshmark", "scrapeRubyLane", "scrapeReverb",
-    "scrapeShopGoodwill", "scrapeLiveAuctioneers", "scrapeCraigslistVehicles", "scrapeCraigslistAntiques",
-    "scrapeEbayMotors", "scrapeAutoTrader", "scrapeCarsCom", "scrapeCarGurus", "scrapeBringATrailer",
-    "scrapeChrono24", "scrapeStockX", "scrapeGoat", "scrapeSothebys",
-    "scrapeTcgplayerApify", "scrapeCourtyard",
-    "scrapePriceCharting", "scrapePsaCard",
-  ]);
-  const extraAdapters = categoryAdapters.filter((fn) => !alwaysFnNames.has(fn.name));
-
-  // Run all scrapers in parallel
-  const allFns = [
-    ...alwaysAdapters,
-    ...extraAdapters.map((fn) => () => fn(itemName)),
-  ];
-
-  const settled = await Promise.allSettled(
-    allFns.map((fn) => {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 45000);
-      return fn().finally(() => clearTimeout(timeout));
-    })
+  // Run Phase 1
+  const phase1Settled = await Promise.allSettled(
+    freeAdapters.map(fn => { const t = setTimeout(() => {}, 30000); return fn().finally(() => clearTimeout(t)); })
   );
 
   const allComps: MarketComp[] = [];
   const sources: string[] = [];
 
-  for (const result of settled) {
+  for (const result of phase1Settled) {
     if (result.status === "fulfilled" && result.value.success) {
       allComps.push(...result.value.comps);
       if (!sources.includes(result.value.source)) sources.push(result.value.source);
     }
   }
 
-  // eBay Apify fallback: only fire if built-in eBay returned 0 results
-  const hasEbayComps = allComps.some((c) => c.platform.includes("eBay"));
-  if (!hasEbayComps && process.env.APIFY_TASK_EBAY) {
-    try {
-      const ebayBackup = await scrapeEbayApify(itemName);
-      if (ebayBackup.success) {
-        allComps.push(...ebayBackup.comps);
-        if (!sources.includes(ebayBackup.source)) sources.push(ebayBackup.source);
-      }
-    } catch { /* non-critical */ }
-  }
+  // ═══ SUFFICIENCY CHECK — Multi-factor decision for Phase 2 ═══
+  const compCount = allComps.length;
+  const sourceCount = sources.length;
+  const isSpecialtyCategory = !!cat.match(
+    /vehicle|automobile|car|truck|motorcycle|watch|horol|timepiece|rolex|omega|sneaker|jordan|nike|yeezy|card|pokemon|magic|yugioh|tcg|trading|sports.?card|antique.*auction|estate.*sale|jewelry|gem|diamond|art|painting|sculpture|coin|numismatic|memorabilia|autograph/
+  );
+  const phase1Prices = allComps.map(c => c.price).filter(p => p > 0).sort((a, b) => a - b);
+  const estimatedValue = phase1Prices.length > 0 ? phase1Prices[Math.floor(phase1Prices.length / 2)] : 0;
+  const isHighValue = estimatedValue >= 200;
 
-  // Amazon Apify: run as supplementary retail anchor (not a comp source — retail prices)
-  if (process.env.APIFY_TASK_AMAZON) {
-    try {
-      const amazonResult = await scrapeAmazonApify(itemName);
-      if (amazonResult.success) {
-        allComps.push(...amazonResult.comps);
-        if (!sources.includes(amazonResult.source)) sources.push(amazonResult.source);
+  const needsMoreData = compCount < 6 || sourceCount < 3 || isSpecialtyCategory || isHighValue;
+  const reason = compCount < 6 ? `only ${compCount} comps` : sourceCount < 3 ? `only ${sourceCount} sources` : isSpecialtyCategory ? "specialty category" : isHighValue ? `high value ($${Math.round(estimatedValue)})` : "sufficient";
+
+  console.log(`[market-intel] Phase 1: ${compCount} comps from ${sourceCount} sources (est. $${Math.round(estimatedValue)})${needsMoreData ? ` — Phase 2 needed: ${reason}` : " — sufficient, Phase 2 skipped"}`);
+
+  // ═══ PHASE 2: PAID Apify scrapers (only if insufficient) ═══
+  if (needsMoreData) {
+    const paidAdapters: Array<() => Promise<ScraperResult>> = [];
+
+    // eBay Apify fallback
+    if (!allComps.some(c => c.platform.includes("eBay"))) {
+      paidAdapters.push(() => scrapeEbayApify(itemName));
+    }
+
+    // Amazon retail anchor
+    paidAdapters.push(() => scrapeAmazonApify(itemName));
+
+    // Vehicle routing (paid)
+    if (cat.match(/vehicle|automobile|car|truck|motorcycle/)) {
+      paidAdapters.push(() => scrapeEbayMotors(itemName));
+      if (SUBSCRIPTION_ACTORS_ENABLED) {
+        paidAdapters.push(() => scrapeAutoTrader(itemName, sellerZip), () => scrapeCarsCom(itemName, sellerZip), () => scrapeCarGurus(itemName, sellerZip));
       }
-    } catch { /* non-critical */ }
+      paidAdapters.push(() => scrapeBringATrailer(itemName));
+    }
+
+    // Watch routing (paid)
+    if (cat.match(/watch|horol|timepiece|rolex|omega|breitling|patek|cartier/)) paidAdapters.push(() => scrapeChrono24(itemName));
+
+    // Sneaker routing (paid)
+    if (cat.match(/sneaker|shoe|jordan|nike|yeezy|streetwear|supreme/)) paidAdapters.push(() => scrapeStockX(itemName), () => scrapeGoat(itemName));
+
+    // Card routing (paid)
+    if (cat.match(/card|pokemon|magic|yugioh|tcg|trading|sports.?card/)) {
+      paidAdapters.push(() => scrapeTcgplayerApify(itemName), () => scrapeCourtyard(itemName), () => scrapePsaCard(itemName));
+    }
+
+    // Antique auction (paid)
+    if (cat.match(/antique.*auction|estate/)) paidAdapters.push(() => scrapeSothebys(itemName));
+
+    // Memorabilia (paid)
+    if (cat.match(/memorabilia|autograph|game.?worn|signed/)) paidAdapters.push(() => scrapeCourtyard(itemName));
+
+    // Any extra category adapters not yet covered
+    for (const fn of extraCatAdapters) paidAdapters.push(() => fn(itemName));
+
+    const phase2Settled = await Promise.allSettled(
+      paidAdapters.map(fn => { const t = setTimeout(() => {}, 45000); return fn().finally(() => clearTimeout(t)); })
+    );
+
+    for (const result of phase2Settled) {
+      if (result.status === "fulfilled" && result.value.success) {
+        allComps.push(...result.value.comps);
+        if (!sources.includes(result.value.source)) sources.push(result.value.source);
+      }
+    }
+
+    console.log(`[market-intel] Phase 2: ${allComps.length - (phase1Settled.filter(r => r.status === "fulfilled" && (r.value as any).success).reduce((s: number, r: any) => s + (r.value?.comps?.length || 0), 0))} additional comps from paid sources`);
   }
 
   // Deduplicate and sort by date (newest first)
