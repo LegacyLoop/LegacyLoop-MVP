@@ -2,6 +2,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import type { Metadata } from "next";
 import { TIERS, TIER_NUMBER_TO_KEY, calculateTotalWithFee, calculateTierPrice, PROCESSING_FEE } from "@/lib/constants/pricing";
 
@@ -41,6 +42,7 @@ export default async function BillingPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Billing" }]} />
       <div style={{ marginBottom: "2rem" }}>
         <div className="section-title">Account</div>
         <h1 className="h2 mt-2">Billing & Subscription</h1>

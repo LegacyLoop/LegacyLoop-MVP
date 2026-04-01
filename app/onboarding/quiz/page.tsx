@@ -388,7 +388,11 @@ export default function OnboardingQuiz() {
       params.set("wantsHelp", "true");
       params.set("r", JSON.stringify(rec));
       if (notes) params.set("userNotes", notes);
-      router.push(`/white-glove?${params.toString()}`);
+      if (document.cookie.includes("auth-token")) {
+        router.push(`/white-glove?${params.toString()}`);
+      } else {
+        router.push(`/quote?${params.toString()}`);
+      }
       return;
     }
 

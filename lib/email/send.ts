@@ -8,7 +8,7 @@ interface EmailMessage {
   fromName?: string;
 }
 
-const DEFAULT_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "hello@legacy-loop.com";
+const DEFAULT_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "support@legacy-loop.com";
 const DEFAULT_FROM_NAME = process.env.SENDGRID_FROM_NAME || "LegacyLoop";
 
 /**

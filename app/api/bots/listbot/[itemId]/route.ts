@@ -208,15 +208,27 @@ INSTRUCTION: Use these buyer profiles to tailor your listing language.
     } catch { /* non-critical — proceed without structured data */ }
 
     // ── REAL LISTING INTELLIGENCE FROM SCRAPERS ──
+    // In conservative mode: only getMarketIntelligence (likely cached from PriceBot) + Poshmark (free)
+    // In normal/full mode: also fire Etsy, Pinterest, YouTube (3 extra Apify calls)
+    const { getApifyBudgetMode: getListBotBudgetMode } = await import("@/lib/market-intelligence/adapters/apify-client");
+    const listBotBudgetMode = getListBotBudgetMode();
+    const runExtraSocial = listBotBudgetMode !== "conservative";
+
     let realListingContext = "";
     try {
-      const [etsyResult, marketIntelResult] = await Promise.allSettled([
-        scrapeEtsy(itemName),
-        getMarketIntelligence(itemName, category, sellerZip),
-      ]);
+      const corePromises: Promise<any>[] = [
+        getMarketIntelligence(itemName, category, sellerZip), // likely cached from PriceBot
+      ];
+      // Etsy is Apify-powered — only in normal/full mode
+      if (runExtraSocial) {
+        corePromises.push(scrapeEtsy(itemName));
+      } else {
+        console.log(`[ListBot] Conservative mode — skipping Etsy/Pinterest/YouTube scrapers (3 Apify calls saved)`);
+      }
 
-      const etsy = etsyResult.status === "fulfilled" ? etsyResult.value : null;
-      const intel = marketIntelResult.status === "fulfilled" ? marketIntelResult.value : null;
+      const coreSettled = await Promise.allSettled(corePromises);
+      const intel = coreSettled[0].status === "fulfilled" ? coreSettled[0].value : null;
+      const etsy = runExtraSocial && coreSettled[1]?.status === "fulfilled" ? coreSettled[1].value : null;
 
       if (etsy && etsy.topListings && etsy.topListings.length > 0) {
         realListingContext += `\n\nREAL ETSY TOP LISTINGS (for copy and SEO analysis):
@@ -240,7 +252,7 @@ ${Object.entries(platformPrices).map(([platform, prices]) =>
 Use these REAL price points when recommending listing prices per platform.`;
       }
 
-      // Poshmark listing patterns for fashion items
+      // Poshmark listing patterns for fashion items (FREE — built-in scraper)
       const catLower = (category || "").toLowerCase();
       if (catLower.match(/fashion|clothing|shoes|accessories|handbag|dress|jacket/)) {
         try {
@@ -253,18 +265,22 @@ Study these titles and pricing for your Poshmark-specific listing copy. Mirror s
         } catch { /* non-critical */ }
       }
 
-      // Social demand signals for listing optimization
-      const [pinterestResult, youtubeResult] = await Promise.allSettled([
-        scrapePinterest(itemName, category),
-        scrapeYoutube(itemName, category),
-      ]);
-      const pin = pinterestResult.status === "fulfilled" ? pinterestResult.value : null;
-      const yt = youtubeResult.status === "fulfilled" ? youtubeResult.value : null;
-      if (pin?.success && pin.demandSignal !== "none") {
-        realListingContext += `\nPinterest demand: ${pin.demandSignal} (${pin.totalSaves.toLocaleString()} saves). Use visual-first listing strategies.`;
-      }
-      if (yt?.success && yt.demandSignal !== "none") {
-        realListingContext += `\nYouTube interest: ${yt.demandSignal} (${yt.totalViews.toLocaleString()} views). Consider video marketing or referencing popular reviews.`;
+      // Social demand signals — only in normal/full mode (Pinterest + YouTube = 2 Apify calls)
+      let pin: any = null;
+      let yt: any = null;
+      if (runExtraSocial) {
+        const [pinterestResult, youtubeResult] = await Promise.allSettled([
+          scrapePinterest(itemName, category),
+          scrapeYoutube(itemName, category),
+        ]);
+        pin = pinterestResult.status === "fulfilled" ? pinterestResult.value : null;
+        yt = youtubeResult.status === "fulfilled" ? youtubeResult.value : null;
+        if (pin?.success && pin.demandSignal !== "none") {
+          realListingContext += `\nPinterest demand: ${pin.demandSignal} (${pin.totalSaves.toLocaleString()} saves). Use visual-first listing strategies.`;
+        }
+        if (yt?.success && yt.demandSignal !== "none") {
+          realListingContext += `\nYouTube interest: ${yt.demandSignal} (${yt.totalViews.toLocaleString()} views). Consider video marketing or referencing popular reviews.`;
+        }
       }
 
       if (realListingContext) {

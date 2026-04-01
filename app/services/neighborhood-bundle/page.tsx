@@ -330,7 +330,7 @@ export default function NeighborhoodBundlePage() {
             style={{ background: "#fff", color: "#0f766e", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 800, textDecoration: "none", fontSize: "0.95rem" }}>
             Start Bundle Free
           </Link>
-          <a href="mailto:hello@legacy-loop.com"
+          <a href="mailto:support@legacy-loop.com"
             style={{ background: "var(--bg-card-hover)", color: "var(--text-primary)", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 700, textDecoration: "none", fontSize: "0.95rem", border: "1px solid var(--border-default)" }}>
             Email Us About Your Group
           </a>

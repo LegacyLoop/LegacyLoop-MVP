@@ -1,6 +1,7 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { DISCOUNTS } from "@/lib/constants/pricing";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -58,10 +59,10 @@ const TESTIMONIALS = [
 ];
 
 const TIERS_PREVIEW = [
-  { name: "Free", price: 0, label: "Try it out", commission: "5%", color: "#22c55e" },
+  { name: "Free", price: 0, label: "Try it out", commission: "12%", color: "#22c55e" },
   { name: "Starter", price: 10, regularPrice: 20, label: "Most Popular", commission: "8%", color: "var(--accent)", popular: true },
-  { name: "Plus", price: 25, regularPrice: 49, label: "Power seller", commission: "10%", color: "#a855f7" },
-  { name: "Pro", price: 75, regularPrice: 99, label: "Full suite", commission: "15%", color: "#f59e0b" },
+  { name: "Plus", price: 25, regularPrice: 49, label: "Power seller", commission: "5%", color: "#a855f7" },
+  { name: "Pro", price: 75, regularPrice: 99, label: "Full suite", commission: "4%", color: "#f59e0b" },
 ];
 
 export default async function HomePage() {
@@ -242,7 +243,7 @@ export default async function HomePage() {
             background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.3)",
             fontSize: "0.72rem", fontWeight: 700, color: "#fbbf24", marginBottom: "1rem",
           }}>
-            LIMITED — ONLY 47 SPOTS LEFT
+            LIMITED — ONLY {DISCOUNTS.preLaunch.spotsRemaining} SPOTS LEFT
           </div>
           <h2 style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--text-primary)", marginBottom: "0.5rem" }}>
             Pre-Launch Special: 50% Off All Plans

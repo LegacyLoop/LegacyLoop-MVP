@@ -19,6 +19,38 @@ import {
   calculateCommission,
 } from "@/lib/constants/pricing";
 
+function getSquareErrorMessage(err: unknown): { message: string; status: number } {
+  const sqErr = err as { errors?: { code?: string; category?: string; detail?: string }[] };
+  const code = sqErr?.errors?.[0]?.code;
+  const category = sqErr?.errors?.[0]?.category;
+
+  if (category === "PAYMENT_METHOD_ERROR") {
+    const messages: Record<string, string> = {
+      CARD_DECLINED: "Your card was declined. Please try another payment method.",
+      CARD_EXPIRED: "Your card has expired. Please use a different card.",
+      INSUFFICIENT_FUNDS: "Insufficient funds. Please check your account balance.",
+      CVV_FAILURE: "The security code is incorrect. Please check and try again.",
+      INVALID_CARD: "The card number is invalid. Please check and try again.",
+      GENERIC_DECLINE: "Payment was declined. Please contact your card issuer.",
+      ADDRESS_VERIFICATION_FAILURE: "Address verification failed. Check your billing address.",
+      INVALID_EXPIRATION: "The card expiration date is invalid.",
+      CARD_DECLINED_CALL_ISSUER: "Card declined. Please call your card issuer.",
+      CARD_DECLINED_VERIFICATION_REQUIRED: "Additional verification required. Contact your card issuer.",
+      TRANSACTION_LIMIT: "This transaction exceeds your card limit.",
+    };
+    return {
+      message: messages[code || ""] || "Payment was declined. Please try another card.",
+      status: 402
+    };
+  }
+
+  if (category === "RATE_LIMIT_ERROR") {
+    return { message: "Too many payment attempts. Please wait a moment.", status: 429 };
+  }
+
+  return { message: "Payment processing failed. Please try again.", status: 500 };
+}
+
 /**
  * Unified Checkout API
  * POST /api/payments/checkout
@@ -52,6 +84,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing type or id" }, { status: 400 });
     }
 
+    // Require payment source when Square is configured (production safety)
+    if (isConfigured && !body.sourceId) {
+      return NextResponse.json({ error: "Payment source required" }, { status: 400 });
+    }
+
     // ── Credit Pack Purchase ──────────────────────────────────────────────
     if (type === "credit_pack") {
       const pack = CREDIT_PACKS[id as keyof typeof CREDIT_PACKS];
@@ -69,7 +106,7 @@ export async function POST(req: NextRequest) {
         // Real Square checkout
         try {
           const payment = await squareClient.payments.create({
-            sourceId: body.sourceId || "cnon:card-nonce-ok", // sandbox test nonce
+            sourceId: body.sourceId,
             amountMoney: { amount: BigInt(Math.round(chargeAmount * 100)), currency: "USD" },
             locationId: SQUARE_LOCATION_ID,
             idempotencyKey: `credit_${user.id}_${id}_${Date.now()}`,
@@ -83,7 +120,8 @@ export async function POST(req: NextRequest) {
           });
         } catch (sqErr) {
           console.error("Square payment error:", sqErr);
-          return NextResponse.json({ error: "Payment processing failed" }, { status: 500 });
+          const { message, status } = getSquareErrorMessage(sqErr);
+          return NextResponse.json({ error: message }, { status });
         }
       } else {
         // Demo mode — record payment without Square
@@ -154,7 +192,7 @@ export async function POST(req: NextRequest) {
       if (isConfigured && squareClient) {
         try {
           const payment = await squareClient.payments.create({
-            sourceId: body.sourceId || "cnon:card-nonce-ok",
+            sourceId: body.sourceId,
             amountMoney: { amount: BigInt(Math.round(chargeAmount * 100)), currency: "USD" },
             locationId: SQUARE_LOCATION_ID,
             idempotencyKey: `custom_credit_${user.id}_${chargeAmount}_${Date.now()}`,
@@ -166,7 +204,8 @@ export async function POST(req: NextRequest) {
               metadata: { credits: totalCredits, rate, tierName, ourRevenue, requestedAmount: amount } });
         } catch (sqErr) {
           console.error("Square payment error:", sqErr);
-          return NextResponse.json({ error: "Payment processing failed" }, { status: 500 });
+          const { message, status } = getSquareErrorMessage(sqErr);
+          return NextResponse.json({ error: message }, { status });
         }
       } else {
         await recordPayment(user.id, "custom_credit", chargeAmount,
@@ -224,7 +263,7 @@ export async function POST(req: NextRequest) {
       if (isConfigured && squareClient) {
         try {
           const payment = await squareClient.payments.create({
-            sourceId: body.sourceId || "cnon:card-nonce-ok",
+            sourceId: body.sourceId,
             amountMoney: { amount: BigInt(Math.round(chargeAmount * 100)), currency: "USD" },
             locationId: SQUARE_LOCATION_ID,
             idempotencyKey: `sub_${user.id}_${tierKey}_${Date.now()}`,
@@ -238,7 +277,8 @@ export async function POST(req: NextRequest) {
           });
         } catch (sqErr) {
           console.error("Square payment error:", sqErr);
-          return NextResponse.json({ error: "Payment processing failed" }, { status: 500 });
+          const { message, status } = getSquareErrorMessage(sqErr);
+          return NextResponse.json({ error: message }, { status });
         }
       } else {
         await recordPayment(user.id, "subscription", chargeAmount, `${tier.name} plan — ${billing}`, {
@@ -336,7 +376,7 @@ export async function POST(req: NextRequest) {
       if (isConfigured && squareClient) {
         try {
           const payment = await squareClient.payments.create({
-            sourceId: body.sourceId || "cnon:card-nonce-ok",
+            sourceId: body.sourceId,
             amountMoney: { amount: BigInt(Math.round(total * 100)), currency: "USD" },
             locationId: SQUARE_LOCATION_ID,
             idempotencyKey: `item_${id}_${user.id}_${Date.now()}`,
@@ -350,7 +390,8 @@ export async function POST(req: NextRequest) {
           });
         } catch (sqErr) {
           console.error("Square payment error:", sqErr);
-          return NextResponse.json({ error: "Payment processing failed" }, { status: 500 });
+          const { message, status } = getSquareErrorMessage(sqErr);
+          return NextResponse.json({ error: message }, { status });
         }
       } else {
         await recordPayment(user.id, "item_purchase", subtotal, `Purchase: ${item.title || "Item"}`, {

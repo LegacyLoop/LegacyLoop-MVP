@@ -9,7 +9,7 @@ import { ltlQuoteRequestEmail } from "@/lib/email/templates";
 /**
  * POST /api/shipping/ltl-quote-request
  * Captures LTL freight quote request data and logs it.
- * Sends email to shipping@legacy-loop.com and logs to file as backup.
+ * Sends email to support@legacy-loop.com and logs to file as backup.
  */
 export async function POST(req: NextRequest) {
   try {
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     ].join("\n");
 
     // Log to console
-    console.log("\n📋 LTL FREIGHT QUOTE REQUEST → shipping@legacy-loop.com");
+    console.log("\n📋 LTL FREIGHT QUOTE REQUEST → support@legacy-loop.com");
     console.log(formatted);
 
     // Save to temp file as backup
@@ -109,8 +109,8 @@ export async function POST(req: NextRequest) {
       String(quoteData.weight), formatted
     );
     sendEmail({
-      to: "shipping@legacy-loop.com",
-      from: "shipping@legacy-loop.com",
+      to: "support@legacy-loop.com",
+      from: "support@legacy-loop.com",
       fromName: "LegacyLoop Shipping",
       ...quoteEmail,
     }).catch(() => {});

@@ -1,5 +1,6 @@
 import type { MarketIntelligence, ScraperResult, MarketComp } from "./types";
 import { deduplicateComps } from "./scraper-base";
+import { getApifyBudgetMode, isItemBudgetExceeded } from "./adapters/apify-client";
 // Built-in scrapers (free, fast)
 import { scrapeEbaySold } from "./adapters/ebay-sold";
 import { scrapeTcgPlayer } from "./adapters/tcgplayer";
@@ -137,20 +138,33 @@ export async function getMarketIntelligence(
   // ═══ SUFFICIENCY CHECK — Multi-factor decision for Phase 2 ═══
   const compCount = allComps.length;
   const sourceCount = sources.length;
-  const isSpecialtyCategory = !!cat.match(
-    /vehicle|automobile|car|truck|motorcycle|watch|horol|timepiece|rolex|omega|sneaker|jordan|nike|yeezy|card|pokemon|magic|yugioh|tcg|trading|sports.?card|antique.*auction|estate.*sale|jewelry|gem|diamond|art|painting|sculpture|coin|numismatic|memorabilia|autograph/
-  );
   const phase1Prices = allComps.map(c => c.price).filter(p => p > 0).sort((a, b) => a - b);
   const estimatedValue = phase1Prices.length > 0 ? phase1Prices[Math.floor(phase1Prices.length / 2)] : 0;
-  const isHighValue = estimatedValue >= 200;
 
-  const needsMoreData = compCount < 6 || sourceCount < 3 || isSpecialtyCategory || isHighValue;
-  const reason = compCount < 6 ? `only ${compCount} comps` : sourceCount < 3 ? `only ${sourceCount} sources` : isSpecialtyCategory ? "specialty category" : isHighValue ? `high value ($${Math.round(estimatedValue)})` : "sufficient";
+  const budgetMode = getApifyBudgetMode();
 
-  console.log(`[market-intel] Phase 1: ${compCount} comps from ${sourceCount} sources (est. $${Math.round(estimatedValue)})${needsMoreData ? ` — Phase 2 needed: ${reason}` : " — sufficient, Phase 2 skipped"}`);
+  // In conservative mode, tighten Phase 2 triggers significantly
+  const compThreshold = budgetMode === "conservative" ? 3 : 6;
+  const sourceThreshold = budgetMode === "conservative" ? 2 : 3;
+  const valueThreshold = budgetMode === "conservative" ? 500 : 200;
 
-  // ═══ PHASE 2: PAID Apify scrapers (only if insufficient) ═══
-  if (needsMoreData) {
+  // In conservative mode, only specialty-trigger on VERY specific categories (not broad regex)
+  const conservativeSpecialtyRegex = /^(vehicle|automobile|car|truck|motorcycle|watch|rolex)$/i;
+  const fullSpecialtyRegex = /vehicle|automobile|car|truck|motorcycle|watch|horol|timepiece|rolex|omega|sneaker|jordan|nike|yeezy|card|pokemon|magic|yugioh|tcg|trading|sports.?card|antique.*auction|estate.*sale|jewelry|gem|diamond|art|painting|sculpture|coin|numismatic|memorabilia|autograph/;
+  const specialtyRegex = budgetMode === "conservative" ? conservativeSpecialtyRegex : fullSpecialtyRegex;
+  const isSpecialtyCategoryForPhase2 = !!cat.match(specialtyRegex);
+
+  const needsMoreData = compCount < compThreshold || sourceCount < sourceThreshold || isSpecialtyCategoryForPhase2 || (estimatedValue >= valueThreshold);
+  const reason = compCount < compThreshold ? `only ${compCount} comps` : sourceCount < sourceThreshold ? `only ${sourceCount} sources` : isSpecialtyCategoryForPhase2 ? "specialty category" : estimatedValue >= valueThreshold ? `high value ($${Math.round(estimatedValue)})` : "sufficient";
+
+  // Also check per-item budget
+  const itemBudgetKey = `${itemName.slice(0, 40)}`;
+  const itemBudgetBlocked = isItemBudgetExceeded(itemBudgetKey);
+
+  console.log(`[market-intel] Phase 1: ${compCount} comps from ${sourceCount} sources (est. $${Math.round(estimatedValue)}) [${budgetMode} mode]${itemBudgetBlocked ? " — ITEM BUDGET EXCEEDED" : needsMoreData ? ` — Phase 2 needed: ${reason}` : " — sufficient, Phase 2 skipped"}`);
+
+  // ═══ PHASE 2: PAID Apify scrapers (only if insufficient AND budget allows) ═══
+  if (needsMoreData && !itemBudgetBlocked) {
     const paidAdapters: Array<() => Promise<ScraperResult>> = [];
 
     // eBay Apify fallback
@@ -233,9 +247,9 @@ export async function getMarketIntelligence(
   // Confidence: 0.3 base + 0.05 per comp + 0.05 per source, max 0.95
   const confidence = Math.min(0.95, 0.3 + comps.length * 0.05 + sources.length * 0.05);
 
-  // TikTok demand signal (non-blocking — runs after comps are collected)
+  // TikTok demand signal — gated by ENABLE_TIKTOK_TRENDS (expensive, non-critical)
   let tiktokDemand: MarketIntelligence["tiktokDemand"] = null;
-  if (process.env.APIFY_TASK_TIKTOK) {
+  if (process.env.ENABLE_TIKTOK_TRENDS === "true" && process.env.APIFY_TASK_TIKTOK) {
     try {
       const tt = await checkTikTokTrend(itemName);
       if (tt.success) {

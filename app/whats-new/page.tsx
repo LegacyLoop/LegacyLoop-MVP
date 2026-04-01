@@ -4,7 +4,8 @@ export const metadata: Metadata = { title: "What's New · LegacyLoop", descripti
 
 export default function WhatsNewPage() {
   const updates = [
-    { date: "Mar 31, 2026", badge: "NEW", title: "🎬 VideoBot ElevenLabs Integration", desc: "5 professional voices with auto-selection by category. Photo-synced narration with sentence-level timecodes. Caching, quota checking, and OpenAI fallback." },
+    { date: "Mar 31, 2026", badge: "NEW", title: "💰 Apify Budget Intelligence System", desc: "3-tier budget mode (conservative/normal/full). Per-item call caps prevent runaway costs. Real compute cost estimates. Auto-sequencer gated. BuyerBot/ListBot social scrapers respect budget mode." },
+    { date: "Mar 31, 2026", badge: null, title: "🎬 VideoBot ElevenLabs Integration", desc: "5 professional voices with auto-selection by category. Photo-synced narration with sentence-level timecodes. Caching, quota checking, and OpenAI fallback." },
     { date: "Mar 31, 2026", badge: null, title: "⚖️ Meta API Compliance", desc: "Data deletion page, updated privacy policy with Square/Meta/cookies, About page with full mission and values." },
     { date: "Mar 31, 2026", badge: null, title: "🙏 Mission & Giving", desc: "Full mission and vision from official doc. Support Our Mission giving section. Built with purpose in Maine." },
     { date: "Mar 31, 2026", badge: null, title: "🔍 Full Page Audit", desc: "119 hardcoded colors fixed for light mode. 13 pages got SEO metadata. 2 dead links repaired. Every page verified." },

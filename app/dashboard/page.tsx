@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import DashboardClient from "./DashboardClient";
@@ -268,6 +269,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Dashboard" }]} />
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "1rem", marginBottom: "2rem", flexWrap: "wrap" }}>
         <div>

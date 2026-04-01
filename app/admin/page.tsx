@@ -174,10 +174,10 @@ export default async function AdminPage() {
 
   // Mock business metrics (would come from real analytics in production)
   const MOCK_METRICS = [
-    { label: "Est. GMV This Month", value: "$124,800", trend: "+18%", up: true },
+    { label: "Est. GMV (Projected)", value: "$124,800", trend: "+18%", up: true },
     { label: "Avg Items per User", value: (totalItems / Math.max(totalUsers, 1)).toFixed(1), trend: "+2.3", up: true },
     { label: "Analysis Rate", value: `${Math.round((analyzedItems / Math.max(totalItems, 1)) * 100)}%`, trend: "+5%", up: true },
-    { label: "Active This Week", value: Math.min(totalUsers, 47).toString(), trend: "—", up: true },
+    { label: "Active This Week", value: totalUsers.toString(), trend: "—", up: true },
   ];
 
   return (
@@ -210,10 +210,22 @@ export default async function AdminPage() {
       {/* Investor metrics */}
       <div style={{ marginBottom: "2rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.875rem" }}>
-          <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)" }}>Investor Metrics</h2>
+          <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)" }}>📊 Growth Model & Projections</h2>
           <span style={{ padding: "0.15rem 0.5rem", background: "#fef9c3", color: "#a16207", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 700 }}>
             FOR INVESTOR REVIEW
           </span>
+        </div>
+
+        <div style={{
+          padding: "0.6rem 1rem",
+          borderRadius: "8px",
+          background: "rgba(251,191,36,0.08)",
+          border: "1px solid rgba(251,191,36,0.2)",
+          fontSize: "0.75rem",
+          color: "#fbbf24",
+          marginBottom: "1rem"
+        }}>
+          ⚠️ Modeled projections based on market analysis — not live operational data. Real metrics shown in Platform Stats above.
         </div>
 
         {/* KPI cards */}
@@ -242,7 +254,7 @@ export default async function AdminPage() {
         {/* 12-month projection */}
         <div className="card" style={{ padding: "1.5rem", background: "linear-gradient(135deg, #f0fdf4, #fff)" }}>
           <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text-primary)", marginBottom: "1rem" }}>
-            📈 12-Month Revenue Projection
+            📈 12-Month Growth Model (34% MoM Projection)
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: "0.5rem" }}>
             {[

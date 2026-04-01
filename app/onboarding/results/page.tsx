@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import type { Recommendation } from "@/lib/pricing/constants";
@@ -38,13 +38,16 @@ function getTierPrice(tier: string): string {
   return `$${dt.preLaunchMonthly ?? dt.monthlyPrice}/mo`;
 }
 
-function getTierHref(tier: string): string {
+function getTierHref(tier: string, loggedIn: boolean): string {
   const isWG = ["ESSENTIALS", "PROFESSIONAL", "LEGACY"].includes(tier);
   if (isWG) return "/quote";
-  return "/auth/signup";
+  return loggedIn ? "/subscription" : "/auth/signup";
 }
 
-function getTierCtaLabel(tier: string): string {
+function getTierCtaLabel(tier: string, loggedIn: boolean): string {
+  if (loggedIn && !["ESSENTIALS", "PROFESSIONAL", "LEGACY"].includes(tier)) {
+    return "Choose This Plan";
+  }
   const map: Record<string, string> = {
     FREE: "Start Free",
     STARTER: "Start Free Trial",
@@ -226,11 +229,16 @@ function ResultsContent() {
   const wantsHelp = searchParams.get("wantsHelp") === "true";
   const userNotes = searchParams.get("userNotes") || "";
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    setIsLoggedIn(document.cookie.includes("auth-token"));
+  }, []);
+
   const tierName = getTierName(rec.recommendedTier);
   const tierPrice = getTierPrice(rec.recommendedTier);
   const tierDesc = getTierDescription(rec.recommendedTier);
-  const tierHref = getTierHref(rec.recommendedTier);
-  const ctaLabel = getTierCtaLabel(rec.recommendedTier);
+  const tierHref = getTierHref(rec.recommendedTier, isLoggedIn);
+  const ctaLabel = getTierCtaLabel(rec.recommendedTier, isLoggedIn);
   const reasons = getRecommendationReasons(rec);
   const alternatives = getAlternativeOptions(rec);
 
@@ -771,7 +779,7 @@ function ResultsContent() {
               </div>
               <p style={{ fontSize: "0.85rem", color: "#1e3a8a", lineHeight: 1.5 }}>
                 Vehicles (cars, boats, RVs) are handled separately. Contact us at{" "}
-                <strong>hello@legacy-loop.com</strong> and we{"\u2019"}ll connect you with the right buyer
+                <strong>support@legacy-loop.com</strong> and we{"\u2019"}ll connect you with the right buyer
                 network.
               </p>
             </div>
@@ -809,7 +817,7 @@ function ResultsContent() {
             {alternatives.map((alt) => (
               <Link
                 key={alt.tier}
-                href={alt.href}
+                href={getTierHref(alt.tier, isLoggedIn)}
                 style={{
                   display: "block",
                   padding: "1rem 1.25rem",

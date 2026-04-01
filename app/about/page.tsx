@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "About LegacyLoop — Mission & Vision",
@@ -24,6 +25,7 @@ export default function AboutPage() {
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem 1rem" }}>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "About" }]} />
       {/* Premium header with atmospheric glow */}
       <div style={{ textAlign: "center", marginBottom: "3rem", position: "relative" }}>
         <div style={{ position: "absolute", top: "-80px", left: "50%", transform: "translateX(-50%)", width: "400px", height: "250px", background: "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,188,212,0.1), transparent 70%)", pointerEvents: "none" }} />

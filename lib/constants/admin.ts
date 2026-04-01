@@ -2,10 +2,9 @@
  * Consolidated admin email list — single source of truth.
  */
 export const ADMIN_EMAILS = [
-  "admin@legacy-loop.com",
   "ryan@legacy-loop.com",
+  "support@legacy-loop.com",
   "ryan@legacyloop.com",
-  "admin@legacyloop.com",
   "ryanhallee@gmail.com",
 ];
 

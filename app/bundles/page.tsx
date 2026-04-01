@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import BundleSuggestions from "@/app/components/BundleSuggestions";
 
 /* ──────────────────────────────────────────────────────────────────────────────
@@ -129,6 +130,7 @@ export default function BundlesPage() {
   return (
     <div style={{ minHeight: "100vh", background: BG_PAGE, padding: "32px 16px 80px" }}>
       <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Bundles" }]} />
         {/* Header */}
         <div
           style={{

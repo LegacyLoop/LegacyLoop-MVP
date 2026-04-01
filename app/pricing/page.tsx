@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import PricingClient from "./PricingClient";
 
 export const metadata: Metadata = {
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 };
 
 export default function PricingPage() {
-  return <PricingClient />;
+  return (
+    <>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Pricing" }]} />
+      <PricingClient />
+    </>
+  );
 }

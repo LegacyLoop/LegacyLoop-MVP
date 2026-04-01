@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 /* ──────────────────────────────────────────────────────────────────────────────
    Bundle Create Page — 4-step wizard
@@ -521,6 +522,7 @@ export default function BundleCreatePage() {
   return (
     <div style={{ minHeight: "100vh", background: BG_PAGE, padding: "32px 16px 80px" }}>
       <div style={{ maxWidth: 940, margin: "0 auto" }}>
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Bundles", href: "/bundles" }, { label: "Create" }]} />
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
           <Link

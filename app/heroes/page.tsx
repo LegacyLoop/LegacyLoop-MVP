@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -120,6 +121,7 @@ const TESTIMONIALS = [
 export default function HeroesPage() {
   return (
     <div className="mx-auto max-w-5xl">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Heroes" }]} />
       {/* Hero */}
       <div
         style={{

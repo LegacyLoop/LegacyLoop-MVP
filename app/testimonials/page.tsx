@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import TestimonialGrid from "@/app/components/TestimonialGrid";
 import Link from "next/link";
 
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export default function TestimonialsPage() {
   return (
     <div className="mx-auto max-w-5xl" style={{ padding: "2rem 1rem" }}>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Testimonials" }]} />
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
         <div className="section-title" style={{ display: "inline-block" }}>

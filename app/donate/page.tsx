@@ -1,6 +1,7 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import DonateClient from "./DonateClient";
 import type { Metadata } from "next";
 
@@ -28,5 +29,10 @@ export default async function DonatePage() {
     photo: item.photos[0]?.filePath ?? null,
   }));
 
-  return <DonateClient items={serialized} />;
+  return (
+    <>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Donate" }]} />
+      <DonateClient items={serialized} />
+    </>
+  );
 }

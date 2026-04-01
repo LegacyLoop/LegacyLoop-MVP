@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
@@ -33,6 +34,7 @@ export default async function WhiteGlovePage() {
 
   return (
     <div className="mx-auto max-w-4xl">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "White-Glove" }]} />
       <div className="flex items-end justify-between gap-4 mb-8">
         <div>
           <div className="section-title">White-Glove Service</div>

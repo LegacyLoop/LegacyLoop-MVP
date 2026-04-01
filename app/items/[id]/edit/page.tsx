@@ -1,5 +1,6 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import EditItemForm from "./EditItemForm";
 
 export default async function EditItemPage({
@@ -60,6 +61,7 @@ export default async function EditItemPage({
 
   return (
     <div className="mx-auto max-w-2xl">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Items", href: "/dashboard" }, { label: "Edit" }]} />
       <div className="section-title">Item</div>
       <h1 className="h2 mt-2">Edit details</h1>
       <p className="muted mt-2">

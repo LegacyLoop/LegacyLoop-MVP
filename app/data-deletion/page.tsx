@@ -99,8 +99,6 @@ export default function DataDeletionPage() {
         <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
           Questions about data deletion? Contact us at{" "}
           <a href="mailto:support@legacy-loop.com" style={{ color: "#00bcd4", textDecoration: "none" }}>support@legacy-loop.com</a>
-          {" "}or{" "}
-          <a href="mailto:hello@legacy-loop.com" style={{ color: "#00bcd4", textDecoration: "none" }}>hello@legacy-loop.com</a>
         </p>
       </div>
     </div>

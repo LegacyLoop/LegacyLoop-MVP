@@ -1,6 +1,7 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import SubscriptionClient from "./SubscriptionClient";
 import type { Metadata } from "next";
 
@@ -54,5 +55,10 @@ export default async function SubscriptionPage() {
     changeDate: c.changeDate.toISOString(),
   }));
 
-  return <SubscriptionClient subscription={serializedSub} changes={serializedChanges} itemCount={itemCount} projectCount={projectCount} />;
+  return (
+    <>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Subscription" }]} />
+      <SubscriptionClient subscription={serializedSub} changes={serializedChanges} itemCount={itemCount} projectCount={projectCount} />
+    </>
+  );
 }

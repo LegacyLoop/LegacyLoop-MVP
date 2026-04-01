@@ -13,7 +13,7 @@ interface HelpClientProps {
   articles: HelpArticle[];
 }
 
-const POPULAR_SLUGS = ["first-item-listing", "understanding-ai-pricing", "complete-shipping-guide", "how-megabot-works", "how-analyzebot-works", "signing-up-and-setup"];
+const POPULAR_SLUGS = ["how-to-list-first-item", "understanding-ai-pricing", "complete-shipping-guide", "how-megabot-works", "how-analyzebot-works", "signing-up-and-setup"];
 
 export default function HelpClient({ categories, articles }: HelpClientProps) {
   const [search, setSearch] = useState("");

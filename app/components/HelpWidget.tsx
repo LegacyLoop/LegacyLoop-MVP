@@ -46,7 +46,7 @@ export default function HelpWidget() {
       ]);
     } else {
       setSuggestions([
-        { label: "Getting started guide", href: "/help/first-item-listing" },
+        { label: "Getting started guide", href: "/help/how-to-list-first-item" },
         { label: "How AI pricing works", href: "/help/understanding-ai-pricing" },
       ]);
     }

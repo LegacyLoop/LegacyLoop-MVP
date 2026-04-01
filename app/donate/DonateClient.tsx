@@ -462,7 +462,7 @@ export default function DonateClient({ items }: Props) {
             { label: "💛 Support the Mission", amount: "$25", color: "#b8860b" },
             { label: "🚀 Fuel the Future", amount: "$100", color: "#b8860b" },
           ].map(opt => (
-            <a key={opt.amount} href={`mailto:hello@legacy-loop.com?subject=Supporting LegacyLoop (${opt.amount})&body=I'd like to support LegacyLoop's mission with a ${opt.amount} contribution.`} style={{
+            <a key={opt.amount} href={`mailto:support@legacy-loop.com?subject=Supporting LegacyLoop (${opt.amount})&body=I'd like to support LegacyLoop's mission with a ${opt.amount} contribution.`} style={{
               padding: "0.6rem 1.25rem", borderRadius: "10px",
               border: `1px solid ${opt.color}40`, background: `${opt.color}10`,
               color: opt.color, fontWeight: 700, fontSize: "0.82rem",
@@ -474,7 +474,7 @@ export default function DonateClient({ items }: Props) {
           ))}
         </div>
         <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginTop: "0.75rem", fontStyle: "italic" }}>
-          Online giving coming soon. For now, reach out at hello@legacy-loop.com.
+          Online giving coming soon. For now, reach out at support@legacy-loop.com.
         </p>
       </div>
     </div>

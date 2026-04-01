@@ -232,17 +232,40 @@ INSTRUCTION: Use these SEO keywords to find buyers who would search for this ite
     } catch { /* non-critical */ }
 
     // ── REAL BUYER COMMUNITY DATA (parallel, non-blocking) ──
+    // In conservative budget mode, only run Reddit built-in (free) + FB Groups (1 Apify call)
+    // In normal/full mode, run all 7 social scrapers
+    const { getApifyBudgetMode: getBudgetMode } = await import("@/lib/market-intelligence/adapters/apify-client");
+    const buyerBudgetMode = getBudgetMode();
+    const runFullSocial = buyerBudgetMode !== "conservative";
+
     let realBuyerContext = "";
     try {
-      const [fbGroups, redditBuiltinData, instaData, pinterestData, youtubeData, twitterData, fbPagesData] = await Promise.allSettled([
-        scrapeFacebookGroups(itemName, category),
-        scrapeRedditBuiltin(itemName),
-        scrapeInstagram(itemName, category),
-        scrapePinterest(itemName, category),
-        scrapeYoutube(itemName, category),
-        scrapeTwitter(itemName, category),
-        scrapeFacebookPages(itemName, category),
-      ]);
+      const scraperPromises: Promise<any>[] = [
+        scrapeFacebookGroups(itemName, category),   // Apify — always run (most valuable for buyers)
+        scrapeRedditBuiltin(itemName),               // FREE — always run
+      ];
+      // Only fire expensive social scrapers in normal/full mode
+      if (runFullSocial) {
+        scraperPromises.push(
+          scrapeInstagram(itemName, category),
+          scrapePinterest(itemName, category),
+          scrapeYoutube(itemName, category),
+          scrapeTwitter(itemName, category),
+          scrapeFacebookPages(itemName, category),
+        );
+      } else {
+        console.log(`[BuyerBot] Conservative mode — skipping Instagram/Pinterest/YouTube/Twitter/FBPages (5 Apify calls saved)`);
+      }
+
+      const settled = await Promise.allSettled(scraperPromises);
+      const [fbGroups, redditBuiltinData, instaData, pinterestData, youtubeData, twitterData, fbPagesData] = [
+        settled[0], settled[1],
+        settled[2] || { status: "rejected" as const, reason: "skipped" },
+        settled[3] || { status: "rejected" as const, reason: "skipped" },
+        settled[4] || { status: "rejected" as const, reason: "skipped" },
+        settled[5] || { status: "rejected" as const, reason: "skipped" },
+        settled[6] || { status: "rejected" as const, reason: "skipped" },
+      ];
 
       const fbResult = fbGroups.status === "fulfilled" ? fbGroups.value : null;
       const redditBuiltinResult = redditBuiltinData.status === "fulfilled" ? redditBuiltinData.value : null;

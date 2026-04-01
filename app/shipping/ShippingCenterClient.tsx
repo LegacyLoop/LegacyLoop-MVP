@@ -5279,7 +5279,7 @@ function FreightTab({ items }: { items: any[] }) {
           {/* Next step: Upload Official Quote */}
           <div style={{ marginTop: "0.75rem", padding: "0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)" }}>
             <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
-              {"\u{1F4CB}"} Waiting for official quote from our freight team. We{"\u2019"}ll email your request to shipping@legacy-loop.com and quote through our carrier network.
+              {"\u{1F4CB}"} Waiting for official quote from our freight team. We{"\u2019"}ll email your request to support@legacy-loop.com and quote through our carrier network.
             </div>
             <button onClick={() => { setShowQuoteUpload(true); setOfficialQuoteForm(prev => ({ ...prev, carrier: confirmation.selectedCarrier || selectedFreight?.carrier || "", rate: selectedFreight?.price ? String(selectedFreight.price) : "" })); }} style={{ padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer" }}>
               {"\u{1F4CB}"} Upload Official Quote

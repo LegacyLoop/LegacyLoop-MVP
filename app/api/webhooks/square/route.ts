@@ -4,11 +4,36 @@ import { recordPayment } from "@/lib/services/payment-ledger";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const rawBody = await request.text();
+    const body = JSON.parse(rawBody);
     const eventType = body.type;
 
-    // TODO: Validate webhook signature when SQUARE_WEBHOOK_SIGNATURE_KEY is configured
-    // For now, process all events in sandbox
+    // ── Webhook Signature Validation ──
+    const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
+    if (signatureKey) {
+      const { WebhooksHelper } = await import("square");
+      const signatureHeader = request.headers.get("x-square-hmacsha256-signature") || "";
+      const notificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/square`;
+      let isValid = false;
+      try {
+        isValid = await WebhooksHelper.verifySignature({
+          requestBody: rawBody,
+          signatureHeader,
+          signatureKey,
+          notificationUrl,
+        });
+      } catch (e) {
+        console.error("Webhook signature verification error:", e);
+      }
+      if (!isValid) {
+        console.warn("Webhook signature invalid — rejecting event:", eventType);
+        return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
+      }
+    } else if (process.env.SQUARE_ENVIRONMENT === "production") {
+      console.error("CRITICAL: SQUARE_WEBHOOK_SIGNATURE_KEY not set in production");
+      return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+    }
+    // Sandbox/demo: proceed without signature check
 
     if (eventType === "payment.completed") {
       const payment = body.data?.object?.payment;
@@ -51,8 +76,16 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // Only record if we have a userId
+      // Validate userId exists in our database
       if (userId) {
+        const userExists = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { id: true }
+        });
+        if (!userExists) {
+          console.error("Webhook userId not found in database:", userId);
+          return NextResponse.json({ received: true, message: "Unknown user" }, { status: 200 });
+        }
         await recordPayment(userId, paymentType, amountDollars, description, {
           squarePaymentId,
           squareOrderId: payment.orderId,

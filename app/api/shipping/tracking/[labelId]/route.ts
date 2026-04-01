@@ -1,11 +1,98 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { runSaleCompletionChain } from "@/lib/sale-completion/engine";
+import { isDemoMode } from "@/lib/bot-mode";
+import {
+  normalizeTrackingResponse,
+  isStatusAdvance,
+} from "@/lib/shipping/tracking-normalizer";
+import { trackFedExFreight } from "@/lib/shipping/fedex-ltl";
+import { trackShipment } from "@/lib/shipping/shipengine-ltl";
 
 const STATUS_ORDER = ["CREATED", "PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED"];
 const DEMO_LOCATIONS = ["Portland, ME", "Hartford, CT", "Newark, NJ", "Distribution Center", "Local Post Office"];
 
 type Params = Promise<{ labelId: string }>;
+
+// ── Live carrier tracking (non-demo mode) ────────────────────────
+
+async function fetchLiveTracking(
+  label: { id: string; carrier: string; trackingNumber: string; status: string; statusHistory?: string },
+  itemId?: string
+): Promise<{ updated: boolean; newStatus?: string; newHistory?: string }> {
+  if (isDemoMode() || !label.trackingNumber) {
+    return { updated: false };
+  }
+
+  let raw: any = null;
+  const carrier = label.carrier.toLowerCase();
+
+  try {
+    if (carrier.includes("fedex")) {
+      raw = await trackFedExFreight(label.trackingNumber);
+    } else if (carrier.includes("shipengine")) {
+      raw = await trackShipment(carrier, label.trackingNumber);
+    }
+    // Shippo tracking comes via webhook, not polling
+  } catch (e) {
+    console.error("[LiveTracking] Carrier API error:", e);
+    return { updated: false };
+  }
+
+  if (!raw) return { updated: false };
+
+  // Store raw carrier response for data retention (Section 5)
+  if (itemId) {
+    await prisma.eventLog.create({
+      data: {
+        itemId,
+        eventType: "CARRIER_TRACKING_RAW",
+        payload: JSON.stringify({
+          carrier: label.carrier,
+          trackingNumber: label.trackingNumber,
+          response: raw,
+          fetchedAt: new Date().toISOString(),
+        }),
+      },
+    }).catch(() => {});
+  }
+
+  // Normalize the response
+  const normalized = normalizeTrackingResponse(label.carrier, raw);
+  if (!normalized) return { updated: false };
+
+  // Only update if status has advanced
+  if (!isStatusAdvance(label.status, normalized.status)) {
+    return { updated: false };
+  }
+
+  // Build new history entry
+  let history: Array<{ status: string; timestamp: string; location?: string }> = [];
+  try { history = JSON.parse(label.statusHistory || "[]"); } catch { /* use empty */ }
+
+  history.push({
+    status: normalized.status,
+    timestamp: normalized.timestamp,
+    location: normalized.location || undefined,
+  });
+
+  const newHistory = JSON.stringify(history);
+
+  // Update the label in DB
+  await prisma.shipmentLabel.update({
+    where: { id: label.id },
+    data: {
+      status: normalized.status,
+      statusHistory: newHistory,
+    },
+  });
+
+  return {
+    updated: true,
+    newStatus: normalized.status,
+    newHistory,
+  };
+}
 
 // GET — return current tracking info
 export async function GET(
@@ -19,13 +106,28 @@ export async function GET(
   const label = await prisma.shipmentLabel.findUnique({ where: { id: labelId } });
   if (!label) return Response.json({ error: "Not found" }, { status: 404 });
 
+  // In live mode, attempt to fetch fresh tracking from carrier
+  const liveResult = await fetchLiveTracking(
+    {
+      id: label.id,
+      carrier: label.carrier,
+      trackingNumber: label.trackingNumber,
+      status: label.status,
+      statusHistory: (label as any).statusHistory,
+    },
+    label.itemId
+  );
+
+  const currentStatus = liveResult.updated ? liveResult.newStatus! : label.status;
+  const currentHistory = liveResult.updated ? liveResult.newHistory! : ((label as any).statusHistory ?? "[]");
+
   return Response.json({
     id: label.id,
-    status: label.status,
+    status: currentStatus,
     trackingNumber: label.trackingNumber,
     carrier: label.carrier,
     service: label.service,
-    statusHistory: (label as any).statusHistory ?? "[]",
+    statusHistory: currentHistory,
     estimatedDays: (label as any).estimatedDays ?? null,
   });
 }
