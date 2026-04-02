@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { calculateProRate } from "@/lib/billing/pro-rate";
-import { PLANS, TIER_NUMBER_TO_KEY } from "@/lib/constants/pricing";
+import { PLANS, TIER_NUMBER_TO_KEY, calculateTierPrice } from "@/lib/constants/pricing";
 
 /** Map legacy tier keys (from TIER_NUMBER_TO_KEY) to PLANS keys */
 const LEGACY_TO_PLAN: Record<string, keyof typeof PLANS> = {
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const user = await authAdapter.getSession();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { newTier } = await req.json().catch(() => ({ newTier: null }));
+    const { newTier, billing } = await req.json().catch(() => ({ newTier: null, billing: "monthly" }));
     if (!newTier || newTier <= user.tier) return NextResponse.json({ error: "Invalid upgrade tier" }, { status: 400 });
 
     const sub = await prisma.subscription.findFirst({ where: { userId: user.id, status: "ACTIVE" }, orderBy: { createdAt: "desc" } });
@@ -28,13 +28,21 @@ export async function POST(req: NextRequest) {
     const newPlan = PLANS[newPlanKey];
     if (!newPlan) return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
 
-    const proRate = calculateProRate(sub.price, new Date(sub.currentPeriodStart), newPlan.monthlyPrice);
+    const billingPeriod = billing === "annual" ? "annual" : "monthly";
+    const isHero = (user as any).heroVerified ?? false;
+    const newPrice = calculateTierPrice(newTierKey, billingPeriod, true, isHero);
+    const proRate = calculateProRate(sub.price, new Date(sub.currentPeriodStart), newPrice);
     const now = new Date();
-    const periodEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const periodEnd = new Date(now);
+    if (billingPeriod === "annual") {
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+    } else {
+      periodEnd.setMonth(periodEnd.getMonth() + 1);
+    }
 
     await prisma.subscription.update({
       where: { id: sub.id },
-      data: { tier: newTierKey.toUpperCase(), price: newPlan.monthlyPrice, commission: newPlan.commission, currentPeriodStart: now, currentPeriodEnd: periodEnd },
+      data: { tier: newTierKey.toUpperCase(), price: newPrice, billingPeriod, commission: newPlan.commission, currentPeriodStart: now, currentPeriodEnd: periodEnd },
     });
 
     await prisma.user.update({ where: { id: user.id }, data: { tier: newTier } });

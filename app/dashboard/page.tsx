@@ -360,7 +360,7 @@ export default async function DashboardPage() {
           Founding Member
         </span>
         <span style={{ flex: 1, fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-          Lock in pre-launch pricing — <strong style={{ color: "var(--text-primary)" }}>{DISCOUNTS.preLaunch.spotsRemaining} of {DISCOUNTS.preLaunch.totalSpots}</strong> spots remaining
+          Lock in pre-launch pricing — <strong style={{ color: "var(--text-primary)" }}>{DISCOUNTS.preLaunch.totalSpots} founding member spots</strong> at 50% off for life
         </span>
         <Link
           href="/pricing"

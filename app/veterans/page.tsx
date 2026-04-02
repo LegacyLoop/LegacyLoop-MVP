@@ -169,7 +169,7 @@ export default function VeteransPage() {
               style={b.highlight ? { background: "linear-gradient(135deg, #eff6ff, #dbeafe)", borderColor: "#93c5fd", borderWidth: "1.5px" } : {}}
             >
               <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>{b.icon}</div>
-              <div style={{ fontWeight: 700, color: "#1c1917", fontSize: "1rem", marginBottom: "0.35rem" }}>
+              <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: "1rem", marginBottom: "0.35rem" }}>
                 {b.title}
                 {b.highlight && (
                   <span style={{ marginLeft: "0.5rem", fontSize: "0.65rem", background: "#1e3a5f", color: "#fff", padding: "0.1rem 0.4rem", borderRadius: "9999px", fontWeight: 800 }}>
@@ -177,7 +177,7 @@ export default function VeteransPage() {
                   </span>
                 )}
               </div>
-              <div style={{ fontSize: "0.85rem", color: "#57534e", lineHeight: 1.6 }}>{b.description}</div>
+              <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>{b.description}</div>
             </div>
           ))}
         </div>
@@ -196,10 +196,10 @@ export default function VeteransPage() {
                   <span key={i} style={{ color: "#f59e0b", fontSize: "1rem" }}>{star}</span>
                 ))}
               </div>
-              <blockquote style={{ fontSize: "0.92rem", color: "#44403c", lineHeight: 1.7, fontStyle: "italic", marginBottom: "0.75rem" }}>
+              <blockquote style={{ fontSize: "0.92rem", color: "var(--text-secondary)", lineHeight: 1.7, fontStyle: "italic", marginBottom: "0.75rem" }}>
                 "{t.quote}"
               </blockquote>
-              <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1c1917" }}>— {t.name}</div>
+              <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text-primary)" }}>— {t.name}</div>
             </div>
           ))}
         </div>
@@ -210,7 +210,7 @@ export default function VeteransPage() {
         <h2 className="h2 mb-4">Who Is Eligible</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {ELIGIBLE.map((e) => (
-            <div key={e} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", color: "#44403c" }}>
+            <div key={e} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.9rem", color: "var(--text-secondary)" }}>
               <span style={{ color: "#1e3a5f", fontWeight: 700 }}>✓</span>
               {e}
             </div>
@@ -240,7 +240,7 @@ export default function VeteransPage() {
             { icon: "✈️", label: "Aviation Memorabilia" },
             { icon: "⚓", label: "Naval Items" },
           ].map((item) => (
-            <div key={item.label} style={{ padding: "0.75rem 1rem", background: "#f5f5f4", borderRadius: "0.75rem", textAlign: "center", fontSize: "0.82rem", fontWeight: 600, color: "#1c1917" }}>
+            <div key={item.label} style={{ padding: "0.75rem 1rem", background: "var(--bg-card-solid)", borderRadius: "0.75rem", textAlign: "center", fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)" }}>
               <div style={{ fontSize: "1.5rem", marginBottom: "0.25rem" }}>{item.icon}</div>
               {item.label}
             </div>
@@ -321,7 +321,7 @@ export default function VeteransPage() {
       {/* Partners */}
       <div className="card p-6 text-center mb-8">
         <div className="section-title mb-4">Partner Organizations</div>
-        <p style={{ fontSize: "0.85rem", color: "#57534e", marginBottom: "1.25rem" }}>
+        <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "1.25rem" }}>
           We work with these organizations to ensure military items find the right homes.
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
@@ -333,7 +333,7 @@ export default function VeteransPage() {
             "VA Medical Centers",
             "Honor & Remember",
           ].map((org) => (
-            <div key={org} style={{ padding: "0.4rem 0.9rem", background: "#f5f5f4", borderRadius: "9999px", fontSize: "0.78rem", fontWeight: 600, color: "#44403c" }}>
+            <div key={org} style={{ padding: "0.4rem 0.9rem", background: "var(--bg-card-solid)", borderRadius: "9999px", fontSize: "0.78rem", fontWeight: 600, color: "var(--text-secondary)" }}>
               {org}
             </div>
           ))}

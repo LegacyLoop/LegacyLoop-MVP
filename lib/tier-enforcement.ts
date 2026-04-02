@@ -14,6 +14,7 @@ import {
   isDemoMode,
   type BotName,
 } from "@/lib/constants/pricing";
+import { isAdmin } from "@/lib/constants/admin";
 
 export interface TierCheckResult {
   allowed: boolean;
@@ -60,6 +61,15 @@ export async function checkTierLimit(
   // Admin / demo bypass — never locked out during testing
   if (isDemoMode()) {
     return { allowed: true, reason: "demo_bypass" };
+  }
+
+  // Admin bypass — admins are never tier-gated
+  const userForBypass = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  });
+  if (userForBypass?.email && isAdmin(userForBypass.email)) {
+    return { allowed: true, reason: "admin_bypass" };
   }
 
   const tierNum = await getUserTierNumber(userId);

@@ -1,6 +1,7 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { logUserEvent } from "@/lib/data/user-events";
+import { checkTierLimit } from "@/lib/tier-enforcement";
 
 export async function GET() {
   const user = await authAdapter.getSession();
@@ -28,6 +29,15 @@ export async function GET() {
 export async function POST(req: Request) {
   const user = await authAdapter.getSession();
   if (!user) return new Response("Unauthorized", { status: 401 });
+
+  // Tier gate: check project creation limit
+  const tierCheck = await checkTierLimit(user.id, "CREATE_PROJECT");
+  if (!tierCheck.allowed) {
+    return Response.json(
+      { error: tierCheck.message, upgradeUrl: "/pricing", currentTier: "current", limit: 0 },
+      { status: 403 }
+    );
+  }
 
   const body = await req.json().catch(() => ({}));
   const { type, name, description, startDate, endDate, location, city, state } = body;

@@ -19,6 +19,11 @@ export default function CookieConsent() {
     setShow(false);
   }
 
+  function decline() {
+    localStorage.setItem("ll-cookie-consent", "declined");
+    setShow(false);
+  }
+
   if (!show) return null;
 
   return (
@@ -40,11 +45,18 @@ export default function CookieConsent() {
           <Link href="/privacy" style={{ color: "var(--accent)", textDecoration: "none" }}>Learn more</Link>
         </div>
       </div>
+      <button onClick={decline} style={{
+        padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600, borderRadius: "0.5rem",
+        whiteSpace: "nowrap", background: "transparent", border: "1px solid var(--border-default)",
+        color: "var(--text-muted)", cursor: "pointer",
+      }}>
+        Decline
+      </button>
       <button onClick={accept} className="btn-primary" style={{
         padding: "0.5rem 1.25rem", fontSize: "0.82rem", fontWeight: 700, borderRadius: "0.5rem",
         whiteSpace: "nowrap",
       }}>
-        Accept
+        Accept All
       </button>
       <style>{`
         @keyframes slideUp {

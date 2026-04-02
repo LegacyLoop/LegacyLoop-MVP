@@ -231,14 +231,14 @@ export default async function AdminPage() {
         {/* KPI cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "0.875rem", marginBottom: "1rem" }}>
           {[
-            { label: "MRR", value: "$12,450", trend: "+34% MoM", up: true, note: "Monthly Recurring Revenue" },
-            { label: "ARR (projected)", value: "$149,400", trend: "+34% MoM", up: true, note: "Annual Run Rate" },
-            { label: "CAC", value: "$23", trend: "-12% MoM", up: true, note: "Customer Acquisition Cost" },
-            { label: "LTV", value: "$890", trend: "+8% MoM", up: true, note: "Lifetime Value" },
-            { label: "LTV : CAC", value: "38.7×", trend: "Excellent", up: true, note: "Industry avg: 3×" },
-            { label: "Churn Rate", value: "2.3%", trend: "-0.4% MoM", up: true, note: "Monthly churn" },
-            { label: "NPS Score", value: "87", trend: "+4 pts", up: true, note: "Net Promoter Score" },
-            { label: "Gross Margin", value: "84%", trend: "Stable", up: true, note: "SaaS gross margin" },
+            { label: "MRR (Projected)", value: "$12,450", trend: "+34% MoM", up: true, note: "Monthly Recurring Revenue" },
+            { label: "ARR (Projected)", value: "$149,400", trend: "+34% MoM", up: true, note: "Annual Run Rate" },
+            { label: "CAC (Projected)", value: "$23", trend: "-12% MoM", up: true, note: "Customer Acquisition Cost" },
+            { label: "LTV (Projected)", value: "$890", trend: "+8% MoM", up: true, note: "Lifetime Value" },
+            { label: "LTV : CAC (Projected)", value: "38.7×", trend: "Excellent", up: true, note: "Industry avg: 3×" },
+            { label: "Churn (Projected)", value: "2.3%", trend: "-0.4% MoM", up: true, note: "Monthly churn" },
+            { label: "NPS (Projected)", value: "87", trend: "+4 pts", up: true, note: "Net Promoter Score" },
+            { label: "Margin (Projected)", value: "84%", trend: "Stable", up: true, note: "SaaS gross margin" },
           ].map((m) => (
             <div key={m.label} className="card" style={{ padding: "1rem 1.25rem", borderTop: "3px solid #0f766e" }}>
               <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "0.2rem" }}>{m.label}</div>
@@ -278,7 +278,7 @@ export default async function AdminPage() {
             ))}
           </div>
           <div style={{ marginTop: "0.75rem", fontSize: "0.72rem", color: "var(--text-muted)" }}>
-            Assumes 34% MoM growth rate (current trajectory). Projections are forward-looking estimates.
+            Financial model based on 34% MoM growth assumption. Not actual operational data. Results will vary.
           </div>
         </div>
       </div>

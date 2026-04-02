@@ -10,10 +10,10 @@ const TRUST_BADGES = [
 ];
 
 const STATS = [
-  { value: "847+", label: "Families served" },
-  { value: "$2.4M", label: "In items sold" },
-  { value: "4.9/5", label: "Average rating" },
-  { value: "32", label: "States covered" },
+  { value: "AI-Powered", label: "Estate resale platform" },
+  { value: "15 Bots", label: "Working for you" },
+  { value: "Pre-Launch", label: "Beta — Launching 2026" },
+  { value: "Free", label: "To get started" },
 ];
 
 export default function Footer() {
@@ -187,9 +187,8 @@ export default function Footer() {
               Support
             </div>
             {[
-              { label: "📞 (207) 555-0127", href: "tel:2075550127" }, // TODO: Replace with real Google Voice number
-              { label: "💬 Text Us", href: "sms:2075550127" }, // TODO: Replace with real Google Voice number
               { label: "support@legacy-loop.com", href: "mailto:support@legacy-loop.com" },
+              { label: "Phone support coming soon", href: "#" },
             ].map((l) => (
               <a
                 key={l.label}
@@ -258,7 +257,8 @@ export default function Footer() {
             color: "var(--text-muted)",
           }}
         >
-          <span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+            <img src="/images/logos/logo-icon.png" alt="LegacyLoop" style={{ height: "24px", width: "24px", objectFit: "contain" }} />
             &copy; {year} LegacyLoop, Inc. &middot; Waterville, Maine &middot; All rights reserved.
           </span>
           <span

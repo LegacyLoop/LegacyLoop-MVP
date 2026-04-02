@@ -6,6 +6,7 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import SettingsClient from "./SettingsClient";
 import ThemeSettings from "./ThemeSettings";
 import ChangePasswordSection from "./ChangePasswordSection";
+import DeleteAccountSection from "./DeleteAccountSection";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Settings · LegacyLoop", description: "Manage privacy, notifications, theme, and account preferences" };
@@ -86,19 +87,20 @@ export default async function SettingsPage() {
       {/* Danger zone */}
       <div
         className="card p-6 mt-4"
-        style={{ borderColor: "rgba(220, 38, 38, 0.25)", background: "rgba(254, 242, 242, 0.8)" }}
+        style={{ borderColor: "var(--error-border)", background: "var(--error-bg)" }}
       >
-        <div style={{ fontWeight: 700, fontSize: "1rem", color: "#9a3412", marginBottom: "0.25rem" }}>
+        <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--error-text)", marginBottom: "0.25rem" }}>
           Danger Zone
         </div>
-        <div style={{ color: "#78716c", fontSize: "0.85rem", marginBottom: "1rem" }}>
+        <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "1rem" }}>
           Canceling your subscription or requesting data deletion are permanent actions.
         </div>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-          <Link href="/subscription" className="btn-ghost" style={{ fontSize: "0.82rem", borderColor: "rgba(220,38,38,0.3)", color: "#9a3412" }}>
+          <Link href="/subscription" className="btn-ghost" style={{ fontSize: "0.82rem", borderColor: "var(--error-border)", color: "var(--error-text)" }}>
             Manage Subscription
           </Link>
         </div>
+        <DeleteAccountSection userEmail={user.email} />
       </div>
 
       <div style={{ textAlign: "center", marginTop: "1.5rem", marginBottom: "1rem" }}>

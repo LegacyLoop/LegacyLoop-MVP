@@ -290,14 +290,14 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
             <img
               src="/images/logos/legacyloop-logo.png"
               alt="LegacyLoop"
-              style={{ height: "36px", width: "auto", objectFit: "contain", display: "block" }}
+              style={{ height: "48px", width: "auto", objectFit: "contain", display: "block" }}
               className="hidden md:block"
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/logos/logo-icon.png"
               alt="LegacyLoop"
-              style={{ height: "36px", width: "36px", objectFit: "contain" }}
+              style={{ height: "44px", width: "44px", objectFit: "contain" }}
               className="md:hidden"
             />
           </Link>

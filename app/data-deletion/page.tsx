@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Data Deletion — LegacyLoop",
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
 export default function DataDeletionPage() {
   return (
     <div style={{ maxWidth: "720px", margin: "0 auto", padding: "2rem 1rem" }}>
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Data Deletion" }]} />
       {/* Premium header */}
       <div style={{ textAlign: "center", marginBottom: "2.5rem", position: "relative" }}>
         <div style={{ position: "absolute", top: "-60px", left: "50%", transform: "translateX(-50%)", width: "300px", height: "200px", background: "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,188,212,0.08), transparent 70%)", pointerEvents: "none" }} />

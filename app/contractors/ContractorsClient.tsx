@@ -81,13 +81,13 @@ export default function ContractorsClient({ contractors, jobs }: Props) {
       {/* Stats */}
       <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
         {[
-          { label: "Total Providers", value: displayContractors.length, color: "#0f766e" },
-          { label: "Available Now", value: availableCount, color: "#15803d" },
+          { label: "Total Providers", value: displayContractors.length, color: "var(--accent)" },
+          { label: "Available Now", value: availableCount, color: "var(--success-text)" },
           { label: "Service Types", value: Object.keys(TYPE_META).length, color: "#1e40af" },
         ].map(({ label, value, color }) => (
-          <div key={label} style={{ padding: "0.625rem 1.25rem", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "0.875rem" }}>
+          <div key={label} style={{ padding: "0.625rem 1.25rem", background: "var(--bg-secondary)", border: "1px solid var(--border-default)", borderRadius: "0.875rem" }}>
             <span style={{ fontWeight: 800, fontSize: "1.25rem", color }}>{value}</span>
-            <span style={{ marginLeft: "0.4rem", fontSize: "0.82rem", color: "#6b7280" }}>{label}</span>
+            <span style={{ marginLeft: "0.4rem", fontSize: "0.82rem", color: "var(--text-muted)" }}>{label}</span>
           </div>
         ))}
       </div>
@@ -104,9 +104,9 @@ export default function ContractorsClient({ contractors, jobs }: Props) {
                 padding: "0.35rem 0.875rem",
                 borderRadius: "999px",
                 border: "1.5px solid",
-                borderColor: typeFilter === t ? "#0f766e" : "#e7e5e4",
-                background: typeFilter === t ? "#f0fdfa" : "#fff",
-                color: typeFilter === t ? "#0f766e" : "#78716c",
+                borderColor: typeFilter === t ? "var(--accent)" : "var(--border-default)",
+                background: typeFilter === t ? "var(--accent-dim)" : "var(--bg-card-solid)",
+                color: typeFilter === t ? "var(--accent)" : "var(--text-muted)",
                 fontWeight: typeFilter === t ? 700 : 400,
                 cursor: "pointer",
                 fontSize: "0.82rem",
@@ -141,9 +141,9 @@ export default function ContractorsClient({ contractors, jobs }: Props) {
                     {meta.icon} {meta.label}
                   </span>
                   <div style={{ fontWeight: 700, fontSize: "1rem" }}>{c.company}</div>
-                  <div style={{ fontSize: "0.78rem", color: "#6b7280" }}>{c.contactName}</div>
+                  <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{c.contactName}</div>
                 </div>
-                <span style={{ padding: "0.15rem 0.5rem", borderRadius: "999px", background: c.available ? "#dcfce7" : "#f3f4f6", color: c.available ? "#15803d" : "#9ca3af", fontSize: "0.7rem", fontWeight: 700, flexShrink: 0 }}>
+                <span style={{ padding: "0.15rem 0.5rem", borderRadius: "999px", background: c.available ? "var(--success-bg)" : "var(--ghost-bg)", color: c.available ? "var(--success-text)" : "var(--text-muted)", fontSize: "0.7rem", fontWeight: 700, flexShrink: 0 }}>
                   {c.available ? "✅ Available" : "⏳ Booked"}
                 </span>
               </div>
@@ -152,20 +152,20 @@ export default function ContractorsClient({ contractors, jobs }: Props) {
               <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", marginBottom: "0.5rem" }}>
                 <span style={{ color: "#f59e0b", fontSize: "0.9rem" }}>{"★".repeat(Math.round(c.rating))}</span>
                 <span style={{ fontWeight: 700, fontSize: "0.82rem" }}>{c.rating.toFixed(1)}</span>
-                <span style={{ fontSize: "0.72rem", color: "#6b7280" }}>({c.reviewCount} reviews)</span>
+                <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>({c.reviewCount} reviews)</span>
               </div>
 
-              <div style={{ fontSize: "0.78rem", color: "#374151", marginBottom: "0.5rem" }}>
+              <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
                 📍 {c.serviceArea}
               </div>
 
               {rates.baseRate > 0 && (
-                <div style={{ fontSize: "0.82rem", color: "#0f766e", fontWeight: 600 }}>
+                <div style={{ fontSize: "0.82rem", color: "var(--accent)", fontWeight: 600 }}>
                   From ${rates.baseRate} per {rates.unit}
                 </div>
               )}
               {rates.baseRate === 0 && (
-                <div style={{ fontSize: "0.82rem", color: "#15803d", fontWeight: 600 }}>Free service</div>
+                <div style={{ fontSize: "0.82rem", color: "var(--success-text)", fontWeight: 600 }}>Free service</div>
               )}
 
               <div style={{ marginTop: "0.875rem", display: "flex", gap: "0.4rem" }}>
@@ -186,7 +186,7 @@ export default function ContractorsClient({ contractors, jobs }: Props) {
       </div>
 
       {filtered.length === 0 && (
-        <div style={{ textAlign: "center", padding: "3rem", color: "#6b7280" }}>
+        <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-muted)" }}>
           <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🔍</div>
           <p>No contractors match your filters. Try changing the type or availability filter.</p>
         </div>
@@ -194,9 +194,9 @@ export default function ContractorsClient({ contractors, jobs }: Props) {
 
       {/* Contractor detail modal */}
       {selectedContractor && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}
+        <div style={{ position: "fixed", inset: 0, background: "var(--overlay-dark)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}
           onClick={() => setSelectedContractor(null)}>
-          <div style={{ background: "#fff", borderRadius: "1.5rem", padding: "2rem", maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}
+          <div style={{ background: "var(--bg-card-solid)", borderRadius: "1.5rem", padding: "2rem", maxWidth: "480px", width: "100%", maxHeight: "90vh", overflowY: "auto" }}
             onClick={(e) => e.stopPropagation()}>
             {(() => {
               const c = selectedContractor;
@@ -211,30 +211,30 @@ export default function ContractorsClient({ contractors, jobs }: Props) {
                       </span>
                       <h2 style={{ fontSize: "1.4rem", fontWeight: 700, marginTop: "0.35rem" }}>{c.company}</h2>
                     </div>
-                    <button onClick={() => setSelectedContractor(null)} style={{ fontSize: "1.25rem", color: "#6b7280", cursor: "pointer", background: "none", border: "none" }}>✕</button>
+                    <button onClick={() => setSelectedContractor(null)} style={{ fontSize: "1.25rem", color: "var(--text-muted)", cursor: "pointer", background: "none", border: "none" }}>✕</button>
                   </div>
 
-                  <div style={{ margin: "1rem 0", padding: "0.875rem 1rem", background: "#f8fafc", borderRadius: "0.875rem" }}>
+                  <div style={{ margin: "1rem 0", padding: "0.875rem 1rem", background: "var(--bg-secondary)", borderRadius: "0.875rem" }}>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", fontSize: "0.85rem" }}>
-                      <div><span style={{ color: "#6b7280" }}>Contact:</span> <strong>{c.contactName}</strong></div>
-                      <div><span style={{ color: "#6b7280" }}>Rating:</span> <strong>⭐ {c.rating.toFixed(1)} ({c.reviewCount})</strong></div>
-                      <div><span style={{ color: "#6b7280" }}>Phone:</span> <a href={`tel:${c.phone}`} style={{ color: "#0f766e", fontWeight: 600 }}>{c.phone}</a></div>
-                      <div><span style={{ color: "#6b7280" }}>Area:</span> <strong>{c.serviceArea}</strong></div>
-                      <div style={{ gridColumn: "1/-1" }}><span style={{ color: "#6b7280" }}>Email:</span> <a href={`mailto:${c.email}`} style={{ color: "#0f766e" }}>{c.email}</a></div>
+                      <div><span style={{ color: "var(--text-muted)" }}>Contact:</span> <strong>{c.contactName}</strong></div>
+                      <div><span style={{ color: "var(--text-muted)" }}>Rating:</span> <strong>⭐ {c.rating.toFixed(1)} ({c.reviewCount})</strong></div>
+                      <div><span style={{ color: "var(--text-muted)" }}>Phone:</span> <a href={`tel:${c.phone}`} style={{ color: "var(--accent)", fontWeight: 600 }}>{c.phone}</a></div>
+                      <div><span style={{ color: "var(--text-muted)" }}>Area:</span> <strong>{c.serviceArea}</strong></div>
+                      <div style={{ gridColumn: "1/-1" }}><span style={{ color: "var(--text-muted)" }}>Email:</span> <a href={`mailto:${c.email}`} style={{ color: "var(--accent)" }}>{c.email}</a></div>
                     </div>
                   </div>
 
                   {rates.baseRate !== undefined && (
-                    <div style={{ marginBottom: "1rem", padding: "0.75rem 1rem", background: "#f0fdfa", border: "1.5px solid #99f6e4", borderRadius: "0.875rem" }}>
-                      <div style={{ fontWeight: 600, color: "#0f766e" }}>
+                    <div style={{ marginBottom: "1rem", padding: "0.75rem 1rem", background: "var(--accent-dim)", border: "1.5px solid var(--accent-border)", borderRadius: "0.875rem" }}>
+                      <div style={{ fontWeight: 600, color: "var(--accent)" }}>
                         {rates.baseRate === 0 ? "Free service" : `From $${rates.baseRate} per ${rates.unit}`}
                       </div>
-                      {rates.perHour > 0 && <div style={{ fontSize: "0.78rem", color: "#374151" }}>${rates.perHour}/hour after base</div>}
+                      {rates.perHour > 0 && <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>${rates.perHour}/hour after base</div>}
                     </div>
                   )}
 
                   {c.notes && (
-                    <p style={{ fontSize: "0.85rem", color: "#374151", marginBottom: "1.25rem", lineHeight: 1.5 }}>{c.notes}</p>
+                    <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "1.25rem", lineHeight: 1.5 }}>{c.notes}</p>
                   )}
 
                   <div style={{ display: "flex", gap: "0.5rem" }}>

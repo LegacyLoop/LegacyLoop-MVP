@@ -7,6 +7,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { isDemoMode } from "@/lib/bot-mode";
 import { safeJson } from "@/lib/utils/json";
+import { canUseBotOnTier } from "@/lib/constants/pricing";
 
 type Params = Promise<{ itemId: string }>;
 
@@ -256,6 +257,17 @@ export async function POST(_req: Request, { params }: { params: Params }) {
   });
   if (!item || item.userId !== user.id) {
     return new Response("Not found", { status: 404 });
+  }
+
+  // Tier gate: MegaBuying Bot requires DIY Seller+
+  if (!isDemoMode()) {
+    const botUser = await prisma.user.findUnique({ where: { id: user.id }, select: { tier: true } });
+    if (!canUseBotOnTier(botUser?.tier ?? 1, "buyerBot")) {
+      return Response.json(
+        { error: "MegaBuying Bot requires DIY Seller tier or higher.", upgradeUrl: "/pricing", currentTier: botUser?.tier ?? 1 },
+        { status: 403 }
+      );
+    }
   }
 
   // Determine if this item is a vehicle

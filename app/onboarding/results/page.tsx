@@ -515,8 +515,7 @@ function ResultsContent() {
             }}
           >
             {"\u26A1"} <strong>Pre-launch pricing:</strong> Lock in this rate forever {"\u2014"}{" "}
-            {DISCOUNTS.preLaunch.spotsRemaining} of {DISCOUNTS.preLaunch.totalSpots} founding
-            member spots remaining.
+            {DISCOUNTS.preLaunch.totalSpots} founding member spots available — 50% off for life.
           </div>
 
           <Link

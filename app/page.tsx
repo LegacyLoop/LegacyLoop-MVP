@@ -201,10 +201,10 @@ export default async function HomePage() {
       <section style={{ padding: "4rem 1.5rem", maxWidth: "1000px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
           <div style={{ fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent)", marginBottom: "0.5rem" }}>
-            Testimonials
+            Beta Feedback
           </div>
           <h2 style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--text-primary)" }}>
-            Trusted by families across Maine
+            What Early Users Say
           </h2>
         </div>
 
@@ -222,7 +222,7 @@ export default async function HomePage() {
               <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", lineHeight: 1.6, fontStyle: "italic", marginBottom: "1rem" }}>
                 &ldquo;{t.text}&rdquo;
               </p>
-              <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>{t.name}</div>
+              <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>{t.name} <span style={{ fontSize: "0.65rem", fontWeight: 500, color: "var(--text-muted)" }}>(Beta)</span></div>
               <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{t.location}</div>
             </div>
           ))}
@@ -243,7 +243,7 @@ export default async function HomePage() {
             background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.3)",
             fontSize: "0.72rem", fontWeight: 700, color: "#fbbf24", marginBottom: "1rem",
           }}>
-            LIMITED — ONLY {DISCOUNTS.preLaunch.spotsRemaining} SPOTS LEFT
+            FOUNDING MEMBER OFFER — {DISCOUNTS.preLaunch.totalSpots} SPOTS AT 50% OFF
           </div>
           <h2 style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--text-primary)", marginBottom: "0.5rem" }}>
             Pre-Launch Special: 50% Off All Plans
@@ -323,7 +323,7 @@ export default async function HomePage() {
           Ready to sell smarter?
         </h2>
         <p style={{ fontSize: "1rem", color: "var(--text-muted)", marginBottom: "2rem" }}>
-          Join hundreds of families who trust LegacyLoop to handle their belongings with care.
+          Join the LegacyLoop community and sell your belongings with care and confidence.
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
           <Link href="/auth/signup" className="btn-primary" style={{

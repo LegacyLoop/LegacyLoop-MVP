@@ -17,6 +17,10 @@ export async function POST(req: NextRequest) {
 
   const creditsToAward = declined ? 0 : dataCollection ? 100 : 0;
 
+  // Check if user already consented (for idempotent credit award)
+  const priorConsent = await prisma.dataCollectionConsent.findUnique({ where: { userId: user.id } });
+  const alreadyConsented = priorConsent?.dataCollection === true;
+
   // Upsert consent record
   await prisma.dataCollectionConsent.upsert({
     where: { userId: user.id },
@@ -40,8 +44,11 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // Award 100 credits if user consented (bonus incentive)
-  if (!declined && dataCollection && creditsToAward > 0) {
+  // Award 100 credits ONLY on first consent (idempotent — never double-award)
+  let actualCreditsAwarded = 0;
+
+  if (!declined && dataCollection && creditsToAward > 0 && !alreadyConsented) {
+    actualCreditsAwarded = creditsToAward;
     const existing = await prisma.userCredits.findUnique({
       where: { userId: user.id },
     });
@@ -81,5 +88,5 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, creditsAwarded: creditsToAward });
+  return NextResponse.json({ ok: true, creditsAwarded: actualCreditsAwarded, alreadyConsented });
 }

@@ -17,7 +17,7 @@ function getStrength(pw: string): { level: number; label: string } {
   return { level: 4, label: "Strong" };
 }
 
-const STRENGTH_COLORS = ["#e5e7eb", "#ef4444", "#f97316", "#eab308", "#00bcd4"];
+const STRENGTH_COLORS = ["var(--ghost-bg)", "#ef4444", "#f97316", "#eab308", "var(--accent)"];
 
 export default function ChangePasswordSection() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -182,7 +182,7 @@ export default function ChangePasswordSection() {
                       background:
                         seg <= strength.level
                           ? STRENGTH_COLORS[strength.level]
-                          : "#e5e7eb",
+                          : "var(--ghost-bg)",
                       transition: "background 0.2s",
                     }}
                   />

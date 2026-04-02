@@ -6,6 +6,7 @@ interface Props {
   newTier: number;
   newPlanName: string;
   newPlanPrice: number;
+  billingPeriod?: "monthly" | "annual";
   onClose: () => void;
   onUpgraded: () => void;
 }
@@ -23,6 +24,7 @@ export default function UpgradeFlowModal({
   newTier,
   newPlanName,
   newPlanPrice,
+  billingPeriod = "monthly",
   onClose,
   onUpgraded,
 }: Props) {
@@ -70,7 +72,7 @@ export default function UpgradeFlowModal({
       const res = await fetch("/api/billing/upgrade", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newTier }),
+        body: JSON.stringify({ newTier, billing: billingPeriod }),
       });
       if (res.ok) {
         setDone(true);

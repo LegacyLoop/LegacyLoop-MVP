@@ -12,8 +12,8 @@ const HERO_GROUPS = [
     icon: "\uD83C\uDF96\uFE0F",
     title: "Military",
     color: "#1e3a5f",
-    bg: "#eff6ff",
-    border: "#bfdbfe",
+    bg: "rgba(30,58,95,0.08)",
+    border: "rgba(30,58,95,0.2)",
     members: [
       "Active duty (all branches)",
       "Veterans (all eras)",
@@ -44,8 +44,8 @@ const HERO_GROUPS = [
     icon: "\uD83D\uDE92",
     title: "Fire & EMS",
     color: "#b91c1c",
-    bg: "#fef2f2",
-    border: "#fecaca",
+    bg: "rgba(185,28,28,0.06)",
+    border: "rgba(185,28,28,0.18)",
     members: [
       "Active firefighters",
       "Volunteer firefighters",
@@ -219,7 +219,7 @@ export default function HeroesPage() {
                   </li>
                 ))}
               </ul>
-              <div style={{ padding: "0.5rem 0.75rem", background: "var(--text-secondary)", border: `1px solid ${g.border}`, borderRadius: "0.6rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
+              <div style={{ padding: "0.5rem 0.75rem", background: "var(--bg-secondary)", border: `1px solid ${g.border}`, borderRadius: "0.6rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
                 <span style={{ fontWeight: 700 }}>Verification:</span> {g.verify}
               </div>
             </div>
@@ -236,7 +236,7 @@ export default function HeroesPage() {
             <div
               key={b.title}
               className="card p-6"
-              style={b.highlight ? { background: "linear-gradient(135deg, #fef9c3, #fef3c7)", borderColor: "#fbbf24", borderWidth: "1.5px" } : {}}
+              style={b.highlight ? { background: "linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.08))", borderColor: "#fbbf24", borderWidth: "1.5px" } : {}}
             >
               <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>{b.icon}</div>
               <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: "1rem", marginBottom: "0.35rem" }}>
@@ -277,14 +277,14 @@ export default function HeroesPage() {
                 <tr key={row.plan} style={{ borderBottom: "1px solid var(--border-default)", background: i % 2 === 0 ? "var(--bg-secondary)" : "var(--bg-card-solid)" }}>
                   <td style={{ padding: "0.6rem 0.75rem", fontWeight: 700, color: "var(--text-primary)" }}>{row.plan}</td>
                   <td style={{ padding: "0.6rem", textAlign: "center", color: "var(--text-muted)", textDecoration: row.regular !== "Free" ? "line-through" : "none" }}>{row.regular}</td>
-                  <td style={{ padding: "0.6rem", textAlign: "center", fontWeight: 800, color: "#b45309" }}>{row.hero}</td>
+                  <td style={{ padding: "0.6rem", textAlign: "center", fontWeight: 800, color: "var(--warning-text)" }}>{row.hero}</td>
                   <td style={{ padding: "0.6rem 0.75rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>{row.best}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <div style={{ marginTop: "1rem", padding: "0.75rem 1rem", background: "#fef9c3", border: "1px solid #fde68a", borderRadius: "0.75rem", fontSize: "0.82rem", color: "#92400e" }}>
+        <div style={{ marginTop: "1rem", padding: "0.75rem 1rem", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "0.75rem", fontSize: "0.82rem", color: "var(--antique-text)" }}>
           White-Glove estate services also include a 25% discount for verified heroes. Contact us for a custom quote.
         </div>
       </div>
@@ -292,7 +292,7 @@ export default function HeroesPage() {
       {/* Testimonials */}
       <div style={{ marginBottom: "3rem" }}>
         <div className="section-title mb-2">Stories</div>
-        <h2 className="h2 mb-6">From Hero Families</h2>
+        <h2 className="h2 mb-6">Representative Hero Experiences</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           {TESTIMONIALS.map((t) => (
             <div key={t.name} className="card p-6">

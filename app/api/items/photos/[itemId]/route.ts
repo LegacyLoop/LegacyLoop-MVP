@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { storageAdapter } from "@/lib/adapters/storage";
 import fs from "fs";
 import path from "path";
+import { checkTierLimit } from "@/lib/tier-enforcement";
 
 // POST: add more photos to an existing item
 export async function POST(
@@ -15,6 +16,15 @@ export async function POST(
 
   const item = await prisma.item.findUnique({ where: { id: itemId } });
   if (!item || item.userId !== user.id) return new Response("Not found", { status: 404 });
+
+  // Tier gate: check photo upload limit per item
+  const tierCheck = await checkTierLimit(user.id, "UPLOAD_PHOTO", itemId);
+  if (!tierCheck.allowed) {
+    return Response.json(
+      { error: tierCheck.message, upgradeUrl: "/pricing", currentTier: "current", limit: 2 },
+      { status: 403 }
+    );
+  }
 
   const formData = await req.formData();
   const files = formData.getAll("photos[]") as File[];

@@ -51,9 +51,9 @@ const DIGITAL_TIERS = [
     border: "#99f6e4",
     bg: "#f0fdfa",
     monthly: PLANS.DIY_SELLER.preLaunchPrice,
-    annual: Math.round(PLANS.DIY_SELLER.preLaunchAnnual / 12),
+    annual: PLANS.DIY_SELLER.preLaunchAnnual,
     regularMonthly: PLANS.DIY_SELLER.monthlyPrice,
-    regularAnnual: Math.round(PLANS.DIY_SELLER.annualPrice / 12),
+    regularAnnual: PLANS.DIY_SELLER.annualPrice,
     commission: PLANS.DIY_SELLER.commission * 100,
     ctaLabel: "Try Free for 7 Days",
     ctaVariant: "primary" as const,
@@ -81,9 +81,9 @@ const DIGITAL_TIERS = [
     border: "#c4b5fd",
     bg: "#faf5ff",
     monthly: PLANS.POWER_SELLER.preLaunchPrice,
-    annual: Math.round(PLANS.POWER_SELLER.preLaunchAnnual / 12),
+    annual: PLANS.POWER_SELLER.preLaunchAnnual,
     regularMonthly: PLANS.POWER_SELLER.monthlyPrice,
-    regularAnnual: Math.round(PLANS.POWER_SELLER.annualPrice / 12),
+    regularAnnual: PLANS.POWER_SELLER.annualPrice,
     commission: PLANS.POWER_SELLER.commission * 100,
     ctaLabel: "Try Free for 7 Days",
     ctaVariant: "primary" as const,
@@ -111,9 +111,9 @@ const DIGITAL_TIERS = [
     border: "#fbbf24",
     bg: "#fffbeb",
     monthly: PLANS.ESTATE_MANAGER.preLaunchPrice,
-    annual: Math.round(PLANS.ESTATE_MANAGER.preLaunchAnnual / 12),
+    annual: PLANS.ESTATE_MANAGER.preLaunchAnnual,
     regularMonthly: PLANS.ESTATE_MANAGER.monthlyPrice,
-    regularAnnual: Math.round(PLANS.ESTATE_MANAGER.annualPrice / 12),
+    regularAnnual: PLANS.ESTATE_MANAGER.annualPrice,
     commission: PLANS.ESTATE_MANAGER.commission * 100,
     ctaLabel: "Try Free for 14 Days",
     ctaVariant: "primary" as const,
@@ -513,7 +513,7 @@ export default function PricingClient() {
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.2rem", flexWrap: "wrap" }}>
                 <span style={{ background: "#fbbf24", color: "#78350f", fontSize: "0.6rem", fontWeight: 900, padding: "0.15rem 0.5rem", borderRadius: "9999px", letterSpacing: "0.1em" }}>FOUNDING MEMBER OFFER</span>
                 <span style={{ color: "var(--text-muted)", fontSize: "0.72rem" }}>
-                  Limited — {DISCOUNTS.preLaunch.spotsRemaining} of {DISCOUNTS.preLaunch.totalSpots} spots remaining
+                  {DISCOUNTS.preLaunch.totalSpots} Founding Member Spots — 50% Off for Life
                 </span>
               </div>
               <div style={{ fontWeight: 800, fontSize: "1rem", color: "#fff", marginBottom: "0.1rem" }}>
@@ -569,12 +569,12 @@ export default function PricingClient() {
                   <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: tier.color }}>{tier.name}</div>
                   <div style={{ marginTop: "0.5rem", display: "flex", alignItems: "baseline", gap: "0.5rem", flexWrap: "wrap" }}>
                     <span style={{ fontSize: "2rem", fontWeight: 900, color: "var(--text-primary)" }}>
-                      ${annual ? tier.annual : tier.monthly}
+                      ${annual ? Math.round(tier.annual / 12) : tier.monthly}
                     </span>
                     <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>/month</span>
                     {tier.regularMonthly > 0 && (
                       <span style={{ fontSize: "0.8rem", color: "#a8a29e", textDecoration: "line-through" }}>
-                        ${annual ? tier.regularAnnual : tier.regularMonthly}
+                        ${annual ? Math.round(tier.regularAnnual / 12) : tier.regularMonthly}
                       </span>
                     )}
                   </div>
@@ -582,7 +582,7 @@ export default function PricingClient() {
                     <div style={{ fontSize: "0.72rem", marginTop: "0.1rem" }}>
                       {annual ? (
                         <span style={{ color: "#16a34a", fontWeight: 700 }}>
-                          Billed ${tier.annual * 12}/year — save ${(tier.monthly - tier.annual) * 12}/yr
+                          Billed ${tier.annual}/year — save ${tier.regularAnnual - tier.annual}/yr
                         </span>
                       ) : (
                         <span style={{ color: "#b45309", fontWeight: 700 }}>

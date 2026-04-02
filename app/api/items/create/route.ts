@@ -2,6 +2,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { storageAdapter } from "@/lib/adapters/storage";
 import { logUserEvent } from "@/lib/data/user-events";
+import { checkTierLimit } from "@/lib/tier-enforcement";
 
 const clampInt = (n: number, min: number, max: number) =>
   Math.max(min, Math.min(max, Math.round(n)));
@@ -9,6 +10,15 @@ const clampInt = (n: number, min: number, max: number) =>
 export async function POST(req: Request) {
   const user = await authAdapter.getSession();
   if (!user) return new Response("Unauthorized", { status: 401 });
+
+  // Tier gate: check item creation limit
+  const tierCheck = await checkTierLimit(user.id, "CREATE_ITEM");
+  if (!tierCheck.allowed) {
+    return Response.json(
+      { error: tierCheck.message, upgradeUrl: "/pricing", currentTier: "current", limit: 3 },
+      { status: 403 }
+    );
+  }
 
   const formData = await req.formData();
 

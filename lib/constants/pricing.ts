@@ -859,7 +859,13 @@ export const DISCOUNTS = {
   },
   preLaunch: {
     discount: 0.50,
-    spotsRemaining: 47,
+    /**
+     * spotsRemaining: Default to totalSpots. Override at render time with real DB count:
+     *   const paidUsers = await prisma.user.count({ where: { tier: { gte: 2 } } });
+     *   const spotsRemaining = Math.max(0, totalSpots - paidUsers);
+     * Used by: app/page.tsx, app/dashboard/page.tsx, app/pricing/PricingClient.tsx
+     */
+    spotsRemaining: 100,
     totalSpots: 100,
   },
   referral: { creditsEach: 50 },

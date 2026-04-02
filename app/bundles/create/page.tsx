@@ -13,16 +13,16 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
    Success: share URL
    ────────────────────────────────────────────────────────────────────────────── */
 
-const TEAL = "#00bcd4";
-const TEAL_DIM = "rgba(0,188,212,0.15)";
-const TEAL_GLOW = "rgba(0,188,212,0.35)";
+const TEAL = "var(--accent)";
+const TEAL_DIM = "var(--accent-dim)";
+const TEAL_GLOW = "var(--accent-glow)";
 const GLASS = "var(--ghost-bg)";
 const GLASS_BORDER = "var(--border-default)";
 const GLASS_HOVER = "var(--ghost-bg)";
 const TEXT_PRIMARY = "var(--text-primary)";
-const TEXT_SECONDARY = "rgba(207,216,220,0.7)";
-const TEXT_MUTED = "rgba(207,216,220,0.45)";
-const BG_PAGE = "#0f1419";
+const TEXT_SECONDARY = "var(--text-secondary)";
+const TEXT_MUTED = "var(--text-muted)";
+const BG_PAGE = "var(--bg-primary)";
 const SUCCESS_GREEN = "#4caf50";
 const WARN_ORANGE = "#ff9800";
 
@@ -451,7 +451,7 @@ export default function BundleCreatePage() {
             <Link
               href={`/bundle/${result.slug}`}
               style={{
-                background: `linear-gradient(135deg, ${TEAL}, #0097a7)`,
+                background: `linear-gradient(135deg, ${TEAL}, var(--accent-deep))`,
                 color: "#fff",
                 border: "none",
                 borderRadius: 10,
@@ -503,7 +503,7 @@ export default function BundleCreatePage() {
             style={{
               display: "inline-block",
               marginTop: 20,
-              background: `linear-gradient(135deg, ${TEAL}, #0097a7)`,
+              background: `linear-gradient(135deg, ${TEAL}, var(--accent-deep))`,
               color: "#fff",
               borderRadius: 10,
               padding: "12px 28px",
@@ -575,7 +575,7 @@ export default function BundleCreatePage() {
                       fontSize: 13,
                       fontWeight: 700,
                       background: isActive
-                        ? `linear-gradient(135deg, ${TEAL}, #0097a7)`
+                        ? `linear-gradient(135deg, ${TEAL}, var(--accent-deep))`
                         : isComplete
                         ? SUCCESS_GREEN
                         : GLASS,
@@ -919,7 +919,7 @@ export default function BundleCreatePage() {
                     style={{
                       background:
                         selectedIds.length >= 2
-                          ? `linear-gradient(135deg, ${TEAL}, #0097a7)`
+                          ? `linear-gradient(135deg, ${TEAL}, var(--accent-deep))`
                           : "var(--ghost-bg)",
                       color: selectedIds.length >= 2 ? "#fff" : TEXT_MUTED,
                       border: "none",
@@ -1243,7 +1243,7 @@ export default function BundleCreatePage() {
                   setStep(4);
                 }}
                 style={{
-                  background: `linear-gradient(135deg, ${TEAL}, #0097a7)`,
+                  background: `linear-gradient(135deg, ${TEAL}, var(--accent-deep))`,
                   color: "#fff",
                   border: "none",
                   borderRadius: 10,
@@ -1478,7 +1478,7 @@ export default function BundleCreatePage() {
                   background:
                     creating || !title.trim()
                       ? "var(--ghost-bg)"
-                      : `linear-gradient(135deg, ${TEAL}, #0097a7)`,
+                      : `linear-gradient(135deg, ${TEAL}, var(--accent-deep))`,
                   color: creating || !title.trim() ? TEXT_MUTED : "#fff",
                   border: "none",
                   borderRadius: 10,

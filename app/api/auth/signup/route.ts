@@ -3,6 +3,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email/send";
 import { welcomeEmail } from "@/lib/email/templates";
+import { prisma } from "@/lib/db";
+import { DISCOUNTS } from "@/lib/constants/pricing";
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
@@ -40,6 +42,22 @@ export async function POST(req: NextRequest) {
     }
 
     await authAdapter.signup(trimmedEmail, String(password));
+
+    // Award signup bonus credits (fire-and-forget — never block signup)
+    try {
+      const newUser = await prisma.user.findUnique({ where: { email: trimmedEmail }, select: { id: true } });
+      if (newUser) {
+        const existingCredits = await prisma.userCredits.findUnique({ where: { userId: newUser.id } });
+        if (!existingCredits) {
+          const uc = await prisma.userCredits.create({
+            data: { userId: newUser.id, balance: DISCOUNTS.signup.credits, lifetime: DISCOUNTS.signup.credits, spent: 0 },
+          });
+          await prisma.creditTransaction.create({
+            data: { userCreditsId: uc.id, type: "bonus", amount: DISCOUNTS.signup.credits, balance: DISCOUNTS.signup.credits, description: "Welcome bonus — thanks for joining LegacyLoop!" },
+          });
+        }
+      }
+    } catch { /* signup must not fail if credit award fails */ }
 
     // Send welcome email (fire-and-forget — never block signup)
     const name = trimmedEmail.split("@")[0];

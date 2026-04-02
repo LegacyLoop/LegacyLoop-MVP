@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 const USE_CASES = [
   {
@@ -29,10 +30,10 @@ const USE_CASES = [
 const FAMILY_PRICING = [
   { families: 2, label: "2 Families", beta: 15, regular: 30, savings: 15, spotsLeft: null },
   { families: 3, label: "3 Families", beta: 13, regular: 26, savings: 39, spotsLeft: null },
-  { families: 4, label: "4 Families", beta: 11, regular: 22, savings: 44, spotsLeft: 8 },
-  { families: 5, label: "5 Families", beta: 10, regular: 20, savings: 50, spotsLeft: 5 },
-  { families: 6, label: "6 Families", beta: 9, regular: 18, savings: 46, spotsLeft: 3 },
-  { families: 8, label: "8 Families", beta: 8, regular: 16, savings: 64, spotsLeft: 2 },
+  { families: 4, label: "4 Families", beta: 11, regular: 22, savings: 44, spotsLeft: null },
+  { families: 5, label: "5 Families", beta: 10, regular: 20, savings: 50, spotsLeft: null },
+  { families: 6, label: "6 Families", beta: 9, regular: 18, savings: 46, spotsLeft: null },
+  { families: 8, label: "8 Families", beta: 8, regular: 16, savings: 64, spotsLeft: null },
 ];
 
 const BUNDLE_FEATURES = [
@@ -73,10 +74,11 @@ export default function NeighborhoodBundlePage() {
 
   return (
     <div className="mx-auto max-w-5xl">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Neighborhood Bundle" }]} />
       {/* Hero */}
       <div
         style={{
-          background: "linear-gradient(135deg, #0f766e, #0d9488)",
+          background: "linear-gradient(135deg, var(--accent-deep), var(--accent))",
           borderRadius: "1.5rem",
           padding: "3.5rem",
           color: "#fff",
@@ -106,7 +108,7 @@ export default function NeighborhoodBundlePage() {
               alignItems: "center",
               gap: "0.5rem",
               background: "#fff",
-              color: "#0f766e",
+              color: "var(--accent-deep)",
               padding: "0.85rem 2rem",
               borderRadius: "9999px",
               fontWeight: 800,
@@ -159,8 +161,8 @@ export default function NeighborhoodBundlePage() {
           {USE_CASES.map((u) => (
             <div key={u.title} className="card p-6">
               <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>{u.icon}</div>
-              <div style={{ fontWeight: 700, fontSize: "1rem", color: "#1c1917", marginBottom: "0.3rem" }}>{u.title}</div>
-              <div style={{ fontSize: "0.85rem", color: "#57534e", lineHeight: 1.6 }}>{u.description}</div>
+              <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-primary)", marginBottom: "0.3rem" }}>{u.title}</div>
+              <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>{u.description}</div>
             </div>
           ))}
         </div>
@@ -175,7 +177,7 @@ export default function NeighborhoodBundlePage() {
         <div className="card p-8">
           {/* Family count selector */}
           <div style={{ marginBottom: "2rem" }}>
-            <label style={{ fontSize: "0.9rem", fontWeight: 700, color: "#44403c", display: "block", marginBottom: "0.75rem" }}>
+            <label style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--label-color)", display: "block", marginBottom: "0.75rem" }}>
               How many families / households?
             </label>
             <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
@@ -188,9 +190,9 @@ export default function NeighborhoodBundlePage() {
                     padding: "0.6rem 1.1rem",
                     borderRadius: "0.75rem",
                     border: "2px solid",
-                    borderColor: selectedFamilies === f.families ? "#0f766e" : "#e7e5e4",
-                    background: selectedFamilies === f.families ? "#f0fdfa" : "#fff",
-                    color: selectedFamilies === f.families ? "#0f766e" : "#44403c",
+                    borderColor: selectedFamilies === f.families ? "var(--accent)" : "var(--border-default)",
+                    background: selectedFamilies === f.families ? "var(--accent-dim)" : "var(--bg-card-solid)",
+                    color: selectedFamilies === f.families ? "var(--accent)" : "var(--text-secondary)",
                     fontWeight: selectedFamilies === f.families ? 800 : 500,
                     cursor: "pointer",
                     fontSize: "0.88rem",
@@ -219,57 +221,57 @@ export default function NeighborhoodBundlePage() {
 
           {/* Billing toggle */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "2rem" }}>
-            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: !annual ? "#1c1917" : "#78716c" }}>Monthly</span>
+            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: !annual ? "var(--text-primary)" : "var(--text-muted)" }}>Monthly</span>
             <button
               onClick={() => setAnnual(!annual)}
-              style={{ width: "44px", height: "24px", borderRadius: "9999px", border: "none", cursor: "pointer", background: annual ? "#0f766e" : "#e7e5e4", position: "relative", transition: "background 0.2s" }}
+              style={{ width: "44px", height: "24px", borderRadius: "9999px", border: "none", cursor: "pointer", background: annual ? "var(--accent)" : "var(--border-default)", position: "relative", transition: "background 0.2s" }}
             >
-              <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#fff", position: "absolute", top: "3px", left: annual ? "23px" : "3px", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+              <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "var(--bg-card-solid)", position: "absolute", top: "3px", left: annual ? "23px" : "3px", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
             </button>
-            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: annual ? "#1c1917" : "#78716c" }}>
-              Annual <span style={{ background: "#0f766e", color: "#fff", padding: "0.1rem 0.4rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 800 }}>Extra 15% off</span>
+            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: annual ? "var(--text-primary)" : "var(--text-muted)" }}>
+              Annual <span style={{ background: "var(--accent)", color: "#fff", padding: "0.1rem 0.4rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 800 }}>Extra 15% off</span>
             </span>
           </div>
 
           {/* Results */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginBottom: "1.5rem" }}>
-            <div style={{ padding: "1.25rem", background: "#f5f5f4", borderRadius: "1rem", textAlign: "center" }}>
-              <div style={{ fontSize: "0.72rem", color: "#78716c", fontWeight: 600, marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Regular price</div>
-              <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "#78716c", textDecoration: "line-through" }}>
+            <div style={{ padding: "1.25rem", background: "var(--bg-secondary)", borderRadius: "1rem", textAlign: "center" }}>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Regular price</div>
+              <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "var(--text-muted)", textDecoration: "line-through" }}>
                 ${annual ? Math.round(selected.regular * 12 * 0.85) : selected.regular * selectedFamilies}<span style={{ fontSize: "0.8rem", fontWeight: 500 }}>/{annual ? "yr" : "mo"}</span>
               </div>
-              <div style={{ fontSize: "0.72rem", color: "#9ca3af" }}>combined</div>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>combined</div>
             </div>
 
-            <div style={{ padding: "1.25rem", background: "linear-gradient(135deg, #f0fdfa, #ecfdf5)", border: "2px solid #86efac", borderRadius: "1rem", textAlign: "center" }}>
-              <div style={{ fontSize: "0.72rem", color: "#0f766e", fontWeight: 700, marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Beta price</div>
-              <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "#0f766e" }}>
+            <div style={{ padding: "1.25rem", background: "var(--accent-dim)", border: "2px solid var(--success-border)", borderRadius: "1rem", textAlign: "center" }}>
+              <div style={{ fontSize: "0.72rem", color: "var(--accent)", fontWeight: 700, marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Beta price</div>
+              <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--accent)" }}>
                 ${annual ? Math.round(monthlyTotal * 12 * 0.85) : monthlyTotal}<span style={{ fontSize: "0.85rem", fontWeight: 500 }}>/{annual ? "yr" : "mo"}</span>
               </div>
-              <div style={{ fontSize: "0.72rem", color: "#16a34a" }}>${selected.beta}/family/mo</div>
+              <div style={{ fontSize: "0.72rem", color: "var(--success-text)" }}>${selected.beta}/family/mo</div>
             </div>
 
-            <div style={{ padding: "1.25rem", background: "#fef9c3", border: "2px solid #fde68a", borderRadius: "1rem", textAlign: "center" }}>
-              <div style={{ fontSize: "0.72rem", color: "#b45309", fontWeight: 700, marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>You save</div>
-              <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "#b45309" }}>
+            <div style={{ padding: "1.25rem", background: "var(--warning-bg)", border: "2px solid var(--warning-border)", borderRadius: "1rem", textAlign: "center" }}>
+              <div style={{ fontSize: "0.72rem", color: "var(--warning-text)", fontWeight: 700, marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>You save</div>
+              <div style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--warning-text)" }}>
                 ${annual ? Math.round(selected.regular * 12 * 0.85) - Math.round(monthlyTotal * 12 * 0.85) : selected.regular * selectedFamilies - monthlyTotal}
               </div>
-              <div style={{ fontSize: "0.72rem", color: "#92400e" }}>per {annual ? "year" : "month"}</div>
+              <div style={{ fontSize: "0.72rem", color: "var(--warning-text)" }}>per {annual ? "year" : "month"}</div>
             </div>
           </div>
 
-          <div style={{ padding: "0.75rem 1rem", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: "0.75rem", fontSize: "0.82rem", color: "#92400e", marginBottom: "1.5rem" }}>
+          <div style={{ padding: "0.75rem 1rem", background: "var(--warning-bg)", border: "1px solid var(--warning-border)", borderRadius: "0.75rem", fontSize: "0.82rem", color: "var(--warning-text)", marginBottom: "1.5rem" }}>
             <strong>Beta pricing lock-in:</strong> Sign up today and pay this rate forever, even after launch pricing increases.
-            {selected.spotsLeft !== null && <strong> Only {selected.spotsLeft} spots left at this price.</strong>}
+            {selected.spotsLeft !== null && <strong> Limited beta pricing available.</strong>}
           </div>
 
           <Link
             href="/auth/signup"
-            style={{ display: "block", textAlign: "center", padding: "0.9rem", background: "#0f766e", color: "#fff", borderRadius: "0.875rem", fontWeight: 800, fontSize: "1rem", textDecoration: "none" }}
+            style={{ display: "block", textAlign: "center", padding: "0.9rem", background: "var(--accent)", color: "#fff", borderRadius: "0.875rem", fontWeight: 800, fontSize: "1rem", textDecoration: "none" }}
           >
             Start Neighborhood Bundle →
           </Link>
-          <p style={{ textAlign: "center", fontSize: "0.75rem", color: "#78716c", marginTop: "0.5rem" }}>No credit card required to start. 14-day free trial included.</p>
+          <p style={{ textAlign: "center", fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>No credit card required to start. 14-day free trial included.</p>
         </div>
       </div>
 
@@ -280,13 +282,13 @@ export default function NeighborhoodBundlePage() {
         <div className="card p-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {BUNDLE_FEATURES.map((f) => (
-              <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", fontSize: "0.88rem", color: "#44403c" }}>
-                <span style={{ color: "#0f766e", fontWeight: 700, flexShrink: 0, marginTop: "0.05rem" }}>✓</span>
+              <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", fontSize: "0.88rem", color: "var(--text-secondary)" }}>
+                <span style={{ color: "var(--accent)", fontWeight: 700, flexShrink: 0, marginTop: "0.05rem" }}>✓</span>
                 {f}
               </div>
             ))}
           </div>
-          <div style={{ marginTop: "1.5rem", padding: "1rem", background: "#f0fdfa", border: "1px solid #99f6e4", borderRadius: "0.875rem", fontSize: "0.85rem", color: "#0f766e" }}>
+          <div style={{ marginTop: "1.5rem", padding: "1rem", background: "var(--accent-dim)", border: "1px solid var(--accent-border)", borderRadius: "0.875rem", fontSize: "0.85rem", color: "var(--accent)" }}>
             All features from the Power Seller plan included for every family, at the bundle rate.
           </div>
         </div>
@@ -295,7 +297,7 @@ export default function NeighborhoodBundlePage() {
       {/* Testimonials */}
       <div style={{ marginBottom: "3rem" }}>
         <div className="section-title mb-2">Success Stories</div>
-        <h2 className="h2 mb-6">Neighbors Selling Together</h2>
+        <h2 className="h2 mb-6">What Neighborhood Bundles Could Look Like</h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           {TESTIMONIALS.map((t) => (
             <div key={t.name} className="card p-6">
@@ -303,22 +305,22 @@ export default function NeighborhoodBundlePage() {
                 <div style={{ display: "flex", gap: "0.15rem" }}>
                   {"★★★★★".split("").map((s, i) => <span key={i} style={{ color: "#f59e0b", fontSize: "1rem" }}>{s}</span>)}
                 </div>
-                <span style={{ background: "#f0fdfa", color: "#0f766e", fontSize: "0.72rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: "9999px", border: "1px solid #99f6e4" }}>
+                <span style={{ background: "var(--accent-dim)", color: "var(--accent)", fontSize: "0.72rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: "9999px", border: "1px solid var(--accent-border)" }}>
                   {t.value}
                 </span>
               </div>
-              <blockquote style={{ fontSize: "0.92rem", color: "#44403c", lineHeight: 1.7, fontStyle: "italic", marginBottom: "0.75rem" }}>
+              <blockquote style={{ fontSize: "0.92rem", color: "var(--text-secondary)", lineHeight: 1.7, fontStyle: "italic", marginBottom: "0.75rem" }}>
                 "{t.quote}"
               </blockquote>
-              <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "#1c1917" }}>— {t.name}</div>
-              <div style={{ fontSize: "0.78rem", color: "#78716c" }}>{t.role}</div>
+              <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--text-primary)" }}>— {t.name}</div>
+              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{t.role}</div>
             </div>
           ))}
         </div>
       </div>
 
       {/* CTA */}
-      <div style={{ background: "linear-gradient(135deg, #0f766e, #0d9488)", borderRadius: "1.5rem", padding: "3rem", textAlign: "center", color: "#fff" }}>
+      <div style={{ background: "linear-gradient(135deg, var(--accent-deep), var(--accent))", borderRadius: "1.5rem", padding: "3rem", textAlign: "center", color: "#fff" }}>
         <h2 style={{ fontSize: "1.75rem", fontWeight: 800, marginBottom: "0.75rem" }}>
           Ready to sell together?
         </h2>
@@ -327,7 +329,7 @@ export default function NeighborhoodBundlePage() {
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
           <Link href="/auth/signup"
-            style={{ background: "#fff", color: "#0f766e", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 800, textDecoration: "none", fontSize: "0.95rem" }}>
+            style={{ background: "var(--bg-card-solid)", color: "var(--accent-deep)", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 800, textDecoration: "none", fontSize: "0.95rem" }}>
             Start Bundle Free
           </Link>
           <a href="mailto:support@legacy-loop.com"

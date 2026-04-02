@@ -89,7 +89,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           priority
           style={{
             position: "relative",
-            maxWidth: "clamp(140px, 35vw, 200px)",
+            maxWidth: "clamp(180px, 40vw, 280px)",
             width: "100%",
             height: "auto",
             objectFit: "contain",

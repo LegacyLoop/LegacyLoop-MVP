@@ -28,7 +28,7 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
   function handleEmail() {
     const subject = encodeURIComponent("Join me on LegacyLoop — AI estate sales");
     const body = encodeURIComponent(
-      `Hey!\n\nI've been using LegacyLoop to sell estate items with AI — it's been amazing.\n\nUse my referral link to sign up and we both get 25 free credits:\n${shareUrl}\n\nCode: ${code}`
+      `Hey!\n\nI've been using LegacyLoop to sell estate items with AI — it's been amazing.\n\nUse my referral link to sign up and we both get 50 free credits:\n${shareUrl}\n\nCode: ${code}`
     );
     window.open(`mailto:?subject=${subject}&body=${body}`);
   }
@@ -41,9 +41,9 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
       {/* Hero */}
       <div style={{ background: "linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95)", borderRadius: "1.25rem", padding: "2.5rem", textAlign: "center", color: "#fff" }}>
         <div style={{ fontSize: "2.5rem" }}>🎁</div>
-        <h2 style={{ fontSize: "1.75rem", fontWeight: 800, marginTop: "0.5rem" }}>Earn 💎 25 Credits Per Referral</h2>
+        <h2 style={{ fontSize: "1.75rem", fontWeight: 800, marginTop: "0.5rem" }}>Earn 💎 50 Credits Per Referral</h2>
         <p style={{ color: "#c4b5fd", marginTop: "0.5rem", fontSize: "0.95rem" }}>
-          Share LegacyLoop with friends and family. When they sign up, you both get 25 credits.
+          Share LegacyLoop with friends and family. When they sign up, you both get 50 credits.
         </p>
       </div>
 
@@ -103,7 +103,7 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
           {[
             { step: "1", icon: "🔗", title: "Share Your Link", desc: "Send your unique referral link to friends, family, or anyone who needs to sell estate items." },
             { step: "2", icon: "✅", title: "They Sign Up", desc: "Your friend creates their LegacyLoop account using your referral link or code." },
-            { step: "3", icon: "💎", title: "Both Get Credits", desc: "You receive 25 credits. Your friend also gets 25 bonus credits to use on AI analysis, bots, and more." },
+            { step: "3", icon: "💎", title: "Both Get Credits", desc: "You receive 50 credits. Your friend also gets 50 bonus credits to use on AI analysis, bots, and more." },
           ].map((s) => (
             <div key={s.step} style={{ background: "var(--bg-card-solid)", borderRadius: "0.75rem", padding: "1.25rem", textAlign: "center" }}>
               <div style={{ fontSize: "2rem" }}>{s.icon}</div>
@@ -161,7 +161,7 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
         <div className="space-y-4">
           {[
             { q: "When do I get my credits?", a: "Credits are added to your account as soon as your referral completes their first sign-up. No purchase required." },
-            { q: "Is there a limit on referrals?", a: "No limit! Refer as many people as you like. Each successful referral earns you 25 credits." },
+            { q: "Is there a limit on referrals?", a: "No limit! Refer as many people as you like. Each successful referral earns you 50 credits." },
             { q: "What can I do with credits?", a: "Credits can be used for AI analysis, MegaBuying Bot activations, priority processing, professional photos, and more services on the Credits page." },
           ].map((faq) => (
             <div key={faq.q} style={{ borderBottom: "1px solid #f3f4f6", paddingBottom: "1rem" }}>

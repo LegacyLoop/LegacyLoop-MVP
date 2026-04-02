@@ -230,6 +230,29 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
         );
       })()}
 
+      {/* Low balance warning */}
+      {balance < 5 && (
+        <div style={{
+          display: "flex", alignItems: "center", gap: "0.75rem",
+          padding: "0.875rem 1.25rem", borderRadius: "0.75rem",
+          background: "linear-gradient(135deg, rgba(234,179,8,0.08), rgba(234,179,8,0.02))",
+          border: "1px solid rgba(234,179,8,0.2)",
+          marginBottom: "1.25rem",
+        }}>
+          <span style={{ fontSize: "1.1rem" }}>⚠️</span>
+          <span style={{ fontSize: "0.85rem", color: "#eab308", fontWeight: 600 }}>
+            Low credit balance — most bots cost 1–5 credits per run.
+          </span>
+          <button onClick={() => setTab("store")} style={{
+            marginLeft: "auto", padding: "0.35rem 0.875rem", borderRadius: "0.5rem",
+            background: "rgba(234,179,8,0.15)", border: "1px solid rgba(234,179,8,0.3)",
+            color: "#eab308", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
+          }}>
+            Buy Credits
+          </button>
+        </div>
+      )}
+
       {/* Tabs */}
       <div style={{ display: "inline-flex", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 16, padding: 4, gap: 4, marginBottom: "1.5rem" }}>
         {(["store", "services", "history"] as const).map((t) => (

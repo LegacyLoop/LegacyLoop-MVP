@@ -1,3 +1,6 @@
+// SECURITY: SQUARE_WEBHOOK_SIGNATURE_KEY must be set in production.
+// Currently in sandbox mode — signature verification is bypassed.
+// TODO: CMD-DEPLOY-1 — configure signature key before go-live.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { recordPayment } from "@/lib/services/payment-ledger";

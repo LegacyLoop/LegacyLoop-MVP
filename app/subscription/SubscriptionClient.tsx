@@ -23,6 +23,14 @@ function getPreLaunchPrice(key: string): number | null {
   return DIGITAL_TIERS[key]?.preLaunchMonthly ?? null;
 }
 
+function getAnnualPrice(key: string): number {
+  return DIGITAL_TIERS[key]?.annualPrice ?? 0;
+}
+
+function getPreLaunchAnnualPrice(key: string): number | null {
+  return DIGITAL_TIERS[key]?.preLaunchAnnual ?? null;
+}
+
 function getTierFeatures(key: string): string[] {
   return DIGITAL_TIERS[key]?.features ?? [];
 }
@@ -72,15 +80,15 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle: string })
   return (
     <div style={{ textAlign: "center", marginBottom: "3rem", position: "relative", padding: "2rem 0 0" }}>
       {/* Atmospheric glow — wider, more prominent */}
-      <div style={{ position: "absolute", top: "-40px", left: "50%", transform: "translateX(-50%)", width: "500px", height: "250px", background: "radial-gradient(ellipse 70% 55% at 50% 50%, rgba(0,188,212,0.1), transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "-40px", left: "50%", transform: "translateX(-50%)", width: "500px", height: "250px", background: "radial-gradient(ellipse 70% 55% at 50% 50%, var(--accent-dim), transparent 70%)", pointerEvents: "none" }} />
 
       {/* Accent bar — wider with glow */}
-      <div style={{ width: 64, height: 4, background: "linear-gradient(90deg, #00bcd4, #009688)", borderRadius: 2, margin: "0 auto 1.25rem auto", boxShadow: "0 2px 12px rgba(0,188,212,0.3)" }} />
+      <div style={{ width: 64, height: 4, background: "linear-gradient(90deg, var(--accent), var(--accent-deep))", borderRadius: 2, margin: "0 auto 1.25rem auto", boxShadow: "0 2px 12px var(--accent-border)" }} />
 
       {/* Title — larger, bolder gradient */}
       <h1 style={{
         fontSize: "2.25rem", fontWeight: 900, letterSpacing: "-0.03em", lineHeight: 1.15,
-        backgroundImage: "linear-gradient(135deg, var(--text-primary) 30%, #00bcd4 100%)",
+        backgroundImage: "linear-gradient(135deg, var(--text-primary) 30%, var(--accent) 100%)",
         backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
         marginBottom: "0.65rem", position: "relative",
       }}>{title}</h1>
@@ -98,13 +106,13 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle: string })
 
 function FeatureTable({ headers, rows }: { headers: string[]; rows: { label: string; values: string[] }[] }) {
   return (
-    <div style={{ background: "var(--bg-card)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+    <div style={{ background: "var(--bg-card)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--accent-dim)", borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
           <thead>
-            <tr style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.1), rgba(0,188,212,0.04))" }}>
+            <tr style={{ background: "linear-gradient(135deg, var(--accent-dim), var(--accent-dim))" }}>
               {headers.map((h, i) => (
-                <th key={h} style={{ textAlign: i === 0 ? "left" : "center", padding: "0.75rem 1rem", color: "#00bcd4", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
+                <th key={h} style={{ textAlign: i === 0 ? "left" : "center", padding: "0.75rem 1rem", color: "var(--accent)", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -113,7 +121,7 @@ function FeatureTable({ headers, rows }: { headers: string[]; rows: { label: str
               <tr key={row.label} style={{ background: ri % 2 === 0 ? "var(--bg-card)" : "transparent" }}>
                 <td style={{ padding: "0.65rem 1rem", color: "var(--text-secondary)", fontSize: "0.875rem", fontWeight: 500 }}>{row.label}</td>
                 {row.values.map((v, vi) => (
-                  <td key={vi} style={{ padding: "0.65rem 1rem", textAlign: "center", color: v === "\u2014" ? "var(--text-muted)" : v === "\u2713" ? "#00bcd4" : "var(--text-secondary)", fontWeight: v === "\u2713" ? 700 : 400, fontSize: "0.875rem" }}>{v}</td>
+                  <td key={vi} style={{ padding: "0.65rem 1rem", textAlign: "center", color: v === "\u2014" ? "var(--text-muted)" : v === "\u2713" ? "var(--accent)" : "var(--text-secondary)", fontWeight: v === "\u2713" ? 700 : 400, fontSize: "0.875rem" }}>{v}</td>
                 ))}
               </tr>
             ))}
@@ -145,9 +153,9 @@ const WG_CARDS: { key: string; accent: string; borderColor: string; bg: string; 
   },
   {
     key: "professional",
-    accent: "#00bcd4",
-    borderColor: "rgba(0,188,212,0.35)",
-    bg: "rgba(0,188,212,0.04)",
+    accent: "var(--accent)",
+    borderColor: "var(--accent-glow)",
+    bg: "var(--accent-dim)",
     cta: "Request Consultation",
     features: [
       "Everything in Essentials",
@@ -181,7 +189,9 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
   const [tab, setTab] = useState<"plan" | "history">("plan");
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">("monthly");
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">(
+    subscription?.billingPeriod === "annual" ? "annual" : "monthly"
+  );
   const [confirmingDowngrade, setConfirmingDowngrade] = useState<number | null>(null);
   const [upgradeTarget, setUpgradeTarget] = useState<string>("PLUS");
   const [activeSlide, setActiveSlide] = useState(0);
@@ -241,15 +251,15 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
               style={{
                 padding: "0.65rem 1.75rem",
                 borderRadius: 12,
-                border: tab === t ? "1px solid rgba(0,188,212,0.3)" : "1px solid transparent",
-                background: tab === t ? "linear-gradient(135deg, rgba(0,188,212,0.15), rgba(0,188,212,0.08))" : "transparent",
-                color: tab === t ? "#00bcd4" : "var(--text-muted)",
+                border: tab === t ? "1px solid var(--accent-border)" : "1px solid transparent",
+                background: tab === t ? "linear-gradient(135deg, var(--accent-dim), var(--accent-dim))" : "transparent",
+                color: tab === t ? "var(--accent)" : "var(--text-muted)",
                 fontWeight: tab === t ? 700 : 500,
                 cursor: "pointer",
                 fontSize: "0.88rem",
                 transition: "all 0.2s ease",
                 letterSpacing: "0.02em",
-                boxShadow: tab === t ? "0 2px 12px rgba(0,188,212,0.15)" : "none",
+                boxShadow: tab === t ? "0 2px 12px var(--accent-dim)" : "none",
               }}
             >
               {t === "plan" ? "Current Plan" : "Change History"}
@@ -262,15 +272,15 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
 
             {/* ── Current plan card ── */}
             <div style={{
-              background: "linear-gradient(135deg, var(--bg-card), rgba(0,188,212,0.03))",
+              background: "linear-gradient(135deg, var(--bg-card), var(--accent-dim))",
               backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
-              border: "1px solid rgba(0,188,212,0.2)", borderRadius: 24,
+              border: "1px solid var(--accent-border)", borderRadius: 24,
               padding: "2.25rem", position: "relative", overflow: "hidden",
               boxShadow: "0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}>
               {/* Decorative glows */}
-              <div style={{ position: "absolute", top: -50, right: -50, width: 220, height: 220, background: "radial-gradient(circle, rgba(0,188,212,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
-              <div style={{ position: "absolute", bottom: -30, left: -30, width: 140, height: 140, background: "radial-gradient(circle, rgba(0,188,212,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ position: "absolute", top: -50, right: -50, width: 220, height: 220, background: "radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ position: "absolute", bottom: -30, left: -30, width: 140, height: 140, background: "radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)", pointerEvents: "none" }} />
 
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1.5rem", flexWrap: "wrap", position: "relative" }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -278,18 +288,18 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.75rem" }}>
                     <div style={{
                       width: 44, height: 44, borderRadius: 12,
-                      background: "linear-gradient(135deg, rgba(0,188,212,0.15), rgba(0,188,212,0.06))",
-                      border: "1px solid rgba(0,188,212,0.2)",
+                      background: "linear-gradient(135deg, var(--accent-dim), var(--accent-dim))",
+                      border: "1px solid var(--accent-border)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: "1.4rem", flexShrink: 0,
                     }}>
                       {tier === "PRO" ? "👑" : tier === "PLUS" ? "⚡" : tier === "STARTER" ? "🚀" : "🆓"}
                     </div>
                     <div>
-                      <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.12em" }}>Current Plan</div>
+                      <div style={{ color: "var(--accent)", fontWeight: 700, fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.12em" }}>Current Plan</div>
                       <div style={{
                         fontWeight: 800, fontSize: "1.75rem", letterSpacing: "-0.02em",
-                        backgroundImage: "linear-gradient(135deg, var(--text-primary), #00bcd4)",
+                        backgroundImage: "linear-gradient(135deg, var(--text-primary), var(--accent))",
                         backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                       }}>
                         {TIER_NAMES[tier] || tier}
@@ -301,7 +311,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   <div style={{ marginBottom: "0.75rem" }}>
                     {preLaunchPrice != null && preLaunchPrice !== normalPrice ? (
                       <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem" }}>
-                        <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "#00bcd4", letterSpacing: "-0.03em" }}>
+                        <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.03em" }}>
                           ${preLaunchPrice}
                         </span>
                         <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span>
@@ -317,7 +327,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                       </div>
                     ) : (
                       <div style={{ display: "flex", alignItems: "baseline", gap: "0.35rem" }}>
-                        <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "#00bcd4", letterSpacing: "-0.03em" }}>${normalPrice}</span>
+                        <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.03em" }}>${normalPrice}</span>
                         <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span>
                       </div>
                     )}
@@ -328,7 +338,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                     <span style={{
                       display: "inline-flex", alignItems: "center", gap: "0.3rem",
                       padding: "0.25rem 0.75rem", borderRadius: 8,
-                      background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.12)",
+                      background: "var(--accent-dim)", border: "1px solid var(--accent-dim)",
                       fontSize: "0.78rem", color: "var(--text-secondary)", fontWeight: 600,
                     }}>
                       💎 {getTierCommission(tier)}% commission
@@ -366,12 +376,12 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                         setShowUpgradeModal(true);
                       }}
                       style={{
-                        background: "linear-gradient(135deg, #00bcd4, #009688)", border: "none", borderRadius: 14,
+                        background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", border: "none", borderRadius: 14,
                         padding: "0.8rem 2rem", color: "white", fontWeight: 700, fontSize: "0.9rem", cursor: "pointer",
-                        boxShadow: "0 4px 16px rgba(0,188,212,0.3)", transition: "all 0.2s ease", letterSpacing: "0.01em",
+                        boxShadow: "0 4px 16px var(--accent-border)", transition: "all 0.2s ease", letterSpacing: "0.01em",
                       }}
-                      onMouseEnter={(e) => { (e.target as HTMLElement).style.boxShadow = "0 6px 24px rgba(0,188,212,0.4)"; (e.target as HTMLElement).style.transform = "translateY(-1px)"; }}
-                      onMouseLeave={(e) => { (e.target as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,188,212,0.3)"; (e.target as HTMLElement).style.transform = "translateY(0)"; }}
+                      onMouseEnter={(e) => { (e.target as HTMLElement).style.boxShadow = "0 6px 24px var(--accent-glow)"; (e.target as HTMLElement).style.transform = "translateY(-1px)"; }}
+                      onMouseLeave={(e) => { (e.target as HTMLElement).style.boxShadow = "0 4px 16px var(--accent-border)"; (e.target as HTMLElement).style.transform = "translateY(0)"; }}
                     >
                       ⬆ Upgrade Plan
                     </button>
@@ -420,9 +430,9 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                     }}>
                       <span style={{
                         width: 20, height: 20, borderRadius: 6,
-                        background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.15)",
+                        background: "var(--accent-dim)", border: "1px solid var(--accent-dim)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: "0.65rem", color: "#00bcd4", fontWeight: 700, flexShrink: 0,
+                        fontSize: "0.65rem", color: "var(--accent)", fontWeight: 700, flexShrink: 0,
                       }}>✓</span>
                       {f}
                     </div>
@@ -440,7 +450,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
               ];
               return (
                 <div style={{ padding: "1.25rem", background: "var(--bg-card)", backdropFilter: "blur(16px)", border: "1px solid var(--border-default)", borderRadius: 16, boxShadow: "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
-                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>📊 Usage</div>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>📊 Usage</div>
                   {limits.map(l => {
                     const pct = l.max === Infinity ? 0 : Math.min(100, Math.round((l.current / Math.max(1, l.max)) * 100));
                     return (
@@ -450,8 +460,8 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                           <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{l.current} of {l.max === Infinity ? "Unlimited" : l.max}</span>
                         </div>
                         {l.max !== Infinity && (
-                          <div style={{ height: 8, borderRadius: 4, background: "rgba(0,188,212,0.08)", overflow: "hidden", border: "1px solid var(--border-default)" }}>
-                            <div style={{ height: "100%", width: `${pct}%`, borderRadius: 4, background: pct >= 90 ? "linear-gradient(90deg, #ef4444, #dc2626)" : pct >= 70 ? "linear-gradient(90deg, #eab308, #f59e0b)" : "linear-gradient(90deg, #00bcd4, #009688)", transition: "width 0.5s ease", boxShadow: pct >= 90 ? "0 0 8px rgba(239,68,68,0.4)" : pct >= 70 ? "0 0 8px rgba(234,179,8,0.3)" : "0 0 8px rgba(0,188,212,0.3)" }} />
+                          <div style={{ height: 8, borderRadius: 4, background: "var(--accent-dim)", overflow: "hidden", border: "1px solid var(--border-default)" }}>
+                            <div style={{ height: "100%", width: `${pct}%`, borderRadius: 4, background: pct >= 90 ? "linear-gradient(90deg, #ef4444, #dc2626)" : pct >= 70 ? "linear-gradient(90deg, #eab308, #f59e0b)" : "linear-gradient(90deg, var(--accent), var(--accent-deep))", transition: "width 0.5s ease", boxShadow: pct >= 90 ? "0 0 8px rgba(239,68,68,0.4)" : pct >= 70 ? "0 0 8px rgba(234,179,8,0.3)" : "0 0 8px var(--accent-border)" }} />
                           </div>
                         )}
                       </div>
@@ -463,16 +473,16 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
 
             {/* ── Billing Period Toggle ── */}
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "12px" }}>
-              <span onClick={() => setBillingPeriod("monthly")} style={{ fontSize: "0.88rem", fontWeight: billingPeriod === "monthly" ? 700 : 400, color: billingPeriod === "monthly" ? "#00bcd4" : "var(--text-muted)", cursor: "pointer", transition: "all 0.2s" }}>Monthly</span>
-              <button onClick={() => setBillingPeriod(p => p === "monthly" ? "annual" : "monthly")} style={{ width: 52, height: 28, borderRadius: 14, border: "none", cursor: "pointer", position: "relative", background: billingPeriod === "annual" ? "linear-gradient(135deg, #00bcd4, #009688)" : "var(--border-default)", boxShadow: billingPeriod === "annual" ? "0 2px 8px rgba(0,188,212,0.3)" : "none", transition: "all 0.2s ease" }}>
+              <span onClick={() => setBillingPeriod("monthly")} style={{ fontSize: "0.88rem", fontWeight: billingPeriod === "monthly" ? 700 : 400, color: billingPeriod === "monthly" ? "var(--accent)" : "var(--text-muted)", cursor: "pointer", transition: "all 0.2s" }}>Monthly</span>
+              <button onClick={() => setBillingPeriod(p => p === "monthly" ? "annual" : "monthly")} style={{ width: 52, height: 28, borderRadius: 14, border: "none", cursor: "pointer", position: "relative", background: billingPeriod === "annual" ? "linear-gradient(135deg, var(--accent), var(--accent-deep))" : "var(--border-default)", boxShadow: billingPeriod === "annual" ? "0 2px 8px var(--accent-border)" : "none", transition: "all 0.2s ease" }}>
                 <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: billingPeriod === "annual" ? 27 : 3, transition: "left 0.2s ease", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
               </button>
-              <span onClick={() => setBillingPeriod("annual")} style={{ fontSize: "0.88rem", fontWeight: billingPeriod === "annual" ? 700 : 400, color: billingPeriod === "annual" ? "#00bcd4" : "var(--text-muted)", cursor: "pointer", transition: "all 0.2s" }}>Annual</span>
+              <span onClick={() => setBillingPeriod("annual")} style={{ fontSize: "0.88rem", fontWeight: billingPeriod === "annual" ? 700 : 400, color: billingPeriod === "annual" ? "var(--accent)" : "var(--text-muted)", cursor: "pointer", transition: "all 0.2s" }}>Annual</span>
               {billingPeriod === "annual" && <span style={{ fontSize: "0.68rem", fontWeight: 700, padding: "3px 10px", borderRadius: 9999, background: "rgba(34,197,94,0.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>Save 17%</span>}
             </div>
 
             {/* ── Founders banner ── */}
-            <div style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.1), rgba(0,188,212,0.04))", border: "1px solid rgba(0,188,212,0.25)", borderRadius: 16, padding: "1rem 1.75rem", textAlign: "center", color: "#00bcd4", fontWeight: 600, fontSize: "0.9rem", boxShadow: "0 4px 20px rgba(0,188,212,0.08), inset 0 1px 0 rgba(255,255,255,0.04)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", position: "relative", overflow: "hidden" }}>
+            <div style={{ background: "linear-gradient(135deg, var(--accent-dim), var(--accent-dim))", border: "1px solid var(--accent-border)", borderRadius: 16, padding: "1rem 1.75rem", textAlign: "center", color: "var(--accent)", fontWeight: 600, fontSize: "0.9rem", boxShadow: "0 4px 20px var(--accent-dim), inset 0 1px 0 rgba(255,255,255,0.04)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", position: "relative", overflow: "hidden" }}>
               {"\uD83D\uDE80"} Founders Early Access — Pre-launch pricing locked in forever for founding members. Normal prices shown crossed out.
             </div>
 
@@ -484,6 +494,14 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   {TIER_KEYS.map((t, idx) => {
                     const tp = getTierPrice(t);
                     const pl = getPreLaunchPrice(t);
+                    const annualTotal = getAnnualPrice(t);
+                    const plAnnualTotal = getPreLaunchAnnualPrice(t);
+                    const displayPrice = billingPeriod === "annual" && annualTotal > 0
+                      ? Math.round((plAnnualTotal ?? annualTotal) / 12)
+                      : (pl ?? tp);
+                    const displayRegular = billingPeriod === "annual" && annualTotal > 0
+                      ? Math.round(annualTotal / 12)
+                      : tp;
                     const isFree = tp === 0;
                     const isPopular = t === "PLUS";
                     const features = getTierFeatures(t);
@@ -493,31 +511,31 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                       <div
                         key={t}
                         style={{
-                          background: isPopular ? "linear-gradient(135deg, rgba(0,188,212,0.1), rgba(0,188,212,0.03))" : "var(--bg-card)",
+                          background: isPopular ? "linear-gradient(135deg, var(--accent-dim), var(--accent-dim))" : "var(--bg-card)",
                           backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-                          border: isPopular ? "2px solid rgba(0,188,212,0.4)" : "1px solid var(--border-default)",
+                          border: isPopular ? "2px solid var(--accent-glow)" : "1px solid var(--border-default)",
                           borderRadius: 20, padding: "1.75rem",
                           display: "flex", flexDirection: "column", gap: "0.5rem",
                           position: "relative", overflow: "hidden",
                           transition: "transform 0.25s ease, box-shadow 0.25s ease",
                           boxShadow: isPopular
-                            ? "0 8px 32px rgba(0,188,212,0.15), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"
+                            ? "0 8px 32px var(--accent-dim), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"
                             : "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 16px 48px rgba(0,188,212,0.2), 0 4px 12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.08)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = isPopular ? "0 8px 32px rgba(0,188,212,0.15), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06)" : "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 16px 48px var(--accent-border), 0 4px 12px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.08)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = isPopular ? "0 8px 32px var(--accent-dim), 0 2px 8px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06)" : "0 4px 16px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
                       >
                         {/* Corner glow */}
-                        <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: `radial-gradient(circle, ${isPopular ? "rgba(0,188,212,0.12)" : "rgba(0,188,212,0.05)"} 0%, transparent 70%)`, pointerEvents: "none" }} />
+                        <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: `radial-gradient(circle, ${isPopular ? "var(--accent-dim)" : "var(--accent-dim)"} 0%, transparent 70%)`, pointerEvents: "none" }} />
 
                         {/* Popular badge */}
                         {isPopular && (
                           <div style={{
                             position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
-                            background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
+                            background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff",
                             padding: "0.2rem 1.25rem", borderRadius: "0 0 10px 10px",
                             fontSize: "0.62rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase",
-                            boxShadow: "0 4px 12px rgba(0,188,212,0.35)",
+                            boxShadow: "0 4px 12px var(--accent-glow)",
                           }}>
                             MOST POPULAR
                           </div>
@@ -534,22 +552,27 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
 
                         {/* Price */}
                         <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem", marginTop: "0.5rem" }}>
-                          {pl != null && pl !== tp ? (
+                          {displayPrice !== displayRegular ? (
                             <>
-                              <span style={{ fontSize: "2rem", fontWeight: 800, color: "#00bcd4", letterSpacing: "-0.03em" }}>${pl}</span>
+                              <span style={{ fontSize: "2rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.03em" }}>${displayPrice}</span>
                               <span style={{ fontSize: "0.9rem", color: "var(--text-muted)", fontWeight: 400 }}>/mo</span>
-                              <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", textDecoration: "line-through", marginLeft: "0.25rem" }}>${tp}/mo</span>
+                              <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", textDecoration: "line-through", marginLeft: "0.25rem" }}>${displayRegular}/mo</span>
                             </>
                           ) : (
                             <>
-                              <span style={{ fontSize: "2rem", fontWeight: 800, color: "#00bcd4", letterSpacing: "-0.03em" }}>${tp}</span>
+                              <span style={{ fontSize: "2rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.03em" }}>${displayPrice}</span>
                               <span style={{ fontSize: "0.9rem", color: "var(--text-muted)", fontWeight: 400 }}>/mo</span>
                             </>
                           )}
                         </div>
+                        {billingPeriod === "annual" && !isFree && (
+                          <div style={{ fontSize: "0.72rem", color: "#16a34a", fontWeight: 600 }}>
+                            Billed ${plAnnualTotal ?? annualTotal}/yr{plAnnualTotal ? ` — save $${annualTotal - plAnnualTotal}/yr` : ""}
+                          </div>
+                        )}
 
                         {/* Commission */}
-                        <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", padding: "0.2rem 0.6rem", borderRadius: "6px", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.1)", width: "fit-content", fontSize: "0.75rem", color: "var(--text-secondary)", fontWeight: 600 }}>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", padding: "0.2rem 0.6rem", borderRadius: "6px", background: "var(--accent-dim)", border: "1px solid var(--accent-dim)", width: "fit-content", fontSize: "0.75rem", color: "var(--text-secondary)", fontWeight: 600 }}>
                           {getTierCommission(t)}% commission
                         </div>
 
@@ -557,7 +580,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                         <div style={{ marginTop: "0.5rem", flex: 1, display: "flex", flexDirection: "column", gap: "0.35rem" }}>
                           {(features || []).slice(0, 5).map((f, fi) => (
                             <div key={fi} style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                              <span style={{ color: "#00bcd4", fontSize: "0.75rem" }}>✓</span>
+                              <span style={{ color: "var(--accent)", fontSize: "0.75rem" }}>✓</span>
                               {f}
                             </div>
                           ))}
@@ -578,18 +601,18 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                             }
                           }}
                           style={{
-                            background: isFree ? "transparent" : "linear-gradient(135deg, #00bcd4, #009688)",
-                            border: isFree ? "1px solid rgba(0,188,212,0.3)" : "none",
+                            background: isFree ? "transparent" : "linear-gradient(135deg, var(--accent), var(--accent-deep))",
+                            border: isFree ? "1px solid var(--accent-border)" : "none",
                             borderRadius: 12, padding: "0.75rem 1.25rem",
-                            color: isFree ? "#00bcd4" : "white",
+                            color: isFree ? "var(--accent)" : "white",
                             fontWeight: 700, fontSize: "0.88rem", cursor: "pointer",
                             marginTop: "0.75rem",
-                            boxShadow: isFree ? "none" : "0 4px 16px rgba(0,188,212,0.25)",
+                            boxShadow: isFree ? "none" : "0 4px 16px var(--accent-border)",
                             transition: "all 0.2s ease",
                             letterSpacing: "0.01em",
                           }}
-                          onMouseEnter={(e) => { if (!isFree) { (e.target as HTMLElement).style.boxShadow = "0 6px 24px rgba(0,188,212,0.35)"; (e.target as HTMLElement).style.transform = "translateY(-1px)"; }}}
-                          onMouseLeave={(e) => { if (!isFree) { (e.target as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,188,212,0.25)"; (e.target as HTMLElement).style.transform = "translateY(0)"; }}}
+                          onMouseEnter={(e) => { if (!isFree) { (e.target as HTMLElement).style.boxShadow = "0 6px 24px var(--accent-glow)"; (e.target as HTMLElement).style.transform = "translateY(-1px)"; }}}
+                          onMouseLeave={(e) => { if (!isFree) { (e.target as HTMLElement).style.boxShadow = "0 4px 16px var(--accent-border)"; (e.target as HTMLElement).style.transform = "translateY(0)"; }}}
                         >
                           {isFree ? "Continue on Free" : `Subscribe to ${TIER_NAMES[t]}`}
                         </button>
@@ -608,6 +631,14 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   {TIER_KEYS.filter((t) => TIER_KEYS.indexOf(t) > currentTierIndex).map((t) => {
                     const tierPrice = getTierPrice(t);
                     const preLaunch = getPreLaunchPrice(t);
+                    const upAnnual = getAnnualPrice(t);
+                    const upPlAnnual = getPreLaunchAnnualPrice(t);
+                    const upDisplay = billingPeriod === "annual" && upAnnual > 0
+                      ? Math.round((upPlAnnual ?? upAnnual) / 12)
+                      : (preLaunch ?? tierPrice);
+                    const upRegular = billingPeriod === "annual" && upAnnual > 0
+                      ? Math.round(upAnnual / 12)
+                      : tierPrice;
                     const features = getTierFeatures(t);
                     const TIER_ICONS: Record<string, string> = { FREE: "🆓", STARTER: "🚀", PLUS: "⚡", PRO: "👑" };
                     return (
@@ -615,51 +646,53 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                         key={t}
                         style={{
                           background: "var(--bg-card)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-                          border: "1px solid rgba(0,188,212,0.2)", borderRadius: 20, padding: "1.75rem",
+                          border: "1px solid var(--accent-border)", borderRadius: 20, padding: "1.75rem",
                           display: "flex", flexDirection: "column", gap: "0.5rem",
                           position: "relative", overflow: "hidden",
                           transition: "transform 0.25s ease, box-shadow 0.25s ease",
                           boxShadow: "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 16px 48px rgba(0,188,212,0.18), inset 0 1px 0 rgba(255,255,255,0.08)"; }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 16px 48px var(--accent-dim), inset 0 1px 0 rgba(255,255,255,0.08)"; }}
                         onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
                       >
-                        <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: "radial-gradient(circle, rgba(0,188,212,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
+                        <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: "radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)", pointerEvents: "none" }} />
                         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                           <span style={{ fontSize: "1.4rem" }}>{TIER_ICONS[t] || "📦"}</span>
                           <div style={{ color: "var(--text-primary)", fontWeight: 800, fontSize: "1.15rem", letterSpacing: "-0.01em" }}>{TIER_NAMES[t]}</div>
                         </div>
                         <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem", marginTop: "0.25rem" }}>
-                          {preLaunch != null && (
-                            <span style={{ fontSize: "1.85rem", fontWeight: 800, color: "#00bcd4", letterSpacing: "-0.03em" }}>${preLaunch}<span style={{ fontSize: "0.85rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span></span>
+                          {upDisplay !== upRegular ? (
+                            <>
+                              <span style={{ fontSize: "1.85rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.03em" }}>${upDisplay}<span style={{ fontSize: "0.85rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span></span>
+                              <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", textDecoration: "line-through" }}>${upRegular}/mo</span>
+                            </>
+                          ) : (
+                            <span style={{ fontSize: "1.85rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.03em" }}>${upDisplay}<span style={{ fontSize: "0.85rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span></span>
                           )}
-                          <span style={{
-                            color: preLaunch != null ? "var(--text-muted)" : "#00bcd4",
-                            fontWeight: preLaunch != null ? 500 : 800,
-                            fontSize: preLaunch != null ? "0.85rem" : "1.85rem",
-                            textDecoration: preLaunch != null ? "line-through" : "none",
-                          }}>
-                            ${tierPrice}/mo
-                          </span>
                         </div>
-                        <div style={{ display: "inline-flex", alignItems: "center", padding: "0.2rem 0.6rem", borderRadius: "6px", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.1)", width: "fit-content", fontSize: "0.75rem", color: "var(--text-secondary)", fontWeight: 600 }}>
+                        {billingPeriod === "annual" && upAnnual > 0 && (
+                          <div style={{ fontSize: "0.72rem", color: "#16a34a", fontWeight: 600 }}>
+                            Billed ${upPlAnnual ?? upAnnual}/yr
+                          </div>
+                        )}
+                        <div style={{ display: "inline-flex", alignItems: "center", padding: "0.2rem 0.6rem", borderRadius: "6px", background: "var(--accent-dim)", border: "1px solid var(--accent-dim)", width: "fit-content", fontSize: "0.75rem", color: "var(--text-secondary)", fontWeight: 600 }}>
                           {getTierCommission(t)}% commission
                         </div>
                         {(features || []).slice(0, 4).map((f, fi) => (
                           <div key={fi} style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                            <span style={{ color: "#00bcd4", fontSize: "0.75rem" }}>✓</span> {f}
+                            <span style={{ color: "var(--accent)", fontSize: "0.75rem" }}>✓</span> {f}
                           </div>
                         ))}
                         <button
                           onClick={() => { setUpgradeTarget(t); setShowUpgradeModal(true); }}
                           style={{
-                            background: "linear-gradient(135deg, #00bcd4, #009688)", border: "none", borderRadius: 12,
+                            background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", border: "none", borderRadius: 12,
                             padding: "0.75rem 1.25rem", color: "white", fontWeight: 700, fontSize: "0.88rem",
                             cursor: "pointer", marginTop: "auto",
-                            boxShadow: "0 4px 16px rgba(0,188,212,0.25)", transition: "all 0.2s ease",
+                            boxShadow: "0 4px 16px var(--accent-border)", transition: "all 0.2s ease",
                           }}
-                          onMouseEnter={(e) => { (e.target as HTMLElement).style.boxShadow = "0 6px 24px rgba(0,188,212,0.35)"; }}
-                          onMouseLeave={(e) => { (e.target as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,188,212,0.25)"; }}
+                          onMouseEnter={(e) => { (e.target as HTMLElement).style.boxShadow = "0 6px 24px var(--accent-glow)"; }}
+                          onMouseLeave={(e) => { (e.target as HTMLElement).style.boxShadow = "0 4px 16px var(--accent-border)"; }}
                         >
                           Upgrade to {TIER_NAMES[t]}
                         </button>
@@ -718,10 +751,10 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                           }}
                           style={{
                             background: "transparent",
-                            border: "1px solid rgba(0,188,212,0.4)",
+                            border: "1px solid var(--accent-glow)",
                             borderRadius: 10,
                             padding: "0.65rem 1.25rem",
-                            color: "#00bcd4",
+                            color: "var(--accent)",
                             fontWeight: 600,
                             fontSize: "0.85rem",
                             cursor: "pointer",
@@ -752,7 +785,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
         )}
 
         {tab === "history" && (
-          <div style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 16, padding: "1.5rem" }}>
+          <div style={{ background: "var(--bg-card)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid var(--accent-dim)", borderRadius: 16, padding: "1.5rem" }}>
             <div style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "1rem" }}>Change History</div>
             {changes.length === 0 ? (
               <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No subscription changes yet.</p>
@@ -760,9 +793,9 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", fontSize: "0.82rem", borderCollapse: "collapse" }}>
                   <thead>
-                    <tr style={{ borderBottom: "2px solid rgba(0,188,212,0.15)" }}>
+                    <tr style={{ borderBottom: "2px solid var(--accent-dim)" }}>
                       {["Date", "Type", "From \u2192 To", "Refund", "Credits", "Method"].map((h) => (
-                        <th key={h} style={{ textAlign: "left", padding: "0.5rem 0.75rem", color: "#00bcd4", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase" }}>{h}</th>
+                        <th key={h} style={{ textAlign: "left", padding: "0.5rem 0.75rem", color: "var(--accent)", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -807,7 +840,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
 
         {/* Tab selector */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "2rem" }}>
-          <div style={{ display: "inline-flex", background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 28, padding: "4px" }}>
+          <div style={{ display: "inline-flex", background: "var(--bg-card)", border: "1px solid var(--accent-dim)", borderRadius: 28, padding: "4px" }}>
             {["Estate Sale Services", "Neighborhood Bundle"].map((label, i) => (
               <button
                 key={label}
@@ -816,8 +849,8 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   padding: "0.5rem 1.5rem",
                   borderRadius: 24,
                   border: "none",
-                  background: activeSlide === i ? "rgba(0,188,212,0.15)" : "transparent",
-                  color: activeSlide === i ? "#00bcd4" : "var(--text-muted)",
+                  background: activeSlide === i ? "var(--accent-dim)" : "transparent",
+                  color: activeSlide === i ? "var(--accent)" : "var(--text-muted)",
                   fontWeight: activeSlide === i ? 700 : 500,
                   fontSize: "0.88rem",
                   cursor: "pointer",
@@ -849,9 +882,9 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                 if (!wg) return null;
                 const isRecommended = wg.recommended === true;
                 return (
-                  <div key={card.key} style={{ background: card.bg, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: `1px solid ${card.borderColor}`, borderRadius: 20, padding: isRecommended ? "2.25rem 1.75rem 1.75rem 1.75rem" : "1.75rem", position: "relative", overflow: "visible", transition: "transform 0.25s ease, box-shadow 0.25s ease", boxShadow: "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(0,188,212,0.12)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)"; }}>
+                  <div key={card.key} style={{ background: card.bg, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: `1px solid ${card.borderColor}`, borderRadius: 20, padding: isRecommended ? "2.25rem 1.75rem 1.75rem 1.75rem" : "1.75rem", position: "relative", overflow: "visible", transition: "transform 0.25s ease, box-shadow 0.25s ease", boxShadow: "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px var(--accent-dim)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)"; }}>
                     {isRecommended && (
-                      <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "white", borderRadius: 20, padding: "0.3rem 1.25rem", fontSize: "0.72rem", fontWeight: 700, whiteSpace: "nowrap", letterSpacing: "0.06em", boxShadow: "0 2px 12px rgba(0,188,212,0.4)", zIndex: 10 }}>RECOMMENDED</div>
+                      <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "white", borderRadius: 20, padding: "0.3rem 1.25rem", fontSize: "0.72rem", fontWeight: 700, whiteSpace: "nowrap", letterSpacing: "0.06em", boxShadow: "0 2px 12px var(--accent-glow)", zIndex: 10 }}>RECOMMENDED</div>
                     )}
                     <div style={{ borderLeft: `3px solid ${card.accent}`, paddingLeft: "1rem", marginBottom: "1rem" }}>
                       <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.1rem" }}>{wg.name}</div>
@@ -889,15 +922,15 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
             width: "100%",
           }}>
             <div style={{ maxWidth: 640, margin: "0 auto" }}>
-              <div style={{ background: "rgba(0,188,212,0.04)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(0,188,212,0.35)", borderRadius: 20, padding: "2.5rem", position: "relative", overflow: "hidden" }}>
+              <div style={{ background: "var(--accent-dim)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid var(--accent-glow)", borderRadius: 20, padding: "2.5rem", position: "relative", overflow: "hidden" }}>
                 {/* Decorative glow */}
-                <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, background: "radial-gradient(circle, rgba(0,188,212,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", top: -60, right: -60, width: 200, height: 200, background: "radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)", pointerEvents: "none" }} />
 
                 <div style={{ position: "relative" }}>
-                  <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>Community Sale Program</div>
+                  <div style={{ color: "var(--accent)", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>Community Sale Program</div>
                   <div style={{ color: "var(--text-primary)", fontWeight: 800, fontSize: "1.5rem", marginBottom: "0.5rem" }}>{NEIGHBORHOOD_BUNDLE.name}</div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", marginBottom: "0.25rem" }}>
-                    <span style={{ color: "#00bcd4", fontWeight: 800, fontSize: "2.5rem" }}>${NEIGHBORHOOD_BUNDLE.preLaunch}</span>
+                    <span style={{ color: "var(--accent)", fontWeight: 800, fontSize: "2.5rem" }}>${NEIGHBORHOOD_BUNDLE.preLaunch}</span>
                     <span style={{ color: "var(--text-muted)", fontSize: "1rem", textDecoration: "line-through" }}>${NEIGHBORHOOD_BUNDLE.price}</span>
                   </div>
                   <div style={{ color: "var(--text-secondary)", fontSize: "0.85rem", marginBottom: "0.25rem" }}>{NEIGHBORHOOD_BUNDLE.commissionPct}% commission on sales</div>
@@ -909,21 +942,21 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem 1.5rem", marginBottom: "1.5rem" }}>
                     {NEIGHBORHOOD_BUNDLE.includes.map((feature: string) => (
                       <div key={feature} style={{ display: "flex", gap: "0.4rem", alignItems: "flex-start", color: "var(--text-secondary)", fontSize: "0.82rem" }}>
-                        <span style={{ color: "#00bcd4", fontWeight: 700, flexShrink: 0, marginTop: "0.05rem" }}>{"\u2713"}</span>
+                        <span style={{ color: "var(--accent)", fontWeight: 700, flexShrink: 0, marginTop: "0.05rem" }}>{"\u2713"}</span>
                         <span>{feature}</span>
                       </div>
                     ))}
                   </div>
 
                   {/* Additional family pricing */}
-                  <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 12, padding: "0.75rem 1rem", marginBottom: "1.5rem" }}>
+                  <div style={{ background: "var(--bg-card)", border: "1px solid var(--accent-dim)", borderRadius: 12, padding: "0.75rem 1rem", marginBottom: "1.5rem" }}>
                     <div style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>
-                      Additional families: <span style={{ color: "#00bcd4", fontWeight: 700 }}>${NEIGHBORHOOD_BUNDLE.preLaunchAdditional}/family</span>
+                      Additional families: <span style={{ color: "var(--accent)", fontWeight: 700 }}>${NEIGHBORHOOD_BUNDLE.preLaunchAdditional}/family</span>
                       <span style={{ color: "var(--text-muted)", fontSize: "0.78rem", textDecoration: "line-through", marginLeft: "0.4rem" }}>${NEIGHBORHOOD_BUNDLE.additionalFamily}</span>
                     </div>
                   </div>
 
-                  <button onClick={() => window.location.href = "/services/neighborhood-bundle"} style={{ background: "linear-gradient(135deg, #00bcd4, #009688)", border: "none", borderRadius: 12, padding: "0.85rem 2rem", color: "white", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", width: "100%", boxShadow: "0 4px 20px rgba(0,188,212,0.3)", transition: "all 0.2s ease" }}>
+                  <button onClick={() => window.location.href = "/services/neighborhood-bundle"} style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", border: "none", borderRadius: 12, padding: "0.85rem 2rem", color: "white", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", width: "100%", boxShadow: "0 4px 20px var(--accent-border)", transition: "all 0.2s ease" }}>
                     Start a Neighborhood Bundle
                   </button>
                 </div>
@@ -942,7 +975,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                 width: activeSlide === i ? 24 : 8,
                 height: 8,
                 borderRadius: activeSlide === i ? 4 : 4,
-                background: activeSlide === i ? "#00bcd4" : "var(--text-muted)",
+                background: activeSlide === i ? "var(--accent)" : "var(--text-muted)",
                 border: "none",
                 cursor: "pointer",
                 transition: "all 0.3s ease",
@@ -979,6 +1012,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
           newTier={TIER_KEY_TO_NUMBER[upgradeTarget] ?? 1}
           newPlanName={TIER_NAMES[upgradeTarget] || upgradeTarget}
           newPlanPrice={upgradePrice}
+          billingPeriod={billingPeriod}
           onClose={() => setShowUpgradeModal(false)}
           onUpgraded={() => window.location.reload()}
         />

@@ -9,6 +9,7 @@ export default function ErrorPage({
 }) {
   return (
     <div style={{ textAlign: "center", padding: "4rem 1.5rem", maxWidth: "500px", margin: "0 auto" }}>
+      <img src="/images/logos/logo-icon.png" alt="LegacyLoop" style={{ height: "36px", width: "36px", objectFit: "contain", margin: "0 auto 1rem", display: "block" }} />
       <div style={{
         width: "80px", height: "80px", borderRadius: "50%",
         background: "rgba(239,68,68,0.1)", border: "2px solid rgba(239,68,68,0.2)",

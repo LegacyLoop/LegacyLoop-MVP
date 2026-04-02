@@ -140,7 +140,7 @@ export default function BuyerOfferPage() {
     const msgs: Record<string, { title: string; desc: string; color: string }> = {
       ACCEPT: { title: "Offer Accepted!", desc: "The seller has been notified. Complete your purchase to secure the item.", color: "#22c55e" },
       DECLINE: { title: "Offer Declined", desc: "The seller has been notified. You can still view the item and make a new offer.", color: "var(--text-muted)" },
-      COUNTER: { title: "Counter Offer Sent!", desc: "Your counter offer has been sent to the seller. You'll receive an email when they respond.", color: "#00bcd4" },
+      COUNTER: { title: "Counter Offer Sent!", desc: "Your counter offer has been sent to the seller. You'll receive an email when they respond.", color: "var(--accent)" },
     };
     const m = msgs[actionDone] || msgs.DECLINE;
 
@@ -167,7 +167,7 @@ export default function BuyerOfferPage() {
 
         {/* Brand */}
         <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-          <span style={{ fontSize: "1.5rem", fontWeight: 700, color: "#00bcd4" }}>LegacyLoop</span>
+          <span style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--accent)" }}>LegacyLoop</span>
         </div>
 
         {/* Item card */}
@@ -193,13 +193,13 @@ export default function BuyerOfferPage() {
 
         {/* Current offer */}
         <div style={{
-          background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.25)",
+          background: "var(--accent-dim)", border: "1px solid var(--accent-border)",
           borderRadius: "12px", padding: "1.5rem", textAlign: "center", marginBottom: "1.25rem",
         }}>
           <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "4px" }}>
             {offer.status === "COUNTERED" ? "Counter Offer on the Table" : "Current Offer"}
           </div>
-          <div style={{ fontSize: "2.5rem", fontWeight: 700, color: "#00bcd4" }}>${dollars(offer.currentPrice)}</div>
+          <div style={{ fontSize: "2.5rem", fontWeight: 700, color: "var(--accent)" }}>${dollars(offer.currentPrice)}</div>
           {offer.round > 1 && (
             <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "4px" }}>Round {offer.round} of negotiation</div>
           )}
@@ -236,8 +236,8 @@ export default function BuyerOfferPage() {
                 <div>
                   <span style={{
                     fontSize: "0.7rem", fontWeight: 700, padding: "2px 6px", borderRadius: "4px",
-                    background: ev.actorType === "BUYER" ? "rgba(0,188,212,0.15)" : "rgba(168,85,247,0.15)",
-                    color: ev.actorType === "BUYER" ? "#00bcd4" : "#a855f7",
+                    background: ev.actorType === "BUYER" ? "var(--accent-dim)" : "rgba(168,85,247,0.15)",
+                    color: ev.actorType === "BUYER" ? "var(--accent)" : "#a855f7",
                     marginRight: "8px",
                   }}>
                     {ev.actorType}
@@ -280,8 +280,8 @@ export default function BuyerOfferPage() {
                 onClick={() => setShowCounter(true)}
                 disabled={submitting}
                 style={{
-                  padding: "14px", fontSize: "0.95rem", fontWeight: 600, border: "1px solid rgba(0,188,212,0.4)",
-                  borderRadius: "10px", background: "rgba(0,188,212,0.08)", color: "#00bcd4",
+                  padding: "14px", fontSize: "0.95rem", fontWeight: 600, border: "1px solid var(--accent-glow)",
+                  borderRadius: "10px", background: "var(--accent-dim)", color: "var(--accent)",
                   cursor: "pointer", minHeight: "52px",
                 }}
               >
@@ -330,7 +330,7 @@ export default function BuyerOfferPage() {
                     disabled={submitting || !counterAmount || Number(counterAmount) <= 0}
                     style={{
                       flex: 1, padding: "12px", fontSize: "0.9rem", fontWeight: 700, border: "none",
-                      borderRadius: "8px", background: "#00bcd4", color: "#000",
+                      borderRadius: "8px", background: "var(--accent)", color: "#000",
                       cursor: submitting ? "not-allowed" : "pointer",
                       opacity: submitting || !counterAmount || Number(counterAmount) <= 0 ? 0.5 : 1,
                       minHeight: "48px",

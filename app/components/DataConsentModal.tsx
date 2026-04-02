@@ -8,8 +8,8 @@ interface Props {
 
 export default function DataConsentModal({ show }: Props) {
   const [visible, setVisible] = useState(show);
-  const [dataCollection, setDataCollection] = useState(true);
-  const [aiTraining, setAiTraining] = useState(true);
+  const [dataCollection, setDataCollection] = useState(false);
+  const [aiTraining, setAiTraining] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
@@ -24,7 +24,7 @@ export default function DataConsentModal({ show }: Props) {
         body: JSON.stringify({
           dataCollection,
           aiTraining,
-          marketResearch: true,
+          marketResearch: dataCollection,
           anonymousSharing: dataCollection,
         }),
       });

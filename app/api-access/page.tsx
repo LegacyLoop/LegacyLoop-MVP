@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { API_TIERS } from "@/lib/constants/pricing";
 
 export const metadata: Metadata = {
@@ -181,6 +182,7 @@ const USE_CASES = [
 export default function ApiAccessPage() {
   return (
     <div className="mx-auto max-w-5xl">
+      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "API Access" }]} />
       {/* Hero */}
       <div
         style={{

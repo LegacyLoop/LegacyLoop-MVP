@@ -52,12 +52,12 @@ export default function OgImage() {
           Turn your family's belongings into meaningful income — with expert AI pricing, buyer matching, and white-glove service.
         </div>
 
-        {/* Stats strip */}
+        {/* Platform capabilities */}
         <div style={{ display: "flex", gap: "48px" }}>
           {[
-            { value: "847+", label: "Families served" },
-            { value: "$2.4M", label: "In items sold" },
-            { value: "4.9★", label: "Average rating" },
+            { value: "15 AI Bots", label: "Working for you" },
+            { value: "4 AI Models", label: "Cross-referenced pricing" },
+            { value: "Free to Start", label: "No credit card needed" },
           ].map((s) => (
             <div key={s.label} style={{ display: "flex", flexDirection: "column" }}>
               <span style={{ color: "#fbbf24", fontWeight: 900, fontSize: 32 }}>{s.value}</span>

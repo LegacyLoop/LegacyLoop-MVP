@@ -407,6 +407,32 @@ export async function POST(req: NextRequest) {
         data: { status: "SOLD" },
       });
 
+      // First sale bonus: award 25 credits to seller on their first completed sale
+      try {
+        const priorSales = await prisma.item.count({
+          where: { userId: item.userId, status: { in: ["SOLD", "SHIPPED", "COMPLETED"] }, id: { not: item.id } },
+        });
+        if (priorSales === 0) {
+          let sellerCredits = await prisma.userCredits.findUnique({ where: { userId: item.userId } });
+          if (!sellerCredits) {
+            sellerCredits = await prisma.userCredits.create({
+              data: { userId: item.userId, balance: 0, lifetime: 0, spent: 0 },
+            });
+          }
+          const bonusAmount = 25; // DISCOUNTS.firstSale.credits
+          await prisma.userCredits.update({
+            where: { userId: item.userId },
+            data: { balance: { increment: bonusAmount }, lifetime: { increment: bonusAmount } },
+          });
+          await prisma.creditTransaction.create({
+            data: { userCreditsId: sellerCredits.id, type: "bonus", amount: bonusAmount, balance: sellerCredits.balance + bonusAmount, description: "First sale bonus — congratulations!" },
+          });
+          await prisma.notification.create({
+            data: { userId: item.userId, type: "BONUS", title: "First Sale Bonus!", message: `You earned ${bonusAmount} credits for your first sale!`, link: "/credits" },
+          }).catch(() => {});
+        }
+      } catch { /* sale must not fail if bonus fails */ }
+
       // Record seller earnings (use seller's tier, not buyer's)
       const { recordEarning } = await import("@/lib/services/payment-ledger");
       const sellerTierKey = ["free", "starter", "plus", "pro"][(item.user?.tier ?? 1) - 1] || "free";
