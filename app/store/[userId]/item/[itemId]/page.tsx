@@ -40,11 +40,11 @@ export default async function PublicItemPage({ params }: { params: Params }) {
 
   if (!item || item.userId !== userId || !["LISTED", "INTERESTED", "ANALYZED", "READY", "OFFER_PENDING"].includes(item.status)) {
     return (
-      <div className="card p-8 max-w-xl mx-auto mt-10 text-center">
-        <div className="text-5xl mb-4">🔍</div>
-        <div className="text-xl font-semibold">Item not available</div>
-        <p className="muted mt-2">This item may have been sold or removed.</p>
-        <Link href={`/store/${userId}`} className="btn-primary mt-6 inline-flex">Browse Other Items</Link>
+      <div style={{ background: "var(--bg-card-solid)", border: "1px solid var(--border-default)", borderRadius: "1.25rem", padding: "2rem", maxWidth: "36rem", margin: "2.5rem auto", textAlign: "center" }}>
+        <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🔍</div>
+        <div style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--text-primary)" }}>Item not available</div>
+        <p style={{ color: "var(--text-muted)", marginTop: "0.5rem" }}>This item may have been sold or removed.</p>
+        <Link href={`/store/${userId}`} style={{ display: "inline-flex", marginTop: "1.5rem", padding: "0.6rem 1.5rem", background: "var(--accent)", color: "#fff", borderRadius: "0.75rem", fontWeight: 700, textDecoration: "none" }}>Browse Other Items</Link>
       </div>
     );
   }
@@ -97,7 +97,11 @@ export default async function PublicItemPage({ params }: { params: Params }) {
   };
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div style={{ maxWidth: "56rem", margin: "0 auto" }}>
+      <style>{`
+        .item-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        @media (max-width: 768px) { .item-detail-grid { grid-template-columns: 1fr; } }
+      `}</style>
       {/* JSON-LD schema markup */}
       <script
         type="application/ld+json"
@@ -116,20 +120,20 @@ export default async function PublicItemPage({ params }: { params: Params }) {
         </Link>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem" }} className="sm:grid-cols-2">
+      <div className="item-detail-grid">
         {/* Photos */}
         <div>
           {photos[0] ? (
-            <img src={photos[0].filePath} alt={title} className="w-full rounded-3xl border object-cover shadow-sm" style={{ maxHeight: 400, objectFit: "cover" }} />
+            <img src={photos[0].filePath} alt={title} loading="lazy" style={{ width: "100%", borderRadius: "1.5rem", border: "1px solid var(--border-default)", objectFit: "cover", maxHeight: 400, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }} />
           ) : (
-            <div className="h-80 bg-stone-100 rounded-3xl flex items-center justify-center">
-              <span className="text-5xl text-stone-300">📷</span>
+            <div style={{ height: "20rem", background: "var(--bg-card-hover)", borderRadius: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: "3rem", color: "var(--text-muted)" }}>📷</span>
             </div>
           )}
           {photos.length > 1 && (
             <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem", flexWrap: "wrap" }}>
               {photos.slice(0, 6).map((p) => (
-                <img key={p.id} src={p.filePath} alt="" style={{ width: "64px", height: "64px", objectFit: "cover", borderRadius: "0.5rem", border: "2px solid var(--border-default)" }} />
+                <img key={p.id} src={p.filePath} alt="" loading="lazy" style={{ width: "64px", height: "64px", objectFit: "cover", borderRadius: "0.5rem", border: "2px solid var(--border-default)" }} />
               ))}
             </div>
           )}
@@ -169,7 +173,7 @@ export default async function PublicItemPage({ params }: { params: Params }) {
           {ai && (
             <div style={{ marginTop: "1rem", display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
               {keywords.slice(0, 8).map((k: string) => (
-                <span key={k} className="badge">{k}</span>
+                <span key={k} style={{ background: "var(--accent-dim)", color: "var(--accent)", padding: "0.15rem 0.5rem", borderRadius: "9999px", fontSize: "0.72rem", fontWeight: 600 }}>{k}</span>
               ))}
             </div>
           )}
@@ -211,12 +215,12 @@ export default async function PublicItemPage({ params }: { params: Params }) {
 
       {/* Market comps (social proof) */}
       {item.marketComps.length > 0 && (
-        <div className="card p-6 mt-8">
-          <div className="section-title mb-3">How this compares to market</div>
+        <div style={{ background: "var(--bg-card-solid)", border: "1px solid var(--border-default)", borderRadius: "1.25rem", padding: "1.5rem", marginTop: "2rem" }}>
+          <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.75rem" }}>How this compares to market</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             {item.marketComps.slice(0, 4).map((c: any) => (
               <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.5rem 0", borderBottom: "1px solid var(--border-default)" }}>
-                <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", flex: 1, marginRight: "1rem" }} className="truncate">{c.title}</div>
+                <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", flex: 1, marginRight: "1rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.title}</div>
                 <div style={{ fontSize: "0.85rem", fontWeight: 600, whiteSpace: "nowrap" }}>
                   {c.currency} ${Number(c.price).toFixed(0)}
                   <a href={c.url} target="_blank" rel="noreferrer" style={{ marginLeft: "0.5rem", color: "var(--accent)", fontSize: "0.75rem" }}>View →</a>
@@ -228,8 +232,8 @@ export default async function PublicItemPage({ params }: { params: Params }) {
       )}
 
       {/* Share */}
-      <div className="card p-6 mt-8">
-        <div className="section-title mb-3">Share this item</div>
+      <div style={{ background: "var(--bg-card-solid)", border: "1px solid var(--border-default)", borderRadius: "1.25rem", padding: "1.5rem", marginTop: "2rem" }}>
+        <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.75rem" }}>Share this item</div>
         <ShareButtons
           url={itemUrl}
           title={`${title}${price != null ? ` — $${price}` : ""}`}

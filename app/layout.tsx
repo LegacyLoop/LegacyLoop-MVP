@@ -9,14 +9,20 @@ import DataConsentModal from "@/app/components/DataConsentModal";
 import CookieConsent from "@/app/components/CookieConsent";
 import HelpWidget from "@/app/components/HelpWidget";
 import ThemeProvider from "@/app/components/ThemeProvider";
+import NoiseOverlay from "@/app/components/effects/NoiseOverlay";
+import GradientOrbs from "@/app/components/effects/GradientOrbs";
 
 export const metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
   ),
   icons: {
-    icon: "/images/logos/logo-icon.png",
-    apple: "/images/logos/logo-icon.png",
+    icon: [
+      { url: "/images/logos/favicon-teal.png", media: "(prefers-color-scheme: light)" },
+      { url: "/images/logos/favicon-white.png", media: "(prefers-color-scheme: dark)" },
+      { url: "/images/logos/favicon-teal.png" },
+    ],
+    apple: "/images/logos/favicon-teal.png",
   },
   title: "LegacyLoop — AI-Powered Estate Sales",
   description:
@@ -118,10 +124,14 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content="LegacyLoop" />
         <meta name="theme-color" content="#00bcd4" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/images/logos/logo-icon.png" />
+        <link rel="icon" type="image/png" href="/images/logos/favicon-teal.png" media="(prefers-color-scheme: light)" sizes="454x451" />
+        <link rel="icon" type="image/png" href="/images/logos/favicon-white.png" media="(prefers-color-scheme: dark)" sizes="454x451" />
+        <link rel="apple-touch-icon" href="/images/logos/favicon-teal.png" />
       </head>
       <body className="min-h-screen">
         <ThemeProvider>
+          <GradientOrbs />
+          <NoiseOverlay />
           <CommandPalette />
           <DemoBanner />
           <AppNav

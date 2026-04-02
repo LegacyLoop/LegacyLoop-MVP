@@ -37,7 +37,7 @@ const ANALYSIS_SCHEMA = {
       description:
         "Highly specific identification. BAD: 'wooden chair'. GOOD: 'American oak Windsor-style spindle-back side chair, circa 1920s-1940s'",
     },
-    category: { type: "string", description: "Primary category (Furniture, Electronics, Jewelry, Art, Kitchenware, Clothing, Tools, Toys, Books, Sports, Musical Instruments, Collectibles, Outdoor Equipment, Vehicles, Vehicle Parts, Other). CRITICAL CLASSIFICATION RULE: Lawn mowers (riding or push), garden tractors (John Deere, Husqvarna, Cub Cadet, Troy-Bilt, Craftsman, Toro), chainsaws, leaf blowers, pressure washers, snow blowers, log splitters, wood chippers, generators, and ALL garden/lawn/outdoor power equipment MUST be categorized as 'Outdoor Equipment' — NEVER as 'Vehicles' — even if they have engines, wheels, seats, or steering wheels. The 'Vehicles' category is EXCLUSIVELY for road-legal motor vehicles: cars, trucks, SUVs, vans, motorcycles, boats, ATVs, RVs, campers, and motorhomes. If it mows grass, blows leaves, or cuts wood — it is 'Outdoor Equipment'. If it drives on roads — it is 'Vehicles'." },
+    category: { type: "string", description: "Primary category (Furniture, Electronics, Jewelry, Art, Kitchenware, Clothing, Tools, Toys, Books, Sports, Musical Instruments, Collectibles, Outdoor Equipment, Vehicles, Vehicle Parts, Other). CRITICAL CLASSIFICATION RULE: Lawn mowers (riding or push), garden tractors (John Deere, Husqvarna, Cub Cadet, Troy-Bilt, Craftsman, Toro), chainsaws, leaf blowers, pressure washers, snow blowers, log splitters, wood chippers, generators, and ALL garden/lawn/outdoor power equipment MUST be categorized as 'Outdoor Equipment' — NEVER as 'Vehicles' — even if they have engines, wheels, seats, or steering wheels. The 'Vehicles' category is EXCLUSIVELY for road-legal motor vehicles: cars, trucks, SUVs, vans, motorcycles, boats, ATVs, RVs, campers, and motorhomes. If it mows grass, blows leaves, or cuts wood — it is 'Outdoor Equipment'. If it drives on roads — it is 'Vehicles'. THIS IS A HARD RULE: If the item name contains 'mower', 'tractor' (when paired with lawn/garden/riding), 'chainsaw', 'blower', 'trimmer', 'washer' (pressure), 'splitter', 'chipper', 'generator', or 'snow blower', you MUST return 'Outdoor Equipment' regardless of any other reasoning." },
     subcategory: { type: ["string", "null"], description: "Subcategory for more specificity (e.g. 'Side Chair' under Furniture, 'Wristwatch' under Jewelry). null if not applicable." },
     brand: { type: ["string", "null"], description: "Brand, maker, or manufacturer if identifiable. null if truly unknown." },
     model: { type: ["string", "null"], description: "Specific model name/number if visible or identifiable. null if unknown." },
@@ -92,7 +92,7 @@ const ANALYSIS_SCHEMA = {
     summary: { type: "string", description: "A 2-4 sentence plain-English verbal summary of your overall assessment. Cover: what the item is, its condition, approximate value range, and your top recommendation (sell locally, ship nationally, get appraised, or donate). Write as if speaking directly to the seller. Example: 'This is a 1960s Omega Seamaster in good working condition with moderate cosmetic wear. Based on recent sales, I estimate it is worth $800-$1,200. I recommend listing on eBay where watch collectors actively search for vintage Omega pieces. The original dial and movement are the key value drivers here.'" },
     keywords: { type: "array", items: { type: "string" }, maxItems: 15, description: "Search keywords a buyer would use: include brand, material, era, style, specific terms" },
     notes: { type: "string", description: "Additional observations: rarity, collectibility, market demand, notable features, anything else relevant to valuation" },
-    confidence: { type: "number", minimum: 0, maximum: 1, description: "How confident you are in the identification (0.0-1.0). Lower if photo is blurry, item is partially obscured, or identification is uncertain." },
+    confidence: { type: "number", minimum: 0, maximum: 1, description: "How confident you are in the identification (0.0-1.0). Lower if photo is blurry, item is partially obscured, or identification is uncertain. BOOST TO 0.90+ if brand name labels, model stickers, QR codes, serial number plates, or manufacturer logos are clearly visible and legible in the photos — visible manufacturer labeling CONFIRMS identification. BOOST TO 0.95+ if both brand AND model number are legible." },
 
     // ── Vehicle fields ───────────────────────────────────────────────────
     vehicle_year: { type: ["string", "null"], description: "If this is a vehicle, the model year (e.g. '2008'). null if not a vehicle." },
@@ -111,7 +111,7 @@ const ANALYSIS_SCHEMA = {
     shipping_notes: { type: ["string", "null"], description: "Specific packing and shipping advice: recommended box type, packing materials, fragility concerns, carrier suggestions. null if not applicable." },
 
     // ── Regional Pricing Intelligence ────────────────────────────────────
-    regional_best_city: { type: ["string", "null"], description: "The SPECIFIC US city where this item commands the highest price. Must be ITEM-SPECIFIC: guitar gear → Nashville or Austin, antique furniture → Boston or Philadelphia, vintage clothing → NYC or LA, surfboards → coastal California, cowboy boots → Dallas or Denver. Do NOT default to NYC for everything. null if no strong regional preference." },
+    regional_best_city: { type: ["string", "null"], description: "The SPECIFIC US city where this item commands the highest price IF SHIPPED NATIONALLY. Must be ITEM-SPECIFIC: guitar gear → Nashville or Austin, antique furniture → Boston or Philadelphia, vintage clothing → NYC or LA. Do NOT default to NYC for everything. IMPORTANT: If this item is too large, heavy, or impractical to ship (riding mowers, furniture, appliances, vehicles), set this to null — those items should sell locally. null if no strong regional preference or if item is impractical to ship." },
     regional_best_state: { type: ["string", "null"], description: "State abbreviation for regional_best_city (e.g. 'TN', 'MA', 'CA'). null if regional_best_city is null." },
     regional_best_price_low: { type: ["number", "null"], description: "Low-end price this item would fetch in the best market city. null if regional_best_city is null." },
     regional_best_price_high: { type: ["number", "null"], description: "High-end price this item would fetch in the best market city. null if regional_best_city is null." },
@@ -119,6 +119,10 @@ const ANALYSIS_SCHEMA = {
     regional_local_demand: { type: ["string", "null"], description: "Market demand strength in the seller's area. One of: Strong, Average, Weak. Consider the item type vs the local buyer demographics. null if seller location unknown." },
     regional_local_reasoning: { type: ["string", "null"], description: "Why local demand is strong/average/weak for THIS item in THIS area. Be specific. null if seller location unknown." },
     regional_ship_or_local: { type: ["string", "null"], description: "Plain language verdict: should the seller ship to the best market or sell locally? Include real math if possible: 'Ship to Nashville — even after $8 shipping, you net $15 more than selling locally in rural Maine.' null if not enough data." },
+    regional_local_best_city: { type: ["string", "null"], description: "If the seller specified a sale radius, the best city WITHIN that radius for this item. If seller is in Waterville ME with 50-mile radius, suggest Portland ME or Augusta ME — not Boston. null if seller has no radius or if shipping nationally." },
+    regional_local_best_why: { type: ["string", "null"], description: "Why this nearby city is the best local market for this item within the seller's radius. null if not applicable." },
+    regional_national_best_city: { type: ["string", "null"], description: "The best city ANYWHERE IN THE US to ship this item for maximum price. null if no strong regional preference." },
+    regional_national_best_state: { type: ["string", "null"], description: "State abbreviation for regional_national_best_city. null if not applicable." },
   },
   required: [
     "item_name", "category", "subcategory", "brand", "model", "maker", "material", "era", "style",
@@ -138,6 +142,7 @@ const ANALYSIS_SCHEMA = {
     "weight_estimate_lbs", "shipping_difficulty", "shipping_notes",
     "regional_best_city", "regional_best_state", "regional_best_price_low", "regional_best_price_high",
     "regional_best_why", "regional_local_demand", "regional_local_reasoning", "regional_ship_or_local",
+    "regional_local_best_city", "regional_local_best_why", "regional_national_best_city", "regional_national_best_state",
   ],
 } as const;
 
@@ -233,6 +238,7 @@ SECTION 1 — IDENTIFICATION:
 - Determine material by examining texture, color, sheen, weight indicators, and construction methods.
 - Estimate era from design style, materials, construction methods, hardware, and wear patterns.
 - Look for maker's marks, labels, stamps, serial numbers, or signatures in ALL photos.
+\nCONFIDENCE RULE: When you can clearly read a brand name label, model number sticker, QR code, serial plate, or manufacturer logo on the item, your identification confidence should be 0.90 or higher — you are CONFIRMING the item's identity from the manufacturer's own labeling, not guessing. If both brand AND model are legible, use 0.95+. Only go below 0.90 when identification relies on visual style/construction analysis without readable labeling.
 
 SECTION 2 — CONDITION:
 - Score on a 1-10 scale where 10=mint/new-in-box and 1=parts-only/non-functional.
@@ -262,6 +268,13 @@ SECTION 3B — REGIONAL PRICING (critical for seller advice):
   Do NOT default to NYC for everything — pick the city where THIS item has the most buyers.
 - Assess local demand based on the seller's area and item type. A guitar pedal in rural Maine has WEAK local demand. An antique rocking chair near Boston has STRONG local demand.
 - Give a plain-language ship-vs-local verdict with real dollar estimates.
+
+RADIUS-AWARE PRICING (critical):
+- If the seller provided a "Sale radius" (e.g., "25 miles", "50 miles"), the regional_best_city should STILL be the best NATIONAL market for shipping.
+- BUT also fill regional_local_best_city with the best city WITHIN the seller's radius. If the seller is in Waterville ME with a 50-mile radius, suggest Portland ME, Augusta ME, or Bangor ME — NOT Boston (which is 180 miles away).
+- A riding lawnmower in rural Maine should have: regional_best_city = null (mowers sell locally, shipping is impractical), regional_local_best_city = "Augusta, ME" or "Portland, ME" (nearest population centers within radius).
+- For large/heavy items (furniture, appliances, outdoor equipment, vehicles) that are impractical to ship: set regional_best_city = null and regional_ship_or_local = "Sell locally — shipping a [item] is impractical and expensive."
+- For small/medium items that ship easily: provide both the national best market AND the local best city.
 
 SECTION 3C — WEIGHT & SHIPPING:
 - Estimate the item's weight in pounds. Be realistic based on what you see.
@@ -374,6 +387,50 @@ Return ONLY the JSON object matching the schema.`.trim();
       if (parsed.estimated_value_mid > parsed.estimated_value_high) {
         parsed.estimated_value_high = parsed.estimated_value_mid;
       }
+    }
+
+    // ── HARD CATEGORY OVERRIDE: Outdoor equipment must NEVER be Vehicles ──
+    const OUTDOOR_EQUIPMENT_PATTERNS = /\b(lawn\s*mower|riding\s*mower|push\s*mower|zero[\s-]turn|garden\s*tractor|lawn\s*tractor|chainsaw|leaf\s*blower|pressure\s*washer|snow\s*blower|weed\s*(eater|trimmer|whacker)|hedge\s*trimmer|rototiller|log\s*splitter|wood\s*chipper|generator|power\s*washer|string\s*trimmer|edger|tiller|cultivator)\b/i;
+    const OUTDOOR_EQUIPMENT_BRANDS = /\b(John\s*Deere|Husqvarna|Cub\s*Cadet|Troy[\s-]Bilt|Craftsman|Toro|Stihl|Echo|Ariens|Snapper|Briggs|Poulan|Ryobi|Greenworks|EGO|Kobalt|Black\s*&?\s*Decker|DeWalt|Makita|Honda\s*(mower|tractor|blower|trimmer|generator))\b/i;
+
+    if (
+      (parsed.category || "").toLowerCase().includes("vehicle") &&
+      (OUTDOOR_EQUIPMENT_PATTERNS.test(parsed.item_name || "") ||
+       OUTDOOR_EQUIPMENT_PATTERNS.test(parsed.notes || "") ||
+       (OUTDOOR_EQUIPMENT_BRANDS.test(parsed.item_name || "") && !/(car|truck|suv|van|motorcycle|automobile|sedan|pickup)/i.test(parsed.item_name || "")))
+    ) {
+      console.warn(`[AI Post-Process] CATEGORY OVERRIDE: "${parsed.category}" → "Outdoor Equipment" for "${parsed.item_name}"`);
+      parsed.category = "Outdoor Equipment";
+      const nameCheck = (parsed.item_name || "").toLowerCase();
+      if ((parsed.subcategory || "").toLowerCase().includes("vehicle")) {
+        parsed.subcategory = nameCheck.includes("mower") ? "Riding Mower" :
+                             nameCheck.includes("chainsaw") ? "Chainsaw" :
+                             nameCheck.includes("tractor") ? "Garden Tractor" :
+                             nameCheck.includes("blower") ? "Leaf Blower" :
+                             nameCheck.includes("generator") ? "Portable Generator" :
+                             "Outdoor Power Equipment";
+      }
+      parsed.vehicle_year = null;
+      parsed.vehicle_make = null;
+      parsed.vehicle_model = null;
+      parsed.vehicle_mileage = null;
+      parsed.vin_visible = null;
+      parsed.vehicle_transmission = null;
+      parsed.vehicle_fuel_type = null;
+      parsed.vehicle_engine = null;
+      parsed.vehicle_drivetrain = null;
+    }
+
+    // ── Confidence floor for items with identifiable brand + model ──
+    if (parsed.brand && parsed.brand !== "Unknown" && parsed.brand !== "Generic" && parsed.model && parsed.model !== "Unknown") {
+      if (parsed.confidence < 0.88) {
+        console.log(`[AI Post-Process] Confidence boosted from ${parsed.confidence} → 0.88 (brand "${parsed.brand}" + model "${parsed.model}" identified)`);
+        parsed.confidence = Math.max(parsed.confidence, 0.88);
+      }
+    }
+    if (parsed.markings && parsed.markings.length > 10 && parsed.confidence < 0.85) {
+      console.log(`[AI Post-Process] Confidence boosted from ${parsed.confidence} → 0.85 (markings detected: "${parsed.markings.slice(0, 50)}...")`);
+      parsed.confidence = Math.max(parsed.confidence, 0.85);
     }
 
     return parsed;

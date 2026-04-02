@@ -617,6 +617,11 @@ export default function DashboardClient({ items, stats, events }: DashboardClien
         )}
       </div>
 
+      {/* ── Bundle Suggestions ─────────────────────────────────────────── */}
+      <div style={{ marginBottom: "1.75rem" }}>
+        <BundleSuggestions />
+      </div>
+
       {/* ── Activity Feed ─────────────────────────────────────────────────── */}
       {events.length > 0 && (
         <div style={{ marginBottom: "1.75rem" }}>
@@ -961,10 +966,6 @@ export default function DashboardClient({ items, stats, events }: DashboardClien
         </div>
       )}
 
-      {/* Bundle Suggestions */}
-      <div style={{ marginTop: "1.5rem" }}>
-        <BundleSuggestions />
-      </div>
     </div>
   );
 }

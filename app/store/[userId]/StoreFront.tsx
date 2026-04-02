@@ -29,6 +29,10 @@ interface StoreFrontProps {
 export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl }: StoreFrontProps) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "antique" | "priced">("all");
+  const [sort, setSort] = useState<"newest" | "priceLow" | "priceHigh" | "antiques">("newest");
+  const [catFilter, setCatFilter] = useState<string | null>(null);
+
+  const categories = Array.from(new Set(items.map((i) => i.category).filter(Boolean))) as string[];
 
   const filtered = items.filter((item) => {
     const q = search.toLowerCase();
@@ -39,7 +43,15 @@ export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl
       filter === "all" ||
       (filter === "antique" && item.isAntique) ||
       (filter === "priced" && item.listingPrice != null);
-    return matchSearch && matchFilter;
+    const matchCategory = !catFilter || item.category === catFilter;
+    return matchSearch && matchFilter && matchCategory;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sort === "priceLow") return (a.listingPrice ?? 0) - (b.listingPrice ?? 0);
+    if (sort === "priceHigh") return (b.listingPrice ?? 0) - (a.listingPrice ?? 0);
+    if (sort === "antiques") return (b.isAntique ? 1 : 0) - (a.isAntique ? 1 : 0);
+    return 0; // newest = default order from server
   });
 
   return (
@@ -134,12 +146,62 @@ export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl
         ))}
       </div>
 
+      {/* Category filter pills */}
+      {categories.length > 1 && (
+        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem", flexWrap: "wrap", overflowX: "auto" }}>
+          <button
+            onClick={() => setCatFilter(null)}
+            style={{
+              padding: "0.35rem 0.85rem", borderRadius: "9999px",
+              fontSize: "0.75rem", fontWeight: 600, border: "1px solid",
+              cursor: "pointer", whiteSpace: "nowrap",
+              background: !catFilter ? "var(--accent)" : "var(--bg-card-solid)",
+              color: !catFilter ? "#fff" : "var(--text-secondary)",
+              borderColor: !catFilter ? "var(--accent)" : "var(--border-default)",
+            }}
+          >All Categories</button>
+          {categories.sort().map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCatFilter(cat)}
+              style={{
+                padding: "0.35rem 0.85rem", borderRadius: "9999px",
+                fontSize: "0.75rem", fontWeight: 600, border: "1px solid",
+                cursor: "pointer", whiteSpace: "nowrap",
+                background: catFilter === cat ? "var(--accent)" : "var(--bg-card-solid)",
+                color: catFilter === cat ? "#fff" : "var(--text-secondary)",
+                borderColor: catFilter === cat ? "var(--accent)" : "var(--border-default)",
+              }}
+            >{cat}</button>
+          ))}
+        </div>
+      )}
+
+      {/* Sort */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "0.75rem" }}>
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value as any)}
+          style={{
+            padding: "0.4rem 0.75rem", fontSize: "0.78rem", fontWeight: 600,
+            background: "var(--bg-card-solid)", color: "var(--text-primary)",
+            border: "1px solid var(--border-default)", borderRadius: "0.5rem",
+            cursor: "pointer", outline: "none",
+          }}
+        >
+          <option value="newest">Newest First</option>
+          <option value="priceLow">Price: Low → High</option>
+          <option value="priceHigh">Price: High → Low</option>
+          <option value="antiques">Antiques First</option>
+        </select>
+      </div>
+
       {/* Grid */}
-      {filtered.length === 0 ? (
-        <div className="card p-12 text-center">
-          <div className="text-5xl mb-4">🔍</div>
-          <div className="text-xl font-semibold" style={{ color: "var(--text-primary)" }}>No items found</div>
-          <p className="muted mt-2">Try a different search or filter.</p>
+      {sorted.length === 0 ? (
+        <div style={{ background: "var(--bg-card-solid)", border: "1px solid var(--border-default)", borderRadius: "1.25rem", padding: "3rem", textAlign: "center" }}>
+          <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🔍</div>
+          <div style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--text-primary)" }}>No items found</div>
+          <p style={{ color: "var(--text-muted)", marginTop: "0.5rem" }}>Try a different search or filter.</p>
         </div>
       ) : (
         <div style={{
@@ -147,7 +209,7 @@ export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl
           gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
           gap: "1.5rem",
         }}>
-          {filtered.map((item) => {
+          {sorted.map((item) => {
             const isSold = item.status === "SOLD" || item.status === "SHIPPED" || item.status === "COMPLETED";
             return (
               <div
@@ -170,6 +232,7 @@ export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl
                     <img
                       src={item.photoUrl}
                       alt={item.title}
+                      loading="lazy"
                       style={{
                         width: "100%",
                         height: "240px",

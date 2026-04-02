@@ -4,7 +4,13 @@ export const metadata: Metadata = { title: "What's New · LegacyLoop", descripti
 
 export default function WhatsNewPage() {
   const updates = [
-    { date: "Mar 31, 2026", badge: "NEW", title: "💰 Apify Budget Intelligence System", desc: "3-tier budget mode (conservative/normal/full). Per-item call caps prevent runaway costs. Real compute cost estimates. Auto-sequencer gated. BuyerBot/ListBot social scrapers respect budget mode." },
+    { date: "Apr 2, 2026", badge: "NEW", title: "🌐 Marketplace Ecosystem Roadmap", desc: "Published the full LegacyLoop API ecosystem vision: 18+ marketplace connectors (eBay, Facebook, Etsy, Shopify, Amazon, and more), cross-platform bot intelligence, developer API with SDKs, and the 5-step ecosystem workflow. Your bots work on every platform you sell on." },
+    { date: "Apr 2, 2026", badge: null, title: "🏪 POS/Catalog Export Architecture", desc: "Built the Square Catalog mapping layer, batch sync API (up to 50 items), and demo-mode export pipeline. Categories, pricing (dollars-to-cents conversion), and photos map automatically. Stripe connector architecture defined." },
+    { date: "Apr 2, 2026", badge: null, title: "🛍️ Storefront & Sale Page Overhaul", desc: "Full theme audit across all public buyer-facing pages. Category grouping on sale pages, sort and filter on storefronts, mobile responsive bundle layouts, breadcrumb navigation, and lazy-loaded images. Zero hardcoded colors remain." },
+    { date: "Apr 2, 2026", badge: null, title: "📦 Department Bundle System", desc: "Sell entire departments at bulk discounts. Smart discount calculation (10-30% based on item count), department grouping by AI category, and integrated sale management from project detail." },
+    { date: "Apr 2, 2026", badge: null, title: "✨ Awwwards-Level Visual Effects", desc: "Noise overlay, gradient orbs, glow cards, animated statistics, and magnetic buttons. Premium visual polish across the entire platform with full Light/Dark/Auto mode support." },
+    { date: "Apr 1, 2026", badge: null, title: "🔒 P0 Production Hardening Complete", desc: "All 6 platform-critical items resolved: bot diagnostics audit, membership gating regression, annual billing validation, credit wallet enhancement, legal/policy readiness, and founding-member stats integrity." },
+    { date: "Mar 31, 2026", badge: null, title: "💰 Apify Budget Intelligence System", desc: "3-tier budget mode (conservative/normal/full). Per-item call caps prevent runaway costs. Real compute cost estimates. Auto-sequencer gated. BuyerBot/ListBot social scrapers respect budget mode." },
     { date: "Mar 31, 2026", badge: null, title: "🎬 VideoBot ElevenLabs Integration", desc: "5 professional voices with auto-selection by category. Photo-synced narration with sentence-level timecodes. Caching, quota checking, and OpenAI fallback." },
     { date: "Mar 31, 2026", badge: null, title: "⚖️ Meta API Compliance", desc: "Data deletion page, updated privacy policy with Square/Meta/cookies, About page with full mission and values." },
     { date: "Mar 31, 2026", badge: null, title: "🙏 Mission & Giving", desc: "Full mission and vision from official doc. Support Our Mission giving section. Built with purpose in Maine." },
@@ -57,7 +63,17 @@ export default function WhatsNewPage() {
         ))}
       </div>
 
-      <div style={{ textAlign: "center", marginTop: "1.5rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
+      <div style={{ textAlign: "center", marginTop: "2rem", marginBottom: "1rem" }}>
+        <a href="/coming-soon" style={{
+          display: "inline-block", padding: "0.65rem 1.5rem",
+          background: "var(--accent)", color: "#fff", borderRadius: "0.75rem",
+          fontSize: "0.85rem", fontWeight: 600, textDecoration: "none",
+        }}>
+          View Roadmap →
+        </a>
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
         LegacyLoop is updated daily. Follow us for the latest.
       </div>
     </div>

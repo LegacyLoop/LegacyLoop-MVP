@@ -1088,6 +1088,21 @@ export default function ItemActionPanel({
 
             {ghostBtn("\u{1F4F7}", "Add New Item", () => { onClose(); router.push("/items/new"); })}
 
+            {/* Bundle action */}
+            <a
+              href={`/bundles/create?items=${item.id}`}
+              style={{
+                display: "flex", alignItems: "center", gap: "0.5rem",
+                width: "100%", padding: "0.65rem 0.85rem", borderRadius: "0.5rem",
+                background: "var(--accent-dim)", border: "1px solid var(--accent-border)",
+                color: "var(--accent)", fontSize: "0.82rem", fontWeight: 600,
+                textDecoration: "none", cursor: "pointer",
+              }}
+            >
+              <span style={{ fontSize: "1rem" }}>{"\u{1F4E6}"}</span>
+              Add to Bundle
+            </a>
+
             {/* Danger zone */}
             <div style={{
               marginTop: '20px',

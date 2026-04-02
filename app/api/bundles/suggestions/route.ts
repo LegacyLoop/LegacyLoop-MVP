@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 
@@ -7,18 +7,30 @@ function safeJson(s: string | null | undefined): Record<string, unknown> | null 
   try { return JSON.parse(s); } catch { return null; }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
     const user = await authAdapter.getSession();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    const projectId = req.nextUrl.searchParams.get("projectId");
+
+    const where: Record<string, unknown> = {
+      userId: user.id,
+      status: { in: ["LISTED", "ANALYZED", "READY", "INTERESTED"] },
+    };
+    if (projectId) where.projectId = projectId;
+
     const items = await prisma.item.findMany({
-      where: { userId: user.id, status: { in: ["LISTED", "ANALYZED", "READY", "INTERESTED"] } },
+      where,
       include: { aiResult: { select: { rawJson: true } }, photos: { take: 1 } },
     });
 
-    // Group by AI-assigned category
-    const groups: Record<string, { id: string; title: string; price: number; photo: string | null; condition: string | null }[]> = {};
+    const groups: Record<string, {
+      id: string; title: string; price: number;
+      photo: string | null; condition: string | null;
+      subcategory: string | null;
+    }[]> = {};
+
     for (const item of items) {
       const ai = safeJson(item.aiResult?.rawJson ?? null);
       const category = (ai?.category as string) || "Other";
@@ -29,6 +41,7 @@ export async function GET() {
         price: item.listingPrice || 0,
         photo: item.photos?.[0]?.filePath || null,
         condition: item.condition,
+        subcategory: (ai?.subcategory as string) || null,
       });
     }
 
@@ -36,15 +49,18 @@ export async function GET() {
       .filter(([, catItems]) => catItems.length >= 2)
       .map(([category, catItems]) => {
         const individualTotal = catItems.reduce((s, i) => s + i.price, 0);
-        const suggestedPrice = Math.round(individualTotal * 0.90);
+        const discountPercent = Math.min(10 + (catItems.length - 2) * 2, 30);
+        const suggestedPrice = Math.round(individualTotal * (1 - discountPercent / 100));
         return {
           category,
           itemCount: catItems.length,
-          itemIds: catItems.map(i => i.id),
+          itemIds: catItems.map((i) => i.id),
           items: catItems,
+          sampleTitles: catItems.slice(0, 3).map((i) => i.title),
+          samplePhotos: catItems.slice(0, 4).map((i) => i.photo).filter(Boolean),
           individualTotal: Math.round(individualTotal),
           suggestedPrice,
-          discountPercent: 10,
+          discountPercent,
         };
       })
       .sort((a, b) => b.individualTotal - a.individualTotal);

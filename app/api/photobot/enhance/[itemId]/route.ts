@@ -58,7 +58,7 @@ export async function POST(
 
     const item = await prisma.item.findUnique({
       where: { id: itemId },
-      include: { photos: { orderBy: { order: "asc" } }, aiResult: true },
+      include: { photos: { orderBy: { order: "asc" } }, aiResult: true, valuation: true, antiqueCheck: true },
     });
     if (!item || item.userId !== user.id) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });

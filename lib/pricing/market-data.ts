@@ -301,7 +301,34 @@ export function getMarketInfo(zip: string | null | undefined): MarketInfo {
  * Get the best market to ship to (highest multiplier).
  * Returns the NYC market as default best since it has highest demand.
  */
-export function getBestMarket(): MarketInfo {
+export function getBestMarket(category?: string | null): MarketInfo {
+  const cat = (category || "").toLowerCase();
+
+  if (cat.includes("outdoor") || cat.includes("vehicle") || cat.includes("furniture")) {
+    return {
+      tier: "MEDIUM",
+      multiplier: 1.05,
+      label: "Nearest metro area",
+      demandNote: "Large/heavy items sell best locally or at nearest metro. Shipping is impractical.",
+    };
+  }
+  if (cat.includes("musical") || cat.includes("instrument") || cat.includes("guitar")) {
+    return {
+      tier: "HIGH",
+      multiplier: 1.20,
+      label: "Nashville, TN / Austin, TX",
+      demandNote: "Music hubs with active gear markets.",
+    };
+  }
+  if (cat.includes("art") || cat.includes("painting") || cat.includes("sculpture")) {
+    return {
+      tier: "HIGH",
+      multiplier: 1.30,
+      label: "New York City / Los Angeles",
+      demandNote: "Strongest art resale markets.",
+    };
+  }
+
   return {
     tier: "HIGH",
     multiplier: 1.35,

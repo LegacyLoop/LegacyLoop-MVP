@@ -13,9 +13,9 @@ import Link from "next/link";
 const TEAL = "#00bcd4";
 const GLASS = "var(--bg-card)";
 const GLASS_BORDER = "var(--border-default)";
-const TEXT_PRIMARY = "#fff";
-const TEXT_SECONDARY = "rgba(207,216,220,0.7)";
-const TEXT_MUTED = "rgba(207,216,220,0.45)";
+const TEXT_PRIMARY = "var(--text-primary)";
+const TEXT_SECONDARY = "var(--text-secondary)";
+const TEXT_MUTED = "var(--text-muted)";
 const SUCCESS_GREEN = "#4caf50";
 
 interface Suggestion {
@@ -25,6 +25,8 @@ interface Suggestion {
   suggestedPrice: number;
   discountPercent: number;
   sampleTitles?: string[];
+  samplePhotos?: string[];
+  itemIds?: string[];
 }
 
 function getDiscountColor(pct: number): string {
@@ -34,14 +36,14 @@ function getDiscountColor(pct: number): string {
   return TEAL;
 }
 
-export default function BundleSuggestions() {
+export default function BundleSuggestions({ projectId }: { projectId?: string } = {}) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("/api/bundles/suggestions")
+    fetch(`/api/bundles/suggestions${projectId ? `?projectId=${projectId}` : ""}`)
       .then((r) => r.json())
       .then((d) => setSuggestions(d.suggestions || []))
       .catch(() => {})
@@ -179,6 +181,16 @@ export default function BundleSuggestions() {
                     ({s.itemCount} items)
                   </span>
                 </div>
+                {s.samplePhotos && s.samplePhotos.length > 0 && (
+                  <div style={{ display: "flex", gap: 3, marginTop: 4, marginBottom: 2 }}>
+                    {s.samplePhotos.slice(0, 4).map((p: string, pi: number) => (
+                      <img key={pi} src={p} alt="" style={{ width: 28, height: 28, borderRadius: 5, objectFit: "cover" as const, border: "1px solid var(--border-default)" }} />
+                    ))}
+                    {s.itemCount > 4 && (
+                      <span style={{ width: 28, height: 28, borderRadius: 5, background: "var(--ghost-bg)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: TEXT_MUTED }}>+{s.itemCount - 4}</span>
+                    )}
+                  </div>
+                )}
                 <div style={{ fontSize: 11, color: TEXT_SECONDARY }}>
                   <span style={{ textDecoration: "line-through", color: TEXT_MUTED }}>
                     ${s.individualTotal.toLocaleString()}

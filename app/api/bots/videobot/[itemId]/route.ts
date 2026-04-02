@@ -109,6 +109,7 @@ export async function POST(
       include: {
         aiResult: true,
         valuation: true,
+        antiqueCheck: true,
         photos: { orderBy: { order: "asc" }, take: 6 },
       },
     });

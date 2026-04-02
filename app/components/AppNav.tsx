@@ -31,6 +31,7 @@ import {
   Search,
   Trophy,
   X,
+  DollarSign,
 } from "lucide-react";
 import { useTheme } from "@/app/components/ThemeProvider";
 
@@ -96,6 +97,7 @@ const DROPDOWN_SECTIONS = [
       { href: "/bots",        label: "AI Bots",         icon: Bot },
       { href: "/marketplace", label: "Add-On Store",    icon: Sparkles },
       { href: "/analytics",   label: "Analytics",       icon: BarChart3 },
+      { href: "/spending",    label: "AI Spending",     icon: DollarSign },
       { href: "/shipping",    label: "Shipping Center", icon: Truck },
     ],
   },

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ShareButtons from "@/app/components/ShareButtons";
+import BundleSuggestions from "@/app/components/BundleSuggestions";
 
 type ProjectInfo = {
   id: string; type: string; name: string; description: string | null;
@@ -15,6 +16,7 @@ type ProjectInfo = {
 type ItemRow = {
   id: string; title: string; status: string; photoUrl: string | null;
   isAntique: boolean; valuationHigh: number | null; listingPrice: number | null; convCount: number;
+  category?: string | null;
 };
 type AvailItem = { id: string; title: string; photoUrl: string | null; status: string };
 
@@ -75,6 +77,11 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
   const [fixedPrice, setFixedPrice] = useState("");
   const [sellAllProcessing, setSellAllProcessing] = useState(false);
 
+  // ── Department sell state ──
+  const [showDeptSell, setShowDeptSell] = useState<string | null>(null);
+  const [deptDiscount, setDeptDiscount] = useState(20);
+  const [deptSelling, setDeptSelling] = useState(false);
+
   // ── Edit mode state ──
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -95,6 +102,15 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
 
   const saleType = SALE_TYPE_MAP[project.type] || SALE_TYPE_MAP.ESTATE_SALE;
   const statusBadge = STATUS_BADGE[project.status] || STATUS_BADGE.DRAFT;
+
+  // ── Department grouping ──
+  const departments: Record<string, typeof items> = {};
+  for (const item of items) {
+    const cat = item.category || "Other";
+    if (!departments[cat]) departments[cat] = [];
+    departments[cat].push(item);
+  }
+  const deptEntries = Object.entries(departments).filter(([, di]) => di.length >= 1).sort((a, b) => b[1].length - a[1].length);
 
   // ── Handlers ──
 
@@ -707,6 +723,85 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Department Bundle Suggestions ── */}
+      <div style={{ marginBottom: "1.25rem" }}>
+        <BundleSuggestions projectId={project.id} />
+      </div>
+
+      {/* ── Department Cards ── */}
+      {deptEntries.length > 1 && (
+        <div style={{
+          padding: "1.25rem", borderRadius: "1rem", marginBottom: "1.25rem",
+          background: "var(--bg-card)", border: "1px solid var(--border-default)",
+          backdropFilter: "blur(20px)",
+        }}>
+          <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem" }}>
+            Departments
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "0.75rem" }}>
+            {deptEntries.map(([cat, dItems]) => {
+              const unsold = dItems.filter((i) => !["SOLD", "SHIPPED", "COMPLETED"].includes(i.status));
+              const deptValue = unsold.reduce((s, i) => s + (i.listingPrice || i.valuationHigh || 0), 0);
+              return (
+                <div key={cat} style={{
+                  padding: "0.85rem", borderRadius: "0.75rem",
+                  background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)",
+                }}>
+                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.25rem" }}>{cat}</div>
+                  <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
+                    {dItems.length} item{dItems.length !== 1 ? "s" : ""} &middot; {unsold.length} unsold &middot; ${Math.round(deptValue).toLocaleString()}
+                  </div>
+                  {unsold.length > 0 && (
+                    <button
+                      onClick={() => setShowDeptSell(showDeptSell === cat ? null : cat)}
+                      style={{
+                        marginTop: "0.5rem", fontSize: "0.7rem", fontWeight: 600,
+                        padding: "0.3rem 0.65rem", borderRadius: "0.4rem",
+                        background: "rgba(0,188,212,0.12)", color: "#00bcd4",
+                        border: "1px solid rgba(0,188,212,0.2)", cursor: "pointer",
+                      }}
+                    >
+                      {showDeptSell === cat ? "Cancel" : `Sell ${cat}`}
+                    </button>
+                  )}
+                  {showDeptSell === cat && (
+                    <div style={{ marginTop: "0.5rem" }}>
+                      <label style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>Discount %</label>
+                      <input
+                        type="number" min={0} max={90} value={deptDiscount}
+                        onChange={(e) => setDeptDiscount(Number(e.target.value))}
+                        style={{ ...INPUT_STYLE, marginTop: "0.25rem", marginBottom: "0.4rem" }}
+                      />
+                      <button
+                        disabled={deptSelling}
+                        onClick={async () => {
+                          setDeptSelling(true);
+                          try {
+                            const res = await fetch(`/api/projects/${project.id}`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ sellDepartment: { category: cat, discountPct: deptDiscount } }),
+                            });
+                            if (res.ok) { router.refresh(); setShowDeptSell(null); }
+                          } finally { setDeptSelling(false); }
+                        }}
+                        style={{
+                          width: "100%", fontSize: "0.7rem", fontWeight: 600,
+                          padding: "0.35rem 0.65rem", borderRadius: "0.4rem",
+                          background: "#00bcd4", color: "#fff", border: "none", cursor: "pointer",
+                        }}
+                      >
+                        {deptSelling ? "Selling..." : `Sell ${unsold.length} items at ${deptDiscount}% off`}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

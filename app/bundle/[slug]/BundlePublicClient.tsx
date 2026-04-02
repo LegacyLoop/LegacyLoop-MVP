@@ -9,14 +9,14 @@ import Link from "next/link";
    All inline style={{}} — no Tailwind.
    ────────────────────────────────────────────────────────────────────────────── */
 
-const TEAL = "#00bcd4";
-const TEAL_DIM = "rgba(0,188,212,0.15)";
+const TEAL = "var(--accent)";
+const TEAL_DIM = "var(--accent-dim)";
 const GLASS = "var(--ghost-bg)";
 const GLASS_BORDER = "var(--border-default)";
-const TEXT_PRIMARY = "#fff";
-const TEXT_SECONDARY = "rgba(207,216,220,0.7)";
-const TEXT_MUTED = "rgba(207,216,220,0.45)";
-const BG_PAGE = "#0f1419";
+const TEXT_PRIMARY = "var(--text-primary)";
+const TEXT_SECONDARY = "var(--text-secondary)";
+const TEXT_MUTED = "var(--text-muted)";
+const BG_PAGE = "var(--bg-body)";
 const SUCCESS_GREEN = "#4caf50";
 
 interface BundleItem {
@@ -50,7 +50,7 @@ function getDiscountColor(pct: number): string {
   if (pct >= 30) return "#f44336";
   if (pct >= 20) return "#ff9800";
   if (pct >= 10) return SUCCESS_GREEN;
-  return TEAL;
+  return "#00bcd4"; // brand teal — must be hex for template literal usage
 }
 
 export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
@@ -122,7 +122,23 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: BG_PAGE }}>
+    <div style={{ minHeight: "100vh" }}>
+      <style>{`
+        .bundle-layout { display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start; }
+        .bundle-sidebar { position: sticky; top: 80px; }
+        @media (max-width: 768px) {
+          .bundle-layout { grid-template-columns: 1fr; }
+          .bundle-sidebar { position: static !important; }
+        }
+      `}</style>
+      <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        <a href="/" style={{ color: "var(--text-muted)", textDecoration: "none" }}>Home</a>
+        <span style={{ color: "var(--text-muted)", opacity: 0.5 }}>/</span>
+        <a href="/bundles" style={{ color: "var(--text-muted)", textDecoration: "none" }}>Bundles</a>
+        <span style={{ color: "var(--text-muted)", opacity: 0.5 }}>/</span>
+        <span style={{ color: "var(--text-primary)" }}>{bundle.title}</span>
+      </div>
+
       {/* Photo lightbox */}
       {selectedPhoto && (
         <div
@@ -141,6 +157,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
           <img
             src={selectedPhoto}
             alt=""
+            loading="lazy"
             style={{ maxWidth: "90vw", maxHeight: "90vh", borderRadius: 8 }}
           />
         </div>
@@ -182,6 +199,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                   <img
                     src={item.photo}
                     alt={item.title}
+                    loading="lazy"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                 ) : (
@@ -226,7 +244,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
 
       {/* Main content */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 16px 80px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 32, alignItems: "start" }}>
+        <div className="bundle-layout">
           {/* Left column: Bundle details */}
           <div>
             {/* Title + seller */}
@@ -234,9 +252,9 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                 <span
                   style={{
-                    background: `${TEAL}22`,
+                    background: "var(--accent-dim)",
                     color: TEAL,
-                    border: `1px solid ${TEAL}44`,
+                    border: "1px solid var(--accent-border)",
                     borderRadius: 6,
                     padding: "3px 10px",
                     fontSize: 10,
@@ -317,8 +335,8 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
             {/* Price comparison banner */}
             <div
               style={{
-                background: `linear-gradient(135deg, ${TEAL}11, ${TEAL}06)`,
-                border: `1px solid ${TEAL}33`,
+                background: "linear-gradient(135deg, rgba(0,188,212,0.07), rgba(0,188,212,0.04))",
+                border: "1px solid var(--accent-border)",
                 borderRadius: 14,
                 padding: 24,
                 marginBottom: 28,
@@ -416,6 +434,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                         <img
                           src={item.photo}
                           alt={item.title}
+                          loading="lazy"
                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
                       ) : (
@@ -532,7 +551,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                   style={{
                     background: copied ? `${SUCCESS_GREEN}22` : TEAL_DIM,
                     color: copied ? SUCCESS_GREEN : TEAL,
-                    border: `1px solid ${copied ? `${SUCCESS_GREEN}44` : `${TEAL}44`}`,
+                    border: `1px solid ${copied ? `${SUCCESS_GREEN}44` : "var(--accent-border)"}`,
                     borderRadius: 8,
                     padding: "8px 16px",
                     fontSize: 12,
@@ -597,7 +616,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
           </div>
 
           {/* Right column: Sticky purchase panel */}
-          <div style={{ position: "sticky", top: 80 }}>
+          <div className="bundle-sidebar">
             <div
               style={{
                 background: GLASS,
@@ -660,7 +679,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                 }}
                 style={{
                   width: "100%",
-                  background: `linear-gradient(135deg, ${TEAL}, #0097a7)`,
+                  background: "linear-gradient(135deg, #00bcd4, #0097a7)",
                   color: "#fff",
                   border: "none",
                   borderRadius: 12,
@@ -669,7 +688,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                   fontWeight: 700,
                   cursor: "pointer",
                   marginBottom: 10,
-                  boxShadow: `0 4px 20px ${TEAL}40`,
+                  boxShadow: "0 4px 20px var(--accent-glow)",
                   transition: "transform 0.15s",
                 }}
               >
@@ -686,7 +705,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                     width: "100%",
                     background: GLASS,
                     color: TEAL,
-                    border: `1px solid ${TEAL}44`,
+                    border: "1px solid var(--accent-border)",
                     borderRadius: 12,
                     padding: "12px 0",
                     fontSize: 14,
@@ -813,7 +832,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
           >
             <div
               style={{
-                background: "#1a1f25",
+                background: "var(--bg-card-solid)",
                 border: `1px solid ${GLASS_BORDER}`,
                 borderRadius: 18,
                 padding: 32,
@@ -916,7 +935,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                   onClick={sendContact}
                   style={{
                     flex: 1,
-                    background: `linear-gradient(135deg, ${TEAL}, #0097a7)`,
+                    background: "linear-gradient(135deg, #00bcd4, #0097a7)",
                     color: "#fff",
                     border: "none",
                     borderRadius: 10,
@@ -950,7 +969,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
           >
             <div
               style={{
-                background: "#1a1f25",
+                background: "var(--bg-card-solid)",
                 border: `1px solid ${GLASS_BORDER}`,
                 borderRadius: 18,
                 padding: 40,
@@ -987,7 +1006,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
           >
             <div
               style={{
-                background: "#1a1f25",
+                background: "var(--bg-card-solid)",
                 border: `1px solid ${GLASS_BORDER}`,
                 borderRadius: 18,
                 padding: 32,
@@ -1098,7 +1117,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                   disabled={offerAmount <= 0}
                   style={{
                     flex: 1,
-                    background: offerAmount > 0 ? `linear-gradient(135deg, ${TEAL}, #0097a7)` : "var(--ghost-bg)",
+                    background: offerAmount > 0 ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "var(--ghost-bg)",
                     color: offerAmount > 0 ? "#fff" : TEXT_MUTED,
                     border: "none",
                     borderRadius: 10,
@@ -1132,7 +1151,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
           >
             <div
               style={{
-                background: "#1a1f25",
+                background: "var(--bg-card-solid)",
                 border: `1px solid ${GLASS_BORDER}`,
                 borderRadius: 18,
                 padding: 40,

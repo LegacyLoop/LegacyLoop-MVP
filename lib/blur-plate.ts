@@ -38,7 +38,26 @@ async function detectPlates(imageBuffer: Buffer): Promise<Array<{
             },
             {
               type: "input_text",
-              text: `Analyze this vehicle photo for license plates. If you see ANY license plate (front or rear), return its bounding box as a JSON array. Each plate should be an object with x, y, width, height as PERCENTAGES of the total image dimensions (0-100 scale). x and y are the TOP-LEFT corner of the plate. Example: [{"x": 35, "y": 82, "width": 12, "height": 5}]. If NO license plate is visible, return an empty array: []. ONLY return the JSON array, nothing else. Be precise — the coordinates will be used to blur the plate for privacy.`,
+              text: `Analyze this vehicle photo for license plates that need privacy blurring.
+
+DETECT these plate types at ANY angle (straight-on, angled, partial, reflected):
+- Standard metal license plates (front and rear)
+- Temporary paper/cardboard plates (dealer or DMV issued)
+- Dealer plates and demonstration plates
+- Transit plates and in-transit permits taped to windows
+- Plates visible through reflections (mirrors, windows, chrome)
+
+DO NOT DETECT (return empty array for these):
+- Empty plate brackets/holders with NO plate mounted
+- Removed plate areas showing only bolts/holes
+- Bumper stickers or non-plate decals
+- VIN numbers on dashboards (these are NOT license plates)
+
+Return bounding boxes as a JSON array. Each plate = {x, y, width, height} as PERCENTAGES of total image (0-100 scale). x,y = TOP-LEFT corner. Be GENEROUS with the bounding box — slightly too large is better than cutting off characters.
+
+Example: [{"x": 33, "y": 80, "width": 14, "height": 6}]
+No plates visible? Return: []
+ONLY return the JSON array, nothing else.`,
             },
           ],
         },
@@ -67,7 +86,7 @@ async function detectPlates(imageBuffer: Buffer): Promise<Array<{
       typeof p.x === "number" && typeof p.y === "number" &&
       typeof p.width === "number" && typeof p.height === "number" &&
       p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100 &&
-      p.width > 0 && p.width <= 50 && p.height > 0 && p.height <= 30
+      p.width > 0 && p.width <= 70 && p.height > 0 && p.height <= 50
     );
 
     console.log(`[blur-plate] AI detected ${validated.length} plate(s):`, JSON.stringify(validated));
@@ -160,8 +179,8 @@ export async function blurPlatesForItem(itemId: string): Promise<{ blurredCount:
         }
 
         // Add 10% padding around detected plate for safety
-        const padX = Math.floor(pixelZone.width * 0.1);
-        const padY = Math.floor(pixelZone.height * 0.1);
+        const padX = Math.floor(pixelZone.width * 0.15);
+        const padY = Math.floor(pixelZone.height * 0.15);
         const paddedZone = {
           left: Math.max(0, pixelZone.left - padX),
           top: Math.max(0, pixelZone.top - padY),

@@ -68,6 +68,7 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
   const [expandedSummary, setExpandedSummary] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [vaultCollapsed, setVaultCollapsed] = useState(false);
+  const [reanalyzing, setReanalyzing] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
@@ -124,6 +125,28 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
     }
   }
 
+  async function reanalyzeDoc(documentId: string) {
+    setReanalyzing(documentId);
+    try {
+      const res = await fetch(`/api/items/documents/${itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ documentId }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error((data as any).message || "Re-analysis failed");
+      }
+      setDocs((prev) => prev.map((d) =>
+        d.id === documentId ? { ...d, aiSummary: null, aiAnalysis: null, confidenceScore: null, providerResults: null } : d
+      ));
+    } catch (e: any) {
+      setError(e.message || "Re-analysis failed");
+    } finally {
+      setReanalyzing(null);
+    }
+  }
+
   function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     uploadFile(files[0]);
@@ -146,7 +169,8 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
     if (pending.length === 0) return;
     const timer = setTimeout(() => fetchDocs(), 8000);
     const timer2 = setTimeout(() => fetchDocs(), 20000);
-    return () => { clearTimeout(timer); clearTimeout(timer2); };
+    const timer3 = setTimeout(() => fetchDocs(), 45000);
+    return () => { clearTimeout(timer); clearTimeout(timer2); clearTimeout(timer3); };
   }, [docs, fetchDocs]);
 
   // Completeness
@@ -552,6 +576,23 @@ export default function DocumentVault({ itemId }: { itemId: string }) {
                         }}
                       >
                         🤖 AI
+                      </button>
+                    )}
+                    {doc.aiSummary && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); reanalyzeDoc(doc.id); }}
+                        disabled={reanalyzing === doc.id}
+                        title="Re-analyze with latest AI"
+                        style={{
+                          padding: "6px 10px", minHeight: "36px",
+                          fontSize: "0.68rem", fontWeight: 600,
+                          borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.2)",
+                          background: "transparent", color: "var(--accent)",
+                          cursor: reanalyzing === doc.id ? "wait" : "pointer",
+                          opacity: reanalyzing === doc.id ? 0.5 : 1,
+                        }}
+                      >
+                        {reanalyzing === doc.id ? "..." : "🔄"}
                       </button>
                     )}
                     <a

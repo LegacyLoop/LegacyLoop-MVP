@@ -60,6 +60,20 @@ export async function POST(
   const item = await prisma.item.findUnique({ where: { id: itemId }, select: { userId: true } });
   if (!item || item.userId !== user.id) return new Response("Not found", { status: 404 });
 
+  // Credit check for document AI analysis (1 credit) — skipped in demo mode
+  const { isDemoMode } = await import("@/lib/bot-mode");
+  if (!isDemoMode()) {
+    const { checkCredits, deductCredits } = await import("@/lib/credits");
+    const cc = await checkCredits(user.id, 1);
+    if (!cc.hasEnough) {
+      return Response.json(
+        { error: "insufficient_credits", message: "1 credit required for document analysis.", balance: cc.balance, required: 1, buyUrl: "/credits" },
+        { status: 402 }
+      );
+    }
+    await deductCredits(user.id, 1, "Document analysis", itemId);
+  }
+
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
   const docType = String(formData.get("docType") || "OTHER").trim();
@@ -134,4 +148,48 @@ export async function DELETE(
   await prisma.itemDocument.delete({ where: { id: documentId } });
 
   return Response.json({ success: true });
+}
+
+/** PATCH /api/items/documents/[itemId] — re-analyze a document */
+export async function PATCH(
+  req: Request,
+  { params }: { params: Params }
+) {
+  const { itemId } = await params;
+  const user = await authAdapter.getSession();
+  if (!user) return new Response("Unauthorized", { status: 401 });
+
+  const item = await prisma.item.findUnique({ where: { id: itemId }, select: { userId: true } });
+  if (!item || item.userId !== user.id) return new Response("Not found", { status: 404 });
+
+  const body = await req.json().catch(() => ({}));
+  const { documentId } = body;
+  if (!documentId) return new Response("documentId required", { status: 400 });
+
+  const doc = await prisma.itemDocument.findUnique({ where: { id: documentId } });
+  if (!doc || doc.itemId !== itemId) return new Response("Document not found", { status: 404 });
+
+  // Credit check: 1 credit for re-analysis
+  const { checkCredits, deductCredits } = await import("@/lib/credits");
+  const credits = await checkCredits(user.id, 1);
+  if (!credits.hasEnough) {
+    return Response.json(
+      { error: "insufficient_credits", message: "1 credit required to re-analyze.", balance: credits.balance, required: 1, buyUrl: "/credits" },
+      { status: 402 }
+    );
+  }
+  await deductCredits(user.id, 1, "Document re-analysis", itemId);
+
+  // Clear old analysis
+  await prisma.itemDocument.update({
+    where: { id: documentId },
+    data: { aiSummary: null, aiAnalysis: null, confidenceScore: null, providerResults: null },
+  });
+
+  // Fire-and-forget re-analysis
+  summarizeDocument(doc.id, doc.fileUrl, doc.fileType, doc.docType).catch((e) =>
+    console.error("[doc-reanalyze] Fire-and-forget failed:", e.message)
+  );
+
+  return Response.json({ success: true, message: "Re-analysis started" });
 }

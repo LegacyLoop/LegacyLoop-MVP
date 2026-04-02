@@ -57,6 +57,25 @@ VERBAL SUMMARY:
 
 GENERAL:
   Include: keywords[] (max 15, search terms buyers would use), notes (additional observations), confidence (0.0-1.0)
+
+CRITICAL CLASSIFICATION RULE:
+Lawn mowers (riding or push), garden tractors (John Deere, Husqvarna, Cub Cadet, Troy-Bilt, Craftsman, Toro), chainsaws, leaf blowers, pressure washers, snow blowers, log splitters, wood chippers, generators, and ALL garden/lawn/outdoor power equipment MUST be categorized as 'Outdoor Equipment' — NEVER as 'Vehicles' — even if they have engines, wheels, seats, or steering wheels. The 'Vehicles' category is EXCLUSIVELY for road-legal motor vehicles: cars, trucks, SUVs, vans, motorcycles, boats, ATVs, RVs, campers, and motorhomes.
+
+CONFIDENCE RULE:
+If brand name labels, model stickers, QR codes, serial number plates, or manufacturer logos are clearly visible and legible in the photos, BOOST confidence to 0.90+. If BOTH brand AND model number are legible, BOOST to 0.95+. Visible labeling CONFIRMS identification.
+
+COLLECTIBLE DETECTION:
+Include: is_collectible (true if trading cards, sports cards, coins, stamps, comics, vinyl records, sneakers, watches, figurines, vintage toys, video games, memorabilia — items graded by PSA/BGS/CGC/WATA or tracked on StockX/TCGPlayer/Discogs)
+
+VEHICLE DATA (only if category is "Vehicles"):
+Include: vehicle_year, vehicle_make, vehicle_model, vehicle_mileage, vin_visible, vehicle_transmission, vehicle_fuel_type, vehicle_engine, vehicle_drivetrain
+Set ALL vehicle fields to null if item is NOT a vehicle.
+
+SHIPPING ESTIMATE:
+Include: weight_estimate_lbs (realistic weight in pounds), shipping_difficulty (Easy/Moderate/Difficult/Freight only), shipping_notes (packing advice, fragility, carrier suggestions)
+
+REGIONAL PRICING INTELLIGENCE:
+Include: regional_best_city (US city where this commands highest price IF shipped nationally — null if too large to ship), regional_best_state, regional_best_price_low, regional_best_price_high, regional_best_why, regional_local_demand (Strong/Average/Weak), regional_local_reasoning, regional_ship_or_local (verdict with math), regional_local_best_city (best city within seller's radius — null if no radius), regional_local_best_why, regional_national_best_city, regional_national_best_state
 ${sellerBlock}
 
 Return ONLY a valid JSON object. No markdown, no code fences, no extra text.`;
@@ -116,6 +135,35 @@ function parseLooseJson(text: string): AiAnalysis | null {
       photo_quality_score: parsed.photo_quality_score != null ? Number(parsed.photo_quality_score) : null,
       photo_improvement_tips: Array.isArray(parsed.photo_improvement_tips) ? parsed.photo_improvement_tips : [],
       summary: parsed.summary ?? null,
+      // Collectible
+      is_collectible: parsed.is_collectible ?? null,
+      // Vehicle fields
+      vehicle_year: parsed.vehicle_year ?? null,
+      vehicle_make: parsed.vehicle_make ?? null,
+      vehicle_model: parsed.vehicle_model ?? null,
+      vehicle_mileage: parsed.vehicle_mileage ?? null,
+      vin_visible: parsed.vin_visible ?? null,
+      vehicle_transmission: parsed.vehicle_transmission ?? null,
+      vehicle_fuel_type: parsed.vehicle_fuel_type ?? null,
+      vehicle_engine: parsed.vehicle_engine ?? null,
+      vehicle_drivetrain: parsed.vehicle_drivetrain ?? null,
+      // Shipping
+      weight_estimate_lbs: parsed.weight_estimate_lbs != null ? Number(parsed.weight_estimate_lbs) : null,
+      shipping_difficulty: parsed.shipping_difficulty ?? null,
+      shipping_notes: parsed.shipping_notes ?? null,
+      // Regional pricing
+      regional_best_city: parsed.regional_best_city ?? null,
+      regional_best_state: parsed.regional_best_state ?? null,
+      regional_best_price_low: parsed.regional_best_price_low != null ? Number(parsed.regional_best_price_low) : null,
+      regional_best_price_high: parsed.regional_best_price_high != null ? Number(parsed.regional_best_price_high) : null,
+      regional_best_why: parsed.regional_best_why ?? null,
+      regional_local_demand: parsed.regional_local_demand ?? null,
+      regional_local_reasoning: parsed.regional_local_reasoning ?? null,
+      regional_ship_or_local: parsed.regional_ship_or_local ?? null,
+      regional_local_best_city: parsed.regional_local_best_city ?? null,
+      regional_local_best_why: parsed.regional_local_best_why ?? null,
+      regional_national_best_city: parsed.regional_national_best_city ?? null,
+      regional_national_best_state: parsed.regional_national_best_state ?? null,
     };
   } catch {
     return null;
@@ -504,7 +552,7 @@ function mergeConsensus(results: AiAnalysis[]): AiAnalysis {
     summary = `This is a ${condition_guess.toLowerCase()} condition ${item_name}. Based on multi-AI consensus analysis, the estimated value is ${priceRange}.${antiqueNote} We recommend listing on ${bestPlatform} for the best results.`;
   }
 
-  return {
+  const merged: Record<string, any> = {
     item_name,
     category,
     brand,
@@ -553,7 +601,79 @@ function mergeConsensus(results: AiAnalysis[]): AiAnalysis {
     // Photo quality (averaged)
     photo_quality_score: avgNumFloat(results, (r) => r.photo_quality_score),
     photo_improvement_tips: unionArrays(results, (r) => r.photo_improvement_tips, 6),
+    // Collectible
+    is_collectible: results.some((r) => (r as any).is_collectible === true) || null,
+    // Vehicle fields
+    vehicle_year: firstNonNull(results, (r) => (r as any).vehicle_year),
+    vehicle_make: firstNonNull(results, (r) => (r as any).vehicle_make),
+    vehicle_model: firstNonNull(results, (r) => (r as any).vehicle_model),
+    vehicle_mileage: firstNonNull(results, (r) => (r as any).vehicle_mileage),
+    vin_visible: firstNonNull(results, (r) => (r as any).vin_visible),
+    vehicle_transmission: firstNonNull(results, (r) => (r as any).vehicle_transmission),
+    vehicle_fuel_type: firstNonNull(results, (r) => (r as any).vehicle_fuel_type),
+    vehicle_engine: firstNonNull(results, (r) => (r as any).vehicle_engine),
+    vehicle_drivetrain: firstNonNull(results, (r) => (r as any).vehicle_drivetrain),
+    // Shipping
+    weight_estimate_lbs: avgNumFloat(results, (r) => (r as any).weight_estimate_lbs),
+    shipping_difficulty: firstNonNull(results, (r) => (r as any).shipping_difficulty),
+    shipping_notes: firstNonNull(results, (r) => (r as any).shipping_notes),
+    // Regional
+    regional_best_city: firstNonNull(results, (r) => (r as any).regional_best_city),
+    regional_best_state: firstNonNull(results, (r) => (r as any).regional_best_state),
+    regional_best_price_low: avgNumFloat(results, (r) => (r as any).regional_best_price_low),
+    regional_best_price_high: avgNumFloat(results, (r) => (r as any).regional_best_price_high),
+    regional_best_why: firstNonNull(results, (r) => (r as any).regional_best_why),
+    regional_local_demand: firstNonNull(results, (r) => (r as any).regional_local_demand),
+    regional_local_reasoning: firstNonNull(results, (r) => (r as any).regional_local_reasoning),
+    regional_ship_or_local: firstNonNull(results, (r) => (r as any).regional_ship_or_local),
+    regional_local_best_city: firstNonNull(results, (r) => (r as any).regional_local_best_city),
+    regional_local_best_why: firstNonNull(results, (r) => (r as any).regional_local_best_why),
+    regional_national_best_city: firstNonNull(results, (r) => (r as any).regional_national_best_city),
+    regional_national_best_state: firstNonNull(results, (r) => (r as any).regional_national_best_state),
   };
+
+  // ── POST-PROCESSING CLAMPS (match ai.ts behavior) ──
+
+  // 1. Confidence normalization
+  if (merged.confidence > 1) merged.confidence = merged.confidence / 100;
+  merged.confidence = Math.max(0, Math.min(1, merged.confidence));
+
+  // 2. Condition score clamping (1-10)
+  merged.condition_score = Math.max(1, Math.min(10, merged.condition_score));
+  merged.condition_cosmetic = Math.max(1, Math.min(10, merged.condition_cosmetic));
+  merged.condition_functional = Math.max(1, Math.min(10, merged.condition_functional));
+
+  // 3. Confidence boost: brand + model → floor 0.88
+  if (merged.brand && merged.model && merged.confidence < 0.88) {
+    merged.confidence = 0.88;
+  }
+  if (merged.markings && typeof merged.markings === "string" && merged.markings.length > 10 && merged.confidence < 0.85) {
+    merged.confidence = 0.85;
+  }
+
+  // 4. Outdoor equipment category override
+  const nameLC = (merged.item_name || "").toLowerCase();
+  const OUTDOOR_PATTERNS = /\b(mow(?:er|ing)|riding\s+mower|lawn\s+tractor|garden\s+tractor|chainsaw|leaf\s+blower|string\s+trimmer|weed\s+(?:eater|whacker)|pressure\s+washer|snow\s+blower|log\s+splitter|wood\s+chipper|generator|hedge\s+trimmer|edger|tiller|rototiller)\b/i;
+  const OUTDOOR_BRANDS = /\b(john\s+deere|husqvarna|cub\s+cadet|troy[- ]bilt|craftsman|toro|stihl|echo|poulan|ariens|honda\s+(?:mower|generator|trimmer)|briggs|murray|snapper)\b/i;
+  if ((merged.category || "").toLowerCase() === "vehicles" && (OUTDOOR_PATTERNS.test(nameLC) || OUTDOOR_BRANDS.test(nameLC))) {
+    merged.category = "Outdoor Equipment";
+    merged.vehicle_year = null;
+    merged.vehicle_make = null;
+    merged.vehicle_model = null;
+    merged.vehicle_mileage = null;
+    merged.vin_visible = null;
+    merged.vehicle_transmission = null;
+    merged.vehicle_fuel_type = null;
+    merged.vehicle_engine = null;
+    merged.vehicle_drivetrain = null;
+  }
+
+  // 5. Pricing confidence normalization (0-100)
+  if (merged.pricing_confidence != null && merged.pricing_confidence > 0 && merged.pricing_confidence <= 1) {
+    merged.pricing_confidence = Math.round(merged.pricing_confidence * 100);
+  }
+
+  return merged as AiAnalysis;
 }
 
 function calcAgreement(results: AiAnalysis[]): number {

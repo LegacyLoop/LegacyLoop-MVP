@@ -23,6 +23,10 @@ export interface AiAnalysis {
   vehicle_model?: string | null;
   vehicle_mileage?: string | null;
   vin_visible?: boolean | null;
+  vehicle_transmission?: string | null;
+  vehicle_fuel_type?: string | null;
+  vehicle_engine?: string | null;
+  vehicle_drivetrain?: string | null;
 
   // Extended fields (Wave 4A)
   subcategory?: string | null;
@@ -46,6 +50,7 @@ export interface AiAnalysis {
   antique_markers?: string[];
   appraisal_recommended?: boolean | null;
   potential_value_if_authenticated?: number | null;
+  is_collectible?: boolean | null;
 
   // Listing suggestions
   recommended_title?: string | null;
@@ -71,6 +76,10 @@ export interface AiAnalysis {
   regional_local_demand?: string | null; // "Strong" | "Average" | "Weak"
   regional_local_reasoning?: string | null;
   regional_ship_or_local?: string | null;
+  regional_local_best_city?: string | null;
+  regional_local_best_why?: string | null;
+  regional_national_best_city?: string | null;
+  regional_national_best_state?: string | null;
 }
 
 export interface ValuationResult {

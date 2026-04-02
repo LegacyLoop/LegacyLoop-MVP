@@ -73,6 +73,19 @@ You specialize in real-time cultural awareness and social media trends.
 Your job: Find the buyers nobody else thinks of. The social angle. The culture play.`,
 };
 
+const CLASSIFICATION_RULES = `
+CRITICAL CLASSIFICATION RULES (OVERRIDE ALL OTHER REASONING):
+
+1. OUTDOOR EQUIPMENT vs VEHICLES:
+   Lawn mowers (riding or push), garden tractors (John Deere, Husqvarna, Cub Cadet, Troy-Bilt, Craftsman, Toro), chainsaws, leaf blowers, pressure washers, snow blowers, log splitters, wood chippers, generators, and ALL garden/lawn/outdoor power equipment MUST be categorized as "Outdoor Equipment" — NEVER as "Vehicles" — even if they have engines, wheels, seats, or steering wheels. "Vehicles" is EXCLUSIVELY for road-legal motor vehicles.
+
+2. CONFIDENCE BOOST:
+   If brand name labels, model stickers, or serial number plates are clearly visible and legible, confidence MUST be 0.90+. If BOTH brand AND model are legible, confidence MUST be 0.95+.
+
+3. COLLECTIBLE DETECTION:
+   Set is_collectible=true for trading cards, sports cards, coins, stamps, comics, vinyl records, sneakers, watches, figurines, vintage toys, video games, and memorabilia.
+`;
+
 // ─── Shared helpers ───────────────────────────────────────────────────────
 
 function fileToDataUrl(absPath: string) {
@@ -405,7 +418,7 @@ async function callOpenAI(
         {
           role: "user",
           content: [
-            { type: "input_text", text: prompt + AGENT_SUFFIXES.openai },
+            { type: "input_text", text: CLASSIFICATION_RULES + prompt + AGENT_SUFFIXES.openai },
             ...imageContent,
           ],
         },
@@ -422,7 +435,7 @@ async function callOpenAI(
         {
           role: "user",
           content: [
-            { type: "input_text", text: prompt + AGENT_SUFFIXES.openai },
+            { type: "input_text", text: CLASSIFICATION_RULES + prompt + AGENT_SUFFIXES.openai },
             ...imageContent,
           ],
         },
@@ -486,7 +499,7 @@ async function callClaude(
   // Claude's specialty (craftsmanship, history, authenticity) is text-based.
   // PREFILL trick: start assistant response with { to force raw JSON output.
 
-  const claudePrompt = prompt + AGENT_SUFFIXES.claude
+  const claudePrompt = CLASSIFICATION_RULES + prompt + AGENT_SUFFIXES.claude
     + "\n\nCRITICAL: Output ONLY a JSON object. No markdown fences. No text before or after. Start directly with {.";
 
   // Dedupe models list (if env var is same as fallback)
@@ -620,7 +633,7 @@ async function callGemini(
       {
         parts: [
           ...imageParts,
-          { text: prompt + AGENT_SUFFIXES.gemini },
+          { text: CLASSIFICATION_RULES + prompt + AGENT_SUFFIXES.gemini },
         ],
       },
     ],
@@ -805,7 +818,7 @@ async function callGrok(
       body: JSON.stringify({
         model: textModel,
         messages: [
-          { role: "system", content: prompt + AGENT_SUFFIXES.grok },
+          { role: "system", content: CLASSIFICATION_RULES + prompt + AGENT_SUFFIXES.grok },
           {
             role: "user",
             content: "Based on the detailed item description and context in the system prompt, provide your full assessment as JSON. Focus on social media buzz, viral potential, trending conversations, and unconventional buyer angles.",

@@ -119,6 +119,8 @@ export default function Footer() {
               { label: "How It Works", href: "/pricing#how" },
               { label: "White-Glove", href: "/white-glove" },
               { label: "Contractors", href: "/contractors" },
+              { label: "What's New", href: "/whats-new" },
+              { label: "Roadmap", href: "/coming-soon" },
             ].map((l) => (
               <Link
                 key={l.label}

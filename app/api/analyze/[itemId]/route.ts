@@ -9,6 +9,7 @@ import { populateFromAnalysis, populateFromRainforest } from "@/lib/data/populat
 import { logUserEvent } from "@/lib/data/user-events";
 import { searchAmazon, buildSearchTerm } from "@/lib/adapters/rainforest";
 import type { RainforestEnrichmentData } from "@/lib/adapters/rainforest";
+import { isAmazonEligible } from "@/lib/amazon-eligibility";
 import { BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, isFreeAnalysisAvailable } from "@/lib/credits";
@@ -116,9 +117,29 @@ export async function POST(
       amazonData = JSON.parse(existingAmazon.payload) as RainforestEnrichmentData;
       console.log(`[analyze] Using stored Amazon data (${amazonData.resultCount} results, from ${new Date(existingAmazon.createdAt).toLocaleDateString()})`);
     } else {
-      // First analysis: fresh Amazon pull
-      const searchTerm = buildSearchTerm(item.title || "item");
-      amazonData = await searchAmazon(searchTerm).catch(() => null);
+      // First analysis: check eligibility BEFORE spending API credits
+      const eligibility = isAmazonEligible(
+        (item as any).category ?? null,
+        null,
+        item.title,
+        null,
+        null
+      );
+
+      if (eligibility.eligible) {
+        const searchTerm = buildSearchTerm(item.title || "item");
+        amazonData = await searchAmazon(searchTerm).catch(() => null);
+        console.log(`[analyze] Amazon eligibility: ELIGIBLE (${eligibility.reason}). Results: ${amazonData?.resultCount ?? 0}`);
+      } else {
+        console.log(`[analyze] Amazon eligibility: SKIPPED (${eligibility.reason}). Saving API credits.`);
+        await prisma.eventLog.create({
+          data: {
+            itemId: item.id,
+            eventType: "AMAZON_SKIPPED",
+            payload: JSON.stringify({ reason: eligibility.reason, confidence: eligibility.confidence }),
+          },
+        }).catch(() => null);
+      }
 
       if (amazonData) {
         await prisma.eventLog.create({

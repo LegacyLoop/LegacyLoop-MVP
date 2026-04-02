@@ -125,6 +125,47 @@ export async function PATCH(req: Request, { params }: { params: Params }) {
     });
   }
 
+  // ── Sell Department (bulk sell one category) ──
+  if (body.sellDepartment) {
+    const { category, discountPct, bulkPrice } = body.sellDepartment;
+    if (!category) return Response.json({ error: "Category required" }, { status: 400 });
+
+    const unsold = await prisma.item.findMany({
+      where: { projectId: id, userId: user.id, status: { notIn: ["SOLD", "SHIPPED", "COMPLETED"] } },
+      include: { aiResult: { select: { rawJson: true } } },
+    });
+
+    const deptItems = unsold.filter((item) => {
+      try {
+        const ai = item.aiResult?.rawJson ? JSON.parse(item.aiResult.rawJson) : null;
+        return (ai?.category || "Other") === category;
+      } catch { return false; }
+    });
+
+    if (deptItems.length === 0) {
+      return Response.json({ error: "No unsold items in this department" }, { status: 400 });
+    }
+
+    const totalValue = deptItems.reduce((s, i) => s + (i.listingPrice ? Number(i.listingPrice) : 0), 0);
+    const finalPrice = bulkPrice != null ? Number(bulkPrice) : Math.round(totalValue * (1 - (discountPct || 25) / 100));
+    const perItem = Math.round(finalPrice / deptItems.length);
+
+    for (const item of deptItems) {
+      await prisma.item.update({ where: { id: item.id }, data: { status: "SOLD", listingPrice: perItem } });
+    }
+
+    await prisma.eventLog.create({
+      data: {
+        itemId: deptItems[0].id,
+        userId: user.id,
+        eventType: "SELL_DEPARTMENT_BULK",
+        payload: JSON.stringify({ projectId: id, category, itemCount: deptItems.length, totalValue, bulkPrice: finalPrice, perItemPrice: perItem, discountPct: discountPct || Math.round((1 - finalPrice / totalValue) * 100) }),
+      },
+    });
+
+    return Response.json({ ok: true, category, itemCount: deptItems.length, bulkPrice: finalPrice, perItemPrice: perItem });
+  }
+
   // Update project fields
   const updated = await prisma.project.update({
     where: { id },

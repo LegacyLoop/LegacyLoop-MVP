@@ -16,6 +16,7 @@ import { canUseBotOnTier, TIER_NAMES, BOT_ACCESS, type BotName } from "@/lib/con
 import { isDemoMode } from "@/lib/bot-mode";
 import AmazonPriceBadge from "./AmazonPriceBadge";
 import DocumentVault from "./DocumentVault";
+import ItemCostBreakdown from "./ItemCostBreakdown";
 import SaleAssignment from "./SaleAssignment";
 import TradeToggle from "./TradeToggle";
 import ActiveOffersWidget from "@/app/components/ActiveOffersWidget";
@@ -9853,6 +9854,7 @@ export default function ItemDashboardPanels({
             )}
           </GlassCard>
 
+          <ItemCostBreakdown itemId={itemId} />
           <DocumentVault itemId={itemId} />
         </div>
 

@@ -11,6 +11,7 @@
 import { prisma } from "@/lib/db";
 import fs from "fs/promises";
 import path from "path";
+import OpenAI from "openai";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -102,27 +103,22 @@ async function callOpenAI(
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("No OPENAI_API_KEY");
 
-  const messages: any[] = [
-    {
-      role: "user",
-      content: imageBase64
-        ? [
-            { type: "text", text: prompt },
-            { type: "image_url", image_url: { url: `data:${imageMime};base64,${imageBase64}`, detail: "high" } },
-          ]
-        : prompt,
-    },
-  ];
+  const openai = new OpenAI({ apiKey });
+  const input: any[] = [];
+  if (imageBase64) {
+    input.push({ type: "input_image", image_url: `data:${imageMime};base64,${imageBase64}`, detail: "high" });
+  }
+  input.push({ type: "input_text", text: prompt });
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: "gpt-4o-mini", messages, max_tokens: 2000 }),
-  });
+  const resp = await Promise.race([
+    openai.responses.create({
+      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      input,
+    }),
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error("OpenAI timeout (40s)")), 40_000)),
+  ]);
 
-  if (!res.ok) throw new Error(`OpenAI ${res.status}`);
-  const json = await res.json();
-  const raw = json.choices?.[0]?.message?.content?.trim() || "";
+  const raw = (resp as any).output_text?.trim() || "";
   return { data: parseExtraction(raw), raw };
 }
 
@@ -185,17 +181,20 @@ async function callGemini(
   }
   parts.push({ text: prompt });
 
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts }],
-        generationConfig: { maxOutputTokens: 2000 },
-      }),
-    }
-  );
+  const res = await Promise.race([
+    fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || "gemini-2.5-flash"}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: { maxOutputTokens: 2000 },
+        }),
+      }
+    ),
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Gemini timeout (40s)")), 40_000)),
+  ]);
 
   if (!res.ok) throw new Error(`Gemini ${res.status}`);
   const json = await res.json();
@@ -211,7 +210,7 @@ async function callGrok(
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey) throw new Error("No XAI_API_KEY");
 
-  const model = imageBase64 ? "grok-2-vision-1212" : "grok-3-fast";
+  const model = process.env.XAI_MODEL_VISION || "grok-4";
   const messages: any[] = [
     {
       role: "user",
@@ -224,11 +223,14 @@ async function callGrok(
     },
   ];
 
-  const res = await fetch("https://api.x.ai/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({ model, messages, max_tokens: 2000 }),
-  });
+  const res = await Promise.race([
+    fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+      body: JSON.stringify({ model, messages, max_tokens: 2000 }),
+    }),
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Grok timeout (40s)")), 40_000)),
+  ]);
 
   if (!res.ok) throw new Error(`Grok ${res.status}`);
   const json = await res.json();

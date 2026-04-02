@@ -296,7 +296,7 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
 
   // ── Step 5: Location multipliers (prefer AI regional data when available) ──
   const sellerMarket = getMarketInfo(saleZip);
-  const bestMarketInfo = getBestMarket();
+  const bestMarketInfo = getBestMarket(category || ai.category || null);
 
   // Check if AI provided item-specific regional pricing intelligence
   const hasAiRegional = !!(ai.regional_best_city && ai.regional_best_price_low && ai.regional_best_price_high);
@@ -319,18 +319,37 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
     label: "National Average",
   };
 
-  // Use AI best-market data when available, otherwise fall back to static multiplier
-  const bestMarketRaw: PriceRange = hasAiRegional ? {
-    low: Math.round(ai.regional_best_price_low!),
-    mid: Math.round((ai.regional_best_price_low! + ai.regional_best_price_high!) / 2),
-    high: Math.round(ai.regional_best_price_high!),
-    label: `${ai.regional_best_city}, ${ai.regional_best_state}`,
-  } : {
-    low: Math.round(adjLow * bestMarketInfo.multiplier),
-    mid: Math.round(adjMid * bestMarketInfo.multiplier),
-    high: Math.round(adjHigh * bestMarketInfo.multiplier),
-    label: bestMarketInfo.label,
-  };
+  const isShipImpractical = (
+    ai.shipping_difficulty === "Freight only" ||
+    (ai.weight_estimate_lbs != null && ai.weight_estimate_lbs > 70) ||
+    (ai.regional_best_city === null && ai.regional_local_demand != null)
+  );
+  const hasLocalBest = !!((ai as any).regional_local_best_city);
+
+  let bestMarketRaw: PriceRange;
+  if (isShipImpractical && hasLocalBest) {
+    const localBestMult = sellerMarket.multiplier + 0.05;
+    bestMarketRaw = {
+      low: Math.round(adjLow * localBestMult),
+      mid: Math.round(adjMid * localBestMult),
+      high: Math.round(adjHigh * localBestMult),
+      label: `${(ai as any).regional_local_best_city}`,
+    };
+  } else if (hasAiRegional) {
+    bestMarketRaw = {
+      low: Math.round(ai.regional_best_price_low!),
+      mid: Math.round((ai.regional_best_price_low! + ai.regional_best_price_high!) / 2),
+      high: Math.round(ai.regional_best_price_high!),
+      label: `${ai.regional_best_city}, ${ai.regional_best_state}`,
+    };
+  } else {
+    bestMarketRaw = {
+      low: Math.round(adjLow * bestMarketInfo.multiplier),
+      mid: Math.round(adjMid * bestMarketInfo.multiplier),
+      high: Math.round(adjHigh * bestMarketInfo.multiplier),
+      label: bestMarketInfo.label,
+    };
+  }
 
   // ── Step 6: Shipping estimate (prefer AI weight, fallback to category) ────
   const aiWeight = ai.weight_estimate_lbs ?? null;

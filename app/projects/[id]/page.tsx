@@ -56,6 +56,7 @@ export default async function ProjectDetailPage({ params }: { params: Params }) 
       valuationHigh: i.valuation?.high ?? null,
       listingPrice: i.listingPrice ? Number(i.listingPrice) : null,
       convCount: i.conversations.length,
+      category: ai?.category || null,
     };
   });
 

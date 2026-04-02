@@ -280,6 +280,16 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
       const currentAi = ai || {};
       const updates: Record<string, any> = {};
 
+      // CATEGORY GUARD: Never let MegaBot overwrite an AnalyzeBot-corrected category
+      if (consensus.category && consensus.category !== currentAi.category) {
+        console.log(`[MegaBot Cascade] Category guard: keeping AnalyzeBot "${currentAi.category}" (MegaBot wanted "${consensus.category}")`);
+      }
+
+      // CONFIDENCE GUARD: Don't downgrade AnalyzeBot confidence
+      if (consensus.confidence && currentAi.confidence && consensus.confidence < currentAi.confidence) {
+        console.log(`[MegaBot Cascade] Confidence guard: keeping AnalyzeBot ${currentAi.confidence} (MegaBot was ${consensus.confidence})`);
+      }
+
       // Cascade antique detection if MegaBot confirms
       if (consensus.is_antique === true && currentAi.is_antique !== true) {
         updates.is_antique = true;
