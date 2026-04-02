@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
-import { isDemoMode } from "@/lib/constants/pricing";
+import { isDemoMode } from "@/lib/bot-mode";
 import { sendTradeNotification } from "@/lib/email/send";
 import { tradeAcceptedEmail, tradeDeclinedEmail, tradeCounteredEmail } from "@/lib/email/templates";
 

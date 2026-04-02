@@ -475,10 +475,9 @@ export function isAdminUser(userRole: string | null | undefined): boolean {
   return userRole === DEMO_CONFIG.adminRole;
 }
 
-export function isDemoMode(): boolean {
-  if (typeof process === "undefined") return false;
-  return process.env.DEMO_MODE === "true" || process.env.NEXT_PUBLIC_DEMO_MODE === "true";
-}
+// isDemoMode() consolidated to lib/bot-mode.ts — single source of truth
+import { isDemoMode } from "@/lib/bot-mode";
+export { isDemoMode };
 
 export function shouldBypassGates(userRole: string | null | undefined): boolean {
   return isAdminUser(userRole) || isDemoMode();

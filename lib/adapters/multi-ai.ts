@@ -191,19 +191,22 @@ async function analyzeWithOpenAI(absPath: string, context?: string, extraPaths?:
     imageContent.push({ type: "input_image", image_url: dataUrl, detail: "auto" });
   }
 
-  const resp = await openai.responses.create({
-    model,
-    input: [
-      {
-        role: "user",
-        content: [
-          { type: "input_text", text: `${imageContent.length} photo(s) attached — cross-reference all angles for grading. ${prompt}` },
-          ...imageContent,
-        ],
-      },
-    ],
-    text: { format: { type: "text" } },
-  });
+  const resp = await Promise.race([
+    openai.responses.create({
+      model,
+      input: [
+        {
+          role: "user",
+          content: [
+            { type: "input_text", text: `${imageContent.length} photo(s) attached — cross-reference all angles for grading. ${prompt}` },
+            ...imageContent,
+          ],
+        },
+      ],
+      text: { format: { type: "text" } },
+    }),
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Provider timeout (40s)")), 40_000)),
+  ]);
 
   const parsed = parseLooseJson(resp.output_text);
   if (!parsed) throw new Error("OpenAI returned unparseable response");
@@ -235,7 +238,7 @@ async function analyzeWithClaude(absPath: string, context?: string, extraPaths?:
   }
 
   const body = {
-    model: "claude-haiku-4-5-20251001",
+    model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
     max_tokens: 4096,
     messages: [
       {
@@ -284,7 +287,7 @@ async function analyzeWithGemini(absPath: string, context?: string, extraPaths?:
   const key = process.env.GEMINI_API_KEY;
   if (!key || key.includes("YOUR_GEMINI") || key.length < 10) throw new Error("No Gemini key configured");
 
-  const model = "gemini-2.5-flash";
+  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
   const prompt = buildComprehensivePrompt(context) + GEMINI_SPECIALTY;
 
@@ -319,11 +322,14 @@ async function analyzeWithGemini(absPath: string, context?: string, extraPaths?:
     },
   };
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  const res = await Promise.race([
+    fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    }),
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Provider timeout (40s)")), 40_000)),
+  ]);
 
   if (!res.ok) {
     const t = await res.text();
@@ -363,28 +369,31 @@ async function analyzeWithGrok(absPath: string, context?: string, extraPaths?: s
     imageUrls.push({ type: "image_url", image_url: { url: dataUrl } });
   }
 
-  const res = await fetch(`${baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: prompt },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: `${imageUrls.length} photo(s) — cross-reference all angles. Return JSON.` },
-            ...imageUrls,
-          ],
-        },
-      ],
-      max_tokens: 4096,
-      temperature: 0.7,
+  const res = await Promise.race([
+    fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: prompt },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: `${imageUrls.length} photo(s) — cross-reference all angles. Return JSON.` },
+              ...imageUrls,
+            ],
+          },
+        ],
+        max_tokens: 4096,
+        temperature: 0.7,
+      }),
     }),
-  });
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Provider timeout (40s)")), 40_000)),
+  ]);
 
   if (!res.ok) {
     const t = await res.text();

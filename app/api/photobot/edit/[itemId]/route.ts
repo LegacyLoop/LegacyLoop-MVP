@@ -6,7 +6,8 @@ import fs from "fs";
 import path from "path";
 import sharp from "sharp";
 import { storageAdapter } from "@/lib/adapters/storage";
-import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 
 const openai = process.env.OPENAI_API_KEY

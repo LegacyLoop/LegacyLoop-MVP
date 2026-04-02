@@ -6,7 +6,8 @@ import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { getMarketInfo } from "@/lib/pricing/market-data";
 import { populateFromPriceBot } from "@/lib/data/populate-intelligence";
 import { logUserEvent } from "@/lib/data/user-events";
-import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 

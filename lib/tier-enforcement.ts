@@ -11,9 +11,9 @@ import {
   TIER_LIMITS,
   BOT_ACCESS,
   canUseBotOnTier,
-  isDemoMode,
   type BotName,
 } from "@/lib/constants/pricing";
+import { isDemoMode } from "@/lib/bot-mode";
 import { isAdmin } from "@/lib/constants/admin";
 
 export interface TierCheckResult {

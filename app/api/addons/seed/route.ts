@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
-import { isDemoMode } from "@/lib/constants/pricing";
+import { isDemoMode } from "@/lib/bot-mode";
 import { seedAddons } from "@/lib/data/seed-addons";
 
 export async function POST() {

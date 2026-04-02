@@ -9,7 +9,8 @@ import {
   generateAlerts,
 } from "@/lib/services/recon-bot";
 import { logUserEvent } from "@/lib/data/user-events";
-import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { isDemoMode } from "@/lib/bot-mode";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 

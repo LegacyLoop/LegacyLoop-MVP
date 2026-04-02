@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
-import { ADDONS, isDemoMode } from "@/lib/constants/pricing";
+import { isDemoMode } from "@/lib/bot-mode";
+import { ADDONS } from "@/lib/constants/pricing";
 import { checkCredits, deductCredits } from "@/lib/credits";
 
 export async function POST(req: NextRequest) {

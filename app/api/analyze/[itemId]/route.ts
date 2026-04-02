@@ -9,7 +9,8 @@ import { populateFromAnalysis, populateFromRainforest } from "@/lib/data/populat
 import { logUserEvent } from "@/lib/data/user-events";
 import { searchAmazon, buildSearchTerm } from "@/lib/adapters/rainforest";
 import type { RainforestEnrichmentData } from "@/lib/adapters/rainforest";
-import { isDemoMode, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, isFreeAnalysisAvailable } from "@/lib/credits";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

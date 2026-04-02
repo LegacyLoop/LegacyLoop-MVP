@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
-import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { runVideoPipeline } from "@/lib/video/pipeline";
 import { getItemEnrichmentContext } from "@/lib/enrichment";

@@ -5,7 +5,8 @@ import { runSpecializedMegaBot } from "@/lib/megabot/run-specialized";
 import { MEGA_PROMPT_MAP, type PromptContext } from "@/lib/megabot/prompts";
 import { getItemEnrichmentContext } from "@/lib/enrichment/item-context";
 import { getMarketInfo } from "@/lib/pricing/market-data";
-import { isDemoMode, canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 
 // MegaBot runs 4 AI agents in parallel — grok can take up to 180s with retries
