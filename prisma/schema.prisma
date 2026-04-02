@@ -7,8 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// TODO: Returns flow — add RETURN_REQUESTED, RETURNED, REFUNDED statuses.
-// Also need ReturnRequest model with: returnReason, returnLabelId, refundAmount, refundStatus.
 enum ItemStatus {
   DRAFT
   ANALYZED
@@ -19,6 +17,9 @@ enum ItemStatus {
   SOLD
   SHIPPED
   COMPLETED
+  RETURN_REQUESTED
+  RETURNED
+  REFUNDED
 }
 
 enum SaleMethod {
@@ -60,6 +61,21 @@ model User {
   offers                Offer[]
   userAddons            UserAddon[]
   listingPublishes      ListingPublish[]
+  budgetPreferences     BudgetPreferences?
+}
+
+model BudgetPreferences {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id])
+  monthlySpendCap     Float?   // dollars — null = unlimited
+  perProjectCap       Float?   // dollars — null = unlimited
+  perItemCap          Float?   // dollars — null = unlimited
+  alertThreshold      Int      @default(80)  // percentage to trigger warning
+  autoStopEnabled     Boolean  @default(false) // auto-pause bots at limit
+  saleDurationDefault Int?     // default sale days — null = no default
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 model UserCredits {
@@ -747,7 +763,8 @@ model ReconBot {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  isActive      Boolean @default(true)
+  isActive        Boolean @default(true)
+  autoScanEnabled Boolean @default(false) // Premium: auto-scan on schedule (costs credits)
   // JSON array of platform names e.g. ["facebook","ebay","craigslist"]
   platformsJson String  @default("[\"facebook\",\"ebay\",\"craigslist\"]")
   searchRadius  Int     @default(50) // miles

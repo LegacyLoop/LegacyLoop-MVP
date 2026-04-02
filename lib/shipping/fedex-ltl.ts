@@ -65,11 +65,6 @@ async function getAuthToken(): Promise<string | null> {
     return null;
   }
 
-  console.log("[FedEx LTL] === AUTH ATTEMPT ===");
-  console.log("[FedEx LTL] URL:", `${FEDEX_URL}/oauth/token`);
-  console.log("[FedEx LTL] API Key present:", !!FEDEX_API_KEY, "length:", FEDEX_API_KEY.length);
-  console.log("[FedEx LTL] Secret present:", !!FEDEX_SECRET, "length:", FEDEX_SECRET.length);
-
   try {
     const res = await fetch(`${FEDEX_URL}/oauth/token`, {
       method: "POST",

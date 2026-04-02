@@ -501,8 +501,12 @@ export default function UploadModal({ photos, setPhotos, maxPhotos = 10, tierLim
       </div>
 
       {/* Source picker cards */}
+      <style>{`
+        .upload-source-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-top: 1rem; }
+        @media (max-width: 480px) { .upload-source-grid { grid-template-columns: repeat(2, 1fr); } }
+      `}</style>
       {showSources && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.6rem", marginTop: "1rem" }}>
+        <div className="upload-source-grid">
           {UPLOAD_SOURCES.map((src) => (
             <button
               key={src.id}

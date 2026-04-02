@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { DISCOUNTS } from "@/lib/pricing/constants";
 import { PROCESSING_FEE, PLANS, TIER_LIMITS, TIER } from "@/lib/constants/pricing";
 import TestimonialGrid from "@/app/components/TestimonialGrid";
 
@@ -319,13 +318,18 @@ function PricingCalculator() {
         Calculate Your Project Cost
       </h3>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem", marginBottom: "1.25rem" }}>
+      <style>{`
+        .calc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+        .addon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+        @media (max-width: 640px) { .calc-grid { grid-template-columns: 1fr; } .addon-grid { grid-template-columns: 1fr; } }
+      `}</style>
+      <div className="calc-grid">
         <div>
           <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: "0.35rem" }}>Bedrooms</label>
           <div style={{ display: "flex", gap: "0.4rem" }}>
             {["1-2", "3-4", "5+"].map((v) => (
               <button key={v} onClick={() => setBedrooms(v)}
-                style={{ flex: 1, padding: "0.5rem", background: bedrooms === v ? "#0f766e" : "#f5f5f4", color: bedrooms === v ? "#fff" : "#44403c", border: `1px solid ${bedrooms === v ? "#0f766e" : "#e7e5e4"}`, borderRadius: "0.6rem", fontWeight: 600, fontSize: "0.82rem", cursor: "pointer" }}>
+                style={{ flex: 1, padding: "0.5rem", background: bedrooms === v ? "var(--accent)" : "var(--bg-card-solid)", color: bedrooms === v ? "#fff" : "var(--text-secondary)", border: `1px solid ${bedrooms === v ? "var(--accent)" : "var(--border-default)"}`, borderRadius: "0.6rem", fontWeight: 600, fontSize: "0.82rem", cursor: "pointer" }}>
                 {v}
               </button>
             ))}
@@ -337,7 +341,7 @@ function PricingCalculator() {
           <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
             {["<100", "100-300", "300-500", "500+"].map((v) => (
               <button key={v} onClick={() => setItems(v)}
-                style={{ padding: "0.5rem 0.6rem", background: items === v ? "#0f766e" : "#f5f5f4", color: items === v ? "#fff" : "#44403c", border: `1px solid ${items === v ? "#0f766e" : "#e7e5e4"}`, borderRadius: "0.6rem", fontWeight: 600, fontSize: "0.72rem", cursor: "pointer" }}>
+                style={{ padding: "0.5rem 0.6rem", background: items === v ? "var(--accent)" : "var(--bg-card-solid)", color: items === v ? "#fff" : "var(--text-secondary)", border: `1px solid ${items === v ? "var(--accent)" : "var(--border-default)"}`, borderRadius: "0.6rem", fontWeight: 600, fontSize: "0.72rem", cursor: "pointer" }}>
                 {v}
               </button>
             ))}
@@ -347,7 +351,7 @@ function PricingCalculator() {
 
       <div style={{ marginBottom: "1.25rem" }}>
         <label style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-secondary)", display: "block", marginBottom: "0.5rem" }}>Add-On Services</label>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem" }}>
+        <div className="addon-grid">
           {[
             { key: "appraisals", label: "Expert Appraisals", price: "$500" },
             { key: "video", label: "Video Documentation", price: "$750" },
@@ -355,47 +359,47 @@ function PricingCalculator() {
             { key: "staging", label: "Staging Consultation", price: "$350" },
           ].map((ao) => (
             <div key={ao.key} onClick={() => toggleAddOn(ao.key)}
-              style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", background: addOns.includes(ao.key) ? "#f0fdf4" : "#fafaf9", border: `1px solid ${addOns.includes(ao.key) ? "#86efac" : "#f5f5f4"}`, borderRadius: "0.6rem", cursor: "pointer" }}>
-              <div style={{ width: "16px", height: "16px", border: `2px solid ${addOns.includes(ao.key) ? "#16a34a" : "#d6d3d1"}`, borderRadius: "3px", background: addOns.includes(ao.key) ? "#16a34a" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.75rem", background: addOns.includes(ao.key) ? "rgba(0,188,212,0.08)" : "var(--bg-card-solid)", border: `1px solid ${addOns.includes(ao.key) ? "rgba(0,188,212,0.3)" : "var(--border-default)"}`, borderRadius: "0.6rem", cursor: "pointer" }}>
+              <div style={{ width: "16px", height: "16px", border: `2px solid ${addOns.includes(ao.key) ? "#00bcd4" : "var(--border-default)"}`, borderRadius: "3px", background: addOns.includes(ao.key) ? "#00bcd4" : "var(--bg-card-solid)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 {addOns.includes(ao.key) && <span style={{ color: "#fff", fontSize: "0.6rem", fontWeight: 800 }}>✓</span>}
               </div>
-              <span style={{ fontSize: "0.78rem", fontWeight: 500, flex: 1 }}>{ao.label}</span>
-              <span style={{ fontSize: "0.72rem", color: "#0f766e", fontWeight: 700 }}>{ao.price}</span>
+              <span style={{ fontSize: "0.78rem", fontWeight: 500, flex: 1, color: "var(--text-primary)" }}>{ao.label}</span>
+              <span style={{ fontSize: "0.72rem", color: "var(--accent)", fontWeight: 700 }}>{ao.price}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Result */}
-      <div style={{ background: "linear-gradient(135deg, #f0fdf4, #ecfdf5)", border: "1.5px solid #86efac", borderRadius: "1rem", padding: "1.25rem" }}>
+      <div style={{ background: "rgba(0,188,212,0.06)", border: "1.5px solid rgba(0,188,212,0.25)", borderRadius: "1rem", padding: "1.25rem" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "0.75rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem" }}>
             <span style={{ color: "var(--text-secondary)" }}>Base service ({bedrooms} bedrooms)</span>
-            <span style={{ fontWeight: 600 }}>${base[0].toLocaleString()} – ${base[1].toLocaleString()}</span>
+            <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>${base[0].toLocaleString()} – ${base[1].toLocaleString()}</span>
           </div>
           {addOnTotal > 0 && (
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem" }}>
               <span style={{ color: "var(--text-secondary)" }}>Add-on services ({addOns.length})</span>
-              <span style={{ fontWeight: 600 }}>+${addOnTotal.toLocaleString()}</span>
+              <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>+${addOnTotal.toLocaleString()}</span>
             </div>
           )}
-          <div style={{ height: "1px", background: "#bbf7d0" }} />
+          <div style={{ height: "1px", background: "rgba(0,188,212,0.15)" }} />
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>Total upfront estimate</span>
-            <span style={{ fontWeight: 800, color: "#16a34a", fontSize: "1.1rem" }}>
+            <span style={{ fontWeight: 800, color: "var(--accent)", fontSize: "1.1rem" }}>
               ${(base[0] + addOnTotal).toLocaleString()} – ${(base[1] + addOnTotal).toLocaleString()}
             </span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem" }}>
             <span style={{ color: "var(--text-secondary)" }}>Commission on sales</span>
-            <span style={{ fontWeight: 600, color: "#0f766e" }}>{commission}% of sale price</span>
+            <span style={{ fontWeight: 600, color: "var(--accent)" }}>{commission}% of sale price</span>
           </div>
         </div>
-        <p style={{ fontSize: "0.72rem", color: "#166534", marginBottom: "0.75rem" }}>
+        <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>
           Preliminary estimate only. Final pricing determined after free on-site assessment.
         </p>
         <Link href="/quote"
-          style={{ display: "block", textAlign: "center", padding: "0.7rem", background: "#0f766e", color: "#fff", borderRadius: "0.75rem", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" }}>
+          style={{ display: "block", textAlign: "center", padding: "0.7rem", background: "var(--accent)", color: "#fff", borderRadius: "0.75rem", fontWeight: 700, fontSize: "0.9rem", textDecoration: "none" }}>
           Request Official Quote →
         </Link>
       </div>
@@ -408,6 +412,14 @@ function PricingCalculator() {
 export default function PricingClient() {
   const [tab, setTab] = useState<"digital" | "white-glove">("digital");
   const [annual, setAnnual] = useState(false);
+  const [founderStats, setFounderStats] = useState<{ totalSpots: number; claimed: number; remaining: number; percentClaimed: number; isOpen: boolean; urgency: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/founding-members")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data) setFounderStats(data); })
+      .catch(() => {});
+  }, []);
 
   const CARD: React.CSSProperties = {
     background: "var(--bg-primary)",
@@ -513,7 +525,7 @@ export default function PricingClient() {
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.2rem", flexWrap: "wrap" }}>
                 <span style={{ background: "#fbbf24", color: "#78350f", fontSize: "0.6rem", fontWeight: 900, padding: "0.15rem 0.5rem", borderRadius: "9999px", letterSpacing: "0.1em" }}>FOUNDING MEMBER OFFER</span>
                 <span style={{ color: "var(--text-muted)", fontSize: "0.72rem" }}>
-                  {DISCOUNTS.preLaunch.totalSpots} Founding Member Spots — 50% Off for Life
+                  {founderStats ? `${founderStats.remaining} of ${founderStats.totalSpots}` : "100"} Founding Member Spots {founderStats ? "Left" : ""} — 50% Off for Life
                 </span>
               </div>
               <div style={{ fontWeight: 800, fontSize: "1rem", color: "#fff", marginBottom: "0.1rem" }}>

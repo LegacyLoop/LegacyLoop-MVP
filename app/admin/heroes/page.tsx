@@ -3,8 +3,10 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 import { isAdmin } from "@/lib/constants/admin";
+import HeroReviewClient from "./HeroReviewClient";
 
 export const metadata: Metadata = { title: "Heroes Review · Admin · LegacyLoop" };
 
@@ -56,60 +58,35 @@ export default async function AdminHeroesPage() {
         ))}
       </div>
 
-      {/* Pending Queue */}
+      {/* Pending Queue — Interactive Client Component */}
       <div style={{
         borderRadius: "1rem", background: "var(--bg-card-solid)", border: "1px solid var(--border-default)",
         padding: "1.5rem", marginBottom: "1.5rem",
       }}>
-        <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-primary)", marginBottom: "1rem" }}>
-          Pending Review ({pendingVerifications.length})
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+          <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-primary)" }}>
+            Pending Review ({pendingVerifications.length})
+          </div>
+          <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#00bcd4", display: "inline-block" }} />
+            AI-Powered Verification
+          </div>
         </div>
-        {pendingVerifications.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted)" }}>
-            No pending verifications.
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {pendingVerifications.map((v: any) => (
-              <div key={v.id} style={{
-                padding: "1rem 1.25rem", borderRadius: "0.75rem",
-                background: "rgba(234,179,8,0.05)", border: "1px solid rgba(234,179,8,0.15)",
-              }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.5rem" }}>
-                  <div>
-                    <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{v.fullName}</div>
-                    <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
-                      {v.serviceCategory} · {v.serviceDetail || "Not specified"}
-                    </div>
-                    {v.department && (
-                      <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Dept: {v.department}</div>
-                    )}
-                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>
-                      {v.email} · Applied {new Date(v.createdAt).toLocaleDateString()}
-                    </div>
-                    {v.proofFileName && (
-                      <div style={{ fontSize: "0.72rem", color: "var(--accent)", marginTop: "0.2rem" }}>
-                        Attachment: {v.proofFileName}
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    <span style={{
-                      padding: "0.35rem 0.75rem", borderRadius: "0.5rem", fontSize: "0.75rem", fontWeight: 700,
-                      background: "rgba(22,163,74,0.1)", color: "#22c55e", border: "1px solid rgba(22,163,74,0.2)",
-                      cursor: "pointer",
-                    }}>Approve</span>
-                    <span style={{
-                      padding: "0.35rem 0.75rem", borderRadius: "0.5rem", fontSize: "0.75rem", fontWeight: 700,
-                      background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)",
-                      cursor: "pointer",
-                    }}>Deny</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <Suspense>
+          <HeroReviewClient verifications={pendingVerifications.map((v: any) => ({
+            id: v.id,
+            fullName: v.fullName,
+            email: v.email,
+            serviceCategory: v.serviceCategory,
+            serviceDetail: v.serviceDetail,
+            department: v.department,
+            proofFileName: v.proofFileName,
+            proofFilePath: v.proofFilePath,
+            reviewNotes: v.reviewNotes,
+            status: v.status,
+            createdAt: v.createdAt.toISOString(),
+          }))} />
+        </Suspense>
       </div>
 
       {/* Recently Approved */}

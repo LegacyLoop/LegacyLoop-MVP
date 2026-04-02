@@ -1,12 +1,10 @@
-// TODO: Returns flow — add "Request Return" action in the COMPLETED/SHIPPED dropdown.
-// Would POST to /api/returns/[itemId], update status to RETURN_REQUESTED, and show return tracking.
 "use client";
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import ItemActionPanel, { type BotStatusMap } from "@/app/components/ItemActionPanel";
 
-type ItemStatus = "DRAFT" | "ANALYZED" | "READY" | "LISTED" | "INTERESTED" | "SOLD" | "SHIPPED" | "COMPLETED";
+type ItemStatus = "DRAFT" | "ANALYZED" | "READY" | "LISTED" | "INTERESTED" | "SOLD" | "SHIPPED" | "COMPLETED" | "RETURN_REQUESTED" | "RETURNED" | "REFUNDED";
 
 interface ItemCardProps {
   item: {
@@ -45,7 +43,10 @@ const STATUS_CONFIG: Record<ItemStatus, { label: string; bg: string; color: stri
   INTERESTED:  { label: "Interested", bg: "rgba(234,179,8,0.12)",   color: "#eab308", border: "rgba(234,179,8,0.25)" },
   SOLD:        { label: "Sold",       bg: "rgba(249,115,22,0.12)",  color: "#f97316", border: "rgba(249,115,22,0.25)" },
   SHIPPED:     { label: "Shipped",    bg: "rgba(0,188,212,0.12)",   color: "#22d3ee", border: "rgba(0,188,212,0.25)" },
-  COMPLETED:   { label: "Completed",  bg: "rgba(34,197,94,0.15)",   color: "#4ade80", border: "rgba(34,197,94,0.3)" },
+  COMPLETED:         { label: "Completed",        bg: "rgba(34,197,94,0.15)",   color: "#4ade80",  border: "rgba(34,197,94,0.3)" },
+  RETURN_REQUESTED:  { label: "Return Requested", bg: "rgba(239,68,68,0.12)",   color: "#f87171",  border: "rgba(239,68,68,0.25)" },
+  RETURNED:          { label: "Returned",         bg: "rgba(251,146,60,0.12)",  color: "#fb923c",  border: "rgba(251,146,60,0.25)" },
+  REFUNDED:          { label: "Refunded",         bg: "rgba(148,163,184,0.12)", color: "#94a3b8",  border: "rgba(148,163,184,0.25)" },
 };
 
 // Actions are now handled by ItemActionPanel (slide-out panel)
@@ -681,12 +682,22 @@ export default function ItemCard({ item }: ItemCardProps) {
           status,
           isAntique: item.isAntique,
           authenticityScore: item.authenticityScore,
+          antiqueTier: item.antiqueTier,
           isCollectible: item.isCollectible,
           collectiblesScore: item.collectiblesScore,
           collectiblesTier: item.collectiblesTier,
           megabotUsed: item.megabotUsed,
           listingPrice,
           category: item.category,
+          photoUrl: item.photoUrl,
+          valuationLow: item.valuationLow,
+          valuationHigh: item.valuationHigh,
+          auctionLow: item.auctionLow,
+          auctionHigh: item.auctionHigh,
+          convCount: item.convCount,
+          unreadMsgs: item.unreadMsgs,
+          hasBotConv: item.hasBotConv,
+          condition: item.condition,
         }}
         botStatus={item.botStatus ?? {
           analyzeBotRun: status !== "DRAFT",

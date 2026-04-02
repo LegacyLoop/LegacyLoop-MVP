@@ -88,6 +88,53 @@ export async function deductCredits(
   }
 }
 
+/** Refund credits back to user balance (e.g. when all agents fail) */
+export async function refundCredits(
+  userId: string,
+  amount: number,
+  description: string,
+  itemId?: string
+): Promise<CreditDeductResult> {
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      let uc = await tx.userCredits.findUnique({ where: { userId } });
+      if (!uc) {
+        uc = await tx.userCredits.create({
+          data: { userId, balance: 0, lifetime: 0, spent: 0 },
+        });
+      }
+
+      const newBalance = uc.balance + amount;
+
+      await tx.userCredits.update({
+        where: { id: uc.id },
+        data: {
+          balance: newBalance,
+          spent: Math.max(0, uc.spent - amount),
+        },
+      });
+
+      await tx.creditTransaction.create({
+        data: {
+          userCreditsId: uc.id,
+          type: "refund",
+          amount: amount,
+          balance: newBalance,
+          description,
+          itemId: itemId ?? null,
+        },
+      });
+
+      return { success: true, newBalance };
+    });
+
+    return result;
+  } catch (err: any) {
+    console.error("[credits] refundCredits error:", err);
+    return { success: false, newBalance: 0, error: err?.message ?? "Credit refund failed" };
+  }
+}
+
 /** Check if user still has their free first AnalyzeBot run available */
 export async function isFreeAnalysisAvailable(userId: string): Promise<boolean> {
   try {

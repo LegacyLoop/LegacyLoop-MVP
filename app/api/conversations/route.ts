@@ -1,5 +1,7 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email/send";
+import { newBuyerMessageEmail } from "@/lib/email/templates";
 
 // ─── Bot/Platform helpers ──────────────────────────────────────────────────
 
@@ -87,7 +89,7 @@ export async function POST(req: Request) {
 
   // Item must exist and be publicly visible
   const PUBLIC_STATUSES = ["LISTED", "ANALYZED", "READY", "INTERESTED", "OFFER_PENDING"];
-  const item = await prisma.item.findUnique({ where: { id: itemId } });
+  const item = await prisma.item.findUnique({ where: { id: itemId }, select: { id: true, status: true, userId: true, title: true } });
   if (!item || !PUBLIC_STATUSES.includes(item.status)) {
     return new Response("Item not found or not available", { status: 404 });
   }
@@ -114,6 +116,39 @@ export async function POST(req: Request) {
       content: String(firstMessage).trim(),
     },
   });
+
+  // ── Notify seller: in-app notification + email ──────────────────────────
+  try {
+    const seller = await prisma.user.findUnique({ where: { id: item.userId }, select: { id: true, email: true, displayName: true } });
+    if (seller) {
+      // In-app notification
+      await prisma.notification.create({
+        data: {
+          userId: seller.id,
+          type: "NEW_MESSAGE",
+          title: `New message from ${String(buyerName).trim()}`,
+          message: String(firstMessage).trim().slice(0, 120),
+          link: `/messages?itemId=${itemId}`,
+        },
+      });
+
+      // Email notification to seller
+      if (seller.email) {
+        const itemTitle = item.title || "Untitled Item";
+        const convUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://legacy-loop.com"}/messages?itemId=${itemId}`;
+        const emailData = newBuyerMessageEmail(
+          seller.displayName || "Seller",
+          String(buyerName).trim(),
+          itemTitle,
+          String(firstMessage).trim(),
+          convUrl
+        );
+        sendEmail({ to: seller.email, subject: emailData.subject, html: emailData.html }).catch(() => {});
+      }
+    }
+  } catch (notifErr) {
+    console.error("[CONV] Notification failed (non-blocking):", notifErr);
+  }
 
   return Response.json({ ok: true, conversationId: conversation.id, botScore: score, flags, platform });
 }

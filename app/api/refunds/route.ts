@@ -30,8 +30,45 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Item not found" }, { status: 404 });
     }
 
-    if (item.status !== "SOLD" && item.status !== "SHIPPED" && item.status !== "COMPLETED") {
+    const REFUNDABLE = ["SOLD", "SHIPPED", "COMPLETED"];
+    if (!REFUNDABLE.includes(item.status)) {
       return NextResponse.json({ error: "Item is not in a refundable state" }, { status: 400 });
+    }
+
+    // ── Enforce 14-day return window ──
+    const saleEvent = await prisma.eventLog.findFirst({
+      where: { itemId, eventType: "STATUS_CHANGE" },
+      orderBy: { createdAt: "desc" },
+    });
+    // Check when item first transitioned to SOLD (the sale date)
+    const soldEvent = await prisma.eventLog.findFirst({
+      where: {
+        itemId,
+        eventType: "STATUS_CHANGE",
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    // Find the actual SOLD transition by checking payloads
+    const allStatusChanges = await prisma.eventLog.findMany({
+      where: { itemId, eventType: "STATUS_CHANGE" },
+      orderBy: { createdAt: "asc" },
+      select: { payload: true, createdAt: true },
+    });
+    let saleDate: Date | null = null;
+    for (const ev of allStatusChanges) {
+      try {
+        const p = ev.payload ? JSON.parse(ev.payload) : {};
+        if (p.to === "SOLD") { saleDate = ev.createdAt; break; }
+      } catch { /* skip */ }
+    }
+    if (saleDate) {
+      const daysSinceSale = Math.floor((Date.now() - saleDate.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysSinceSale > 14) {
+        return NextResponse.json({
+          error: "Return window expired",
+          message: `The 14-day return window has passed (${daysSinceSale} days since sale). Returns are no longer accepted.`,
+        }, { status: 400 });
+      }
     }
 
     // Find the payment ledger entry for this item
@@ -119,12 +156,28 @@ export async function POST(req: NextRequest) {
       }
     } catch { /* email non-critical */ }
 
+    // ── Set item to RETURN_REQUESTED ──
+    await prisma.item.update({
+      where: { id: itemId },
+      data: { status: "RETURN_REQUESTED" },
+    });
+
+    // ── Pause payout — freeze seller earnings while return is in progress ──
+    await prisma.sellerEarnings.updateMany({
+      where: { itemId, status: { in: ["pending", "available"] } },
+      data: {
+        status: "pending",
+        holdUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // hold indefinitely until resolved
+      },
+    }).catch(() => {});
+
     return NextResponse.json({
       ok: true,
       refundAmount,
       processingFee,
       processingFeeRefunded: false,
-      note: "Processing fee is non-refundable per our terms.",
+      returnWindowDays: saleDate ? Math.floor((Date.now() - saleDate.getTime()) / (1000 * 60 * 60 * 24)) : null,
+      note: "Processing fee is non-refundable per our terms. Item moved to RETURN_REQUESTED. Seller payout is on hold.",
     });
   } catch (err) {
     console.error("Refund request error:", err);

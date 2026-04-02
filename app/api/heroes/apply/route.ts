@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { authAdapter } from "@/lib/adapters/auth";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { analyzeHeroDocument } from "@/lib/services/hero-verify-ai";
 
 export async function POST(request: Request) {
   try {
@@ -114,6 +115,26 @@ export async function POST(request: Request) {
       } catch {
         // Notification creation is non-critical
       }
+    }
+
+    // ── Auto-run AI verification if proof file was uploaded (non-blocking) ──
+    if (proofFilePath) {
+      analyzeHeroDocument(
+        proofFilePath,
+        fullName.trim(),
+        serviceCategory,
+        serviceDetail,
+        department
+      ).then(async (result) => {
+        const aiSummary = `[AI PRE-SCREEN] Confidence: ${result.confidence}% | Valid: ${result.isLikelyValid ? "YES" : "NO"} | Doc: ${result.documentType} | Category match: ${result.matchesCategory ? "YES" : "NO"} | Name match: ${result.nameMatchScore}% | ${result.flags.length > 0 ? "Flags: " + result.flags.join(", ") : "No flags"} | ${result.summary}`;
+        await prisma.heroVerification.update({
+          where: { id: verification.id },
+          data: { reviewNotes: aiSummary },
+        });
+        console.log(`[HeroAI] Auto-analyzed ${fullName}: confidence=${result.confidence}%`);
+      }).catch((err) => {
+        console.error("[HeroAI] Auto-analysis failed (non-blocking):", err);
+      });
     }
 
     return NextResponse.json({

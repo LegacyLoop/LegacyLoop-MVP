@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import ItemCard from "./ItemCard";
 import BundleSuggestions from "@/app/components/BundleSuggestions";
+import BudgetGuard from "@/app/components/BudgetGuard";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -381,12 +382,12 @@ export default function DashboardClient({ items, stats, events }: DashboardClien
       )}
 
       {/* ── Stat Card Filters ─────────────────────────────────────────────── */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(6, 1fr)",
-        gap: "0.75rem",
-        marginBottom: "1.75rem",
-      }}>
+      <style>{`
+        .dash-stat-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.75rem; margin-bottom: 1.75rem; }
+        @media (max-width: 768px) { .dash-stat-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 480px) { .dash-stat-grid { grid-template-columns: repeat(2, 1fr); } }
+      `}</style>
+      <div className="dash-stat-grid">
         {statCards.map((stat) => {
           const isActive = activeFilter === stat.key;
           const accent = stat.accentColor;
@@ -615,6 +616,11 @@ export default function DashboardClient({ items, stats, events }: DashboardClien
             ))}
           </div>
         )}
+      </div>
+
+      {/* ── Budget Control ────────────────────────────────────────────── */}
+      <div style={{ marginBottom: "1.75rem" }}>
+        <BudgetGuard variant="compact" />
       </div>
 
       {/* ── Bundle Suggestions ─────────────────────────────────────────── */}

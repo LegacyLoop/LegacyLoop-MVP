@@ -1,7 +1,7 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { DISCOUNTS } from "@/lib/constants/pricing";
+import { getFoundingMemberStats } from "@/lib/founding-members";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -68,6 +68,8 @@ const TIERS_PREVIEW = [
 export default async function HomePage() {
   const user = await authAdapter.getSession();
   if (user) redirect("/dashboard");
+
+  const founderStats = await getFoundingMemberStats();
 
   return (
     <div style={{ marginTop: "-2.5rem" }}>
@@ -243,7 +245,7 @@ export default async function HomePage() {
             background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.3)",
             fontSize: "0.72rem", fontWeight: 700, color: "#fbbf24", marginBottom: "1rem",
           }}>
-            FOUNDING MEMBER OFFER — {DISCOUNTS.preLaunch.totalSpots} SPOTS AT 50% OFF
+            FOUNDING MEMBER OFFER — {founderStats.remaining} OF {founderStats.totalSpots} SPOTS LEFT AT 50% OFF
           </div>
           <h2 style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--text-primary)", marginBottom: "0.5rem" }}>
             Pre-Launch Special: 50% Off All Plans

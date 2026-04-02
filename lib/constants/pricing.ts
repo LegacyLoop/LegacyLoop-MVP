@@ -248,6 +248,7 @@ export const BOT_CREDIT_COSTS = {
   collectiblesBotReRun: 1,
   megaBotRun: 5,
   megaBotReRun: 3,
+  reconBotAutoScan: 1,   // Deducted per scheduled auto-scan
   antiqueDeepDive: 5,
   analyzeBotFirstRun: 0,
   videoBotStandard: 8,
@@ -320,6 +321,13 @@ export const CUSTOM_CREDIT_SCALE = [
 
 export const CUSTOM_CREDIT_MINIMUM = 25;
 export const CUSTOM_CREDIT_MAXIMUM = 10000;
+
+/**
+ * Default dollars-per-credit rate used for budget tracking and spending reports.
+ * Matches the "Power" pack rate ($100 / 140 credits ≈ $0.71/credit).
+ * This is an accounting estimate — actual cost depends on which pack the user bought.
+ */
+export const CREDIT_COST_RATE = 0.71;
 
 /**
  * Calculate credits for a custom dollar amount using the sliding scale.

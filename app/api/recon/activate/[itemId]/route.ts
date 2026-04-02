@@ -28,6 +28,30 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
     }
   }
 
+  // Budget gate: block activation if autoStop is enabled and spending exceeds cap
+  try {
+    const budgetPrefs = await (prisma as any).budgetPreferences.findUnique({ where: { userId: user.id } });
+    if (budgetPrefs?.autoStopEnabled && budgetPrefs?.monthlySpendCap) {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const credits = await prisma.userCredits.findUnique({ where: { userId: user.id } });
+      if (credits) {
+        const monthTxns = await prisma.creditTransaction.findMany({
+          where: { userCreditsId: credits.id, type: "spend", createdAt: { gte: monthStart } },
+        });
+        const monthlyCreditsUsed = monthTxns.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        const CREDIT_COST_RATE = 0.71;
+        const monthlySpent = monthlyCreditsUsed * CREDIT_COST_RATE;
+        if (monthlySpent >= budgetPrefs.monthlySpendCap) {
+          return NextResponse.json(
+            { error: "Budget limit reached. Disable auto-stop in settings to continue." },
+            { status: 403 }
+          );
+        }
+      }
+    }
+  } catch { /* budget table may not exist — skip check */ }
+
   const body = await req.json().catch(() => ({}));
   const platforms: string[] = Array.isArray(body.platforms)
     ? body.platforms

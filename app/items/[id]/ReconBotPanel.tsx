@@ -18,6 +18,7 @@ interface Alert {
 interface ReconBotData {
   id: string;
   isActive: boolean;
+  autoScanEnabled: boolean;
   platformsJson: string;
   competitorCount: number;
   lowestPrice: number | null;
@@ -29,6 +30,7 @@ interface ReconBotData {
   recommendation: string | null;
   confidenceScore: number | null;
   lastScan: string | null;
+  nextScan: string | null;
   scansCompleted: number;
   alerts: Alert[];
 }
@@ -84,6 +86,7 @@ export default function ReconBotPanel({ itemId, userTier, userPrice, initialBot 
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(["facebook", "ebay", "craigslist"]);
   const [activating, setActivating] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [togglingAutoScan, setTogglingAutoScan] = useState(false);
   const [showAllCompetitors, setShowAllCompetitors] = useState(false);
 
   const competitors: any[] = bot
@@ -153,6 +156,26 @@ export default function ReconBotPanel({ itemId, userTier, userPrice, initialBot 
       setBot(data.bot);
     } else {
       setBot((prev) => (prev ? { ...prev, isActive: !prev.isActive } : prev));
+    }
+  }
+
+  async function handleToggleAutoScan() {
+    if (!bot) return;
+    setTogglingAutoScan(true);
+    try {
+      const res = await fetch(`/api/recon/scan/${bot.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "toggleAutoScan" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.ok && data.bot) {
+        setBot(data.bot);
+      } else if (data.error) {
+        alert(data.error);
+      }
+    } finally {
+      setTogglingAutoScan(false);
     }
   }
 
@@ -702,6 +725,87 @@ export default function ReconBotPanel({ itemId, userTier, userPrice, initialBot 
             ? `${Math.round(bot.confidenceScore * 100)}% confidence`
             : ""}
         </div>
+      </div>
+
+      {/* ── Auto-Scan Premium Toggle ─────────────────────────────────── */}
+      <div
+        style={{
+          marginTop: "1rem",
+          padding: "0.875rem 1rem",
+          background: bot.autoScanEnabled
+            ? "linear-gradient(135deg, rgba(0,188,212,0.06) 0%, rgba(15,118,110,0.06) 100%)"
+            : "var(--bg-card-hover)",
+          border: bot.autoScanEnabled
+            ? "1.5px solid rgba(0,188,212,0.3)"
+            : "1px solid var(--border-default)",
+          borderRadius: "0.875rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "0.75rem",
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.2rem" }}>
+            <span style={{ fontSize: "0.85rem" }}>⚡</span>
+            <span style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-primary)" }}>
+              Auto-Scan
+            </span>
+            {userTier < 3 && (
+              <span
+                style={{
+                  fontSize: "0.58rem",
+                  fontWeight: 700,
+                  padding: "2px 6px",
+                  borderRadius: "4px",
+                  background: "rgba(217,119,6,0.12)",
+                  color: "#d97706",
+                }}
+              >
+                PRO+
+              </span>
+            )}
+          </div>
+          <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
+            {bot.autoScanEnabled
+              ? `Active — next scan ${timeAgo(bot.nextScan)} · 1 credit per scan`
+              : userTier >= 3
+                ? "Auto-scan every 6 hours · 1 credit per scan"
+                : "Upgrade to Power Seller to enable auto-scanning"}
+          </div>
+        </div>
+
+        <button
+          onClick={handleToggleAutoScan}
+          disabled={togglingAutoScan || userTier < 3}
+          style={{
+            position: "relative",
+            width: "44px",
+            height: "24px",
+            borderRadius: "12px",
+            border: "none",
+            background: bot.autoScanEnabled ? "#00bcd4" : "var(--border-default)",
+            cursor: togglingAutoScan || userTier < 3 ? "not-allowed" : "pointer",
+            transition: "background 0.25s ease",
+            flexShrink: 0,
+            opacity: userTier < 3 ? 0.5 : 1,
+          }}
+          title={userTier < 3 ? "Requires Power Seller (tier 3+)" : bot.autoScanEnabled ? "Disable auto-scan" : "Enable auto-scan"}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: "2px",
+              left: bot.autoScanEnabled ? "22px" : "2px",
+              width: "20px",
+              height: "20px",
+              borderRadius: "50%",
+              background: "#fff",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+              transition: "left 0.25s ease",
+            }}
+          />
+        </button>
       </div>
     </div>
   );

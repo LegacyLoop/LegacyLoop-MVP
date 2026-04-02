@@ -18,6 +18,7 @@ type ItemData = {
   reconBotRunAt: string | null;
   reconBot: {
     isActive: boolean;
+    autoScanEnabled: boolean;
     competitorCount: number;
     lowestPrice: number | null;
     averagePrice: number | null;
@@ -193,7 +194,7 @@ function extractMegaRecon(p: any) {
   };
 }
 
-export default function ReconBotClient({ items }: { items: ItemData[] }) {
+export default function ReconBotClient({ items, userTier = 1 }: { items: ItemData[]; userTier?: number }) {
   const [selectedId, setSelectedId] = useState<string | null>(items[0]?.id ?? null);
   const [loading, setLoading] = useState(false);
   const [liveResult, setLiveResult] = useState<any>(null);
@@ -551,7 +552,7 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
           {item.reconBot?.isActive && (
             <span style={{ fontSize: "0.5rem", padding: "2px 8px", borderRadius: "9999px",
               background: "rgba(34,197,94,0.1)", color: "#22c55e", fontWeight: 600 }}>
-              🟢 Auto-scanning
+              🟢 Active — scan on demand
             </span>
           )}
           <span style={{ marginLeft: "auto", fontSize: "0.55rem" }}>
@@ -1467,8 +1468,129 @@ export default function ReconBotClient({ items }: { items: ItemData[] }) {
               View Item →
             </Link>
           </div>
+
+          {/* ── Auto-Scan Premium Toggle ─────────────────────── */}
+          {item?.reconBot && (
+            <AutoScanToggle
+              reconBot={item.reconBot}
+              itemId={item.id}
+              userTier={userTier}
+            />
+          )}
         </div>
       )}
     </>
+  );
+}
+
+function AutoScanToggle({ reconBot, itemId, userTier }: {
+  reconBot: NonNullable<ItemData["reconBot"]>;
+  itemId: string;
+  userTier: number;
+}) {
+  const [autoScan, setAutoScan] = useState(reconBot.autoScanEnabled);
+  const [toggling, setToggling] = useState(false);
+
+  // Sync if parent data changes
+  useEffect(() => {
+    setAutoScan(reconBot.autoScanEnabled);
+  }, [reconBot.autoScanEnabled]);
+
+  async function handleToggle() {
+    setToggling(true);
+    try {
+      // We need the bot id — fetch it
+      const activateRes = await fetch(`/api/recon/${itemId}`);
+      const activateData = await activateRes.json().catch(() => ({}));
+      const botId = activateData?.bot?.id;
+      if (!botId) { setToggling(false); return; }
+
+      const res = await fetch(`/api/recon/scan/${botId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "toggleAutoScan" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.ok && data.bot) {
+        setAutoScan(data.bot.autoScanEnabled);
+      } else if (data.error) {
+        alert(data.error);
+      }
+    } finally {
+      setToggling(false);
+    }
+  }
+
+  function timeAgo(isoStr: string | null): string {
+    if (!isoStr) return "—";
+    const diff = Date.now() - new Date(isoStr).getTime();
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return "just now";
+    if (min < 60) return `${min}m ago`;
+    const hr = Math.floor(min / 60);
+    if (hr < 24) return `${hr}h ago`;
+    return `${Math.floor(hr / 24)}d ago`;
+  }
+
+  return (
+    <div style={{
+      marginTop: "0.75rem",
+      padding: "0.75rem 1rem",
+      background: autoScan
+        ? "linear-gradient(135deg, rgba(0,188,212,0.06) 0%, rgba(15,118,110,0.06) 100%)"
+        : "var(--bg-card)",
+      border: autoScan
+        ? "1.5px solid rgba(0,188,212,0.3)"
+        : "1px solid var(--border-default)",
+      borderRadius: "0.75rem",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "0.75rem",
+    }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginBottom: "0.15rem" }}>
+          <span style={{ fontSize: "0.75rem" }}>⚡</span>
+          <span style={{ fontWeight: 700, fontSize: "0.72rem", color: "var(--text-primary)" }}>Auto-Scan</span>
+          {userTier < 3 && (
+            <span style={{
+              fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px",
+              borderRadius: "4px", background: "rgba(217,119,6,0.12)", color: "#d97706",
+            }}>PRO+</span>
+          )}
+        </div>
+        <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
+          {autoScan
+            ? `Active — next scan ${timeAgo(reconBot.nextScan)} · 1 credit/scan`
+            : userTier >= 3
+              ? "Auto-scan every 6 hours · 1 credit per scan"
+              : "Upgrade to Power Seller to enable"}
+        </div>
+      </div>
+      <button
+        onClick={handleToggle}
+        disabled={toggling || userTier < 3}
+        style={{
+          position: "relative",
+          width: "40px", height: "22px",
+          borderRadius: "11px", border: "none",
+          background: autoScan ? "#00bcd4" : "var(--border-default)",
+          cursor: toggling || userTier < 3 ? "not-allowed" : "pointer",
+          transition: "background 0.25s ease",
+          flexShrink: 0,
+          opacity: userTier < 3 ? 0.5 : 1,
+        }}
+        title={userTier < 3 ? "Requires Power Seller (tier 3+)" : autoScan ? "Disable" : "Enable"}
+      >
+        <div style={{
+          position: "absolute", top: "2px",
+          left: autoScan ? "20px" : "2px",
+          width: "18px", height: "18px",
+          borderRadius: "50%", background: "#fff",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+          transition: "left 0.25s ease",
+        }} />
+      </button>
+    </div>
   );
 }

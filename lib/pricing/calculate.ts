@@ -216,6 +216,49 @@ function estimateShippingByCategory(category: string | null): number {
   return 25;
 }
 
+// ─── Range narrowing helpers ────────────────────────────────────────────────
+
+/**
+ * Get the narrowing band based on condition.
+ * Returns a fractional band (e.g., 0.10 = ±10%) or 1 if no narrowing needed.
+ */
+function getConditionNarrowBand(
+  conditionScore: number | null | undefined,
+  sellerCondition: string | null | undefined
+): number {
+  if (conditionScore != null) {
+    if (conditionScore >= 9) return 0.10;       // Mint/Near Mint: ±10%
+    if (conditionScore >= 8) return 0.15;       // Excellent: ±15%
+    if (conditionScore >= 7) return 0.20;       // Very Good: ±20%
+    if (conditionScore >= 5) return 0.25;       // Good: ±25%
+    if (conditionScore >= 3) return 0.35;       // Fair: ±35%
+    return 1; // Poor — no narrowing
+  }
+  if (sellerCondition) {
+    const c = sellerCondition.toLowerCase();
+    if (c.includes("mint") || c === "new") return 0.10;
+    if (c.includes("like new") || c.includes("excellent")) return 0.15;
+    if (c.includes("very good")) return 0.20;
+    if (c.includes("good")) return 0.25;
+    if (c.includes("fair") || c.includes("okay")) return 0.35;
+    return 1; // poor/parts/unknown
+  }
+  return 1; // no condition data
+}
+
+/**
+ * Narrow a PriceRange in-place using a band (e.g., 0.20 = ±20% of mid).
+ * Only narrows if current range is wider than the band allows.
+ */
+function narrowPriceRange(range: PriceRange, band: number): void {
+  if (band >= 1 || range.low <= 0) return;
+  const ratio = range.high / (range.low || 1);
+  const maxRatio = 1 + band * 2;
+  if (ratio <= maxRatio) return; // already tight enough
+  range.low = Math.round(range.mid * (1 - band));
+  range.high = Math.round(range.mid * (1 + band));
+}
+
 // ─── Main pipeline ──────────────────────────────────────────────────────────
 
 export function calculatePricing(input: PricingCalcInput): PricingResult {
@@ -465,6 +508,32 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
   let confidence = baseConfidence;
   if (sellerCondition) confidence = Math.min(confidence + 0.05, 0.98);
   if (baseHigh > baseLow * 5) confidence = Math.max(confidence - 0.1, 0.15);
+
+  // ── Condition-based range narrowing on all price tiers ──
+  const condNarrowBand = getConditionNarrowBand(ai.condition_score, sellerCondition);
+  if (condNarrowBand < 1) {
+    narrowPriceRange(localPrice, condNarrowBand);
+    narrowPriceRange(nationalPrice, condNarrowBand);
+    narrowPriceRange(bestMarketRaw, condNarrowBand);
+    // Update bestMarket reference (it spread from bestMarketRaw)
+    bestMarket.low = bestMarketRaw.low;
+    bestMarket.mid = bestMarketRaw.mid;
+    bestMarket.high = bestMarketRaw.high;
+  }
+
+  // ── Confidence-based hard cap ──
+  const confNarrow = confidence >= 0.85 ? 0.20 : confidence >= 0.70 ? 0.35 : confidence >= 0.50 ? 0.50 : 1;
+  if (confNarrow < 1) {
+    narrowPriceRange(localPrice, confNarrow);
+    narrowPriceRange(nationalPrice, confNarrow);
+    narrowPriceRange(bestMarketRaw, confNarrow);
+    bestMarket.low = bestMarketRaw.low;
+    bestMarket.mid = bestMarketRaw.mid;
+    bestMarket.high = bestMarketRaw.high;
+  }
+
+  // ── Rationale logging ──
+  console.log(`[PricingCalc] condScore=${ai.condition_score ?? "?"} sellerCond=${sellerCondition ?? "?"} condBand=${condNarrowBand < 1 ? `±${Math.round(condNarrowBand * 100)}%` : "none"} confBand=${confNarrow < 1 ? `±${Math.round(confNarrow * 100)}%` : "none"} confidence=${confidence.toFixed(2)} local=$${localPrice.low}-$${localPrice.high} national=$${nationalPrice.low}-$${nationalPrice.high} best=$${bestMarketRaw.low}-$${bestMarketRaw.high}`);
 
   return {
     aiEstimate,

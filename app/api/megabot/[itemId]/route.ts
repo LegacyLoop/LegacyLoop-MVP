@@ -7,7 +7,7 @@ import { getItemEnrichmentContext } from "@/lib/enrichment/item-context";
 import { getMarketInfo } from "@/lib/pricing/market-data";
 import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
-import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
+import { checkCredits, deductCredits, hasPriorBotRun, refundCredits } from "@/lib/credits";
 
 // MegaBot runs 4 AI agents in parallel — grok can take up to 180s with retries
 export const maxDuration = 300; // 5 minutes
@@ -243,6 +243,82 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     return new Response(`MegaBot ${botType} failed: ${e.message}`, { status: 422 });
   }
 
+  // ── ALL-AGENT-FAILURE FALLBACK ──
+  // If every agent returned an error (successCount === 0), try to return cached result or error gracefully
+  if (result.successCount === 0) {
+    console.warn(`[megabot/${botType}] All 4 agents failed for item ${itemId}`);
+
+    // Refund credits since no work was done
+    if (!isDemoMode()) {
+      const isRerun = await hasPriorBotRun(userId, itemId, "MEGABOT");
+      const cost = isRerun ? BOT_CREDIT_COSTS.megaBotReRun : BOT_CREDIT_COSTS.megaBotRun;
+      try {
+        await refundCredits(userId, cost, `MegaBot refund — all agents failed`, itemId);
+        console.log(`[megabot/${botType}] Refunded ${cost} credits to user ${userId}`);
+      } catch (refundErr) {
+        console.error(`[megabot/${botType}] Credit refund failed:`, refundErr);
+      }
+    }
+
+    // Check for cached prior MegaBot result in EventLog
+    const cachedEventType = `MEGABOT_${botType.toUpperCase()}`;
+    const cachedLog = await prisma.eventLog.findFirst({
+      where: { itemId, eventType: cachedEventType },
+      orderBy: { createdAt: "desc" },
+      select: { payload: true, createdAt: true },
+    });
+
+    if (cachedLog?.payload) {
+      const cachedPayload = safeJson(cachedLog.payload);
+      if (cachedPayload && cachedPayload.successCount > 0) {
+        const cacheAgeMs = Date.now() - new Date(cachedLog.createdAt).getTime();
+        const cacheAgeHours = Math.round(cacheAgeMs / (1000 * 60 * 60));
+        const cacheAgeLabel = cacheAgeHours < 1 ? "less than 1 hour" : cacheAgeHours < 24 ? `${cacheAgeHours} hours` : `${Math.round(cacheAgeHours / 24)} days`;
+
+        console.log(`[megabot/${botType}] Returning cached result (age: ${cacheAgeLabel})`);
+
+        const cachedProviders = [
+          cachedPayload.agents?.openai ? { provider: "openai", ...formatAgentForClient(cachedPayload.agents.openai) } : null,
+          cachedPayload.agents?.claude ? { provider: "claude", ...formatAgentForClient(cachedPayload.agents.claude) } : null,
+          cachedPayload.agents?.gemini ? { provider: "gemini", ...formatAgentForClient(cachedPayload.agents.gemini) } : null,
+          cachedPayload.agents?.grok ? { provider: "grok", ...formatAgentForClient(cachedPayload.agents.grok) } : null,
+        ].filter(Boolean);
+
+        return Response.json({
+          ok: true,
+          botType,
+          usedCache: true,
+          cacheAge: cacheAgeLabel,
+          agreementScore: cachedPayload.agreementScore,
+          consensus: cachedPayload.consensus,
+          summary: cachedPayload.summary,
+          successCount: cachedPayload.successCount,
+          failCount: cachedPayload.failCount,
+          providers: cachedProviders,
+          webSources: [],
+        });
+      }
+    }
+
+    // No cache available — return structured error
+    const providerErrors = [
+      result.agents.openai?.error ? { provider: "openai", error: result.agents.openai.error } : null,
+      result.agents.claude?.error ? { provider: "claude", error: result.agents.claude.error } : null,
+      result.agents.gemini?.error ? { provider: "gemini", error: result.agents.gemini.error } : null,
+      result.agents.grok?.error ? { provider: "grok", error: result.agents.grok.error } : null,
+    ].filter(Boolean);
+
+    return Response.json(
+      {
+        error: "all_agents_failed",
+        message: "All AI providers are temporarily unavailable. Please try again in a few minutes.",
+        providers: providerErrors,
+        creditsRefunded: true,
+      },
+      { status: 503 }
+    );
+  }
+
   // Store with bot-specific event type: MEGABOT_PRICEBOT, MEGABOT_BUYERBOT, etc.
   const eventType = `MEGABOT_${botType.toUpperCase()}`;
   await prisma.eventLog.create({
@@ -429,9 +505,20 @@ function formatAgentForClient(agent: { data: any; responseTime: number; error?: 
     // Extract common fields — check flat, nested, and camelCase variants
     itemName: id.item_name || id.itemName || id.item_type || id.name || d.item_name || d.itemName || d.name || null,
     confidence: (typeof d.confidence === "number" ? d.confidence : null) || d.pricing_confidence || price.pricing_confidence || price.overall_confidence || null,
-    priceLow: price.revised_low || price.estimated_value_low || d.estimated_value_low || d.price_low || d.priceLow || null,
+    priceLow: (() => {
+      const low = price.revised_low || price.estimated_value_low || d.estimated_value_low || d.price_low || d.priceLow || null;
+      return typeof low === "number" && low > 0 ? Math.round(low) : low;
+    })(),
     priceFair: price.revised_mid || price.estimated_value_mid || d.estimated_value_mid || d.price_mid || d.priceMid || null,
-    priceHigh: price.revised_high || price.estimated_value_high || d.estimated_value_high || d.price_high || d.priceHigh || null,
+    priceHigh: (() => {
+      const low = price.revised_low || price.estimated_value_low || d.estimated_value_low || d.price_low || d.priceLow || null;
+      let high = price.revised_high || price.estimated_value_high || d.estimated_value_high || d.price_high || d.priceHigh || null;
+      // Enforce 2x max range rule — prevents wild AI ranges like $8–$2200
+      if (typeof low === "number" && typeof high === "number" && low > 0 && high > low * 2.5) {
+        high = Math.round(low * 2.5);
+      }
+      return typeof high === "number" && high > 0 ? Math.round(high) : high;
+    })(),
     conditionScore: cond.overall_score || cond.condition_score || d.condition_score || d.conditionScore || cond.overall_grade || null,
     category: id.category || d.category || null,
     era: id.era || d.era || null,

@@ -1,8 +1,15 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { calculateProratedRefund } from "@/lib/services/refund-calculator";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
+  const ip = getClientIp(req);
+  const rl = checkRateLimit("payments", ip);
+  if (!rl.allowed) {
+    return new Response(JSON.stringify({ error: "Too many requests. Try again later." }), { status: 429, headers: { "Retry-After": String(Math.ceil(rl.resetIn / 1000)) } });
+  }
+
   const user = await authAdapter.getSession();
   if (!user) return new Response("Unauthorized", { status: 401 });
 

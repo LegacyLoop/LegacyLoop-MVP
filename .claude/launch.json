@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "legacy-loop",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "/usr/local/bin/node",
+      "runtimeArgs": ["/usr/local/bin/npx", "next", "dev"],
       "port": 3000,
       "autoPort": false
     }

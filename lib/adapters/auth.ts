@@ -3,6 +3,13 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { prisma } from "../db";
 
+if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is required in production");
+}
+if (process.env.NODE_ENV !== "production" && !process.env.JWT_SECRET) {
+  console.warn("[auth] JWT_SECRET not set — using insecure default. Do NOT use in production.");
+}
+
 const secret = new TextEncoder().encode(
   process.env.JWT_SECRET || "dev-secret-change-me"
 );

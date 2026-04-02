@@ -27,8 +27,8 @@ export default function SaleCongratsBar({ saleMethod, itemId }: Props) {
       style={{
         padding: "1.1rem 1.25rem",
         borderRadius: "0.75rem",
-        background: "linear-gradient(135deg, rgba(22,163,74,0.12), rgba(16,185,129,0.08))",
-        border: "1px solid rgba(22,163,74,0.3)",
+        background: "var(--success-bg, linear-gradient(135deg, rgba(22,163,74,0.12), rgba(16,185,129,0.08)))",
+        border: "1px solid var(--success-border, rgba(22,163,74,0.3))",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",

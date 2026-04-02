@@ -3,15 +3,18 @@ import { redirect } from "next/navigation";
 import VoiceListeningClient from "./VoiceListeningClient";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
-export const metadata = { title: "Voice Buyer Detection — LegacyLoop" };
+export const metadata = {
+  title: "Buyer Intent Scanner — LegacyLoop",
+  description: "AI scans public posts and classifieds to find buyers searching for your items. Fully opt-in, transparent, and revocable.",
+};
 
-export default async function VoicePage() {
+export default async function BuyerIntentPage() {
   const user = await authAdapter.getSession();
   if (!user) redirect("/auth/login");
 
   return (
     <>
-      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Voice Detection" }]} />
+      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Buyer Intent Scanner" }]} />
       <VoiceListeningClient />
     </>
   );

@@ -79,6 +79,85 @@ function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
 }
 
+/**
+ * Normalize price ranges to prevent wild/random spreads.
+ * Higher confidence → tighter range. Enforces hard caps.
+ */
+function normalizeRange(low: number, high: number, confidence: number): [number, number] {
+  if (low <= 0 || high <= 0) return [low, high];
+  if (high < low) [low, high] = [high, low]; // swap if inverted
+
+  const mid = (low + high) / 2;
+  const ratio = high / low;
+
+  // High confidence (0.85+): force ±20% of mid
+  if (confidence >= 0.85 && ratio > 1.4) {
+    return [Math.round(mid * 0.80), Math.round(mid * 1.20)];
+  }
+
+  // Medium confidence (0.70+): force ±35% of mid
+  if (confidence >= 0.70 && ratio > 1.7) {
+    return [Math.round(mid * 0.65), Math.round(mid * 1.35)];
+  }
+
+  // Low confidence: cap at 3x ratio maximum
+  if (ratio > 3) {
+    return [Math.round(mid * 0.60), Math.round(mid * 1.80)];
+  }
+
+  return [Math.round(low), Math.round(high)];
+}
+
+/**
+ * Narrow price range based on condition assessment.
+ * Better condition = more predictable price = tighter range.
+ * conditionScore is 1-10 scale (from AI analysis).
+ * conditionString is seller-reported ("mint", "good", "fair", etc.)
+ */
+function conditionNarrow(
+  low: number, high: number,
+  conditionScore: number | null | undefined,
+  conditionString: string | null | undefined
+): [number, number] {
+  if (low <= 0 || high <= 0) return [low, high];
+  const mid = (low + high) / 2;
+  const ratio = high / (low || 1);
+
+  // Determine narrowing band from condition
+  let band = 0.35; // default: ±35% (fair condition)
+
+  if (conditionScore != null) {
+    if (conditionScore >= 9) band = 0.10;       // Mint/Near Mint: ±10%
+    else if (conditionScore >= 8) band = 0.15;   // Excellent: ±15%
+    else if (conditionScore >= 7) band = 0.20;   // Very Good: ±20%
+    else if (conditionScore >= 5) band = 0.25;   // Good: ±25%
+    else if (conditionScore >= 3) band = 0.35;   // Fair: ±35%
+    // conditionScore 1-2 (Poor): no narrowing, leave range as-is
+    else return [low, high];
+  } else if (conditionString) {
+    const c = conditionString.toLowerCase();
+    if (c.includes("mint") || c === "new") band = 0.10;
+    else if (c.includes("like new") || c.includes("excellent")) band = 0.15;
+    else if (c.includes("very good")) band = 0.20;
+    else if (c.includes("good")) band = 0.25;
+    else if (c.includes("fair") || c.includes("okay")) band = 0.35;
+    else return [low, high]; // poor/parts/unknown — don't narrow
+  } else {
+    return [low, high]; // no condition data — can't narrow
+  }
+
+  // Only narrow if current range is wider than the band allows
+  const maxRatio = 1 + band * 2; // e.g., ±10% → max ratio 1.2
+  if (ratio <= maxRatio) return [low, high]; // already tight enough
+
+  const narrowLow = Math.round(mid * (1 - band));
+  const narrowHigh = Math.round(mid * (1 + band));
+
+  console.log(`[Pricing] Condition narrowing: ${conditionScore ?? conditionString} → ±${Math.round(band * 100)}% | $${low}-$${high} → $${narrowLow}-$${narrowHigh}`);
+
+  return [narrowLow, narrowHigh];
+}
+
 function percentile(sorted: number[], p: number) {
   if (!sorted.length) return NaN;
   const idx = (sorted.length - 1) * p;
@@ -242,6 +321,64 @@ function applyAmazonAnchor(
 
 export const pricingAdapter = {
   async getEstimate(input: PricingInput): Promise<PricingEstimate> {
+    const raw = await this._getEstimateRaw(input);
+    const origLow = raw.low;
+    const origHigh = raw.high;
+
+    // ── Step A: Condition-based narrowing (uses AI condition_score or seller condition) ──
+    const condScore = input.ai?.condition_score ?? null;
+    const condStr = input.condition ?? null;
+    const [cLow, cHigh] = conditionNarrow(raw.low, raw.high, condScore, condStr);
+    raw.low = cLow;
+    raw.high = cHigh;
+
+    // Apply to local/online/bestMarket too
+    if (raw.localLow != null && raw.localHigh != null) {
+      const [cl, ch] = conditionNarrow(raw.localLow, raw.localHigh, condScore, condStr);
+      raw.localLow = cl;
+      raw.localHigh = ch;
+    }
+    if (raw.onlineLow != null && raw.onlineHigh != null) {
+      const [ol, oh] = conditionNarrow(raw.onlineLow, raw.onlineHigh, condScore, condStr);
+      raw.onlineLow = ol;
+      raw.onlineHigh = oh;
+    }
+    if (raw.bestMarketLow != null && raw.bestMarketHigh != null) {
+      const [bl, bh] = conditionNarrow(raw.bestMarketLow, raw.bestMarketHigh, condScore, condStr);
+      raw.bestMarketLow = bl;
+      raw.bestMarketHigh = bh;
+    }
+
+    // ── Step B: Confidence-based normalization (hard caps on range width) ──
+    const [nLow, nHigh] = normalizeRange(raw.low, raw.high, raw.confidence);
+    raw.low = nLow;
+    raw.high = nHigh;
+
+    if (raw.localLow != null && raw.localHigh != null && raw.localConfidence != null) {
+      const [lLow, lHigh] = normalizeRange(raw.localLow, raw.localHigh, raw.localConfidence);
+      raw.localLow = lLow;
+      raw.localHigh = lHigh;
+    }
+    if (raw.onlineLow != null && raw.onlineHigh != null && raw.onlineConfidence != null) {
+      const [oLow, oHigh] = normalizeRange(raw.onlineLow, raw.onlineHigh, raw.onlineConfidence);
+      raw.onlineLow = oLow;
+      raw.onlineHigh = oHigh;
+    }
+    if (raw.bestMarketLow != null && raw.bestMarketHigh != null) {
+      const [bLow, bHigh] = normalizeRange(raw.bestMarketLow, raw.bestMarketHigh, raw.confidence);
+      raw.bestMarketLow = bLow;
+      raw.bestMarketHigh = bHigh;
+    }
+
+    // ── Step C: Rationale logging ──
+    const finalRatio = raw.high / (raw.low || 1);
+    const condNarrowed = origLow !== raw.low || origHigh !== raw.high;
+    console.log(`[Pricing Rationale] source="${raw.source}" | orig=$${origLow}-$${origHigh} (${(origHigh / (origLow || 1)).toFixed(1)}x) | final=$${raw.low}-$${raw.high} (${finalRatio.toFixed(1)}x) | confidence=${raw.confidence.toFixed(2)} | condScore=${condScore ?? "none"} | condStr=${condStr ?? "none"} | condNarrowed=${condNarrowed} | megabotSuggested=${raw.suggestMegabot ?? false}`);
+
+    return raw;
+  },
+
+  async _getEstimateRaw(input: PricingInput): Promise<PricingEstimate> {
     const { ai, condition, notes, purchasePrice, saleMethod, saleZip, amazonData } = input;
 
     const mult = conditionMultiplier(condition);

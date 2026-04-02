@@ -6,7 +6,7 @@ import DashboardClient from "./DashboardClient";
 import DemoSeedButton from "./DemoSeedButton";
 import AlertsWidget from "./AlertsWidget";
 import { safeJson } from "@/lib/utils/json";
-import { DISCOUNTS } from "@/lib/pricing/constants";
+import { getFoundingMemberStats } from "@/lib/founding-members";
 import { computeAuthenticityScore, getTierFromScore } from "@/lib/antique-score";
 import { computeCollectiblesScore } from "@/lib/collectibles-score";
 import { detectCollectible } from "@/lib/collectible-detect";
@@ -56,6 +56,8 @@ export default async function DashboardPage() {
       </div>
     );
   }
+
+  const founderStats = await getFoundingMemberStats();
 
   // ── Items ──────────────────────────────────────────────────────────────────
   let items: Awaited<ReturnType<typeof prisma.item.findMany<{
@@ -360,7 +362,7 @@ export default async function DashboardPage() {
           Founding Member
         </span>
         <span style={{ flex: 1, fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-          Lock in pre-launch pricing — <strong style={{ color: "var(--text-primary)" }}>{DISCOUNTS.preLaunch.totalSpots} founding member spots</strong> at 50% off for life
+          Lock in pre-launch pricing — <strong style={{ color: "var(--text-primary)" }}>{founderStats.remaining} of {founderStats.totalSpots} founding member spots left</strong> — 50% off for life
         </span>
         <Link
           href="/pricing"

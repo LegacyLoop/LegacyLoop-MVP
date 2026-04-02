@@ -57,7 +57,7 @@ function getCarrierTheme(carrier: string) {
   if (key.includes("FEDEX")) return CARRIER_COLORS.FEDEX;
   if (key.includes("UPS")) return CARRIER_COLORS.UPS;
   if (key.includes("USPS")) return CARRIER_COLORS.USPS;
-  return { primary: "#00bcd4", secondary: "#009688", bg: "rgba(0,188,212,0.06)" };
+  return { primary: "var(--accent, #00bcd4)", secondary: "var(--accent-dark, #009688)", bg: "var(--accent-dim, rgba(0,188,212,0.06))" };
 }
 
 export default function TrackingTimeline({

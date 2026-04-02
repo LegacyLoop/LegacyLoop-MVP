@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ShareButtons from "@/app/components/ShareButtons";
 import BundleSuggestions from "@/app/components/BundleSuggestions";
+import BudgetGuard from "@/app/components/BudgetGuard";
 
 type ProjectInfo = {
   id: string; type: string; name: string; description: string | null;
@@ -725,6 +726,11 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
           )}
         </div>
       )}
+
+      {/* ── Budget & Timeline Controls ── */}
+      <div style={{ marginBottom: "1.25rem" }}>
+        <BudgetGuard variant="compact" />
+      </div>
 
       {/* ── Department Bundle Suggestions ── */}
       <div style={{ marginBottom: "1.25rem" }}>

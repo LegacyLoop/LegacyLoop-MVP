@@ -34,6 +34,9 @@ const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   SOLD: { bg: "rgba(251,191,36,0.15)", color: "#fbbf24" },
   SHIPPED: { bg: "rgba(168,85,247,0.15)", color: "#a855f7" },
   COMPLETED: { bg: "rgba(76,175,80,0.15)", color: "#4caf50" },
+  RETURN_REQUESTED: { bg: "rgba(239,68,68,0.12)", color: "#f87171" },
+  RETURNED: { bg: "rgba(251,146,60,0.12)", color: "#fb923c" },
+  REFUNDED: { bg: "rgba(148,163,184,0.12)", color: "#94a3b8" },
 };
 
 export default async function ItemPage({ params }: { params: Params }) {

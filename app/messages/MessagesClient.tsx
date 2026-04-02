@@ -191,6 +191,35 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // ── Live Polling — fetch new messages every 30s ──────
+  useEffect(() => {
+    const poll = async () => {
+      try {
+        const res = await fetch("/api/conversations");
+        if (!res.ok) return;
+        const fresh: Conversation[] = await res.json();
+        setConvs((prev) => {
+          // Merge: keep new data but preserve local-only state (starred, etc.)
+          const prevMap = new Map(prev.map((c) => [c.id, c]));
+          const merged = fresh.map((fc) => {
+            const existing = prevMap.get(fc.id);
+            // If message count grew, use fresh data (new messages arrived)
+            if (!existing || fc.messages.length > existing.messages.length) return fc;
+            return existing;
+          });
+          // Also include any brand-new conversations from the server
+          const freshIds = new Set(fresh.map((c) => c.id));
+          const kept = prev.filter((c) => !freshIds.has(c.id)); // should be empty normally
+          return [...merged, ...kept];
+        });
+      } catch {
+        // Polling failure is non-critical — skip silently
+      }
+    };
+    const interval = setInterval(poll, 30_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const selected = convs.find((c) => c.id === selectedId) ?? null;
 
   // Auto-scroll to bottom when messages change

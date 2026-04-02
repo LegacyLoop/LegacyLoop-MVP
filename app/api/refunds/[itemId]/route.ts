@@ -3,6 +3,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { sendReturnNotification } from "@/lib/email/send";
 import { returnApprovedBuyerEmail, returnDeniedBuyerEmail } from "@/lib/email/templates";
+import { createReturnLabel, isShippoConfigured } from "@/lib/adapters/shippo";
 
 type Params = Promise<{ itemId: string }>;
 
@@ -29,7 +30,10 @@ export async function PATCH(
 
   const item = await prisma.item.findUnique({
     where: { id: itemId },
-    select: { id: true, title: true, userId: true, status: true },
+    select: {
+      id: true, title: true, userId: true, status: true,
+      shippingLength: true, shippingWidth: true, shippingHeight: true,
+    },
   });
 
   if (!item || item.userId !== user.id) {
@@ -37,13 +41,68 @@ export async function PATCH(
   }
 
   if (action === "approve") {
-    // Update seller earnings to refunded
+    // ── Generate return shipping label ──
+    let returnLabelInfo: any = null;
+    const originalLabel = await prisma.shipmentLabel.findFirst({
+      where: { itemId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (originalLabel) {
+      try {
+        const fromAddr = JSON.parse(originalLabel.fromAddressJson);
+        const toAddr = JSON.parse(originalLabel.toAddressJson);
+        const parcel = {
+          length: String(item.shippingLength ?? 12),
+          width: String(item.shippingWidth ?? 10),
+          height: String(item.shippingHeight ?? 6),
+          distance_unit: "in" as const,
+          weight: String(originalLabel.weight),
+          mass_unit: "lb" as const,
+        };
+
+        const result = await createReturnLabel(fromAddr, toAddr, parcel);
+        returnLabelInfo = {
+          trackingNumber: result.label.tracking_number,
+          labelUrl: result.label.label_url,
+          carrier: result.rate.provider,
+          service: result.rate.servicelevel_name,
+          rate: parseFloat(result.rate.amount),
+          isMock: result.isMock,
+        };
+
+        // Persist return label to DB
+        await prisma.shipmentLabel.create({
+          data: {
+            itemId,
+            fromAddressJson: JSON.stringify(toAddr), // swapped
+            toAddressJson: JSON.stringify(fromAddr),  // swapped
+            weight: originalLabel.weight,
+            carrier: result.rate.provider,
+            service: result.rate.servicelevel_name,
+            rate: parseFloat(result.rate.amount),
+            labelUrl: result.label.label_url,
+            trackingNumber: result.label.tracking_number,
+            deliveryMethod: "print",
+            status: "RETURN_LABEL",
+            statusHistory: JSON.stringify([
+              { status: "RETURN_LABEL_CREATED", timestamp: new Date().toISOString() },
+            ]),
+          },
+        });
+      } catch (e) {
+        console.error("[Refund] Return label generation failed:", e);
+        // Non-blocking — approve still proceeds without prepaid label
+      }
+    }
+
+    // ── Update seller earnings to refunded ──
     await prisma.sellerEarnings.updateMany({
       where: { itemId, status: { not: "refunded" } },
       data: { status: "refunded" },
     });
 
-    // Update payment ledger to refunded
+    // ── Update payment ledger to refunded ──
     const ledgerEntries = await prisma.paymentLedger.findMany({
       where: { type: "item_purchase" },
     });
@@ -60,22 +119,39 @@ export async function PATCH(
       } catch { /* skip */ }
     }
 
-    // Reset item status
+    // ── Transition item through return flow → REFUNDED, then relist ──
     await prisma.item.update({
       where: { id: itemId },
-      data: { status: "LISTED" },
+      data: { status: "REFUNDED" },
     });
 
-    // Log
+    // Log with return label info
     await prisma.eventLog.create({
       data: {
         itemId,
         eventType: "refund_approved",
-        payload: JSON.stringify({ approvedBy: user.id, reason }),
+        payload: JSON.stringify({
+          approvedBy: user.id,
+          reason,
+          returnLabel: returnLabelInfo,
+        }),
       },
     }).catch(() => {});
   } else {
-    // Deny — just log
+    // ── Deny — release payout hold, return item to previous state ──
+    await prisma.sellerEarnings.updateMany({
+      where: { itemId, status: "pending" },
+      data: { holdUntil: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) }, // reset to normal 3-day hold
+    }).catch(() => {});
+
+    // If item was in RETURN_REQUESTED, move it back to COMPLETED
+    if (item.status === "RETURN_REQUESTED") {
+      await prisma.item.update({
+        where: { id: itemId },
+        data: { status: "COMPLETED" },
+      });
+    }
+
     await prisma.eventLog.create({
       data: {
         itemId,
@@ -119,7 +195,7 @@ export async function PATCH(
     ok: true,
     action,
     message: action === "approve"
-      ? "Refund approved. Item relisted. Processing fee is non-refundable."
-      : "Refund denied.",
+      ? "Refund approved. Item marked as REFUNDED. Seller earnings refunded. Processing fee is non-refundable."
+      : "Refund denied. Payout hold released. Item returned to COMPLETED.",
   });
 }

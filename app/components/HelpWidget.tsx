@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 
 const HelpChatWidget = dynamic(() => import("@/app/help/HelpChatWidget"), { ssr: false });
+const BugReportModal = dynamic(() => import("@/app/components/BugReportModal"), { ssr: false });
 
 export default function HelpWidget() {
   const [open, setOpen] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showBugReport, setShowBugReport] = useState(false);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -91,6 +93,18 @@ export default function HelpWidget() {
               </div>
             )}
 
+            {/* Bug Report */}
+            <button onClick={() => { setShowBugReport(true); setOpen(false); }} style={{
+              display: "flex", alignItems: "center", gap: "8px", padding: "10px 12px", borderRadius: "8px",
+              background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)",
+              color: "#f87171", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer", width: "100%", textAlign: "left",
+            }}>
+              🐛 Report a Bug
+              <span style={{ marginLeft: "auto", fontSize: "0.62rem", padding: "2px 6px", borderRadius: "4px", background: "rgba(0,188,212,0.1)", color: "#00bcd4", fontWeight: 700 }}>
+                + Screenshot
+              </span>
+            </button>
+
             {/* Divider */}
             <div style={{ height: "1px", background: "var(--border-default, rgba(0,188,212,0.1))", margin: "2px 0" }} />
 
@@ -144,6 +158,9 @@ export default function HelpWidget() {
       }}>
         {open ? "✕" : "?"}
       </button>
+
+      {/* Bug Report Modal */}
+      <BugReportModal open={showBugReport} onClose={() => setShowBugReport(false)} />
     </div>
   );
 }

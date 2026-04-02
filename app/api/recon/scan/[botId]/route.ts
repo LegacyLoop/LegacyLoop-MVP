@@ -35,7 +35,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
   return NextResponse.json({ ok: true, bot: updated });
 }
 
-/** PATCH — Pause or resume a ReconBot */
+/** PATCH — Pause/resume a ReconBot, or toggle autoScan */
 export async function PATCH(req: NextRequest, { params }: { params: Params }) {
   const { botId } = await params;
   const user = await authAdapter.getSession();
@@ -45,12 +45,47 @@ export async function PATCH(req: NextRequest, { params }: { params: Params }) {
   if (!bot) return NextResponse.json({ error: "Bot not found" }, { status: 404 });
 
   const body = await req.json().catch(() => ({}));
+
+  // ── Auto-scan toggle ──
+  if (body.action === "toggleAutoScan") {
+    const newVal = !bot.autoScanEnabled;
+
+    // Tier gate: auto-scan requires Power Seller+ (tier >= 3)
+    if (newVal && user.tier < 3) {
+      return NextResponse.json(
+        { error: "Auto-scan requires Power Seller tier or higher.", upgradeUrl: "/pricing" },
+        { status: 403 }
+      );
+    }
+
+    const updated = await prisma.reconBot.update({
+      where: { id: botId },
+      data: {
+        autoScanEnabled: newVal,
+        // If enabling, set nextScan to 6h from now
+        ...(newVal ? { nextScan: new Date(Date.now() + 6 * 60 * 60 * 1000) } : {}),
+      },
+      include: {
+        alerts: {
+          where: { dismissed: false },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        },
+      },
+    });
+
+    return NextResponse.json({ ok: true, bot: updated });
+  }
+
+  // ── Pause / resume ──
   const action = body.action ?? (bot.isActive ? "pause" : "resume");
 
   const updated = await prisma.reconBot.update({
     where: { id: botId },
     data: {
       isActive: action === "resume",
+      // If pausing, also disable auto-scan
+      ...(action === "pause" ? { autoScanEnabled: false } : {}),
     },
     include: {
       alerts: {

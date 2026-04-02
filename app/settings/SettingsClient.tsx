@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import BudgetGuard from "@/app/components/BudgetGuard";
 
 type ConsentData = {
   dataCollection: boolean;
@@ -59,7 +60,7 @@ export default function SettingsClient({ userId, email, consent }: Props) {
         </div>
         <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "1.25rem" }}>
           Control how your data is used. Enabling data sharing earns you{" "}
-          <strong style={{ color: "#6d28d9" }}>100 bonus credits</strong>.
+          <strong style={{ color: "var(--accent, #00bcd4)" }}>100 bonus credits</strong>.
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -95,8 +96,8 @@ export default function SettingsClient({ userId, email, consent }: Props) {
                 cursor: "pointer",
                 padding: "0.75rem",
                 borderRadius: "0.625rem",
-                background: prefs[key] ? "rgba(109, 40, 217, 0.05)" : "transparent",
-                border: `1px solid ${prefs[key] ? "rgba(109,40,217,0.2)" : "transparent"}`,
+                background: prefs[key] ? "rgba(0, 188, 212, 0.06)" : "transparent",
+                border: `1px solid ${prefs[key] ? "rgba(0,188,212,0.2)" : "transparent"}`,
                 transition: "all 0.15s ease",
               }}
             >
@@ -117,11 +118,11 @@ export default function SettingsClient({ userId, email, consent }: Props) {
                     width: "2.75rem",
                     height: "1.5rem",
                     borderRadius: "9999px",
-                    background: prefs[key] ? "linear-gradient(135deg, #6d28d9, #2563eb)" : "#e7e5e4",
+                    background: prefs[key] ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "#e7e5e4",
                     cursor: "pointer",
                     position: "relative",
                     transition: "background 0.2s ease",
-                    boxShadow: prefs[key] ? "0 0 8px rgba(109,40,217,0.4)" : "none",
+                    boxShadow: prefs[key] ? "0 0 8px rgba(0,188,212,0.35)" : "none",
                   }}
                 >
                   <div
@@ -149,10 +150,10 @@ export default function SettingsClient({ userId, email, consent }: Props) {
               marginTop: "1rem",
               padding: "0.5rem 0.75rem",
               borderRadius: "0.5rem",
-              background: "rgba(20, 184, 166, 0.1)",
-              border: "1px solid rgba(20, 184, 166, 0.3)",
+              background: "rgba(0, 188, 212, 0.08)",
+              border: "1px solid rgba(0, 188, 212, 0.2)",
               fontSize: "0.8rem",
-              color: "#0f766e",
+              color: "var(--accent, #00bcd4)",
               fontWeight: 600,
             }}
           >
@@ -213,12 +214,12 @@ export default function SettingsClient({ userId, email, consent }: Props) {
                   width: "2.75rem",
                   height: "1.5rem",
                   borderRadius: "9999px",
-                  background: notifs[key] ? "linear-gradient(135deg, #6d28d9, #2563eb)" : "#e7e5e4",
+                  background: notifs[key] ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "#e7e5e4",
                   cursor: "pointer",
                   position: "relative",
                   transition: "background 0.2s ease",
                   flexShrink: 0,
-                  boxShadow: notifs[key] ? "0 0 8px rgba(109,40,217,0.4)" : "none",
+                  boxShadow: notifs[key] ? "0 0 8px rgba(0,188,212,0.35)" : "none",
                 }}
               >
                 <div
@@ -238,6 +239,11 @@ export default function SettingsClient({ userId, email, consent }: Props) {
             </label>
           ))}
         </div>
+      </div>
+
+      {/* ── Budget & Spending Controls ─────────────────────────── */}
+      <div style={{ marginTop: "2rem" }}>
+        <BudgetGuard variant="full" />
       </div>
     </>
   );

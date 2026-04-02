@@ -77,10 +77,10 @@ export async function POST(
         return NextResponse.json({ error: "upgrade_required", message: "Upgrade your plan to access AntiqueBot.", upgradeUrl: "/pricing?upgrade=true" }, { status: 403 });
       }
       const isRerun = await hasPriorBotRun(user.id, itemId, "ANTIQUEBOT");
-      const cost = isRerun ? BOT_CREDIT_COSTS.singleBotReRun : BOT_CREDIT_COSTS.singleBotRun;
+      const cost = isRerun ? BOT_CREDIT_COSTS.antiqueBotReRun : BOT_CREDIT_COSTS.antiqueBotRun;
       const cc = await checkCredits(user.id, cost);
       if (!cc.hasEnough) {
-        return NextResponse.json({ error: "insufficient_credits", message: "Not enough credits to run AntiqueBot.", balance: cc.balance, required: cost, buyUrl: "/credits" }, { status: 402 });
+        return NextResponse.json({ error: "insufficient_credits", message: "Not enough credits to run AntiqueBot (2 credits).", balance: cc.balance, required: cost, buyUrl: "/credits" }, { status: 402 });
       }
       await deductCredits(user.id, cost, isRerun ? "AntiqueBot re-run" : "AntiqueBot run", itemId);
     }

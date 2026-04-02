@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
-
-const CREDIT_COST_RATE = 0.71;
+import { CREDIT_COST_RATE } from "@/lib/constants/pricing";
 
 export async function GET() {
   const user = await authAdapter.getSession();

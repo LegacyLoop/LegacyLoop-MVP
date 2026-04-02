@@ -3,6 +3,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { calculateProRate } from "@/lib/billing/pro-rate";
 import { PLANS, TIER_NUMBER_TO_KEY } from "@/lib/constants/pricing";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 /** Map legacy tier keys (from TIER_NUMBER_TO_KEY) to PLANS keys */
 const LEGACY_TO_PLAN: Record<string, keyof typeof PLANS> = {
@@ -14,6 +15,12 @@ const LEGACY_TO_PLAN: Record<string, keyof typeof PLANS> = {
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = getClientIp(req);
+    const rl = checkRateLimit("payments", ip);
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "Too many requests. Try again later." }, { status: 429, headers: { "Retry-After": String(Math.ceil(rl.resetIn / 1000)) } });
+    }
+
     const user = await authAdapter.getSession();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

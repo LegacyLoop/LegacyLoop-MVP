@@ -1,5 +1,7 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
+import { sendEmail } from "@/lib/email/send";
+import { sellerRepliedEmail } from "@/lib/email/templates";
 
 export async function POST(
   req: Request,
@@ -11,7 +13,7 @@ export async function POST(
 
   const conv = await prisma.conversation.findUnique({
     where: { id: convId },
-    include: { item: { select: { userId: true } } },
+    include: { item: { select: { userId: true, title: true, id: true } } },
   });
 
   if (!conv || conv.item.userId !== user.id) {
@@ -31,6 +33,25 @@ export async function POST(
       isRead: true,
     },
   });
+
+  // ── Email buyer when seller replies ──────────────────────────────────
+  if (sender === "seller" && conv.buyerEmail) {
+    try {
+      const sellerUser = await prisma.user.findUnique({ where: { id: user.id }, select: { displayName: true } });
+      const itemTitle = conv.item.title || "Untitled Item";
+      const itemUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://legacy-loop.com"}/store/${conv.item.userId}/item/${conv.item.id}`;
+      const emailData = sellerRepliedEmail(
+        conv.buyerName || "Buyer",
+        sellerUser?.displayName || "Seller",
+        itemTitle,
+        String(content).trim(),
+        itemUrl
+      );
+      sendEmail({ to: conv.buyerEmail, subject: emailData.subject, html: emailData.html }).catch(() => {});
+    } catch (emailErr) {
+      console.error("[MSG] Buyer email notification failed (non-blocking):", emailErr);
+    }
+  }
 
   return Response.json(msg);
 }

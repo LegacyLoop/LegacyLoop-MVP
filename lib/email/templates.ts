@@ -299,6 +299,69 @@ export function returnDeniedBuyerEmail(itemTitle: string, reason: string): strin
   `);
 }
 
+// ─── Message Notification Templates ──────────────────────────────────────
+
+export function newBuyerMessageEmail(
+  sellerName: string,
+  buyerName: string,
+  itemTitle: string,
+  messagePreview: string,
+  conversationUrl: string
+): { subject: string; html: string } {
+  const preview = messagePreview.length > 200 ? messagePreview.slice(0, 200) + "…" : messagePreview;
+  return {
+    subject: `New message about "${itemTitle}" from ${buyerName}`,
+    html: wrapper(`
+      <h1 style="font-size:24px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 8px">New Buyer Message 💬</h1>
+      <p style="font-size:16px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
+        Hi ${sellerName}, <strong style="color:${TEXT_PRIMARY}">${buyerName}</strong> sent a message about your listing:
+      </p>
+      <div style="background:rgba(255,255,255,0.03);border-left:4px solid ${ACCENT};border-radius:0 8px 8px 0;padding:16px 20px;margin:0 0 24px">
+        <div style="font-size:13px;color:${TEXT_MUTED};margin-bottom:6px">Re: ${itemTitle}</div>
+        <div style="font-size:15px;color:${TEXT_SECONDARY};line-height:1.6;font-style:italic">"${preview}"</div>
+      </div>
+      <p style="font-size:14px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
+        Reply quickly to keep buyer interest high. Fast response times lead to more sales.
+      </p>
+      <div style="text-align:center;margin:24px 0 16px">
+        ${ctaButton("Reply Now", conversationUrl)}
+      </div>
+      <p style="font-size:12px;color:${TEXT_MUTED};text-align:center">
+        You're receiving this because a buyer messaged you on LegacyLoop.
+      </p>
+    `),
+  };
+}
+
+export function sellerRepliedEmail(
+  buyerName: string,
+  sellerName: string,
+  itemTitle: string,
+  replyPreview: string,
+  itemUrl: string
+): { subject: string; html: string } {
+  const preview = replyPreview.length > 200 ? replyPreview.slice(0, 200) + "…" : replyPreview;
+  return {
+    subject: `${sellerName} replied about "${itemTitle}"`,
+    html: wrapper(`
+      <h1 style="font-size:24px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 8px">You Got a Reply! 📬</h1>
+      <p style="font-size:16px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
+        Hi ${buyerName}, the seller responded to your inquiry about <strong style="color:${TEXT_PRIMARY}">${itemTitle}</strong>:
+      </p>
+      <div style="background:rgba(255,255,255,0.03);border-left:4px solid ${ACCENT};border-radius:0 8px 8px 0;padding:16px 20px;margin:0 0 24px">
+        <div style="font-size:13px;color:${TEXT_MUTED};margin-bottom:6px">From: ${sellerName}</div>
+        <div style="font-size:15px;color:${TEXT_SECONDARY};line-height:1.6;font-style:italic">"${preview}"</div>
+      </div>
+      <div style="text-align:center;margin:24px 0 16px">
+        ${ctaButton("View Listing", itemUrl)}
+      </div>
+      <p style="font-size:12px;color:${TEXT_MUTED};text-align:center">
+        You're receiving this because you inquired about an item on LegacyLoop.
+      </p>
+    `),
+  };
+}
+
 // ─── Buyer Outreach ─────────────────────────────────────────────────────
 
 export function buyerOutreachEmail(message: string, itemName: string, itemUrl: string): string {

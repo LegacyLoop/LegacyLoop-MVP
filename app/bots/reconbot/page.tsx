@@ -59,6 +59,7 @@ export default async function ReconBotPage() {
       lastScannedAt: item.eventLogs[0]?.createdAt?.toISOString() ?? null,
       reconBot: bot ? {
         isActive: bot.isActive,
+        autoScanEnabled: bot.autoScanEnabled,
         competitorCount: bot.competitorCount,
         lowestPrice: bot.lowestPrice,
         averagePrice: bot.averagePrice,
@@ -83,7 +84,7 @@ export default async function ReconBotPage() {
           <p className="muted" style={{ fontSize: "0.85rem" }}>Continuous competitive intelligence — monitors competitors, prices, and market shifts</p>
         </div>
       </div>
-      <Suspense><ReconBotClient items={serialized} /></Suspense>
+      <Suspense><ReconBotClient items={serialized} userTier={user.tier} /></Suspense>
     </div>
   );
 }

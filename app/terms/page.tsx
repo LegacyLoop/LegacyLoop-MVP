@@ -132,9 +132,19 @@ export default function TermsPage() {
           </li>
           <li>Antique and collectible detection and appraisal recommendations</li>
           <li>Buyer matching and lead generation tools</li>
+          <li>
+            Buyer Intent Scanner — opt-in, consent-based scanning of publicly
+            visible social media posts and classifieds to match buyer intent with
+            your inventory (no audio recording, no microphone access, no background
+            monitoring)
+          </li>
           <li>Multi-platform listing and marketplace integration</li>
           <li>Shipping calculation, label generation, and tracking</li>
           <li>Estate sale project management and organization tools</li>
+          <li>
+            Optional data sharing program with transparent consent controls and
+            credit incentives (see Privacy Policy for details)
+          </li>
         </ul>
       </div>
 

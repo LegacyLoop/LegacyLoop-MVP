@@ -22,9 +22,9 @@ export async function POST(
     if (!offer) return NextResponse.json({ error: "Offer not found" }, { status: 404 });
     if (offer.sellerId !== user.id) return NextResponse.json({ error: "Not your offer" }, { status: 403 });
 
-    if (isOfferExpired(offer)) {
+    if (offer.expiresAt && isOfferExpired(offer)) {
       await prisma.offer.update({ where: { id: offerId }, data: { status: "EXPIRED" } });
-      return NextResponse.json({ error: "Offer has expired" }, { status: 400 });
+      return NextResponse.json({ error: "This offer has expired" }, { status: 400 });
     }
 
     if (offer.status !== "PENDING" && offer.status !== "COUNTERED") {

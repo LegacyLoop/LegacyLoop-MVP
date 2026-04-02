@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import BudgetGuard from "@/app/components/BudgetGuard";
 
 interface BotSpend { botName: string; creditsSpent: number; costDollars: number; runCount: number; }
 interface TopItem { itemId: string; title: string; creditsSpent: number; costDollars: number; estimatedValue: number | null; roiPercent: number | null; }
@@ -52,7 +53,12 @@ export default function SpendingPage() {
     <div style={{ maxWidth: "900px", margin: "0 auto", padding: "2rem 1rem" }}>
       <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Spending" }]} />
       <h1 style={{ fontSize: "1.75rem", fontWeight: 900, color: "var(--text-primary)", marginBottom: "0.25rem" }}>AI Spending & ROI</h1>
-      <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", marginBottom: "2rem" }}>Track your AI investment and see the value it creates.</p>
+      <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", marginBottom: "2rem" }}>Track your AI investment, set budget guardrails, and see the value it creates.</p>
+
+      {/* Budget Control Center */}
+      <div style={{ marginBottom: "2rem" }}>
+        <BudgetGuard variant="full" />
+      </div>
 
       {/* Section 1: KPI Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>

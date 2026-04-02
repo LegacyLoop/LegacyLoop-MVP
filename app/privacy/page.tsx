@@ -277,6 +277,168 @@ export default function PrivacyPage() {
         </ul>
       </div>
 
+      {/* 3a. Opt-In Data Sharing Program */}
+      <div
+        style={{
+          background: "var(--bg-card)",
+          backdropFilter: "blur(16px)",
+          border: "1px solid var(--border-default)",
+          borderRadius: "16px",
+          padding: "1.5rem",
+          marginBottom: "1rem",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "1.1rem",
+            fontWeight: 700,
+            color: "var(--text-primary)",
+            marginBottom: "0.75rem",
+          }}
+        >
+          3a. Opt-In Data Sharing Program
+        </h2>
+        <p
+          style={{
+            fontSize: "0.88rem",
+            color: "var(--text-secondary)",
+            lineHeight: 1.7,
+            marginBottom: "0.5rem",
+          }}
+        >
+          LegacyLoop offers an <strong>optional</strong> data sharing program
+          that helps improve AI accuracy and market pricing for all users. This
+          program is:
+        </p>
+        <ul
+          style={{
+            paddingLeft: "1.25rem",
+            fontSize: "0.88rem",
+            color: "var(--text-secondary)",
+            lineHeight: 1.8,
+          }}
+        >
+          <li>
+            <strong>Explicitly opt-in:</strong> You must actively enable each
+            data sharing category. Nothing is shared by default.
+          </li>
+          <li>
+            <strong>Granular:</strong> Four independent categories — anonymized
+            data collection, AI training data, market research, and aggregate
+            trend reports — each controllable separately.
+          </li>
+          <li>
+            <strong>Fully revocable:</strong> You can change or revoke your
+            consent at any time in Settings → Privacy & Data Sharing.
+          </li>
+          <li>
+            <strong>Anonymized:</strong> All shared data is stripped of
+            personally identifiable information before processing.
+          </li>
+          <li>
+            <strong>Incentivized transparently:</strong> Users who enable data
+            collection receive 100 bonus credits as a one-time thank-you. Credits
+            are never clawed back if consent is later revoked.
+          </li>
+        </ul>
+        <p
+          style={{
+            fontSize: "0.88rem",
+            color: "var(--text-secondary)",
+            lineHeight: 1.7,
+            marginTop: "0.5rem",
+          }}
+        >
+          We <strong>never sell</strong> your data. Shared data is used solely to
+          improve LegacyLoop pricing algorithms, market trend analysis, and AI
+          identification accuracy.
+        </p>
+      </div>
+
+      {/* 3b. Buyer Intent Scanner */}
+      <div
+        style={{
+          background: "var(--bg-card)",
+          backdropFilter: "blur(16px)",
+          border: "1px solid var(--border-default)",
+          borderRadius: "16px",
+          padding: "1.5rem",
+          marginBottom: "1rem",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.06)",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "1.1rem",
+            fontWeight: 700,
+            color: "var(--text-primary)",
+            marginBottom: "0.75rem",
+          }}
+        >
+          3b. Buyer Intent Scanner
+        </h2>
+        <p
+          style={{
+            fontSize: "0.88rem",
+            color: "var(--text-secondary)",
+            lineHeight: 1.7,
+            marginBottom: "0.5rem",
+          }}
+        >
+          LegacyLoop offers a Buyer Intent Scanner feature that analyzes{" "}
+          <strong>publicly visible</strong> social media posts, classified ads,
+          and buy/sell boards to match buyer intent with your inventory. This
+          feature:
+        </p>
+        <ul
+          style={{
+            paddingLeft: "1.25rem",
+            fontSize: "0.88rem",
+            color: "var(--text-secondary)",
+            lineHeight: 1.8,
+          }}
+        >
+          <li>
+            <strong>Requires explicit consent:</strong> You must opt in before
+            any scanning occurs. Consent is saved to your account.
+          </li>
+          <li>
+            <strong>No audio recording:</strong> This feature does not access
+            your microphone, record audio, or perform any ambient listening.
+          </li>
+          <li>
+            <strong>Public data only:</strong> Only analyzes publicly visible
+            posts — never private messages, DMs, or protected content.
+          </li>
+          <li>
+            <strong>On-demand only:</strong> Scans run only when you explicitly
+            press the Scan button. There is no background monitoring.
+          </li>
+          <li>
+            <strong>Auto-deletion:</strong> Scan results are deleted after your
+            chosen retention period (7, 30, or 90 days).
+          </li>
+          <li>
+            <strong>Fully revocable:</strong> You can revoke consent and delete
+            all scan data at any time.
+          </li>
+        </ul>
+        <p
+          style={{
+            fontSize: "0.88rem",
+            color: "var(--text-secondary)",
+            lineHeight: 1.7,
+            marginTop: "0.5rem",
+            fontStyle: "italic",
+          }}
+        >
+          Note: This feature is currently in beta and displays simulated results
+          for demonstration purposes. The production version will scan real
+          public posts with the same privacy guarantees described above.
+        </p>
+      </div>
+
       {/* 4. Sharing Your Information */}
       <div
         style={{

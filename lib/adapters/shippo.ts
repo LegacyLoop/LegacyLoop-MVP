@@ -1,7 +1,5 @@
 // Shippo REST API adapter
 // Docs: https://goshippo.com/docs/reference
-// TODO: Returns flow — add createReturnLabel(originalLabelId) that generates a prepaid return label
-// using the Shippo returns API. Should swap from/to addresses and use the cheapest ground rate.
 
 const BASE = "https://api.goshippo.com";
 
@@ -133,6 +131,39 @@ export async function createShippingLabel(rateId: string): Promise<ShippoLabel> 
     label_url: data.label_url ?? "",
     status: data.status ?? "UNKNOWN",
   };
+}
+
+// ─── Create a return label (swap from/to, cheapest ground rate) ────────────
+
+export async function createReturnLabel(
+  originalFrom: ShippoAddress,
+  originalTo: ShippoAddress,
+  parcel: ShippoParcel
+): Promise<{ label: ShippoLabel; rate: ShippoRate; isMock: boolean }> {
+  // Swap addresses — buyer ships back to seller
+  const returnFrom = originalTo;
+  const returnTo = originalFrom;
+
+  const { rates, isMock } = await getShippingRates(returnFrom, returnTo, parcel);
+
+  if (rates.length === 0) {
+    throw new Error("No return shipping rates available");
+  }
+
+  // Pick cheapest ground rate (prefer USPS/UPS Ground for cost)
+  const groundRates = rates.filter(
+    (r) =>
+      r.servicelevel_name.toLowerCase().includes("ground") ||
+      r.servicelevel_name.toLowerCase().includes("first class") ||
+      r.servicelevel_name.toLowerCase().includes("parcel select")
+  );
+  const cheapest = (groundRates.length > 0 ? groundRates : rates).sort(
+    (a, b) => parseFloat(a.amount) - parseFloat(b.amount)
+  )[0];
+
+  const label = await createShippingLabel(cheapest.object_id);
+
+  return { label, rate: cheapest, isMock };
 }
 
 export function isShippoConfigured() {

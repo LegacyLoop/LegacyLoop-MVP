@@ -64,7 +64,7 @@ const ANALYSIS_SCHEMA = {
     estimated_value_low: { type: ["number", "null"], description: "Low end of fair market value in USD for US secondhand resale (2024-2025 pricing). Consider condition, completeness, and typical sell-through. null if truly unable to estimate." },
     estimated_value_mid: { type: ["number", "null"], description: "Most likely sale price in USD. null if unable to estimate." },
     estimated_value_high: { type: ["number", "null"], description: "High end / best case in USD (perfect buyer, great listing). null if unable to estimate." },
-    pricing_confidence: { type: ["number", "null"], description: "How confident in the price estimate (0-100). Under 40 means very uncertain. null if no estimate." },
+    pricing_confidence: { type: ["number", "null"], description: "How confident in the price estimate (0-100). Under 40 = uncertain (wider range OK). 70+ = confident (low/high within 25% of mid). 85+ = very confident (low/high within 15% of mid). NEVER give high confidence with a wide range." },
     pricing_rationale: { type: ["string", "null"], description: "Brief explanation of how you arrived at this price. Reference comparable sales if possible. null if no estimate." },
     comparable_description: { type: ["string", "null"], description: "Description of comparable items you are basing the price on: 'Similar Rolex Datejust models in this condition sell for $4,000-$6,000 on eBay'. null if none." },
     value_drivers: { type: "array", items: { type: "string" }, description: "What makes this item valuable (or not): 'Recognized brand', 'Rare model year', 'Poor condition reduces value significantly'. Empty array if none." },
@@ -254,6 +254,17 @@ SECTION 3 — PRICING:
 - If the item appears worthless, unsellable, or would cost more to ship than it's worth, set estimated_value_low/mid/high to 0 and note "Recommend donation" in pricing_rationale.
 - Items under $5 value: recommend donation or bundling with other items.
 - pricing_confidence: 0-100. Use <40 if you're truly guessing. Use >70 if you have strong comparables.
+
+CRITICAL RANGE RULES (you MUST follow these):
+- If pricing_confidence >= 85: your low and high MUST be within 15% of mid. Example: mid=$200 → low=$170, high=$230.
+- If pricing_confidence >= 70: your low and high MUST be within 25% of mid. Example: mid=$200 → low=$150, high=$250.
+- If pricing_confidence >= 50: your low and high MUST be within 40% of mid. Example: mid=$200 → low=$120, high=$280.
+- If pricing_confidence < 40: you may use a wider range, but NEVER exceed 3x (high must be less than 3× low).
+- A wide range signals uncertainty to the seller — ALWAYS prefer a TIGHTER range with LOWER confidence over a WIDE range with HIGH confidence.
+- BAD: low=$50, high=$500, confidence=75 (10x range with high confidence = nonsensical)
+- GOOD: low=$150, high=$250, confidence=80 (1.7x range with high confidence = helpful)
+- GOOD: low=$80, high=$300, confidence=35 (3.75x range with low confidence = honest uncertainty)
+- Use the CONDITION you assessed to narrow the range. Mint condition = tight range. Poor condition = slightly wider but still reasonable.
 
 SECTION 3B — REGIONAL PRICING (critical for seller advice):
 - The best market must be SPECIFIC to this item type. Think about WHERE buyers for THIS item actually are:

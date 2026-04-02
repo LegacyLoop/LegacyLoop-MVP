@@ -2,6 +2,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
 import { CREDIT_PACK_LIST } from "@/lib/constants/pricing";
+import { isConfigured } from "@/lib/square";
 
 const PACKAGES = CREDIT_PACK_LIST.map((p) => ({
   id: p.id,
@@ -19,6 +20,19 @@ export async function POST(req: NextRequest) {
   const pkg = PACKAGES.find((p) => p.id === packageId);
   if (!pkg) return new Response("Invalid package", { status: 400 });
 
+  // When Square is configured, redirect to the proper checkout flow
+  // so payment is collected before credits are awarded.
+  if (isConfigured) {
+    return Response.json({
+      ok: false,
+      redirect: true,
+      checkoutUrl: "/api/payments/checkout",
+      checkoutBody: { type: "credit_pack", id: `pack_${pkg.price}` },
+      message: "Use the checkout flow to purchase credits with payment.",
+    }, { status: 303 });
+  }
+
+  // Demo mode — award credits directly without collecting payment
   const totalAdded = pkg.credits + pkg.bonusCredits;
 
   // Get or create UserCredits
@@ -40,17 +54,17 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // Create transaction
+  // Create transaction (marked as demo)
   await prisma.creditTransaction.create({
     data: {
       userCreditsId: uc.id,
       type: "purchase",
       amount: totalAdded,
       balance: newBalance,
-      description: `${pkg.name} — ${pkg.credits} credits${pkg.bonusCredits > 0 ? ` + ${pkg.bonusCredits} bonus` : ""}`,
+      description: `[DEMO] ${pkg.name} — ${pkg.credits} credits${pkg.bonusCredits > 0 ? ` + ${pkg.bonusCredits} bonus` : ""}`,
       paymentAmount: pkg.price,
     },
   });
 
-  return Response.json({ ok: true, balance: updated.balance, added: totalAdded });
+  return Response.json({ ok: true, demo: true, balance: updated.balance, added: totalAdded });
 }

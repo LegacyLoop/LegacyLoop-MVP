@@ -7,7 +7,6 @@ import type { Recommendation } from "@/lib/pricing/constants";
 import {
   DIGITAL_TIERS,
   WHITE_GLOVE_TIERS,
-  DISCOUNTS,
 } from "@/lib/pricing/constants";
 
 // ── Helper functions ──────────────────────────────────────────────────────────
@@ -230,8 +229,13 @@ function ResultsContent() {
   const userNotes = searchParams.get("userNotes") || "";
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [founderStats, setFounderStats] = useState<{ totalSpots: number; remaining: number } | null>(null);
   useEffect(() => {
     setIsLoggedIn(document.cookie.includes("auth-token"));
+    fetch("/api/founding-members")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => { if (data) setFounderStats(data); })
+      .catch(() => {});
   }, []);
 
   const tierName = getTierName(rec.recommendedTier);
@@ -515,7 +519,7 @@ function ResultsContent() {
             }}
           >
             {"\u26A1"} <strong>Pre-launch pricing:</strong> Lock in this rate forever {"\u2014"}{" "}
-            {DISCOUNTS.preLaunch.totalSpots} founding member spots available — 50% off for life.
+            {founderStats ? `${founderStats.remaining} of ${founderStats.totalSpots}` : "100"} founding member spots {founderStats ? "left" : "available"} — 50% off for life.
           </div>
 
           <Link
@@ -525,7 +529,7 @@ function ResultsContent() {
               textAlign: "center",
               padding: "0.9rem",
               background: "#fff",
-              color: isWhiteGlove ? "#1c1917" : "#0f766e",
+              color: isWhiteGlove ? "#1c1917" : "#00838f",
               borderRadius: "0.875rem",
               fontWeight: 800,
               fontSize: "1rem",

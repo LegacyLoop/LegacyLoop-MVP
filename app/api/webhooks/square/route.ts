@@ -1,6 +1,6 @@
-// SECURITY: SQUARE_WEBHOOK_SIGNATURE_KEY must be set in production.
-// Currently in sandbox mode — signature verification is bypassed.
-// TODO: CMD-DEPLOY-1 — configure signature key before go-live.
+// SECURITY: Square webhook signature verification is REQUIRED in all environments.
+// Set SQUARE_WEBHOOK_SIGNATURE_KEY in your environment variables.
+// In demo mode without the key, webhooks are rejected for safety.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { recordPayment } from "@/lib/services/payment-ledger";
@@ -11,32 +11,40 @@ export async function POST(request: NextRequest) {
     const body = JSON.parse(rawBody);
     const eventType = body.type;
 
-    // ── Webhook Signature Validation ──
+    // ── Webhook Signature Validation — REQUIRED in all environments ──
     const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY;
-    if (signatureKey) {
-      const { WebhooksHelper } = await import("square");
-      const signatureHeader = request.headers.get("x-square-hmacsha256-signature") || "";
-      const notificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/square`;
-      let isValid = false;
-      try {
-        isValid = await WebhooksHelper.verifySignature({
-          requestBody: rawBody,
-          signatureHeader,
-          signatureKey,
-          notificationUrl,
-        });
-      } catch (e) {
-        console.error("Webhook signature verification error:", e);
-      }
-      if (!isValid) {
-        console.warn("Webhook signature invalid — rejecting event:", eventType);
-        return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
-      }
-    } else if (process.env.SQUARE_ENVIRONMENT === "production") {
-      console.error("CRITICAL: SQUARE_WEBHOOK_SIGNATURE_KEY not set in production");
-      return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+    if (!signatureKey) {
+      // No signature key configured — reject webhook to prevent forged payments
+      console.error(
+        "[Square Webhook] SQUARE_WEBHOOK_SIGNATURE_KEY not set.",
+        process.env.SQUARE_ENVIRONMENT === "production"
+          ? "CRITICAL: Production webhooks are being rejected!"
+          : "Set the key in .env to process Square webhooks."
+      );
+      return NextResponse.json(
+        { error: "Webhook signature key not configured" },
+        { status: 500 }
+      );
     }
-    // Sandbox/demo: proceed without signature check
+
+    const { WebhooksHelper } = await import("square");
+    const signatureHeader = request.headers.get("x-square-hmacsha256-signature") || "";
+    const notificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/square`;
+    let isValid = false;
+    try {
+      isValid = await WebhooksHelper.verifySignature({
+        requestBody: rawBody,
+        signatureHeader,
+        signatureKey,
+        notificationUrl,
+      });
+    } catch (e) {
+      console.error("[Square Webhook] Signature verification error:", e);
+    }
+    if (!isValid) {
+      console.warn("[Square Webhook] Invalid signature — rejecting:", eventType);
+      return NextResponse.json({ error: "Invalid signature" }, { status: 403 });
+    }
 
     if (eventType === "payment.completed") {
       const payment = body.data?.object?.payment;

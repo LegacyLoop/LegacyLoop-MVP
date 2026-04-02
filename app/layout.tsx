@@ -12,6 +12,13 @@ import ThemeProvider from "@/app/components/ThemeProvider";
 import NoiseOverlay from "@/app/components/effects/NoiseOverlay";
 import GradientOrbs from "@/app/components/effects/GradientOrbs";
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover" as const,
+};
+
 export const metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"

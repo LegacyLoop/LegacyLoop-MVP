@@ -17,6 +17,7 @@ import { isDemoMode } from "@/lib/bot-mode";
 import AmazonPriceBadge from "./AmazonPriceBadge";
 import DocumentVault from "./DocumentVault";
 import ItemCostBreakdown from "./ItemCostBreakdown";
+import BudgetGuard from "@/app/components/BudgetGuard";
 import SaleAssignment from "./SaleAssignment";
 import TradeToggle from "./TradeToggle";
 import ActiveOffersWidget from "@/app/components/ActiveOffersWidget";
@@ -8343,7 +8344,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               <span style={{ fontSize: "0.55rem", fontWeight: 600, padding: "1px 5px", borderRadius: "4px", background: "rgba(0,188,212,0.08)", color: "var(--accent)", border: "1px solid rgba(0,188,212,0.15)" }}>Assigned</span>
             )}
             {!projectId && (
-              <a href="/projects/new" style={{ fontSize: "0.55rem", color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>+ New</a>
+              <a href="/projects" style={{ fontSize: "0.55rem", color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>+ New</a>
             )}
           </div>
 
@@ -9855,6 +9856,7 @@ export default function ItemDashboardPanels({
           </GlassCard>
 
           <ItemCostBreakdown itemId={itemId} />
+          <BudgetGuard variant="item" itemName={aiData?.item_name || "this item"} />
           <DocumentVault itemId={itemId} />
         </div>
 

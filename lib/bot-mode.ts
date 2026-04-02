@@ -4,9 +4,10 @@
  * BOT_MODE env var controls whether bots use mock/demo data or live APIs.
  *
  * Values:
- *   "demo"  — Default. Uses hardcoded mock data for all bot systems.
+ *   "demo"  — Uses hardcoded mock data for all bot systems.
  *             Safe for demos, development, and investor presentations.
- *   "live"  — Connects to real APIs (requires API keys + platform credentials).
+ *   "live"  — Default (when BOT_MODE is unset). Connects to real APIs
+ *             (requires API keys + platform credentials).
  *             NOT YET IMPLEMENTED. When ready, swap the data sources in:
  *               - lib/services/recon-bot.ts  → real scraper/API calls
  *               - api/bots/activate/[itemId] → real buyer discovery APIs
@@ -25,14 +26,20 @@
 
 /**
  * Unified demo mode check — single source of truth.
- * Returns true if ANY of these env vars indicate demo mode:
- *   BOT_MODE=demo (primary), DEMO_MODE=true, NEXT_PUBLIC_DEMO_MODE=true
+ * Returns true ONLY when explicitly opted in via env vars:
+ *   BOT_MODE=demo, DEMO_MODE=true, or NEXT_PUBLIC_DEMO_MODE=true
+ *
+ * When no env var is set, defaults to LIVE (production behavior).
  */
 export function isDemoMode(): boolean {
   if (typeof process === "undefined") return false;
-  if (process.env.BOT_MODE === "demo") return true;
-  if (process.env.DEMO_MODE === "true" || process.env.NEXT_PUBLIC_DEMO_MODE === "true") return true;
-  // Default to demo when BOT_MODE is not explicitly set to "live"
-  if (!process.env.BOT_MODE || process.env.BOT_MODE !== "live") return true;
+  if (process.env.BOT_MODE === "demo") {
+    console.warn("[LegacyLoop] Running in DEMO mode (BOT_MODE=demo). No charges or limits enforced.");
+    return true;
+  }
+  if (process.env.DEMO_MODE === "true" || process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+    console.warn("[LegacyLoop] Running in DEMO mode (DEMO_MODE/NEXT_PUBLIC_DEMO_MODE=true). No charges or limits enforced.");
+    return true;
+  }
   return false;
 }
