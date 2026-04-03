@@ -9,7 +9,8 @@ export const FEATURES = {
   LIVE_EMAIL: !!process.env.SENDGRID_API_KEY,
   LIVE_SMS: !!process.env.TWILIO_AUTH_TOKEN,
   DEMO_MODE: process.env.DEMO_MODE === "true",
-  PRE_LAUNCH: true,
+  /** Pre-launch pricing/messaging. Set PRE_LAUNCH=false in env to transition to regular pricing. */
+  PRE_LAUNCH: process.env.PRE_LAUNCH !== "false",
 } as const;
 
 export type FeatureKey = keyof typeof FEATURES;

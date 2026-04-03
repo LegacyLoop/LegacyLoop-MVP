@@ -20,6 +20,7 @@ export async function PATCH(
   const user = await authAdapter.getSession();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
+  try {
   const body = await req.json().catch(() => ({}));
   const { status, listingPrice } = body;
 
@@ -91,11 +92,28 @@ export async function PATCH(
       data: { status: "refunded" },
     }).catch(() => {});
 
-    await prisma.paymentLedger.updateMany({
-      where: { type: "item_purchase" },
-      data: { status: "refunded" },
-    }).catch(() => {});
+    // Scope refund to THIS item only — find matching ledger entry via userId + metadata
+    const ledgerEntries = await prisma.paymentLedger.findMany({
+      where: { userId: user.id, type: "item_purchase", status: { not: "refunded" } },
+    }).catch(() => []);
+
+    for (const entry of ledgerEntries) {
+      try {
+        const meta = entry.metadata ? JSON.parse(entry.metadata as string) : {};
+        if (meta.itemId === itemId) {
+          await prisma.paymentLedger.update({
+            where: { id: entry.id },
+            data: { status: "refunded" },
+          });
+          break; // Only refund the matching entry
+        }
+      } catch { /* skip malformed metadata */ }
+    }
   }
 
   return Response.json({ ok: true, status: updated.status });
+  } catch (err) {
+    console.error("[items/status] Error:", err);
+    return Response.json({ error: "Failed to update status" }, { status: 500 });
+  }
 }

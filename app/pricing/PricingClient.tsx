@@ -31,7 +31,7 @@ const DIGITAL_TIERS = [
       { text: `${TIER_LIMITS[TIER.FREE].maxActiveItems} items max`, enabled: true },
       { text: "Basic AI identification", enabled: true },
       { text: `${TIER_LIMITS[TIER.FREE].maxPhotosPerItem} photos per item`, enabled: true },
-      { text: "Public store listing", enabled: true },
+      { text: "Public store listing", enabled: false },
       { text: "Email support", enabled: true },
       { text: "Analytics dashboard", enabled: false },
       { text: "Buyer Finder", enabled: false },

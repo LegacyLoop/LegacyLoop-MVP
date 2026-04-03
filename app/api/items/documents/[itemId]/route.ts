@@ -81,10 +81,18 @@ export async function POST(
 
   if (!file || file.size === 0) return new Response("No file provided", { status: 400 });
 
-  // Validate MIME type
+  // Validate MIME type — strict allowlist, both MIME and extension must pass
   const rawExt = (file.name.split(".").pop() || "").toLowerCase();
-  if (!ALLOWED_DOC_TYPES.has(file.type) && !rawExt) {
-    return new Response(`Unsupported file type: ${file.type}`, { status: 400 });
+  const ALLOWED_EXTENSIONS = new Set([
+    "jpg", "jpeg", "png", "webp", "heic", "gif",
+    "pdf", "doc", "docx", "odt", "txt", "rtf",
+    "xls", "xlsx", "csv",
+  ]);
+  if (!ALLOWED_DOC_TYPES.has(file.type)) {
+    return new Response(`Unsupported file type: ${file.type}. Accepted: images, PDFs, Word docs, spreadsheets, text files.`, { status: 400 });
+  }
+  if (rawExt && !ALLOWED_EXTENSIONS.has(rawExt)) {
+    return new Response(`Unsupported file extension: .${rawExt}`, { status: 400 });
   }
 
   if (file.size > MAX_SIZE) {

@@ -32,6 +32,15 @@ export async function POST(req: NextRequest) {
     }, { status: 303 });
   }
 
+  // ── Production safety: block free credits when Square is misconfigured ──
+  const { isDemoMode } = await import("@/lib/bot-mode");
+  if (!isDemoMode() && process.env.NODE_ENV === "production") {
+    return Response.json({
+      ok: false,
+      error: "Payment processing is not configured. Please contact support.",
+    }, { status: 503 });
+  }
+
   // Demo mode — award credits directly without collecting payment
   const totalAdded = pkg.credits + pkg.bonusCredits;
 

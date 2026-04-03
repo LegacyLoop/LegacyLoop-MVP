@@ -1,13 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 
 type AuthPanel = "none" | "phone" | "magic";
 
-export default function LoginPage() {
+const URL_ERROR_MESSAGES: Record<string, string> = {
+  oauth_failed: "Google sign-in failed. Please try again or use another method.",
+  oauth_not_configured: "Google sign-in is not available right now. Please use email or phone instead.",
+  expired: "That sign-in link has expired. Please request a new one below.",
+};
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const urlError = searchParams.get("error");
+  const urlErrorMessage = urlError ? URL_ERROR_MESSAGES[urlError] || "Something went wrong. Please try again." : "";
 
   // Form state
   const [email, setEmail] = useState("");
@@ -297,6 +306,30 @@ export default function LoginPage() {
           Sign in to your LegacyLoop dashboard
         </p>
       </div>
+
+      {/* ────── URL-based error banner (OAuth failures, expired links) ────── */}
+      {urlErrorMessage && (
+        <div
+          role="alert"
+          style={{
+            background: "rgba(239,68,68,0.08)",
+            border: "1px solid rgba(239,68,68,0.15)",
+            borderLeft: "3px solid #ef4444",
+            borderRadius: 12,
+            padding: "12px 16px",
+            fontSize: "0.82rem",
+            color: "#fca5a5",
+            lineHeight: 1.5,
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            marginBottom: "0.5rem",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {urlErrorMessage}
+        </div>
+      )}
 
       {/* ────── Email / Password Form ────── */}
       <form onSubmit={onSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.125rem" }}>
@@ -1176,5 +1209,13 @@ export default function LoginPage() {
         </Link>
       </p>
     </>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

@@ -5,15 +5,120 @@ import { prisma } from "@/lib/db";
 import OpenAI from "openai";
 
 /**
- * AI-powered license plate blur — uses OpenAI Vision to detect actual
- * plate locations in vehicle photos, then applies gaussian blur to
- * ONLY the detected plates. No more guessing, no more wrong-spot blurs.
- * Falls back to skipping blur if no plates detected or no API key.
+ * AI-powered license plate blur — production-grade implementation.
+ *
+ * Uses OpenAI GPT-4o Vision for maximum accuracy on plate detection:
+ * - 2-pass detection: detect → verify (eliminates false positives)
+ * - Retry logic with fallback to gpt-4o-mini if primary fails
+ * - Generous padding + heavy gaussian blur for complete obscuring
+ * - Handles all plate types: standard, temporary, dealer, transit, reflected
+ * - Smart filtering: skips outdoor equipment, validates bounding boxes
+ * - Preserves original files for re-processing
  */
 
-async function detectPlates(imageBuffer: Buffer): Promise<Array<{
-  x: number; y: number; width: number; height: number;
-}>> {
+interface PlateBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  confidence?: number;
+}
+
+// ── AI plate detection ──────────────────────────────────────────────────────
+
+const DETECTION_PROMPT = `You are a license plate detection system for a privacy-protection tool. Your ONLY job is to find license plates in vehicle photos so they can be blurred.
+
+DETECT these plate types at ANY angle (straight-on, angled, partial, tilted, reflected):
+- Standard metal license plates (front AND rear — check both ends of vehicle)
+- Temporary paper/cardboard plates (dealer-issued, taped to window or bumper)
+- Dealer plates, demonstration plates, and test drive plates
+- Transit plates and in-transit permits (often taped inside rear window)
+- Plates visible in reflections (mirrors, chrome bumpers, puddles, glass)
+- Motorcycle plates (smaller, often at rear wheel level)
+- Trailer plates (check behind tow hitches)
+- Partially obscured plates (behind trailer hitches, bike racks, dirt)
+
+DO NOT DETECT (return empty array for these):
+- Empty plate brackets/frames with NO plate mounted
+- Removed plate areas showing only bolt holes
+- Bumper stickers, decals, or dealer emblems
+- VIN numbers visible through windshields
+- House numbers or street signs in the background
+- Other vehicles' plates that are too small/distant to read (under 2% of image width)
+
+Return your answer as ONLY a JSON array of bounding boxes. Each object:
+{ "x": <number 0-100>, "y": <number 0-100>, "width": <number 0-100>, "height": <number 0-100> }
+
+x and y = TOP-LEFT corner as percentage of total image dimensions.
+width and height = size as percentage of total image dimensions.
+
+Be GENEROUS — slightly too large is much better than cutting off plate edges.
+A typical rear plate on a car photo: x~30-45, y~75-90, width~10-20, height~4-8.
+
+No plates found? Return exactly: []
+ONLY output the JSON array. No explanation, no markdown, no extra text.`;
+
+async function callVision(
+  openai: OpenAI,
+  base64Image: string,
+  model: string
+): Promise<PlateBox[]> {
+  const response = await openai.responses.create({
+    model,
+    input: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "input_image",
+            image_url: `data:image/jpeg;base64,${base64Image}`,
+            detail: "high",
+          },
+          {
+            type: "input_text",
+            text: DETECTION_PROMPT,
+          },
+        ],
+      },
+    ],
+  });
+
+  // Parse the response — handle multiple output formats
+  const text = typeof response.output === "string"
+    ? response.output
+    : Array.isArray(response.output)
+    ? response.output
+        .map((o: any) => {
+          if (typeof o === "string") return o;
+          if (o.content && Array.isArray(o.content)) {
+            return o.content.map((c: any) => c.text || "").join("");
+          }
+          return o.content || o.text || "";
+        })
+        .join("")
+    : (response as any).output_text || "";
+
+  // Extract JSON array from response (handle markdown code blocks too)
+  const cleaned = text.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+  const jsonMatch = cleaned.match(/\[[\s\S]*?\]/);
+  if (!jsonMatch) return [];
+
+  const parsed = JSON.parse(jsonMatch[0]);
+  if (!Array.isArray(parsed)) return [];
+
+  // Validate each detection
+  return parsed.filter((p: any) =>
+    typeof p.x === "number" && typeof p.y === "number" &&
+    typeof p.width === "number" && typeof p.height === "number" &&
+    p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100 &&
+    p.width >= 1 && p.width <= 60 &&   // Plates are 1-60% of image width
+    p.height >= 1 && p.height <= 40 &&  // Plates are 1-40% of image height
+    p.width * p.height >= 2 &&          // Minimum area: 2% of image (skip tiny noise)
+    p.width * p.height <= 1500          // Maximum area: 15% of image (skip massive false positives)
+  );
+}
+
+async function detectPlates(imageBuffer: Buffer): Promise<PlateBox[]> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     console.log("[blur-plate] No OPENAI_API_KEY — skipping AI detection");
@@ -22,10 +127,31 @@ async function detectPlates(imageBuffer: Buffer): Promise<Array<{
 
   const openai = new OpenAI({ apiKey });
   const base64Image = imageBuffer.toString("base64");
-  const mimeType = "image/jpeg";
 
+  // ── Pass 1: Primary detection with gpt-4o ──
+  let plates: PlateBox[] = [];
   try {
-    const response = await openai.responses.create({
+    plates = await callVision(openai, base64Image, "gpt-4o");
+    console.log(`[blur-plate] Pass 1 (gpt-4o): detected ${plates.length} plate(s)`);
+  } catch (e: any) {
+    console.warn("[blur-plate] Pass 1 (gpt-4o) failed:", e.message);
+
+    // ── Fallback: retry with gpt-4o-mini ──
+    try {
+      plates = await callVision(openai, base64Image, "gpt-4o-mini");
+      console.log(`[blur-plate] Fallback (gpt-4o-mini): detected ${plates.length} plate(s)`);
+    } catch (e2: any) {
+      console.error("[blur-plate] Both detection attempts failed:", e2.message);
+      return [];
+    }
+  }
+
+  if (plates.length === 0) return [];
+
+  // ── Pass 2: Verification — re-check each detection with a focused prompt ──
+  // Only runs if we detected plates, to eliminate false positives
+  try {
+    const verifyResponse = await openai.responses.create({
       model: "gpt-4o-mini",
       input: [
         {
@@ -33,72 +159,62 @@ async function detectPlates(imageBuffer: Buffer): Promise<Array<{
           content: [
             {
               type: "input_image",
-              image_url: `data:${mimeType};base64,${base64Image}`,
+              image_url: `data:image/jpeg;base64,${base64Image}`,
               detail: "high",
             },
             {
               type: "input_text",
-              text: `Analyze this vehicle photo for license plates that need privacy blurring.
+              text: `I previously detected ${plates.length} potential license plate(s) at these locations (as % of image): ${JSON.stringify(plates)}
 
-DETECT these plate types at ANY angle (straight-on, angled, partial, reflected):
-- Standard metal license plates (front and rear)
-- Temporary paper/cardboard plates (dealer or DMV issued)
-- Dealer plates and demonstration plates
-- Transit plates and in-transit permits taped to windows
-- Plates visible through reflections (mirrors, windows, chrome)
+Verify EACH detection: Is there actually a license plate (or temporary plate / paper tag) at that location? Remove any false positives (bumper stickers, dealer emblems, decals, reflections of non-plates).
 
-DO NOT DETECT (return empty array for these):
-- Empty plate brackets/holders with NO plate mounted
-- Removed plate areas showing only bolts/holes
-- Bumper stickers or non-plate decals
-- VIN numbers on dashboards (these are NOT license plates)
-
-Return bounding boxes as a JSON array. Each plate = {x, y, width, height} as PERCENTAGES of total image (0-100 scale). x,y = TOP-LEFT corner. Be GENEROUS with the bounding box — slightly too large is better than cutting off characters.
-
-Example: [{"x": 33, "y": 80, "width": 14, "height": 6}]
-No plates visible? Return: []
-ONLY return the JSON array, nothing else.`,
+Return ONLY the confirmed plates as a JSON array with the same format. Adjust coordinates if they need refinement. Return [] if none are real plates.`,
             },
           ],
         },
       ],
     });
 
-    const text = typeof response.output === "string"
-      ? response.output
-      : Array.isArray(response.output)
-      ? response.output.map((o: any) => o.content || o.text || "").join("")
-      : response.output_text || "";
+    const verifyText = typeof verifyResponse.output === "string"
+      ? verifyResponse.output
+      : Array.isArray(verifyResponse.output)
+      ? verifyResponse.output.map((o: any) => {
+          if (typeof o === "string") return o;
+          if (o.content && Array.isArray(o.content)) {
+            return o.content.map((c: any) => c.text || "").join("");
+          }
+          return o.content || o.text || "";
+        }).join("")
+      : (verifyResponse as any).output_text || "";
 
-    const jsonMatch = text.match(/\[[\s\S]*?\]/);
-    if (!jsonMatch) {
-      console.log("[blur-plate] AI returned no JSON array — no plates detected");
-      return [];
+    const cleanedVerify = verifyText.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+    const verifyMatch = cleanedVerify.match(/\[[\s\S]*?\]/);
+    if (verifyMatch) {
+      const verified = JSON.parse(verifyMatch[0]);
+      if (Array.isArray(verified)) {
+        const validVerified = verified.filter((p: any) =>
+          typeof p.x === "number" && typeof p.y === "number" &&
+          typeof p.width === "number" && typeof p.height === "number"
+        );
+        if (validVerified.length > 0 || verified.length === 0) {
+          console.log(`[blur-plate] Pass 2 verification: ${validVerified.length}/${plates.length} confirmed`);
+          plates = validVerified;
+        }
+      }
     }
-
-    const plates = JSON.parse(jsonMatch[0]);
-    if (!Array.isArray(plates) || plates.length === 0) {
-      console.log("[blur-plate] AI detected 0 plates");
-      return [];
-    }
-
-    const validated = plates.filter((p: any) =>
-      typeof p.x === "number" && typeof p.y === "number" &&
-      typeof p.width === "number" && typeof p.height === "number" &&
-      p.x >= 0 && p.x <= 100 && p.y >= 0 && p.y <= 100 &&
-      p.width > 0 && p.width <= 70 && p.height > 0 && p.height <= 50
-    );
-
-    console.log(`[blur-plate] AI detected ${validated.length} plate(s):`, JSON.stringify(validated));
-    return validated;
   } catch (e: any) {
-    console.error("[blur-plate] AI detection failed:", e.message);
-    return [];
+    // Verification failed — use original detections (better safe than sorry)
+    console.warn("[blur-plate] Verification pass failed, using original detections:", e.message);
   }
+
+  console.log(`[blur-plate] Final: ${plates.length} plate(s) confirmed:`, JSON.stringify(plates));
+  return plates;
 }
-export async function blurPlatesForItem(itemId: string): Promise<{ blurredCount: number }> {
+
+// ── Main blur function ──────────────────────────────────────────────────────
+
+export async function blurPlatesForItem(itemId: string): Promise<{ blurredCount: number; platesDetected: number }> {
   // Guard: Check if item is actually a road vehicle before blurring
-  // Outdoor equipment (lawn mowers, garden tractors) should NOT be blurred
   const item = await prisma.item.findUnique({
     where: { id: itemId },
     select: { category: true, title: true },
@@ -109,52 +225,51 @@ export async function blurPlatesForItem(itemId: string): Promise<{ blurredCount:
   const isOutdoorEquipment = (
     cat.includes("outdoor") ||
     cat.includes("garden") ||
-    /\b(lawn|mower|chainsaw|leaf blower|pressure washer|snow blower|garden tractor|lawn tractor|riding mower|push mower)\b/i.test(title)
+    /\b(lawn|mower|chainsaw|leaf blower|pressure washer|snow blower|garden tractor|lawn tractor|riding mower|push mower|weed (eater|trimmer)|hedge trimmer|tiller|cultivator)\b/i.test(title)
   );
 
   if (isOutdoorEquipment) {
-    console.log("[blur-plate] SKIPPED — item is outdoor equipment, not a road vehicle. Category:", cat, "| Title:", title.slice(0, 60));
-    return { blurredCount: 0 };
+    console.log("[blur-plate] SKIPPED — outdoor equipment, not a road vehicle. Title:", title.slice(0, 60));
+    return { blurredCount: 0, platesDetected: 0 };
   }
 
   // Delete any previous blur-done marker so re-analysis can re-blur
   await prisma.eventLog.deleteMany({
     where: { itemId, eventType: "PLATE_BLUR_DONE" },
   });
-  console.log("[blur-plate] Starting blur for item:", itemId);
+  console.log("[blur-plate] Starting plate detection for item:", itemId);
 
   const photos = await prisma.itemPhoto.findMany({ where: { itemId } });
-  console.log("[blur-plate] Found", photos.length, "photos:", photos.map((p) => ({ id: p.id, filePath: p.filePath })));
-  if (!photos.length) return { blurredCount: 0 };
+  if (!photos.length) return { blurredCount: 0, platesDetected: 0 };
 
   let blurredCount = 0;
+  let totalPlatesDetected = 0;
 
   for (const photo of photos) {
     try {
-      // Try to read the original (non-blurred) file if it exists, otherwise use current path
+      // Read the original (non-blurred) file if it exists, otherwise use current
       const currentPath = photo.filePath;
       const originalPath = currentPath.replace(/_blurred(\.\w+)$/, "$1");
       const absOriginal = path.join(process.cwd(), "public", originalPath);
       const absCurrent = path.join(process.cwd(), "public", currentPath);
       const filePath = fs.existsSync(absOriginal) ? absOriginal : absCurrent;
+
       if (!fs.existsSync(filePath)) {
         console.log("[blur-plate] File not found:", filePath);
         continue;
       }
 
-      console.log("[blur-plate] Reading from:", filePath);
       const imageBuffer = fs.readFileSync(filePath);
-
       const metadata = await sharp(imageBuffer).metadata();
       const W = metadata.width ?? 800;
       const H = metadata.height ?? 600;
-      console.log("[blur-plate] Image dimensions:", W, "x", H);
 
-      // AI-powered plate detection
+      // AI-powered plate detection (2-pass with verification)
       const plates = await detectPlates(imageBuffer);
+      totalPlatesDetected += plates.length;
 
       if (plates.length === 0) {
-        console.log("[blur-plate] No plates detected in photo — skipping blur");
+        console.log(`[blur-plate] No plates in photo ${photo.id} — skipping`);
         continue;
       }
 
@@ -162,37 +277,34 @@ export async function blurPlatesForItem(itemId: string): Promise<{ blurredCount:
 
       for (const plate of plates) {
         // Convert percentage coordinates to pixels
-        const pixelZone = {
-          left: Math.max(0, Math.floor((plate.x / 100) * W)),
-          top: Math.max(0, Math.floor((plate.y / 100) * H)),
-          width: Math.min(Math.floor((plate.width / 100) * W), W),
-          height: Math.min(Math.floor((plate.height / 100) * H), H),
+        const rawZone = {
+          left: Math.floor((plate.x / 100) * W),
+          top: Math.floor((plate.y / 100) * H),
+          width: Math.floor((plate.width / 100) * W),
+          height: Math.floor((plate.height / 100) * H),
         };
 
-        // Ensure zone doesn't exceed image bounds
-        if (pixelZone.left + pixelZone.width > W) pixelZone.width = W - pixelZone.left;
-        if (pixelZone.top + pixelZone.height > H) pixelZone.height = H - pixelZone.top;
-
-        if (pixelZone.width <= 0 || pixelZone.height <= 0) {
-          console.log("[blur-plate] Invalid zone after clamping — skipping");
-          continue;
-        }
-
-        // Add 10% padding around detected plate for safety
-        const padX = Math.floor(pixelZone.width * 0.15);
-        const padY = Math.floor(pixelZone.height * 0.15);
+        // Add 20% padding around detected plate for safety margin
+        const padX = Math.floor(rawZone.width * 0.20);
+        const padY = Math.floor(rawZone.height * 0.25);
         const paddedZone = {
-          left: Math.max(0, pixelZone.left - padX),
-          top: Math.max(0, pixelZone.top - padY),
-          width: Math.min(pixelZone.width + padX * 2, W - Math.max(0, pixelZone.left - padX)),
-          height: Math.min(pixelZone.height + padY * 2, H - Math.max(0, pixelZone.top - padY)),
+          left: Math.max(0, rawZone.left - padX),
+          top: Math.max(0, rawZone.top - padY),
+          width: Math.min(rawZone.width + padX * 2, W - Math.max(0, rawZone.left - padX)),
+          height: Math.min(rawZone.height + padY * 2, H - Math.max(0, rawZone.top - padY)),
         };
 
-        console.log("[blur-plate] Blurring plate at:", paddedZone);
+        // Final bounds check
+        if (paddedZone.left + paddedZone.width > W) paddedZone.width = W - paddedZone.left;
+        if (paddedZone.top + paddedZone.height > H) paddedZone.height = H - paddedZone.top;
+        if (paddedZone.width <= 0 || paddedZone.height <= 0) continue;
 
+        console.log(`[blur-plate] Blurring plate region:`, paddedZone);
+
+        // Heavy gaussian blur (sigma 25) — completely unreadable
         const blurredRegion = await sharp(baseBuffer)
           .extract(paddedZone)
-          .blur(20)
+          .blur(25)
           .toBuffer();
 
         baseBuffer = await sharp(baseBuffer)
@@ -200,9 +312,10 @@ export async function blurPlatesForItem(itemId: string): Promise<{ blurredCount:
           .toBuffer();
       }
 
+      // Save blurred version at high quality
       const finalImage = await sharp(baseBuffer).jpeg({ quality: 92 }).toBuffer();
 
-      // Strip any existing _blurred suffix to avoid _blurred_blurred on re-runs
+      // Clean path to avoid _blurred_blurred on re-runs
       const cleanPath = photo.filePath.replace(/_blurred(\.\w+)$/, "$1");
       const blurredPath = cleanPath.replace(/(\.\w+)$/, "_blurred$1");
       const fullBlurredPath = path.join(process.cwd(), "public", blurredPath);
@@ -213,17 +326,27 @@ export async function blurPlatesForItem(itemId: string): Promise<{ blurredCount:
         data: { filePath: blurredPath },
       });
 
-      console.log(`[blur-plate] AI plate blur complete — ${plates.length} plate(s) detected and blurred.`);
+      console.log(`[blur-plate] Photo ${photo.id}: ${plates.length} plate(s) blurred successfully`);
       blurredCount++;
     } catch (e: any) {
-      console.error("[blur-plate] Error processing photo:", e.message);
+      console.error(`[blur-plate] Error processing photo ${photo.id}:`, e.message);
     }
   }
 
-  // Mark as done
+  // Log completion
   await prisma.eventLog.create({
-    data: { itemId, eventType: "PLATE_BLUR_DONE", payload: JSON.stringify({ blurredCount, timestamp: new Date().toISOString() }) },
+    data: {
+      itemId,
+      eventType: "PLATE_BLUR_DONE",
+      payload: JSON.stringify({
+        blurredCount,
+        platesDetected: totalPlatesDetected,
+        photosProcessed: photos.length,
+        timestamp: new Date().toISOString(),
+      }),
+    },
   });
 
-  return { blurredCount };
+  console.log(`[blur-plate] Complete: ${totalPlatesDetected} plates detected, ${blurredCount} photos blurred`);
+  return { blurredCount, platesDetected: totalPlatesDetected };
 }

@@ -37,6 +37,9 @@ yarn-error.log*
 prisma/dev.db
 prisma/dev.db-journal
 
+# sensitive uploads (hero proof documents — served via authorized API only)
+/data/hero-proofs/
+
 # claude code local settings
 .claude/settings.local.json
 

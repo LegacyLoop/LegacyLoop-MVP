@@ -103,8 +103,16 @@ export async function GET(
   const user = await authAdapter.getSession();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
-  const label = await prisma.shipmentLabel.findUnique({ where: { id: labelId } });
+  const label = await prisma.shipmentLabel.findUnique({
+    where: { id: labelId },
+    include: { item: { select: { userId: true } } },
+  });
   if (!label) return Response.json({ error: "Not found" }, { status: 404 });
+
+  // ── Ownership check — only the item owner can view tracking ──
+  if (label.item && label.item.userId !== user.id) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   // In live mode, attempt to fetch fresh tracking from carrier
   const liveResult = await fetchLiveTracking(
@@ -153,6 +161,11 @@ export async function POST(
     include: { item: { select: { id: true, title: true, userId: true } } },
   });
   if (!label) return Response.json({ error: "Not found" }, { status: 404 });
+
+  // ── Ownership check — only the item owner can update tracking status ──
+  if (label.item && label.item.userId !== user.id) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   // Validate transition — new status must be after current
   const currentIdx = STATUS_ORDER.indexOf(label.status);

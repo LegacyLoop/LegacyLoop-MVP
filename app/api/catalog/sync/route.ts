@@ -18,8 +18,11 @@ export async function POST(req: NextRequest) {
     if (itemIds.length > 50) {
       return NextResponse.json({ error: "Max 50 items per sync" }, { status: 400 });
     }
-    if (!["square", "stripe"].includes(platform)) {
-      return NextResponse.json({ error: "platform must be 'square' or 'stripe'" }, { status: 400 });
+    if (platform === "stripe") {
+      return NextResponse.json({ error: "Stripe catalog sync is not yet available. Use 'square' instead." }, { status: 400 });
+    }
+    if (platform !== "square") {
+      return NextResponse.json({ error: "platform must be 'square'" }, { status: 400 });
     }
 
     const items = await prisma.item.findMany({

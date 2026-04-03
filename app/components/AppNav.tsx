@@ -61,11 +61,12 @@ const TEAL      = "#00bcd4";
 const TEAL_GLOW = "rgba(0, 188, 212, 0.35)";
 const TEAL_BDR  = "rgba(0, 188, 212, 0.35)";
 
+// Tier labels from pricing SSOT — matches TIER_NAMES in lib/constants/pricing.ts
 const TIER_LABELS: Record<number, string> = {
-  0: "Free",
-  1: "Starter",
-  2: "Plus",
-  3: "Pro",
+  1: "Free",
+  2: "DIY Seller",
+  3: "Power Seller",
+  4: "Estate Manager",
 };
 
 // Top bar — only the 5 most-used links

@@ -3,11 +3,16 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { prisma } from "../db";
 
-if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is required in production");
-}
-if (process.env.NODE_ENV !== "production" && !process.env.JWT_SECRET) {
-  console.warn("[auth] JWT_SECRET not set — using insecure default. Do NOT use in production.");
+if (!process.env.JWT_SECRET) {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("JWT_SECRET environment variable is required in production");
+  }
+  // Allow insecure fallback ONLY in explicit local development
+  if (process.env.NODE_ENV !== "development") {
+    console.error("[auth] JWT_SECRET not set and NODE_ENV is not 'development'. Refusing to use insecure default.");
+    throw new Error("JWT_SECRET environment variable is required. Set it in .env or use NODE_ENV=development for local dev.");
+  }
+  console.warn("[auth] JWT_SECRET not set — using insecure default for local development ONLY.");
 }
 
 const secret = new TextEncoder().encode(

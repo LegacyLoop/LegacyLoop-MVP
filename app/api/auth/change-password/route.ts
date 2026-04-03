@@ -8,7 +8,8 @@ export async function POST(req: Request) {
   const user = await authAdapter.getSession();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
-  const body = await req.json();
+  try {
+  const body = await req.json().catch(() => ({}));
   const { currentPassword, newPassword } = body as {
     currentPassword: string;
     newPassword: string;
@@ -21,15 +22,29 @@ export async function POST(req: Request) {
     );
   }
 
-  const fullUser = await prisma.user.findUnique({ where: { id: user.id } });
+  const fullUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { passwordHash: true, googleId: true, phoneNumber: true, email: true },
+  });
   if (!fullUser) return new Response("Unauthorized", { status: 401 });
 
-  const ok = await bcrypt.compare(currentPassword, fullUser.passwordHash);
-  if (!ok) {
-    return Response.json(
-      { error: "Current password is incorrect." },
-      { status: 400 }
-    );
+  // OAuth/phone users may not have set a password — allow them to set one
+  // by skipping the current password check (they authenticated via Google/phone)
+  const isOAuthOrPhoneUser = !!(fullUser.googleId || fullUser.email?.includes("@phone.legacyloop.com"));
+  if (!isOAuthOrPhoneUser) {
+    if (!currentPassword) {
+      return Response.json(
+        { error: "Current password is required." },
+        { status: 400 }
+      );
+    }
+    const ok = await bcrypt.compare(currentPassword, fullUser.passwordHash);
+    if (!ok) {
+      return Response.json(
+        { error: "Current password is incorrect." },
+        { status: 400 }
+      );
+    }
   }
 
   const hash = await bcrypt.hash(newPassword, 12);
@@ -70,4 +85,8 @@ export async function POST(req: Request) {
   });
 
   return Response.json({ ok: true });
+  } catch (err) {
+    console.error("[change-password] Error:", err);
+    return Response.json({ error: "Something went wrong. Please try again." }, { status: 500 });
+  }
 }

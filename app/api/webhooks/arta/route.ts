@@ -8,6 +8,14 @@ import { NextRequest, NextResponse } from "next/server";
  *         shipment.in_transit, shipment.delivered, shipment.exception
  */
 export async function POST(req: NextRequest) {
+  // ── Webhook secret validation — reject unauthorized callers ──
+  const secret = req.headers.get("x-webhook-secret") || req.headers.get("x-arta-signature");
+  const expectedSecret = process.env.ARTA_WEBHOOK_SECRET;
+  if (expectedSecret && secret !== expectedSecret) {
+    console.warn("[arta-webhook] Invalid or missing webhook secret");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const event = body?.event_type || body?.type || "unknown";

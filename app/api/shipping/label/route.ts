@@ -22,6 +22,16 @@ export async function POST(req: Request) {
 
   if (!rateId) return Response.json({ error: "Missing rateId" }, { status: 400 });
 
+  // ── Ownership check — only the item owner can create a shipping label ──
+  if (itemId) {
+    const item = await prisma.item.findUnique({
+      where: { id: itemId },
+      select: { userId: true },
+    });
+    if (!item) return Response.json({ error: "Item not found" }, { status: 404 });
+    if (item.userId !== user.id) return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   try {
     const label = await createShippingLabel(String(rateId));
 

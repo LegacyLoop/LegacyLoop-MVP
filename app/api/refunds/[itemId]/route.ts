@@ -102,21 +102,21 @@ export async function PATCH(
       data: { status: "refunded" },
     });
 
-    // ── Update payment ledger to refunded ──
+    // ── Update payment ledger to refunded — scoped to this item + seller ──
     const ledgerEntries = await prisma.paymentLedger.findMany({
-      where: { type: "item_purchase" },
+      where: { userId: user.id, type: "item_purchase", status: { not: "refunded" } },
     });
     for (const entry of ledgerEntries) {
       try {
-        const meta = entry.metadata ? JSON.parse(entry.metadata) : {};
+        const meta = entry.metadata ? JSON.parse(entry.metadata as string) : {};
         if (meta.itemId === itemId) {
           await prisma.paymentLedger.update({
             where: { id: entry.id },
             data: { status: "refunded" },
           });
-          break;
+          break; // Only refund the matching entry
         }
-      } catch { /* skip */ }
+      } catch { /* skip malformed metadata */ }
     }
 
     // ── Transition item through return flow → REFUNDED, then relist ──

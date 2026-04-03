@@ -72,7 +72,8 @@ export async function POST(request: Request) {
 
       const ext = proofFile.name.split(".").pop() || "bin";
       const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "hero-proofs");
+      // Store OUTSIDE public/ — these are sensitive identity documents
+      const uploadDir = path.join(process.cwd(), "data", "hero-proofs");
 
       // Ensure directory exists
       await mkdir(uploadDir, { recursive: true });
@@ -82,7 +83,8 @@ export async function POST(request: Request) {
       await writeFile(filePath, buffer);
 
       proofFileName = proofFile.name;
-      proofFilePath = `/uploads/hero-proofs/${uniqueName}`;
+      // Path is a reference key, NOT a public URL — served through /api/heroes/proof/[id]
+      proofFilePath = `hero-proofs/${uniqueName}`;
     }
 
     // Create HeroVerification record

@@ -264,6 +264,13 @@ export async function POST() {
   const user = await authAdapter.getSession();
   if (!user) return new Response("Unauthorized", { status: 401 });
 
+  // ── Admin + demo mode gate — prevent accidental seeding in production ──
+  const { ADMIN_EMAILS } = await import("@/lib/constants/admin");
+  const { isDemoMode } = await import("@/lib/bot-mode");
+  if (!ADMIN_EMAILS.includes(user.email) && !isDemoMode()) {
+    return new Response("Demo seeding is only available to admins or in demo mode.", { status: 403 });
+  }
+
   let itemsCreated = 0;
   let conversationsCreated = 0;
   let projectsCreated = 0;
