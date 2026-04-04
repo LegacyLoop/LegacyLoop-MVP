@@ -7968,9 +7968,43 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   const rawConf = valuation?.confidence ?? aiData?.confidence ?? 0;
   const confPct = Math.round(rawConf > 1 ? rawConf : rawConf * 100);
 
+  // ── Sub-accordion state ──
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(["sell"]));
+  const toggleSection = (id: string) => setOpenSections(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  // Sub-section header — theme-aware high-tech command style
+  const SubHeader = ({ id, icon, title, hudContent }: { id: string; icon: string; title: string; hudContent?: React.ReactNode }) => {
+    const isOpen = openSections.has(id);
+    return (
+      <button onClick={() => toggleSection(id)} style={{
+        display: "flex", alignItems: "center", gap: "0.4rem",
+        width: "100%", background: isOpen ? "rgba(0,188,212,0.05)" : "transparent",
+        border: "none", borderBottom: `1px solid ${isOpen ? "rgba(0,188,212,0.12)" : "var(--border-default)"}`,
+        padding: "0.45rem 0.6rem", cursor: "pointer", transition: "all 0.2s ease",
+      }}>
+        <span style={{ fontSize: "0.65rem", width: "18px", textAlign: "center" as const, flexShrink: 0 }}>{icon}</span>
+        <span style={{ fontSize: "0.56rem", fontWeight: 800, color: isOpen ? "var(--accent)" : "var(--text-muted)", letterSpacing: "0.1em", textTransform: "uppercase" as const, whiteSpace: "nowrap" as const, transition: "color 0.2s" }}>{title}</span>
+        <div style={{ flex: 1, height: "1px", background: isOpen ? "linear-gradient(90deg, rgba(0,188,212,0.2), transparent)" : "var(--border-default)", transition: "background 0.3s" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexShrink: 0 }}>
+          {!isOpen && hudContent}
+          <span style={{ fontSize: "0.55rem", color: isOpen ? "var(--accent)" : "var(--text-muted)", transform: isOpen ? "rotate(0deg)" : "rotate(-90deg)", transition: "all 0.25s ease", flexShrink: 0 }}>▾</span>
+        </div>
+      </button>
+    );
+  };
+
+  // HUD badge helper — theme-aware
+  const HudBadge = ({ text, color = "var(--text-muted)" }: { text: string; color?: string }) => (
+    <span style={{ fontSize: "0.5rem", fontWeight: 700, color, padding: "2px 6px", borderRadius: "4px", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", whiteSpace: "nowrap" as const, letterSpacing: "0.03em" }}>{text}</span>
+  );
+
   return (
     <GlassCard fullWidth>
-      <PanelHeader icon={"\u{1F39B}\u{FE0F}"} title="Item Control Center" hasData={true} badge="STATUS" collapsed={collapsed} onToggle={onToggle} />
+      <PanelHeader icon={"\u{1F39B}\u{FE0F}"} title="Item Control Center" hasData={true} badge="COMMAND" collapsed={collapsed} onToggle={onToggle} />
       {collapsed && (
         <div style={{
           padding: "0.4rem 1rem",
@@ -8033,7 +8067,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
                     fontSize: isCurrent ? "0.75rem" : "0.65rem",
                     background: isPast ? "var(--accent)" : isCurrent ? "var(--accent)" : "var(--ghost-bg)",
                     border: isCurrent ? "2px solid var(--accent)" : "1px solid " + (isPast ? "var(--accent)" : "var(--border-default)"),
-                    boxShadow: isCurrent ? "0 0 10px rgba(0,188,212,0.45)" : "none",
+                    boxShadow: isCurrent ? "0 0 10px rgba(0,188,212,0.4)" : "none",
                     color: isPast || isCurrent ? "#fff" : "var(--text-muted)",
                     zIndex: 1, position: "relative",
                     transition: "all 0.3s",
@@ -8059,16 +8093,16 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           const hasAnalysis = !!aiData;
           const hasPrice = !!initialListingPrice;
           const views = extra?.totalViews ?? 0;
-          const msg = status === "DRAFT" && !hasPhotos ? "📸 Add photos to get started — AI needs at least 1 image"
-            : status === "DRAFT" && hasPhotos && !hasAnalysis ? "🧠 Ready for AI — tap Run AI Analysis above"
-            : (status === "ANALYZED" || status === "READY") && !hasPrice ? `💰 Set a listing price${valuation ? ` — AI suggests $${Math.round(valuation.low || 0)}–$${Math.round(valuation.high || 0)}` : ""}`
-            : (status === "ANALYZED" || status === "READY") && hasPrice ? "📢 Ready to list! Mark as Listed to go live"
-            : status === "LISTED" && views === 0 ? "⏳ Just listed — share your link to attract buyers"
-            : status === "LISTED" && views > 0 ? "📊 Getting views! Check messages for inquiries"
-            : status === "INTERESTED" ? "🤝 Buyers interested — check messages and close the sale"
-            : status === "SOLD" ? "📦 Congrats! Ship within 3 days for best rating"
-            : status === "SHIPPED" ? "📬 Package on its way — mark complete when delivered"
-            : status === "COMPLETED" ? "🎉 All done! Create a new listing or check earnings"
+          const msg = status === "DRAFT" && !hasPhotos ? "\u{1F4F8} Add photos to get started \u2014 AI needs at least 1 image"
+            : status === "DRAFT" && hasPhotos && !hasAnalysis ? "\u{1F9E0} Ready for AI \u2014 tap Run AI Analysis above"
+            : (status === "ANALYZED" || status === "READY") && !hasPrice ? `\u{1F4B0} Set a listing price${valuation ? ` \u2014 AI suggests $${Math.round(valuation.low || 0)}\u2013$${Math.round(valuation.high || 0)}` : ""}`
+            : (status === "ANALYZED" || status === "READY") && hasPrice ? "\u{1F4E2} Ready to list! Mark as Listed to go live"
+            : status === "LISTED" && views === 0 ? "\u23F3 Just listed \u2014 share your link to attract buyers"
+            : status === "LISTED" && views > 0 ? "\u{1F4CA} Getting views! Check messages for inquiries"
+            : status === "INTERESTED" ? "\u{1F91D} Buyers interested \u2014 check messages and close the sale"
+            : status === "SOLD" ? "\u{1F4E6} Congrats! Ship within 3 days for best rating"
+            : status === "SHIPPED" ? "\u{1F4EC} Package on its way \u2014 mark complete when delivered"
+            : status === "COMPLETED" ? "\u{1F389} All done! Create a new listing or check earnings"
             : null;
           if (!msg) return null;
           return (
@@ -8078,14 +8112,13 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           );
         })()}
 
-        {/* ── TELEMETRY BAR — Inline KPIs ── */}
+        {/* ── TELEMETRY BAR \u2014 Inline KPIs ── */}
         <div style={{
           display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap",
           padding: "0.4rem 0.6rem", marginBottom: "0.5rem",
-          background: "linear-gradient(135deg, rgba(0,188,212,0.03), rgba(0,188,212,0.01))",
-          borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.08)",
+          background: "var(--ghost-bg)",
+          borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.1)",
         }}>
-          {/* Photo count */}
           {(photos?.length ?? 0) > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: "0.2rem" }}>
               <span style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{"\u{1F4F7}"}</span>
@@ -8093,7 +8126,6 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               <span style={{ fontSize: "0.55rem", color: photos!.length >= 6 ? "#22c55e" : "var(--text-muted)" }}>{photos!.length >= 6 ? "\u2713" : "/6"}</span>
             </div>
           )}
-          {/* AI confidence gauge */}
           {confPct > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
               <div style={{ width: "28px", height: "4px", borderRadius: "2px", background: "var(--ghost-bg)", overflow: "hidden" }}>
@@ -8102,68 +8134,29 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               <span style={{ fontSize: "0.6rem", fontWeight: 700, color: confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#eab308" : "#ef4444" }}>{confPct}%</span>
             </div>
           )}
-          {/* Category */}
-          {(category || aiData?.category) && (
-            <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>
-              {category || aiData.category}
-            </span>
-          )}
-          {/* Price range */}
-          {valuation?.low != null && valuation?.high != null && (
-            <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#4ade80", letterSpacing: "-0.01em" }}>
-              ${Math.round(valuation.low)}{"\u2013"}${Math.round(valuation.high)}
-            </span>
-          )}
-          {/* Spacer pushes metrics right */}
+          {(category || aiData?.category) && <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>{category || aiData.category}</span>}
+          {valuation?.low != null && valuation?.high != null && <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#4ade80", letterSpacing: "-0.01em" }}>${Math.round(valuation.low)}{"\u2013"}${Math.round(valuation.high)}</span>}
           <div style={{ flex: 1 }} />
-          {/* Engagement metrics */}
-          {(extra?.totalViews ?? 0) > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}>
-              <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F441}"}</span>
-              <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>{extra!.totalViews}</span>
-            </div>
-          )}
-          {(extra?.inquiries ?? 0) > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}>
-              <span style={{ fontSize: "0.55rem", color: "#a78bfa" }}>{"\u{1F4AC}"}</span>
-              <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "#a78bfa" }}>{extra!.inquiries}</span>
-            </div>
-          )}
-          {(extra?.buyersFound ?? 0) > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}>
-              <span style={{ fontSize: "0.55rem", color: "#f59e0b" }}>{"\u{1F916}"}</span>
-              <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "#f59e0b" }}>{extra!.buyersFound}</span>
-            </div>
-          )}
-          {(extra?.documentCount ?? 0) > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}>
-              <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F4C4}"}</span>
-              <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>{extra!.documentCount}</span>
-            </div>
-          )}
-          {extra?.shippingReady && (
-            <span style={{ fontSize: "0.5rem", fontWeight: 700, color: "#22c55e", background: "rgba(34,197,94,0.08)", padding: "1px 5px", borderRadius: "4px" }}>SHIP {"\u2713"}</span>
-          )}
-          {/* AI Readiness */}
+          {(extra?.totalViews ?? 0) > 0 && <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}><span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F441}"}</span><span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>{extra!.totalViews}</span></div>}
+          {(extra?.inquiries ?? 0) > 0 && <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}><span style={{ fontSize: "0.55rem", color: "#a78bfa" }}>{"\u{1F4AC}"}</span><span style={{ fontSize: "0.6rem", fontWeight: 600, color: "#a78bfa" }}>{extra!.inquiries}</span></div>}
+          {(extra?.buyersFound ?? 0) > 0 && <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}><span style={{ fontSize: "0.55rem", color: "#f59e0b" }}>{"\u{1F916}"}</span><span style={{ fontSize: "0.6rem", fontWeight: 600, color: "#f59e0b" }}>{extra!.buyersFound}</span></div>}
+          {(extra?.documentCount ?? 0) > 0 && <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}><span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F4C4}"}</span><span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>{extra!.documentCount}</span></div>}
+          {extra?.shippingReady && <span style={{ fontSize: "0.5rem", fontWeight: 700, color: "#22c55e", background: "rgba(34,197,94,0.08)", padding: "1px 5px", borderRadius: "4px" }}>SHIP {"\u2713"}</span>}
           {(() => {
             const checks = [
-              { ok: (photos?.length ?? 0) > 0, label: "Photos" },
-              { ok: !!aiData, label: "AI Analysis" },
-              { ok: !!valuation, label: "Valuation" },
-              { ok: !!initialListingPrice, label: "Price" },
-              { ok: shippingData?.weight != null, label: "Shipping" },
+              { ok: (photos?.length ?? 0) > 0 }, { ok: !!aiData }, { ok: !!valuation },
+              { ok: !!initialListingPrice }, { ok: shippingData?.weight != null },
             ];
             const score = checks.filter(c => c.ok).length;
             const color = score >= 4 ? "#22c55e" : score >= 2 ? "#f59e0b" : "#ef4444";
             return (
               <button onClick={() => setShowReadiness(!showReadiness)} style={{ padding: "1px 6px", borderRadius: "4px", fontSize: "0.55rem", fontWeight: 700, color, background: `${color}12`, border: `1px solid ${color}25`, cursor: "pointer" }}>
-                {score}/5 ✓
+                {score}/5 {"\u2713"}
               </button>
             );
           })()}
         </div>
 
-        {/* AI Readiness Checklist */}
         {showReadiness && (
           <div style={{ padding: "0.4rem 0.6rem", marginBottom: "0.5rem", borderRadius: "0.4rem", borderLeft: "3px solid var(--accent)", background: "var(--ghost-bg)" }}>
             {[
@@ -8174,313 +8167,282 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               { ok: shippingData?.weight != null, label: "Shipping info complete", fix: `/items/${itemId}/edit` },
             ].map((c, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.35rem", padding: "0.15rem 0", fontSize: "0.62rem" }}>
-                <span style={{ color: c.ok ? "#22c55e" : "#ef4444" }}>{c.ok ? "✓" : "✗"}</span>
+                <span style={{ color: c.ok ? "#22c55e" : "#ef4444" }}>{c.ok ? "\u2713" : "\u2717"}</span>
                 <span style={{ color: c.ok ? "var(--text-secondary)" : "var(--text-primary)", fontWeight: c.ok ? 400 : 600 }}>{c.label}</span>
-                {!c.ok && c.fix && <a href={c.fix} style={{ fontSize: "0.55rem", color: "var(--accent)", textDecoration: "none", marginLeft: "auto" }}>Fix →</a>}
+                {!c.ok && c.fix && <a href={c.fix} style={{ fontSize: "0.55rem", color: "var(--accent)", textDecoration: "none", marginLeft: "auto" }}>Fix {"\u2192"}</a>}
               </div>
             ))}
           </div>
         )}
 
-        {/* ── UNIFIED COMMAND BAR ── */}
+        {/* ═══════════════════════════════════════════
+           COMMAND SECTIONS
+           ═══════════════════════════════════════════ */}
         <div style={{
-          display: "flex", alignItems: "center", gap: "0.35rem", flexWrap: "wrap",
-          padding: "0.45rem 0.55rem", marginBottom: "0.5rem",
-          background: "var(--ghost-bg)", borderRadius: "0.5rem",
-          border: "1px solid var(--border-default)",
+          display: "flex", flexDirection: "column", gap: 0,
+          borderRadius: "0.5rem", overflow: "hidden", marginBottom: "0.5rem",
+          background: "var(--ghost-bg)",
+          border: "1px solid rgba(0,188,212,0.15)",
+          boxShadow: "0 2px 12px rgba(0,188,212,0.04)",
         }}>
-          {/* Primary action — hero button */}
-          {actions.filter(a => a.primary).map((a) => (
-            <button
-              key={a.label}
-              onClick={a.onClick}
-              disabled={updating || deleting}
-              style={{
-                padding: "0.35rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer",
-                background: "linear-gradient(135deg, #00bcd4, #0097a7)", border: "none", color: "#fff",
-                opacity: (updating || deleting) ? 0.5 : 1, transition: "all 0.2s ease",
-                boxShadow: "0 2px 8px rgba(0,188,212,0.3)",
-              }}
-            >
-              {a.label}
-            </button>
-          ))}
 
-          {/* Divider */}
-          {actions.filter(a => a.primary).length > 0 && actions.filter(a => !a.primary && !a.danger).length > 0 && (
-            <div style={{ width: "1px", height: "20px", background: "var(--border-default)" }} />
-          )}
-
-          {/* Secondary actions */}
-          {actions.filter(a => !a.primary && !a.danger).map((a) => (
-            <button
-              key={a.label}
-              onClick={a.onClick}
-              disabled={updating || deleting}
-              style={{
-                padding: "0.3rem 0.55rem", borderRadius: "0.35rem", fontSize: "0.65rem", fontWeight: 600, cursor: "pointer",
-                background: "transparent", border: "1px solid var(--border-default)",
-                color: "var(--text-secondary)",
-                opacity: (updating || deleting) ? 0.5 : 1, transition: "all 0.15s ease",
-              }}
-            >
-              {a.label}
-            </button>
-          ))}
-
-          {/* Price + Net — pushed right */}
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.04em" }}>$</span>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder={valuation?.mid ? `${Math.round(valuation.mid)}` : "0"}
-              value={priceInput}
-              onChange={(e) => setPriceInput(e.target.value)}
-              style={{
-                background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)",
-                borderRadius: "0.3rem", padding: "0.25rem 0.4rem",
-                color: "var(--text-primary)", fontSize: "0.82rem", fontWeight: 700,
-                width: "75px", outline: "none",
-              }}
-            />
-            <button
-              onClick={async () => {
-                const val = parseFloat(priceInput);
-                if (isNaN(val) || val < 0) return;
-                setPriceSaveState("saving");
-                try {
-                  const res = await fetch(`/api/items/status/${itemId}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ listingPrice: val }),
-                  });
-                  if (res.ok) { setPriceSaveState("saved"); setTimeout(() => setPriceSaveState("idle"), 2000); }
-                  else { setPriceSaveState("error"); setTimeout(() => setPriceSaveState("idle"), 2000); }
-                } catch { setPriceSaveState("error"); setTimeout(() => setPriceSaveState("idle"), 2000); }
-              }}
-              disabled={priceSaveState === "saving"}
-              style={{
-                background: priceSaveState === "saved" ? "#22c55e" : priceSaveState === "error" ? "#ef4444" : "linear-gradient(135deg, #00bcd4, #009688)",
-                border: "none", borderRadius: "0.3rem", padding: "0.25rem 0.5rem",
-                color: "#fff", fontWeight: 700, fontSize: "0.62rem",
-                cursor: priceSaveState === "saving" ? "wait" : "pointer",
-                opacity: priceSaveState === "saving" ? 0.6 : 1,
-                minWidth: "36px", textAlign: "center" as const,
-                boxShadow: "0 1px 4px rgba(0,188,212,0.2)",
-                transition: "all 0.2s ease",
-              }}
-            >
-              {priceSaveState === "saving" ? "\u23F3" : priceSaveState === "saved" ? "\u2713" : priceSaveState === "error" ? "\u2717" : "SET"}
-            </button>
-            {listPriceNum > 0 && (
-              <span style={{ fontSize: "0.55rem", color: "#4ade80", fontWeight: 700, whiteSpace: "nowrap" }}>
-                net ~${netEst.toFixed(0)}
-              </span>
-            )}
-          </div>
-
-          {/* Danger actions at far right */}
-          {actions.filter(a => a.danger).map((a) => (
-            <button
-              key={a.label}
-              onClick={a.onClick}
-              disabled={updating || deleting}
-              style={{
-                padding: "0.25rem 0.4rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600, cursor: "pointer",
-                background: "transparent", border: "1px solid rgba(239,68,68,0.12)",
-                color: "#ef4444", opacity: (updating || deleting) ? 0.5 : 1,
-              }}
-            >
-              {a.label}
-            </button>
-          ))}
-        </div>
-
-        {/* ── MORE ACTIONS ROW ── */}
-        <div style={{ marginBottom: "0.5rem" }}>
-          <button onClick={() => setShowMoreActions(!showMoreActions)} style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "0.62rem", fontWeight: 600, color: "var(--text-muted)", padding: "0.2rem 0.4rem", borderRadius: "0.3rem" }}>
-            ⚙️ {showMoreActions ? "Less" : "More"}
-          </button>
-          {showMoreActions && (
-            <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" as const, marginTop: "0.3rem", padding: "0.35rem 0.5rem", background: "var(--ghost-bg)", borderRadius: "0.4rem" }}>
-              <button onClick={() => { window.print(); }} style={{ padding: "0.3rem 0.6rem", fontSize: "0.6rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.35rem", cursor: "pointer", color: "var(--text-secondary)" }}>🖨️ Print</button>
-              <button onClick={() => {
-                const blob = new Blob([JSON.stringify({ itemId, status, category, aiData, valuation, photos: photos?.map((p: any) => p.filePath) }, null, 2)], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a"); a.href = url; a.download = `legacyloop-${itemId.slice(0, 8)}.json`; a.click(); URL.revokeObjectURL(url);
-                setExportDone(true); setTimeout(() => setExportDone(false), 2000);
-              }} style={{ padding: "0.3rem 0.6rem", fontSize: "0.6rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.35rem", cursor: "pointer", color: "var(--text-secondary)" }}>{exportDone ? "✅ Exported" : "📥 Export"}</button>
-              <button onClick={() => {
-                const url = `${typeof window !== "undefined" ? window.location.origin : ""}/store`;
-                navigator.clipboard.writeText(url);
-                setPublicLinkCopied(true); setTimeout(() => setPublicLinkCopied(false), 2000);
-              }} style={{ padding: "0.3rem 0.6rem", fontSize: "0.6rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.35rem", cursor: "pointer", color: "var(--text-secondary)" }}>{publicLinkCopied ? "✅ Copied" : "🔗 Public Link"}</button>
-            </div>
-          )}
-        </div>
-
-        {/* ── MANAGE STRIP — Trade · Sale · Offers ── */}
-        <div style={{
-          display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap",
-          padding: "0.35rem 0.55rem",
-          background: "linear-gradient(135deg, rgba(0,188,212,0.02), transparent)",
-          borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.06)",
-          marginBottom: "0.5rem",
-        }}>
-          {/* Trade toggle + pending indicator */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <TradeToggle itemId={itemId} />
-          </div>
-
-          <div style={{ width: "1px", height: "16px", background: "var(--border-default)", opacity: 0.5 }} />
-
-          {/* Sale assignment */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-            <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>🏷️</span>
-            <SaleAssignment itemId={itemId} initialProjectId={projectId ?? null} />
-            {projectId && (
-              <span style={{ fontSize: "0.55rem", fontWeight: 600, padding: "1px 5px", borderRadius: "4px", background: "rgba(0,188,212,0.08)", color: "var(--accent)", border: "1px solid rgba(0,188,212,0.15)" }}>Assigned</span>
-            )}
-            {!projectId && (
-              <a href="/projects" style={{ fontSize: "0.55rem", color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>+ New</a>
-            )}
-          </div>
-
-          <div style={{ flex: 1 }} />
-
-          {/* Offers jump */}
-          <button
-            onClick={() => {
-              const el = document.getElementById("active-offers-widget");
-              if (el) el.scrollIntoView({ behavior: "smooth" });
-            }}
-            style={{
-              fontSize: "0.55rem", fontWeight: 600, color: "var(--accent)",
-              background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.12)",
-              borderRadius: "0.3rem", padding: "0.15rem 0.4rem",
-              cursor: "pointer", transition: "all 0.15s ease",
-            }}
-          >
-            {"\u{1F91D}"} Offers
-          </button>
-        </div>
-
-        {/* ── POST-SALE SECTIONS (contextual) ── */}
-        {(status === "SOLD" || status === "SHIPPED" || status === "COMPLETED") && (
-          <div style={{
-            padding: "0.4rem 0.55rem", marginBottom: "0.5rem",
-            background: "linear-gradient(135deg, rgba(34,197,94,0.04), rgba(34,197,94,0.01))",
-            borderRadius: "0.5rem", border: "1px solid rgba(34,197,94,0.1)",
-          }}>
-            {/* Sale summary line */}
-            {price && (
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.35rem" }}>
-                <span style={{ fontSize: "0.5rem", fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.12)", padding: "2px 6px", borderRadius: "4px", letterSpacing: "0.06em" }}>SOLD</span>
-                <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)" }}>${price}{"\u2013"}${priceHigh}</span>
-                {aiData?.category && <span style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{"\u00B7"} {aiData.category}</span>}
+          {/* ── 1. SELL ── */}
+          <div style={{ borderLeft: openSections.has("sell") ? "2px solid var(--accent)" : "2px solid transparent", transition: "all 0.2s ease" }}>
+            <SubHeader id="sell" icon={"\u{1F4B0}"} title="Sell" hudContent={<>
+              {initialListingPrice ? <HudBadge text={`$${Math.round(initialListingPrice)}`} color="#00bcd4" /> : valuation?.low ? <HudBadge text={`$${Math.round(valuation.low)}\u2013$${Math.round(valuation.high)}`} color="#4ade80" /> : null}
+              {listPriceNum > 0 && <HudBadge text={`net ~$${netEst.toFixed(0)}`} color="#22c55e" />}
+            </>} />
+            {openSections.has("sell") && (
+              <div style={{ padding: "0.4rem 0.5rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                {/* Primary + secondary action buttons */}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexWrap: "wrap" }}>
+                  {actions.filter(a => a.primary).map((a) => (
+                    <button key={a.label} onClick={a.onClick} disabled={updating || deleting} style={{
+                      padding: "0.35rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer",
+                      background: "linear-gradient(135deg, #00bcd4, #0097a7)", border: "none", color: "#fff",
+                      opacity: (updating || deleting) ? 0.5 : 1, boxShadow: "0 2px 8px rgba(0,188,212,0.25)", transition: "all 0.2s ease",
+                    }}>{a.label}</button>
+                  ))}
+                  {actions.filter(a => a.primary).length > 0 && actions.filter(a => !a.primary && !a.danger).length > 0 && (
+                    <div style={{ width: "1px", height: "20px", background: "var(--border-default)" }} />
+                  )}
+                  {actions.filter(a => !a.primary && !a.danger).map((a) => (
+                    <button key={a.label} onClick={a.onClick} disabled={updating || deleting} style={{
+                      padding: "0.3rem 0.55rem", borderRadius: "0.35rem", fontSize: "0.65rem", fontWeight: 600, cursor: "pointer",
+                      background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)",
+                      opacity: (updating || deleting) ? 0.5 : 1,
+                    }}>{a.label}</button>
+                  ))}
+                  {actions.filter(a => a.danger).map((a) => (
+                    <button key={a.label} onClick={a.onClick} disabled={updating || deleting} style={{
+                      padding: "0.25rem 0.4rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600, cursor: "pointer",
+                      background: "transparent", border: "1px solid rgba(239,68,68,0.15)", color: "#ef4444",
+                      opacity: (updating || deleting) ? 0.5 : 1, marginLeft: "auto",
+                    }}>{a.label}</button>
+                  ))}
+                </div>
+                {/* Price input row */}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                  <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)" }}>$</span>
+                  <input type="number" min="0" step="0.01" placeholder={valuation?.mid ? `${Math.round(valuation.mid)}` : "0"} value={priceInput} onChange={(e) => setPriceInput(e.target.value)} style={{
+                    background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "0.3rem", padding: "0.25rem 0.4rem",
+                    color: "var(--text-primary)", fontSize: "0.82rem", fontWeight: 700, width: "75px", outline: "none",
+                  }} />
+                  <button onClick={async () => {
+                    const val = parseFloat(priceInput); if (isNaN(val) || val < 0) return;
+                    setPriceSaveState("saving");
+                    try {
+                      const res = await fetch(`/api/items/status/${itemId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ listingPrice: val }) });
+                      if (res.ok) { setPriceSaveState("saved"); setTimeout(() => setPriceSaveState("idle"), 2000); }
+                      else { setPriceSaveState("error"); setTimeout(() => setPriceSaveState("idle"), 2000); }
+                    } catch { setPriceSaveState("error"); setTimeout(() => setPriceSaveState("idle"), 2000); }
+                  }} disabled={priceSaveState === "saving"} style={{
+                    background: priceSaveState === "saved" ? "#22c55e" : priceSaveState === "error" ? "#ef4444" : "linear-gradient(135deg, #00bcd4, #009688)",
+                    border: "none", borderRadius: "0.3rem", padding: "0.25rem 0.5rem",
+                    color: "#fff", fontWeight: 700, fontSize: "0.62rem",
+                    cursor: priceSaveState === "saving" ? "wait" : "pointer", opacity: priceSaveState === "saving" ? 0.6 : 1,
+                    minWidth: "36px", textAlign: "center" as const, boxShadow: "0 1px 4px rgba(0,188,212,0.2)",
+                  }}>{priceSaveState === "saving" ? "\u23F3" : priceSaveState === "saved" ? "\u2713" : priceSaveState === "error" ? "\u2717" : "SET"}</button>
+                  {listPriceNum > 0 && <span style={{ fontSize: "0.55rem", color: "#4ade80", fontWeight: 700, whiteSpace: "nowrap" }}>net ~${netEst.toFixed(0)}</span>}
+                  <div style={{ flex: 1 }} />
+                  {listPriceNum > 0 && <span style={{ fontSize: "0.48rem", color: "var(--text-muted)" }}>5% comm + 1.75% fee</span>}
+                </div>
               </div>
             )}
+          </div>
 
-            {/* Shipping bridge */}
-            {(status === "SOLD" || status === "SHIPPED") && (
-              <a
-                href={`/shipping?itemId=${itemId}`}
-                style={{
-                  display: "flex", alignItems: "center", gap: "0.4rem",
-                  width: "100%", padding: "0.35rem 0.5rem", borderRadius: "0.35rem",
-                  background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)",
-                  color: "#00bcd4", fontSize: "0.7rem", fontWeight: 600,
-                  textDecoration: "none", transition: "all 0.15s ease",
-                  marginBottom: "0.3rem",
-                }}
-              >
-                <span>{"\u{1F4E6}"}</span>
-                <span style={{ flex: 1 }}>{status === "SOLD" ? "Shipping Center" : "Track Shipment"}</span>
-                <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 400 }}>{status === "SOLD" ? "Labels & carriers" : "Live status"}</span>
-                <span style={{ fontSize: "0.7rem" }}>{"\u2192"}</span>
-              </a>
+          {/* ── 2. LIST & PROMOTE ── */}
+          <div style={{ borderLeft: openSections.has("list") ? "2px solid var(--accent)" : "2px solid transparent", transition: "all 0.2s ease" }}>
+            <SubHeader id="list" icon={"\u{1F4E2}"} title="List & Promote" hudContent={<>
+              {status === "LISTED" ? <HudBadge text="LIVE" color="#22c55e" /> : <HudBadge text="Not listed" />}
+            </>} />
+            {openSections.has("list") && (
+              <div style={{ padding: "0.4rem 0.5rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                {/* Action links as compact button row */}
+                <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
+                  <a href={`/bots/listbot?itemId=${itemId}`} style={{
+                    padding: "0.3rem 0.6rem", borderRadius: "0.35rem", fontSize: "0.6rem", fontWeight: 700,
+                    background: "linear-gradient(135deg, rgba(0,188,212,0.1), rgba(0,188,212,0.03))",
+                    border: "1px solid rgba(0,188,212,0.25)", color: "#00bcd4", textDecoration: "none",
+                    display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                    boxShadow: "0 0 10px rgba(0,188,212,0.08)", transition: "all 0.2s ease",
+                  }}>{"\u{1F310}"} List Everywhere</a>
+                  <a href={`/addons/listing-optimizer?itemId=${itemId}`} style={{
+                    padding: "0.3rem 0.6rem", borderRadius: "0.35rem", fontSize: "0.6rem", fontWeight: 600,
+                    background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none",
+                    display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                  }}>{"\u2728"} Optimize Listing</a>
+                  <a href={`/bundles/create?itemId=${itemId}`} style={{
+                    padding: "0.3rem 0.6rem", borderRadius: "0.35rem", fontSize: "0.6rem", fontWeight: 600,
+                    background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none",
+                    display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                  }}>{"\u{1F4E6}"} Create Bundle</a>
+                </div>
+                {/* Share row */}
+                <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
+                  <button onClick={shareItem} style={{
+                    padding: "0.25rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600,
+                    background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", cursor: "pointer",
+                  }}>{shareCopied ? "\u2713 Copied!" : "\u{1F4E4} Share Link"}</button>
+                  <button onClick={() => {
+                    const url = `${typeof window !== "undefined" ? window.location.origin : ""}/store`;
+                    navigator.clipboard.writeText(url);
+                    setPublicLinkCopied(true); setTimeout(() => setPublicLinkCopied(false), 2000);
+                  }} style={{
+                    padding: "0.25rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600,
+                    background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", cursor: "pointer",
+                  }}>{publicLinkCopied ? "\u2713 Copied!" : "\u{1F517} Store Link"}</button>
+                  <a href="/bundles" style={{
+                    padding: "0.25rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600,
+                    background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none",
+                    display: "inline-flex", alignItems: "center",
+                  }}>{"\u{1F4CB}"} My Bundles</a>
+                </div>
+              </div>
             )}
+          </div>
 
-            {/* Returns row */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-              <button
-                onClick={relistItem}
-                disabled={relistLoading}
-                style={{
-                  padding: "0.2rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.62rem", fontWeight: 600,
-                  border: "1px solid rgba(0,188,212,0.15)", background: "rgba(0,188,212,0.03)",
-                  color: "#00bcd4", cursor: relistLoading ? "wait" : "pointer",
-                  opacity: relistLoading ? 0.6 : 1,
-                }}
-              >
-                {relistLoading ? "..." : "\u{1F504} Relist Item"}
-              </button>
-              <button
-                onClick={() => setShowReturnsInfo(!showReturnsInfo)}
-                style={{ fontSize: "0.55rem", fontWeight: 500, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-              >
-                {showReturnsInfo ? "\u25B2" : "\u25BC"} Returns info
-              </button>
-              {!refundLoading && refundRequests.length === 0 && (
-                <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginLeft: "auto", opacity: 0.6 }}>No refunds</span>
+          {/* ── 3. MANAGE ── */}
+          <div style={{ borderLeft: openSections.has("manage") ? "2px solid var(--accent)" : "2px solid transparent", transition: "all 0.2s ease" }}>
+            <SubHeader id="manage" icon={"\u2699\u{FE0F}"} title="Manage" hudContent={<>
+              {projectId && <HudBadge text="Sale assigned" color="#00bcd4" />}
+            </>} />
+            {openSections.has("manage") && (
+              <div style={{ padding: "0.4rem 0.5rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                {/* Trade + Sale Assignment row */}
+                <div style={{
+                  display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap",
+                  padding: "0.3rem 0.4rem", borderRadius: "0.35rem",
+                  background: "linear-gradient(135deg, rgba(0,188,212,0.02), transparent)",
+                  border: "1px solid rgba(0,188,212,0.06)",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                    <TradeToggle itemId={itemId} />
+                  </div>
+                  <div style={{ width: "1px", height: "16px", background: "var(--border-default)", opacity: 0.5 }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                    <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F3F7}\u{FE0F}"}</span>
+                    <SaleAssignment itemId={itemId} initialProjectId={projectId ?? null} />
+                    {projectId && <span style={{ fontSize: "0.55rem", fontWeight: 600, padding: "1px 5px", borderRadius: "4px", background: "rgba(0,188,212,0.08)", color: "var(--accent)", border: "1px solid rgba(0,188,212,0.15)" }}>Assigned</span>}
+                    {!projectId && <a href="/projects" style={{ fontSize: "0.55rem", color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>+ New</a>}
+                  </div>
+                  <div style={{ flex: 1 }} />
+                  <button onClick={() => { const el = document.getElementById("active-offers-widget"); if (el) el.scrollIntoView({ behavior: "smooth" }); }} style={{
+                    fontSize: "0.55rem", fontWeight: 600, color: "var(--accent)",
+                    background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.12)",
+                    borderRadius: "0.3rem", padding: "0.15rem 0.4rem", cursor: "pointer",
+                  }}>{"\u{1F91D}"} Offers</button>
+                </div>
+                {/* Quick actions row */}
+                <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
+                  <a href={`/items/${itemId}/edit`} style={{ padding: "0.25rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none" }}>{"\u270F\u{FE0F}"} Edit Item</a>
+                  <a href={`/messages?itemId=${itemId}`} style={{ padding: "0.25rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none" }}>{"\u{1F4AC}"} Messages</a>
+                  <button onClick={() => { window.print(); }} style={{ padding: "0.25rem 0.5rem", fontSize: "0.58rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.3rem", cursor: "pointer", color: "var(--text-secondary)" }}>{"\u{1F5A8}\u{FE0F}"} Print</button>
+                  <button onClick={() => {
+                    const blob = new Blob([JSON.stringify({ itemId, status, category, aiData, valuation, photos: photos?.map((p: any) => p.filePath) }, null, 2)], { type: "application/json" });
+                    const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `legacyloop-${itemId.slice(0, 8)}.json`; a.click(); URL.revokeObjectURL(url);
+                    setExportDone(true); setTimeout(() => setExportDone(false), 2000);
+                  }} style={{ padding: "0.25rem 0.5rem", fontSize: "0.58rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.3rem", cursor: "pointer", color: "var(--text-secondary)" }}>{exportDone ? "\u2713 Exported" : "\u{1F4E5} Export"}</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── 4. POST-SALE (conditional) ── */}
+          {(status === "SOLD" || status === "SHIPPED" || status === "COMPLETED") && (
+            <div style={{ borderLeft: openSections.has("postsale") ? "2px solid #22c55e" : "2px solid transparent", transition: "all 0.2s ease" }}>
+              <SubHeader id="postsale" icon={"\u{1F3C6}"} title="Post-Sale" hudContent={<>
+                {status === "SOLD" && <HudBadge text="Ship now" color="#f59e0b" />}
+                {status === "SHIPPED" && <HudBadge text="In transit" color="#3b82f6" />}
+                {status === "COMPLETED" && <HudBadge text="Complete" color="#22c55e" />}
+              </>} />
+              {openSections.has("postsale") && (
+                <div style={{ padding: "0.4rem 0.5rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                  {/* Sale summary */}
+                  {price && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <span style={{ fontSize: "0.5rem", fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.12)", padding: "2px 6px", borderRadius: "4px", letterSpacing: "0.06em" }}>SOLD</span>
+                      <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)" }}>${price}{"\u2013"}${priceHigh}</span>
+                      {aiData?.category && <span style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{"\u00B7"} {aiData.category}</span>}
+                    </div>
+                  )}
+                  {/* Shipping bridge */}
+                  {(status === "SOLD" || status === "SHIPPED") && (
+                    <a href={`/shipping?itemId=${itemId}`} style={{
+                      display: "flex", alignItems: "center", gap: "0.4rem", width: "100%",
+                      padding: "0.35rem 0.5rem", borderRadius: "0.35rem",
+                      background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)",
+                      color: "#00bcd4", fontSize: "0.7rem", fontWeight: 600, textDecoration: "none",
+                    }}>
+                      <span>{"\u{1F4E6}"}</span>
+                      <span style={{ flex: 1 }}>{status === "SOLD" ? "Shipping Center" : "Track Shipment"}</span>
+                      <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 400 }}>{status === "SOLD" ? "Labels & carriers" : "Live status"}</span>
+                      <span style={{ fontSize: "0.7rem" }}>{"\u2192"}</span>
+                    </a>
+                  )}
+                  {/* Returns row */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+                    <button onClick={relistItem} disabled={relistLoading} style={{
+                      padding: "0.2rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.62rem", fontWeight: 600,
+                      border: "1px solid rgba(0,188,212,0.15)", background: "rgba(0,188,212,0.03)",
+                      color: "#00bcd4", cursor: relistLoading ? "wait" : "pointer", opacity: relistLoading ? 0.6 : 1,
+                    }}>{relistLoading ? "..." : "\u{1F504} Relist Item"}</button>
+                    <button onClick={() => setShowReturnsInfo(!showReturnsInfo)} style={{ fontSize: "0.55rem", fontWeight: 500, color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                      {showReturnsInfo ? "\u25B2" : "\u25BC"} Returns info
+                    </button>
+                    {!refundLoading && refundRequests.length === 0 && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginLeft: "auto", opacity: 0.6 }}>No refunds</span>}
+                  </div>
+                  {showReturnsInfo && (
+                    <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", lineHeight: 1.45, padding: "0.25rem 0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "0.3rem" }}>
+                      Buyer requests {"\u2192"} You approve/deny {"\u2192"} Auto-relist if approved {"\u2192"} Refund (minus processing fee)
+                    </div>
+                  )}
+                  {/* Refund cards */}
+                  {!refundLoading && refundRequests.length > 0 && refundRequests.map((r: any) => {
+                    const isPending = r.type === "refund_requested";
+                    const isApproved = r.type === "refund_approved";
+                    const badge = isPending ? { label: "Pending", color: "#f59e0b", bg: "rgba(245,158,11,0.1)" }
+                      : isApproved ? { label: "OK", color: "#22c55e", bg: "rgba(34,197,94,0.1)" }
+                      : { label: "Denied", color: "#ef4444", bg: "rgba(239,68,68,0.1)" };
+                    return (
+                      <div key={r.id} style={{ padding: "0.25rem 0.4rem", borderRadius: "0.3rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          <span style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--text-primary)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.data?.reason || "Refund"}</span>
+                          {r.data?.refundAmount && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>${Number(r.data.refundAmount).toFixed(2)}</span>}
+                          <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: 6, background: badge.bg, color: badge.color }}>{badge.label}</span>
+                          {isPending && (<>
+                            <button onClick={() => handleRefund("approve")} disabled={refundActionLoading === "approve"} style={{ padding: "2px 8px", fontSize: "0.55rem", fontWeight: 700, borderRadius: 4, border: "none", background: "#22c55e", color: "#fff", cursor: "pointer", opacity: refundActionLoading === "approve" ? 0.5 : 1 }}>{"\u2713"}</button>
+                            <button onClick={() => handleRefund("deny")} disabled={refundActionLoading === "deny"} style={{ padding: "2px 8px", fontSize: "0.55rem", fontWeight: 700, borderRadius: 4, border: "1px solid rgba(239,68,68,0.25)", background: "transparent", color: "#ef4444", cursor: "pointer", opacity: refundActionLoading === "deny" ? 0.5 : 1 }}>{"\u2717"}</button>
+                          </>)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
+          )}
 
-            {showReturnsInfo && (
-              <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", lineHeight: 1.45, padding: "0.25rem 0.4rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "0.3rem", marginTop: "0.25rem" }}>
-                Buyer requests {"\u2192"} You approve/deny {"\u2192"} Auto-relist if approved {"\u2192"} Refund (minus processing fee)
-              </div>
-            )}
-
-            {/* Refund cards */}
-            {!refundLoading && refundRequests.length > 0 && refundRequests.map((r: any) => {
-              const isPending = r.type === "refund_requested";
-              const isApproved = r.type === "refund_approved";
-              const badge = isPending ? { label: "Pending", color: "#f59e0b", bg: "rgba(245,158,11,0.1)" }
-                : isApproved ? { label: "OK", color: "#22c55e", bg: "rgba(34,197,94,0.1)" }
-                : { label: "Denied", color: "#ef4444", bg: "rgba(239,68,68,0.1)" };
-              return (
-                <div key={r.id} style={{ padding: "0.25rem 0.4rem", borderRadius: "0.3rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", marginTop: "0.2rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                    <span style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--text-primary)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const }}>{r.data?.reason || "Refund"}</span>
-                    {r.data?.refundAmount && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>${Number(r.data.refundAmount).toFixed(2)}</span>}
-                    <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: 6, background: badge.bg, color: badge.color }}>{badge.label}</span>
-                    {isPending && (
-                      <>
-                        <button onClick={() => handleRefund("approve")} disabled={refundActionLoading === "approve"} style={{ padding: "2px 8px", fontSize: "0.55rem", fontWeight: 700, borderRadius: 4, border: "none", background: "#22c55e", color: "#fff", cursor: "pointer", opacity: refundActionLoading === "approve" ? 0.5 : 1 }}>{"\u2713"}</button>
-                        <button onClick={() => handleRefund("deny")} disabled={refundActionLoading === "deny"} style={{ padding: "2px 8px", fontSize: "0.55rem", fontWeight: 700, borderRadius: 4, border: "1px solid rgba(239,68,68,0.25)", background: "transparent", color: "#ef4444", cursor: "pointer", opacity: refundActionLoading === "deny" ? 0.5 : 1 }}>{"\u2717"}</button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        </div>{/* end accordion container */}
 
         {/* ── QUICK NAV ── */}
-        <div style={{ display: "flex", gap: "0.2rem", flexWrap: "wrap", justifyContent: "center" }}>
+        <div style={{ display: "flex", gap: "0.2rem", flexWrap: "wrap", justifyContent: "center", marginTop: "0.35rem" }}>
           {[
             { icon: "\u270F\u{FE0F}", label: "Edit", href: `/items/${itemId}/edit` },
             { icon: "+", label: "New", href: "/items/new" },
             { icon: "\u{1F3EA}", label: "Store", href: "/store" },
             { icon: "\u{1F4AC}", label: "Messages", href: `/messages?itemId=${itemId}` },
             { icon: "\u{1F4CA}", label: "Dashboard", href: "/dashboard" },
-            ...((status === "ANALYZED" || status === "READY") ? [{ icon: "\u{1F916}", label: "Bots", href: "/bots" }] : []),
+            { icon: "\u{1F4E6}", label: "Bundles", href: "/bundles" },
+            { icon: "\u{1F916}", label: "Bots", href: "/bots" },
           ].map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              style={{
-                display: "inline-flex", alignItems: "center", gap: "0.15rem",
-                padding: "0.18rem 0.35rem", borderRadius: "0.25rem",
-                background: "transparent", border: "none",
-                color: "var(--text-muted)", textDecoration: "none",
-                fontSize: "0.58rem", fontWeight: 500,
-                transition: "color 0.15s ease",
-              }}
+            <a key={link.label} href={link.href} style={{
+              display: "inline-flex", alignItems: "center", gap: "0.15rem",
+              padding: "0.18rem 0.35rem", borderRadius: "0.25rem",
+              background: "transparent", border: "none",
+              color: "var(--text-muted)", textDecoration: "none",
+              fontSize: "0.58rem", fontWeight: 500, transition: "color 0.15s ease",
+            }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#00bcd4"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
             >

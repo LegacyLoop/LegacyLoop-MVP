@@ -6,6 +6,7 @@ import { recordPayment } from "@/lib/services/payment-ledger";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email/send";
 import { creditPurchaseEmail, subscriptionUpgradeEmail, itemSoldEmail, orderConfirmationEmail } from "@/lib/email/templates";
+import { n8nPaymentReceived, n8nSmsAlert } from "@/lib/n8n";
 import {
   calculateProcessingFee,
   calculateTotalWithFee,
@@ -456,6 +457,10 @@ export async function POST(req: NextRequest) {
       const buyerName = body.buyerName || user.email.split("@")[0];
       const buyerEmail = orderConfirmationEmail(buyerName, item.title || "Item", itemPrice, shippingCost, processingFee, total);
       sendEmail({ to: user.email, ...buyerEmail });
+
+      // n8n: WF15 payment alert + WF11 SMS (fire-and-forget)
+      n8nPaymentReceived(itemPrice, user.email, item.title || "Item", "item_purchase");
+      n8nSmsAlert(`SALE: $${itemPrice.toFixed(2)} — ${item.title || "Item"}`);
 
       // Email seller about sale
       if (item.user?.email) {

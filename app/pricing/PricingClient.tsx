@@ -559,7 +559,7 @@ export default function PricingClient() {
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "0.75rem", marginBottom: "2rem" }}>
             <span style={{ fontSize: "0.85rem", fontWeight: 600, color: !annual ? "var(--text-primary)" : "var(--text-muted)" }}>Monthly</span>
             <button onClick={() => setAnnual(!annual)}
-              style={{ width: "44px", height: "24px", borderRadius: "9999px", border: "none", cursor: "pointer", background: annual ? "#0f766e" : "#e7e5e4", position: "relative", transition: "background 0.2s" }}>
+              style={{ width: "44px", height: "24px", borderRadius: "9999px", border: "none", cursor: "pointer", background: annual ? "#0f766e" : "var(--ghost-bg)", position: "relative", transition: "background 0.2s" }}>
               <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#fff", position: "absolute", top: "3px", left: annual ? "23px" : "3px", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
             </button>
             <span style={{ fontSize: "0.85rem", fontWeight: 600, color: annual ? "var(--text-primary)" : "var(--text-muted)" }}>
@@ -614,8 +614,8 @@ export default function PricingClient() {
                 <div style={{ padding: "1rem 1.5rem", flex: 1 }}>
                   <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                     {tier.features.map((f) => (
-                      <li key={f.text} style={{ display: "flex", gap: "0.5rem", fontSize: "0.82rem", color: f.enabled ? "#44403c" : "#a8a29e" }}>
-                        <span style={{ color: f.enabled ? tier.color : "#d6d3d1", fontWeight: 700, flexShrink: 0, fontSize: "0.75rem" }}>{f.enabled ? "✓" : "✗"}</span>
+                      <li key={f.text} style={{ display: "flex", gap: "0.5rem", fontSize: "0.82rem", color: f.enabled ? "var(--text-secondary)" : "var(--text-muted)" }}>
+                        <span style={{ color: f.enabled ? tier.color : "var(--text-muted)", fontWeight: 700, flexShrink: 0, fontSize: "0.75rem" }}>{f.enabled ? "✓" : "✗"}</span>
                         {f.text}
                       </li>
                     ))}
@@ -624,7 +624,7 @@ export default function PricingClient() {
 
                 <div style={{ padding: "1rem 1.5rem 1.5rem" }}>
                   {tier.trial && (
-                    <div style={{ fontSize: "0.7rem", color: "#78716c", textAlign: "center", marginBottom: "0.4rem" }}>✨ {tier.trial} — no card needed</div>
+                    <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", textAlign: "center", marginBottom: "0.4rem" }}>✨ {tier.trial} — no card needed</div>
                   )}
                   <Link href="/auth/signup"
                     style={{
@@ -696,17 +696,19 @@ export default function PricingClient() {
       {tab === "white-glove" && (
         <div>
           {/* Value prop banner */}
-          <div style={{ background: "linear-gradient(135deg, #1c1917, #292524)", borderRadius: "1.25rem", padding: "2rem", color: "#fff", marginBottom: "2.5rem", display: "flex", alignItems: "center", gap: "1.5rem", flexWrap: "wrap" }}>
+          <div style={{ padding: "3px", borderRadius: "1.5rem", background: "linear-gradient(135deg, var(--accent), #7c3aed, #a855f7)", marginBottom: "2.5rem" }}>
+            <div style={{ background: "var(--bg-card-solid)", borderRadius: "calc(1.5rem - 3px)", padding: "2rem", display: "flex", alignItems: "center", gap: "1.5rem", flexWrap: "wrap" }}>
             <span style={{ fontSize: "2.5rem" }}>🏠</span>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 800, fontSize: "1.1rem", marginBottom: "0.25rem" }}>White-Glove Estate Services — Maine Only</div>
+              <div style={{ fontWeight: 800, fontSize: "1.1rem", marginBottom: "0.25rem", color: "var(--text-primary)" }}>White-Glove Estate Services — Maine Only</div>
               <p style={{ color: "var(--text-secondary)", fontSize: "0.88rem", lineHeight: 1.6, margin: 0 }}>
                 Our team comes to you. We catalogue, photograph, price, list, and sell every item — then handle all buyer communication, shipping, and final coordination. You just say yes.
               </p>
             </div>
-            <Link href="/quote" style={{ background: "#fff", color: "#1c1917", padding: "0.75rem 1.5rem", borderRadius: "0.75rem", fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap", fontSize: "0.9rem" }}>
+            <Link href="/quote" className="btn-primary" style={{ padding: "0.75rem 1.5rem", borderRadius: "0.75rem", fontWeight: 800, textDecoration: "none", whiteSpace: "nowrap", fontSize: "0.9rem" }}>
               Request Free Quote →
             </Link>
+            </div>
           </div>
 
           {/* Service tier cards */}
@@ -714,24 +716,24 @@ export default function PricingClient() {
             {WG_TIERS.map((tier) => {
               const isDark = tier.dark;
               return (
-                <div key={tier.id} style={{ ...CARD, border: `2px solid ${tier.border}`, background: isDark ? "#1c1917" : "#fff" }}>
+                <div key={tier.id} style={{ ...CARD, border: `2px solid ${tier.border}`, background: isDark ? "var(--bg-secondary, #1c1917)" : "var(--bg-card-solid)" }}>
                   {tier.badge && (
                     <div style={{ position: "absolute", top: 0, right: 0, background: tier.color, color: isDark ? "#fff" : "#fff", fontSize: "0.62rem", fontWeight: 800, padding: "0.2rem 0.65rem", borderBottomLeftRadius: "0.65rem", letterSpacing: "0.05em" }}>
                       {tier.badge}
                     </div>
                   )}
 
-                  <div style={{ padding: "1.75rem 1.75rem 1rem", background: isDark ? "#292524" : tier.bg }}>
+                  <div style={{ padding: "1.75rem 1.75rem 1rem", background: isDark ? "var(--ghost-bg)" : tier.bg }}>
                     <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>{tier.icon}</div>
-                    <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "#a8a29e" : tier.color }}>{tier.name}</div>
-                    <div style={{ fontSize: "0.8rem", color: isDark ? "#78716c" : "#78716c", marginTop: "0.15rem" }}>{tier.idealFor}</div>
+                    <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: isDark ? "var(--text-muted)" : tier.color }}>{tier.name}</div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>{tier.idealFor}</div>
                     <div style={{ marginTop: "0.75rem" }}>
-                      <div style={{ fontSize: "0.72rem", color: isDark ? "#78716c" : "var(--text-muted)" }}>Pre-launch price</div>
+                      <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>Pre-launch price</div>
                       <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", flexWrap: "wrap" }}>
-                        <span style={{ fontSize: "2rem", fontWeight: 900, color: isDark ? "#fff" : "var(--text-primary)" }}>
+                        <span style={{ fontSize: "2rem", fontWeight: 900, color: "var(--text-primary)" }}>
                           ${tier.preLaunchPrice.toLocaleString()}
                         </span>
-                        <span style={{ fontSize: "1rem", color: isDark ? "#78716c" : "var(--text-muted)", textDecoration: "line-through" }}>
+                        <span style={{ fontSize: "1rem", color: "var(--text-muted)", textDecoration: "line-through" }}>
                           ${tier.basePrice.toLocaleString()}
                         </span>
                       </div>
@@ -740,25 +742,25 @@ export default function PricingClient() {
                           ⚡ Save ${(tier.basePrice - tier.preLaunchPrice).toLocaleString()} — pre-launch only
                         </span>
                       </div>
-                      <div style={{ fontSize: "0.82rem", color: isDark ? "#a8a29e" : "var(--text-muted)", marginTop: "0.25rem" }}>+ {tier.commission}% commission · {tier.timeline}</div>
+                      <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>+ {tier.commission}% commission · {tier.timeline}</div>
                     </div>
                   </div>
 
-                  <div style={{ padding: "1.25rem 1.75rem", flex: 1, background: isDark ? "#1c1917" : "#fff" }}>
+                  <div style={{ padding: "1.25rem 1.75rem", flex: 1, background: isDark ? "var(--bg-secondary, #1c1917)" : "var(--bg-card-solid)" }}>
                     <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                       {tier.services.map((s, i) => (
-                        <li key={i} style={{ display: "flex", gap: "0.5rem", fontSize: "0.82rem", color: isDark ? (i === 0 ? "#a8a29e" : "#e7e5e4") : (i === 0 ? "#78716c" : "#44403c"), fontStyle: i === 0 && s.includes("PLUS") ? "italic" : "normal" }}>
-                          {i !== 0 && <span style={{ color: isDark ? "#a8a29e" : tier.color, fontWeight: 700, flexShrink: 0, fontSize: "0.75rem" }}>✓</span>}
+                        <li key={i} style={{ display: "flex", gap: "0.5rem", fontSize: "0.82rem", color: i === 0 ? "var(--text-muted)" : "var(--text-secondary)", fontStyle: i === 0 && s.includes("PLUS") ? "italic" : "normal" }}>
+                          {i !== 0 && <span style={{ color: isDark ? "var(--text-muted)" : tier.color, fontWeight: 700, flexShrink: 0, fontSize: "0.75rem" }}>✓</span>}
                           {s}
                         </li>
                       ))}
                     </ul>
-                    <div style={{ marginTop: "1rem", padding: "0.5rem 0.75rem", background: isDark ? "#292524" : "#f5f5f4", borderRadius: "0.5rem", fontSize: "0.75rem", color: isDark ? "#a8a29e" : "#78716c", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <div style={{ marginTop: "1rem", padding: "0.5rem 0.75rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                       <span>👥</span> {tier.team}
                     </div>
                   </div>
 
-                  <div style={{ padding: "1rem 1.75rem 1.75rem", background: isDark ? "#1c1917" : "#fff" }}>
+                  <div style={{ padding: "1rem 1.75rem 1.75rem", background: isDark ? "var(--bg-secondary, #1c1917)" : "var(--bg-card-solid)" }}>
                     <Link href="/quote"
                       style={{
                         display: "block", textAlign: "center", padding: "0.75rem 1rem", borderRadius: "0.75rem",
@@ -1029,7 +1031,7 @@ export default function PricingClient() {
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
           <Link href="/auth/signup"
-            style={{ background: "#fff", color: "#0f766e", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 800, textDecoration: "none", fontSize: "0.95rem" }}>
+            style={{ background: "var(--bg-card-solid)", color: "var(--accent)", padding: "0.85rem 2rem", borderRadius: "9999px", fontWeight: 800, textDecoration: "none", fontSize: "0.95rem" }}>
             Start Free Today
           </Link>
           <Link href="/quote"

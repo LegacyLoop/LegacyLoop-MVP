@@ -18,9 +18,9 @@ const GLASS = "var(--ghost-bg)";
 const GLASS_BORDER = "var(--border-default)";
 const GLASS_HOVER = "var(--ghost-bg)";
 const TEXT_PRIMARY = "var(--text-primary)";
-const TEXT_SECONDARY = "rgba(207,216,220,0.7)";
-const TEXT_MUTED = "rgba(207,216,220,0.45)";
-const BG_PAGE = "#0f1419";
+const TEXT_SECONDARY = "var(--text-secondary)";
+const TEXT_MUTED = "var(--text-muted)";
+const BG_PAGE = "var(--bg-primary)";
 const SUCCESS_GREEN = "#4caf50";
 const WARN_ORANGE = "#ff9800";
 const DANGER_RED = "#f44336";
@@ -130,88 +130,89 @@ export default function BundlesPage() {
   return (
     <div style={{ minHeight: "100vh", background: BG_PAGE, padding: "32px 16px 80px" }}>
       <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Bundles" }]} />
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: 28,
-          }}
-        >
-          <div>
-            <h1
-              style={{
-                fontSize: 26,
-                fontWeight: 800,
-                color: TEXT_PRIMARY,
-                margin: 0,
-              }}
-            >
-              My Bundles
-            </h1>
-            <p style={{ fontSize: 13, color: TEXT_SECONDARY, marginTop: 4 }}>
-              Manage your bundle sales. Bundles sell 40% faster on average.
-            </p>
-          </div>
-          <Link
-            href="/bundles/create"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: `linear-gradient(135deg, ${TEAL}, #0097a7)`,
-              color: "#fff",
-              border: "none",
-              borderRadius: 10,
-              padding: "10px 22px",
-              fontSize: 13,
-              fontWeight: 700,
-              textDecoration: "none",
-              boxShadow: `0 4px 16px ${TEAL}30`,
-              whiteSpace: "nowrap",
-            }}
-          >
-            + Create Bundle Sale
-          </Link>
-        </div>
+        <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Bundles" }]} />
 
-        {/* Stats bar */}
-        {bundles.length > 0 && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: 12,
-              marginBottom: 24,
-            }}
-          >
-            {[
-              { label: "Total Bundles", value: stats.total, color: TEXT_PRIMARY },
-              { label: "Active", value: stats.active, color: SUCCESS_GREEN },
-              { label: "Total Value", value: `$${stats.totalValue.toLocaleString()}`, color: TEAL },
-              { label: "Items Bundled", value: stats.totalItems, color: WARN_ORANGE },
-            ].map((s) => (
-              <div
-                key={s.label}
-                style={{
-                  background: GLASS,
-                  border: `1px solid ${GLASS_BORDER}`,
-                  borderRadius: 12,
-                  padding: "14px 16px",
-                }}
-              >
-                <div style={{ fontSize: 10, fontWeight: 600, color: TEXT_MUTED, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>
-                  {s.label}
-                </div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: s.color }}>
-                  {s.value}
+        {/* ═══ PREMIUM HERO HEADER ═══ */}
+        <div style={{
+          borderRadius: "1rem",
+          padding: "3px",
+          background: "linear-gradient(135deg, #00bcd4, #0097a7, #00bcd4)",
+          boxShadow: "0 4px 24px rgba(0,188,212,0.15)",
+          marginBottom: "1.5rem",
+        }}>
+          <div style={{
+            borderRadius: "calc(1rem - 3px)",
+            padding: "1.5rem 2rem",
+            background: "var(--bg-card-solid)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{
+                  width: 52, height: 52, borderRadius: "14px",
+                  background: "linear-gradient(135deg, #00bcd4, #0097a7)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: "1.6rem", flexShrink: 0,
+                  boxShadow: "0 4px 16px rgba(0,188,212,0.25)",
+                }}>{"\uD83D\uDCE6"}</div>
+                <div>
+                  <h1 style={{ fontSize: "1.4rem", fontWeight: 800, letterSpacing: "-0.02em", color: TEXT_PRIMARY, margin: 0 }}>
+                    Bundle Manager
+                  </h1>
+                  <p style={{ fontSize: "0.72rem", fontWeight: 500, color: TEXT_MUTED, margin: "0.15rem 0 0 0" }}>
+                    Group items into discounted bundles. Bundles sell 40% faster on average.
+                  </p>
                 </div>
               </div>
-            ))}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                <span style={{
+                  padding: "0.2rem 0.65rem", borderRadius: "999px", fontSize: "0.58rem", fontWeight: 700,
+                  background: "rgba(0,188,212,0.1)", border: "1px solid rgba(0,188,212,0.25)", color: "#00bcd4",
+                }}>
+                  SMART PRICING
+                </span>
+                <Link
+                  href="/bundles/create"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    background: `linear-gradient(135deg, ${TEAL}, #0097a7)`,
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 10,
+                    padding: "10px 22px",
+                    fontSize: 13,
+                    fontWeight: 700,
+                    textDecoration: "none",
+                    boxShadow: `0 4px 16px ${TEAL}30`,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  + Create Bundle
+                </Link>
+              </div>
+            </div>
+            {/* Metrics strip */}
+            {bundles.length > 0 && (
+              <div style={{ display: "flex", gap: "1.25rem", marginTop: "0.85rem", paddingTop: "0.75rem", borderTop: "1px solid var(--border-default)" }}>
+                <span style={{ fontSize: "0.72rem", color: TEXT_MUTED }}>
+                  Bundles: <strong style={{ color: "#00bcd4", fontWeight: 800 }}>{stats.total}</strong>
+                </span>
+                <span style={{ fontSize: "0.72rem", color: TEXT_MUTED }}>
+                  Active: <strong style={{ color: SUCCESS_GREEN, fontWeight: 800 }}>{stats.active}</strong>
+                </span>
+                <span style={{ fontSize: "0.72rem", color: TEXT_MUTED }}>
+                  Total Value: <strong style={{ color: "#00bcd4", fontWeight: 800 }}>${stats.totalValue.toLocaleString()}</strong>
+                </span>
+                <span style={{ fontSize: "0.72rem", color: TEXT_MUTED }}>
+                  Items Bundled: <strong style={{ color: WARN_ORANGE, fontWeight: 800 }}>{stats.totalItems}</strong>
+                </span>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+
+        {/* Stats integrated into hero header above */}
 
         {/* Filter tabs */}
         {bundles.length > 0 && (
@@ -266,19 +267,20 @@ export default function BundlesPage() {
         {!loading && bundles.length === 0 && (
           <div
             style={{
-              background: GLASS,
+              background: "var(--bg-card)",
               border: `1px solid ${GLASS_BORDER}`,
               borderRadius: 18,
-              padding: 48,
+              padding: "3rem 2rem",
               textAlign: "center",
               marginBottom: 32,
+              backdropFilter: "blur(20px)",
             }}
           >
-            <div style={{ fontSize: 48, marginBottom: 16 }}>{"\uD83D\uDCE6"}</div>
+            <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.7 }}>{"\uD83D\uDCE6"}</div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: TEXT_PRIMARY, margin: "0 0 8px" }}>
               No Bundles Yet
             </h2>
-            <p style={{ fontSize: 13, color: TEXT_SECONDARY, maxWidth: 400, margin: "0 auto 24px" }}>
+            <p style={{ fontSize: 13, color: TEXT_MUTED, maxWidth: 420, margin: "0 auto 28px", lineHeight: 1.6 }}>
               Bundle multiple items together at a discounted price. Buyers love getting a deal,
               and you move inventory faster.
             </p>
@@ -291,23 +293,25 @@ export default function BundlesPage() {
               }}
             >
               {[
-                { icon: "\uD83C\uDFE0", label: "Full Estate Sale", desc: "Bundle everything" },
-                { icon: "\uD83D\uDCE6", label: "Category Bundle", desc: "Group by type" },
-                { icon: "\u2728", label: "Custom Bundle", desc: "Hand-pick items" },
+                { icon: "\uD83C\uDFE0", label: "Full Estate Sale", desc: "Bundle everything", color: "#4caf50" },
+                { icon: "\uD83D\uDCE6", label: "Category Bundle", desc: "Group by type", color: "#ff9800" },
+                { icon: "\u2728", label: "Custom Bundle", desc: "Hand-pick items", color: "#00bcd4" },
               ].map((t) => (
                 <div
                   key={t.label}
                   style={{
-                    background: "var(--bg-card)",
-                    borderRadius: 10,
-                    padding: "14px 18px",
+                    background: "var(--ghost-bg)",
+                    border: `1px solid ${GLASS_BORDER}`,
+                    borderRadius: 12,
+                    padding: "18px 20px",
                     textAlign: "center",
-                    width: 140,
+                    width: 150,
+                    transition: "border-color 0.2s ease",
                   }}
                 >
-                  <div style={{ fontSize: 24, marginBottom: 6 }}>{t.icon}</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: TEXT_PRIMARY }}>{t.label}</div>
-                  <div style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 2 }}>{t.desc}</div>
+                  <div style={{ fontSize: 28, marginBottom: 8 }}>{t.icon}</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: t.color }}>{t.label}</div>
+                  <div style={{ fontSize: 10, color: TEXT_MUTED, marginTop: 4, lineHeight: 1.4 }}>{t.desc}</div>
                 </div>
               ))}
             </div>
@@ -315,7 +319,7 @@ export default function BundlesPage() {
               href="/bundles/create"
               style={{
                 display: "inline-block",
-                marginTop: 24,
+                marginTop: 28,
                 background: `linear-gradient(135deg, ${TEAL}, #0097a7)`,
                 color: "#fff",
                 borderRadius: 10,
@@ -459,13 +463,13 @@ export default function BundlesPage() {
                               position: "absolute",
                               top: "100%",
                               right: 0,
-                              background: "#1a1f25",
+                              background: "var(--bg-card-solid)",
                               border: `1px solid ${GLASS_BORDER}`,
                               borderRadius: 10,
                               padding: 6,
                               minWidth: 150,
                               zIndex: 20,
-                              boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+                              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
                             }}
                           >
                             <Link
@@ -677,13 +681,14 @@ export default function BundlesPage() {
           >
             <div
               style={{
-                background: "#1a1f25",
+                background: "var(--bg-card-solid)",
                 border: `1px solid ${GLASS_BORDER}`,
                 borderRadius: 18,
                 padding: 32,
                 maxWidth: 400,
                 width: "100%",
                 textAlign: "center",
+                boxShadow: "0 24px 80px rgba(0,0,0,0.3)",
               }}
             >
               <div style={{ fontSize: 40, marginBottom: 16 }}>{"\u26A0\uFE0F"}</div>

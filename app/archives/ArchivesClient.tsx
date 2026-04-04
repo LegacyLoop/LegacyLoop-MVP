@@ -153,7 +153,7 @@ export default function ArchivesClient({ items }: Props) {
                 <button onClick={selectAll} style={{ fontSize: "0.72rem", padding: "0.2rem 0.6rem", background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0", borderRadius: "0.4rem", cursor: "pointer" }}>
                   Select All
                 </button>
-                <button onClick={clearAll} style={{ fontSize: "0.72rem", padding: "0.2rem 0.6rem", background: "#f5f5f4", color: "var(--text-muted)", border: "1px solid #e7e5e4", borderRadius: "0.4rem", cursor: "pointer" }}>
+                <button onClick={clearAll} style={{ fontSize: "0.72rem", padding: "0.2rem 0.6rem", background: "var(--ghost-bg)", color: "var(--text-muted)", border: "1px solid var(--border-default)", borderRadius: "0.4rem", cursor: "pointer" }}>
                   Clear
                 </button>
               </div>
@@ -178,8 +178,8 @@ export default function ArchivesClient({ items }: Props) {
                         alignItems: "center",
                         gap: "0.75rem",
                         padding: "0.65rem 0.75rem",
-                        background: isSelected ? "#f0fdf4" : "#fafaf9",
-                        border: `1.5px solid ${isSelected ? "#86efac" : "#f5f5f4"}`,
+                        background: isSelected ? "#f0fdf4" : "var(--ghost-bg)",
+                        border: `1.5px solid ${isSelected ? "#86efac" : "var(--ghost-bg)"}`,
                         borderRadius: "0.75rem",
                         cursor: "pointer",
                         transition: "all 0.15s",
@@ -187,7 +187,7 @@ export default function ArchivesClient({ items }: Props) {
                     >
                       <div style={{
                         width: "20px", height: "20px", border: `2px solid ${isSelected ? "#16a34a" : "#d6d3d1"}`,
-                        borderRadius: "4px", background: isSelected ? "#16a34a" : "#fff",
+                        borderRadius: "4px", background: isSelected ? "#16a34a" : "var(--bg-card-solid)",
                         display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                       }}>
                         {isSelected && <span style={{ color: "#fff", fontSize: "0.7rem", fontWeight: 800 }}>✓</span>}
@@ -195,7 +195,7 @@ export default function ArchivesClient({ items }: Props) {
                       {item.photoUrl ? (
                         <img src={item.photoUrl} alt="" style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "0.5rem", flexShrink: 0 }} />
                       ) : (
-                        <div style={{ width: "40px", height: "40px", background: "#f5f5f4", borderRadius: "0.5rem", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ width: "40px", height: "40px", background: "var(--ghost-bg)", borderRadius: "0.5rem", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <span style={{ fontSize: "1rem" }}>📷</span>
                         </div>
                       )}
@@ -235,9 +235,9 @@ export default function ArchivesClient({ items }: Props) {
                 <div
                   key={opt.key}
                   onClick={() => opt.set(!opt.value)}
-                  style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", background: opt.value ? "#f0fdf4" : "#fafaf9", border: `1px solid ${opt.value ? "#86efac" : "#f5f5f4"}`, borderRadius: "0.75rem", cursor: "pointer" }}
+                  style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", background: opt.value ? "#f0fdf4" : "var(--ghost-bg)", border: `1px solid ${opt.value ? "#86efac" : "var(--ghost-bg)"}`, borderRadius: "0.75rem", cursor: "pointer" }}
                 >
-                  <div style={{ width: "18px", height: "18px", border: `2px solid ${opt.value ? "#16a34a" : "#d6d3d1"}`, borderRadius: "4px", background: opt.value ? "#16a34a" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ width: "18px", height: "18px", border: `2px solid ${opt.value ? "#16a34a" : "#d6d3d1"}`, borderRadius: "4px", background: opt.value ? "#16a34a" : "var(--bg-card-solid)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     {opt.value && <span style={{ color: "#fff", fontSize: "0.65rem", fontWeight: 800 }}>✓</span>}
                   </div>
                   <div>
@@ -260,7 +260,7 @@ export default function ArchivesClient({ items }: Props) {
                 <div
                   key={fmt.id}
                   onClick={() => setSelectedFormat(fmt.id)}
-                  style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.75rem 0.9rem", background: selectedFormat === fmt.id ? "#f0fdf4" : "#fafaf9", border: `2px solid ${selectedFormat === fmt.id ? "#0f766e" : "#f5f5f4"}`, borderRadius: "0.75rem", cursor: "pointer" }}
+                  style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.75rem 0.9rem", background: selectedFormat === fmt.id ? "#f0fdf4" : "var(--ghost-bg)", border: `2px solid ${selectedFormat === fmt.id ? "#0f766e" : "var(--ghost-bg)"}`, borderRadius: "0.75rem", cursor: "pointer" }}
                 >
                   <span style={{ fontSize: "1.5rem" }}>{fmt.icon}</span>
                   <div style={{ flex: 1 }}>
@@ -375,7 +375,7 @@ export default function ArchivesClient({ items }: Props) {
                       ↓ Download
                     </a>
                     <button
-                      style={{ padding: "0.4rem 0.75rem", background: "#f5f5f4", color: "var(--text-secondary)", border: "1px solid #e7e5e4", borderRadius: "0.6rem", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer" }}
+                      style={{ padding: "0.4rem 0.75rem", background: "var(--ghost-bg)", color: "var(--text-secondary)", border: "1px solid var(--border-default)", borderRadius: "0.6rem", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer" }}
                     >
                       Share
                     </button>

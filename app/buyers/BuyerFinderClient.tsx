@@ -232,7 +232,7 @@ function BotScoreBadge({ score }: { score: number }) {
 }
 
 const STATUS_CHIP: Record<string, { bg: string; color: string; label: string }> = {
-  pending: { bg: "#f5f5f4", color: "#78716c", label: "Pending" },
+  pending: { bg: "var(--ghost-bg)", color: "var(--text-muted)", label: "Pending" },
   contacted: { bg: "#eff6ff", color: "#1d4ed8", label: "Contacted" },
   replied: { bg: "#dcfce7", color: "#16a34a", label: "Replied ✓" },
   flagged: { bg: "#fee2e2", color: "#dc2626", label: "Flagged Bot" },
@@ -309,8 +309,8 @@ export default function BuyerFinderClient() {
   const repliedCount = buyers.filter((b) => b.status === "replied").length;
 
   const CARD: React.CSSProperties = {
-    background: "#fff",
-    border: "1px solid #e7e5e4",
+    background: "var(--bg-card-solid)",
+    border: "1px solid var(--border-default)",
     borderRadius: "1.25rem",
     padding: "1.5rem",
   };
@@ -350,7 +350,7 @@ export default function BuyerFinderClient() {
       </div>
 
       {/* Main tabs */}
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.75rem", borderBottom: "2px solid #e7e5e4" }}>
+      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.75rem", borderBottom: "2px solid var(--border-default)" }}>
         {([
           { key: "active",   label: "🎯 Active Buyers",   count: buyers.length },
           { key: "platform", label: "📡 Platform Leads",  count: PLATFORM_LEADS.length },
@@ -362,9 +362,9 @@ export default function BuyerFinderClient() {
               padding: "0.65rem 1.25rem",
               background: "none",
               border: "none",
-              borderBottom: mainTab === key ? "2px solid #0f766e" : "2px solid transparent",
+              borderBottom: mainTab === key ? "2px solid var(--accent)" : "2px solid transparent",
               marginBottom: "-2px",
-              color: mainTab === key ? "#0f766e" : "#78716c",
+              color: mainTab === key ? "var(--accent)" : "var(--text-muted)",
               fontWeight: mainTab === key ? 700 : 500,
               fontSize: "0.9rem",
               cursor: "pointer",
@@ -376,8 +376,8 @@ export default function BuyerFinderClient() {
             {label}
             <span style={{
               padding: "0.1rem 0.45rem",
-              background: mainTab === key ? "#0f766e" : "#e7e5e4",
-              color: mainTab === key ? "#fff" : "#78716c",
+              background: mainTab === key ? "var(--accent)" : "var(--ghost-bg)",
+              color: mainTab === key ? "#fff" : "var(--text-muted)",
               borderRadius: "9999px",
               fontSize: "0.7rem",
               fontWeight: 700,
@@ -416,13 +416,13 @@ export default function BuyerFinderClient() {
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
             <span style={{ fontSize: "1.5rem" }}>🎯</span>
             <div>
-              <div style={{ fontWeight: 700, fontSize: "1rem", color: "#1c1917" }}>Scan complete — {buyers.length} potential buyers found</div>
-              <div style={{ fontSize: "0.82rem", color: "#57534e" }}>Across Facebook, eBay, Craigslist, Reddit &amp; Groups</div>
+              <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-primary)" }}>Scan complete — {buyers.length} potential buyers found</div>
+              <div style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>Across Facebook, eBay, Craigslist, Reddit &amp; Groups</div>
             </div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "0.75rem" }}>
             {[
-              { label: "Total Found", value: buyers.length, color: "#1c1917", bg: "#f5f5f4" },
+              { label: "Total Found", value: buyers.length, color: "var(--text-primary)", bg: "var(--ghost-bg)" },
               { label: "Real Humans", value: humanCount, color: "#16a34a", bg: "#dcfce7" },
               { label: "Possible Bots", value: botCount, color: "#dc2626", bg: "#fee2e2" },
               { label: "Contacted", value: contactedCount, color: "#1d4ed8", bg: "#eff6ff" },
@@ -430,7 +430,7 @@ export default function BuyerFinderClient() {
             ].map((s) => (
               <div key={s.label} style={{ padding: "0.75rem", background: s.bg, borderRadius: "0.75rem", textAlign: "center" }}>
                 <div style={{ fontSize: "1.5rem", fontWeight: 800, color: s.color }}>{s.value}</div>
-                <div style={{ fontSize: "0.7rem", color: "#57534e", fontWeight: 600 }}>{s.label}</div>
+                <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontWeight: 600 }}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -448,7 +448,7 @@ export default function BuyerFinderClient() {
           <div key={s.label} style={CARD}>
             <div className="section-title">{s.label}</div>
             <div style={{ fontSize: "1.75rem", fontWeight: 800, color: s.color, marginTop: "0.25rem" }}>{s.value}</div>
-            <div style={{ fontSize: "0.75rem", color: "#78716c", marginTop: "0.1rem" }}>{s.sub}</div>
+            <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{s.sub}</div>
           </div>
         ))}
       </div>
@@ -456,7 +456,7 @@ export default function BuyerFinderClient() {
       {/* Filters */}
       <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.25rem", flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-          <span style={{ fontSize: "0.78rem", color: "#78716c", fontWeight: 600 }}>Platform:</span>
+          <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: 600 }}>Platform:</span>
           {["all", "facebook", "ebay", "craigslist", "reddit"].map((p) => (
             <button
               key={p}
@@ -464,8 +464,8 @@ export default function BuyerFinderClient() {
               style={{
                 padding: "0.25rem 0.6rem",
                 fontSize: "0.72rem",
-                background: filterPlatform === p ? "#0f766e" : "#f5f5f4",
-                color: filterPlatform === p ? "#fff" : "#44403c",
+                background: filterPlatform === p ? "var(--accent)" : "var(--ghost-bg)",
+                color: filterPlatform === p ? "#fff" : "var(--text-secondary)",
                 border: "none",
                 borderRadius: "9999px",
                 cursor: "pointer",
@@ -478,7 +478,7 @@ export default function BuyerFinderClient() {
           ))}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-          <span style={{ fontSize: "0.78rem", color: "#78716c", fontWeight: 600 }}>Filter:</span>
+          <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: 600 }}>Filter:</span>
           {[
             { key: "all", label: "All" },
             { key: "real", label: "✓ Real buyers" },
@@ -490,8 +490,8 @@ export default function BuyerFinderClient() {
               style={{
                 padding: "0.25rem 0.6rem",
                 fontSize: "0.72rem",
-                background: filterScore === f.key ? "#0f766e" : "#f5f5f4",
-                color: filterScore === f.key ? "#fff" : "#44403c",
+                background: filterScore === f.key ? "var(--accent)" : "var(--ghost-bg)",
+                color: filterScore === f.key ? "#fff" : "var(--text-secondary)",
                 border: "none",
                 borderRadius: "9999px",
                 cursor: "pointer",
@@ -518,7 +518,7 @@ export default function BuyerFinderClient() {
               style={{
                 ...CARD,
                 opacity: isFlagged ? 0.6 : 1,
-                border: buyer.status === "replied" ? "1.5px solid #86efac" : "1px solid #e7e5e4",
+                border: buyer.status === "replied" ? "1.5px solid #86efac" : "1px solid var(--border-default)",
               }}
             >
               <div style={{ display: "flex", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
@@ -544,22 +544,22 @@ export default function BuyerFinderClient() {
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: "200px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                    <span style={{ fontWeight: 700, color: "#1c1917" }}>{buyer.name}</span>
-                    <span style={{ fontSize: "0.75rem", color: PLATFORM_COLORS[buyer.platform] ?? "#78716c", fontWeight: 600 }}>
+                    <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>{buyer.name}</span>
+                    <span style={{ fontSize: "0.75rem", color: PLATFORM_COLORS[buyer.platform] ?? "var(--text-muted)", fontWeight: 600 }}>
                       {buyer.platformIcon} {buyer.platform}
                     </span>
-                    <span style={{ fontSize: "0.72rem", color: "#a8a29e" }}>{buyer.timeAgo}</span>
+                    <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{buyer.timeAgo}</span>
                   </div>
-                  <div style={{ fontSize: "0.78rem", color: "#57534e", marginTop: "0.2rem" }}>
+                  <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
                     📍 {buyer.location}
                   </div>
-                  <div style={{ fontSize: "0.82rem", color: "#44403c", marginTop: "0.4rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                  <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginTop: "0.4rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                     <span style={{ color: "#0f766e" }}>🎯</span>
                     {buyer.matchReason}
                   </div>
                   {buyer.searchTerm && (
-                    <div style={{ marginTop: "0.3rem", fontSize: "0.72rem", color: "#78716c" }}>
-                      Search: <span style={{ background: "#f5f5f4", padding: "0.1rem 0.4rem", borderRadius: "0.3rem", fontFamily: "monospace" }}>"{buyer.searchTerm}"</span>
+                    <div style={{ marginTop: "0.3rem", fontSize: "0.72rem", color: "var(--text-muted)" }}>
+                      Search: <span style={{ background: "var(--ghost-bg)", padding: "0.1rem 0.4rem", borderRadius: "0.3rem", fontFamily: "monospace" }}>"{buyer.searchTerm}"</span>
                     </div>
                   )}
                 </div>
@@ -567,7 +567,7 @@ export default function BuyerFinderClient() {
                 {/* Bot score + item */}
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", alignItems: "flex-end" }}>
                   <BotScoreBadge score={buyer.botScore} />
-                  <div style={{ fontSize: "0.72rem", color: "#78716c", textAlign: "right" }}>
+                  <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", textAlign: "right" }}>
                     <span style={{ fontWeight: 600 }}>{buyer.itemTitle}</span>
                     <br />
                     <span style={{ color: "#0f766e", fontWeight: 700 }}>${buyer.itemPrice.toLocaleString()}</span>
@@ -580,9 +580,9 @@ export default function BuyerFinderClient() {
 
               {/* Message section */}
               {!isFlagged && buyer.generatedMessage && (
-                <div style={{ marginTop: "1rem", borderTop: "1px solid #f5f5f4", paddingTop: "1rem" }}>
+                <div style={{ marginTop: "1rem", borderTop: "1px solid var(--border-default)", paddingTop: "1rem" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                    <span style={{ fontSize: "0.72rem", color: "#78716c", fontWeight: 600 }}>
+                    <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontWeight: 600 }}>
                       ✨ AI-Generated Message:
                     </span>
                     <button
@@ -652,8 +652,8 @@ export default function BuyerFinderClient() {
       )}
 
       {/* How it works */}
-      <div style={{ marginTop: "2rem", padding: "1.5rem", background: "#f5f5f4", borderRadius: "1rem", fontSize: "0.85rem", color: "#57534e" }}>
-        <div style={{ fontWeight: 700, marginBottom: "0.5rem", color: "#1c1917" }}>How Buyer Finder works</div>
+      <div style={{ marginTop: "2rem", padding: "1.5rem", background: "var(--ghost-bg)", borderRadius: "1rem", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+        <div style={{ fontWeight: 700, marginBottom: "0.5rem", color: "var(--text-primary)" }}>How Buyer Finder works</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0.75rem" }}>
           {[
             { step: "1", text: "AI scans Facebook Marketplace, eBay Watch lists, Craigslist wanted ads, Reddit buy/sell boards" },
@@ -690,10 +690,10 @@ export default function BuyerFinderClient() {
             <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
               <span style={{ fontSize: "1.5rem" }}>📡</span>
               <div>
-                <div style={{ fontWeight: 700, color: "#1c1917" }}>
+                <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>
                   Total Intelligence: {PLATFORM_LEADS.length} leads across {totalLeadPlatforms} platforms
                 </div>
-                <div style={{ fontSize: "0.78rem", color: "#57534e" }}>
+                <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
                   {contactedLeads.size} contacted · {PLATFORM_LEADS.filter(l => l.matchScore >= 85).length} high-confidence matches
                 </div>
               </div>
@@ -706,7 +706,7 @@ export default function BuyerFinderClient() {
               ].map((s) => (
                 <div key={s.label} style={{ textAlign: "center", padding: "0.4rem 0.75rem", background: s.bg, borderRadius: "0.6rem" }}>
                   <div style={{ fontWeight: 800, color: s.color, fontSize: "1.1rem" }}>{s.value}</div>
-                  <div style={{ fontSize: "0.65rem", color: "#78716c", fontWeight: 600 }}>{s.label}</div>
+                  <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 600 }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -723,8 +723,8 @@ export default function BuyerFinderClient() {
                     onClick={() => setLeadPlatform(plat)}
                     style={{
                       padding: "0.3rem 0.75rem",
-                      background: leadPlatform === plat ? "#0f766e" : "#f5f5f4",
-                      color: leadPlatform === plat ? "#fff" : "#44403c",
+                      background: leadPlatform === plat ? "var(--accent)" : "var(--ghost-bg)",
+                      color: leadPlatform === plat ? "#fff" : "var(--text-secondary)",
                       border: "none",
                       borderRadius: "9999px",
                       fontSize: "0.78rem",
@@ -770,8 +770,8 @@ export default function BuyerFinderClient() {
                 <div
                   key={lead.id}
                   style={{
-                    background: "#fff",
-                    border: lead.matchScore >= 90 ? "2px solid #86efac" : "1px solid #e7e5e4",
+                    background: "var(--bg-card-solid)",
+                    border: lead.matchScore >= 90 ? "2px solid #86efac" : "1px solid var(--border-default)",
                     borderRadius: "1rem",
                     padding: "1.25rem 1.5rem",
                   }}
@@ -791,23 +791,23 @@ export default function BuyerFinderClient() {
                         }}>
                           {lead.platformIcon} {lead.platform}
                         </span>
-                        <span style={{ fontSize: "0.72rem", color: "#a8a29e" }}>{lead.timeAgo}</span>
+                        <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{lead.timeAgo}</span>
                       </div>
-                      <div style={{ fontWeight: 700, color: "#1c1917", fontSize: "0.95rem" }}>{lead.handle}</div>
-                      <div style={{ fontSize: "0.78rem", color: "#57534e", marginTop: "0.15rem" }}>📍 {lead.location}</div>
+                      <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: "0.95rem" }}>{lead.handle}</div>
+                      <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>📍 {lead.location}</div>
                       <div style={{
                         marginTop: "0.6rem",
                         padding: "0.5rem 0.75rem",
-                        background: "#f9f9f8",
+                        background: "var(--ghost-bg)",
                         borderRadius: "0.6rem",
                         fontSize: "0.82rem",
-                        color: "#44403c",
+                        color: "var(--text-secondary)",
                         fontStyle: "italic",
                         lineHeight: 1.5,
                       }}>
                         "{lead.want}"
                       </div>
-                      <div style={{ marginTop: "0.5rem", fontSize: "0.78rem", color: "#78716c" }}>
+                      <div style={{ marginTop: "0.5rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
                         Max budget: <span style={{ fontWeight: 700, color: "#0f766e" }}>${lead.maxPrice.toLocaleString()}</span>
                       </div>
                     </div>
@@ -855,10 +855,10 @@ export default function BuyerFinderClient() {
           </div>
 
           {filteredLeads.length === 0 && (
-            <div style={{ background: "#fff", border: "1px solid #e7e5e4", borderRadius: "1rem", padding: "3rem", textAlign: "center", color: "#78716c" }}>
+            <div style={{ background: "var(--bg-card-solid)", border: "1px solid var(--border-default)", borderRadius: "1rem", padding: "3rem", textAlign: "center", color: "var(--text-muted)" }}>
               <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>📡</div>
               <div style={{ fontWeight: 700 }}>No leads for this platform yet</div>
-              <button onClick={() => setLeadPlatform("All")} style={{ marginTop: "0.75rem", padding: "0.4rem 1rem", background: "#f5f5f4", border: "none", borderRadius: "0.6rem", cursor: "pointer", fontWeight: 600 }}>
+              <button onClick={() => setLeadPlatform("All")} style={{ marginTop: "0.75rem", padding: "0.4rem 1rem", background: "var(--ghost-bg)", border: "none", borderRadius: "0.6rem", cursor: "pointer", fontWeight: 600, color: "var(--text-secondary)" }}>
                 Show All Platforms
               </button>
             </div>

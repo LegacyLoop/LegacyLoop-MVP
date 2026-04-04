@@ -39,20 +39,22 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
   return (
     <div className="space-y-8">
       {/* Hero */}
-      <div style={{ background: "linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95)", borderRadius: "1.25rem", padding: "2.5rem", textAlign: "center", color: "#fff" }}>
-        <div style={{ fontSize: "2.5rem" }}>🎁</div>
-        <h2 style={{ fontSize: "1.75rem", fontWeight: 800, marginTop: "0.5rem" }}>Earn 💎 50 Credits Per Referral</h2>
-        <p style={{ color: "#c4b5fd", marginTop: "0.5rem", fontSize: "0.95rem" }}>
-          Share LegacyLoop with friends and family. When they sign up, you both get 50 credits.
-        </p>
+      <div style={{ padding: "3px", borderRadius: "1.5rem", background: "linear-gradient(135deg, var(--accent), #7c3aed, #a855f7)" }}>
+        <div style={{ background: "var(--bg-card-solid)", borderRadius: "calc(1.5rem - 3px)", padding: "2.5rem", textAlign: "center" }}>
+          <div style={{ fontSize: "2.5rem" }}>🎁</div>
+          <h2 style={{ fontSize: "1.75rem", fontWeight: 800, marginTop: "0.5rem", color: "var(--text-primary)" }}>Earn 💎 50 Credits Per Referral</h2>
+          <p style={{ color: "var(--text-muted)", marginTop: "0.5rem", fontSize: "0.95rem" }}>
+            Share LegacyLoop with friends and family. When they sign up, you both get 50 credits.
+          </p>
+        </div>
       </div>
 
       {/* Your code card */}
       <div className="card p-6">
         <div className="section-title mb-4">Your Referral Code</div>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-          <div style={{ flex: 1, background: "#f5f3ff", border: "2px solid #a78bfa", borderRadius: "0.75rem", padding: "1rem 1.5rem", textAlign: "center" }}>
-            <div style={{ fontSize: "2.5rem", fontWeight: 900, letterSpacing: "0.2em", color: "#4c1d95", fontFamily: "monospace" }}>
+          <div style={{ flex: 1, background: "var(--ghost-bg)", border: "2px solid var(--accent)", borderRadius: "0.75rem", padding: "1rem 1.5rem", textAlign: "center" }}>
+            <div style={{ fontSize: "2.5rem", fontWeight: 900, letterSpacing: "0.2em", color: "var(--accent)", fontFamily: "monospace" }}>
               {code}
             </div>
             <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>Your unique referral code</div>
@@ -60,10 +62,10 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
           <div className="flex flex-col gap-2">
             <button
               onClick={handleCopy}
+              className="btn-primary"
               style={{
-                background: copied ? "#065f46" : "#312e81",
-                color: "#fff", border: "none", borderRadius: "0.65rem",
-                padding: "0.65rem 1.5rem", fontWeight: 700, cursor: "pointer", fontSize: "0.9rem",
+                background: copied ? "#16a34a" : undefined,
+                padding: "0.65rem 1.5rem", fontWeight: 700, fontSize: "0.9rem",
                 transition: "background 0.2s",
               }}
             >
@@ -71,14 +73,15 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
             </button>
             <button
               onClick={handleEmail}
-              style={{ background: "#f5f3ff", color: "#312e81", border: "1.5px solid #a78bfa", borderRadius: "0.65rem", padding: "0.65rem 1.5rem", fontWeight: 700, cursor: "pointer", fontSize: "0.9rem" }}
+              className="btn-ghost"
+              style={{ padding: "0.65rem 1.5rem", fontWeight: 700, fontSize: "0.9rem" }}
             >
               ✉️ Share via Email
             </button>
           </div>
         </div>
         <div style={{ marginTop: "0.75rem", fontSize: "0.78rem", color: "var(--text-muted)", wordBreak: "break-all" }}>
-          Share link: <span style={{ color: "#4c1d95" }}>{shareUrl}</span>
+          Share link: <span style={{ color: "var(--accent)" }}>{shareUrl}</span>
         </div>
       </div>
 
@@ -90,7 +93,7 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
           { label: "Credits Earned", value: creditsEarned || "—" },
         ].map((s) => (
           <div key={s.label} className="card p-4 text-center">
-            <div style={{ fontSize: "1.75rem", fontWeight: 800, color: "#312e81" }}>{s.value}</div>
+            <div style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--accent)" }}>{s.value}</div>
             <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>{s.label}</div>
           </div>
         ))}
@@ -121,7 +124,7 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid #e5e7eb" }}>
+                <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
                   <th style={{ textAlign: "left", padding: "0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>Email</th>
                   <th style={{ textAlign: "left", padding: "0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>Status</th>
                   <th style={{ textAlign: "left", padding: "0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>Credits</th>
@@ -130,7 +133,7 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
               </thead>
               <tbody>
                 {referrals.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
+                  <tr key={r.id} style={{ borderBottom: "1px solid var(--border-default)" }}>
                     <td style={{ padding: "0.5rem", color: "var(--text-secondary)" }}>{r.referredEmail ?? "Pending"}</td>
                     <td style={{ padding: "0.5rem" }}>
                       <span style={{
@@ -164,7 +167,7 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
             { q: "Is there a limit on referrals?", a: "No limit! Refer as many people as you like. Each successful referral earns you 50 credits." },
             { q: "What can I do with credits?", a: "Credits can be used for AI analysis, MegaBuying Bot activations, priority processing, professional photos, and more services on the Credits page." },
           ].map((faq) => (
-            <div key={faq.q} style={{ borderBottom: "1px solid #f3f4f6", paddingBottom: "1rem" }}>
+            <div key={faq.q} style={{ borderBottom: "1px solid var(--border-default)", paddingBottom: "1rem" }}>
               <div style={{ fontWeight: 600, color: "var(--text-secondary)" }}>{faq.q}</div>
               <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.25rem" }}>{faq.a}</p>
             </div>

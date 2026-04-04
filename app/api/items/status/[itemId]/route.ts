@@ -1,6 +1,7 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { populateSoldPrice } from "@/lib/data/populate-intelligence";
+import { n8nSaleComplete } from "@/lib/n8n";
 
 const VALID_STATUSES = ["DRAFT", "ANALYZED", "READY", "LISTED", "INTERESTED", "SOLD", "SHIPPED", "COMPLETED", "RETURN_REQUESTED", "RETURNED", "REFUNDED"] as const;
 type ItemStatus = typeof VALID_STATUSES[number];
@@ -64,6 +65,11 @@ export async function PATCH(
     if (price != null && price > 0) {
       populateSoldPrice(itemId, price, new Date()).catch(() => null);
     }
+  }
+
+  // n8n: WF13 sale complete — triggers review request (fire-and-forget)
+  if (status === "COMPLETED" && item.status !== "COMPLETED") {
+    n8nSaleComplete(user.email, item.title || "Item", itemId, Number(item.listingPrice) || 0);
   }
 
   // ── Pause payout when return is requested ──

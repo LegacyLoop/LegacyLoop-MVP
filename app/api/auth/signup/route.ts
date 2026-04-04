@@ -5,6 +5,7 @@ import { sendEmail } from "@/lib/email/send";
 import { welcomeEmail } from "@/lib/email/templates";
 import { prisma } from "@/lib/db";
 import { DISCOUNTS } from "@/lib/constants/pricing";
+import { n8nNewUser, n8nNewUserCheck } from "@/lib/n8n";
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
@@ -64,14 +65,9 @@ export async function POST(req: NextRequest) {
     const welcome = welcomeEmail(name);
     sendEmail({ to: trimmedEmail, ...welcome });
 
-    // Notify n8n for welcome drip sequence (fire-and-forget)
-    if (process.env.N8N_WEBHOOK_URL) {
-      fetch(`${process.env.N8N_WEBHOOK_URL}/webhook/new-user`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmedEmail, firstName: name, signupDate: new Date().toISOString() }),
-      }).catch(() => {});
-    }
+    // n8n: WF1 drip sequence + WF12 health check (fire-and-forget)
+    n8nNewUser(trimmedEmail, name);
+    n8nNewUserCheck(trimmedEmail, name);
 
     return new Response("OK", { status: 200 });
   } catch (err: any) {

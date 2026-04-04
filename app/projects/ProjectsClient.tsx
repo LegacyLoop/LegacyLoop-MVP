@@ -124,11 +124,11 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
           onClick={(e) => { if (e.target === e.currentTarget) setShowCreate(false); }}
         >
           <div style={{
-            background: "rgba(18,18,28,0.97)", border: "1px solid var(--border-default)",
+            background: "var(--bg-card-solid)", border: "1px solid var(--border-default)",
             borderRadius: "1.25rem", padding: "2rem", width: "100%", maxWidth: "580px",
-            boxShadow: "0 24px 80px rgba(0,0,0,0.5)", backdropFilter: "blur(24px)",
+            boxShadow: "0 24px 80px rgba(0,0,0,0.3)", backdropFilter: "blur(24px)",
           }}>
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#fff", marginBottom: "0.35rem" }}>Create New Sale</h2>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.35rem" }}>Create New Sale</h2>
             <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "1.25rem" }}>
               Choose a sale type, give it a name, and start adding items.
             </p>
@@ -167,7 +167,7 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                 style={{
                   padding: "0.65rem 0.9rem", border: "1px solid var(--border-default)",
                   borderRadius: "0.6rem", fontSize: "0.88rem",
-                  background: "var(--ghost-bg)", color: "#fff",
+                  background: "var(--ghost-bg)", color: "var(--text-primary)",
                 }}
               />
               <textarea
@@ -178,7 +178,7 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                 style={{
                   padding: "0.65rem 0.9rem", border: "1px solid var(--border-default)",
                   borderRadius: "0.6rem", fontSize: "0.88rem", resize: "vertical",
-                  background: "var(--ghost-bg)", color: "#fff",
+                  background: "var(--ghost-bg)", color: "var(--text-primary)",
                 }}
               />
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
@@ -192,7 +192,7 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                       display: "block", width: "100%", padding: "0.5rem 0.75rem",
                       border: "1px solid var(--border-default)", borderRadius: "0.6rem",
                       fontSize: "0.82rem", boxSizing: "border-box",
-                      background: "var(--ghost-bg)", color: "#fff",
+                      background: "var(--ghost-bg)", color: "var(--text-primary)",
                     }}
                   />
                 </div>
@@ -206,7 +206,7 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                       display: "block", width: "100%", padding: "0.5rem 0.75rem",
                       border: "1px solid var(--border-default)", borderRadius: "0.6rem",
                       fontSize: "0.82rem", boxSizing: "border-box",
-                      background: "var(--ghost-bg)", color: "#fff",
+                      background: "var(--ghost-bg)", color: "var(--text-primary)",
                     }}
                   />
                 </div>
@@ -217,7 +217,7 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                   style={{
                     padding: "0.5rem 0.75rem", border: "1px solid var(--border-default)",
                     borderRadius: "0.6rem", fontSize: "0.82rem",
-                    background: "var(--ghost-bg)", color: "#fff",
+                    background: "var(--ghost-bg)", color: "var(--text-primary)",
                   }}
                 />
                 <input
@@ -227,7 +227,7 @@ export default function ProjectsClient({ projects, unassignedItems }: Props) {
                   style={{
                     padding: "0.5rem 0.75rem", border: "1px solid var(--border-default)",
                     borderRadius: "0.6rem", fontSize: "0.82rem",
-                    background: "var(--ghost-bg)", color: "#fff",
+                    background: "var(--ghost-bg)", color: "var(--text-primary)",
                   }}
                 />
               </div>

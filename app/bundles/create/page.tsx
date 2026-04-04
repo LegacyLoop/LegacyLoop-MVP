@@ -334,7 +334,7 @@ export default function BundleCreatePage() {
                 display: "flex",
                 alignItems: "center",
                 gap: 8,
-                background: "rgba(0,0,0,0.3)",
+                background: "var(--ghost-bg)",
                 borderRadius: 8,
                 padding: "10px 14px",
               }}
