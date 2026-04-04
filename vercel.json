@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/offers",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 0 * * ** * * *"
     },
     {
       "path": "/api/cron/monthly-credits",
