@@ -1,39 +1,247 @@
 "use client";
-import { useState } from "react";
-import type { EnrichedItemContext } from "@/lib/addons/enrich-item-context";
+import { useState, useEffect, useCallback } from "react";
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Types
+   ═══════════════════════════════════════════════════════════════════════ */
+
+interface EnrichedData {
+  priceDirection: "rising" | "falling" | "stable" | "unknown";
+  demandLevel: string | null;
+  totalOffers: number;
+  highestOffer: number | null;
+  offerToAskRatio: number | null;
+  soldPrice: number | null;
+  dataCompleteness: number;
+  bestPlatform: string | null;
+  targetBuyerProfiles: string[];
+  valueDrivers: string[];
+  topSearchKeywords: string[];
+  avgCompPrice: number | null;
+  highComp: number | null;
+  lowComp: number | null;
+  aiConfidence: number | null;
+  compCount: number;
+  hasAcceptedOffer: boolean;
+}
+
+interface AIIntelligence {
+  summary: string;
+  pricingIntel: {
+    recommendedLow: number;
+    recommendedHigh: number;
+    sweetSpot: number;
+    confidence: string;
+    reasoning: string;
+    quickSalePrice: number;
+    premiumPrice: number;
+    sources: string[];
+  };
+  conditionAssessment: string;
+  marketPosition: {
+    demand: string;
+    trend: string;
+    competition: string;
+    insight: string;
+  };
+  sellingStrategy: {
+    bestApproach: string;
+    bestPlatform: string;
+    reasoning: string;
+    alternativePlatforms: string[];
+    timing: string;
+  };
+  keyInsights: string[];
+  nextSteps: { step: string; reason: string; priority: string }[];
+  alerts: { type: string; message: string }[];
+}
 
 interface Props {
   itemId: string;
   status: string;
   aiData: any;
   valuation: any;
-  antique: any;
-  enriched: EnrichedItemContext | null;
+  enriched: EnrichedData | null;
   engagement: { totalViews: number; inquiries: number; buyersFound: number; documentCount: number };
   shippingData: { weight: number | null; isFragile: boolean; preference: string; aiShippingDifficulty: string | null };
-  saleMethod: string;
+  saleMethod: string | null;
   listingPrice: number | null;
   hasPhotos: boolean;
   photoCount: number;
   isAntique: boolean;
   isCollectible: boolean;
   authenticityScore: number | null;
+  collapsed?: boolean;
+  onToggle?: () => void;
 }
 
-type Section = "market" | "ready" | "sell" | "alerts" | "action";
+type Tab = "market" | "ready" | "sell" | "alerts" | "action";
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Score Ring
+   ═══════════════════════════════════════════════════════════════════════ */
+
+function ScoreRing({ score, color }: { score: number; color: string }) {
+  const r = 18;
+  const circ = 2 * Math.PI * r;
+  const filled = (score / 100) * circ;
+  return (
+    <div style={{ position: "relative", width: "46px", height: "46px", flexShrink: 0 }}>
+      <svg width="46" height="46" viewBox="0 0 46 46" style={{ transform: "rotate(-90deg)" }}>
+        <circle cx="23" cy="23" r={r} stroke="rgba(148,163,184,0.1)" strokeWidth="3" fill="none" />
+        <circle cx="23" cy="23" r={r} stroke={color} strokeWidth="3" fill="none"
+          strokeDasharray={`${filled} ${circ}`} strokeLinecap="round"
+          style={{ transition: "stroke-dasharray 1.2s cubic-bezier(0.4, 0, 0.2, 1)", filter: `drop-shadow(0 0 4px ${color}50)` }}
+        />
+      </svg>
+      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontSize: "13px", fontWeight: 800, color, lineHeight: 1, fontVariantNumeric: "tabular-nums", textShadow: `0 0 8px ${color}30` }}>{score}</span>
+        <span style={{ fontSize: "6.5px", fontWeight: 600, color: "var(--text-muted)", opacity: 0.5, lineHeight: 1 }}>/100</span>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Helpers
+   ═══════════════════════════════════════════════════════════════════════ */
+
+function timeAgo(iso: string): string {
+  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (mins < 60) return mins <= 1 ? "just now" : `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return days === 1 ? "1 day ago" : `${days}d ago`;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Main Component
+   ═══════════════════════════════════════════════════════════════════════ */
 
 export default function ItemIntelligenceSummary(props: Props) {
-  const { itemId, status, aiData, valuation, enriched, engagement, shippingData, saleMethod, listingPrice, hasPhotos, photoCount, isAntique, isCollectible, authenticityScore } = props;
+  const {
+    itemId, status, aiData, valuation, enriched, engagement,
+    shippingData, saleMethod, listingPrice, hasPhotos, photoCount,
+    isAntique, isCollectible, authenticityScore,
+    collapsed = false, onToggle,
+  } = props;
 
-  // Compute readiness
+  // ── AI Intelligence state ──
+  const [aiIntel, setAiIntel] = useState<AIIntelligence | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiStale, setAiStale] = useState(false);
+  const [aiCachedAt, setAiCachedAt] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  // ── Chat state ──
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{ question: string; answer: string; timestamp: string }[]>([]);
+  const [chatLoaded, setChatLoaded] = useState(false);
+
+  // Fetch cached intelligence on mount (NO auto-generate — user must click)
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchCached() {
+      try {
+        const res = await fetch(`/api/intelligence/${itemId}`);
+        const d = await res.json();
+        if (!cancelled && d.success && d.result) {
+          setAiIntel(d.result);
+          setAiCachedAt(d.cachedAt);
+          setAiStale(d.isStale ?? false);
+        }
+      } catch { /* non-critical */ }
+    }
+    if (aiData) fetchCached();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemId]);
+
+  const generateIntel = useCallback(async () => {
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const res = await fetch(`/api/intelligence/${itemId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingPrice, saleMethod }),
+      });
+      const d = await res.json();
+      if (d.success && d.result) {
+        setAiIntel(d.result);
+        setAiCachedAt(d.cachedAt);
+        setAiStale(false);
+      } else {
+        setAiError(d.error || "Generation failed");
+      }
+    } catch (e: any) {
+      setAiError(e.message || "Network error");
+    }
+    setAiLoading(false);
+  }, [itemId, listingPrice, saleMethod]);
+
+  // ── Load chat history when chat opens ──
+  useEffect(() => {
+    if (!chatOpen || chatLoaded) return;
+    let cancelled = false;
+    async function loadChat() {
+      try {
+        const res = await fetch(`/api/intelligence/${itemId}/chat`);
+        const d = await res.json();
+        if (!cancelled && d.messages) {
+          setChatMessages(d.messages);
+          setChatLoaded(true);
+        }
+      } catch { /* non-critical */ }
+    }
+    loadChat();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatOpen, itemId]);
+
+  const sendChat = useCallback(async () => {
+    const q = chatInput.trim();
+    if (!q || chatLoading) return;
+    setChatLoading(true);
+    setChatInput("");
+    // Optimistic: show question immediately
+    const optimistic = { question: q, answer: "...", timestamp: new Date().toISOString() };
+    setChatMessages((prev) => [...prev, optimistic]);
+    try {
+      const res = await fetch(`/api/intelligence/${itemId}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q }),
+      });
+      const d = await res.json();
+      if (d.answer) {
+        setChatMessages((prev) =>
+          prev.map((m, i) => (i === prev.length - 1 ? { ...m, answer: d.answer, timestamp: d.timestamp || m.timestamp } : m))
+        );
+      } else {
+        setChatMessages((prev) =>
+          prev.map((m, i) => (i === prev.length - 1 ? { ...m, answer: d.error || "Failed to get answer" } : m))
+        );
+      }
+    } catch {
+      setChatMessages((prev) =>
+        prev.map((m, i) => (i === prev.length - 1 ? { ...m, answer: "Network error — try again" } : m))
+      );
+    }
+    setChatLoading(false);
+  }, [chatInput, chatLoading, itemId]);
+
+  // ── Readiness checks ──
   const readinessChecks = [
     { ok: photoCount > 0, label: "Photos uploaded", fix: `/items/${itemId}/edit` },
-    { ok: photoCount >= 3, label: "3+ photos", fix: `/items/${itemId}/edit` },
-    { ok: !!aiData, label: "AI analysis complete", fix: `/items/${itemId}` },
-    { ok: !!valuation, label: "Valuation exists", fix: `/items/${itemId}` },
+    { ok: photoCount >= 3, label: "3+ photos for best results", fix: `/items/${itemId}/edit` },
+    { ok: !!aiData, label: "AI analysis complete", fix: null },
+    { ok: !!valuation, label: "Valuation generated", fix: null },
     { ok: !!listingPrice, label: "Listing price set", fix: null },
     { ok: shippingData.weight != null, label: "Shipping info complete", fix: `/items/${itemId}/edit` },
-    { ok: saleMethod !== "BOTH", label: "Sale method chosen", fix: null },
+    { ok: !!saleMethod, label: "Sale method chosen", fix: null },
     { ok: (enriched?.dataCompleteness ?? 0) > 25, label: "Bot analysis run", fix: null },
     { ok: engagement.documentCount > 0, label: "Documents uploaded", fix: null },
     { ok: !!(aiData?.summary || aiData?.item_name), label: "Description exists", fix: null },
@@ -41,35 +249,65 @@ export default function ItemIntelligenceSummary(props: Props) {
   const readinessScore = readinessChecks.filter(c => c.ok).length;
   const readinessColor = readinessScore >= 8 ? "#22c55e" : readinessScore >= 5 ? "#f59e0b" : "#ef4444";
 
-  // Compute warnings
-  const warnings: { type: "error" | "warning" | "success"; msg: string }[] = [];
-  if (photoCount < 3) warnings.push({ type: "warning", msg: "Add more photos — listings with 4+ photos sell 2x faster" });
-  if (!listingPrice && (status === "ANALYZED" || status === "READY")) warnings.push({ type: "error", msg: "Set a price before listing" });
-  if (enriched?.priceDirection === "falling") warnings.push({ type: "warning", msg: "Market prices are falling — price competitively" });
-  if (shippingData.isFragile) warnings.push({ type: "warning", msg: "Fragile item — needs careful packaging" });
-  if (enriched?.demandLevel === "Strong" || enriched?.demandLevel === "High") warnings.push({ type: "success", msg: "Strong demand detected — price confidently" });
-  if (isAntique) warnings.push({ type: "success", msg: "Antique verified — consider auction or specialty platforms" });
-  if (engagement.inquiries > 0) warnings.push({ type: "success", msg: `${engagement.inquiries} buyer inquiries — check your messages` });
-  if ((enriched?.totalOffers ?? 0) > 0) warnings.push({ type: "success", msg: `${enriched?.totalOffers} offers received — highest $${Math.round((enriched?.highestOffer ?? 0) / 100)}` });
+  // ── Warnings (merge computed + AI alerts) ──
+  const warnings: { type: "error" | "warning" | "success"; msg: string; pri: number }[] = [];
+  if (!listingPrice && (status === "ANALYZED" || status === "READY"))
+    warnings.push({ type: "error", msg: "Set a price before listing", pri: 0 });
+  if (photoCount < 3)
+    warnings.push({ type: "warning", msg: "Add more photos — listings with 4+ photos sell 2x faster", pri: 1 });
+  if ((enriched?.priceDirection === "falling") || (aiIntel?.marketPosition?.trend === "declining"))
+    warnings.push({ type: "warning", msg: "Market prices are falling — price competitively", pri: 2 });
+  if (shippingData.isFragile)
+    warnings.push({ type: "warning", msg: "Fragile item — needs careful packaging", pri: 3 });
+  if (enriched?.demandLevel === "Strong" || enriched?.demandLevel === "High" || aiIntel?.marketPosition?.demand === "high")
+    warnings.push({ type: "success", msg: "Strong demand detected — price confidently", pri: 4 });
+  if (isAntique)
+    warnings.push({ type: "success", msg: "Antique verified — consider auction or specialty platforms", pri: 5 });
+  if (engagement.inquiries > 0)
+    warnings.push({ type: "success", msg: `${engagement.inquiries} buyer inquiries — check your messages`, pri: 6 });
+  if ((enriched?.totalOffers ?? 0) > 0)
+    warnings.push({ type: "success", msg: `${enriched!.totalOffers} offer${enriched!.totalOffers !== 1 ? "s" : ""} received — highest $${Math.round(enriched!.highestOffer ?? 0)}`, pri: 7 });
+  // Merge AI alerts
+  if (aiIntel?.alerts) {
+    aiIntel.alerts.forEach((a, i) => {
+      const t = a.type === "warning" ? "warning" : a.type === "opportunity" ? "success" : "success";
+      warnings.push({ type: t as any, msg: a.message, pri: 10 + i });
+    });
+  }
+  warnings.sort((a, b) => {
+    const tp: Record<string, number> = { error: 0, warning: 1, success: 2 };
+    return (tp[a.type] - tp[b.type]) || (a.pri - b.pri);
+  });
+  // Deduplicate by message similarity
+  const seen = new Set<string>();
+  const uniqueWarnings = warnings.filter(w => {
+    const key = w.msg.toLowerCase().slice(0, 30);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 
-  // Compute next action
+  // ── Next action ──
   const getNextAction = () => {
     if (status === "DRAFT" && !hasPhotos) return { icon: "📸", msg: "Upload photos to get started", href: `/items/${itemId}/edit` };
     if (status === "DRAFT" && hasPhotos && !aiData) return { icon: "🧠", msg: "Run AI Analysis — free and takes 30 seconds", href: null };
-    if ((status === "ANALYZED" || status === "READY") && !listingPrice) return { icon: "💰", msg: `Set your listing price${valuation ? ` — AI suggests $${Math.round(valuation.low || 0)}–$${Math.round(valuation.high || 0)}` : ""}`, href: null };
+    if ((status === "ANALYZED" || status === "READY") && !listingPrice) {
+      const sweetSpot = aiIntel?.pricingIntel?.sweetSpot;
+      return { icon: "💰", msg: sweetSpot ? `Set your price — Claude recommends $${Math.round(sweetSpot)}` : `Set your listing price${valuation ? ` — AI suggests $${Math.round(valuation.low || 0)}–$${Math.round(valuation.high || 0)}` : ""}`, href: null };
+    }
     if ((status === "ANALYZED" || status === "READY") && readinessScore < 7) return { icon: "📋", msg: `Complete your listing — ${10 - readinessScore} items still needed`, href: null };
     if ((status === "ANALYZED" || status === "READY") && readinessScore >= 7) return { icon: "📢", msg: "You're ready! Mark as Listed to go live", href: null };
     if (status === "LISTED" && engagement.totalViews === 0) return { icon: "📊", msg: "Boost visibility — run BuyerBot or share your listing", href: `/bots/buyerbot?item=${itemId}` };
     if (status === "LISTED" && engagement.inquiries > 0) return { icon: "💬", msg: "Check your messages — buyers are interested", href: "/messages" };
-    if (status === "INTERESTED") return { icon: "🤝", msg: `Review your offers — highest is $${Math.round((enriched?.highestOffer ?? 0) / 100)}`, href: null };
+    if (status === "INTERESTED") return { icon: "🤝", msg: `Review your offers${enriched?.highestOffer ? ` — highest is $${Math.round(enriched.highestOffer)}` : ""}`, href: null };
     if (status === "SOLD") return { icon: "📦", msg: "Ship your item within 3 days for best rating", href: null };
     if (status === "SHIPPED") return { icon: "📬", msg: "Your item is on its way — mark complete when delivered", href: null };
-    if (status === "COMPLETED") return { icon: "🎉", msg: `All done! Your earnings: $${Math.round((enriched?.soldPrice ?? 0) * 0.9825)}`, href: "/dashboard" };
+    if (status === "COMPLETED") return { icon: "🎉", msg: `All done!${enriched?.soldPrice ? ` Your earnings: $${Math.round(enriched.soldPrice * 0.9825)}` : ""}`, href: "/dashboard" };
     return null;
   };
   const nextAction = getNextAction();
 
-  // Overall score (0-100)
+  // ── Overall score ──
   const overallScore = Math.min(100, Math.round(
     (readinessScore * 6) +
     (enriched?.dataCompleteness ?? 0) * 0.2 +
@@ -78,10 +316,11 @@ export default function ItemIntelligenceSummary(props: Props) {
   ));
   const scoreColor = overallScore >= 70 ? "#22c55e" : overallScore >= 40 ? "#f59e0b" : "#ef4444";
 
-  const defaultSection: Section = warnings.some(w => w.type === "error") ? "alerts" : "action";
-  const [activeSection, setActiveSection] = useState<Section>(defaultSection);
+  // ── Tab state ──
+  const defaultTab: Tab = uniqueWarnings.some(w => w.type === "error") ? "alerts" : "market";
+  const [activeTab, setActiveTab] = useState<Tab>(defaultTab);
 
-  const sections: { key: Section; icon: string; label: string }[] = [
+  const tabs: { key: Tab; icon: string; label: string }[] = [
     { key: "market", icon: "📊", label: "Market" },
     { key: "ready", icon: "✅", label: "Ready" },
     { key: "sell", icon: "🏪", label: "Sell" },
@@ -89,153 +328,940 @@ export default function ItemIntelligenceSummary(props: Props) {
     { key: "action", icon: "🎯", label: "Action" },
   ];
 
+  // ── Derived values ──
+  const aiConf = enriched?.aiConfidence != null ? (enriched.aiConfidence > 1 ? Math.round(enriched.aiConfidence) : Math.round(enriched.aiConfidence * 100)) : null;
+  const pricingConfColor = aiIntel?.pricingIntel?.confidence === "high" ? "#22c55e" : aiIntel?.pricingIntel?.confidence === "medium" ? "#f59e0b" : "#ef4444";
+
   return (
-    <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "1rem", overflow: "hidden" }}>
-      {/* Header */}
-      <div style={{ padding: "0.75rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--border-default)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span style={{ fontSize: "1rem" }}>🧠</span>
-          <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "var(--text-primary)", textTransform: "uppercase" as const, letterSpacing: "0.06em" }}>Item Intelligence</span>
-        </div>
-        <div style={{ padding: "0.2rem 0.6rem", borderRadius: "9999px", fontSize: "0.72rem", fontWeight: 800, color: scoreColor, background: `${scoreColor}15`, border: `1px solid ${scoreColor}30` }}>
-          {overallScore}/100
-        </div>
-      </div>
+    <>
+      <style>{`
+        .intel-hud {
+          border-radius: 12px; overflow: hidden;
+          border: 1px solid rgba(0,188,212,0.15);
+          background: var(--bg-card);
+          box-shadow: 0 1px 8px rgba(0,188,212,0.06), 0 0 20px rgba(0,188,212,0.03);
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+          animation: intelFadeIn 0.5s ease-out both;
+        }
+        html.dark .intel-hud {
+          background: linear-gradient(135deg, rgba(0,188,212,0.03) 0%, rgba(0,0,0,0.15) 100%);
+          border-color: rgba(0,188,212,0.2);
+          box-shadow: 0 1px 12px rgba(0,188,212,0.08), 0 0 30px rgba(0,188,212,0.04);
+        }
+        @keyframes intelFadeIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .intel-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 10px 16px; border-bottom: 1px solid var(--border-default);
+        }
+        .intel-header-left { display: flex; align-items: center; gap: 8px; }
+        .intel-dot {
+          width: 7px; height: 7px; border-radius: 50%; background: #00bcd4;
+          box-shadow: 0 0 6px rgba(0,188,212,0.5);
+          animation: intelPulse 3s ease-in-out infinite;
+        }
+        @keyframes intelPulse {
+          0%, 100% { box-shadow: 0 0 4px rgba(0,188,212,0.4); }
+          50% { box-shadow: 0 0 10px rgba(0,188,212,0.7); }
+        }
+        .intel-title {
+          font-size: 10.5px; font-weight: 800; letter-spacing: 0.1em;
+          text-transform: uppercase; color: var(--text-primary);
+          text-shadow: 0 0 20px rgba(0,188,212,0.12);
+        }
+        .intel-claude {
+          font-size: 7.5px; font-weight: 800; letter-spacing: 0.06em;
+          padding: 2px 6px; border-radius: 4px;
+          background: rgba(0,188,212,0.1); color: var(--accent, #00bcd4);
+          border: 1px solid rgba(0,188,212,0.2); text-transform: uppercase;
+        }
+        .intel-tabs {
+          display: flex; gap: 4px; padding: 6px 8px;
+          border-bottom: 1px solid var(--border-default);
+          background: rgba(0,0,0,0.015);
+        }
+        html.dark .intel-tabs { background: rgba(0,0,0,0.12); }
+        .intel-tab {
+          flex: 1; display: flex; flex-direction: column; align-items: center;
+          justify-content: center; gap: 3px; padding: 7px 4px; min-height: 44px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(240,240,240,0.5) 100%);
+          border: 1px solid rgba(148,163,184,0.18);
+          border-radius: 8px; cursor: pointer;
+          transition: all 0.15s ease;
+          color: var(--text-muted);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6);
+          position: relative;
+        }
+        html.dark .intel-tab {
+          background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+          border-color: rgba(148,163,184,0.12);
+          box-shadow: 0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .intel-tab:hover {
+          background: linear-gradient(180deg, rgba(0,188,212,0.08) 0%, rgba(0,188,212,0.03) 100%);
+          border-color: rgba(0,188,212,0.2);
+          transform: translateY(-1px);
+          box-shadow: 0 2px 6px rgba(0,188,212,0.08), inset 0 1px 0 rgba(255,255,255,0.5);
+        }
+        html.dark .intel-tab:hover {
+          background: linear-gradient(180deg, rgba(0,188,212,0.12) 0%, rgba(0,188,212,0.04) 100%);
+          box-shadow: 0 2px 6px rgba(0,188,212,0.12), inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+        .intel-tab.active {
+          background: linear-gradient(180deg, rgba(0,188,212,0.12) 0%, rgba(0,188,212,0.04) 100%);
+          border-color: rgba(0,188,212,0.3);
+          color: var(--accent, #00bcd4);
+          box-shadow: 0 1px 4px rgba(0,188,212,0.12), inset 0 1px 0 rgba(0,188,212,0.1), 0 0 8px rgba(0,188,212,0.06);
+          transform: translateY(0);
+        }
+        html.dark .intel-tab.active {
+          background: linear-gradient(180deg, rgba(0,188,212,0.18) 0%, rgba(0,188,212,0.06) 100%);
+          border-color: rgba(0,188,212,0.35);
+          box-shadow: 0 1px 4px rgba(0,188,212,0.15), inset 0 1px 0 rgba(0,188,212,0.12), 0 0 12px rgba(0,188,212,0.08);
+        }
+        .intel-tab.active::after {
+          content: ""; position: absolute; bottom: -1px; left: 20%; right: 20%;
+          height: 2px; border-radius: 2px;
+          background: linear-gradient(90deg, transparent, var(--accent, #00bcd4), transparent);
+        }
+        .intel-tab-icon { font-size: 15px; line-height: 1; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.06)); }
+        .intel-tab-label { font-size: 8.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1; }
+        .intel-content { padding: 14px 16px; min-height: 80px; }
+        .intel-metrics { display: flex; gap: 8px; flex-wrap: wrap; }
+        .intel-metric {
+          display: flex; flex-direction: column; align-items: center; gap: 2px;
+          padding: 8px 14px; border-radius: 8px;
+          background: var(--ghost-bg, rgba(148,163,184,0.06));
+          border: 1px solid var(--border-default); min-width: 70px;
+        }
+        .intel-metric-val {
+          font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums;
+          line-height: 1.1; letter-spacing: -0.02em;
+        }
+        .intel-metric-lbl {
+          font-size: 7.5px; font-weight: 700; letter-spacing: 0.08em;
+          text-transform: uppercase; color: var(--text-muted); opacity: 0.6; line-height: 1;
+        }
+        .intel-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+        .intel-chip {
+          display: inline-flex; align-items: center; gap: 3px;
+          padding: 2px 8px; border-radius: 20px; font-size: 9px;
+          font-weight: 700; letter-spacing: 0.02em; border: 1px solid;
+          white-space: nowrap; line-height: 1.4;
+        }
+        .intel-alert {
+          display: flex; align-items: center; gap: 8px;
+          padding: 8px 12px; border-radius: 8px; font-size: 11.5px;
+          font-weight: 600; border: 1px solid; line-height: 1.3;
+        }
+        .intel-check { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 11.5px; }
+        .intel-check-icon { font-size: 11px; width: 16px; text-align: center; flex-shrink: 0; }
+        .intel-check-fix { margin-left: auto; font-size: 10px; color: var(--accent); text-decoration: none; font-weight: 600; }
+        .intel-check-fix:hover { text-decoration: underline; }
+        .intel-plat-card {
+          display: flex; align-items: center; gap: 10px;
+          padding: 10px 14px; border-radius: 8px;
+          background: rgba(0,188,212,0.05); border: 1px solid rgba(0,188,212,0.15);
+        }
+        html.dark .intel-plat-card { background: rgba(0,188,212,0.08); border-color: rgba(0,188,212,0.2); }
+        .intel-action { text-align: center; padding: 8px 0; }
+        .intel-action-icon { font-size: 28px; margin-bottom: 6px; }
+        .intel-action-msg { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; line-height: 1.4; }
+        .intel-cta {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 10px 20px; border-radius: 8px; font-size: 12px; font-weight: 700;
+          text-decoration: none; min-height: 44px; color: #fff; border: none; cursor: pointer;
+          transition: all 0.2s ease;
+          background: linear-gradient(135deg, #00bcd4, #009688);
+          box-shadow: 0 2px 12px rgba(0,188,212,0.25);
+        }
+        .intel-cta:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .intel-cta:disabled { opacity: 0.5; cursor: default; transform: none; filter: none; }
+        .intel-footer {
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          padding: 5px 16px; border-top: 1px solid var(--border-default);
+          background: rgba(0,0,0,0.02);
+        }
+        html.dark .intel-footer { background: rgba(0,0,0,0.12); }
+        .intel-footer-text { font-size: 8px; font-weight: 500; letter-spacing: 0.06em; color: var(--text-muted); opacity: 0.5; }
+        .intel-footer-sep { width: 2px; height: 2px; border-radius: 50%; background: var(--text-muted); opacity: 0.3; }
+        .intel-sect-lbl { font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+        .intel-summary {
+          font-size: 12px; line-height: 1.5; color: var(--text-secondary);
+          padding: 10px 12px; border-radius: 8px; margin-bottom: 10px;
+          background: rgba(0,188,212,0.03); border: 1px solid rgba(0,188,212,0.1);
+          font-style: italic;
+        }
+        html.dark .intel-summary { background: rgba(0,188,212,0.06); border-color: rgba(0,188,212,0.15); }
+        .intel-price-cards { display: flex; gap: 8px; flex-wrap: wrap; }
+        .intel-price-card {
+          flex: 1; min-width: 80px; display: flex; flex-direction: column; align-items: center;
+          padding: 10px 8px; border-radius: 8px; border: 1px solid var(--border-default);
+          background: var(--ghost-bg, rgba(148,163,184,0.06));
+        }
+        .intel-price-card.highlight {
+          border-color: rgba(0,188,212,0.3);
+          background: rgba(0,188,212,0.06);
+          box-shadow: 0 0 10px rgba(0,188,212,0.08);
+        }
+        html.dark .intel-price-card.highlight {
+          background: rgba(0,188,212,0.1); border-color: rgba(0,188,212,0.35);
+          box-shadow: 0 0 15px rgba(0,188,212,0.1);
+        }
+        .intel-price-val { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1; }
+        .intel-price-lbl { font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); opacity: 0.6; margin-top: 3px; }
+        .intel-stale-bar {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 6px 12px; background: rgba(245,158,11,0.06);
+          border-bottom: 1px solid rgba(245,158,11,0.15);
+          font-size: 10px; font-weight: 600; color: #f59e0b;
+        }
+        .intel-stale-btn {
+          font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+          background: rgba(245,158,11,0.12); color: #f59e0b;
+          border: 1px solid rgba(245,158,11,0.25); cursor: pointer;
+        }
+        .intel-stale-btn:hover { background: rgba(245,158,11,0.2); }
+        .intel-loading {
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          padding: 16px 0; font-size: 11px; color: var(--text-muted);
+        }
+        .intel-loading-dot {
+          width: 6px; height: 6px; border-radius: 50%; background: var(--accent, #00bcd4);
+          animation: intelLoadPulse 1.2s ease-in-out infinite;
+        }
+        .intel-loading-dot:nth-child(2) { animation-delay: 0.15s; }
+        .intel-loading-dot:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes intelLoadPulse {
+          0%, 100% { opacity: 0.3; transform: scale(0.8); }
+          50% { opacity: 1; transform: scale(1.2); }
+        }
+        .intel-step {
+          display: flex; gap: 10px; padding: 8px 0;
+          border-bottom: 1px solid var(--border-default);
+        }
+        .intel-step:last-child { border-bottom: none; }
+        .intel-step-pri {
+          width: 6px; height: 6px; border-radius: 50%; margin-top: 5px; flex-shrink: 0;
+        }
+        .intel-collapsed {
+          display: flex; flex-direction: column; align-items: center; gap: 6px;
+          padding: 10px 16px; width: 100%;
+        }
+        .intel-collapsed-row {
+          display: flex; gap: 8px; align-items: stretch; justify-content: center; flex-wrap: wrap;
+        }
+        .intel-collapsed-stat {
+          padding: 4px 10px; border-radius: 8px;
+          background: rgba(0,188,212,0.04); border: 1px solid rgba(0,188,212,0.1);
+          text-align: center; min-width: 60px; flex: 1 1 auto; max-width: 110px;
+        }
+        .intel-collapsed-stat-lbl {
+          font-size: 7px; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.05em; color: rgba(148,163,184,0.7); margin-bottom: 1px;
+        }
+        .intel-collapsed-stat-val {
+          font-size: 11px; font-weight: 700; line-height: 1.2; word-break: break-word;
+        }
+        .intel-collapsed-insight {
+          font-size: 9px; color: var(--text-muted); line-height: 1.4;
+          text-align: center; max-width: 92%; overflow: hidden;
+          text-overflow: ellipsis; display: -webkit-box;
+          -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        }
+        .intel-toggle {
+          background: none; border: none; cursor: pointer; padding: 2px;
+          font-size: 12px; color: var(--text-muted); transition: transform 0.2s ease;
+          display: flex; align-items: center; justify-content: center;
+          width: 24px; height: 24px; border-radius: 4px;
+        }
+        .intel-toggle:hover { background: rgba(0,188,212,0.06); color: var(--accent, #00bcd4); }
+        .intel-error {
+          display: flex; align-items: center; gap: 8px;
+          padding: 8px 12px; margin: 0 0 8px; border-radius: 8px;
+          background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.15);
+          font-size: 11px; font-weight: 600; color: #ef4444; line-height: 1.3;
+        }
+        .intel-error-retry {
+          margin-left: auto; font-size: 9px; font-weight: 700;
+          padding: 3px 8px; border-radius: 4px; cursor: pointer;
+          background: rgba(239,68,68,0.1); color: #ef4444;
+          border: 1px solid rgba(239,68,68,0.2);
+        }
+        .intel-error-retry:hover { background: rgba(239,68,68,0.18); }
+        /* ═══ CHAT ═══ */
+        .intel-chat-toggle {
+          display: flex; align-items: center; justify-content: center; gap: 6px;
+          width: 100%; padding: 8px 16px;
+          background: transparent; border: none; border-top: 1px solid var(--border-default);
+          cursor: pointer; transition: all 0.15s ease;
+          font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+          text-transform: uppercase; color: var(--text-muted);
+        }
+        .intel-chat-toggle:hover { background: rgba(0,188,212,0.04); color: var(--accent, #00bcd4); }
+        .intel-chat-toggle .chat-icon {
+          width: 16px; height: 16px; border-radius: 50%;
+          background: linear-gradient(135deg, rgba(0,188,212,0.15), rgba(0,188,212,0.05));
+          border: 1px solid rgba(0,188,212,0.2);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 9px; line-height: 1;
+        }
+        .intel-chat-area {
+          border-top: 1px solid var(--border-default);
+          animation: chatSlideIn 0.25s ease-out both;
+        }
+        @keyframes chatSlideIn {
+          from { opacity: 0; max-height: 0; }
+          to { opacity: 1; max-height: 400px; }
+        }
+        .intel-chat-history {
+          max-height: 200px; overflow-y: auto; padding: 8px 14px;
+          display: flex; flex-direction: column; gap: 8px;
+          scrollbar-width: thin; scrollbar-color: rgba(0,188,212,0.2) transparent;
+        }
+        .intel-chat-history::-webkit-scrollbar { width: 3px; }
+        .intel-chat-history::-webkit-scrollbar-thumb { background: rgba(0,188,212,0.2); border-radius: 3px; }
+        .intel-chat-q {
+          align-self: flex-end; max-width: 85%;
+          padding: 6px 10px; border-radius: 10px 10px 2px 10px;
+          background: linear-gradient(135deg, rgba(0,188,212,0.12), rgba(0,188,212,0.06));
+          border: 1px solid rgba(0,188,212,0.18);
+          font-size: 11px; font-weight: 600; color: var(--text-primary); line-height: 1.4;
+        }
+        .intel-chat-a {
+          align-self: flex-start; max-width: 85%;
+          padding: 6px 10px; border-radius: 10px 10px 10px 2px;
+          background: var(--ghost-bg, rgba(148,163,184,0.06));
+          border: 1px solid var(--border-default);
+          font-size: 11px; color: var(--text-secondary); line-height: 1.45;
+        }
+        html.dark .intel-chat-a { background: rgba(255,255,255,0.04); }
+        .intel-chat-input-row {
+          display: flex; gap: 6px; padding: 8px 14px 10px;
+          border-top: 1px solid var(--border-default);
+          background: rgba(0,0,0,0.01);
+        }
+        html.dark .intel-chat-input-row { background: rgba(0,0,0,0.08); }
+        .intel-chat-input {
+          flex: 1; padding: 7px 10px; border-radius: 8px; font-size: 11px;
+          border: 1px solid var(--border-default);
+          background: var(--bg-card, #fff); color: var(--text-primary);
+          outline: none; transition: border-color 0.15s;
+          font-family: inherit;
+        }
+        html.dark .intel-chat-input { background: rgba(255,255,255,0.06); }
+        .intel-chat-input:focus { border-color: var(--accent, #00bcd4); }
+        .intel-chat-input::placeholder { color: var(--text-muted); opacity: 0.5; }
+        .intel-chat-send {
+          padding: 0 12px; border-radius: 8px; border: none; cursor: pointer;
+          background: linear-gradient(135deg, #00bcd4, #009688);
+          color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+          text-transform: uppercase; transition: all 0.15s; min-height: 32px;
+        }
+        .intel-chat-send:hover:not(:disabled) { filter: brightness(1.1); }
+        .intel-chat-send:disabled { opacity: 0.4; cursor: default; }
+        .intel-chat-cost {
+          text-align: center; padding: 0 14px 4px;
+          font-size: 8px; color: var(--text-muted); opacity: 0.5;
+        }
+        .intel-chat-empty {
+          text-align: center; padding: 10px 14px; font-size: 10px;
+          color: var(--text-muted); opacity: 0.6;
+        }
+        @media (max-width: 640px) {
+          .intel-metrics { flex-direction: column; }
+          .intel-metric { flex-direction: row; gap: 8px; min-width: auto; }
+          .intel-price-cards { flex-direction: column; }
+          .intel-tab { padding: 6px 2px; }
+          .intel-tab-icon { font-size: 14px; }
+          .intel-tab-label { font-size: 8px; }
+          .intel-collapsed-row { gap: 6px; }
+          .intel-chat-q, .intel-chat-a { max-width: 92%; }
+        }
+      `}</style>
 
-      {/* Tab bar */}
-      <div style={{ display: "flex", borderBottom: "1px solid var(--border-default)" }}>
-        {sections.map(s => (
-          <button key={s.key} onClick={() => setActiveSection(s.key)} style={{
-            flex: 1, padding: "0.55rem 0.35rem", display: "flex", flexDirection: "column" as const, alignItems: "center", gap: "0.1rem",
-            background: activeSection === s.key ? "rgba(0,188,212,0.06)" : "transparent",
-            borderTop: "none", borderLeft: "none", borderRight: "none",
-            borderBottom: activeSection === s.key ? "2px solid var(--accent)" : "2px solid transparent",
-            cursor: "pointer", transition: "all 0.15s",
-            color: activeSection === s.key ? "var(--accent)" : "var(--text-muted)",
-          }}>
-            <span style={{ fontSize: "0.85rem" }}>{s.icon}</span>
-            <span style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>{s.label}</span>
-          </button>
-        ))}
-      </div>
+      <div className="intel-hud">
+        {/* ═══ HEADER ═══ */}
+        <div className="intel-header">
+          <div className="intel-header-left">
+            <div className="intel-dot" />
+            <span className="intel-title">Item Intelligence</span>
+            {aiIntel && <span className="intel-claude">Claude</span>}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <ScoreRing score={overallScore} color={scoreColor} />
+            {onToggle && (
+              <button onClick={onToggle} className="intel-toggle" title={collapsed ? "Expand" : "Collapse"}
+                style={{ transform: collapsed ? "rotate(-90deg)" : "rotate(0deg)" }}>
+                ▼
+              </button>
+            )}
+          </div>
+        </div>
 
-      {/* Content */}
-      <div style={{ padding: "0.85rem 1rem" }}>
-        {/* MARKET POSITION */}
-        {activeSection === "market" && (
-          <div style={{ display: "flex", flexDirection: "column" as const, gap: "0.5rem" }}>
-            {valuation && (
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" as const }}>
-                <div>
-                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Value Range</div>
-                  <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--accent)" }}>${Math.round(valuation.low || 0)} — ${Math.round(valuation.high || 0)}</div>
+        {/* ═══ COLLAPSED HUD ═══ */}
+        {collapsed && (
+          <>
+            <div className="intel-collapsed">
+              {aiIntel ? (
+                <>
+                  <div style={{ fontSize: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(148,163,184,0.8)" }}>
+                    Claude Intelligence
+                  </div>
+                  <div className="intel-collapsed-row">
+                    <div className="intel-collapsed-stat">
+                      <div className="intel-collapsed-stat-lbl">Sweet Spot</div>
+                      <div className="intel-collapsed-stat-val" style={{ color: "var(--accent, #00bcd4)", textShadow: "0 0 10px rgba(0,188,212,0.2)" }}>
+                        ${Math.round(aiIntel.pricingIntel.sweetSpot)}
+                      </div>
+                    </div>
+                    <div className="intel-collapsed-stat">
+                      <div className="intel-collapsed-stat-lbl">Range</div>
+                      <div className="intel-collapsed-stat-val" style={{ color: "var(--text-secondary)" }}>
+                        ${Math.round(aiIntel.pricingIntel.recommendedLow)}–${Math.round(aiIntel.pricingIntel.recommendedHigh)}
+                      </div>
+                    </div>
+                    {aiIntel.marketPosition?.demand && (
+                      <div className="intel-collapsed-stat">
+                        <div className="intel-collapsed-stat-lbl">Demand</div>
+                        <div className="intel-collapsed-stat-val" style={{ color: aiIntel.marketPosition.demand === "high" ? "#22c55e" : aiIntel.marketPosition.demand === "low" ? "#ef4444" : "#f59e0b" }}>
+                          {aiIntel.marketPosition.demand}
+                        </div>
+                      </div>
+                    )}
+                    <div className="intel-collapsed-stat">
+                      <div className="intel-collapsed-stat-lbl">Readiness</div>
+                      <div className="intel-collapsed-stat-val" style={{ color: readinessColor }}>
+                        {readinessScore}/10
+                      </div>
+                    </div>
+                  </div>
+                  {aiIntel.sellingStrategy?.bestPlatform && (
+                    <div className="intel-collapsed-insight">
+                      🏆 Best platform: {aiIntel.sellingStrategy.bestPlatform} · {aiIntel.sellingStrategy.timing}
+                    </div>
+                  )}
+                  {aiStale && <div style={{ fontSize: "8px", color: "#f59e0b", fontWeight: 600 }}>⚡ New data available — expand to refresh</div>}
+                </>
+              ) : valuation ? (
+                <>
+                  <div style={{ fontSize: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(148,163,184,0.8)" }}>
+                    Item Intelligence
+                  </div>
+                  <div className="intel-collapsed-row">
+                    <div className="intel-collapsed-stat">
+                      <div className="intel-collapsed-stat-lbl">Value Range</div>
+                      <div className="intel-collapsed-stat-val" style={{ color: "var(--accent, #00bcd4)" }}>
+                        ${Math.round(valuation.low || 0)}–${Math.round(valuation.high || 0)}
+                      </div>
+                    </div>
+                    <div className="intel-collapsed-stat">
+                      <div className="intel-collapsed-stat-lbl">Readiness</div>
+                      <div className="intel-collapsed-stat-val" style={{ color: readinessColor }}>
+                        {readinessScore}/10
+                      </div>
+                    </div>
+                  </div>
+                  {aiData && !aiIntel && (
+                    <div style={{ fontSize: "9px", color: "var(--accent)", fontWeight: 600 }}>
+                      Expand to generate Claude Intelligence · 1 cr
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div style={{ fontSize: "9px", color: "var(--text-muted)" }}>
+                  Run AI Analysis for intelligence
                 </div>
-                {enriched?.priceDirection && enriched.priceDirection !== "unknown" && (
-                  <div style={{ padding: "0.25rem 0.5rem", borderRadius: "0.35rem", background: enriched.priceDirection === "rising" ? "rgba(34,197,94,0.08)" : enriched.priceDirection === "falling" ? "rgba(239,68,68,0.08)" : "var(--ghost-bg)", border: `1px solid ${enriched.priceDirection === "rising" ? "rgba(34,197,94,0.2)" : enriched.priceDirection === "falling" ? "rgba(239,68,68,0.2)" : "var(--border-default)"}` }}>
-                    <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, color: "var(--text-muted)", fontWeight: 700 }}>Trend</div>
-                    <div style={{ fontSize: "0.75rem", fontWeight: 700, color: enriched.priceDirection === "rising" ? "#22c55e" : enriched.priceDirection === "falling" ? "#ef4444" : "var(--text-secondary)" }}>{enriched.priceDirection === "rising" ? "↑ Rising" : enriched.priceDirection === "falling" ? "↓ Falling" : "→ Stable"}</div>
-                  </div>
-                )}
-                {enriched?.demandLevel && (
-                  <div style={{ padding: "0.25rem 0.5rem", borderRadius: "0.35rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
-                    <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, color: "var(--text-muted)", fontWeight: 700 }}>Demand</div>
-                    <div style={{ fontSize: "0.75rem", fontWeight: 700, color: enriched.demandLevel === "Strong" || enriched.demandLevel === "High" ? "#22c55e" : "#f59e0b" }}>{enriched.demandLevel}</div>
-                  </div>
-                )}
-              </div>
-            )}
-            {(enriched?.totalOffers ?? 0) > 0 && (
-              <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)" }}>
-                📨 {enriched?.totalOffers} offer{(enriched?.totalOffers ?? 0) !== 1 ? "s" : ""} received — highest ${Math.round((enriched?.highestOffer ?? 0) / 100)}{enriched?.offerToAskRatio ? ` (${Math.round(enriched.offerToAskRatio * 100)}% of ask)` : ""}
-              </div>
-            )}
-            {isAntique && <div style={{ fontSize: "0.68rem", color: "#f59e0b", fontWeight: 600 }}>🏺 Antique detected{authenticityScore ? ` — authenticity score: ${authenticityScore}` : ""}</div>}
-            {isCollectible && <div style={{ fontSize: "0.68rem", color: "#8b5cf6", fontWeight: 600 }}>⭐ Collectible detected</div>}
-          </div>
-        )}
-
-        {/* READINESS SCORE */}
-        {activeSection === "ready" && (
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-              <div style={{ fontSize: "1.1rem", fontWeight: 800, color: readinessColor }}>{readinessScore}/10</div>
-              <div style={{ flex: 1, height: "6px", borderRadius: "3px", background: "var(--ghost-bg)", overflow: "hidden" }}>
-                <div style={{ width: `${readinessScore * 10}%`, height: "100%", borderRadius: "3px", background: readinessColor, transition: "width 0.3s" }} />
-              </div>
+              )}
             </div>
-            {readinessChecks.map((c, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.35rem", padding: "0.2rem 0", fontSize: "0.68rem" }}>
-                <span style={{ color: c.ok ? "#22c55e" : "#ef4444", fontWeight: 700 }}>{c.ok ? "✅" : "❌"}</span>
-                <span style={{ color: c.ok ? "var(--text-secondary)" : "var(--text-primary)", fontWeight: c.ok ? 400 : 600 }}>{c.label}</span>
-                {!c.ok && c.fix && <a href={c.fix} style={{ fontSize: "0.58rem", color: "var(--accent)", textDecoration: "none", marginLeft: "auto" }}>Fix →</a>}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* SELL PATH */}
-        {activeSection === "sell" && (
-          <div style={{ display: "flex", flexDirection: "column" as const, gap: "0.5rem" }}>
-            {enriched?.bestPlatform && (
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)" }}>
-                <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, color: "var(--accent)", fontWeight: 700 }}>Best Platform</div>
-                <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--accent)" }}>🏆 {enriched.bestPlatform}</div>
-              </div>
-            )}
-            <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-              {valuation?.localHigh && valuation?.onlineHigh ? (
-                valuation.onlineHigh > valuation.localHigh * 1.15
-                  ? "📦 Ship nationally for best price — online markets pay more for this item."
-                  : "🤝 Sell locally for faster sale — local demand is strong in your area."
-              ) : "Set your sale method to get platform recommendations."}
+            {/* Collapsed footer */}
+            <div className="intel-footer">
+              {aiIntel && aiCachedAt ? (
+                <>
+                  <span className="intel-footer-text">POWERED BY CLAUDE</span>
+                  <span className="intel-footer-sep" />
+                  <span className="intel-footer-text">Updated {timeAgo(aiCachedAt)}</span>
+                </>
+              ) : (
+                <span className="intel-footer-text">ITEM INTELLIGENCE</span>
+              )}
             </div>
-            {enriched?.targetBuyerProfiles && enriched.targetBuyerProfiles.length > 0 && (
-              <div style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
-                🎯 Target buyers: {enriched.targetBuyerProfiles.join(", ")}
-              </div>
-            )}
+          </>
+        )}
+
+        {/* ═══ EXPANDED CONTENT ═══ */}
+        {!collapsed && (
+        <>
+
+        {/* ═══ STALE DATA BANNER ═══ */}
+        {aiStale && aiIntel && (
+          <div className="intel-stale-bar">
+            <span>⚡ New bot data available</span>
+            <button onClick={generateIntel} disabled={aiLoading} className="intel-stale-btn">
+              {aiLoading ? "Updating..." : "Refresh · 0.5 cr"}
+            </button>
           </div>
         )}
 
-        {/* WARNINGS */}
-        {activeSection === "alerts" && (
-          <div style={{ display: "flex", flexDirection: "column" as const, gap: "0.35rem" }}>
-            {warnings.length > 0 ? warnings.map((w, i) => (
-              <div key={i} style={{
-                display: "flex", alignItems: "center", gap: "0.35rem", padding: "0.35rem 0.5rem",
-                borderRadius: "0.35rem", fontSize: "0.68rem",
-                background: w.type === "error" ? "rgba(239,68,68,0.06)" : w.type === "warning" ? "rgba(245,158,11,0.06)" : "rgba(34,197,94,0.06)",
-                color: w.type === "error" ? "#ef4444" : w.type === "warning" ? "#f59e0b" : "#22c55e",
-                border: `1px solid ${w.type === "error" ? "rgba(239,68,68,0.15)" : w.type === "warning" ? "rgba(245,158,11,0.15)" : "rgba(34,197,94,0.15)"}`,
-              }}>
-                {w.type === "error" ? "❌" : w.type === "warning" ? "⚠️" : "🟢"} {w.msg}
+        {/* ═══ TAB BAR ═══ */}
+        <div className="intel-tabs">
+          {tabs.map(t => (
+            <button key={t.key} onClick={() => setActiveTab(t.key)}
+              className={`intel-tab${activeTab === t.key ? " active" : ""}`}>
+              <span className="intel-tab-icon">{t.icon}</span>
+              <span className="intel-tab-label">{t.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* ═══ TAB CONTENT ═══ */}
+        <div className="intel-content">
+
+          {/* ═══ ERROR BANNER ═══ */}
+          {aiError && (
+            <div className="intel-error">
+              <span style={{ flexShrink: 0 }}>❌</span>
+              <span>{aiError}</span>
+              <button onClick={generateIntel} disabled={aiLoading} className="intel-error-retry">
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* ── MARKET TAB ── */}
+          {activeTab === "market" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {/* AI summary */}
+              {aiIntel?.summary && <div className="intel-summary">{aiIntel.summary}</div>}
+
+              {/* AI-powered pricing (3 cards) */}
+              {aiIntel?.pricingIntel ? (
+                <>
+                  <div className="intel-price-cards">
+                    <div className="intel-price-card">
+                      <span className="intel-price-val" style={{ color: "#f59e0b" }}>${Math.round(aiIntel.pricingIntel.quickSalePrice)}</span>
+                      <span className="intel-price-lbl">Quick Sale</span>
+                    </div>
+                    <div className="intel-price-card highlight">
+                      <span className="intel-price-val" style={{ color: "var(--accent)" }}>${Math.round(aiIntel.pricingIntel.sweetSpot)}</span>
+                      <span className="intel-price-lbl">Sweet Spot</span>
+                    </div>
+                    <div className="intel-price-card">
+                      <span className="intel-price-val" style={{ color: "#22c55e" }}>${Math.round(aiIntel.pricingIntel.premiumPrice)}</span>
+                      <span className="intel-price-lbl">Premium</span>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                    <span className="intel-chip" style={{ borderColor: `${pricingConfColor}30`, color: pricingConfColor, background: `${pricingConfColor}0d` }}>
+                      {aiIntel.pricingIntel.confidence.toUpperCase()} CONFIDENCE
+                    </span>
+                    {aiIntel.pricingIntel.sources.map((s, i) => (
+                      <span key={i} className="intel-chip" style={{ borderColor: "var(--border-default)", color: "var(--text-muted)", background: "var(--ghost-bg, rgba(148,163,184,0.06))" }}>
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                    {aiIntel.pricingIntel.reasoning}
+                  </div>
+                </>
+              ) : valuation ? (
+                /* Fallback: prop-based pricing */
+                <div className="intel-metrics">
+                  <div className="intel-metric" style={{ flex: 1 }}>
+                    <span className="intel-metric-val" style={{ color: "var(--accent)", fontSize: "16px" }}>
+                      ${Math.round(valuation.low || 0)} — ${Math.round(valuation.high || 0)}
+                    </span>
+                    <span className="intel-metric-lbl">Value Range</span>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "12px 0", fontSize: "11px", color: "var(--text-muted)" }}>
+                  Run AI Analysis for market intelligence
+                </div>
+              )}
+
+              {/* AI condition assessment */}
+              {aiIntel?.conditionAssessment && (
+                <div style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>Condition: </span>
+                  {aiIntel.conditionAssessment}
+                </div>
+              )}
+
+              {/* Market position from AI or enriched */}
+              {(aiIntel?.marketPosition || enriched) && (
+                <div className="intel-metrics">
+                  {(aiIntel?.marketPosition?.demand || enriched?.demandLevel) && (
+                    <div className="intel-metric">
+                      <span className="intel-metric-val" style={{ color: (aiIntel?.marketPosition?.demand === "high" || enriched?.demandLevel === "Strong" || enriched?.demandLevel === "High") ? "#22c55e" : "#f59e0b" }}>
+                        {aiIntel?.marketPosition?.demand || enriched?.demandLevel || "—"}
+                      </span>
+                      <span className="intel-metric-lbl">Demand</span>
+                    </div>
+                  )}
+                  {(aiIntel?.marketPosition?.trend || (enriched?.priceDirection && enriched.priceDirection !== "unknown")) && (
+                    <div className="intel-metric">
+                      <span className="intel-metric-val" style={{ color: (aiIntel?.marketPosition?.trend === "rising" || enriched?.priceDirection === "rising") ? "#22c55e" : (aiIntel?.marketPosition?.trend === "declining" || enriched?.priceDirection === "falling") ? "#ef4444" : "var(--text-muted)" }}>
+                        {aiIntel?.marketPosition?.trend || enriched?.priceDirection || "—"}
+                      </span>
+                      <span className="intel-metric-lbl">Trend</span>
+                    </div>
+                  )}
+                  {aiIntel?.marketPosition?.competition && (
+                    <div className="intel-metric">
+                      <span className="intel-metric-val" style={{ color: "var(--text-secondary)" }}>
+                        {aiIntel.marketPosition.competition}
+                      </span>
+                      <span className="intel-metric-lbl">Competition</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Market insight */}
+              {aiIntel?.marketPosition?.insight && (
+                <div style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.5, fontStyle: "italic" }}>
+                  💡 {aiIntel.marketPosition.insight}
+                </div>
+              )}
+
+              {/* Detection chips + comps */}
+              <div className="intel-chips">
+                {isAntique && (
+                  <span className="intel-chip" style={{ borderColor: "rgba(245,158,11,0.3)", color: "#f59e0b", background: "rgba(245,158,11,0.08)" }}>
+                    🏺 Antique{authenticityScore ? ` · ${authenticityScore}/100` : ""}
+                  </span>
+                )}
+                {isCollectible && (
+                  <span className="intel-chip" style={{ borderColor: "rgba(139,92,246,0.3)", color: "#8b5cf6", background: "rgba(139,92,246,0.08)" }}>
+                    ⭐ Collectible
+                  </span>
+                )}
+                {aiConf != null && (
+                  <span className="intel-chip" style={{ borderColor: "rgba(0,188,212,0.2)", color: "var(--accent)", background: "rgba(0,188,212,0.06)" }}>
+                    🎯 AI: {aiConf}%
+                  </span>
+                )}
               </div>
-            )) : (
-              <div style={{ textAlign: "center" as const, padding: "1rem", fontSize: "0.78rem", color: "#22c55e" }}>
-                ✅ No warnings — your item is in great shape
+
+              {enriched && enriched.compCount > 0 && (
+                <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>
+                  📦 {enriched.compCount} comp{enriched.compCount !== 1 ? "s" : ""} found
+                  {enriched.avgCompPrice != null && <> · Avg ${Math.round(enriched.avgCompPrice)}</>}
+                  {enriched.lowComp != null && enriched.highComp != null && <> · ${Math.round(enriched.lowComp)}–${Math.round(enriched.highComp)}</>}
+                </div>
+              )}
+
+              {/* AI loading state */}
+              {aiLoading && !aiIntel && (
+                <div className="intel-loading">
+                  <span className="intel-loading-dot" />
+                  <span className="intel-loading-dot" />
+                  <span className="intel-loading-dot" />
+                  <span>Claude is analyzing your item...</span>
+                </div>
+              )}
+
+              {/* Generate button (if no AI yet and item is analyzed) */}
+              {!aiIntel && !aiLoading && aiData && (
+                <button onClick={generateIntel} className="intel-cta" style={{ width: "100%", justifyContent: "center", marginTop: "4px" }}>
+                  Generate Claude Intelligence · 1 cr
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* ── READY TAB ── */}
+          {activeTab === "ready" && (
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                <span style={{ fontSize: "18px", fontWeight: 800, color: readinessColor, fontVariantNumeric: "tabular-nums" }}>
+                  {readinessScore}/10
+                </span>
+                <div style={{ flex: 1, height: "6px", borderRadius: "3px", background: "var(--ghost-bg, rgba(148,163,184,0.08))", overflow: "hidden" }}>
+                  <div style={{
+                    width: `${readinessScore * 10}%`, height: "100%", borderRadius: "3px",
+                    background: `linear-gradient(90deg, ${readinessColor}88, ${readinessColor})`,
+                    transition: "width 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                    boxShadow: `0 0 6px ${readinessColor}30`,
+                  }} />
+                </div>
+              </div>
+              {readinessChecks.map((c, i) => (
+                <div key={i} className="intel-check">
+                  <span className="intel-check-icon" style={{ color: c.ok ? "#22c55e" : "#ef4444", fontWeight: 700 }}>
+                    {c.ok ? "✓" : "✗"}
+                  </span>
+                  <span style={{ color: c.ok ? "var(--text-secondary)" : "var(--text-primary)", fontWeight: c.ok ? 400 : 600 }}>
+                    {c.label}
+                  </span>
+                  {!c.ok && c.fix && <a href={c.fix} className="intel-check-fix">Fix →</a>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── SELL TAB ── */}
+          {activeTab === "sell" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {/* AI selling strategy */}
+              {aiIntel?.sellingStrategy ? (
+                <>
+                  <div className="intel-plat-card">
+                    <span style={{ fontSize: "16px" }}>🏆</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: "7.5px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--accent)", opacity: 0.7 }}>Best Platform</div>
+                      <div style={{ fontSize: "14px", fontWeight: 800, color: "var(--accent)" }}>{aiIntel.sellingStrategy.bestPlatform}</div>
+                    </div>
+                    <span className="intel-chip" style={{ borderColor: "rgba(0,188,212,0.2)", color: "var(--accent)", background: "rgba(0,188,212,0.06)" }}>
+                      {aiIntel.sellingStrategy.bestApproach}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: "11.5px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                    {aiIntel.sellingStrategy.reasoning}
+                  </div>
+
+                  {aiIntel.sellingStrategy.alternativePlatforms.length > 0 && (
+                    <div>
+                      <div className="intel-sect-lbl">Also Consider</div>
+                      <div className="intel-chips">
+                        {aiIntel.sellingStrategy.alternativePlatforms.map((p, i) => (
+                          <span key={i} className="intel-chip" style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)", background: "var(--ghost-bg, rgba(148,163,184,0.06))" }}>
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                    <span style={{ fontWeight: 700 }}>⏰ Timing: </span>{aiIntel.sellingStrategy.timing}
+                  </div>
+                </>
+              ) : enriched?.bestPlatform ? (
+                <div className="intel-plat-card">
+                  <span style={{ fontSize: "16px" }}>🏆</span>
+                  <div>
+                    <div style={{ fontSize: "7.5px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--accent)", opacity: 0.7 }}>Best Platform</div>
+                    <div style={{ fontSize: "14px", fontWeight: 800, color: "var(--accent)" }}>{enriched.bestPlatform}</div>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Strategy advice fallback */}
+              {!aiIntel?.sellingStrategy && (
+                <div style={{ fontSize: "11.5px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  {valuation?.localHigh && valuation?.onlineHigh ? (
+                    valuation.onlineHigh > valuation.localHigh * 1.15
+                      ? "📦 Ship nationally for best price — online markets pay more for this item."
+                      : "🤝 Sell locally for faster sale — local demand is strong in your area."
+                  ) : "Set pricing to get platform recommendations."}
+                </div>
+              )}
+
+              {/* Key insights from AI */}
+              {aiIntel?.keyInsights && aiIntel.keyInsights.length > 0 && (
+                <div>
+                  <div className="intel-sect-lbl">Key Insights</div>
+                  {aiIntel.keyInsights.map((insight, i) => (
+                    <div key={i} style={{ fontSize: "11px", color: "var(--text-secondary)", padding: "3px 0", lineHeight: 1.4 }}>
+                      • {insight}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Buyer profiles + value drivers from enriched */}
+              {enriched?.targetBuyerProfiles && enriched.targetBuyerProfiles.length > 0 && (
+                <div>
+                  <div className="intel-sect-lbl">Target Buyers</div>
+                  <div className="intel-chips">
+                    {enriched.targetBuyerProfiles.map((p, i) => (
+                      <span key={i} className="intel-chip" style={{ borderColor: "rgba(0,188,212,0.2)", color: "var(--accent)", background: "rgba(0,188,212,0.06)" }}>
+                        🎯 {p}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {enriched?.topSearchKeywords && enriched.topSearchKeywords.length > 0 && (
+                <div>
+                  <div className="intel-sect-lbl">Top Keywords</div>
+                  <div className="intel-chips">
+                    {enriched.topSearchKeywords.map((k, i) => (
+                      <span key={i} className="intel-chip" style={{ borderColor: "var(--border-default)", color: "var(--text-secondary)", background: "var(--ghost-bg, rgba(148,163,184,0.06))" }}>
+                        🔑 {k}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!aiIntel?.sellingStrategy && !enriched?.bestPlatform && !(valuation?.localHigh && valuation?.onlineHigh) && (
+                <div style={{ textAlign: "center", padding: "12px 0", fontSize: "11px", color: "var(--text-muted)" }}>
+                  Run PriceBot or BuyerBot for selling intelligence
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── ALERTS TAB ── */}
+          {activeTab === "alerts" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              {uniqueWarnings.length > 0 ? uniqueWarnings.map((w, i) => {
+                const c = w.type === "error"
+                  ? { bg: "rgba(239,68,68,0.06)", bd: "rgba(239,68,68,0.15)", tx: "#ef4444", ic: "❌" }
+                  : w.type === "warning"
+                  ? { bg: "rgba(245,158,11,0.06)", bd: "rgba(245,158,11,0.15)", tx: "#f59e0b", ic: "⚠️" }
+                  : { bg: "rgba(34,197,94,0.06)", bd: "rgba(34,197,94,0.15)", tx: "#22c55e", ic: "🟢" };
+                return (
+                  <div key={i} className="intel-alert" style={{ background: c.bg, borderColor: c.bd, color: c.tx }}>
+                    <span style={{ flexShrink: 0 }}>{c.ic}</span> {w.msg}
+                  </div>
+                );
+              }) : (
+                <div style={{ textAlign: "center", padding: "16px 0" }}>
+                  <div style={{ fontSize: "20px", marginBottom: "4px" }}>✅</div>
+                  <div style={{ fontSize: "12px", fontWeight: 700, color: "#22c55e" }}>No warnings — your item is in great shape</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── ACTION TAB ── */}
+          {activeTab === "action" && (
+            <div>
+              {/* AI next steps (prioritized list) */}
+              {aiIntel?.nextSteps && aiIntel.nextSteps.length > 0 ? (
+                <div>
+                  {aiIntel.nextSteps.map((s, i) => {
+                    const priColor = s.priority === "high" ? "#ef4444" : s.priority === "medium" ? "#f59e0b" : "#22c55e";
+                    return (
+                      <div key={i} className="intel-step">
+                        <div className="intel-step-pri" style={{ background: priColor, boxShadow: `0 0 4px ${priColor}40` }} />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>{s.step}</div>
+                          <div style={{ fontSize: "10px", color: "var(--text-muted)", lineHeight: 1.3, marginTop: "2px" }}>{s.reason}</div>
+                        </div>
+                        <span style={{ fontSize: "8px", fontWeight: 700, color: priColor, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                          {s.priority}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : nextAction ? (
+                /* Fallback: single next action */
+                <div className="intel-action">
+                  <div className="intel-action-icon">{nextAction.icon}</div>
+                  <div className="intel-action-msg">{nextAction.msg}</div>
+                  {nextAction.href && (
+                    <a href={nextAction.href} className="intel-cta">Take Action →</a>
+                  )}
+                </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "16px 0", fontSize: "11px", color: "var(--text-muted)" }}>
+                  No action needed right now
+                </div>
+              )}
+
+              {/* Always show main CTA if relevant */}
+              {aiIntel?.nextSteps && nextAction?.href && (
+                <div style={{ textAlign: "center", marginTop: "10px" }}>
+                  <a href={nextAction.href} className="intel-cta">
+                    {nextAction.icon} Take Action →
+                  </a>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ═══ ASK CLAUDE CHAT ═══ */}
+        <button className="intel-chat-toggle" onClick={() => setChatOpen(!chatOpen)}>
+          <span className="chat-icon">💬</span>
+          <span>{chatOpen ? "Close Chat" : "Ask Claude"}</span>
+          {chatMessages.length > 0 && !chatOpen && (
+            <span style={{ fontSize: "8px", padding: "1px 5px", borderRadius: "8px", background: "rgba(0,188,212,0.12)", color: "var(--accent, #00bcd4)", fontWeight: 700 }}>
+              {chatMessages.length}
+            </span>
+          )}
+          <span style={{ fontSize: "8px", opacity: 0.4, marginLeft: "auto" }}>0.25 cr / question</span>
+        </button>
+
+        {chatOpen && (
+          <div className="intel-chat-area">
+            {chatMessages.length === 0 ? (
+              <div className="intel-chat-empty">
+                Ask Claude anything about this item&apos;s data, pricing, market position, or selling strategy.
+              </div>
+            ) : (
+              <div className="intel-chat-history" ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }}>
+                {chatMessages.map((m, i) => (
+                  <div key={i} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <div className="intel-chat-q">{m.question}</div>
+                    <div className="intel-chat-a">
+                      {m.answer === "..." ? (
+                        <span style={{ display: "inline-flex", gap: "3px", alignItems: "center" }}>
+                          <span className="intel-loading-dot" />
+                          <span className="intel-loading-dot" />
+                          <span className="intel-loading-dot" />
+                        </span>
+                      ) : m.answer}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
+            <div className="intel-chat-input-row">
+              <input
+                className="intel-chat-input"
+                type="text"
+                placeholder="Ask about pricing, condition, market, strategy..."
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
+                disabled={chatLoading}
+                maxLength={500}
+              />
+              <button
+                className="intel-chat-send"
+                onClick={sendChat}
+                disabled={chatLoading || !chatInput.trim()}
+              >
+                {chatLoading ? "..." : "Ask"}
+              </button>
+            </div>
           </div>
         )}
 
-        {/* NEXT ACTION */}
-        {activeSection === "action" && nextAction && (
-          <div style={{ padding: "0.75rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", textAlign: "center" as const }}>
-            <div style={{ fontSize: "1.25rem", marginBottom: "0.35rem" }}>{nextAction.icon}</div>
-            <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>{nextAction.msg}</div>
-            {nextAction.href && (
-              <a href={nextAction.href} style={{
-                display: "inline-flex", alignItems: "center", gap: "0.3rem",
-                padding: "0.5rem 1rem", borderRadius: "0.5rem", fontSize: "0.75rem", fontWeight: 700,
-                background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
-                textDecoration: "none", minHeight: "44px",
-              }}>
-                Take Action →
-              </a>
-            )}
-          </div>
+        {/* ═══ FOOTER ═══ */}
+        <div className="intel-footer">
+          {aiIntel && aiCachedAt ? (
+            <>
+              <span className="intel-footer-text">POWERED BY CLAUDE</span>
+              <span className="intel-footer-sep" />
+              <span className="intel-footer-text">Updated {timeAgo(aiCachedAt)}</span>
+            </>
+          ) : enriched && enriched.dataCompleteness < 75 ? (
+            <>
+              <span className="intel-footer-text">{enriched.dataCompleteness}% INTEL GATHERED</span>
+              <span className="intel-footer-sep" />
+              <span className="intel-footer-text">RUN MORE BOTS FOR DEEPER INSIGHTS</span>
+            </>
+          ) : (
+            <span className="intel-footer-text">ITEM INTELLIGENCE</span>
+          )}
+        </div>
+
+        </>
         )}
       </div>
-    </div>
+    </>
   );
 }

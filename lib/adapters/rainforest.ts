@@ -32,8 +32,9 @@ export interface RainforestEnrichmentData {
     median: number;
   };
   topResult: RainforestSearchResult | null;
-  resultCount: number;
-  fetchedAt: string; // ISO string for JSON serialization
+  resultCount: number;       // how many results we processed (capped for price calc)
+  totalResults: number;      // actual total Amazon returned (the REAL number)
+  fetchedAt: string;         // ISO string for JSON serialization
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -105,6 +106,12 @@ export async function searchAmazon(
     const json = await res.json();
     const rawResults: any[] = json.search_results || [];
 
+    // Grab the REAL total from Amazon's search metadata (not our capped slice)
+    const amazonTotal: number =
+      json.search_information?.total_results ??
+      json.search_information?.total ??
+      rawResults.length;
+
     if (rawResults.length === 0) {
       console.log("[Rainforest] No search results returned");
       return null;
@@ -148,11 +155,12 @@ export async function searchAmazon(
       },
       topResult: results[0] || null,
       resultCount: results.length,
+      totalResults: amazonTotal,   // the REAL count Amazon reported
       fetchedAt: new Date().toISOString(),
     };
 
     console.log(
-      `[Rainforest] Found ${results.length} results. Price range: $${data.priceRange.low}–$${data.priceRange.high} (avg: $${avg})`
+      `[Rainforest] Found ${amazonTotal} total on Amazon (${results.length} processed). Price range: $${data.priceRange.low}–$${data.priceRange.high} (avg: $${avg})`
     );
 
     return data;

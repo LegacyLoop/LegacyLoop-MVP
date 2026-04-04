@@ -2,6 +2,7 @@
 import OpenAI from "openai";
 import type { AiAnalysis } from "@/lib/types";
 import { searchEbayComps, type EbayComp } from "@/lib/adapters/ebay";
+import { scrapeEbaySold } from "@/lib/market-intelligence/adapters/ebay-sold";
 import { getLocationPrices, getMarketInfo, type MarketInfo } from "@/lib/pricing/market-data";
 import type { RainforestEnrichmentData } from "@/lib/adapters/rainforest";
 
@@ -317,6 +318,46 @@ function applyAmazonAnchor(
   };
 }
 
+// ─── eBay comps with scraper fallback ─────────────────────────────────────────
+
+/**
+ * Try the eBay Browse API first (for when dev keys are live).
+ * If that fails, fall back to the free eBay sold-listings scraper.
+ * Returns comps in the same EbayComp shape either way.
+ */
+async function getEbayCompsWithFallback(query: string, limit = 10): Promise<EbayComp[]> {
+  // 1. Try official eBay API
+  try {
+    const apiComps = await searchEbayComps(query, limit);
+    if (apiComps.length > 0) {
+      console.log(`[Pricing] eBay API returned ${apiComps.length} comps`);
+      return apiComps;
+    }
+  } catch (e: any) {
+    console.log(`[Pricing] eBay API unavailable (${e.message?.slice(0, 60) || "error"}) — falling back to scraper`);
+  }
+
+  // 2. Fallback: scrape eBay sold listings (free, no API key needed)
+  try {
+    const scraped = await scrapeEbaySold(query);
+    if (scraped.success && scraped.comps.length > 0) {
+      console.log(`[Pricing] eBay scraper returned ${scraped.comps.length} sold comps`);
+      return scraped.comps.slice(0, limit).map((c) => ({
+        platform: "eBay" as const,
+        title: c.item,
+        price: c.price,
+        currency: "USD",
+        url: c.url || `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(query)}&LH_Sold=1`,
+        shipping: undefined,
+      }));
+    }
+  } catch (e: any) {
+    console.log(`[Pricing] eBay scraper also failed: ${e.message?.slice(0, 60) || "error"}`);
+  }
+
+  return [];
+}
+
 // ─── Main adapter ─────────────────────────────────────────────────────────────
 
 export const pricingAdapter = {
@@ -394,9 +435,9 @@ export const pricingAdapter = {
     ].filter(Boolean);
     const query = queryParts.join(" ");
 
-    // Run eBay + AI pricing in parallel
+    // Run eBay (API → scraper fallback) + AI pricing in parallel
     const [comps, aiPrice] = await Promise.all([
-      searchEbayComps(query, 10).catch(() => [] as EbayComp[]),
+      getEbayCompsWithFallback(query, 10).catch(() => [] as EbayComp[]),
       getAiPriceEstimate(ai, condition, notes),
     ]);
 

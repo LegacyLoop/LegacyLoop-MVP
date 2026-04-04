@@ -10,10 +10,10 @@ import { computeAuthenticityScore } from "@/lib/antique-score";
 import { computeCollectiblesScore } from "@/lib/collectibles-score";
 import { detectCollectible } from "@/lib/collectible-detect";
 import AmazonPriceBadge from "./AmazonPriceBadge";
+import DetectionHUD from "./DetectionHUD";
 import SoldPriceWidget from "./SoldPriceWidget";
 import SaleCongratsBar from "./SaleCongratsBar";
 import { enrichItemContext } from "@/lib/addons/enrich-item-context";
-import ItemIntelligenceSummary from "./ItemIntelligenceSummary";
 
 type Params = Promise<{ id: string }>;
 
@@ -117,11 +117,8 @@ export default async function ItemPage({ params }: { params: Params }) {
   const showAntiqueUI = antique?.isAntique === true || isAntiqueFromAI;
 
   // Detect collectible from AI analysis
-  let isCollectibleFromAI = false;
-  if (aiObj) {
-    const collectibleDetection = detectCollectible(aiObj);
-    isCollectibleFromAI = collectibleDetection.isCollectible;
-  }
+  const collectibleDetectionResult = aiObj ? detectCollectible(aiObj) : null;
+  const isCollectibleFromAI = collectibleDetectionResult?.isCollectible ?? false;
   const showCollectibleUI = isCollectibleFromAI;
   const collectiblesScore = showCollectibleUI
     ? computeCollectiblesScore({ aiResult: item.aiResult })
@@ -406,6 +403,33 @@ export default async function ItemPage({ params }: { params: Params }) {
         </div>
       )}
 
+      {/* ═══ Detection HUD (Antique + Collectible — above Control Center) ═══ */}
+      {(showAntiqueUI || showCollectibleUI) && (
+        <div style={{ marginTop: "0.75rem" }}>
+          <DetectionHUD
+            itemId={item.id}
+            showAntique={showAntiqueUI}
+            antique={antique ? {
+              isAntique: showAntiqueUI,
+              auctionLow: antique.auctionLow,
+              auctionHigh: antique.auctionHigh,
+              reason: antique.reason,
+            } : null}
+            authenticityScore={authenticityScore}
+            antiqueBannerAge={(() => {
+              const estAge = Number(aiObj?.estimated_age_years ?? aiObj?.estimated_age ?? 0);
+              const decStr = String(aiObj?.decade ?? aiObj?.era ?? "");
+              const decAge = (() => { const m = decStr.match(/(\d{4})/); return m ? new Date().getFullYear() - Number(m[1]) : 0; })();
+              return estAge >= 70 ? `~${estAge} Years Old` : decAge >= 70 ? `~${decStr}` : null;
+            })()}
+            showCollectible={showCollectibleUI}
+            collectibleDetection={collectibleDetectionResult}
+            collectiblesScore={collectiblesScore}
+            isAntique={showAntiqueUI}
+          />
+        </div>
+      )}
+
       {/* ═══ Sale Congrats Bar ═══ */}
       {item.status === "SOLD" && (
         <div style={{ marginTop: "1rem" }}>
@@ -515,6 +539,27 @@ export default async function ItemPage({ params }: { params: Params }) {
           projectId={item.projectId ?? null}
           demandScore={demandScore}
           botDisagreement={botDisagreement}
+          enriched={enriched ? {
+            priceDirection: enriched.priceDirection,
+            demandLevel: enriched.demandLevel,
+            totalOffers: enriched.totalOffers,
+            highestOffer: enriched.highestOffer,
+            offerToAskRatio: enriched.offerToAskRatio,
+            soldPrice: enriched.soldPrice,
+            dataCompleteness: enriched.dataCompleteness,
+            bestPlatform: enriched.bestPlatform,
+            targetBuyerProfiles: enriched.targetBuyerProfiles,
+            valueDrivers: enriched.valueDrivers,
+            topSearchKeywords: enriched.topSearchKeywords,
+            avgCompPrice: enriched.avgCompPrice,
+            highComp: enriched.highComp,
+            lowComp: enriched.lowComp,
+            aiConfidence: enriched.aiConfidence,
+            compCount: enriched.marketComps?.length ?? 0,
+            hasAcceptedOffer: enriched.hasAcceptedOffer,
+          } : null}
+          itemSaleMethod={(item as any).saleMethod || null}
+          itemIsCollectible={isCollectibleFromAI}
         />
       </div>
 

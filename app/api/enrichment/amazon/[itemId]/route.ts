@@ -32,6 +32,10 @@ export async function GET(
     }
 
     const data = safeJson(cached.payload) as RainforestEnrichmentData | null;
+    // Backfill totalResults for older cached data that predates the field
+    if (data && !data.totalResults) {
+      data.totalResults = data.resultCount;
+    }
     return NextResponse.json({ success: true, data, cachedAt: cached.createdAt });
   } catch (e) {
     console.error("[enrichment/amazon GET]", e);

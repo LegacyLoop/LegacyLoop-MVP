@@ -248,6 +248,9 @@ export const BOT_CREDIT_COSTS = {
   collectiblesBotReRun: 1,
   megaBotRun: 5,
   megaBotReRun: 3,
+  intelligenceRun: 1,    // Claude intelligence synthesis
+  intelligenceRefresh: 0.5, // Refresh when stale
+  intelligenceChat: 0.25,  // Ask Claude a question about item intel
   reconBotAutoScan: 1,   // Deducted per scheduled auto-scan
   antiqueDeepDive: 5,
   analyzeBotFirstRun: 0,
