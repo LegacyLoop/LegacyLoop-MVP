@@ -40,7 +40,7 @@ const EVENT_META: Record<string, EventMeta> = {
   },
   MEGABOT_ANALYSIS: {
     icon: "⚡",
-    label: (p) => `MegaBot ran · ${p?.agreementScore ?? "?"}% agreement · 3-AI consensus`,
+    label: (p) => `MegaBot ran · ${p?.agreementScore ?? "?"}% agreement · 4-AI consensus`,
     color: "#7c3aed",
   },
   STATUS_CHANGE: {

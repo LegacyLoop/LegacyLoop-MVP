@@ -252,7 +252,7 @@ export default function ApiAccessPage() {
             { value: "REST", label: "API standard" },
             { value: "<800ms", label: "Avg response time" },
             { value: "99.5%", label: "Uptime SLA" },
-            { value: "3-AI", label: "MegaBot consensus" },
+            { value: "4-AI", label: "MegaBot consensus" },
           ].map((s) => (
             <div key={s.label}>
               <div style={{ fontSize: "1.5rem", fontWeight: 900, color: "#5eead4" }}>{s.value}</div>

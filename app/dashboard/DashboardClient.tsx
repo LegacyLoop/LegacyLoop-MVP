@@ -127,7 +127,7 @@ function describeEvent(eventType: string, payload: any): string {
     case "ANALYZED_FORCE":
       return `Re-analyzed${payload?.comps ? ` with ${payload.comps} comps` : ""}`;
     case "MEGABOT_ANALYSIS":
-      return `MegaBot ran${payload?.agreementScore ? ` — ${payload.agreementScore}% agreement` : ""} across 3 AI models`;
+      return `MegaBot ran${payload?.agreementScore ? ` — ${payload.agreementScore}% agreement` : ""} across 4 AI models`;
     case "STATUS_CHANGE":
       return `Status changed${payload?.from ? ` from ${payload.from}` : ""}${payload?.to ? ` to ${payload.to}` : ""}`;
     case "PRICE_UPDATE":

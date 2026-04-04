@@ -732,7 +732,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border-default)" }}>
-                    {["", "Description", "Credits", "Balance", "Date"].map((h) => (
+                    {["", "Description", "Credits", "Balance", "Date", ""].map((h) => (
                       <th key={h} style={{
                         padding: "0.75rem 1rem", textAlign: "left", fontSize: "0.72rem",
                         fontWeight: 700, color: "var(--text-muted)",
@@ -754,6 +754,24 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                       </td>
                       <td style={{ padding: "0.75rem 1rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
                         {new Date(tx.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </td>
+                      <td style={{ padding: "0.75rem 1rem" }}>
+                        <a
+                          href={`/receipts/${tx.id}?type=credit`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: "inline-flex", alignItems: "center", gap: "4px",
+                            padding: "0.25rem 0.6rem", borderRadius: "6px",
+                            fontSize: "0.68rem", fontWeight: 600,
+                            color: "var(--accent)", background: "rgba(0,188,212,0.08)",
+                            border: "1px solid rgba(0,188,212,0.2)",
+                            textDecoration: "none", whiteSpace: "nowrap",
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          📄 Receipt
+                        </a>
                       </td>
                     </tr>
                   ))}

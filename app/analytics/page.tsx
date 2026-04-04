@@ -1008,7 +1008,7 @@ export default async function AnalyticsPage({
           <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
             AI pricing uses OpenAI vision + live market comparables + location-based multipliers.
             {antiqueItems > 0 && " Antique items may command higher prices at auction."}
-            {" "}MegaBot combines 3 AI models for consensus pricing.
+            {" "}MegaBot combines 4 AI models for consensus pricing.
           </div>
         </div>
       </div>

@@ -185,7 +185,7 @@ export default async function BillingPage() {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem" }}>
             <thead>
               <tr>
-                {["Date", "Description", "Subtotal", "Fee", "Total", "Status"].map((h) => (
+                {["Date", "Description", "Subtotal", "Fee", "Total", "Status", ""].map((h) => (
                   <th key={h} style={{
                     textAlign: "left", padding: "0.5rem 0.6rem", color: "var(--text-muted)", fontWeight: 600,
                     fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.06em",
@@ -212,6 +212,23 @@ export default async function BillingPage() {
                       border: `1px solid ${tx.status === "completed" ? "rgba(22,163,74,0.2)" : "rgba(234,179,8,0.2)"}`,
                       textTransform: "uppercase",
                     }}>{tx.status}</span>
+                  </td>
+                  <td style={{ padding: "0.6rem" }}>
+                    <a
+                      href={`/receipts/${tx.id}?type=payment`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: "4px",
+                        padding: "0.15rem 0.5rem", borderRadius: "6px",
+                        fontSize: "0.6rem", fontWeight: 600,
+                        color: "var(--accent)", background: "rgba(0,188,212,0.08)",
+                        border: "1px solid rgba(0,188,212,0.2)",
+                        textDecoration: "none", whiteSpace: "nowrap",
+                      }}
+                    >
+                      📄 Receipt
+                    </a>
                   </td>
                 </tr>
               ))}

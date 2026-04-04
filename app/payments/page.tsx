@@ -481,6 +481,7 @@ export default async function PaymentsPage() {
                         "Commission",
                         "Net Earnings",
                         "Status",
+                        "",
                       ].map((h) => (
                         <th
                           key={h}
@@ -595,6 +596,23 @@ export default async function PaymentsPage() {
                               {chip.label}
                             </span>
                           </td>
+                          <td style={{ padding: "0.6rem" }}>
+                            <a
+                              href={`/receipts/${e.id}?type=earning`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: "inline-flex", alignItems: "center", gap: "4px",
+                                padding: "0.15rem 0.5rem", borderRadius: "6px",
+                                fontSize: "0.6rem", fontWeight: 600,
+                                color: "var(--accent)", background: "rgba(0,188,212,0.08)",
+                                border: "1px solid rgba(0,188,212,0.2)",
+                                textDecoration: "none", whiteSpace: "nowrap",
+                              }}
+                            >
+                              📄 Receipt
+                            </a>
+                          </td>
                         </tr>
                       );
                     })}
@@ -691,6 +709,7 @@ export default async function PaymentsPage() {
                         "Fee",
                         "Total",
                         "Status",
+                        "",
                       ].map((h) => (
                         <th
                           key={h}
@@ -796,6 +815,23 @@ export default async function PaymentsPage() {
                             >
                               {chip.label}
                             </span>
+                          </td>
+                          <td style={{ padding: "0.6rem" }}>
+                            <a
+                              href={`/receipts/${tx.id}?type=payment`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: "inline-flex", alignItems: "center", gap: "4px",
+                                padding: "0.15rem 0.5rem", borderRadius: "6px",
+                                fontSize: "0.6rem", fontWeight: 600,
+                                color: "var(--accent)", background: "rgba(0,188,212,0.08)",
+                                border: "1px solid rgba(0,188,212,0.2)",
+                                textDecoration: "none", whiteSpace: "nowrap",
+                              }}
+                            >
+                              📄 Receipt
+                            </a>
                           </td>
                         </tr>
                       );

@@ -8549,8 +8549,8 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
 
         </div>{/* end accordion container */}
 
-        {/* ── QUICK NAV ── */}
-        <div style={{ display: "flex", gap: "0.2rem", flexWrap: "wrap", justifyContent: "center", marginTop: "0.35rem" }}>
+        {/* ── QUICK NAV — mini keycap buttons ── */}
+        <div style={{ display: "flex", gap: "5px", flexWrap: "wrap", justifyContent: "center", marginTop: "0.5rem" }}>
           {[
             { icon: "\u270F\u{FE0F}", label: "Edit", href: `/items/${itemId}/edit` },
             { icon: "+", label: "New", href: "/items/new" },
@@ -8561,17 +8561,37 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
             { icon: "\u{1F916}", label: "Bots", href: "/bots" },
           ].map((link) => (
             <a key={link.label} href={link.href} style={{
-              display: "inline-flex", alignItems: "center", gap: "0.15rem",
-              padding: "0.18rem 0.35rem", borderRadius: "0.25rem",
-              background: "transparent", border: "none",
-              color: "var(--text-muted)", textDecoration: "none",
-              fontSize: "0.58rem", fontWeight: 500, transition: "color 0.15s ease",
+              display: "inline-flex", flexDirection: "column" as const, alignItems: "center",
+              justifyContent: "center", gap: "1px",
+              padding: "5px 8px", minHeight: "32px", minWidth: "42px",
+              borderRadius: "6px", textDecoration: "none",
+              background: "linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(240,240,240,0.5) 100%)",
+              border: "1px solid rgba(148,163,184,0.18)",
+              color: "var(--text-muted)",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6)",
+              transition: "all 0.15s ease",
+              cursor: "pointer",
+              position: "relative" as const,
             }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#00bcd4"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.background = "linear-gradient(180deg, rgba(0,188,212,0.08) 0%, rgba(0,188,212,0.03) 100%)";
+                el.style.borderColor = "rgba(0,188,212,0.25)";
+                el.style.color = "#00bcd4";
+                el.style.transform = "translateY(-1px)";
+                el.style.boxShadow = "0 2px 6px rgba(0,188,212,0.1), inset 0 1px 0 rgba(255,255,255,0.5)";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.background = "linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(240,240,240,0.5) 100%)";
+                el.style.borderColor = "rgba(148,163,184,0.18)";
+                el.style.color = "var(--text-muted)";
+                el.style.transform = "translateY(0)";
+                el.style.boxShadow = "0 1px 3px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6)";
+              }}
             >
-              <span>{link.icon}</span>
-              <span>{link.label}</span>
+              <span style={{ fontSize: "11px", lineHeight: 1, filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.06))" }}>{link.icon}</span>
+              <span style={{ fontSize: "7px", fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1 }}>{link.label}</span>
             </a>
           ))}
         </div>

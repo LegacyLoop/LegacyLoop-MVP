@@ -161,6 +161,21 @@ export default function SpendingPage() {
                 <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", minWidth: "40px", textAlign: "right" }}>
                   {tx.balance} cr
                 </span>
+                <a
+                  href={`/receipts/${tx.id}?type=credit`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "3px",
+                    padding: "0.12rem 0.4rem", borderRadius: "5px",
+                    fontSize: "0.6rem", fontWeight: 600, marginLeft: "0.5rem",
+                    color: "var(--accent)", background: "rgba(0,188,212,0.08)",
+                    border: "1px solid rgba(0,188,212,0.2)",
+                    textDecoration: "none", whiteSpace: "nowrap",
+                  }}
+                >
+                  📄
+                </a>
               </div>
             ))}
           </div>

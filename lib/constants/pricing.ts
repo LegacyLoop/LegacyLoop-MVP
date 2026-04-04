@@ -652,6 +652,7 @@ export const TIERS: Record<string, DigitalTierDef> = {
     features: [
       "Enhanced AI pricing",
       "5 core bots included",
+      "20 credits/month included",
       "BuyerBot matching",
       "Priority email support",
     ],
@@ -673,6 +674,7 @@ export const TIERS: Record<string, DigitalTierDef> = {
     features: [
       "MegaBot (credit-based)",
       "All specialty bots",
+      "50 credits/month included",
       "Advanced analytics",
       "Phone support",
     ],
@@ -693,6 +695,7 @@ export const TIERS: Record<string, DigitalTierDef> = {
     popular: false,
     features: [
       "All bots including CarBot",
+      "100 credits/month included",
       "White-label store",
       "Dedicated account manager",
       "API access",
