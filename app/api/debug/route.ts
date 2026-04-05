@@ -3,9 +3,9 @@ import { prisma } from "@/lib/db";
 
 export async function GET() {
   try {
-    const tursoUrl = process.env.TURSO_CONNECTION_URL ? "SET" : "NOT SET";
-    const tursoToken = process.env.TURSO_AUTH_TOKEN ? "SET" : "NOT SET";
-    const dbUrl = process.env.DATABASE_URL ? "SET" : "NOT SET";
+    const tursoUrl = process.env.TURSO_CONNECTION_URL ? process.env.TURSO_CONNECTION_URL.substring(0, 30) + "..." : "NOT SET";
+    const tursoToken = process.env.TURSO_AUTH_TOKEN ? "SET (" + process.env.TURSO_AUTH_TOKEN.length + " chars)" : "NOT SET";
+    const dbUrl = process.env.DATABASE_URL || "NOT SET";
 
     // Try a simple query
     const userCount = await prisma.user.count();
