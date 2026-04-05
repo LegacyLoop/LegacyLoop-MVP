@@ -35,6 +35,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  outputFileTracingExcludes: {
+    '/**': ['node_modules/ffmpeg-static/**', 'node_modules/sharp/**', 'node_modules/@img/**', 'node_modules/prisma/libquery_engine-*', 'node_modules/.prisma/client/libquery_engine-*'],
+  },
   async headers() {
     return [
       {
