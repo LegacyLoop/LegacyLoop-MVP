@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@libsql/client": "^0.17.2",
-    "@prisma/adapter-libsql": "^7.6.0",
+    "@prisma/adapter-libsql": "^6.19.3",
     "@prisma/client": "^6.19.2",
     "@types/fluent-ffmpeg": "^2.1.28",
     "bcryptjs": "^3.0.3",
