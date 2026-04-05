@@ -8,7 +8,7 @@ function buildPrisma(): PrismaClient {
   const tursoUrl = process.env.TURSO_CONNECTION_URL;
   const tursoToken = process.env.TURSO_AUTH_TOKEN;
 
-  // Use Turso if configured, otherwise fall back to local SQLite
+  // Use Turso (hosted libSQL) if configured, otherwise fall back to local SQLite
   if (tursoUrl && tursoToken) {
     const libsql = createClient({ url: tursoUrl, authToken: tursoToken });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
