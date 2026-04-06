@@ -76,11 +76,11 @@ const BOTS: BotDef[] = [
     route: "/bots/shipbot",
   },
   {
-    id: "stylebot",
+    id: "photobot",
     name: "PhotoBot",
     icon: "\u{1F4F7}",
-    desc: "Visual presentation \u2014 photo quality, lighting, staging tips to attract more buyers",
-    detail: "AI-scored photo quality, lighting analysis, staging tips, before/after improvements, and platform-specific advice.",
+    desc: "AI photo assessment, scoring, enhancement, background removal, and professional imagery",
+    detail: "Photo quality scoring, presentation/listing/staging analysis, DALL-E enhancement, background removal, and platform-specific visual advice.",
     color: "#f06292",
     route: "/bots/photobot",
   },
@@ -165,7 +165,7 @@ const COMING_SOON_BOTS = [
 
 // ── Bot groupings ────────────────────────────────────────────────────────────
 
-const SPECIALIST_IDS = ["analyzebot", "pricebot", "listbot", "buyerbot", "shipbot", "stylebot"];
+const SPECIALIST_IDS = ["analyzebot", "pricebot", "listbot", "buyerbot", "shipbot", "photobot"];
 const INTEL_IDS = ["carbot", "antiquebot", "collectiblesbot", "reconbot"];
 
 // ── Page ─────────────────────────────────────────────────────────────────────

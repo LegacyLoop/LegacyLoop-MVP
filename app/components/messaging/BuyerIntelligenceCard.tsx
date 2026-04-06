@@ -82,11 +82,23 @@ export default function BuyerIntelligenceCard({ conversationId }: { conversation
         <span style={{ fontSize: 11, color: "rgba(0,188,212,0.9)", lineHeight: 1.5 }}>💡 {intent.recommendation}</span>
       </div>
 
-      {/* Scam Warning */}
+      {/* Scam Warning — HIGH VISIBILITY */}
       {data?.type === "scam_warning" && (
-        <div style={{ marginTop: 10, background: "rgba(244,67,54,0.1)", border: "1px solid rgba(244,67,54,0.4)", borderRadius: 10, padding: 14 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#f44336", marginBottom: 6 }}>⚠️ Potential Scam Detected</div>
-          <div style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.5 }}>{data.scam?.warning}</div>
+        <div style={{ marginTop: 14, background: "linear-gradient(135deg, rgba(244,67,54,0.2) 0%, rgba(183,28,28,0.25) 100%)", border: "2px solid #f44336", borderRadius: 12, padding: "16px 14px", boxShadow: "0 0 20px rgba(244,67,54,0.3), inset 0 0 20px rgba(244,67,54,0.05)", animation: "pulse 2s infinite" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 20 }}>🚨</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: "#f44336", letterSpacing: 0.5, textTransform: "uppercase" }}>Scam Alert</span>
+          </div>
+          <div style={{ fontSize: 12, color: "var(--text-primary)", lineHeight: 1.6, marginBottom: 12 }}>{data.scam?.warning}</div>
+          {data.scam?.confidence && (
+            <div style={{ fontSize: 10, color: "#f44336", fontWeight: 600, marginBottom: 10 }}>
+              Confidence: {data.scam.confidence === "high" ? "HIGH" : data.scam.confidence === "medium" ? "MEDIUM" : "LOW"}
+            </div>
+          )}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button style={{ fontSize: 11, fontWeight: 600, padding: "6px 14px", borderRadius: 8, background: "rgba(244,67,54,0.9)", color: "#fff", border: "none", cursor: "pointer" }}>Block Buyer</button>
+            <button style={{ fontSize: 11, fontWeight: 600, padding: "6px 14px", borderRadius: 8, background: "transparent", color: "#f44336", border: "1px solid #f44336", cursor: "pointer" }}>Acknowledge</button>
+          </div>
         </div>
       )}
     </div>

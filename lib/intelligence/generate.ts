@@ -211,7 +211,7 @@ export async function getCachedIntelligence(itemId: string): Promise<{
         in: [
           "PRICEBOT_RESULT", "ANTIQUEBOT_RESULT", "COLLECTIBLESBOT_RESULT",
           "BUYERBOT_RESULT", "LISTBOT_RESULT", "RECONBOT_RESULT",
-          "CARBOT_RESULT", "SHIPBOT_RESULT", "STYLEBOT_RESULT",
+          "CARBOT_RESULT", "SHIPBOT_RESULT",
           "RAINFOREST_RESULT", "ANALYZED", "ANALYZED_FORCE",
         ],
       },

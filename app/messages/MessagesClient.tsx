@@ -112,6 +112,10 @@ const TEMPLATES = [
   { label: "Local Pickup", text: "Hi! This is available for local pickup. I'm flexible on timing -- when works best for you?" },
   { label: "Shipping Info", text: "Hi! I can ship this item. Once I have your ZIP code I can calculate the exact rate. Interested?" },
   { label: "Ask a Question", text: "Thanks for reaching out! Do you have any questions about the item that I can answer?" },
+  { label: "Bulk Discount", text: "Great news -- if you're interested in purchasing multiple items, I can offer a package deal! Let me know what else catches your eye and I'll put together a bundle price." },
+  { label: "Payment Methods", text: "I accept payment through LegacyLoop's secure checkout, as well as cash for local pickup. Which works best for you?" },
+  { label: "Pickup Windows", text: "I'm generally available for pickup Thursday through Saturday, 9am-4pm. Which day and time works best for you?" },
+  { label: "Estate Closing", text: "This is a one-time estate sale, so quantities are limited and items are first-come, first-served. Would you like to come view it in person or proceed with a purchase?" },
 ];
 
 export default function MessagesClient({ initialConversations, itemsForForm }: Props) {
@@ -216,7 +220,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
         // Polling failure is non-critical — skip silently
       }
     };
-    const interval = setInterval(poll, 30_000);
+    const interval = setInterval(poll, 10_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -342,6 +346,12 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
     e.preventDefault();
     setNewConvBusy(true);
     setNewConvErr("");
+
+    // Validate required fields
+    if (!newConv.buyerName.trim()) { setNewConvErr("Buyer name is required."); setNewConvBusy(false); return; }
+    if (!newConv.firstMessage.trim()) { setNewConvErr("Please enter the buyer's message."); setNewConvBusy(false); return; }
+    if (!newConv.itemId) { setNewConvErr("Please select an item."); setNewConvBusy(false); return; }
+
     const res = await fetch("/api/conversations", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1111,8 +1121,8 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                 <div ref={bottomRef} />
               </div>
 
-              {/* ═══ ZONE 2: AI Tools + Templates (contained, max 280px) ═══ */}
-              <div style={{ flexShrink: 0, maxHeight: 180, overflowY: "auto", borderTop: "1px solid var(--border-default)", padding: "6px 12px" }}>
+              {/* ═══ ZONE 2: AI Tools + Templates (sticky, always visible above reply) ═══ */}
+              <div style={{ flexShrink: 0, maxHeight: 240, overflowY: "auto", borderTop: "1px solid var(--border-default)", padding: "6px 12px", position: "sticky", bottom: 0, background: "var(--bg-secondary, #1a1f2e)", zIndex: 5 }}>
                 {/* Reply templates */}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>
                   {TEMPLATES.map((t) => (
@@ -1166,7 +1176,13 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
               <div style={{ fontWeight: 600, fontSize: "1.1rem", color: "var(--text-primary)" }}>
                 Select a conversation
               </div>
-              <p className="muted mt-2">Or log a new buyer message to get started.</p>
+              <p className="muted mt-2" style={{ marginBottom: 16 }}>Your AI agent will analyze it and provide real-time intelligence.</p>
+              <button
+                onClick={() => setComposing(true)}
+                style={{ padding: "10px 24px", borderRadius: 10, background: "linear-gradient(135deg, #00bcd4, #0097a7)", color: "#fff", fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(0,188,212,0.3)" }}
+              >
+                + New Conversation
+              </button>
             </div>
           )}
         </div>

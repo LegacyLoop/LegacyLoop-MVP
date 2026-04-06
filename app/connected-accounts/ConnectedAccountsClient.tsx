@@ -103,7 +103,12 @@ export default function ConnectedAccountsClient({ connectedPlatforms }: Props) {
       setModal(key);
       return;
     }
-    // For demo: toggle connection via API
+    // eBay uses real OAuth — redirect to eBay consent page
+    if (key === "ebay") {
+      window.location.href = "/api/ebay/auth";
+      return;
+    }
+    // For other platforms: toggle connection via API
     try {
       await fetch("/api/integrations/connect", {
         method: "POST",

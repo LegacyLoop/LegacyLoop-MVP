@@ -277,6 +277,16 @@ overallScore: 1-10 composite quality score`,
     } else {
       // Standard enhance path — build from physical descriptors + enrichment + custom prompt
       const customGenDirective = hasCustomPrompt ? `User instruction: ${customPrompt}.` : "";
+
+      // Build staging context from AI analysis (presentation/styling guidance for cover photo)
+      const ad = analysisData as Record<string, any>;
+      const stagingContext: string[] = [];
+      if (ad?.positive_notes?.length) stagingContext.push(`Highlight: ${(ad.positive_notes as string[]).slice(0, 2).join(", ")}`);
+      if (ad?.is_antique) stagingContext.push("Antique staging: emphasize patina and character as authenticity markers");
+      if (ad?.is_collectible) stagingContext.push("Collectible staging: include visual cues of rarity and premium quality");
+      if (Number(ad?.condition_cosmetic) >= 8) stagingContext.push("Item presents beautifully — use aspirational lifestyle staging");
+      const stagingDirective = stagingContext.length > 0 ? `Staging guidance: ${stagingContext.join(". ")}.` : "";
+
       dallePromptText = [
         hasEnrichment && `Product context: ${enrichmentContext}`,
         physicallyAccuratePrompt || assessment?.dallePrompt || "Professional product photo on clean neutral background",
@@ -284,6 +294,7 @@ overallScore: 1-10 composite quality score`,
         surfaceDetails && `Visible condition details that must appear exactly: ${surfaceDetails}`,
         conditionNote,
         customGenDirective,
+        stagingDirective,
         `Background: ${bgReplacement}`,
         "IRON RULE: Preserve ALL visible condition details including scratches, wear, dents, stains, patina, and damage exactly as they appear in the original. Do not hide, smooth, soften, or alter any condition detail.",
         "Professional product photography. Item centered, filling 70% of frame. Even soft studio lighting. No harsh shadows. Photorealistic quality.",
@@ -424,7 +435,7 @@ overallScore: 1-10 composite quality score`,
     }
 
     // ── STEP D: STORE RESULTS ─────────────────────────────────────────────
-    const result = {
+    const result: Record<string, any> = {
       assessment,
       editedPhotoUrl,
       generatedPhotoUrl,
@@ -436,6 +447,94 @@ overallScore: 1-10 composite quality score`,
       ...(editedPhotoSavedPath ? { editedPhotoSavedPath } : {}),
       ...(generatedPhotoSavedPath ? { generatedPhotoSavedPath } : {}),
     };
+
+    // ── Style Scoring (ported from StyleBot — runs in assess-only mode) ──
+    if (assessOnly) {
+      const ad = analysisData as Record<string, any>;
+      const stPhotoCount = item.photos?.length || 0;
+      const hasPrimarySet = item.photos?.some((p: any) => p.isPrimary) || false;
+
+      // Presentation Score (40% weight)
+      const rawPhotoScore = ad?.photo_quality_score ?? 5;
+      const quantityBonus = stPhotoCount >= 6 ? 15 : stPhotoCount >= 4 ? 10 : stPhotoCount >= 2 ? 5 : 0;
+      const primaryBonus = hasPrimarySet ? 5 : 0;
+      const presentationScore = Math.min(100, Math.round(rawPhotoScore * 10 + quantityBonus + primaryBonus));
+
+      const stPhotoTips: string[] = [];
+      if (ad?.photo_improvement_tips?.length) stPhotoTips.push(...ad.photo_improvement_tips);
+      if (stPhotoCount < 3) stPhotoTips.push("Add more photos — listings with 4+ photos sell 2x faster");
+      if (stPhotoCount < 6) stPhotoTips.push("Aim for 6 photos: front, back, sides, detail shots, and any flaws");
+      if (!hasPrimarySet && stPhotoCount > 1) stPhotoTips.push("Set a primary photo — this is what buyers see first in search results");
+
+      // Listing Score (35% weight)
+      const hasStTitle = !!ad?.recommended_title;
+      const hasStDescription = !!ad?.recommended_description;
+      const hasStKeywords = ad?.keywords?.length > 5;
+      const hasStPricing = ad?.estimated_value_mid != null;
+      const listingScore = Math.min(100, (hasStTitle ? 25 : 10) + (hasStDescription ? 25 : 10) + (hasStKeywords ? 20 : 5) + (hasStPricing ? 15 : 0) + (ad?.condition_details ? 15 : 5));
+
+      const titleSuggestion = ad?.recommended_title || `${ad?.brand ? ad.brand + " " : ""}${ad?.item_name || "Item"} — ${ad?.condition_guess || "Good"} Condition`;
+      const stDescTips: string[] = [];
+      if (ad?.recommended_description) stDescTips.push(ad.recommended_description);
+      if (ad?.condition_details) stDescTips.push(`Mention condition specifics: "${String(ad.condition_details).slice(0, 100)}"`);
+      if (ad?.material) stDescTips.push(`Highlight material: ${ad.material}`);
+      if (ad?.era) stDescTips.push(`Include era/period: ${ad.era}`);
+      if (ad?.markings) stDescTips.push(`Mention markings/labels: ${ad.markings}`);
+      if (ad?.dimensions_estimate) stDescTips.push(`Include measurements: ${ad.dimensions_estimate}`);
+      if (ad?.value_drivers?.length) stDescTips.push(`Lead with value drivers: ${ad.value_drivers.slice(0, 3).join(", ")}`);
+
+      // Staging Score (25% weight)
+      const stConditionScore = ad?.condition_score ?? 5;
+      const stCosmeticScore = ad?.condition_cosmetic ?? stConditionScore;
+      const stagingBase = Math.round((stConditionScore + stCosmeticScore) / 2 * 10);
+      const stPositiveBonus = (ad?.positive_notes?.length ?? 0) >= 2 ? 10 : 0;
+      const stIssuesPenalty = (ad?.visible_issues?.length ?? 0) >= 3 ? -10 : 0;
+      const stagingScore = Math.min(100, Math.max(0, stagingBase + stPositiveBonus + stIssuesPenalty));
+
+      const stStagingSuggestions: string[] = [];
+      if (ad?.visible_issues?.length) stStagingSuggestions.push(`Photograph honestly but minimize in primary photo: ${ad.visible_issues.slice(0, 2).join("; ")}`);
+      if (ad?.positive_notes?.length) stStagingSuggestions.push(`Highlight strengths prominently: ${ad.positive_notes.slice(0, 3).join("; ")}`);
+      if (ad?.is_antique) stStagingSuggestions.push("Stage with context — show patina as character, not damage. Antique buyers value authenticity.");
+      if (ad?.is_collectible) stStagingSuggestions.push("Include proof of authenticity if available — certificates, original packaging, provenance documents");
+      if (stCosmeticScore < 5) stStagingSuggestions.push("Consider cleaning/light restoration before photographing — first impressions matter");
+      if (stCosmeticScore >= 8) stStagingSuggestions.push("Item presents beautifully — use lifestyle staging to help buyers envision ownership");
+
+      // Platform Recommendations
+      const stPlatforms: { name: string; fit: string; reason: string }[] = [];
+      if (ad?.best_platforms?.length) {
+        const fitLevels = ["Excellent", "Good", "Good", "Fair", "Fair"];
+        ad.best_platforms.slice(0, 5).forEach((p: string, i: number) => {
+          stPlatforms.push({ name: p, fit: fitLevels[i] || "Fair", reason: ad?.regional_best_why || `Strong ${ad?.category || "item"} market` });
+        });
+      }
+      if (stPlatforms.length === 0) {
+        stPlatforms.push(
+          { name: "Facebook Marketplace", fit: "Good", reason: "Large local buyer pool, no listing fees" },
+          { name: "eBay", fit: "Good", reason: "Largest secondhand marketplace with buyer protections" },
+          { name: "Craigslist", fit: "Fair", reason: "Free listings, local pickup preferred" },
+        );
+      }
+
+      // Overall Score
+      const overallScore = Math.round(presentationScore * 0.4 + listingScore * 0.35 + stagingScore * 0.25);
+
+      // Summary
+      const scoreSummary = `Overall presentation score: ${overallScore}/100. ${
+        overallScore >= 80 ? "Strong listing — ready to publish." :
+        overallScore >= 60 ? "Good foundation — a few improvements could boost buyer interest." :
+        overallScore >= 40 ? "Needs work — focus on photo quality and description detail." :
+        "Significant improvements needed before listing."
+      } ${stPhotoCount < 3 ? "Priority: add more photos." : ""}${!hasStTitle ? " Priority: optimize your listing title." : ""}`;
+
+      result.styleScoring = {
+        overallScore,
+        presentation: { score: presentationScore, photoQualityScore: rawPhotoScore, photoCount: stPhotoCount, tips: stPhotoTips.slice(0, 5) },
+        listing: { score: listingScore, titleSuggestion, descriptionTips: stDescTips.slice(0, 5), keywords: ad?.keywords?.slice(0, 10) || [] },
+        staging: { score: stagingScore, conditionScore: stConditionScore, cosmeticScore: stCosmeticScore, suggestions: stStagingSuggestions.slice(0, 5) },
+        platforms: stPlatforms,
+        summary: scoreSummary,
+      };
+    }
 
     const eventType = isVariation
       ? "PHOTOBOT_ENHANCE_VARIATION"

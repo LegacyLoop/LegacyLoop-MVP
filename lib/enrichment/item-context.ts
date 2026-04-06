@@ -52,6 +52,7 @@ export interface EnrichmentSummary {
   megaBotFindings: string | null;
   valuationFindings: string | null;
   amazonFindings: string | null;
+  marketIntelFindings: string | null;
   documentVaultFindings: string | null;
   priorRunCount: number;
   confidenceLevel: "none" | "low" | "medium" | "high";
@@ -103,6 +104,7 @@ export async function getItemEnrichmentContext(
               "PHOTOBOT_ENHANCE",
               "PHOTOBOT_EDIT",
               "RAINFOREST_RESULT",
+              "ANALYZEBOT_MARKET_INTEL",
             ],
           },
         },
@@ -194,6 +196,7 @@ export async function getItemEnrichmentContext(
       megaBotFindings: extractMegaBot(megaBotLogs),
       valuationFindings: extractValuation(item),
       amazonFindings: extractFromEventLog(logByType["RAINFOREST_RESULT"], extractAmazonData),
+      marketIntelFindings: extractMarketIntelligence(logByType),
       documentVaultFindings,
       priorRunCount: 0, // calculated below
       confidenceLevel: "none",
@@ -675,6 +678,28 @@ function extractPhotoBot(logByType: Record<string, string | null>): string | nul
   if (d.missing_angles?.length) parts.push(`Missing Shots: ${d.missing_angles.slice(0, 3).join(", ")}`);
   if (d.missingShots?.length) parts.push(`Missing Shots: ${d.missingShots.slice(0, 3).join(", ")}`);
   if (d.priorityAction) parts.push(`Priority: ${String(d.priorityAction).slice(0, 80)}`);
+  // StyleScoring (ported from StyleBot into PhotoBot assess-only mode)
+  if (d.styleScoring?.overallScore) {
+    parts.push(`Listing Readiness: ${d.styleScoring.overallScore}/100`);
+    if (d.styleScoring.presentation?.score) parts.push(`Presentation: ${d.styleScoring.presentation.score}/100`);
+    if (d.styleScoring.listing?.score) parts.push(`Listing Quality: ${d.styleScoring.listing.score}/100`);
+    if (d.styleScoring.staging?.score) parts.push(`Staging: ${d.styleScoring.staging.score}/100`);
+    if (d.styleScoring.staging?.suggestions?.length) parts.push(`Staging Tips: ${d.styleScoring.staging.suggestions.slice(0, 2).join("; ")}`);
+  }
+  return parts.length ? parts.join(" · ") : null;
+}
+
+function extractMarketIntelligence(logByType: Record<string, string | null>): string | null {
+  const payload = logByType["ANALYZEBOT_MARKET_INTEL"];
+  const d = safeJson(payload);
+  if (!d) return null;
+  const parts: string[] = [];
+  if (d.compCount) parts.push(`${d.compCount} market comps`);
+  if (d.sources?.length) parts.push(`Sources: ${d.sources.join(", ")}`);
+  if (d.median) parts.push(`Market median: $${Math.round(d.median)}`);
+  if (d.low && d.high) parts.push(`Range: $${Math.round(d.low)}–$${Math.round(d.high)}`);
+  if (d.trend) parts.push(`Trend: ${d.trend}`);
+  if (d.confidence) parts.push(`Confidence: ${Math.round(d.confidence * 100)}%`);
   return parts.length ? parts.join(" · ") : null;
 }
 
@@ -819,6 +844,9 @@ function buildContextBlock(summary: EnrichmentSummary, excludeBot?: string, item
       }
     } catch { /* ignore */ }
     findings.push(`• Amazon Market Data: ${summary.amazonFindings}${amazonAge}`);
+  }
+  if (summary.marketIntelFindings) {
+    findings.push(`• Market Intelligence (Phase 1): ${summary.marketIntelFindings}`);
   }
   if (summary.documentVaultFindings) {
     findings.push(`• Document Vault Intelligence: ${summary.documentVaultFindings}`);
@@ -1002,6 +1030,7 @@ function emptyContext(itemId: string): ItemEnrichmentContext {
       megaBotFindings: null,
       valuationFindings: null,
       amazonFindings: null,
+      marketIntelFindings: null,
       documentVaultFindings: null,
       priorRunCount: 0,
       confidenceLevel: "none",

@@ -70,6 +70,18 @@ export async function calculateDemandScore(itemId: string): Promise<number> {
     signals.push({ source: "BuyerBot", score: buyerScore, weight: 0.15 });
   }
 
+  // PhotoBot listing readiness (photo quality directly impacts click-through + conversion)
+  const photoBotLog = await prisma.eventLog.findFirst({
+    where: { itemId, eventType: { in: ["PHOTOBOT_ASSESS", "PHOTOBOT_ENHANCE"] } },
+    orderBy: { createdAt: "desc" },
+  });
+  if (photoBotLog?.payload) {
+    const pbData = safeJson(photoBotLog.payload);
+    if (pbData?.styleScoring?.overallScore) {
+      signals.push({ source: "PhotoBot", score: Math.min(100, pbData.styleScoring.overallScore), weight: 0.10 });
+    }
+  }
+
   const engagement = await prisma.itemEngagementMetrics.findUnique({ where: { itemId } });
   if (engagement) {
     const engScore = Math.min(100, (engagement.totalViews || 0) * 0.3 + (engagement.inquiries || 0) * 5);

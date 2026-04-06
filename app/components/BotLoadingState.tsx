@@ -58,11 +58,6 @@ const BOT_SUBTEXTS: Record<string, string[]> = {
     "Comparing carrier rates...",
     "Optimizing package dimensions...",
   ],
-  StyleBot: [
-    "Analyzing style and aesthetics...",
-    "Identifying design patterns...",
-    "Matching to style categories...",
-  ],
 };
 
 const DEFAULT_SUBTEXTS = [

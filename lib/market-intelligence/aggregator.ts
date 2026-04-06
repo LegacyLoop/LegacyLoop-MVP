@@ -73,7 +73,8 @@ function percentile(sorted: number[], p: number): number {
 export async function getMarketIntelligence(
   itemName: string,
   category: string,
-  sellerZip?: string
+  sellerZip?: string,
+  phase1Only?: boolean
 ): Promise<MarketIntelligence> {
   const cacheKey = `${category.toLowerCase()}:${itemName.toLowerCase().slice(0, 80)}:${sellerZip || ""}`;
   const cached = resultCache.get(cacheKey);
@@ -163,8 +164,8 @@ export async function getMarketIntelligence(
 
   console.log(`[market-intel] Phase 1: ${compCount} comps from ${sourceCount} sources (est. $${Math.round(estimatedValue)}) [${budgetMode} mode]${itemBudgetBlocked ? " — ITEM BUDGET EXCEEDED" : needsMoreData ? ` — Phase 2 needed: ${reason}` : " — sufficient, Phase 2 skipped"}`);
 
-  // ═══ PHASE 2: PAID Apify scrapers (only if insufficient AND budget allows) ═══
-  if (needsMoreData && !itemBudgetBlocked) {
+  // ═══ PHASE 2: PAID Apify scrapers (only if insufficient AND budget allows AND not phase1Only) ═══
+  if (needsMoreData && !itemBudgetBlocked && !phase1Only) {
     const paidAdapters: Array<() => Promise<ScraperResult>> = [];
 
     // eBay Apify fallback

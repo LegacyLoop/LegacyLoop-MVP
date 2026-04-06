@@ -432,7 +432,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
                   {/* Bell dropdown */}
                   {bellOpen && (
-                    <div style={{ ...glassPanel, position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "22rem", maxHeight: "26rem", overflowY: "auto", zIndex: 100 }}>
+                    <div style={{ ...glassPanel, position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "min(22rem, 92vw)", maxHeight: "26rem", overflowY: "auto", zIndex: 100 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.875rem 1rem 0.625rem", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
                         <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "#fff" }}>Notifications</span>
                         {notifications.some((n) => !n.isRead) && (

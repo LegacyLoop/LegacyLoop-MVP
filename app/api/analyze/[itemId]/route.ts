@@ -10,6 +10,7 @@ import { logUserEvent } from "@/lib/data/user-events";
 import { searchAmazon, buildSearchTerm } from "@/lib/adapters/rainforest";
 import type { RainforestEnrichmentData } from "@/lib/adapters/rainforest";
 import { isAmazonEligible } from "@/lib/amazon-eligibility";
+import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, isFreeAnalysisAvailable } from "@/lib/credits";
@@ -205,6 +206,38 @@ export async function POST(
 
   // Fire-and-forget: populate structured intelligence fields from AI analysis
   populateFromAnalysis(itemId, analysis as unknown as Record<string, unknown>).catch(() => null);
+
+  // 1b) Market Intelligence prefetch — Phase 1 only (free scrapers + cheap Apify)
+  // Runs in parallel, non-blocking. Results stored for downstream bot reuse.
+  let marketIntel: any = null;
+  try {
+    const miItemName = analysis.item_name || item.title || "item";
+    const miCategory = analysis.category || "General";
+    marketIntel = await getMarketIntelligence(miItemName, miCategory, item.saleZip || undefined, true);
+
+    if (marketIntel && marketIntel.comps?.length > 0) {
+      await prisma.eventLog.create({
+        data: {
+          itemId: item.id,
+          eventType: "ANALYZEBOT_MARKET_INTEL",
+          payload: JSON.stringify({
+            comps: marketIntel.comps.slice(0, 20),
+            median: marketIntel.median,
+            low: marketIntel.low,
+            high: marketIntel.high,
+            trend: marketIntel.trend,
+            confidence: marketIntel.confidence,
+            sources: marketIntel.sources,
+            compCount: marketIntel.compCount,
+            queriedAt: marketIntel.queriedAt,
+          }),
+        },
+      }).catch(() => null);
+      console.log(`[analyze] Market intel: ${marketIntel.compCount} comps from ${marketIntel.sources?.length || 0} sources (Phase 1 only)`);
+    }
+  } catch (miErr: any) {
+    console.error("[analyze] Market intelligence prefetch failed (non-fatal):", miErr?.message);
+  }
 
   // 2) New pricing pipeline (calculate.ts) — pass all seller data
   const numOwners = (item as any).numberOfOwners || extractTag(item.description, "Owners");

@@ -60,6 +60,13 @@ export default function IntegrationsClient({ connectedPlatforms }: Props) {
   }
 
   async function connect(platformId: string) {
+    // eBay uses real OAuth — redirect to eBay consent page
+    if (platformId === "ebay") {
+      setConnecting(platformId);
+      window.location.href = "/api/ebay/auth";
+      return;
+    }
+
     setConnecting(platformId);
     // Simulate brief loading
     await new Promise((r) => setTimeout(r, 1500));

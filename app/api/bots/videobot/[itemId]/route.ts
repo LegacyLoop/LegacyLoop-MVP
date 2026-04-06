@@ -134,6 +134,8 @@ export async function POST(
     const photoPaths = item.photos.map((p) => p.filePath);
 
     // ── Gather enrichment + market intelligence (non-blocking failures) ──
+    // Note: Video-specific scrapers (TikTok Ads, FB Ads Library, Social Trends, TikTok Songs, AI Video Ads)
+    // are called internally by the video pipeline in lib/video/pipeline.ts
     const [enrichment, marketIntel] = await Promise.all([
       getItemEnrichmentContext(itemId, "videobot").catch(() => null),
       getMarketIntelligence(itemName, category, item.saleZip || "04901").catch(() => null),

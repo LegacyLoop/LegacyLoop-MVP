@@ -28,7 +28,7 @@ const BOT_ICONS: Record<string, string> = {
   "AnalyzeBot": "🔍", "PriceBot": "💲", "ListBot": "📋", "BuyerBot": "🎯",
   "MegaBot": "🧠", "ReconBot": "🛰️", "AntiqueBot": "🏺", "CollectiblesBot": "🎴",
   "CarBot": "🚗", "VideoBot": "🎬", "PhotoBot": "📸", "ShipBot": "📦",
-  "StyleBot": "🎨", "Document": "📄",
+  "Document": "📄",
 };
 
 function getBotIcon(name: string): string {
