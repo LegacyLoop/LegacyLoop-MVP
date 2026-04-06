@@ -9,6 +9,48 @@
 import { prisma } from "@/lib/db";
 import { isDemoMode } from "@/lib/bot-mode";
 import type { RainforestEnrichmentData } from "@/lib/adapters/rainforest";
+import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
+import { searchEbayComps } from "@/lib/adapters/ebay";
+import type { MarketComp } from "@/lib/market-intelligence/types";
+
+// ─── Real scraper → MockCompetitor conversion ────────────────────────────────
+
+function scraperCompsToMockCompetitors(comps: MarketComp[], category: string): MockCompetitor[] {
+  return comps.map((c, i) => ({
+    id: `${c.platform.toLowerCase().replace(/\s+/g, "_")}_${i}`,
+    platform: c.platform,
+    title: (c.item || "").slice(0, 120),
+    category,
+    condition: normalizeCondition(c.condition),
+    location: c.location || "Online",
+    price: c.price,
+    status: (calculateDaysAgo(c.date) > 90 ? "SOLD" : "ACTIVE") as "ACTIVE" | "SOLD",
+    daysAgo: calculateDaysAgo(c.date),
+    daysToSell: null,
+    url: c.url || "#",
+    views: 0,
+    saves: 0,
+    isReal: true,
+  }));
+}
+
+function normalizeCondition(raw: string): string {
+  const lower = (raw || "").toLowerCase();
+  if (lower.includes("excellent") || lower.includes("mint") || lower.includes("new")) return "Excellent";
+  if (lower.includes("very good") || lower.includes("great")) return "Very Good";
+  if (lower.includes("good") || lower.includes("used")) return "Good";
+  return "Fair";
+}
+
+function calculateDaysAgo(dateStr: string): number {
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return 0;
+    return Math.max(0, Math.floor((Date.now() - date.getTime()) / 86400000));
+  } catch {
+    return 0;
+  }
+}
 
 // ─── Mock data pools ──────────────────────────────────────────────────────────
 
@@ -379,15 +421,57 @@ export async function runScan(botId: string): Promise<void> {
     }
   }
 
-  // In demo mode, generate mock competitors. In live mode, call real scrapers/APIs.
-  // See lib/bot-mode.ts for connection points.
-  const mockCompetitors = isDemoMode()
-    ? generateMockCompetitors(title, category, targetPrice)
-    : generateMockCompetitors(title, category, targetPrice); // TODO: Replace with real scraper when BOT_MODE=live
+  // In demo mode, use mock data. In live mode, call real scrapers + eBay API.
+  let scrapedCompetitors: MockCompetitor[];
+
+  if (isDemoMode()) {
+    scrapedCompetitors = generateMockCompetitors(title, category, targetPrice);
+  } else {
+    try {
+      // Phase 1: Real market intelligence from 49 scraper adapters (phase1Only = cheap)
+      const marketIntel = await getMarketIntelligence(title, category, item.saleZip ?? undefined, true);
+      if (marketIntel?.comps && marketIntel.comps.length >= 3) {
+        scrapedCompetitors = scraperCompsToMockCompetitors(marketIntel.comps, category);
+        console.log(`[ReconBot] Real scrapers: ${scrapedCompetitors.length} competitors from ${marketIntel.sources?.join(", ") || "various"}`);
+      } else {
+        throw new Error(`Only ${marketIntel?.comps?.length ?? 0} comps found — insufficient`);
+      }
+    } catch (scraperErr: any) {
+      console.warn(`[ReconBot] Scrapers returned insufficient data (${scraperErr?.message}) — using mock fallback`);
+      scrapedCompetitors = generateMockCompetitors(title, category, targetPrice);
+    }
+
+    // Supplement with FREE eBay active listings (current competitors, not sold history)
+    try {
+      const activeEbayComps = await searchEbayComps(title, 8);
+      if (activeEbayComps.length > 0) {
+        const ebayActiveCompetitors: MockCompetitor[] = activeEbayComps.map((ec, i) => ({
+          id: `ebay_active_${i}`,
+          platform: "eBay (Active)",
+          title: ec.title.slice(0, 120),
+          category,
+          condition: "As Listed",
+          location: "Online",
+          price: ec.price + (ec.shipping ?? 0),
+          status: "ACTIVE" as const,
+          daysAgo: 0,
+          daysToSell: null,
+          url: ec.url,
+          views: 0,
+          saves: 0,
+          isReal: true,
+        }));
+        scrapedCompetitors = [...ebayActiveCompetitors, ...scrapedCompetitors];
+        console.log(`[ReconBot] eBay active listings: +${activeEbayComps.length} competitors (FREE)`);
+      }
+    } catch (ebayErr: any) {
+      console.warn(`[ReconBot] eBay active listing supplement failed (non-fatal): ${ebayErr?.message}`);
+    }
+  }
 
   // Supplement with real Amazon listings if available (prepend so they appear first)
   const amazonCompetitors = await getAmazonCompetitors(item.id, category).catch(() => []);
-  const competitors = [...amazonCompetitors, ...mockCompetitors];
+  const competitors = [...amazonCompetitors, ...scrapedCompetitors];
   const analysis = analyzeMarket(competitors, userPrice);
   const newAlerts = generateAlerts(competitors, analysis, userPrice);
 

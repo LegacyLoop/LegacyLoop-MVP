@@ -9,7 +9,7 @@ export const maxDuration = 120;
  * POST /api/cron/recon-autoscan
  * Runs scheduled auto-scans for all active ReconBots with autoScanEnabled=true.
  * - Only scans bots whose nextScan <= now
- * - Deducts 1 credit per scan from the user's balance
+ * - Deducts 8 credits per auto-scan (premium multi-platform monitoring)
  * - Skips bots whose owners lack credits (auto-pauses autoScan)
  * - Tier gate: requires Power Seller+ (tier >= 3)
  * Protected by CRON_SECRET. Called by Vercel Cron every 6 hours.

@@ -78,7 +78,7 @@ export async function POST(
         return NextResponse.json({ error: "upgrade_required", message: "Upgrade your plan to access ReconBot.", upgradeUrl: "/pricing?upgrade=true" }, { status: 403 });
       }
       const isRerun = await hasPriorBotRun(user.id, itemId, "RECONBOT");
-      const cost = isRerun ? BOT_CREDIT_COSTS.singleBotReRun : BOT_CREDIT_COSTS.singleBotRun;
+      const cost = isRerun ? BOT_CREDIT_COSTS.reconBotReRun : BOT_CREDIT_COSTS.reconBotRun;
       const cc = await checkCredits(user.id, cost);
       if (!cc.hasEnough) {
         return NextResponse.json({ error: "insufficient_credits", message: "Not enough credits to run ReconBot.", balance: cc.balance, required: cost, buyUrl: "/credits" }, { status: 402 });

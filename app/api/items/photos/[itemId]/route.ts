@@ -44,6 +44,23 @@ export async function POST(
     added.push(filePath);
   }
 
+  // Auto-trigger AnalyzeBot if this is the first photo upload (free first run, cost-neutral)
+  if (added.length > 0) {
+    const hasAiResult = await prisma.aiResult.findUnique({ where: { itemId }, select: { id: true } });
+    if (!hasAiResult) {
+      // Fire-and-forget — don't block the photo upload response
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+      fetch(`${baseUrl}/api/analyze/${itemId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: req.headers.get("cookie") || "" },
+      }).then(() => {
+        console.log(`[photo-upload] Auto-triggered AnalyzeBot for item ${itemId} (first photos uploaded)`);
+      }).catch((e) => {
+        console.log(`[photo-upload] Auto-trigger AnalyzeBot failed (non-fatal): ${e?.message}`);
+      });
+    }
+  }
+
   return Response.json({ ok: true, added: added.length, paths: added });
 }
 

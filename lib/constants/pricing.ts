@@ -246,12 +246,18 @@ export const BOT_CREDIT_COSTS = {
   antiqueBotReRun: 1,
   collectiblesBotRun: 2,
   collectiblesBotReRun: 1,
+  // ReconBot: heavy scraper usage (multi-platform competitor monitoring)
+  reconBotRun: 2,         // Single AI scan — covers scraper costs
+  reconBotReRun: 1,       // Re-scan with cached data
+  reconBotAutoScan: 8,    // Premium auto-scan (recurring, multi-platform, high scraper volume)
+  // BuyerBot: social platform scrapers (FB Groups, Reddit, Instagram, etc.)
+  buyerBotRun: 2,         // Single AI pull — covers social scraper costs
+  buyerBotReRun: 1,       // Re-run with cached social data
   megaBotRun: 5,
   megaBotReRun: 3,
   intelligenceRun: 1,    // Claude intelligence synthesis
   intelligenceRefresh: 0.5, // Refresh when stale
   intelligenceChat: 0.25,  // Ask Claude a question about item intel
-  reconBotAutoScan: 1,   // Deducted per scheduled auto-scan
   antiqueDeepDive: 5,
   analyzeBotFirstRun: 0,
   videoBotStandard: 8,

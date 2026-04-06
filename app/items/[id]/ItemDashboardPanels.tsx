@@ -344,6 +344,8 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
       const s = data?.score ?? 5;
       const scoreColor = s >= 7 ? "#22c55e" : s >= 4 ? "#f59e0b" : "#ef4444";
       const ratingLabel = s >= 7 ? "Great" : s >= 4 ? "Fair" : "Needs Work";
+      const rs = data?.readinessScore;
+      const rsColor = rs >= 80 ? "#22c55e" : rs >= 60 ? "#f59e0b" : rs ? "#ef4444" : "var(--text-muted)";
       return (
         <div style={hWrap}>
           <div style={hL}>Photo Quality</div>
@@ -351,7 +353,11 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
           <div style={hR}>
             <div style={hS}><div style={hSL}>Coverage</div><div style={{ ...hSV, color: (data?.count ?? 0) >= 6 ? "#22c55e" : (data?.count ?? 0) >= 3 ? "#f59e0b" : "#ef4444" }}>{data?.count ?? 0}/10</div></div>
             <div style={hS}><div style={hSL}>Rating</div><div style={{ ...hSV, color: scoreColor }}>{ratingLabel}</div></div>
-            <div style={hS}><div style={hSL}>Tips</div><div style={{ ...hSV, color: (data?.tipsCount ?? 0) > 0 ? "#f59e0b" : "#22c55e" }}>{(data?.tipsCount ?? 0) > 0 ? `${data.tipsCount} available` : "None"}</div></div>
+            {rs ? (
+              <div style={hS}><div style={hSL}>Readiness</div><div style={{ ...hSV, color: rsColor }}>{rs}/100</div></div>
+            ) : (
+              <div style={hS}><div style={hSL}>Tips</div><div style={{ ...hSV, color: (data?.tipsCount ?? 0) > 0 ? "#f59e0b" : "#22c55e" }}>{(data?.tipsCount ?? 0) > 0 ? `${data.tipsCount} available` : "None"}</div></div>
+            )}
           </div>
           {(data?.count ?? 0) < 3 && <div style={{ fontSize: "0.58rem", color: "#f59e0b", textAlign: "center" as const }}>⚠️ Items with 3+ photos sell 40% faster</div>}
         </div>
@@ -5022,7 +5028,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
       />
 
       {collapsed && hasResult && <CollapsedSummary botType="buyers" data={{ leadCount: hotLeads.length + profiles.length, bestPlatform: bestPlatform?.platform, hotCount: hotLeads.length, platformCount: platforms.length, profileCount: profiles.length }} megaData={boosted ? boostResult : undefined} buttons={<>
-        {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 Re-Run · 0.5 cr</button>}
+        {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 Re-Run · 1 cr</button>}
         {onSuperBoost && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>{boosted ? "🔄 MegaBot Re-Run · 3 cr" : "⚡ MegaBot · 5 cr"}</button>}
         <a href="/bots/buyerbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open BuyerBot →</a>
       </>} />}
@@ -5036,7 +5042,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
           ]}
           description="Targeted buyer profiles and platform opportunities"
           buttons={<>
-            {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 BuyerBot · 1 cr</button>}
+            {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 BuyerBot · 2 cr</button>}
             <a href={`/bots/buyerbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open BuyerBot →</a>
           </>}
         />
@@ -5061,7 +5067,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
               ))}
             </div>
             <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
-              {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 BuyerBot · 1 cr</button>}
+              {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 BuyerBot · 2 cr</button>}
               <a href="/bots/buyerbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open BuyerBot →</a>
             </div>
           </div>
@@ -8717,10 +8723,10 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
   return (
     <GlassCard>
       <PanelHeader icon="🔍" title="ReconBot" hasData={hasData} badge={hasData ? (scan?.market_heat || "SCAN") : "INTEL"} collapsed={collapsed} onToggle={onToggle}
-        preview={hasData ? `${competitors.length} competitors · ${scan?.price_position || "—"} · Market ${scan?.market_heat || "—"}` : "Not scanned yet"}
+        preview={hasData ? `${competitors.length} competitors · ${scan?.price_position || "—"} · Market ${scan?.market_heat || "—"}${reconBotResult?._scannedAt ? ` · ${Math.round((Date.now() - new Date(reconBotResult._scannedAt).getTime()) / 3600000)}h ago` : ""}` : "Not scanned yet"}
       />
       {collapsed && hasData && <CollapsedSummary botType="recon" data={{ competitorCount: competitors.length, alertCount: alerts.length, marketHeat: scan?.market_heat, pricePosition: scan?.price_position, avgPrice: pi?.average_competitor_price || pi?.avg_price || null, recommendation: recs?.[0]?.title || recs?.[0]?.recommendation || null }} megaData={boosted ? boostResult : undefined} buttons={<>
-        {onReconBotRun && <button onClick={onReconBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🔍 Re-Scan · 0.5 cr</button>}
+        {onReconBotRun && <button onClick={onReconBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🔍 Re-Scan · 1 cr</button>}
         {onSuperBoost && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>{boosted ? "🔄 MegaBot Re-Run · 3 cr" : "⚡ MegaBot · 5 cr"}</button>}
         <a href={`/bots/reconbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ReconBot →</a>
       </>} />}
@@ -8734,7 +8740,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
         ]}
         description="Competitive intelligence scanning — competitor listings, price positioning, and market alerts across 5+ marketplaces."
         buttons={<>
-          {onReconBotRun && <button onClick={onReconBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🔍 ReconBot · 1 cr</button>}
+          {onReconBotRun && <button onClick={onReconBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🔍 ReconBot · 2 cr</button>}
           <a href={`/bots/reconbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ReconBot →</a>
         </>}
       />}
@@ -8751,7 +8757,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
               ))}
             </div>
             <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
-              {onReconBotRun && <button onClick={onReconBotRun} disabled={!aiData} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: aiData ? "pointer" : "not-allowed", minHeight: "32px" }}>🔍 ReconBot · 1 cr</button>}
+              {onReconBotRun && <button onClick={onReconBotRun} disabled={!aiData} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: aiData ? "pointer" : "not-allowed", minHeight: "32px" }}>🔍 ReconBot · 2 cr</button>}
               <a href={`/bots/reconbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ReconBot →</a>
             </div>
           </div>
