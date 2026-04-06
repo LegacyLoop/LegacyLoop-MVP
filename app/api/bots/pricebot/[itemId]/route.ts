@@ -157,12 +157,39 @@ This is a HARD RULE — do not ignore it.`;
       }
     } catch { /* non-critical */ }
 
-    // ── REAL MARKET DATA FROM SCRAPERS ──
+    // ── REAL MARKET DATA — check cached AnalyzeBot intel first, then scrape fresh ──
     let realCompsContext = "";
     let marketIntel: any = null;
+
+    // Check if AnalyzeBot already ran market intelligence (avoid duplicate scraping)
     try {
-      marketIntel = await getMarketIntelligence(itemName, category, sellerZip);
-      console.log(`[PriceBot] Market intelligence: ${marketIntel?.comps?.length ?? 0} real comps from ${marketIntel?.sources?.join(", ") || "none"}`);
+      const cachedIntel = await prisma.eventLog.findFirst({
+        where: { itemId, eventType: "ANALYZEBOT_MARKET_INTEL" },
+        orderBy: { createdAt: "desc" },
+        select: { payload: true, createdAt: true },
+      });
+      if (cachedIntel?.payload) {
+        const cacheAgeMs = Date.now() - new Date(cachedIntel.createdAt).getTime();
+        const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
+        if (cacheAgeMs < CACHE_TTL_MS) {
+          marketIntel = JSON.parse(cachedIntel.payload);
+          console.log(`[PriceBot] Using cached market intel from AnalyzeBot (${Math.round(cacheAgeMs / 60000)}min old, ${marketIntel?.comps?.length ?? 0} comps)`);
+        }
+      }
+    } catch { /* non-critical — will fetch fresh below */ }
+
+    // If no valid cache, fetch fresh market intelligence
+    if (!marketIntel) {
+      try {
+        marketIntel = await getMarketIntelligence(itemName, category, sellerZip);
+        console.log(`[PriceBot] Fresh market intelligence: ${marketIntel?.comps?.length ?? 0} real comps from ${marketIntel?.sources?.join(", ") || "none"}`);
+      } catch (miErr: any) {
+        console.error("[PriceBot] Market intelligence failed (non-fatal):", miErr?.message);
+      }
+    }
+
+    try {
+      console.log(`[PriceBot] Market intelligence: ${marketIntel?.comps?.length ?? 0} comps from ${marketIntel?.sources?.join(", ") || "none"}`);
 
       if (marketIntel?.comps?.length > 0) {
         const compLines = marketIntel.comps.slice(0, 10).map((c: any, i: number) =>

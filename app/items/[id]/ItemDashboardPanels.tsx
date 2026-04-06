@@ -4384,10 +4384,10 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
   return (
     <GlassCard>
       <PanelHeader icon="📷" title="Photo Assessment" hasData={hasAnalysis} collapsed={collapsed} onToggle={onToggle}
-        preview={hasAnalysis ? `${qualityScore}/10 quality · ${photoCount} photo${photoCount !== 1 ? "s" : ""}` : `${photoCount} photo${photoCount !== 1 ? "s" : ""} uploaded`}
+        preview={hasAnalysis ? `${qualityScore}/10 quality · ${photoCount} photo${photoCount !== 1 ? "s" : ""}${enhanceResult?.styleScoring?.overallScore ? ` · ${enhanceResult.styleScoring.overallScore}/100 ready` : ""}` : `${photoCount} photo${photoCount !== 1 ? "s" : ""} uploaded`}
       />
 
-      {collapsed && hasAnalysis && <CollapsedSummary botType="photos" data={{ score: qualityScore, count: photoCount, tipsCount: tips.length }} buttons={<>
+      {collapsed && hasAnalysis && <CollapsedSummary botType="photos" data={{ score: qualityScore, count: photoCount, tipsCount: tips.length, readinessScore: enhanceResult?.styleScoring?.overallScore }} buttons={<>
         <button onClick={runAssessOnly} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>{enhanceResult ? "🔄 Re-Run · 0.5 cr" : "📷 PhotoBot · 1 cr"}</button>
         {onSuperBoost && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>{boosted ? "🔄 MegaBot Re-Run · 3 cr" : "⚡ MegaBot · 5 cr"}</button>}
         <a href={`/bots/photobot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PhotoBot →</a>
@@ -4490,6 +4490,73 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
                 </div>
               </div>
             )}
+
+            {/* ═══ ACCORDION: Listing Readiness Score (from StyleScoring) ═══ */}
+            {enhanceResult?.styleScoring && (() => {
+              const ss = enhanceResult.styleScoring;
+              const readyColor = ss.overallScore >= 80 ? "#22c55e" : ss.overallScore >= 60 ? "#f59e0b" : "#ef4444";
+              const readyLabel = ss.overallScore >= 80 ? "READY" : ss.overallScore >= 60 ? "GOOD" : "NEEDS WORK";
+              return (<>
+                <AccordionHeader id="photo-readiness" icon="✓" title="LISTING READINESS SCORE" subtitle={`${ss.overallScore}/100`} isOpen={photoSections.has("photo-readiness")} onToggle={togglePhotoSection} accentColor={readyColor} badge={readyLabel} />
+                {photoSections.has("photo-readiness") && (
+                  <div style={{ padding: "0.75rem 0.4rem" }}>
+                    {/* Overall Score Ring */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.85rem", marginBottom: "0.85rem" }}>
+                      <div style={{ width: 56, height: 56, borderRadius: "50%", border: `3px solid ${readyColor}`, display: "flex", alignItems: "center", justifyContent: "center", background: `${readyColor}12` }}>
+                        <span style={{ fontSize: "1.1rem", fontWeight: 800, color: readyColor }}>{ss.overallScore}</span>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--text-primary)" }}>Listing Readiness</div>
+                        <div style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>{ss.summary?.split(". ")[0] || "Score calculated from presentation, listing, and staging quality"}</div>
+                      </div>
+                    </div>
+
+                    {/* Three Score Breakdown */}
+                    <div style={{ display: "flex", gap: "0.4rem", marginBottom: "0.75rem" }}>
+                      {[
+                        { label: "Presentation", score: ss.presentation?.score, weight: "40%", icon: "📸" },
+                        { label: "Listing", score: ss.listing?.score, weight: "35%", icon: "📝" },
+                        { label: "Staging", score: ss.staging?.score, weight: "25%", icon: "🎯" },
+                      ].map((s) => {
+                        const sc = s.score ?? 0;
+                        const c = sc >= 80 ? "#22c55e" : sc >= 60 ? "#f59e0b" : "#ef4444";
+                        return (
+                          <div key={s.label} style={{ flex: 1, background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.5rem", textAlign: "center" }}>
+                            <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginBottom: "0.2rem" }}>{s.icon} {s.label}</div>
+                            <div style={{ fontSize: "1rem", fontWeight: 800, color: c }}>{sc}</div>
+                            <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{s.weight}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Platform Recommendations */}
+                    {ss.platforms?.length > 0 && (
+                      <div style={{ marginBottom: "0.65rem" }}>
+                        <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.3rem" }}>Best Platforms</div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.25rem" }}>
+                          {ss.platforms.slice(0, 4).map((p: any, i: number) => (
+                            <span key={i} style={{ fontSize: "0.62rem", padding: "0.15rem 0.5rem", borderRadius: "9999px", background: p.fit === "Excellent" ? "rgba(34,197,94,0.12)" : "var(--ghost-bg)", border: `1px solid ${p.fit === "Excellent" ? "rgba(34,197,94,0.3)" : "var(--border-default)"}`, color: p.fit === "Excellent" ? "#22c55e" : "var(--text-secondary)" }}>{p.name}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Staging Suggestions */}
+                    {ss.staging?.suggestions?.length > 0 && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                        {ss.staging.suggestions.slice(0, 3).map((tip: string, i: number) => (
+                          <div key={i} style={{ display: "flex", gap: "0.35rem", alignItems: "flex-start" }}>
+                            <span style={{ fontSize: "0.65rem", flexShrink: 0, color: "#f59e0b" }}>💡</span>
+                            <span style={{ fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>{tip}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>);
+            })()}
 
             {/* ═══ ACCORDION: Enhancement Studio ═══ */}
             {photos.length > 0 && (<>

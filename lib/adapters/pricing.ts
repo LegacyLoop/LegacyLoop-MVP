@@ -352,7 +352,26 @@ async function getEbayCompsWithFallback(query: string, limit = 10): Promise<Ebay
       }));
     }
   } catch (e: any) {
-    console.log(`[Pricing] eBay scraper also failed: ${e.message?.slice(0, 60) || "error"}`);
+    console.log(`[Pricing] eBay scraper also failed (${e.message?.slice(0, 60) || "error"}) — trying Apify`);
+  }
+
+  // 3. Final fallback: Apify eBay scraper (paid, most reliable for sold listings)
+  try {
+    const { scrapeEbayApify } = await import("@/lib/market-intelligence/adapters/ebay-apify");
+    const apifyResult = await scrapeEbayApify(query);
+    if (apifyResult.success && apifyResult.comps.length > 0) {
+      console.log(`[Pricing] Apify eBay returned ${apifyResult.comps.length} comps`);
+      return apifyResult.comps.slice(0, limit).map((c) => ({
+        platform: "eBay" as const,
+        title: c.item,
+        price: c.price,
+        currency: "USD",
+        url: c.url || `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(query)}&LH_Sold=1`,
+        shipping: undefined,
+      }));
+    }
+  } catch (e: any) {
+    console.log(`[Pricing] Apify eBay also failed: ${e.message?.slice(0, 60) || "error"}`);
   }
 
   return [];
