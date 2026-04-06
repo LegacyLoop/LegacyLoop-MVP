@@ -195,6 +195,36 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "buyerbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
+    // ── SPECIALTY BOT ENRICHMENT FOR PRECISION BUYER TARGETING ──
+    // Labeled blocks make specialty bot findings legible to the AI prompt.
+    // Each specialty bot's data gets explicit targeting instructions.
+    let specialtyBotContext = "";
+    if (enrichment?.summary) {
+      const sb: string[] = [];
+      if (enrichment.summary.analyzeBotFindings) {
+        sb.push(`\n[ANALYZE BOT FOUNDATION]\n${enrichment.summary.analyzeBotFindings}`);
+      }
+      if (enrichment.summary.priceBotFindings) {
+        sb.push(`\n[PRICING INTELLIGENCE]\n${enrichment.summary.priceBotFindings}`);
+      }
+      if (enrichment.summary.antiqueBotFindings) {
+        sb.push(`\n[ANTIQUE MARKET INTEL]\n${enrichment.summary.antiqueBotFindings}\nINSTRUCTION: For antique buyer targeting, prioritize auction houses (Invaluable, LiveAuctioneers, Sotheby's regional), dealer networks, collector organizations, and antique-focused Facebook groups. Use the AntiqueBot best_venue recommendation as your primary strategy.`);
+      }
+      if (enrichment.summary.collectiblesBotFindings) {
+        sb.push(`\n[COLLECTIBLES COMMUNITY INTEL]\n${enrichment.summary.collectiblesBotFindings}\nINSTRUCTION: For collectibles, target grading service communities (PSA, BGS, CGC forums), collector Discord servers, subreddit communities (r/PokemonTCG, r/sportscards, r/vinyl), and specialty marketplaces. Reference the specific subcategory from CollectiblesBot.`);
+      }
+      if (enrichment.summary.carBotFindings) {
+        sb.push(`\n[VEHICLE MARKET INTEL]\n${enrichment.summary.carBotFindings}\nINSTRUCTION: For vehicles, focus on LOCAL buyers first (within 100 miles), dealerships for trade-in, mechanic/enthusiast groups for the specific make/model, and Facebook Marketplace local listings. De-prioritize national shipping unless vehicle is rare/collector.`);
+      }
+      if (enrichment.summary.photoBotFindings) {
+        sb.push(`\n[LISTING QUALITY SIGNAL]\n${enrichment.summary.photoBotFindings}`);
+      }
+      if (enrichment.summary.reconBotFindings) {
+        sb.push(`\n[COMPETITIVE MARKET SCAN]\n${enrichment.summary.reconBotFindings}`);
+      }
+      specialtyBotContext = sb.join("\n");
+    }
+
     // ══ ROBIN READS BATMAN — ListBot intelligence for smarter buyer targeting ══
     let listingIntelligence = "";
     try {
@@ -357,7 +387,7 @@ ${fbPages.sellers.slice(0, 5).map((s: any) => `${s.name} (${s.followers.toLocale
     }
 
     // ── BUYERBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + listingIntelligence + realBuyerContext + `You are a world-class buyer acquisition specialist and marketplace researcher. You have 15 years of experience finding buyers for every type of item — from antiques to electronics to vehicles. You know every platform, every community, every trick to find the RIGHT buyer who will pay the best price.
+    const systemPrompt = enrichmentPrefix + specialtyBotContext + "\n\n" + listingIntelligence + realBuyerContext + `You are a world-class buyer acquisition specialist and marketplace researcher. You have 15 years of experience finding buyers for every type of item — from antiques to electronics to vehicles. You know every platform, every community, every trick to find the RIGHT buyer who will pay the best price.
 
 You are finding buyers for: ${itemName} — ${category}${subcategory ? ` — ${subcategory}` : ""}
 Condition: ${condLabel} (${condScore}/10)

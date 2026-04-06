@@ -137,6 +137,50 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "reconbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
+    // ── SPECIALTY BOT ENRICHMENT FOR SMARTER COMPETITIVE POSITIONING ──
+    // Includes CONFLICT TRANSPARENCY PROTOCOL: when specialty bot findings
+    // conflict with raw market data, ReconBot keeps both perspectives visible.
+    let specialtyBotContext = "";
+    if (enrichment?.summary) {
+      const sb: string[] = [];
+      if (enrichment.summary.analyzeBotFindings) {
+        sb.push(`\n[ANALYZE BOT FOUNDATION]\n${enrichment.summary.analyzeBotFindings}`);
+      }
+      if (enrichment.summary.priceBotFindings) {
+        sb.push(`\n[PRICING INTELLIGENCE]\n${enrichment.summary.priceBotFindings}`);
+      }
+      if (enrichment.summary.antiqueBotFindings) {
+        sb.push(`\n[ANTIQUE AUTHENTICATION CONTEXT]\n${enrichment.summary.antiqueBotFindings}\nINSTRUCTION: If AntiqueBot identifies rarity, authentication, or auction-grade status, factor this into your market positioning. A rare authenticated antique may justify prices above the market average — this is NOT necessarily a price_too_high situation.`);
+      }
+      if (enrichment.summary.collectiblesBotFindings) {
+        sb.push(`\n[COLLECTIBLES MARKET INTELLIGENCE]\n${enrichment.summary.collectiblesBotFindings}\nINSTRUCTION: If CollectiblesBot indicates high grade, key card status, or rare population, the item may command a premium. Distinguish graded vs ungraded competitor comparisons in your analysis.`);
+      }
+      if (enrichment.summary.carBotFindings) {
+        sb.push(`\n[VEHICLE MARKET INTELLIGENCE]\n${enrichment.summary.carBotFindings}\nINSTRUCTION: Factor NHTSA recalls and safety ratings into competitive positioning. Vehicles with active recalls may need lower pricing. Compare only against same year/make/model competitors.`);
+      }
+      if (enrichment.summary.photoBotFindings) {
+        sb.push(`\n[LISTING PRESENTATION QUALITY]\n${enrichment.summary.photoBotFindings}\nINSTRUCTION: If PhotoBot quality score is low, flag that better photos could justify higher prices against competitors with average photography.`);
+      }
+      if (enrichment.summary.listBotFindings) {
+        sb.push(`\n[LISTING STRATEGY CONTEXT]\n${enrichment.summary.listBotFindings}`);
+      }
+      if (enrichment.summary.buyerBotFindings) {
+        sb.push(`\n[BUYER DEMAND INTEL]\n${enrichment.summary.buyerBotFindings}`);
+      }
+
+      // CONFLICT TRANSPARENCY PROTOCOL (FULL DISCLOSURE)
+      sb.push(`\n[CONFLICT TRANSPARENCY PROTOCOL]
+When specialty bot findings conflict with raw market data:
+1. KEEP the market-based alert (e.g., PRICE_TOO_HIGH) but ADD a conflict flag
+2. ALSO include a specialty-bot-aware recommendation as a SEPARATE alert
+3. Summarize the discrepancy clearly in the alert message
+   Example: "Market average is $200, but AntiqueBot identifies this as rare authenticated Victorian piece with auction estimate $400-600. Premium pricing above market average may be justified."
+4. Let the user see both perspectives and decide
+5. Never suppress data — always show full picture with clear reasoning`);
+
+      specialtyBotContext = sb.join("\n");
+    }
+
     // ── AMAZON MARKET CONTEXT ──
     let amazonContext = "";
     try {
@@ -179,7 +223,7 @@ CRITICAL: These are REAL listings scraped from actual marketplaces. Use them as 
     }
 
     // ── RECONBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + amazonContext + realCompContext + `You are a world-class competitive intelligence analyst specializing in resale markets. You monitor every marketplace continuously — eBay, Facebook Marketplace, Craigslist, Mercari, OfferUp, Etsy, Ruby Lane, auction houses, and local shops. Your job is to provide a comprehensive competitive scan.
+    const systemPrompt = enrichmentPrefix + specialtyBotContext + "\n\n" + amazonContext + realCompContext + `You are a world-class competitive intelligence analyst specializing in resale markets. You monitor every marketplace continuously — eBay, Facebook Marketplace, Craigslist, Mercari, OfferUp, Etsy, Ruby Lane, auction houses, and local shops. Your job is to provide a comprehensive competitive scan.
 
 You are scanning for: ${itemName} — ${category} — ${material} — ${era} — ${condLabel} (${condScore}/10)
 Seller location: ZIP ${sellerZip} (Maine, USA)

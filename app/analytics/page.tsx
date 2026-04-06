@@ -11,6 +11,8 @@ export const metadata: Metadata = {
 };
 
 import { isAdmin } from "@/lib/constants/admin";
+// SPEC-WIRE FIX (Step 4): admin-only router health surface
+import { getProviderHealth, getRoutingHistory, getTriggerEffectiveness } from "@/lib/bots/router-analytics";
 
 const SPECIALIST_BOT_TYPES = [
   "PRICEBOT_RESULT",
@@ -152,6 +154,15 @@ export default async function AnalyticsPage({
   }
 
   const isAdminUser = isAdmin(user.email);
+
+  // SPEC-WIRE FIX (Step 4): admin-only router health rollup
+  const [routerProviderHealth, routerRecent, routerTriggers] = isAdminUser
+    ? await Promise.all([
+        getProviderHealth().catch(() => null),
+        getRoutingHistory().catch(() => []),
+        getTriggerEffectiveness().catch(() => null),
+      ])
+    : [null, [], null];
 
   // ─── Data fetch ────────────────────────────────────────────────────────
   const items = await prisma.item.findMany({
@@ -1368,6 +1379,126 @@ export default async function AnalyticsPage({
         <strong>Pro tip:</strong> Items with antique flags and MegaBot consensus pricing achieve 20–40% higher sale prices.
         Run MegaBot on your high-value items for multi-AI price confidence.
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          ADMIN-ONLY: ROUTER HEALTH (Step 4 — bot-ai-router observability)
+          ═══════════════════════════════════════════════════════════════════ */}
+      {isAdminUser && (
+        <>
+          <div style={{ ...ACCENT_BAR, background: "linear-gradient(90deg, #8b5cf6, #6366f1)" }} />
+          <div style={{ color: "var(--text-primary)", fontWeight: 800, fontSize: "1.2rem", marginBottom: "0.5rem" }}>
+            🛰️ Router Health <span style={{ fontSize: "0.7rem", color: "#8b5cf6", fontWeight: 600 }}>ADMIN ONLY</span>
+          </div>
+          <div style={{ color: "var(--text-muted)", fontSize: "0.78rem", marginBottom: "1.25rem" }}>
+            Live observability over the per-bot AI router. Sources: BOT_AI_ROUTING EventLog rows.
+          </div>
+
+          {/* Provider Health Table */}
+          <div style={{ ...CARD, marginBottom: "1.25rem" }}>
+            <div style={SECTION_TITLE}>Provider Health (last 1,000 router calls)</div>
+            {routerProviderHealth ? (
+              <div style={{ overflowX: "auto", marginTop: "0.75rem" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.75rem" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid var(--border-default)", textAlign: "left", color: "var(--text-muted)" }}>
+                      <th style={{ padding: "0.5rem 0.6rem", fontWeight: 600 }}>Provider</th>
+                      <th style={{ padding: "0.5rem 0.6rem", fontWeight: 600 }}>Attempts</th>
+                      <th style={{ padding: "0.5rem 0.6rem", fontWeight: 600 }}>Success Rate</th>
+                      <th style={{ padding: "0.5rem 0.6rem", fontWeight: 600 }}>Avg Latency</th>
+                      <th style={{ padding: "0.5rem 0.6rem", fontWeight: 600 }}>Avg Cost (est)</th>
+                      <th style={{ padding: "0.5rem 0.6rem", fontWeight: 600 }}>Avg Cost (actual)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(["openai", "claude", "gemini", "grok"] as const).map((p) => {
+                      const h = routerProviderHealth[p];
+                      const successColor = h.successRate >= 0.95 ? "#10b981" : h.successRate >= 0.8 ? "#f59e0b" : "#ef4444";
+                      return (
+                        <tr key={p} style={{ borderBottom: "1px solid var(--border-default)", color: "var(--text-secondary)" }}>
+                          <td style={{ padding: "0.55rem 0.6rem", fontWeight: 700, textTransform: "capitalize" }}>{p}</td>
+                          <td style={{ padding: "0.55rem 0.6rem" }}>{h.attempts}</td>
+                          <td style={{ padding: "0.55rem 0.6rem", color: successColor, fontWeight: 700 }}>{h.attempts === 0 ? "—" : `${(h.successRate * 100).toFixed(1)}%`}</td>
+                          <td style={{ padding: "0.55rem 0.6rem" }}>{h.attempts === 0 ? "—" : `${h.avgLatencyMs}ms`}</td>
+                          <td style={{ padding: "0.55rem 0.6rem" }}>{h.attempts === 0 ? "—" : `$${h.avgCostUsd.toFixed(5)}`}</td>
+                          <td style={{ padding: "0.55rem 0.6rem", color: h.avgActualCostUsd > 0 ? "#10b981" : "var(--text-muted)" }}>{h.avgActualCostUsd > 0 ? `$${h.avgActualCostUsd.toFixed(6)}` : "no token data"}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div style={{ ...KPI_LABEL, marginTop: "0.5rem" }}>No router data yet — call routeBotAI() to populate.</div>
+            )}
+          </div>
+
+          {/* Trigger Effectiveness */}
+          <div style={{ ...CARD, marginBottom: "1.25rem" }}>
+            <div style={SECTION_TITLE}>Trigger Effectiveness</div>
+            {routerTriggers ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem", marginTop: "0.75rem" }}>
+                {Object.entries(routerTriggers).map(([trigger, stats]) => {
+                  const ratio = stats.firedCount > 0 ? stats.ledToSecondaryRun / stats.firedCount : 0;
+                  return (
+                    <div key={trigger} style={{ padding: "0.75rem", background: "var(--ghost-bg)", borderRadius: "0.55rem", border: "1px solid var(--border-default)" }}>
+                      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.35rem" }}>{trigger.replace(/_/g, " ")}</div>
+                      <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)" }}>{stats.firedCount} fires</div>
+                      <div style={{ fontSize: "0.65rem", color: stats.ledToSecondaryRun > 0 ? "#10b981" : "var(--text-muted)", marginTop: "0.2rem" }}>
+                        {stats.ledToSecondaryRun} secondary runs ({(ratio * 100).toFixed(0)}%)
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div style={{ ...KPI_LABEL, marginTop: "0.5rem" }}>No trigger data yet.</div>
+            )}
+          </div>
+
+          {/* Recent Routing Decisions */}
+          <div style={{ ...CARD, marginBottom: "2rem" }}>
+            <div style={SECTION_TITLE}>Recent Routing Decisions (last {Math.min(routerRecent.length, 20)})</div>
+            {routerRecent.length > 0 ? (
+              <div style={{ overflowX: "auto", marginTop: "0.75rem" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.72rem" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid var(--border-default)", textAlign: "left", color: "var(--text-muted)" }}>
+                      <th style={{ padding: "0.45rem 0.5rem", fontWeight: 600 }}>When</th>
+                      <th style={{ padding: "0.45rem 0.5rem", fontWeight: 600 }}>Bot</th>
+                      <th style={{ padding: "0.45rem 0.5rem", fontWeight: 600 }}>Primary</th>
+                      <th style={{ padding: "0.45rem 0.5rem", fontWeight: 600 }}>Triggers</th>
+                      <th style={{ padding: "0.45rem 0.5rem", fontWeight: 600 }}>Used</th>
+                      <th style={{ padding: "0.45rem 0.5rem", fontWeight: 600 }}>Cost</th>
+                      <th style={{ padding: "0.45rem 0.5rem", fontWeight: 600 }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {routerRecent.slice(0, 20).map((row) => {
+                      const p = row.payload;
+                      const when = new Date(row.createdAt).toLocaleString();
+                      const status = p.degraded ? "DEGRADED" : p.fallbackUsed ? "FALLBACK" : "OK";
+                      const statusColor = p.degraded ? "#ef4444" : p.fallbackUsed ? "#f59e0b" : "#10b981";
+                      return (
+                        <tr key={row.id} style={{ borderBottom: "1px solid var(--border-default)", color: "var(--text-secondary)" }}>
+                          <td style={{ padding: "0.5rem 0.5rem", color: "var(--text-muted)" }}>{when}</td>
+                          <td style={{ padding: "0.5rem 0.5rem", fontWeight: 700 }}>{p.botName}</td>
+                          <td style={{ padding: "0.5rem 0.5rem" }}>{p.primary}{p.secondary ? ` + ${p.secondary}` : ""}</td>
+                          <td style={{ padding: "0.5rem 0.5rem" }}>{(p.triggersFired ?? []).join(", ") || "—"}</td>
+                          <td style={{ padding: "0.5rem 0.5rem" }}>{(p.providersUsed ?? []).join(", ") || "—"}</td>
+                          <td style={{ padding: "0.5rem 0.5rem" }}>${(p.actualCostUsd ?? p.costUsd ?? 0).toFixed(5)}</td>
+                          <td style={{ padding: "0.5rem 0.5rem", color: statusColor, fontWeight: 700 }}>{status}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div style={{ ...KPI_LABEL, marginTop: "0.5rem" }}>No router calls logged yet.</div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }

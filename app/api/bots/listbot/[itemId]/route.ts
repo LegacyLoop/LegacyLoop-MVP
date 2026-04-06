@@ -12,6 +12,13 @@ import { scrapePoshmark } from "@/lib/market-intelligence/adapters/poshmark";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { scrapePinterest } from "@/lib/market-intelligence/adapters/pinterest";
 import { scrapeYoutube } from "@/lib/market-intelligence/adapters/youtube";
+// CARRY-OVER FIX + STEP 3: route ListBot through hybrid Claude+Grok router
+import { routeListBotHybrid } from "@/lib/adapters/bot-ai-router";
+import { mergeListBotHybrid } from "@/lib/adapters/bot-ai-router/listbot-merge";
+import {
+  buildMarketplacePrompt,
+  buildSocialPrompt,
+} from "@/lib/adapters/bot-ai-router/listbot-prompts";
 import fs from "fs";
 import path from "path";
 
@@ -79,7 +86,8 @@ export async function POST(
         return NextResponse.json({ error: "upgrade_required", message: "Upgrade your plan to access ListBot.", upgradeUrl: "/pricing?upgrade=true" }, { status: 403 });
       }
       const isRerun = await hasPriorBotRun(user.id, itemId, "LISTBOT");
-      const cost = isRerun ? BOT_CREDIT_COSTS.singleBotReRun : BOT_CREDIT_COSTS.singleBotRun;
+      // STEP 3: ListBot is now a hybrid bot (Claude + Grok). Cost bumped to 2cr/1cr.
+      const cost = isRerun ? BOT_CREDIT_COSTS.listBotReRun : BOT_CREDIT_COSTS.listBotRun;
       const cc = await checkCredits(user.id, cost);
       if (!cc.hasEnough) {
         return NextResponse.json({ error: "insufficient_credits", message: "Not enough credits to run ListBot.", balance: cc.balance, required: cost, buyUrl: "/credits" }, { status: 402 });
@@ -155,6 +163,37 @@ export async function POST(
     // ── CROSS-BOT ENRICHMENT (single source of truth — replaces direct EventLog fetches) ──
     const enrichment = await getItemEnrichmentContext(itemId, "listbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
+
+    // ── SPECIALTY BOT ENRICHMENT FOR EXPERT-LEVEL LISTINGS ──
+    // Labeled blocks make specialty bot findings legible to the AI prompt.
+    // Currently enrichmentPrefix has all findings in a generic bullet list —
+    // this adds explicit, bot-specific sections with usage instructions.
+    let specialtyBotContext = "";
+    if (enrichment?.summary) {
+      const sb: string[] = [];
+      if (enrichment.summary.analyzeBotFindings) {
+        sb.push(`\n[ANALYZE BOT FOUNDATION]\n${enrichment.summary.analyzeBotFindings}`);
+      }
+      if (enrichment.summary.priceBotFindings) {
+        sb.push(`\n[PRICING INTELLIGENCE]\n${enrichment.summary.priceBotFindings}`);
+      }
+      if (enrichment.summary.photoBotFindings) {
+        sb.push(`\n[PHOTO QUALITY INTELLIGENCE]\n${enrichment.summary.photoBotFindings}\nINSTRUCTION: Use photo quality score to set auto-post readiness. If score < 6, recommend retaking photos before listing.`);
+      }
+      if (enrichment.summary.antiqueBotFindings) {
+        sb.push(`\n[ANTIQUE EXPERT FINDINGS]\n${enrichment.summary.antiqueBotFindings}\nINSTRUCTION: For antique listings, emphasize authentication verdict, provenance, maker marks, era, and rarity. Use period-specific language. Reference auction estimate if available. Professional buyers expect precision.`);
+      }
+      if (enrichment.summary.collectiblesBotFindings) {
+        sb.push(`\n[COLLECTIBLES EXPERT FINDINGS]\n${enrichment.summary.collectiblesBotFindings}\nINSTRUCTION: For collectibles, highlight grade (PSA/BGS/CGC), population data, set completion context, key card status, and investment potential. Use collector terminology.`);
+      }
+      if (enrichment.summary.carBotFindings) {
+        sb.push(`\n[VEHICLE EXPERT FINDINGS]\n${enrichment.summary.carBotFindings}\nINSTRUCTION: For vehicles, include year/make/model/trim, mileage, VIN if available, NHTSA safety data, condition grades (exterior/interior/mechanical), and all three valuation tiers (private party, retail, trade-in).`);
+      }
+      if (enrichment.summary.reconBotFindings) {
+        sb.push(`\n[COMPETITIVE MARKET INTEL]\n${enrichment.summary.reconBotFindings}`);
+      }
+      specialtyBotContext = sb.join("\n");
+    }
 
     // ══ BATMAN READS ROBIN — BuyerBot intelligence for smarter listings ══
     let buyerIntelligence = "";
@@ -292,7 +331,7 @@ Study these titles and pricing for your Poshmark-specific listing copy. Mirror s
     }
 
     // ── LISTBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + buyerIntelligence + realListingContext + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.
+    const systemPrompt = enrichmentPrefix + specialtyBotContext + "\n\n" + buyerIntelligence + realListingContext + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.
 
 You are creating listings for: ${itemName} — ${category}${subcategory ? ` — ${subcategory}` : ""}
 Condition: ${condLabel} (${condScore}/10)
@@ -487,70 +526,54 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
 
     let listbotResult: any;
     let webSources: Array<{ url: string; title: string }> = [];
+    let aiBreakdown: any = null;
 
     if (openai) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 90_000);
+      // ══ STEP 3: HYBRID CLAUDE + GROK via bot-ai-router ══
+      // Claude writes premium marketplace copy (eBay, Etsy, Mercari,
+      // Poshmark, FB Marketplace, etc.) while Grok writes viral-native
+      // social copy (TikTok, Reels, Pinterest, X). Both run in
+      // parallel and merge into the existing 13-platform shape.
       try {
-        const photoDescs = item.photos.map((p) =>
-          `[Photo: ${p.filePath}${p.caption ? ` — ${p.caption}` : ""}]`
-        );
-
-        const inputText = `Create complete, ready-to-post listings for every platform. Photos: ${photoDescs.join(", ")}. Return ONLY valid JSON.`;
-
-        const response = await openai.responses.create({
-          model: "gpt-4o-mini",
-          instructions: systemPrompt,
-          input: photoImageContent.length > 0
-            ? [{
-                role: "user" as const,
-                content: [
-                  { type: "input_text" as const, text: inputText },
-                  ...photoImageContent,
-                ],
-              }]
-            : inputText,
-          tools: [{ type: "web_search_preview" } as any],
-          max_output_tokens: 16384,
-        }, { signal: controller.signal });
-
-        const text = typeof response.output === "string"
-          ? response.output
-          : response.output_text || JSON.stringify(response.output);
-
-        // Extract web sources from response
-        webSources = [];
-        try {
-          const outputArr = Array.isArray(response.output) ? response.output : [];
-          for (const outItem of outputArr) {
-            if ((outItem as any).type === "web_search_call" && Array.isArray((outItem as any).results)) {
-              for (const r of (outItem as any).results) {
-                if (r.url && r.title) webSources.push({ url: r.url, title: r.title });
-              }
-            }
-            if ((outItem as any).type === "message" && Array.isArray((outItem as any).content)) {
-              for (const c of (outItem as any).content) {
-                if (c.annotations) {
-                  for (const ann of c.annotations) {
-                    if (ann.type === "url_citation" && ann.url) webSources.push({ url: ann.url, title: ann.title || ann.url });
-                  }
-                }
-              }
-            }
-          }
-        } catch { /* citation extraction non-critical */ }
-
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          listbotResult = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("No JSON in response");
+        const photoUrls = item.photos.map((p) => p.filePath);
+        if (photoUrls.length === 0) {
+          return NextResponse.json({ error: "No photos available for ListBot" }, { status: 400 });
         }
+
+        const marketplacePrompt = buildMarketplacePrompt(systemPrompt);
+        const socialPrompt = buildSocialPrompt(systemPrompt);
+
+        const hybrid = await routeListBotHybrid({
+          itemId,
+          photoPath: photoUrls,
+          marketplacePrompt,
+          socialPrompt,
+        });
+
+        if (hybrid.degraded) {
+          console.error("[listbot] Hybrid degraded:", hybrid.error);
+          return NextResponse.json(
+            { error: `ListBot hybrid failed: ${hybrid.error ?? "both providers failed"}` },
+            { status: 422 },
+          );
+        }
+
+        // Merge marketplace + social into the unified 13-platform shape
+        listbotResult = mergeListBotHybrid(
+          hybrid.marketplace.rawResult,
+          hybrid.social.rawResult,
+        );
+        aiBreakdown = listbotResult._ai_breakdown;
+
+        // Web sources: routeListBotHybrid path doesn't run web_search_preview
+        // (Claude + Grok don't share that OpenAI tool). Flagged for Step 4.
+        webSources = [];
       } catch (aiErr: any) {
-        console.error("[listbot] OpenAI error:", aiErr);
-        return NextResponse.json({ error: `ListBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` }, { status: 422 });
-      } finally {
-        clearTimeout(timeoutId);
+        console.error("[listbot] hybrid router error:", aiErr);
+        return NextResponse.json(
+          { error: `ListBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` },
+          { status: 422 },
+        );
       }
     } else {
       listbotResult = generateDemoResult(itemName, category, subcategory, material, era, style, brand, condScore, condLabel, lowPrice, midPrice, highPrice, sellerZip, isAntique, photoCount);

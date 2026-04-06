@@ -354,6 +354,75 @@ export function generateAlerts(
     });
   }
 
+  // ── NEW ALERT: OPTIMAL_PRICE ──
+  // Triggers when userPrice is between 100-110% of market average
+  if (analysis.currentStatus === "PRICED_WELL" && userPrice && analysis.averagePrice) {
+    const ratio = userPrice / analysis.averagePrice;
+    if (ratio >= 1.0 && ratio <= 1.1) {
+      alerts.push({
+        alertType: "OPTIMAL_PRICE",
+        severity: "LOW",
+        title: "Priced Optimally",
+        message: `Your price of $${userPrice} is positioned perfectly within the market sweet spot (100-110% of average $${Math.round(analysis.averagePrice)}). This balances maximum margin with fast sell-through.`,
+        actionable: false,
+        suggestedAction: "Hold current price — market sweet spot",
+        triggerDataJson: JSON.stringify({
+          userPrice,
+          marketAverage: Math.round(analysis.averagePrice),
+          ratio: Math.round(ratio * 100) / 100,
+        }),
+      });
+    }
+  }
+
+  // ── NEW ALERT: SUPPLY_SHORTAGE ──
+  // Triggers when competitor count is very low (rare item opportunity)
+  if (analysis.competitorCount !== null && analysis.competitorCount < 3 && analysis.competitorCount >= 0) {
+    alerts.push({
+      alertType: "SUPPLY_SHORTAGE",
+      severity: "MEDIUM",
+      title: "Low Market Supply",
+      message: `Only ${analysis.competitorCount} active competitor${analysis.competitorCount === 1 ? "" : "s"} found. Low supply may indicate rarity or seasonal scarcity. Consider pricing at a premium above average.`,
+      actionable: true,
+      suggestedAction: analysis.averagePrice
+        ? `Consider pricing at $${Math.round(analysis.averagePrice * 1.15)} (15% above average) due to scarcity`
+        : "Price at a premium — limited competition",
+      triggerDataJson: JSON.stringify({
+        competitorCount: analysis.competitorCount,
+        averagePrice: analysis.averagePrice,
+      }),
+    });
+  }
+
+  // ── NEW ALERT: MARKET_SHIFT ──
+  // Triggers when recently sold items show significantly different pricing than active listings
+  const activeCompetitors = competitors.filter((c) => c.status === "ACTIVE");
+  const soldCompetitors = competitors.filter((c) => c.status === "SOLD");
+  if (activeCompetitors.length >= 3 && soldCompetitors.length >= 3) {
+    const activeAvg = activeCompetitors.reduce((sum, c) => sum + c.price, 0) / activeCompetitors.length;
+    const soldAvg = soldCompetitors.reduce((sum, c) => sum + c.price, 0) / soldCompetitors.length;
+    const shiftPct = Math.abs(activeAvg - soldAvg) / soldAvg;
+    if (shiftPct > 0.15) {
+      const direction = activeAvg > soldAvg ? "rising" : "falling";
+      alerts.push({
+        alertType: "MARKET_SHIFT",
+        severity: "MEDIUM",
+        title: `Market Prices ${direction === "rising" ? "Rising" : "Falling"}`,
+        message: `Active listings average $${Math.round(activeAvg)} while recent sales averaged $${Math.round(soldAvg)}. Market is ${direction} by ${Math.round(shiftPct * 100)}%. ${direction === "rising" ? "Consider listing higher to capture the trend" : "Price competitively to sell before further drops"}.`,
+        actionable: true,
+        suggestedAction: direction === "rising"
+          ? `List at $${Math.round(activeAvg * 1.05)}`
+          : `List at $${Math.round(soldAvg * 0.95)}`,
+        triggerDataJson: JSON.stringify({
+          activeAvg: Math.round(activeAvg),
+          soldAvg: Math.round(soldAvg),
+          shiftPct: Math.round(shiftPct * 100),
+          direction,
+        }),
+      });
+    }
+  }
+
   return alerts;
 }
 

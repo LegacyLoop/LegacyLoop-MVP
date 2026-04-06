@@ -10,6 +10,13 @@ import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
+// SPEC-WIRE FIX (Step 4): single source of truth for seller location + shippability
+import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
+import {
+  getFreightWarning,
+  adjustNetForFreight,
+  summarizeSpecContext,
+} from "@/lib/bots/spec-guards";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -102,6 +109,12 @@ export async function POST(
     if (!ai || !v) {
       return NextResponse.json({ error: "Run AI analysis first" }, { status: 400 });
     }
+
+    // SPEC-WIRE FIX (Step 4): Build the canonical seller spec context.
+    // Reads item.aiShippingDifficulty, item.shippingPreference, item.aiWeightLbs,
+    // item.isFragile, item.saleRadiusMi DIRECTLY from the live Item model
+    // (not stale aiResult.rawJson). This is the data PriceBot was missing.
+    const specCtx = await buildItemSpecContext(itemId, { item, user });
 
     // Build context from existing analysis
     const itemName = ai.item_name || item.title || "Unknown item";
@@ -240,7 +253,12 @@ CRITICAL: These are REAL comparable sales from actual marketplaces. Your revised
     }
 
     // ── PRICEBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + realCompsContext + `You are a world-class resale pricing analyst and market researcher with 20 years of experience in antiques, collectibles, electronics, furniture, and general resale. You have been given an item that has ALREADY been identified by another AI. Your ONLY job is pricing — go as deep as possible.
+    // SPEC-WIRE FIX (Step 4): inject the seller constraint block at the
+    // VERY TOP so the AI sees freight + radius + local-only constraints
+    // before any other context.
+    const specPrefix = specCtx.promptBlock + "\n\n";
+
+    const systemPrompt = specPrefix + enrichmentPrefix + realCompsContext + `You are a world-class resale pricing analyst and market researcher with 20 years of experience in antiques, collectibles, electronics, furniture, and general resale. You have been given an item that has ALREADY been identified by another AI. Your ONLY job is pricing — go as deep as possible.
 
 You are analyzing: ${itemName} — ${category} — ${material} — ${era} — ${conditionLabel} (${conditionScore}/10)
 
@@ -548,6 +566,56 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
             pricebotResult.confidence.overall_confidence = Math.min(conf, 55);
             pricebotResult.confidence._cappedReason = "No comparable sales found";
           }
+        }
+      }
+
+      // SPEC-WIRE FIX (Step 4): Apply seller constraint pass.
+      // Soft warn (not hard suppress) — keep all 3 columns visible but
+      // expose the warning + freight-adjusted net math so the UI can
+      // render a consistent picture.
+      const warning = getFreightWarning(specCtx);
+      pricebotResult.spec_context_summary = summarizeSpecContext(specCtx);
+      if (warning) {
+        pricebotResult.spec_warning = warning;
+
+        // For freight items, compute realistic post-freight net for the
+        // National + Best Market columns the UI displays.
+        if (specCtx.isFreightOnly && pricebotResult.regional_pricing) {
+          const rp = pricebotResult.regional_pricing;
+          const adjustments: Record<string, any> = {};
+
+          // Try multiple shapes the AI might emit
+          const nationalGross =
+            rp.national?.mid ??
+            rp.best_us_market?.estimated_price ??
+            rp.local_price_estimate ??
+            null;
+          const bestMarketGross =
+            rp.best_us_market?.estimated_price ??
+            rp.national?.mid ??
+            null;
+
+          if (typeof nationalGross === "number") {
+            adjustments.national = adjustNetForFreight(nationalGross, specCtx);
+          }
+          if (typeof bestMarketGross === "number") {
+            adjustments.best_market = adjustNetForFreight(bestMarketGross, specCtx);
+          }
+
+          pricebotResult.freight_adjustments = adjustments;
+        }
+
+        // Make the AI Tip / executive summary consistent with the visible
+        // columns. If the AI's summary mentions national markets, prepend a
+        // freight-aware lead so the user doesn't see contradictory advice.
+        if (
+          typeof pricebotResult.executive_summary === "string" &&
+          specCtx.isFreightOnly &&
+          !/local pickup/i.test(pricebotResult.executive_summary)
+        ) {
+          pricebotResult.executive_summary =
+            `⚠️ This item requires freight shipping (${specCtx.weightLbs ?? "oversized"} lbs) — local pickup is the fastest, lowest-friction sale path. ` +
+            pricebotResult.executive_summary;
         }
       }
     }

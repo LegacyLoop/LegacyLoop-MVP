@@ -241,6 +241,11 @@ export const FREE_TIER_RULES = {
 export const BOT_CREDIT_COSTS = {
   singleBotRun: 1,
   singleBotReRun: 0.5,
+  // CARRY-OVER FIX (Step 3): ListBot is hybrid (Claude + Grok), CarBot needs its own pricing
+  listBotRun: 2,          // Hybrid: Claude marketplace + Grok social
+  listBotReRun: 1,
+  carBotRun: 2,           // Gemini primary + OpenAI rare-vehicle secondary
+  carBotReRun: 1,
   // Specialist bots: GPT-4o full + heavy scraping
   antiqueBotRun: 2,
   antiqueBotReRun: 1,

@@ -629,14 +629,74 @@ function extractCarBot(d: any): string | null {
 
 function extractReconBot(d: any): string | null {
   const parts: string[] = [];
-  if (d.scan_summary?.total_competitors_found != null) parts.push(`Competitors: ${d.scan_summary.total_competitors_found}`);
-  if (d.scan_summary?.market_heat) parts.push(`Market Heat: ${d.scan_summary.market_heat}`);
-  if (d.scan_summary?.price_position) parts.push(`Price Position: ${d.scan_summary.price_position}`);
-  if (d.price_intelligence?.optimal_price) parts.push(`Optimal Price: $${d.price_intelligence.optimal_price}`);
-  if (d.price_intelligence?.market_average) parts.push(`Market Avg: $${d.price_intelligence.market_average}`);
-  if (d.market_dynamics?.avg_days_to_sell) parts.push(`Avg Days to Sell: ${d.market_dynamics.avg_days_to_sell}`);
-  if (d.alerts?.length) parts.push(`Alerts: ${d.alerts.length}`);
-  if (d.executive_summary) parts.push(`Expert: ${String(d.executive_summary).slice(0, 150)}`);
+
+  // Section 1: Scan Summary (up to 8 fields)
+  if (d.scan_summary) {
+    if (d.scan_summary.scan_type) parts.push(`Scan: ${d.scan_summary.scan_type}`);
+    if (d.scan_summary.total_competitors_found != null) parts.push(`Competitors: ${d.scan_summary.total_competitors_found}`);
+    if (d.scan_summary.active_listings != null) parts.push(`Active: ${d.scan_summary.active_listings}`);
+    if (d.scan_summary.recently_sold != null) parts.push(`Sold: ${d.scan_summary.recently_sold}`);
+    if (d.scan_summary.market_heat) parts.push(`Heat: ${d.scan_summary.market_heat}`);
+    if (d.scan_summary.price_position) parts.push(`Position: ${d.scan_summary.price_position}`);
+    if (d.scan_summary.overall_threat_level) parts.push(`Threat: ${d.scan_summary.overall_threat_level}`);
+    if (d.scan_summary.headline) parts.push(`Headline: "${String(d.scan_summary.headline).slice(0, 80)}"`);
+  }
+
+  // Section 2: Price Intelligence (up to 8 fields)
+  if (d.price_intelligence) {
+    if (d.price_intelligence.market_average != null) parts.push(`Avg: $${d.price_intelligence.market_average}`);
+    if (d.price_intelligence.market_median != null) parts.push(`Median: $${d.price_intelligence.market_median}`);
+    if (d.price_intelligence.lowest_active != null) parts.push(`Low: $${d.price_intelligence.lowest_active}`);
+    if (d.price_intelligence.highest_active != null) parts.push(`High: $${d.price_intelligence.highest_active}`);
+    if (d.price_intelligence.optimal_price != null) parts.push(`Optimal: $${d.price_intelligence.optimal_price}`);
+    if (d.price_intelligence.price_trend) parts.push(`Trend: ${d.price_intelligence.price_trend}`);
+    if (d.price_intelligence.price_trend_pct) parts.push(`Trend%: ${d.price_intelligence.price_trend_pct}`);
+    if (d.price_intelligence.price_position_detail) parts.push(`PositionNote: ${String(d.price_intelligence.price_position_detail).slice(0, 100)}`);
+  }
+
+  // Section 3: Market Dynamics (up to 6 fields)
+  if (d.market_dynamics) {
+    if (d.market_dynamics.supply_level) parts.push(`Supply: ${d.market_dynamics.supply_level}`);
+    if (d.market_dynamics.demand_signals) parts.push(`Demand: ${String(d.market_dynamics.demand_signals).slice(0, 80)}`);
+    if (d.market_dynamics.avg_days_to_sell != null) parts.push(`AvgDays: ${d.market_dynamics.avg_days_to_sell}`);
+    if (d.market_dynamics.sell_through_rate) parts.push(`SellThru: ${d.market_dynamics.sell_through_rate}`);
+    if (d.market_dynamics.market_velocity) parts.push(`Velocity: ${d.market_dynamics.market_velocity}`);
+    if (d.market_dynamics.seasonal_outlook) parts.push(`Season: ${String(d.market_dynamics.seasonal_outlook).slice(0, 60)}`);
+  }
+
+  // Section 4: Platform Breakdown (aggregate top 3)
+  if (d.platform_breakdown && Array.isArray(d.platform_breakdown) && d.platform_breakdown.length > 0) {
+    const topPlatforms = d.platform_breakdown.slice(0, 3).map((p: any) => `${p.platform || "?"}($${p.avg_price || "?"})`).join(", ");
+    parts.push(`TopPlatforms: ${topPlatforms}`);
+  }
+
+  // Section 5: Competitive Advantages (top 2)
+  if (d.competitive_advantages && Array.isArray(d.competitive_advantages) && d.competitive_advantages.length > 0) {
+    const advs = d.competitive_advantages.slice(0, 2).map((a: any) => a.advantage || a).filter(Boolean).join("; ");
+    if (advs) parts.push(`Advantages: ${String(advs).slice(0, 120)}`);
+  }
+
+  // Section 6: Competitive Disadvantages (top 2)
+  if (d.competitive_disadvantages && Array.isArray(d.competitive_disadvantages) && d.competitive_disadvantages.length > 0) {
+    const disadvs = d.competitive_disadvantages.slice(0, 2).map((x: any) => x.disadvantage || x).filter(Boolean).join("; ");
+    if (disadvs) parts.push(`Disadvantages: ${String(disadvs).slice(0, 120)}`);
+  }
+
+  // Section 7: Alerts (count + types)
+  if (d.alerts && Array.isArray(d.alerts) && d.alerts.length > 0) {
+    const alertTypes = Array.from(new Set(d.alerts.map((a: any) => a.type || a.alertType).filter(Boolean))).slice(0, 3).join(", ");
+    parts.push(`Alerts: ${d.alerts.length}${alertTypes ? ` (${alertTypes})` : ""}`);
+  }
+
+  // Section 8: Market Forecast (2 fields)
+  if (d.market_forecast) {
+    if (d.market_forecast.best_window) parts.push(`BestWindow: ${d.market_forecast.best_window}`);
+    if (d.market_forecast.short_term) parts.push(`ShortTerm: ${String(d.market_forecast.short_term).slice(0, 80)}`);
+  }
+
+  // Section 9: Executive Summary
+  if (d.executive_summary) parts.push(`Expert: ${String(d.executive_summary).slice(0, 200)}`);
+
   return parts.length ? parts.join(" · ") : null;
 }
 

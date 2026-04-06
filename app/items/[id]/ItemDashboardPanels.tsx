@@ -2774,7 +2774,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
 
       {collapsed && hasData && <CollapsedSummary botType="analyze" data={{ itemName: aiData?.item_name, conditionScore: aiData?.condition_score, category: aiData?.category, confidence: aiData?.confidence }} buttons={<>
         <button onClick={() => analyze(hasData)} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🧠 Re-Run · 0.5 cr</button>
-        {onSuperBoost && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>{boosted ? "🔄 MegaBot Re-Run · 3 cr" : "⚡ MegaBot · 3 cr"}</button>}
+        {onSuperBoost && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>{boosted ? "🔄 MegaBot Re-Run · 3 cr" : "⚡ MegaBot · 5 cr"}</button>}
         <a href="/bots/analyzebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AnalyzeBot →</a>
       </>} />}
       {collapsed && !hasData && (
@@ -3262,6 +3262,27 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
     } catch { /* legacy fallback */ }
   }
 
+  // SPEC-WIRE FIX (Step 4): Soft-warn banner data — hoist freight detection
+  // up so we can both render a banner AND keep the existing recommendation logic.
+  // The banner is what fixes the screenshot bug (users were seeing contradictory
+  // columns vs the AI tip).
+  const _aiWeight = aiData?.weight_estimate_lbs ?? null;
+  const _aiDifficulty = aiData?.shipping_difficulty ?? null;
+  const _isHeavyItem = (_aiWeight != null && _aiWeight > 100) || /freight|difficult/i.test(_aiDifficulty || "");
+  const _isLocalOnlyItem = (_aiWeight != null && _aiWeight > 150) || /local.only|vehicle|riding.mow|lawn.tractor/i.test((aiData?.category || "").toLowerCase());
+  const _sellerChoseLocal = shippingPreference === "LOCAL_ONLY" || shippingPreference === "local_only";
+  const specWarning: string | null =
+    _sellerChoseLocal
+      ? "Seller has set this item to LOCAL PICKUP ONLY. National & Best Market quotes are reference only — this item will not ship."
+      : _isLocalOnlyItem
+        ? `Item is too large/heavy for cost-effective shipping (${_aiWeight ? Math.round(_aiWeight) + " lbs" : "oversized"}). National & Best Market quotes assume freight shipping. Local pickup is the fastest sale path.`
+        : _isHeavyItem
+          ? `Item is freight-classified (${_aiWeight ? Math.round(_aiWeight) + " lbs" : "heavy"}) — National & Best Market quotes assume freight shipping cost. Consider local pickup.`
+          : null;
+  const freightCostEstimate: number | null = _isHeavyItem || _isLocalOnlyItem
+    ? Math.max(95, Math.round((_aiWeight ?? 100) * 1.5 + 100))
+    : null;
+
   // Recalculate seller net + tip using CURRENT user tier (not stale analysis-time tier)
   const COMMISSION_RATES: Record<number, number> = { 1: 0.12, 2: 0.10, 3: 0.08, 4: 0.04 };
   if (pr) {
@@ -3375,6 +3396,26 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 <span style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginLeft: "0.3rem" }}>— Run MegaBot or PriceBot for a more accurate estimate</span>
               </div>
             )}
+            {/* SPEC-WIRE FIX (Step 4): freight / local-only soft-warn banner.
+                Sits ABOVE the 3 columns so the user sees it before scanning numbers. */}
+            {specWarning && (
+              <div style={{
+                padding: "0.55rem 0.75rem",
+                marginBottom: "0.5rem",
+                background: "rgba(234,179,8,0.1)",
+                border: "1px solid rgba(234,179,8,0.3)",
+                borderRadius: "0.55rem",
+                fontSize: "0.7rem",
+                color: "#eab308",
+                lineHeight: 1.45,
+                display: "flex",
+                gap: "0.5rem",
+                alignItems: "flex-start",
+              }}>
+                <span style={{ fontSize: "0.85rem", flexShrink: 0 }}>⚠️</span>
+                <span><strong style={{ fontWeight: 700 }}>Shipping constraint:</strong> {specWarning}</span>
+              </div>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
               <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                 <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Local</div>
@@ -3393,6 +3434,12 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "#4caf50", marginTop: "0.15rem" }}>${Math.round((pr.nationalPrice.low + pr.nationalPrice.high) / 2)}</div>
                 <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{pr.nationalPrice.label || "Nationwide"}</div>
                 {pr.sellerNet && <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4caf50", marginTop: "0.25rem" }}>You get: ${pr.sellerNet.national.toFixed(0)}</div>}
+                {/* SPEC-WIRE FIX: freight cost line for freight items */}
+                {freightCostEstimate != null && pr.sellerNet && (
+                  <div style={{ fontSize: "0.55rem", color: "#eab308", marginTop: "0.1rem", fontWeight: 600 }}>
+                    −${freightCostEstimate} freight ⇒ ${(pr.sellerNet.national - freightCostEstimate).toFixed(0)}
+                  </div>
+                )}
               </div>
               <div style={{ background: "var(--bg-card)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                 <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#fbbf24" }}>Best Market</div>
@@ -3402,6 +3449,12 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", marginTop: "0.15rem", lineHeight: 1.35, maxWidth: "100%" }}>{pr.regionalIntel.bestWhy.slice(0, 80)}{pr.regionalIntel.bestWhy.length > 80 ? "..." : ""}</div>
                 )}
                 {pr.sellerNet && <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4caf50", marginTop: "0.25rem" }}>You get: ${pr.sellerNet.bestMarket.toFixed(0)}</div>}
+                {/* SPEC-WIRE FIX: freight cost line for freight items */}
+                {freightCostEstimate != null && pr.sellerNet && (
+                  <div style={{ fontSize: "0.55rem", color: "#eab308", marginTop: "0.1rem", fontWeight: 600 }}>
+                    −${freightCostEstimate} freight ⇒ ${(pr.sellerNet.bestMarket - freightCostEstimate).toFixed(0)}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -5476,7 +5529,7 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
       )}
 
       {collapsed && hasListBotData && <CollapsedSummary botType="listing" data={{ platformCount, bestPlatform: listBotResult?.best_platform || listBotResult?.top_platforms?.[0] || null, topPlatforms: platformKeys.slice(0, 5), summary: listBotResult?.executive_summary || null }} megaData={boosted ? boostResult : undefined} buttons={<>
-        {onListBotRun && <button onClick={onListBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📋 Re-Run · 0.5 cr</button>}
+        {onListBotRun && <button onClick={onListBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📋 Re-Run · 1 cr</button>}
         {onSuperBoost && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>{boosted ? "🔄 MegaBot Re-Run · 3 cr" : "⚡ MegaBot · 5 cr"}</button>}
         <a href="/bots/listbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ListBot →</a>
       </>} />}
@@ -5490,7 +5543,7 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
           ]}
           description="Optimized listings for 13+ selling platforms"
           buttons={<>
-            {onListBotRun && <button onClick={onListBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📋 ListBot · 1 cr</button>}
+            {onListBotRun && <button onClick={onListBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📋 ListBot · 2 cr</button>}
             <a href="/bots/listbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ListBot →</a>
           </>}
         />
@@ -5525,7 +5578,7 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
                 ))}
               </div>
               <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
-                {onListBotRun && <button onClick={onListBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📋 ListBot · 1 cr</button>}
+                {onListBotRun && <button onClick={onListBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>📋 ListBot · 2 cr</button>}
                 <a href="/bots/listbot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open ListBot →</a>
               </div>
             </div>
@@ -6581,7 +6634,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
                 ))}
               </div>
               <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
-                {onCollectiblesBotRun && <button onClick={onCollectiblesBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎴 CollectiblesBot · 1 cr</button>}
+                {onCollectiblesBotRun && <button onClick={onCollectiblesBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎴 CollectiblesBot · 2 cr</button>}
                 <a href={`/bots/collectiblesbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CollectiblesBot →</a>
               </div>
             </div>
@@ -6628,7 +6681,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
       />
 
       {collapsed && hasResult && <CollapsedSummary botType="collectibles" data={{ name: ident?.item_name, rarity: assess?.rarity, value: val?.estimated_mid ? safeFmtPrice(val.estimated_mid) : null, grade: psaGrade, demand: demandTrend }} buttons={<>
-        {onCollectiblesBotRun && <button onClick={onCollectiblesBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>⭐ Re-Run · 0.5 cr</button>}
+        {onCollectiblesBotRun && <button onClick={onCollectiblesBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>⭐ Re-Run · 1 cr</button>}
         {onSuperBoost && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>{boosted ? "🔄 MegaBot Re-Run · 3 cr" : "⚡ MegaBot · 5 cr"}</button>}
         <a href={`/bots/collectiblesbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CollectiblesBot →</a>
       </>} />}
@@ -6678,7 +6731,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
               ))}
             </div>
             <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
-              {onCollectiblesBotRun && <button onClick={onCollectiblesBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎴 CollectiblesBot · 1 cr</button>}
+              {onCollectiblesBotRun && <button onClick={onCollectiblesBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎴 CollectiblesBot · 2 cr</button>}
               <a href={`/bots/collectiblesbot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open CollectiblesBot →</a>
             </div>
           </div>
@@ -7103,7 +7156,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
                 ))}
               </div>
               <div style={{ display: "flex", gap: "0.4rem", justifyContent: "center", flexWrap: "wrap", marginTop: "0.5rem", paddingTop: "0.4rem", borderTop: "1px solid var(--border-default)", width: "100%" }}>
-                {onAntiqueBotRun && <button onClick={onAntiqueBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🏺 AntiqueBot · 1 cr</button>}
+                {onAntiqueBotRun && <button onClick={onAntiqueBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🏺 AntiqueBot · 2 cr</button>}
                 <a href={`/bots/antiquebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AntiqueBot →</a>
               </div>
             </div>
@@ -7150,7 +7203,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
       />
 
       {collapsed && hasData && <CollapsedSummary botType="antique" data={{ isAntique: antique?.isAntique, score: antique?.score, auctionLow: antique?.auctionLow, auctionHigh: antique?.auctionHigh, verdict: auth?.verdict, confidence: auth?.confidence, period: ident?.period, origin: ident?.origin, rarity: ident?.rarity, fmvLow: extractPrice(val?.fair_market_value?.low ?? val?.fair_market_value?.min), fmvHigh: extractPrice(val?.fair_market_value?.high ?? val?.fair_market_value?.max), insuranceValue: extractPrice(val?.insurance_value), overallGrade: abr?.condition_assessment?.overall_grade, collectorDemand: abr?.collector_market?.collector_demand, bestVenue: abr?.selling_strategy?.best_venue }} megaData={boosted ? boostResult : undefined} buttons={<>
-        {onAntiqueBotRun && <button onClick={onAntiqueBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🏺 Re-Run · 0.5 cr</button>}
+        {onAntiqueBotRun && <button onClick={onAntiqueBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🏺 Re-Run · 1 cr</button>}
         {onSuperBoost && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>{boosted ? "🔄 MegaBot Re-Run · 3 cr" : "⚡ MegaBot · 5 cr"}</button>}
         <a href={`/bots/antiquebot?item=${itemId}`} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open AntiqueBot →</a>
       </>} />}
