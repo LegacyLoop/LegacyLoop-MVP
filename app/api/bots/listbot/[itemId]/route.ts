@@ -24,6 +24,10 @@ import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
 // CMD-SKILLS-INFRA-A: LegacyLoop Skill Pack loader (markdown
 // playbooks prepended to the system prompt before any item context).
 import { loadSkillPack } from "@/lib/bots/skill-loader";
+// CMD-LISTBOT-MEGA-C: Bot Constitution wiring (gap closure).
+// Mirrors the ReconBot/BuyerBot pattern from prior rounds.
+import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
+import { summarizeSpecContext } from "@/lib/bots/spec-guards";
 import fs from "fs";
 import path from "path";
 
@@ -346,12 +350,16 @@ Study these titles and pricing for your Poshmark-specific listing copy. Mirror s
     // ── LISTBOT PROMPT ──
     // CMD-SKILLS-INFRA-A: skillPack injected at the very TOP of the
     // system prompt so the agent sees LegacyLoop's epistemic standard
-    // before any item context. Prophylactic for upcoming
-    // CMD-LISTBOT-MEGA-C — bot-specific listbot skills can be
-    // authored later and the loader will pick them up automatically.
+    // before any item context.
+    // CMD-LISTBOT-MEGA-C: specContext.promptBlock now prepended
+    // AFTER the skill pack but BEFORE the enrichmentPrefix — Bot
+    // Constitution gap closure. Mirrors ReconBot/BuyerBot pattern.
     const skillPack = loadSkillPack("listbot");
+    const specContext = await buildItemSpecContext(item.id, { item, user });
+    const specSummary = summarizeSpecContext(specContext);
     const systemPrompt =
       (skillPack.systemPromptBlock ? skillPack.systemPromptBlock + "\n\n" : "") +
+      specContext.promptBlock + "\n\n" +
       enrichmentPrefix + specialtyBotContext + "\n\n" + buyerIntelligence + realListingContext + webEnrichment + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.
 
 You are creating listings for: ${itemName} — ${category}${subcategory ? ` — ${subcategory}` : ""}

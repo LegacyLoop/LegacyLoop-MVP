@@ -378,6 +378,9 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   // process-cached → zero cost on subsequent calls per warm instance.
   let reconSkillPack: ReturnType<typeof loadSkillPack> | undefined;
   let buyerSkillPack: ReturnType<typeof loadSkillPack> | undefined;
+  // CMD-LISTBOT-MEGA-C: hoist listSkillPack to function scope so
+  // it's visible at the MEGABOT_RUN write block (mirrors recon/buyer).
+  let listSkillPack: ReturnType<typeof loadSkillPack> | undefined;
 
   let reconOpts: RunSpecializedMegaBotOpts | undefined;
   if (botType === "reconbot" && !isDemoMode()) {
@@ -499,15 +502,77 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     }
   }
 
+  // CMD-LISTBOT-MEGA-C: ListBot opts assembly mirrors the
+  // ReconBot/BuyerBot pattern. The three branches stay parallel/
+  // independent because botType is single-valued per request.
+  // Failure booleans (listSpecContextFailed / listMarketIntelFailed)
+  // surface in MEGABOT_RUN telemetry for ops visibility.
+  let listOpts: RunSpecializedMegaBotOpts | undefined;
+  let listSpecContextFailed = false;
+  let listMarketIntelFailed = false;
+  if (botType === "listbot" && !isDemoMode()) {
+    try {
+      listSkillPack = loadSkillPack("listbot");
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const specContext = await buildItemSpecContext(item.id, { item, user });
+      const specSummary = summarizeSpecContext(specContext);
+
+      let marketIntel: any = null;
+      try {
+        marketIntel = await getMarketIntelligence(
+          ctx.itemName ?? item.title ?? "",
+          ctx.category ?? "",
+          item.saleZip ?? undefined,
+        );
+      } catch (err) {
+        listMarketIntelFailed = true;
+        console.warn("[megabot/listbot] getMarketIntelligence failed:", err);
+      }
+
+      const marketIntelBlock = marketIntel?.comps?.length
+        ? `MARKET INTELLIGENCE (live comps from real eBay Browse API + free scrapers — use these to validate pricing and keywords):\n${
+            marketIntel.comps.slice(0, 12).map((c: any) =>
+              `• ${c.platform}: ${c.item} — $${c.price}`
+            ).join("\n")
+          }`
+        : "";
+
+      const marketIntelMedian = marketIntel?.median ?? null;
+      const midPrice = v
+        ? Math.round((v.low + v.high) / 2)
+        : (ai?.estimated_value_mid ?? null);
+
+      listOpts = {
+        specSummary,
+        specPromptBlock: specContext.promptBlock,
+        marketIntelBlock,
+        marketIntelMedian,
+        // FLAG 8 (RC-7) carry-forward: aggregator does not yet
+        // expose Apify spend per call; hardcode 0.
+        apifyCostUsd: 0,
+        enableGrounding: true,
+        priorValuationMid: midPrice,
+        // CMD-SKILLS-INFRA-A: prepended to enrichedPrompt before
+        // any item-specific context inside runSpecializedMegaBot.
+        skillPackBlock: listSkillPack.systemPromptBlock,
+      };
+    } catch (specErr) {
+      listSpecContextFailed = true;
+      console.warn("[megabot/listbot] specContext assembly failed (non-critical):", specErr);
+      listOpts = undefined; // graceful degradation
+    }
+  }
+
   let result;
   try {
     const photoPaths = item.photos.slice(0, 6).map((p: any) => p.filePath);
-    // CMD-BUYERBOT-MEGA-C: dispatch reconOpts vs buyerOpts vs undefined
-    // based on botType. Other bots stay on the undefined path until
-    // their respective MEGA-C rounds.
+    // CMD-LISTBOT-MEGA-C: dispatch reconOpts/buyerOpts/listOpts/
+    // undefined based on botType. Other bots stay on the undefined
+    // path until their respective MEGA-C rounds.
     const activeOpts =
       botType === "reconbot" ? reconOpts :
       botType === "buyerbot" ? buyerOpts :
+      botType === "listbot"  ? listOpts  :
       undefined;
     result = await runSpecializedMegaBot(botType, prompt, photoPaths[0], itemId, photoPaths, activeOpts);
   } catch (e: any) {
@@ -643,20 +708,31 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   //   FLAG 7: perAgentWebSources + totalWebSourceCount
   //   FLAG 9: totalTokens aggregate
   //   FLAG 8 (DEFERRED): apifyCostUsdReal placeholder (always 0)
-  if (botType === "reconbot" || botType === "buyerbot") {
+  if (botType === "reconbot" || botType === "buyerbot" || botType === "listbot") {
     try {
       const telemetry = extractAgentTelemetry(result);
       const specBlockFp = fingerprintBlock(
-        botType === "reconbot" ? reconOpts?.specPromptBlock : buyerOpts?.specPromptBlock
+        botType === "reconbot" ? reconOpts?.specPromptBlock :
+        botType === "buyerbot" ? buyerOpts?.specPromptBlock :
+        listOpts?.specPromptBlock
       );
       const marketBlockFp = fingerprintBlock(
-        botType === "reconbot" ? reconOpts?.marketIntelBlock : buyerOpts?.marketIntelBlock
+        botType === "reconbot" ? reconOpts?.marketIntelBlock :
+        botType === "buyerbot" ? buyerOpts?.marketIntelBlock :
+        listOpts?.marketIntelBlock
       );
-      const opts = botType === "reconbot" ? reconOpts : buyerOpts;
+      const opts =
+        botType === "reconbot" ? reconOpts :
+        botType === "buyerbot" ? buyerOpts :
+        listOpts;
       const specContextFailed =
-        botType === "reconbot" ? false : buyerSpecContextFailed;
+        botType === "reconbot" ? false :
+        botType === "buyerbot" ? buyerSpecContextFailed :
+        listSpecContextFailed;
       const marketIntelFailed =
-        botType === "reconbot" ? false : buyerMarketIntelFailed;
+        botType === "reconbot" ? false :
+        botType === "buyerbot" ? buyerMarketIntelFailed :
+        listMarketIntelFailed;
 
       await prisma.eventLog.create({
         data: {
@@ -710,19 +786,23 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
 
             // CMD-SKILLS-INFRA-A: skill pack telemetry. A/B testing
             // of skill pack versions is now possible from day one.
+            // CMD-LISTBOT-MEGA-C: listbot added to ternary chain.
             skillPackVersion: (
               botType === "reconbot" ? reconSkillPack?.version :
               botType === "buyerbot" ? buyerSkillPack?.version :
+              botType === "listbot"  ? listSkillPack?.version  :
               "v0"
             ),
             skillPackCount: (
               botType === "reconbot" ? reconSkillPack?.skillNames.length ?? 0 :
               botType === "buyerbot" ? buyerSkillPack?.skillNames.length ?? 0 :
+              botType === "listbot"  ? listSkillPack?.skillNames.length ?? 0 :
               0
             ),
             skillPackChars: (
               botType === "reconbot" ? reconSkillPack?.totalChars ?? 0 :
               botType === "buyerbot" ? buyerSkillPack?.totalChars ?? 0 :
+              botType === "listbot"  ? listSkillPack?.totalChars ?? 0 :
               0
             ),
           }),
