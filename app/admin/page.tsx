@@ -183,10 +183,32 @@ export default async function AdminPage() {
     { label: "Active This Week", value: totalUsers.toString(), trend: "—", up: true },
   ];
 
+  // CMD-BUYERBOT-SKILLS: relative time helper for the freshness
+  // column. Plain Node — no date-fns / dayjs dependency. Returns
+  // "never" for the epoch fallback (empty packs).
+  function relativeTime(iso: string): string {
+    if (!iso || iso === new Date(0).toISOString()) return "never";
+    const ms = Date.now() - new Date(iso).getTime();
+    const s = Math.floor(ms / 1000);
+    if (s < 60) return `${s}s ago`;
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    if (d < 7) return `${d}d ago`;
+    const w = Math.floor(d / 7);
+    if (w < 5) return `${w}w ago`;
+    const mo = Math.floor(d / 30);
+    return `${mo}mo ago`;
+  }
+
   // CMD-RECONBOT-SKILLS: per-bot Skill Pack status table.
   // Reads the loader synchronously (process-cached after first call
   // per warm instance). Empty packs render as ❌ Empty so ops can
   // see at a glance which bots are missing their playbooks.
+  // CMD-BUYERBOT-SKILLS: now also surfaces lastUpdated mtime via
+  // the relativeTime helper above.
   const BOT_TYPES = [
     "analyzebot", "antiquebot", "buyerbot", "carbot",
     "collectiblesbot", "listbot", "photobot", "pricebot",
@@ -200,6 +222,7 @@ export default async function AdminPage() {
       version: pack.version,
       count: pack.skillNames.length,
       totalChars: pack.totalChars,
+      lastUpdated: relativeTime(pack.lastUpdated),
       statusBadge: ok ? "✅ Ready" : "❌ Empty",
       statusColor: ok ? "#16a34a" : "#dc2626",
     };
@@ -460,6 +483,7 @@ export default async function AdminPage() {
                 <th style={{ textAlign: "left", padding: "0.5rem", color: "var(--text-secondary)" }}>Version</th>
                 <th style={{ textAlign: "center", padding: "0.5rem", color: "var(--text-secondary)" }}>Skills</th>
                 <th style={{ textAlign: "right", padding: "0.5rem", color: "var(--text-secondary)" }}>Total Chars</th>
+                <th style={{ textAlign: "right", padding: "0.5rem", color: "var(--text-secondary)" }}>Last Updated</th>
                 <th style={{ textAlign: "center", padding: "0.5rem", color: "var(--text-secondary)" }}>Status</th>
               </tr>
             </thead>
@@ -470,6 +494,7 @@ export default async function AdminPage() {
                   <td style={{ padding: "0.5rem", color: "var(--text-secondary)", fontFamily: "monospace", fontSize: "0.78rem" }}>{row.version}</td>
                   <td style={{ padding: "0.5rem", textAlign: "center", color: "var(--text-secondary)" }}>{row.count}</td>
                   <td style={{ padding: "0.5rem", textAlign: "right", color: "var(--text-secondary)", fontFamily: "monospace", fontSize: "0.78rem" }}>{row.totalChars.toLocaleString()}</td>
+                  <td style={{ padding: "0.5rem", textAlign: "right", color: "var(--text-secondary)", fontFamily: "monospace", fontSize: "0.78rem" }}>{row.lastUpdated}</td>
                   <td style={{ padding: "0.5rem", textAlign: "center", fontWeight: 700, color: row.statusColor }}>{row.statusBadge}</td>
                 </tr>
               ))}

@@ -21,6 +21,11 @@ export interface SkillPack {
   skillNames: string[];
   totalChars: number;
   version: string;
+  // CMD-BUYERBOT-SKILLS: ISO timestamp of newest .md file mtime
+  // across all loaded skill files (shared + bot-specific). Used by
+  // /admin Skills Status widget to show pack freshness at a glance.
+  // Empty packs return new Date(0).toISOString() (epoch fallback).
+  lastUpdated: string;
 }
 
 const SKILLS_VERSION = "v1.0-2026-04-07";
@@ -44,9 +49,11 @@ function stripFrontmatter(content: string): string {
 /**
  * Read every .md file from a folder, in directory order. Returns
  * an empty array when the folder is missing or unreadable — never
- * throws. Each entry { name, body } has frontmatter stripped.
+ * throws. Each entry { name, body, mtimeMs } has frontmatter
+ * stripped and the file's mtime captured for freshness telemetry
+ * (CMD-BUYERBOT-SKILLS).
  */
-function readSkillFolder(folderPath: string): { name: string; body: string }[] {
+function readSkillFolder(folderPath: string): { name: string; body: string; mtimeMs: number }[] {
   if (!fs.existsSync(folderPath)) return [];
   let entries: string[];
   try {
@@ -55,15 +62,16 @@ function readSkillFolder(folderPath: string): { name: string; body: string }[] {
     console.warn(`[skill-loader] readdirSync failed for ${folderPath}:`, err);
     return [];
   }
-  const skills: { name: string; body: string }[] = [];
+  const skills: { name: string; body: string; mtimeMs: number }[] = [];
   for (const entry of entries) {
     if (!entry.endsWith(".md")) continue;
     const full = path.join(folderPath, entry);
     try {
       const raw = fs.readFileSync(full, "utf8");
+      const stat = fs.statSync(full);
       const body = stripFrontmatter(raw);
       const name = entry.replace(/^\d+-/, "").replace(/\.md$/, "");
-      skills.push({ name, body });
+      skills.push({ name, body, mtimeMs: stat.mtimeMs });
     } catch (err) {
       console.warn(`[skill-loader] Failed to read ${full}:`, err);
     }
@@ -84,8 +92,8 @@ export function loadSkillPack(botType: string): SkillPack {
   const cached = cache.get(botType);
   if (cached) return cached;
 
-  let shared: { name: string; body: string }[] = [];
-  let botSkills: { name: string; body: string }[] = [];
+  let shared: { name: string; body: string; mtimeMs: number }[] = [];
+  let botSkills: { name: string; body: string; mtimeMs: number }[] = [];
   try {
     shared = readSkillFolder(SHARED_DIR);
     const botFolder = path.join(SKILLS_DIR, botType);
@@ -102,6 +110,8 @@ export function loadSkillPack(botType: string): SkillPack {
       skillNames: [],
       totalChars: 0,
       version: SKILLS_VERSION,
+      // CMD-BUYERBOT-SKILLS: epoch fallback for empty packs.
+      lastUpdated: new Date(0).toISOString(),
     };
     cache.set(botType, empty);
     return empty;
@@ -111,11 +121,22 @@ export function loadSkillPack(botType: string): SkillPack {
     .map((s) => `# SKILL PACK: ${s.name}\n\n${s.body}`)
     .join("\n\n---\n\n");
 
+  // CMD-BUYERBOT-SKILLS: track newest .md mtime across all loaded
+  // files (shared + bot-specific). Surfaced via /admin Skills
+  // Status widget for at-a-glance freshness.
+  let maxMtimeMs = 0;
+  for (const s of all) {
+    if (s.mtimeMs > maxMtimeMs) maxMtimeMs = s.mtimeMs;
+  }
+
   const pack: SkillPack = {
     systemPromptBlock,
     skillNames: all.map((s) => s.name),
     totalChars: systemPromptBlock.length,
     version: SKILLS_VERSION,
+    lastUpdated: maxMtimeMs > 0
+      ? new Date(maxMtimeMs).toISOString()
+      : new Date(0).toISOString(),
   };
 
   cache.set(botType, pack);
