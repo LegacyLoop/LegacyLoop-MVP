@@ -592,12 +592,14 @@ function PanelHeader({ icon, title, hasData, badge, collapsed, onToggle, preview
   );
 }
 
-function PanelFooter({ botName, botLink, itemId, botIcon, botCost, onSuperBoost, onBotRun, boosting, boosted, extra, hasResult, botError }: {
+function PanelFooter({ botName, botLink, itemId, botIcon, botCost, reRunCost, onSuperBoost, onBotRun, boosting, boosted, extra, hasResult, botError }: {
   botName: string;
   botLink: string;
   itemId: string;
   botIcon?: string;
   botCost?: number;
+  /** STEP 4.9: explicit re-run cost (preferred over the legacy *0.5 formula). */
+  reRunCost?: number;
   onSuperBoost?: () => void;
   onBotRun?: () => void;
   boosting?: boolean;
@@ -656,7 +658,7 @@ function PanelFooter({ botName, botLink, itemId, botIcon, botCost, onSuperBoost,
             cursor: "pointer",
           }}
         >
-          {hasResult ? `🔄 Re-Run · ${(botCost ?? 1) * 0.5} cr` : `${botIcon} ${botName} · ${botCost ?? 1} cr`}
+          {hasResult ? `🔄 Re-Run · ${reRunCost ?? (botCost ?? 1) * 0.5} cr` : `${botIcon} ${botName} · ${botCost ?? 1} cr`}
         </button>
       )}
       {/* MegaBot — single button, transforms on state */}
@@ -3205,6 +3207,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
         itemId={itemId}
         botIcon="🧠"
         botCost={1}
+        reRunCost={1}
         onBotRun={() => analyze(hasData)}
         onSuperBoost={hasData ? onSuperBoost : undefined}
         boosting={boosting}
@@ -3961,7 +3964,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
         <AmazonPriceBadge itemId={itemId} />
       </div>
 
-      <PanelFooter botName="PriceBot" botLink="/bots/pricebot" itemId={itemId} botIcon="💰" botCost={1} onBotRun={hasData ? onPriceBotRun : undefined} onSuperBoost={hasData ? onSuperBoost : undefined} boosting={boosting} boosted={boosted} hasResult={!!priceBotResult} />
+      <PanelFooter botName="PriceBot" botLink="/bots/pricebot" itemId={itemId} botIcon="💰" botCost={2} reRunCost={1} onBotRun={hasData ? onPriceBotRun : undefined} onSuperBoost={hasData ? onSuperBoost : undefined} boosting={boosting} boosted={boosted} hasResult={!!priceBotResult} />
       </div>
     </GlassCard>
   );
@@ -4961,6 +4964,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
         itemId={itemId}
         botIcon="📷"
         botCost={1}
+        reRunCost={0.5}
         onBotRun={hasAnalysis ? runAssessOnly : undefined}
         onSuperBoost={hasAnalysis ? onSuperBoost : undefined}
         boosting={boosting}
@@ -5277,7 +5281,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
         </>)}
       </div>
 
-      <PanelFooter botName="BuyerBot" botLink="/bots/buyerbot" itemId={itemId} botIcon="🎯" botCost={1} onBotRun={hasAnalysis ? onBuyerBotRun : undefined} onSuperBoost={hasAnalysis ? onSuperBoost : undefined} boosting={boosting} boosted={boosted} hasResult={!!buyerBotResult} />
+      <PanelFooter botName="BuyerBot" botLink="/bots/buyerbot" itemId={itemId} botIcon="🎯" botCost={4} reRunCost={2} onBotRun={hasAnalysis ? onBuyerBotRun : undefined} onSuperBoost={hasAnalysis ? onSuperBoost : undefined} boosting={boosting} boosted={boosted} hasResult={!!buyerBotResult} />
       </div>
     </GlassCard>
   );
@@ -5722,7 +5726,8 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
         botLink="/bots/listbot"
         itemId={itemId}
         botIcon="✍️"
-        botCost={1}
+        botCost={4}
+        reRunCost={2}
         onBotRun={hasAnalysis ? onListBotRun : undefined}
         onSuperBoost={onSuperBoost}
         boosting={boosting}
@@ -5925,7 +5930,8 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
             botLink={`/bots/carbot?item=${itemId}`}
             itemId={itemId}
             botIcon="🚗"
-            botCost={1}
+            botCost={4}
+            reRunCost={2}
           />
         </div>
       </GlassCard>
@@ -6513,7 +6519,8 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
         botLink={`/bots/carbot?item=${itemId}`}
         itemId={itemId}
         botIcon="🚗"
-        botCost={1}
+        botCost={4}
+        reRunCost={2}
         onBotRun={hasAnalysis ? onCarBotRun : undefined}
         onSuperBoost={onSuperBoost}
         boosting={boosting}
@@ -6681,7 +6688,8 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
             botLink={`/bots/collectiblesbot?item=${itemId}`}
             itemId={itemId}
             botIcon="🎴"
-            botCost={1}
+            botCost={4}
+            reRunCost={2}
             onBotRun={
               hasAnalysis && detection?.isCollectible
                 ? onCollectiblesBotRun
@@ -7039,7 +7047,8 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
         botLink={`/bots/collectiblesbot?item=${itemId}`}
         itemId={itemId}
         botIcon="🎴"
-        botCost={1}
+        botCost={4}
+        reRunCost={2}
         onBotRun={
           hasAnalysis && detection?.isCollectible
             ? onCollectiblesBotRun
@@ -7204,7 +7213,8 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
             botLink={`/bots/antiquebot?item=${itemId}`}
             itemId={itemId}
             botIcon="🏺"
-            botCost={1}
+            botCost={4}
+            reRunCost={2}
             onBotRun={
               hasAnalysis && isAntiqueItem
                 ? onAntiqueBotRun
@@ -7642,7 +7652,8 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
         botLink={`/bots/antiquebot?item=${itemId}`}
         itemId={itemId}
         botIcon="🏺"
-        botCost={1}
+        botCost={4}
+        reRunCost={2}
         onBotRun={
           hasAnalysis && isAntiqueItem
             ? onAntiqueBotRun
@@ -9004,7 +9015,8 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
           botLink={`/bots/reconbot?item=${itemId}`}
           itemId={itemId}
           botIcon="🔍"
-          botCost={1}
+          botCost={3}
+          reRunCost={2}
           onBotRun={!!aiData ? onReconBotRun : undefined}
           onSuperBoost={onSuperBoost}
           boosting={boosting}

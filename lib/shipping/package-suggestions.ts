@@ -279,28 +279,33 @@ export function suggestShippingMethod(
 ): ShippingMethodSuggestion {
   const cat = (category ?? "").toLowerCase();
 
-  // AI shipping_difficulty as strong signal (if provided)
+  // STEP 4.9 FIX: LOCAL_ONLY categories ALWAYS win, even if the AI says "freight".
+  // A 500 lb riding lawnmower is technically freight-shippable, but it's
+  // illogical — nobody freight-ships a lawn tractor cross-country. The seller
+  // sells it locally, period. This was the bug Ryan caught: the Shipping
+  // Estimates panel was showing "Freight · Est. shipping from $955" for a
+  // riding mower because the AI shipping_difficulty check ran first.
+  if (LOCAL_ONLY_CATEGORIES.some(term => cat.includes(term))) {
+    console.log(`[shipping-method] "${cat}" matches local_only category — overriding AI shipping_difficulty`);
+    return "local_only";
+  }
+
+  // Seller explicitly chose local pickup only
+  if (saleMethod === "LOCAL_PICKUP") {
+    return "local_only";
+  }
+
+  // AI shipping_difficulty as strong signal for non-local categories
   if (shippingDifficulty) {
     const diff = shippingDifficulty.toLowerCase();
     if (diff.includes("freight")) return "freight";
     if (diff === "local only" || diff.includes("local only")) return "local_only";
   }
 
-  // Check LOCAL_ONLY categories first
-  if (LOCAL_ONLY_CATEGORIES.some(term => cat.includes(term))) {
-    console.log(`[shipping-method] "${cat}" matches local_only category`);
-    return "local_only";
-  }
-
-  // Check FREIGHT categories
+  // FREIGHT categories (furniture, appliances, etc.)
   if (FREIGHT_CATEGORIES.some(term => cat.includes(term))) {
     console.log(`[shipping-method] "${cat}" matches freight category`);
     return "freight";
-  }
-
-  // Seller chose local pickup only
-  if (saleMethod === "LOCAL_PICKUP") {
-    return "local_only";
   }
 
   // Over 150 lbs — recommend local (too heavy even for freight in many cases)
