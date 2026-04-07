@@ -3621,23 +3621,43 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
           const listPrice = sellerListingPrice ?? null;
           const useListingPrice = listPrice != null && listPrice > 0;
 
-          if (isLocalOnly) {
-            // Seller chose local pickup only — no shipping cost
+          // STEP 4.8 — SMART PANEL: detect shipping mode (local/parcel/freight)
+          // and drive scenario label + cost + badge from a single source.
+          // freightCostEstimate is set above (line ~3282) when AI weight or
+          // category indicates the item is too large/heavy for parcel.
+          const _isFreightItem = freightCostEstimate != null;
+          const _forceLocalForFreight = _isFreightItem && _isLocalOnlyItem;
+          // Three explicit modes — the panel uses this to render the right
+          // badge AND pick the right shipping cost.
+          let _shipMode: "local" | "parcel" | "freight" = "parcel";
+          if (isLocalOnly || _forceLocalForFreight) _shipMode = "local";
+          else if (_isFreightItem) _shipMode = "freight";
+          else _shipMode = "parcel";
+
+          if (_shipMode === "local") {
+            // Seller chose local pickup OR item too heavy for cost-effective shipping
             salePrice = useListingPrice ? listPrice : (pr ? (pr.localPrice?.mid ?? 0) : (v?.mid ?? Math.round((v?.low + v?.high) / 2)));
             isLocal = true;
-            scenario = "Local pickup";
+            scenario = _forceLocalForFreight ? "Local pickup (freight item)" : "Local pickup";
           } else if (pr) {
             const lm = pr.localPrice?.mid ?? 0, bm = pr.bestMarket?.mid ?? 0;
-            const sc = realQuotedRate ?? pr.bestMarket?.shippingCost ?? pr.shippingEstimate ?? 25;
+            // SMART COST: freight items use real freight estimate, parcel items
+            // use the quoted rate or fall back to a realistic parcel default.
+            const sc = _shipMode === "freight"
+              ? (freightCostEstimate as number)
+              : (realQuotedRate ?? pr.bestMarket?.shippingCost ?? pr.shippingEstimate ?? 25);
             const ln = lm - lm * cRate, sn = bm - bm * cRate - sc;
             if (sn > ln && bm > 0) {
               salePrice = useListingPrice ? listPrice : bm;
               shipCost = sc;
-              scenario = useListingPrice ? `Ship to ${pr.bestMarket?.label ?? "best market"}` : `Ship to ${pr.bestMarket?.label ?? "best market"}`;
+              const _modeLabel = _shipMode === "freight" ? "Freight to" : "Parcel to";
+              scenario = `${_modeLabel} ${pr.bestMarket?.label ?? "best market"}`;
             } else {
+              // Best market doesn't beat local after real shipping cost — go local
               salePrice = useListingPrice ? listPrice : lm;
               isLocal = true;
-              scenario = "Local pickup";
+              _shipMode = "local";
+              scenario = _isFreightItem ? "Local pickup (freight too costly)" : "Local pickup";
             }
           } else if (v) {
             salePrice = useListingPrice ? listPrice : (v.mid ?? Math.round((v.low + v.high) / 2));
@@ -3699,18 +3719,29 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                     <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
                       <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
                         Shipping
-                        {!isLocal && realQuotedRate != null && (
-                          <span style={{ fontSize: "0.55rem", padding: "1px 5px", borderRadius: 99, background: "rgba(76,175,80,0.1)", color: "#4caf50", fontWeight: 600 }}>
-                            Quoted
+                        {/* STEP 4.8 SMART PANEL: explicit mode badge — local / parcel / freight */}
+                        {_shipMode === "local" && (
+                          <span style={{ fontSize: "0.55rem", padding: "1px 5px", borderRadius: 99, background: "rgba(76,175,80,0.12)", color: "#4caf50", fontWeight: 700 }}>
+                            Local Pickup
                           </span>
                         )}
-                        {!isLocal && realQuotedRate == null && (
-                          <span style={{ fontSize: "0.55rem", padding: "1px 5px", borderRadius: 99, background: "rgba(245,158,11,0.1)", color: "#f59e0b", fontWeight: 600 }}>
-                            Est.
+                        {_shipMode === "freight" && (
+                          <span style={{ fontSize: "0.55rem", padding: "1px 5px", borderRadius: 99, background: "rgba(234,179,8,0.12)", color: "#eab308", fontWeight: 700 }}>
+                            Freight
+                          </span>
+                        )}
+                        {_shipMode === "parcel" && realQuotedRate != null && (
+                          <span style={{ fontSize: "0.55rem", padding: "1px 5px", borderRadius: 99, background: "rgba(0,188,212,0.12)", color: "#00bcd4", fontWeight: 700 }}>
+                            Parcel · Quoted
+                          </span>
+                        )}
+                        {_shipMode === "parcel" && realQuotedRate == null && (
+                          <span style={{ fontSize: "0.55rem", padding: "1px 5px", borderRadius: 99, background: "rgba(0,188,212,0.08)", color: "#00bcd4", fontWeight: 700 }}>
+                            Parcel · Est.
                           </span>
                         )}
                       </span>
-                      <span style={{ color: isLocal ? "#4ade80" : "#ef4444" }}>{isLocal ? "$0.00 local pickup" : `-$${shipCost.toFixed(2)}`}</span>
+                      <span style={{ color: isLocal ? "#4ade80" : _shipMode === "freight" ? "#eab308" : "#ef4444" }}>{isLocal ? "$0.00 local pickup" : `-$${shipCost.toFixed(2)}`}</span>
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
                       <span>Commission ({cPct}% {tName})</span>

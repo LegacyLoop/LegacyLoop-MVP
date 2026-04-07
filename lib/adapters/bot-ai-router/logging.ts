@@ -35,6 +35,8 @@ export interface RoutingLogPayload {
   costUsd: number;
   /** CARRY-OVER FIX (Step 3): real USD cost from token metering. */
   actualCostUsd?: number;
+  /** STEP 4.8: real Apify scraper cost incurred during this routing call. */
+  apifyCostUsd?: number;
   latencyMs: number;
   fallbackUsed: boolean;
   degraded: boolean;
