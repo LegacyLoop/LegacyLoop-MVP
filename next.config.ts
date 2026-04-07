@@ -38,6 +38,13 @@ const nextConfig: NextConfig = {
   outputFileTracingExcludes: {
     '/**': ['node_modules/ffmpeg-static/**', 'node_modules/sharp/**', 'node_modules/@img/**'],
   },
+  // CMD-RECONBOT-SKILLS: guarantee Vercel bundles all .md skill
+  // pack files into every /api/* serverless function deployment
+  // regardless of default tracing behavior. Insurance for the
+  // skill-loader runtime fs.readFileSync calls.
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./lib/bots/skills/**/*"],
+  },
   async headers() {
     return [
       {

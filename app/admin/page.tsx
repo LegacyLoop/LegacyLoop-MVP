@@ -9,6 +9,9 @@ export const metadata: Metadata = {
 };
 
 import { isAdmin } from "@/lib/constants/admin";
+// CMD-RECONBOT-SKILLS: Skills Status widget reads loader directly
+// at server-component render time (no API roundtrip).
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 export default async function AdminPage() {
   const user = await authAdapter.getSession();
@@ -179,6 +182,28 @@ export default async function AdminPage() {
     { label: "Analysis Rate", value: `${Math.round((analyzedItems / Math.max(totalItems, 1)) * 100)}%`, trend: "+5%", up: true },
     { label: "Active This Week", value: totalUsers.toString(), trend: "—", up: true },
   ];
+
+  // CMD-RECONBOT-SKILLS: per-bot Skill Pack status table.
+  // Reads the loader synchronously (process-cached after first call
+  // per warm instance). Empty packs render as ❌ Empty so ops can
+  // see at a glance which bots are missing their playbooks.
+  const BOT_TYPES = [
+    "analyzebot", "antiquebot", "buyerbot", "carbot",
+    "collectiblesbot", "listbot", "photobot", "pricebot",
+    "reconbot", "videobot",
+  ] as const;
+  const skillStatusRows = BOT_TYPES.map((botType) => {
+    const pack = loadSkillPack(botType);
+    const ok = pack.systemPromptBlock.length > 0;
+    return {
+      botType,
+      version: pack.version,
+      count: pack.skillNames.length,
+      totalChars: pack.totalChars,
+      statusBadge: ok ? "✅ Ready" : "❌ Empty",
+      statusColor: ok ? "#16a34a" : "#dc2626",
+    };
+  });
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -406,6 +431,50 @@ export default async function AdminPage() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* ═══ Skills Status (CMD-RECONBOT-SKILLS) ═══ */}
+      <div style={{
+        background: "var(--bg-card)",
+        border: "1px solid var(--border-default)",
+        borderRadius: "12px",
+        padding: "1.5rem",
+        marginTop: "1.5rem",
+      }}>
+        <h2 style={{
+          fontSize: "1rem",
+          fontWeight: 700,
+          color: "var(--text-primary)",
+          marginBottom: "1rem",
+        }}>🧠 Skill Packs Status</h2>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            fontSize: "0.85rem",
+          }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--border-default)" }}>
+                <th style={{ textAlign: "left", padding: "0.5rem", color: "var(--text-secondary)" }}>Bot Type</th>
+                <th style={{ textAlign: "left", padding: "0.5rem", color: "var(--text-secondary)" }}>Version</th>
+                <th style={{ textAlign: "center", padding: "0.5rem", color: "var(--text-secondary)" }}>Skills</th>
+                <th style={{ textAlign: "right", padding: "0.5rem", color: "var(--text-secondary)" }}>Total Chars</th>
+                <th style={{ textAlign: "center", padding: "0.5rem", color: "var(--text-secondary)" }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {skillStatusRows.map((row) => (
+                <tr key={row.botType} style={{ borderBottom: "1px solid var(--border-default)" }}>
+                  <td style={{ padding: "0.5rem", fontWeight: 700, color: "var(--text-primary)" }}>{row.botType}</td>
+                  <td style={{ padding: "0.5rem", color: "var(--text-secondary)", fontFamily: "monospace", fontSize: "0.78rem" }}>{row.version}</td>
+                  <td style={{ padding: "0.5rem", textAlign: "center", color: "var(--text-secondary)" }}>{row.count}</td>
+                  <td style={{ padding: "0.5rem", textAlign: "right", color: "var(--text-secondary)", fontFamily: "monospace", fontSize: "0.78rem" }}>{row.totalChars.toLocaleString()}</td>
+                  <td style={{ padding: "0.5rem", textAlign: "center", fontWeight: 700, color: row.statusColor }}>{row.statusBadge}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 

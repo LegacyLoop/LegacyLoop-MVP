@@ -62,7 +62,7 @@ function readSkillFolder(folderPath: string): { name: string; body: string }[] {
     try {
       const raw = fs.readFileSync(full, "utf8");
       const body = stripFrontmatter(raw);
-      const name = entry.replace(/\.md$/, "");
+      const name = entry.replace(/^\d+-/, "").replace(/\.md$/, "");
       skills.push({ name, body });
     } catch (err) {
       console.warn(`[skill-loader] Failed to read ${full}:`, err);
