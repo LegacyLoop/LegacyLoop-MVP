@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import OpenAI from "openai";
+// STEP 4.7: pre-pass OpenAI web search for real-time auction + collector market data
+import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
 import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { logUserEvent } from "@/lib/data/user-events";
 import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
@@ -176,8 +178,17 @@ ${la.comps.slice(0, 5).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${
       console.log("[AntiqueBot] Market intelligence unavailable — proceeding with AI-only analysis");
     }
 
+    // STEP 4.7: OpenAI web_search_preview pre-pass for real-time auction + collector market data
+    const _sellerZip = item.saleZip || "04901";
+    const { webEnrichment, webSources: prepassWebSources } = await runWebSearchPrepass(
+      openai,
+      itemName,
+      category,
+      _sellerZip,
+    );
+
     // ── ANTIQUEBOT DEEP-DIVE PROMPT ──
-    const systemPrompt = enrichmentPrefix + auctionContext + `You are a world-class antique appraiser, auction specialist, and collector-market expert with 30+ years of experience in fine antiques, collectibles, decorative arts, and estate appraisal. You have been given an item that has ALREADY been identified and flagged as a potential antique by another AI.
+    const systemPrompt = enrichmentPrefix + auctionContext + webEnrichment + `You are a world-class antique appraiser, auction specialist, and collector-market expert with 30+ years of experience in fine antiques, collectibles, decorative arts, and estate appraisal. You have been given an item that has ALREADY been identified and flagged as a potential antique by another AI.
 
 Your ONLY job is ANTIQUE DEEP-DIVE — authentication, provenance, history, collector market, and selling strategy.
 
@@ -440,6 +451,10 @@ IMPORTANT:
     ];
     for (const key of requiredFields) {
       if (antiquebotResult[key] === undefined) antiquebotResult[key] = null;
+    }
+    // STEP 4.7: attach web search citations from the pre-pass
+    if (prepassWebSources.length > 0) {
+      antiquebotResult.web_sources = prepassWebSources;
     }
 
     // Store in EventLog

@@ -238,28 +238,42 @@ export const FREE_TIER_RULES = {
 // SECTION F — BOT CREDIT COSTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// STEP 4.6 (April 6 2026): clean integer ladder 1→2→3→4→5→7
+// Specialty bots all 4cr to cover scraper costs.
+// MegaBot bumped to 7/4 for premium positioning.
+// Audit: see git log e5a9b1f for unit-economics analysis.
 export const BOT_CREDIT_COSTS = {
-  singleBotRun: 1,
+  singleBotRun: 1,        // Generic baseline (legacy callers)
   singleBotReRun: 0.5,
-  // CARRY-OVER FIX (Step 3): ListBot is hybrid (Claude + Grok), CarBot needs its own pricing
-  listBotRun: 2,          // Hybrid: Claude marketplace + Grok social
-  listBotReRun: 1,
-  carBotRun: 2,           // Gemini primary + OpenAI rare-vehicle secondary
-  carBotReRun: 1,
-  // Specialist bots: GPT-4o full + heavy scraping
-  antiqueBotRun: 2,
-  antiqueBotReRun: 1,
-  collectiblesBotRun: 2,
-  collectiblesBotReRun: 1,
-  // ReconBot: heavy scraper usage (multi-platform competitor monitoring)
-  reconBotRun: 2,         // Single AI scan — covers scraper costs
-  reconBotReRun: 1,       // Re-scan with cached data
-  reconBotAutoScan: 8,    // Premium auto-scan (recurring, multi-platform, high scraper volume)
-  // BuyerBot: social platform scrapers (FB Groups, Reddit, Instagram, etc.)
-  buyerBotRun: 2,         // Single AI pull — covers social scraper costs
-  buyerBotReRun: 1,       // Re-run with cached social data
-  megaBotRun: 5,
-  megaBotReRun: 3,
+  // PriceBot specialty (Step 4.6 bump 1→2)
+  priceBotRun: 2,
+  priceBotReRun: 1,
+  // PhotoBot (Step 4.6 explicit constant — was using singleBotRun)
+  photoBotRun: 1,
+  photoBotReRun: 0.5,
+  // ListBot HYBRID (Claude marketplace + Grok social) — Step 4.6 bump 2→4
+  listBotRun: 4,
+  listBotReRun: 2,
+  // CarBot (Step 4.6 bump 1→4 — matches specialty pattern)
+  carBotRun: 4,           // Gemini primary + OpenAI rare-vehicle secondary
+  carBotReRun: 2,
+  // Specialist bots (Step 4.6 bump 2→4)
+  antiqueBotRun: 4,
+  antiqueBotReRun: 2,
+  collectiblesBotRun: 4,
+  collectiblesBotReRun: 2,
+  // ReconBot (Step 4.6 bump 2→3)
+  reconBotRun: 3,
+  reconBotReRun: 2,
+  reconBotAutoScan: 8,    // CLICK-ONLY premium auto-scan — never auto-fires
+  // BuyerBot (Step 4.6 bump 2→4 + scraper cap to 3 max)
+  buyerBotRun: 4,
+  buyerBotReRun: 2,
+  // MegaBot (Step 4.6 bump 5→7 / 3→4 — premium positioning)
+  megaBotRun: 7,
+  megaBotReRun: 4,
+  // AnalyzeBot: free first run, paid re-runs (Step 4.6 semantic constant)
+  analyzeBotReRun: 1,
   intelligenceRun: 1,    // Claude intelligence synthesis
   intelligenceRefresh: 0.5, // Refresh when stale
   intelligenceChat: 0.25,  // Ask Claude a question about item intel

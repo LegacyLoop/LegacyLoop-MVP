@@ -359,10 +359,10 @@ export default function DetectionHUD(props: DetectionHUDProps) {
                 {!antiqueBotDone ? (
                   <>
                     <button onClick={runAntiqueBot} disabled={antiqueBotLoading} className="det-btn" style={{ borderColor: `${ac}30`, color: ac }}>
-                      {antiqueBotLoading ? "Running..." : "AntiqueBot 2 cr"}
+                      {antiqueBotLoading ? "Running..." : "AntiqueBot 4 cr"}
                     </button>
                     <button onClick={() => runMegaBot("antique")} disabled={megaBotTarget === "antique"} className="det-btn" style={{ borderColor: `${ac}35`, color: ac, background: `${ac}08` }}>
-                      {megaBotTarget === "antique" ? "Running..." : "MegaBot 5 cr"}
+                      {megaBotTarget === "antique" ? "Running..." : "MegaBot 7 cr"}
                     </button>
                   </>
                 ) : (
@@ -421,10 +421,10 @@ export default function DetectionHUD(props: DetectionHUDProps) {
                 {!collectBotDone ? (
                   <>
                     <button onClick={runCollectiblesBot} disabled={collectBotLoading} className="det-btn" style={{ borderColor: `${ac}30`, color: ac }}>
-                      {collectBotLoading ? "Running..." : "CollectiblesBot 2 cr"}
+                      {collectBotLoading ? "Running..." : "CollectiblesBot 4 cr"}
                     </button>
                     <button onClick={() => runMegaBot("collectibles")} disabled={megaBotTarget === "collectibles"} className="det-btn" style={{ borderColor: `${ac}35`, color: ac, background: `${ac}08` }}>
-                      {megaBotTarget === "collectibles" ? "Running..." : "MegaBot 5 cr"}
+                      {megaBotTarget === "collectibles" ? "Running..." : "MegaBot 7 cr"}
                     </button>
                   </>
                 ) : (

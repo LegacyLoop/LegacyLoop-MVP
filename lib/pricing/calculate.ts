@@ -362,8 +362,10 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
     label: "National Average",
   };
 
+  // SPEC-WIRE FIX (Step 4.6): prefer live item field over stale rawJson
+  const _liveDifficulty = (ai as any).aiShippingDifficulty ?? ai.shipping_difficulty;
   const isShipImpractical = (
-    ai.shipping_difficulty === "Freight only" ||
+    _liveDifficulty === "Freight only" ||
     (ai.weight_estimate_lbs != null && ai.weight_estimate_lbs > 70) ||
     (ai.regional_best_city === null && ai.regional_local_demand != null)
   );
@@ -460,7 +462,8 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
 
   // ── Recommendation (shipping-method-aware) ────────────────────────────────
   const maxDim = ai.dimensions_estimate ? Math.max(...(String(ai.dimensions_estimate).match(/\d+/g) || ["0"]).map(Number)) : undefined;
-  const shippingMethod = suggestShippingMethod(category || ai.category, aiWeight ?? undefined, maxDim, undefined, ai.shipping_difficulty ?? undefined);
+  // SPEC-WIRE FIX (Step 4.6): prefer live item field over stale rawJson
+  const shippingMethod = suggestShippingMethod(category || ai.category, aiWeight ?? undefined, maxDim, undefined, ((ai as any).aiShippingDifficulty ?? ai.shipping_difficulty) ?? undefined);
 
   let recommendation: string;
   if (baseMid <= 0) {
@@ -568,7 +571,7 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
       localReasoning: localReasoning,
       shipOrLocal: ai.regional_ship_or_local ?? null,
       weightLbs: aiWeight,
-      shippingDifficulty: ai.shipping_difficulty ?? null,
+      shippingDifficulty: ((ai as any).aiShippingDifficulty ?? ai.shipping_difficulty) ?? null,  // SPEC-WIRE FIX (Step 4.6)
       shippingNotes: ai.shipping_notes ?? null,
     },
   };

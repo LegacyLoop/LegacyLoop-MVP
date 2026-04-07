@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import OpenAI from "openai";
+// STEP 4.7: pre-pass OpenAI web search for real-time collector market data
+import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
 import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { logUserEvent } from "@/lib/data/user-events";
 import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
@@ -173,20 +175,14 @@ ${chrono.comps.slice(0, 6).map((c: any, i: number) => `${i + 1}. "${c.item}" —
       }
       // Trading cards / sports cards / collectible cards routing
       if (catLower.match(/card|pokemon|magic|yugioh|tcg|trading|sports.?card|baseball|football|basketball|hockey/)) {
-        const [tcgApifyResult, courtyardResult] = await Promise.allSettled([
-          scrapeTcgplayerApify(itemName),
-          scrapeCourtyard(itemName),
-        ]);
-        const tcgApify = tcgApifyResult.status === "fulfilled" ? tcgApifyResult.value : null;
-        const courtyard = courtyardResult.status === "fulfilled" ? courtyardResult.value : null;
+        // MARGIN-FIX (Step 4.6): dropped Courtyard from card routing.
+        // Niche fractional-investor data, low value for typical sellers.
+        // Saves ~$0.40/call. Cards now run TCGPlayer + PriceCharting + PSAcard (3 max).
+        const tcgApifyResult = await scrapeTcgplayerApify(itemName).catch(() => null);
+        const tcgApify = tcgApifyResult;
         if (tcgApify?.success && tcgApify.comps.length > 0) {
           specialtyContext += `\n\nTCGPLAYER DEEP DATA (${tcgApify.comps.length} listings — Apify):
 ${tcgApify.comps.slice(0, 8).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}${c.condition ? ` [${c.condition}]` : ""}`).join("\n")}`;
-        }
-        if (courtyard?.success && courtyard.comps.length > 0) {
-          specialtyContext += `\n\nCOURTYARD.IO FRACTIONAL MARKET (${courtyard.comps.length} assets):
-${courtyard.comps.slice(0, 6).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price} (full value)${c.condition ? ` [${c.condition}]` : ""}`).join("\n")}
-NOTE: Courtyard tokenizes physical cards — these prices reflect total asset value, indicating institutional/fractional investor interest.`;
         }
       }
       // PriceCharting + PSAcard — Beckett equivalent for graded + ungraded price guide data
@@ -226,7 +222,16 @@ These are REAL PSA graded card auction results. Use these to validate your grade
       }
     } catch { /* non-critical */ }
 
-    const systemPrompt = enrichmentPrefix + collectiblesMarketContext + specialtyContext + `You are a world-class collectibles specialist with deep expertise across ALL major collector markets. You have encyclopedic knowledge of grading standards, auction records, population reports, and current market conditions.
+    // STEP 4.7: OpenAI web_search_preview pre-pass for real-time collector market data
+    const _sellerZip = item.saleZip || "04901";
+    const { webEnrichment, webSources: prepassWebSources } = await runWebSearchPrepass(
+      openai,
+      itemName,
+      category,
+      _sellerZip,
+    );
+
+    const systemPrompt = enrichmentPrefix + collectiblesMarketContext + specialtyContext + webEnrichment + `You are a world-class collectibles specialist with deep expertise across ALL major collector markets. You have encyclopedic knowledge of grading standards, auction records, population reports, and current market conditions.
 
 YOUR SPECIALTY MARKETS — you must actively reference these in every analysis:
 - Sports Cards: PSA, BGS/Beckett, SGC grading scales. eBay sold listings, PWCC Marketplace, Goldin Auctions, Beckett Marketplace, SportLots, Comc.com, MySlabs
@@ -662,6 +667,10 @@ Be specific to the actual collectible category. All prices USD. Return ONLY JSON
     // Ensure critical top-level keys exist
     for (const key of ["item_name", "category", "rarity", "raw_value_low", "raw_value_mid", "raw_value_high", "value_reasoning", "graded_values", "grading_recommendation", "grading_roi_reasoning", "demand_trend", "best_platform", "selling_strategy", "executive_summary", "visual_grading", "collection_context", "price_history", "investment", "authentication_services", "liquidity_assessment", "insurance_valuation", "condition_history", "comparable_sales", "market_comps", "pricing_sources"]) {
       if (result[key] === undefined) result[key] = null;
+    }
+    // STEP 4.7: attach web search citations from the pre-pass
+    if (prepassWebSources.length > 0) {
+      result.web_sources = prepassWebSources;
     }
 
     await prisma.eventLog.create({

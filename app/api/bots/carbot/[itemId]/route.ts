@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import OpenAI from "openai";
+// STEP 4.7: pre-pass OpenAI web search for real-time vehicle market data
+import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
 import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { logUserEvent } from "@/lib/data/user-events";
 import { getVehicleHistoryReport, decodeVinNHTSA } from "@/lib/vehicle/nhtsa";
@@ -91,7 +93,8 @@ export async function POST(
         return NextResponse.json({ error: "upgrade_required", message: "Upgrade your plan to access CarBot.", upgradeUrl: "/pricing?upgrade=true" }, { status: 403 });
       }
       const isRerun = await hasPriorBotRun(user.id, itemId, "CARBOT");
-      const cost = isRerun ? BOT_CREDIT_COSTS.singleBotReRun : BOT_CREDIT_COSTS.singleBotRun;
+      // STEP 4.6: CarBot is now a specialty bot (4cr / 2cr re-run)
+      const cost = isRerun ? BOT_CREDIT_COSTS.carBotReRun : BOT_CREDIT_COSTS.carBotRun;
       const cc = await checkCredits(user.id, cost);
       if (!cc.hasEnough) {
         return NextResponse.json({ error: "insufficient_credits", message: "Not enough credits to run CarBot.", balance: cc.balance, required: cost, buyUrl: "/credits" }, { status: 402 });
@@ -235,7 +238,16 @@ CRITICAL: Use these REAL comparable vehicles to anchor your valuation. Do NOT gu
       console.log("[CarBot] Vehicle market intelligence unavailable — proceeding with AI-only analysis");
     }
 
-    const systemPrompt = enrichmentPrefix + vehicleCompsContext + `You are an elite automotive appraiser, mechanic, and vehicle market analyst with 25 years of experience. You've evaluated thousands of vehicles — from classic cars to modern trucks to motorcycles to boats. You know every make, model, year, common problem, market value, and selling strategy.
+    // STEP 4.7: OpenAI web_search_preview pre-pass for real-time vehicle market data
+    const _vehicleQuery = `${vehicleYear || ""} ${vehicleMake || ""} ${vehicleModel || ""}`.trim() || ai.item_name || item.title || "";
+    const { webEnrichment, webSources: prepassWebSources } = await runWebSearchPrepass(
+      openai,
+      _vehicleQuery,
+      "vehicle",
+      sellerZip,
+    );
+
+    const systemPrompt = enrichmentPrefix + vehicleCompsContext + webEnrichment + `You are an elite automotive appraiser, mechanic, and vehicle market analyst with 25 years of experience. You've evaluated thousands of vehicles — from classic cars to modern trucks to motorcycles to boats. You know every make, model, year, common problem, market value, and selling strategy.
 
 You are evaluating a vehicle from photos and seller-provided data.${sellerContext ? `\n\nSELLER-PROVIDED VEHICLE DATA:${sellerContext}\n\nUse this seller data to provide a more accurate and specific evaluation.` : ""}
 
@@ -455,6 +467,10 @@ IMPORTANT:
     ];
     for (const key of requiredFields) {
       if (carbotResult[key] === undefined) carbotResult[key] = null;
+    }
+    // STEP 4.7: attach web search citations from the pre-pass
+    if (prepassWebSources.length > 0) {
+      carbotResult.web_sources = prepassWebSources;
     }
 
     // Store in EventLog (include NHTSA + VIN decode data alongside AI result)

@@ -239,7 +239,7 @@ export default function AntiqueAlert({ reason, auctionLow, auctionHigh, itemId }
                       boxShadow: "0 4px 14px rgba(139, 92, 246, 0.3)",
                     }}
                   >
-                    {megaBotLoading ? "Running..." : "⚡ Boost with MegaBot — 5 cr"}
+                    {megaBotLoading ? "Running..." : "⚡ Boost with MegaBot — 7 cr"}
                   </button>
                 )}
                 {megaBotSuccess && (
@@ -312,7 +312,7 @@ export default function AntiqueAlert({ reason, auctionLow, auctionHigh, itemId }
                   </div>
                 ) : (
                   <>
-                    {/* Quick Scan — 1 credit */}
+                    {/* Quick Scan — 4 credits (Step 4.6 bump) */}
                     <button
                       onClick={handleQuickScan}
                       disabled={quickScanLoading || megaBotLoading}
@@ -332,11 +332,11 @@ export default function AntiqueAlert({ reason, auctionLow, auctionHigh, itemId }
                           Scanning...
                         </>
                       ) : (
-                        "🏺 Quick Antique Scan — 1 credit"
+                        "🏺 Quick Antique Scan — 4 credits"
                       )}
                     </button>
 
-                    {/* MegaBot — 5 credits */}
+                    {/* MegaBot — 7 credits */}
                     <button
                       onClick={handleMegaBotAnalysis}
                       disabled={quickScanLoading || megaBotLoading}
@@ -355,7 +355,7 @@ export default function AntiqueAlert({ reason, auctionLow, auctionHigh, itemId }
                           Running MegaBot...
                         </>
                       ) : (
-                        "⚡ MegaBot Deep Analysis — 5 cr"
+                        "⚡ MegaBot Deep Analysis — 7 cr"
                       )}
                     </button>
 

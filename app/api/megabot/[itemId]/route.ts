@@ -232,7 +232,42 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     return new Response(`Unknown bot type: ${botType}`, { status: 400 });
   }
 
-  const prompt = getPrompt(ctx);
+  // STEP 4.7 — RYAN-APPROVED: MegaBot premium scraper enrichment.
+  // Adds back the scrapers we capped from standard bot runs in 4.6.
+  // The 7cr MegaBot price covers the additional Apify cost.
+  //   • buyerbot → Pinterest, YouTube, Twitter, FB Pages
+  //   • collectiblesbot → Courtyard for trading cards
+  //   • carbot → handled via the AutoTrader env override below
+  let megaEnrichmentBlock = "";
+  try {
+    const { runMegaBotEnrichment } = await import("@/lib/bots/megabot-enrichment");
+    const enrich = await runMegaBotEnrichment(
+      botType,
+      ctx.itemName || item.title || "",
+      ctx.category || "",
+    );
+    if (enrich.contextBlock) {
+      megaEnrichmentBlock = enrich.contextBlock;
+      console.log(
+        `[megabot/${botType}] premium enrichment fired ${enrich.scrapersFired.length} scrapers (~$${enrich.estimatedApifyCostUsd.toFixed(2)})`,
+      );
+    }
+  } catch (enrichErr) {
+    console.warn(`[megabot/${botType}] enrichment failed (non-critical):`, enrichErr);
+  }
+
+  // Inject the premium enrichment into the prompt that the 4 AIs see
+  const prompt = getPrompt(ctx) + megaEnrichmentBlock;
+
+  // STEP 4.6 — RYAN-APPROVED: AutoTrader/CarsCom/CarGurus subscription
+  // scrapers fire ONLY for CarBot MegaBot. The premium 7cr MegaBot price
+  // covers the $0.50+ subscription cost. Other bots stay locked out via
+  // the global ENABLE_SUBSCRIPTION_SCRAPERS=false env default.
+  let _prevSubscriptionFlag: string | undefined;
+  if (botType === "carbot") {
+    _prevSubscriptionFlag = process.env.ENABLE_SUBSCRIPTION_SCRAPERS;
+    process.env.ENABLE_SUBSCRIPTION_SCRAPERS = "true";
+  }
 
   let result;
   try {
@@ -241,6 +276,15 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   } catch (e: any) {
     console.error(`[megabot/${botType}]`, e);
     return new Response(`MegaBot ${botType} failed: ${e.message}`, { status: 422 });
+  } finally {
+    // Restore the subscription flag immediately after the call
+    if (botType === "carbot") {
+      if (_prevSubscriptionFlag === undefined) {
+        delete process.env.ENABLE_SUBSCRIPTION_SCRAPERS;
+      } else {
+        process.env.ENABLE_SUBSCRIPTION_SCRAPERS = _prevSubscriptionFlag;
+      }
+    }
   }
 
   // ── ALL-AGENT-FAILURE FALLBACK ──

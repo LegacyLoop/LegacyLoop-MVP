@@ -241,7 +241,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
         }}>
           <span style={{ fontSize: "1.1rem" }}>⚠️</span>
           <span style={{ fontSize: "0.85rem", color: "#eab308", fontWeight: 600 }}>
-            Low credit balance — most bots cost 1–5 credits per run.
+            Low credit balance — bots cost 1–7 credits per run.
           </span>
           <button onClick={() => setTab("store")} style={{
             marginLeft: "auto", padding: "0.35rem 0.875rem", borderRadius: "0.5rem",

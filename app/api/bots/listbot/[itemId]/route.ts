@@ -19,6 +19,8 @@ import {
   buildMarketplacePrompt,
   buildSocialPrompt,
 } from "@/lib/adapters/bot-ai-router/listbot-prompts";
+// STEP 4.6: pre-pass OpenAI web search enrichment
+import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
 import fs from "fs";
 import path from "path";
 
@@ -330,8 +332,16 @@ Study these titles and pricing for your Poshmark-specific listing copy. Mirror s
       console.log("[ListBot] Listing scrapers unavailable — proceeding with AI-only analysis");
     }
 
+    // STEP 4.6: OpenAI web_search_preview pre-pass for real-time market data
+    const { webEnrichment, webSources: prepassWebSources } = await runWebSearchPrepass(
+      openai,
+      itemName,
+      category,
+      sellerZip,
+    );
+
     // ── LISTBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + specialtyBotContext + "\n\n" + buyerIntelligence + realListingContext + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.
+    const systemPrompt = enrichmentPrefix + specialtyBotContext + "\n\n" + buyerIntelligence + realListingContext + webEnrichment + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.
 
 You are creating listings for: ${itemName} — ${category}${subcategory ? ` — ${subcategory}` : ""}
 Condition: ${condLabel} (${condScore}/10)
@@ -565,9 +575,9 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
         );
         aiBreakdown = listbotResult._ai_breakdown;
 
-        // Web sources: routeListBotHybrid path doesn't run web_search_preview
-        // (Claude + Grok don't share that OpenAI tool). Flagged for Step 4.
-        webSources = [];
+        // STEP 4.6: Use citations from the OpenAI web_search_preview pre-pass
+        // (Claude + Grok don't share that tool, so the pre-pass collects them).
+        webSources = prepassWebSources;
       } catch (aiErr: any) {
         console.error("[listbot] hybrid router error:", aiErr);
         return NextResponse.json(

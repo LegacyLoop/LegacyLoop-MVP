@@ -85,17 +85,18 @@ export async function POST(
   }
 
   // ── Tier + Credit Gate (free first run, then 1 credit) ──
+  // STEP 4.6: semantic constant swap singleBotRun → analyzeBotReRun
   if (!isDemoMode()) {
     const isFirstRun = await isFreeAnalysisAvailable(user.id);
     if (!isFirstRun) {
-      const cc = await checkCredits(user.id, BOT_CREDIT_COSTS.singleBotRun);
+      const cc = await checkCredits(user.id, BOT_CREDIT_COSTS.analyzeBotReRun);
       if (!cc.hasEnough) {
         return Response.json(
-          { error: "insufficient_credits", message: "Not enough credits. Your free analysis has been used.", balance: cc.balance, required: BOT_CREDIT_COSTS.singleBotRun, buyUrl: "/credits" },
+          { error: "insufficient_credits", message: "Not enough credits. Your free analysis has been used.", balance: cc.balance, required: BOT_CREDIT_COSTS.analyzeBotReRun, buyUrl: "/credits" },
           { status: 402 }
         );
       }
-      await deductCredits(user.id, BOT_CREDIT_COSTS.singleBotRun, "AnalyzeBot re-run", itemId);
+      await deductCredits(user.id, BOT_CREDIT_COSTS.analyzeBotReRun, "AnalyzeBot re-run", itemId);
     }
   }
 

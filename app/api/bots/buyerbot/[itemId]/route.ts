@@ -271,32 +271,33 @@ INSTRUCTION: Use these SEO keywords to find buyers who would search for this ite
 
     let realBuyerContext = "";
     try {
+      // MARGIN-FIX (Step 4.6): scraper cap from 7→3.
+      // Audit Step 4.5 showed BuyerBot normal mode lost $1.02/call.
+      // Keep FB Groups + Reddit (baseline) + Instagram (highest engagement signal).
+      // DROPPED: Pinterest, YouTube, Twitter, FB Pages (saves ~$1.30/call).
       const scraperPromises: Promise<any>[] = [
         scrapeFacebookGroups(itemName, category),   // Apify — always run (most valuable for buyers)
         scrapeRedditBuiltin(itemName),               // FREE — always run
       ];
-      // Only fire expensive social scrapers in normal/full mode
+      // Only fire Instagram in normal/full mode (capped to 3 total)
       if (runFullSocial) {
         scraperPromises.push(
           scrapeInstagram(itemName, category),
-          scrapePinterest(itemName, category),
-          scrapeYoutube(itemName, category),
-          scrapeTwitter(itemName, category),
-          scrapeFacebookPages(itemName, category),
         );
       } else {
-        console.log(`[BuyerBot] Conservative mode — skipping Instagram/Pinterest/YouTube/Twitter/FBPages (5 Apify calls saved)`);
+        console.log(`[BuyerBot] Conservative mode — skipping Instagram (1 Apify call saved)`);
       }
 
       const settled = await Promise.allSettled(scraperPromises);
-      const [fbGroups, redditBuiltinData, instaData, pinterestData, youtubeData, twitterData, fbPagesData] = [
-        settled[0], settled[1],
-        settled[2] || { status: "rejected" as const, reason: "skipped" },
-        settled[3] || { status: "rejected" as const, reason: "skipped" },
-        settled[4] || { status: "rejected" as const, reason: "skipped" },
-        settled[5] || { status: "rejected" as const, reason: "skipped" },
-        settled[6] || { status: "rejected" as const, reason: "skipped" },
-      ];
+      // Permanent stubs cast to widen union so downstream "fulfilled" checks compile
+      const skippedStub = { status: "rejected", reason: "dropped in Step 4.6 cap" } as unknown as PromiseSettledResult<any>;
+      const fbGroups = settled[0] as PromiseSettledResult<any>;
+      const redditBuiltinData = settled[1] as PromiseSettledResult<any>;
+      const instaData = (settled[2] ?? skippedStub) as PromiseSettledResult<any>;
+      const pinterestData = skippedStub;
+      const youtubeData = skippedStub;
+      const twitterData = skippedStub;
+      const fbPagesData = skippedStub;
 
       const fbResult = fbGroups.status === "fulfilled" ? fbGroups.value : null;
       const redditBuiltinResult = redditBuiltinData.status === "fulfilled" ? redditBuiltinData.value : null;
