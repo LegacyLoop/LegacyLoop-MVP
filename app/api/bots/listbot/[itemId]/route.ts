@@ -21,6 +21,9 @@ import {
 } from "@/lib/adapters/bot-ai-router/listbot-prompts";
 // STEP 4.6: pre-pass OpenAI web search enrichment
 import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
+// CMD-SKILLS-INFRA-A: LegacyLoop Skill Pack loader (markdown
+// playbooks prepended to the system prompt before any item context).
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 import fs from "fs";
 import path from "path";
 
@@ -341,7 +344,15 @@ Study these titles and pricing for your Poshmark-specific listing copy. Mirror s
     );
 
     // ── LISTBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + specialtyBotContext + "\n\n" + buyerIntelligence + realListingContext + webEnrichment + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.
+    // CMD-SKILLS-INFRA-A: skillPack injected at the very TOP of the
+    // system prompt so the agent sees LegacyLoop's epistemic standard
+    // before any item context. Prophylactic for upcoming
+    // CMD-LISTBOT-MEGA-C — bot-specific listbot skills can be
+    // authored later and the loader will pick them up automatically.
+    const skillPack = loadSkillPack("listbot");
+    const systemPrompt =
+      (skillPack.systemPromptBlock ? skillPack.systemPromptBlock + "\n\n" : "") +
+      enrichmentPrefix + specialtyBotContext + "\n\n" + buyerIntelligence + realListingContext + webEnrichment + `You are a world-class copywriter and social media marketing expert specializing in resale, antiques, and e-commerce. You've written 50,000+ listings that have sold millions of dollars worth of items. You know every platform's algorithm, character limits, best practices, and buyer psychology.
 
 You are creating listings for: ${itemName} — ${category}${subcategory ? ` — ${subcategory}` : ""}
 Condition: ${condLabel} (${condScore}/10)
@@ -638,7 +649,15 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
       data: {
         itemId,
         eventType: "LISTBOT_RUN",
-        payload: JSON.stringify({ userId: user.id, timestamp: new Date().toISOString() }),
+        // CMD-SKILLS-INFRA-A: payload extended with skill pack
+        // telemetry for A/B testing of skill pack versions.
+        payload: JSON.stringify({
+          userId: user.id,
+          timestamp: new Date().toISOString(),
+          skillPackVersion: skillPack.version,
+          skillPackCount: skillPack.skillNames.length,
+          skillPackChars: skillPack.totalChars,
+        }),
       },
     });
 

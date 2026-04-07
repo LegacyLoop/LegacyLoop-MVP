@@ -15,6 +15,10 @@ import { checkCredits, deductCredits, hasPriorBotRun, refundCredits } from "@/li
 import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
 import { summarizeSpecContext } from "@/lib/bots/spec-guards";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
+// CMD-SKILLS-INFRA-A: LegacyLoop Skill Pack loader. Process-cached
+// markdown playbooks injected into the MegaBot prompt for ReconBot
+// and BuyerBot (other bots get their own SKILLS rounds).
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 // MegaBot runs 4 AI agents in parallel — grok can take up to 180s with retries
 export const maxDuration = 300; // 5 minutes
@@ -368,9 +372,17 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   // reconOpts stays undefined and runSpecializedMegaBot behaves
   // byte-identically to its pre-edit Round 6B implementation. Each
   // future bot gets its own MEGA-C command with its own opts shape.
+  // CMD-SKILLS-INFRA-A: hoist skill pack handles to function scope so
+  // they're visible to BOTH the opts assembly blocks below AND the
+  // unified MEGABOT_RUN write block further down. loadSkillPack is
+  // process-cached → zero cost on subsequent calls per warm instance.
+  let reconSkillPack: ReturnType<typeof loadSkillPack> | undefined;
+  let buyerSkillPack: ReturnType<typeof loadSkillPack> | undefined;
+
   let reconOpts: RunSpecializedMegaBotOpts | undefined;
   if (botType === "reconbot" && !isDemoMode()) {
     try {
+      reconSkillPack = loadSkillPack("reconbot");
       // Refetch user for buildItemSpecContext (handleSpecializedMegaBot
       // only has userId; spec-context reader needs the user.tier field
       // for commission rate fallback).
@@ -414,6 +426,9 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         apifyCostUsd: 0,
         enableGrounding: true,
         priorValuationMid: midPrice,
+        // CMD-SKILLS-INFRA-A: prepended to enrichedPrompt before
+        // any item-specific context inside runSpecializedMegaBot.
+        skillPackBlock: reconSkillPack.systemPromptBlock,
       };
     } catch (specErr) {
       console.warn("[megabot/reconbot] specContext/marketIntel assembly failed (non-critical):", specErr);
@@ -431,6 +446,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   let buyerMarketIntelFailed = false;
   if (botType === "buyerbot" && !isDemoMode()) {
     try {
+      buyerSkillPack = loadSkillPack("buyerbot");
       const user = await prisma.user.findUnique({ where: { id: userId } });
       const specContext = await buildItemSpecContext(item.id, { item, user });
       const specSummary = summarizeSpecContext(specContext);
@@ -472,6 +488,9 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         apifyCostUsd: 0,
         enableGrounding: true,
         priorValuationMid: midPrice,
+        // CMD-SKILLS-INFRA-A: prepended to enrichedPrompt before
+        // any item-specific context inside runSpecializedMegaBot.
+        skillPackBlock: buyerSkillPack.systemPromptBlock,
       };
     } catch (specErr) {
       buyerSpecContextFailed = true;
@@ -688,6 +707,24 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
             // FLAG 8 (RC-7): still deferred. Field present
             // with value 0 for forward-compat schema.
             apifyCostUsdReal: 0,
+
+            // CMD-SKILLS-INFRA-A: skill pack telemetry. A/B testing
+            // of skill pack versions is now possible from day one.
+            skillPackVersion: (
+              botType === "reconbot" ? reconSkillPack?.version :
+              botType === "buyerbot" ? buyerSkillPack?.version :
+              "v0"
+            ),
+            skillPackCount: (
+              botType === "reconbot" ? reconSkillPack?.skillNames.length ?? 0 :
+              botType === "buyerbot" ? buyerSkillPack?.skillNames.length ?? 0 :
+              0
+            ),
+            skillPackChars: (
+              botType === "reconbot" ? reconSkillPack?.totalChars ?? 0 :
+              botType === "buyerbot" ? buyerSkillPack?.totalChars ?? 0 :
+              0
+            ),
           }),
         },
       });

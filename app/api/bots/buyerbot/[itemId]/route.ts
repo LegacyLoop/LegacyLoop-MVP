@@ -20,6 +20,9 @@ import { routeBuyerBotHybrid, getBotConfig } from "@/lib/adapters/bot-ai-router"
 import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
 import { summarizeSpecContext } from "@/lib/bots/spec-guards";
 import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
+// CMD-SKILLS-INFRA-A: LegacyLoop Skill Pack loader (markdown
+// playbooks prepended to the system prompt before any item context).
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -421,9 +424,14 @@ ${fbPages.sellers.slice(0, 5).map((s: any) => `${s.name} (${s.followers.toLocale
       await runWebSearchPrepass(openai, itemName, category, _sellerZip);
 
     // ── BUYERBOT PROMPT ──
+    // CMD-SKILLS-INFRA-A: skillPack injected at the very TOP of the
+    // system prompt (BEFORE specCtx.promptBlock) so the agent sees
+    // LegacyLoop's epistemic standard before any item context.
     // CMD-BUYERBOT-API-B: specCtx.promptBlock prepended FRONT,
     // webEnrichment appended right before the template literal.
+    const skillPack = loadSkillPack("buyerbot");
     const systemPrompt =
+      (skillPack.systemPromptBlock ? skillPack.systemPromptBlock + "\n\n" : "") +
       specCtx.promptBlock + "\n\n" +     // Bot Constitution FIRST
       enrichmentPrefix +
       specialtyBotContext + "\n\n" +
@@ -739,7 +747,15 @@ Include a "web_sources" array in your response with {"url": "...", "title": "...
       data: {
         itemId,
         eventType: "BUYERBOT_RUN",
-        payload: JSON.stringify({ userId: user.id, timestamp: new Date().toISOString() }),
+        // CMD-SKILLS-INFRA-A: payload extended with skill pack
+        // telemetry for A/B testing of skill pack versions.
+        payload: JSON.stringify({
+          userId: user.id,
+          timestamp: new Date().toISOString(),
+          skillPackVersion: skillPack.version,
+          skillPackCount: skillPack.skillNames.length,
+          skillPackChars: skillPack.totalChars,
+        }),
       },
     });
 

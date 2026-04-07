@@ -17,6 +17,9 @@ import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { routeReconBotHybrid } from "@/lib/adapters/bot-ai-router";
 import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
 import { summarizeSpecContext } from "@/lib/bots/spec-guards";
+// CMD-SKILLS-INFRA-A: LegacyLoop Skill Pack loader (markdown
+// playbooks prepended to the system prompt before any item context).
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -241,11 +244,17 @@ CRITICAL: These are REAL listings scraped from actual marketplaces. Use them as 
     }
 
     // ── RECONBOT PROMPT ──
+    // CMD-SKILLS-INFRA-A: skillPack injected at the very TOP of the
+    // system prompt (BEFORE specContext.promptBlock) so the agent
+    // sees LegacyLoop's epistemic standard before any item context.
     // CMD-RECONBOT-API-B: specContext.promptBlock prepended FRONT
     // (Bot Constitution — seller location/shippability constraints)
     // so the AI honors freight-only / local-only items in its
     // competitor recommendations.
-    const systemPrompt = specContext.promptBlock + "\n\n" + enrichmentPrefix + specialtyBotContext + "\n\n" + amazonContext + realCompContext + `You are a world-class competitive intelligence analyst specializing in resale markets. You monitor every marketplace continuously — eBay, Facebook Marketplace, Craigslist, Mercari, OfferUp, Etsy, Ruby Lane, auction houses, and local shops. Your job is to provide a comprehensive competitive scan.
+    const skillPack = loadSkillPack("reconbot");
+    const systemPrompt =
+      (skillPack.systemPromptBlock ? skillPack.systemPromptBlock + "\n\n" : "") +
+      specContext.promptBlock + "\n\n" + enrichmentPrefix + specialtyBotContext + "\n\n" + amazonContext + realCompContext + `You are a world-class competitive intelligence analyst specializing in resale markets. You monitor every marketplace continuously — eBay, Facebook Marketplace, Craigslist, Mercari, OfferUp, Etsy, Ruby Lane, auction houses, and local shops. Your job is to provide a comprehensive competitive scan.
 
 You are scanning for: ${itemName} — ${category} — ${material} — ${era} — ${condLabel} (${condScore}/10)
 Seller location: ZIP ${sellerZip} (Maine, USA)
@@ -583,6 +592,10 @@ ${isAntique ? "- This IS an antique: include auction houses, specialty dealers, 
           apifyCostUsd,
           geminiWebSourceCount: webSources.length,
           groundingUsed,
+          // CMD-SKILLS-INFRA-A: skill pack telemetry
+          skillPackVersion: skillPack.version,
+          skillPackCount: skillPack.skillNames.length,
+          skillPackChars: skillPack.totalChars,
         }),
       },
     });
