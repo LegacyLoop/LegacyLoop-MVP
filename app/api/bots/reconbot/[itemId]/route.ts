@@ -13,6 +13,10 @@ import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
+// CMD-RECONBOT-API-B: hybrid router consumer + Bot Constitution
+import { routeReconBotHybrid } from "@/lib/adapters/bot-ai-router";
+import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
+import { summarizeSpecContext } from "@/lib/bots/spec-guards";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -111,6 +115,13 @@ export async function POST(
       return NextResponse.json({ error: "Run AI analysis first" }, { status: 400 });
     }
 
+    // CMD-RECONBOT-API-B: Bot Constitution — read seller location
+    // + shippability constraints from LIVE Item fields. Reuses the
+    // already-fetched item to avoid a second query. Same pattern
+    // applied to BuyerBot in Round 5B.
+    const specContext = await buildItemSpecContext(item.id, { item, user });
+    const specSummary = summarizeSpecContext(specContext);
+
     const itemName = ai.item_name || item.title || "Unknown item";
     const category = ai.category || "General";
     const material = ai.material || "Unknown";
@@ -205,8 +216,15 @@ When specialty bot findings conflict with raw market data:
 
     // ── REAL COMPETITOR LISTINGS FROM SCRAPERS ──
     let realCompContext = "";
+    // CMD-RECONBOT-API-B: track scraper market intelligence for the
+    // post-router high_disagreement evaluation + pre-router secondary
+    // gating. marketIntelMedian is the synthetic estimated_value_mid
+    // proxy fed to the disagreement check (Option A: caller-side
+    // mapping, zero changes to provider-selector.ts).
+    let marketIntelMedian: number | null = null;
     try {
       const marketIntel = await getMarketIntelligence(itemName, category, sellerZip);
+      marketIntelMedian = marketIntel?.median ?? null;
       if (marketIntel?.comps?.length > 0) {
         console.log(`[ReconBot] ${marketIntel.comps.length} real competitors from ${marketIntel.sources?.join(", ")}`);
         realCompContext = `\n\nREAL COMPETITOR LISTINGS (scraped from actual marketplaces — NOT AI-generated):
@@ -223,7 +241,11 @@ CRITICAL: These are REAL listings scraped from actual marketplaces. Use them as 
     }
 
     // ── RECONBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + specialtyBotContext + "\n\n" + amazonContext + realCompContext + `You are a world-class competitive intelligence analyst specializing in resale markets. You monitor every marketplace continuously — eBay, Facebook Marketplace, Craigslist, Mercari, OfferUp, Etsy, Ruby Lane, auction houses, and local shops. Your job is to provide a comprehensive competitive scan.
+    // CMD-RECONBOT-API-B: specContext.promptBlock prepended FRONT
+    // (Bot Constitution — seller location/shippability constraints)
+    // so the AI honors freight-only / local-only items in its
+    // competitor recommendations.
+    const systemPrompt = specContext.promptBlock + "\n\n" + enrichmentPrefix + specialtyBotContext + "\n\n" + amazonContext + realCompContext + `You are a world-class competitive intelligence analyst specializing in resale markets. You monitor every marketplace continuously — eBay, Facebook Marketplace, Craigslist, Mercari, OfferUp, Etsy, Ruby Lane, auction houses, and local shops. Your job is to provide a comprehensive competitive scan.
 
 You are scanning for: ${itemName} — ${category} — ${material} — ${era} — ${condLabel} (${condScore}/10)
 Seller location: ZIP ${sellerZip} (Maine, USA)
@@ -374,63 +396,156 @@ ${isAntique ? "- This IS an antique: include auction houses, specialty dealers, 
     let reconbotResult: any;
     let webSources: Array<{ url: string; title: string }> = [];
 
+    // CMD-RECONBOT-API-B: pre-router high_disagreement gating.
+    // Caller-side mapping (Option A) — compare scraper market median
+    // vs the AnalyzeBot baseline midPrice. If they diverge by >20%,
+    // Grok cultural-secondary fires alongside Gemini primary.
+    // Provider-selector.ts is left unchanged.
+    const HIGH_DISAGREEMENT_THRESHOLD = 0.20;
+    const wantsSecondary =
+      marketIntelMedian != null &&
+      midPrice > 0 &&
+      Math.abs(marketIntelMedian - midPrice) / Math.max(midPrice, 1) > HIGH_DISAGREEMENT_THRESHOLD;
+
+    // CMD-RECONBOT-API-B: TODO carry-forward — getMarketIntelligence
+    // does not yet expose Apify scraper spend. Hardcode 0 for now.
+    // ReconBot becomes the second bot to populate apifyCostUsd in
+    // BOT_AI_ROUTING (BuyerBot was first). Round 6C+ should add real
+    // tracking by extending MarketIntelligence with an apifyCostUsd
+    // field, populated inside aggregator.ts Phase 1+2 loops.
+    const apifyCostUsd = 0;
+
+    // ── Mark hybrid result early so demo branch can also tag it ──
+    let mergedStrategy: "primary_only" | "merged_consensus" | "degraded" = "primary_only";
+    let groundingUsed = false;
+
     if (openai) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60_000);
       try {
-        const photoDescs = item.photos.map((p) =>
-          `[Photo: ${p.filePath}${p.caption ? ` — ${p.caption}` : ""}]`
-        );
+        // CMD-RECONBOT-API-B: route through Round 6A's hybrid runner.
+        // Gemini PRIMARY (with grounding opt-in for real-time
+        // competitor URLs). Grok SECONDARY (cultural interpretation
+        // for high_disagreement scenarios). RAW JSON preservation.
+        const photoPaths = item.photos.map((p) => p.filePath);
 
-        const response = await openai.responses.create({
-          model: "gpt-4o-mini",
-          instructions: systemPrompt,
-          input: `Run a comprehensive competitive intelligence scan for this item. Photos: ${photoDescs.join(", ")}. Return ONLY valid JSON.`,
-          tools: [{ type: "web_search_preview" } as any],
-        }, { signal: controller.signal });
+        const culturalContext = wantsSecondary
+          ? systemPrompt +
+            "\n\n[CULTURAL INTERPRETATION REFINEMENT — HIGH-DISAGREEMENT MODE]\n" +
+            "The scraper market median ($" + Math.round(marketIntelMedian!) + ") " +
+            "diverges from the AnalyzeBot valuation ($" + midPrice + ") by more " +
+            "than 20%. Re-examine the competitor_listings, price_intelligence, " +
+            "and strategic_recommendations through the lens of WHY this " +
+            "disagreement exists: cultural moment, scarcity event, " +
+            "auction-house attention, viral resurgence, regional preference. " +
+            "KEEP THE EXACT JSON SCHEMA from the original prompt — only " +
+            "refine the price_intelligence.price_position_detail and the " +
+            "executive_summary fields with the cultural narrative."
+          : undefined;
 
-        const text = typeof response.output === "string"
-          ? response.output
-          : response.output_text || JSON.stringify(response.output);
+        const hybridResult = await routeReconBotHybrid({
+          itemId: item.id,
+          photoPath: photoPaths,
+          reconPrompt: systemPrompt,
+          culturalContext,
+          shouldRunSecondary: wantsSecondary,
+          enableGrounding: true, // ← OPT-IN: Round 6A grounding goes live
+          apifyCostUsd,
+          skipLogging: false,
+        });
 
-        // Extract web sources
-        webSources = [];
-        try {
-          const outputArr = Array.isArray(response.output) ? response.output : [];
-          for (const outItem of outputArr) {
-            if ((outItem as any).type === "web_search_call" && Array.isArray((outItem as any).results)) {
-              for (const r of (outItem as any).results) {
-                if (r.url && r.title) webSources.push({ url: r.url, title: r.title });
-              }
-            }
-            if ((outItem as any).type === "message" && Array.isArray((outItem as any).content)) {
-              for (const c of (outItem as any).content) {
-                if (c.annotations) {
-                  for (const ann of c.annotations) {
-                    if (ann.type === "url_citation" && ann.url) webSources.push({ url: ann.url, title: ann.title || ann.url });
-                  }
-                }
-              }
-            }
-          }
-        } catch { /* non-critical */ }
-
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          reconbotResult = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("No JSON in response");
+        if (hybridResult.degraded) {
+          console.error("[reconbot] router degraded:", hybridResult.error);
+          return NextResponse.json({
+            error: "ai_failed",
+            message: "ReconBot AI providers failed — please try again",
+            details: hybridResult.error,
+          }, { status: 422 });
         }
+
+        // CMD-RECONBOT-API-B: overlay merge — primary as base, then
+        // overlay Grok secondary's cultural refinements onto
+        // price_intelligence + executive_summary only. The other
+        // schema fields stay verbatim from Gemini primary.
+        const primaryRaw = hybridResult.primary.rawResult;
+        const secondaryRaw = hybridResult.secondary?.rawResult;
+
+        if (!primaryRaw || typeof primaryRaw !== "object") {
+          console.error("[reconbot] primary unparseable");
+          return NextResponse.json({
+            error: "ai_parse_failed",
+            message: "ReconBot returned unreadable response — please retry",
+          }, { status: 422 });
+        }
+
+        reconbotResult = primaryRaw;
+
+        if (secondaryRaw && typeof secondaryRaw === "object") {
+          if (secondaryRaw.price_intelligence?.price_position_detail) {
+            reconbotResult.price_intelligence = {
+              ...reconbotResult.price_intelligence,
+              price_position_detail:
+                secondaryRaw.price_intelligence.price_position_detail,
+            };
+          }
+          if (typeof secondaryRaw.executive_summary === "string") {
+            reconbotResult.executive_summary = secondaryRaw.executive_summary;
+          }
+          reconbotResult._cultural_refined = true;
+        }
+
+        // CMD-RECONBOT-API-B: hoist Gemini grounding citations from
+        // Round 6A's geminiWebSources field to the existing
+        // webSources array consumed by RECONBOT_RESULT.web_sources.
+        webSources = hybridResult.geminiWebSources ?? [];
+        groundingUsed = webSources.length > 0;
+
+        // mergedStrategy mirrors the router's semantic mapping
+        mergedStrategy = secondaryRaw
+          ? "merged_consensus"
+          : "primary_only";
+
+        // _ai_breakdown for downstream audit (parity with BuyerBot)
+        reconbotResult._ai_breakdown = {
+          primary_provider: hybridResult.primary.provider,
+          secondary_provider: hybridResult.secondary?.provider ?? null,
+          merged_at: new Date().toISOString(),
+          actual_cost_usd: hybridResult.actualCostUsd,
+          latency_ms: hybridResult.latencyMs,
+          grounding_source_count: webSources.length,
+          high_disagreement_fired: wantsSecondary,
+        };
+
+        // CMD-RECONBOT-API-B: post-hoc syntheticAnalysis for analytics.
+        // The router already finished — this captures the actual
+        // ReconBot market_average vs prior valuation for the
+        // RECONBOT_RUN payload (downstream cohort analysis).
+        reconbotResult._synthetic_analysis = {
+          estimated_value_mid:
+            reconbotResult.price_intelligence?.market_average ?? midPrice,
+          prior_valuation: midPrice,
+          scraper_median: marketIntelMedian,
+          high_disagreement: wantsSecondary,
+        };
       } catch (aiErr: any) {
-        console.error("[reconbot] OpenAI error:", aiErr);
-        return NextResponse.json({ error: `ReconBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` }, { status: 422 });
-      } finally {
-        clearTimeout(timeoutId);
+        console.error("[reconbot] router error:", aiErr);
+        return NextResponse.json({
+          error: `ReconBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}`,
+        }, { status: 422 });
       }
     } else {
+      // PRESERVED: existing demo fallback path
       reconbotResult = generateDemoResult(itemName, category, material, era, condScore, lowPrice, midPrice, highPrice, sellerZip, isAntique, listingPrice, isUpdate);
       reconbotResult._isDemo = true;
+      // Demo branch hardcodes the new fields for shape parity.
+      webSources = [];
+      mergedStrategy = "primary_only";
+      groundingUsed = false;
     }
+
+    // CMD-RECONBOT-API-B: lastScan timestamp on the result payload
+    // (Part F field rename — replaces the underscored field name the
+    // panel was reading but the route never wrote). Panel reader
+    // updated to match in Part F.
+    reconbotResult.lastScan = new Date().toISOString();
 
     // Validate expected fields
     const requiredKeys = [
@@ -456,7 +571,19 @@ ${isAntique ? "- This IS an antique: include auction houses, specialty dealers, 
       data: {
         itemId,
         eventType: "RECONBOT_RUN",
-        payload: JSON.stringify({ userId: user.id, timestamp: new Date().toISOString(), scanType: isUpdate ? "update" : "initial" }),
+        // CMD-RECONBOT-API-B: payload extended with router telemetry
+        // (mergedStrategy, apifyCostUsd, geminiWebSourceCount,
+        // groundingUsed). Downstream cohort analytics queries can
+        // join this against BOT_AI_ROUTING via itemId + timestamp.
+        payload: JSON.stringify({
+          userId: user.id,
+          timestamp: new Date().toISOString(),
+          scanType: isUpdate ? "update" : "initial",
+          mergedStrategy,
+          apifyCostUsd,
+          geminiWebSourceCount: webSources.length,
+          groundingUsed,
+        }),
       },
     });
 
@@ -554,6 +681,12 @@ ${isAntique ? "- This IS an antique: include auction houses, specialty dealers, 
       success: true,
       result: reconbotResult,
       isDemo: !!reconbotResult._isDemo,
+      // CMD-RECONBOT-API-B: surface router telemetry to the panel
+      // for the new mergedStrategy badge + grounding source count.
+      apifyCostUsd,
+      mergedStrategy,
+      groundingSourceCount: webSources.length,
+      specSummary,
     });
   } catch (e) {
     console.error("[reconbot POST]", e);

@@ -8823,7 +8823,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
   return (
     <GlassCard>
       <PanelHeader icon="🔍" title="ReconBot" hasData={hasData} badge={hasData ? (scan?.market_heat || "SCAN") : "INTEL"} collapsed={collapsed} onToggle={onToggle}
-        preview={hasData ? `${competitors.length} competitors · ${scan?.price_position || "—"} · Market ${scan?.market_heat || "—"}${reconBotResult?._scannedAt ? ` · ${Math.round((Date.now() - new Date(reconBotResult._scannedAt).getTime()) / 3600000)}h ago` : ""}` : "Not scanned yet"}
+        preview={hasData ? `${competitors.length} competitors · ${scan?.price_position || "—"} · Market ${scan?.market_heat || "—"}${reconBotResult?.lastScan ? ` · ${Math.round((Date.now() - new Date(reconBotResult.lastScan).getTime()) / 3600000)}h ago` : ""}` : "Not scanned yet"}
       />
       {collapsed && hasData && <CollapsedSummary botType="recon" data={{ competitorCount: competitors.length, alertCount: alerts.length, marketHeat: scan?.market_heat, pricePosition: scan?.price_position, avgPrice: pi?.average_competitor_price || pi?.avg_price || null, recommendation: recs?.[0]?.title || recs?.[0]?.recommendation || null }} megaData={boosted ? boostResult : undefined} buttons={<>
         {onReconBotRun && <button onClick={onReconBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🔍 Re-Scan · 2 cr</button>}

@@ -1,6 +1,10 @@
 import type { MarketIntelligence, ScraperResult, MarketComp } from "./types";
 import { deduplicateComps } from "./scraper-base";
 import { getApifyBudgetMode, isItemBudgetExceeded } from "./adapters/apify-client";
+// CMD-RECONBOT-API-B: Phase 0 eBay swap — real Browse API replaces
+// the Phase 1 HTML scraper at line 93. Fallback to scrapeEbaySold
+// when the rate-limit safety net trips or the Browse API errors.
+import { searchEbayComps, getEbayRateLimits, type EbayComp } from "@/lib/adapters/ebay";
 // Built-in scrapers (free, fast)
 import { scrapeEbaySold } from "./adapters/ebay-sold";
 import { scrapeTcgPlayer } from "./adapters/tcgplayer";
@@ -70,6 +74,23 @@ function percentile(sorted: number[], p: number): number {
   return sorted[Math.max(0, Math.min(idx, sorted.length - 1))];
 }
 
+// CMD-RECONBOT-API-B: shim — convert eBay Browse API EbayComp into
+// the aggregator's standard MarketComp shape. Browse API returns
+// active listings (no sold-date metadata), so date is synthesized
+// to "now" and condition is fixed at "As Listed". URL is preserved
+// for downstream attribution.
+function ebayCompToMarketComp(c: EbayComp): MarketComp {
+  return {
+    item: c.title,
+    price: c.price,
+    date: new Date().toISOString(),
+    platform: "eBay",
+    condition: "As Listed",
+    url: c.url,
+    location: null,
+  };
+}
+
 export async function getMarketIntelligence(
   itemName: string,
   category: string,
@@ -89,8 +110,31 @@ export async function getMarketIntelligence(
 
   // ═══ PHASE 1: FREE built-in + cheap essential Apify scrapers ═══
   const freeAdapters: Array<() => Promise<ScraperResult>> = [
-    // Built-in (free)
-    () => scrapeEbaySold(itemName),
+    // CMD-RECONBOT-API-B Phase 0 swap: real eBay Browse API replaces
+    // the HTML scraper. Default ON, gated by getEbayRateLimits — falls
+    // back to scrapeEbaySold when fewer than 500 calls remain in the
+    // daily window or when the Browse API errors. Browse API is FREE
+    // under the 5,000-call/day default tier (~14% utilization today).
+    async () => {
+      try {
+        const limits = await getEbayRateLimits();
+        if (limits.dailyLimitRemaining < 500) {
+          console.warn(
+            `[aggregator] eBay rate-limit safety net tripped (${limits.dailyLimitRemaining} remaining), falling back to scraper`,
+          );
+          return scrapeEbaySold(itemName);
+        }
+        const comps = await searchEbayComps(itemName, 8);
+        return {
+          success: true,
+          comps: comps.map(ebayCompToMarketComp),
+          source: "eBay",
+        };
+      } catch (err) {
+        console.warn("[aggregator] eBay Browse API failed, falling back to scraper:", err);
+        return scrapeEbaySold(itemName);
+      }
+    },
     () => scrapeCraigslist(itemName, sellerZip),
     () => scrapeMercari(itemName),
     () => scrapeOfferUp(itemName, sellerZip),

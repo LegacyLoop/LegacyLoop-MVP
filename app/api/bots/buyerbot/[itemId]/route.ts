@@ -15,6 +15,11 @@ import { scrapePinterest } from "@/lib/market-intelligence/adapters/pinterest";
 import { scrapeYoutube } from "@/lib/market-intelligence/adapters/youtube";
 import { scrapeTwitter } from "@/lib/market-intelligence/adapters/twitter-x";
 import { scrapeFacebookPages } from "@/lib/market-intelligence/adapters/facebook-pages";
+// CMD-BUYERBOT-API-B: router consumer + Bot Constitution + web pre-pass
+import { routeBuyerBotHybrid, getBotConfig } from "@/lib/adapters/bot-ai-router";
+import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
+import { summarizeSpecContext } from "@/lib/bots/spec-guards";
+import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -174,6 +179,12 @@ export async function POST(
       return NextResponse.json({ error: "Run AI analysis first" }, { status: 400 });
     }
 
+    // CMD-BUYERBOT-API-B: Bot Constitution — read seller location
+    // + shippability constraints from LIVE Item fields.
+    // Falls back to AiResult.rawJson with a logged warning when
+    // older items have null shipping fields.
+    const specCtx = await buildItemSpecContext(itemId, { item, user });
+
     // Build context from existing analysis
     const itemName = ai.item_name || item.title || "Unknown item";
     const category = ai.category || "General";
@@ -270,6 +281,11 @@ INSTRUCTION: Use these SEO keywords to find buyers who would search for this ite
     const runFullSocial = buyerBudgetMode !== "conservative";
 
     let realBuyerContext = "";
+    // CMD-BUYERBOT-API-B: track real Apify spend per call.
+    // First bot to populate apifyCostUsd in BOT_AI_ROUTING EventLog
+    // (Step 4.8 added the field, this round writes the first row).
+    // Sources: ACTOR_COST_TIERS in lib/market-intelligence/adapters/apify-client.ts
+    let apifyCostUsd = 0;
     try {
       // MARGIN-FIX (Step 4.6): scraper cap from 7→3.
       // Audit Step 4.5 showed BuyerBot normal mode lost $1.02/call.
@@ -323,6 +339,15 @@ INSTRUCTION: Use these SEO keywords to find buyers who would search for this ite
       }
 
       const instaResult = instaData.status === "fulfilled" ? instaData.value : null;
+
+      // CMD-BUYERBOT-API-B: accumulate Apify spend from successful scrapers.
+      // Reddit built-in is FREE — only count Apify Reddit when fallback fired
+      // (i.e. built-in returned nothing AND scrapeReddit was tried).
+      if (fbResult?.success) apifyCostUsd += 0.40;        // FB Groups Apify
+      if (instaResult?.success) apifyCostUsd += 0.40;     // Instagram Apify
+      if (redditResult?.success && !redditBuiltinResult?.success) {
+        apifyCostUsd += 0.30;                             // Reddit Apify fallback
+      }
 
       if (fbResult?.success && fbResult.groups.length > 0) {
         realBuyerContext += `\n\nREAL FACEBOOK GROUPS (scraped data — these are REAL communities):
@@ -387,8 +412,25 @@ ${fbPages.sellers.slice(0, 5).map((s: any) => `${s.name} (${s.followers.toLocale
       console.log("[BuyerBot] Community scrapers unavailable — proceeding with AI-only analysis");
     }
 
+    // CMD-BUYERBOT-API-B: OpenAI web search pre-pass for real-time
+    // buyer demand signals. Pinterest/YouTube/Twitter/FB Pages live
+    // in MegaBot tier — this fills the social signal gap at the
+    // standard tier with citations. ~$0.003/call, well within margin.
+    const _sellerZip = item.saleZip || "04901";
+    const { webEnrichment, webSources: prepassWebSources } =
+      await runWebSearchPrepass(openai, itemName, category, _sellerZip);
+
     // ── BUYERBOT PROMPT ──
-    const systemPrompt = enrichmentPrefix + specialtyBotContext + "\n\n" + listingIntelligence + realBuyerContext + `You are a world-class buyer acquisition specialist and marketplace researcher. You have 15 years of experience finding buyers for every type of item — from antiques to electronics to vehicles. You know every platform, every community, every trick to find the RIGHT buyer who will pay the best price.
+    // CMD-BUYERBOT-API-B: specCtx.promptBlock prepended FRONT,
+    // webEnrichment appended right before the template literal.
+    const systemPrompt =
+      specCtx.promptBlock + "\n\n" +     // Bot Constitution FIRST
+      enrichmentPrefix +
+      specialtyBotContext + "\n\n" +
+      listingIntelligence +
+      realBuyerContext +
+      webEnrichment +                    // Web pre-pass injected here
+      `You are a world-class buyer acquisition specialist and marketplace researcher. You have 15 years of experience finding buyers for every type of item — from antiques to electronics to vehicles. You know every platform, every community, every trick to find the RIGHT buyer who will pay the best price.
 
 You are finding buyers for: ${itemName} — ${category}${subcategory ? ` — ${subcategory}` : ""}
 Condition: ${condLabel} (${condScore}/10)
@@ -509,89 +551,170 @@ If you have web search capability, USE IT AGGRESSIVELY to find real buyers:
 For each hot lead, include WHERE you found evidence of their interest.
 Include a "web_sources" array in your response with {"url": "...", "title": "..."} objects for pages you found. If no web search performed, return empty array.`;
 
-    let buyerbotResult: any;
+    // CMD-BUYERBOT-API-B: Pre-evaluate the specialty_item trigger
+    // (router config validation lives in routeBuyerBotHybrid via
+    // PART B; here we check whether THIS item should fire Claude).
+    const _config = getBotConfig("buyerbot");
+    const _specialtyTriggerEnabled = _config.triggers.includes("specialty_item");
+    const _isSpecialtyItem =
+      item.antiqueCheck?.isAntique === true ||
+      ai?.is_collectible === true ||
+      category.toLowerCase().includes("vehicle") ||
+      category.toLowerCase().includes("car") ||
+      category.toLowerCase().includes("truck") ||
+      category.toLowerCase().includes("motorcycle");
+    const shouldRunSecondary = _specialtyTriggerEnabled && _isSpecialtyItem;
+
+    let buyerbotResult: any = null;
 
     if (openai) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60_000);
       try {
-        const photoDescs = item.photos.map((p) =>
-          `[Photo: ${p.filePath}${p.caption ? ` — ${p.caption}` : ""}]`
-        );
+        // CMD-BUYERBOT-API-B: route through the new hybrid runner.
+        // Grok PRIMARY for buyer psychology + outreach hooks.
+        // Claude SECONDARY (conditional) for collector-tone refinement
+        // when antique/collectible/vehicle is detected.
+        const photoPaths = item.photos.map((p) => p.filePath);
 
-        const response = await openai.responses.create({
-          model: "gpt-4o-mini",
-          instructions: systemPrompt,
-          input: `Find the best buyers for this item. Photos: ${photoDescs.join(", ")}. Return ONLY valid JSON — keep values short and compact.`,
-          tools: [{ type: "web_search_preview" as any }],
-          max_output_tokens: 16384,
-        }, { signal: controller.signal });
+        const collectorContext = shouldRunSecondary
+          ? systemPrompt +
+            "\n\n[SPECIALTY ITEM REFINEMENT — COLLECTOR TONE]\n" +
+            "This item has been flagged as antique, collectible, or " +
+            "vehicle. Refine the buyer_profiles and outreach_strategies " +
+            "for a sophisticated collector audience: use period-" +
+            "appropriate language, reference auction culture, " +
+            "emphasize provenance and authentication where available, " +
+            "and target specialist communities (auction houses, " +
+            "collector forums, dealer networks). KEEP THE EXACT JSON " +
+            "SCHEMA from the original prompt — only refine the " +
+            "buyer_profiles array and outreach_strategies array."
+          : undefined;
 
-        const text = typeof response.output === "string"
-          ? response.output
-          : response.output_text || JSON.stringify(response.output);
+        const hybrid = await routeBuyerBotHybrid({
+          itemId,
+          photoPath: photoPaths,
+          buyerPrompt: systemPrompt,
+          collectorContext,
+          shouldRunSecondary,
+          apifyCostUsd,
+          skipLogging: false,
+        });
 
-        buyerbotResult = parseAiJson(text);
-        if (!buyerbotResult) {
-          console.error("[buyerbot] Failed to parse AI response. Length:", text.length);
-          console.error("[buyerbot] First 200:", text.slice(0, 200));
-          console.error("[buyerbot] Last 300:", text.slice(-300));
-          console.error("[buyerbot] Cleaned first 200:", text.replace(/```(?:json)?\s*/gi, "").replace(/```/g, "").trim().slice(0, 200));
-          // Last resort: try extracting any valid JSON substring
-          const fallbackMatch = text.match(/\{[\s\S]{100,}\}/);
-          if (fallbackMatch) {
-            // Aggressively truncate at last complete key-value pair
-            let truncated = fallbackMatch[0];
-            // Find the last valid closing point
-            for (let i = truncated.length - 1; i > truncated.length - 200; i--) {
-              const sub = truncated.slice(0, i);
-              // Count braces
-              let b = 0, a = 0;
-              for (const c of sub) { if (c === "{") b++; else if (c === "}") b--; if (c === "[") a++; else if (c === "]") a--; }
-              let attempt = sub;
-              for (let j = 0; j < a; j++) attempt += "]";
-              for (let j = 0; j < b; j++) attempt += "}";
-              try { buyerbotResult = JSON.parse(attempt); console.log("[buyerbot] Recovered via truncation at offset", i); break; } catch { /* continue */ }
-            }
-          }
-          if (!buyerbotResult) {
-            throw new Error("AI returned unparseable response — retry recommended");
-          }
+        if (hybrid.degraded) {
+          console.error("[buyerbot] router degraded:", hybrid.error);
+          return NextResponse.json({
+            error: "ai_failed",
+            message: "BuyerBot AI providers failed — please try again",
+            details: hybrid.error,
+          }, { status: 422 });
         }
 
-        // Extract web search citations
-        const webSources: Array<{ url: string; title: string }> = [];
-        try {
-          const outputArr = Array.isArray(response.output) ? response.output : [];
-          for (const outItem of outputArr) {
-            if ((outItem as any).type === "web_search_call" && Array.isArray((outItem as any).results)) {
-              for (const r of (outItem as any).results) {
-                if (r.url && r.title) webSources.push({ url: r.url, title: r.title });
-              }
-            }
-            if ((outItem as any).type === "message" && Array.isArray((outItem as any).content)) {
-              for (const c of (outItem as any).content) {
-                if (c.annotations) {
-                  for (const ann of c.annotations) {
-                    if (ann.type === "url_citation" && ann.url) webSources.push({ url: ann.url, title: ann.title || ann.url });
-                  }
+        // OVERLAY MERGE strategy:
+        //   1. Start with Grok primary as the base (full payload)
+        //   2. When Claude secondary present, overlay its refined
+        //      buyer_profiles + outreach_strategies on top
+        //   3. Tag with _ai_breakdown for downstream auditability
+        //
+        // The router returns rawResult as a parsed object — but Grok
+        // occasionally returns stringified JSON, so we re-apply the
+        // existing parseAiJson 5-repair fallback to BOTH results.
+        const primaryRaw = hybrid.primary.rawResult;
+        const secondaryRaw = hybrid.secondary?.rawResult;
+
+        // CMD-BUYERBOT-API-B: ensureParsed — re-applies parseAiJson
+        // 5-repair fallback if rawResult came back as a string (Grok edge case).
+        const ensureParsed = (raw: any): any => {
+          if (raw == null) return null;
+          if (typeof raw === "object") return raw;
+          if (typeof raw === "string") {
+            const parsed = parseAiJson(raw);
+            if (parsed) return parsed;
+            // Fall back to the existing aggressive truncation recovery
+            const fallbackMatch = raw.match(/\{[\s\S]{100,}\}/);
+            if (fallbackMatch) {
+              let truncated = fallbackMatch[0];
+              for (let i = truncated.length - 1; i > truncated.length - 200; i--) {
+                const sub = truncated.slice(0, i);
+                let b = 0, a = 0;
+                for (const c of sub) {
+                  if (c === "{") b++; else if (c === "}") b--;
+                  if (c === "[") a++; else if (c === "]") a--;
                 }
+                let attempt = sub;
+                for (let j = 0; j < a; j++) attempt += "]";
+                for (let j = 0; j < b; j++) attempt += "}";
+                try {
+                  return JSON.parse(attempt);
+                } catch { /* continue */ }
               }
             }
           }
-        } catch { /* citation extraction non-critical */ }
-        if (!buyerbotResult.web_sources) buyerbotResult.web_sources = [];
-        if (webSources.length > 0) buyerbotResult.web_sources = [...webSources, ...(buyerbotResult.web_sources || [])];
+          return null;
+        };
+
+        const primaryObj = ensureParsed(primaryRaw);
+        const secondaryObj = ensureParsed(secondaryRaw);
+
+        if (!primaryObj) {
+          console.error("[buyerbot] primary unparseable");
+          return NextResponse.json({
+            error: "ai_parse_failed",
+            message: "BuyerBot returned unreadable response — please retry",
+          }, { status: 422 });
+        }
+
+        buyerbotResult = primaryObj;
+
+        // Overlay Claude refinement when present (best-effort)
+        if (secondaryObj) {
+          if (Array.isArray(secondaryObj.buyer_profiles)) {
+            buyerbotResult.buyer_profiles = secondaryObj.buyer_profiles;
+          }
+          if (Array.isArray(secondaryObj.outreach_strategies)) {
+            buyerbotResult.outreach_strategies = secondaryObj.outreach_strategies;
+          }
+          buyerbotResult._collector_refined = true;
+        }
+
+        // _ai_breakdown for downstream audit trail
+        buyerbotResult._ai_breakdown = {
+          primary_provider: hybrid.primary.provider,
+          secondary_provider: hybrid.secondary?.provider ?? null,
+          merged_at: new Date().toISOString(),
+          actual_cost_usd: hybrid.actualCostUsd,
+          latency_ms: hybrid.latencyMs,
+        };
       } catch (aiErr: any) {
-        console.error("[buyerbot] OpenAI error:", aiErr);
-        return NextResponse.json({ error: `BuyerBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` }, { status: 422 });
-      } finally {
-        clearTimeout(timeoutId);
+        console.error("[buyerbot] router error:", aiErr);
+        return NextResponse.json({
+          error: `BuyerBot AI failed: ${aiErr?.message ?? String(aiErr)}`,
+        }, { status: 422 });
       }
     } else {
-      buyerbotResult = generateDemoResult(itemName, category, midPrice, era, material, sellerZip, isAntique, isVehicle);
+      // PRESERVED: existing demo fallback path
+      buyerbotResult = generateDemoResult(
+        itemName, category, midPrice, era, material, sellerZip,
+        isAntique, isVehicle,
+      );
       buyerbotResult._isDemo = true;
     }
+
+    // CMD-BUYERBOT-API-B: prepend pre-pass citations to existing
+    // web_sources (preserves prior shape — UI consumer expects an
+    // array of {url, title} on web_sources).
+    if (!buyerbotResult.web_sources) buyerbotResult.web_sources = [];
+    if (prepassWebSources && prepassWebSources.length > 0) {
+      buyerbotResult.web_sources = [
+        ...prepassWebSources,
+        ...(buyerbotResult.web_sources || []),
+      ];
+    }
+
+    // CMD-BUYERBOT-API-B: spec_context_summary for downstream audit.
+    // Uses the existing summarizeSpecContext helper from spec-guards.ts
+    // (Round B recon caught the spec's claim that this helper does not
+    // exist — it does. Reusing avoids drift with PriceBot Step 4 and
+    // future bots in Steps 6-13.)
+    buyerbotResult.spec_context_summary = summarizeSpecContext(specCtx);
 
     // Validate expected fields
     const requiredKeys = [

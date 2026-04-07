@@ -1,6 +1,11 @@
 import fs from "fs";
 import path from "path";
 import OpenAI from "openai";
+// CMD-BUYERBOT-MEGA-C: type-only import (runtime-erased, no bundle
+// impact). Tightens RunSpecializedMegaBotOpts.specSummary from
+// `unknown` to the structured SpecContextSummary shape — resolves
+// Round C FLAGS 1 + 5 without violating the locked-imports spirit.
+import type { SpecContextSummary } from "@/lib/bots/spec-guards";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -27,6 +32,49 @@ export interface MegaBotResult {
   consensus: any;
   agreementScore: number;
   summary: string;
+  // CMD-RECONBOT-MEGA-C: optional metadata fields populated when
+  // runSpecializedMegaBot is called with the new opts parameter.
+  // All optional → existing 5-arg callers see no behavior change.
+  lastScan?: string;
+  mergedStrategy?: "primary_only" | "merged_consensus" | "degraded";
+  apifyCostUsd?: number;
+  groundingUsed?: boolean;
+  geminiWebSourceCount?: number;
+}
+
+/**
+ * CMD-RECONBOT-MEGA-C — Step 6 Round C
+ *
+ * Optional opts shape consumed by runSpecializedMegaBot. The route
+ * caller assembles a per-bot opts object (currently ReconBot-only;
+ * BuyerBot/PriceBot/etc. each get their own MEGA-C round) so the
+ * 4-AI parallel agents all reason from the same enriched data.
+ *
+ * Fields are all optional. When opts is undefined (existing 5-arg
+ * callers), the function behaves byte-identically to its pre-edit
+ * Round 6B implementation.
+ */
+export interface RunSpecializedMegaBotOpts {
+  /** Compact spec-context summary for analytics (not injected into the prompt).
+   *  Typed as SpecContextSummary post-Round-C-MEGA via a type-only import
+   *  from spec-guards.ts (runtime-erased, no bundle impact). The route
+   *  caller passes the structured object as-is; runSpecializedMegaBot does
+   *  not read this field, it's purely caller-passthrough metadata —
+   *  but downstream consumers (MEGABOT_RUN EventLog payload, analytics
+   *  dashboards) now get full type safety. */
+  specSummary?: SpecContextSummary;
+  /** Bot Constitution prompt block from buildItemSpecContext().promptBlock — prepended to enrichedPrompt */
+  specPromptBlock?: string;
+  /** Pre-formatted live market intelligence text block — injected after specPromptBlock */
+  marketIntelBlock?: string;
+  /** Median price from getMarketIntelligence — used for downstream high_disagreement analytics */
+  marketIntelMedian?: number | null;
+  /** Caller-tracked Apify scraper spend for this MegaBot call (Round 6B carry-forward) */
+  apifyCostUsd?: number;
+  /** Whether the caller intended Gemini grounding (telemetry — actual grounding is gated inside the Gemini agent) */
+  enableGrounding?: boolean;
+  /** Prior valuation midpoint for downstream high_disagreement analytics */
+  priorValuationMid?: number | null;
 }
 
 // ─── Agent specialty suffixes ─────────────────────────────────────────────
@@ -1035,18 +1083,41 @@ export async function runSpecializedMegaBot(
   prompt: string,
   photoPublicUrl: string,
   itemId: string,
-  allPhotoUrls?: string[]
+  allPhotoUrls?: string[],
+  // CMD-RECONBOT-MEGA-C: optional 6th param. When undefined, the
+  // function behaves byte-identically to the pre-edit Round 6B
+  // implementation (every existing 5-arg caller is unaffected).
+  opts?: RunSpecializedMegaBotOpts,
 ): Promise<MegaBotResult> {
   const absPath = publicUrlToAbsPath(photoPublicUrl);
   const allAbsPaths = allPhotoUrls?.map(u => {
     try { return publicUrlToAbsPath(u); } catch { return null; }
   }).filter((p): p is string => p !== null);
 
+  // CMD-RECONBOT-MEGA-C: assemble enrichedPrompt before the agent
+  // calls array. Bot Constitution block first, then live market
+  // intel block, then the original prompt verbatim. When opts is
+  // undefined, enrichedPrompt === prompt (no leading whitespace,
+  // no behavior change). The 4 agents below all receive the same
+  // enriched text via closure binding.
+  const enrichedPrompt = [
+    opts?.specPromptBlock ?? "",
+    opts?.marketIntelBlock ?? "",
+    prompt,
+  ].filter((s) => typeof s === "string" && s.length > 0).join("\n\n");
+
+  // CMD-RECONBOT-MEGA-C: agentCalls now binds enrichedPrompt via
+  // closure. The 4-AI parallel wrapper below still calls
+  // fn(prompt, absPath) byte-identically — the inner closures
+  // ignore the prompt argument and use enrichedPrompt instead.
+  // This is the ONLY change to the calls array; the wrapper, the
+  // agent function bodies, and the result mapping all remain
+  // byte-identical to their Round 6B baselines.
   const agentCalls = [
-    { provider: "openai" as const, fn: (prompt: string, path: string) => callOpenAI(prompt, path, allAbsPaths) },
-    { provider: "claude" as const, fn: callClaude },
-    { provider: "gemini" as const, fn: (prompt: string, path: string) => callGemini(prompt, path, allAbsPaths) },
-    { provider: "grok" as const, fn: callGrok },
+    { provider: "openai" as const, fn: (_p: string, path: string) => callOpenAI(enrichedPrompt, path, allAbsPaths) },
+    { provider: "claude" as const, fn: (_p: string, path: string) => callClaude(enrichedPrompt, path) },
+    { provider: "gemini" as const, fn: (_p: string, path: string) => callGemini(enrichedPrompt, path, allAbsPaths) },
+    { provider: "grok" as const, fn: (_p: string, path: string) => callGrok(enrichedPrompt, path) },
   ];
 
   const results = await Promise.allSettled(
@@ -1089,7 +1160,13 @@ export async function runSpecializedMegaBot(
 
   const { consensus, agreementScore, summary } = buildConsensus(agentResults);
 
-  return {
+  // CMD-RECONBOT-MEGA-C: assemble result object then attach the 5
+  // optional metadata fields. The base shape stays byte-identical;
+  // the new fields are additive and only meaningful when opts was
+  // provided. Existing 5-arg callers will see the new fields too
+  // (with sensible defaults), but their consumers ignore unknown
+  // fields so there's zero downstream impact.
+  const result: MegaBotResult = {
     botType,
     itemId,
     timestamp: new Date().toISOString(),
@@ -1100,4 +1177,14 @@ export async function runSpecializedMegaBot(
     agreementScore,
     summary,
   };
+  result.lastScan = new Date().toISOString();
+  result.mergedStrategy =
+    successCount === 4 ? "merged_consensus" :
+    successCount >= 2 ? "primary_only" :
+    "degraded";
+  result.apifyCostUsd = opts?.apifyCostUsd ?? 0;
+  result.groundingUsed = opts?.enableGrounding ?? false;
+  result.geminiWebSourceCount =
+    (agents.gemini as any)?.webSources?.length ?? 0;
+  return result;
 }

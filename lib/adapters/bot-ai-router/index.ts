@@ -52,6 +52,12 @@ import type {
   RouterInput,
   RoutedAIResult,
   TokenUsage,
+  // CMD-BUYERBOT-HYBRID-5A: Step 5 Round A
+  BuyerBotHybridInput,
+  BuyerBotHybridResult,
+  // CMD-RECONBOT-API-A: Step 6 Round A
+  ReconBotHybridInput,
+  ReconBotHybridResult,
 } from "./types";
 
 // ─── Re-exports — public surface ───────────────────────────────
@@ -77,6 +83,12 @@ export type {
   RoutedAIResult,
   ProviderRunResult,
   TokenUsage,
+  // CMD-BUYERBOT-HYBRID-5A: Step 5 Round A
+  BuyerBotHybridInput,
+  BuyerBotHybridResult,
+  // CMD-RECONBOT-API-A: Step 6 Round A
+  ReconBotHybridInput,
+  ReconBotHybridResult,
 } from "./types";
 
 // ─── Constants ──────────────────────────────────────────────────
@@ -84,6 +96,17 @@ export type {
 const PROVIDER_TIMEOUT_MS = 40_000;
 const HYBRID_TIMEOUT_MS = 90_000; // ListBot hybrid runs longer prompts
 const MAX_FALLBACK_ATTEMPTS = 3;
+
+// CMD-RECONBOT-API-B: shared hybrid defaults for new hybrid runners
+// going forward (Step 6+). Existing routeListBotHybrid (90s timeout
+// for the 13-platform prompt) and routeBuyerBotHybrid (60s/16k from
+// Step 5) keep their inlined constants to preserve byte-identity.
+// New runners reference HYBRID_DEFAULTS so the next refactor can
+// promote ListBot/BuyerBot to it without per-bot churn.
+export const HYBRID_DEFAULTS = {
+  TIMEOUT_MS: 60_000,
+  MAX_TOKENS: 16_384,
+} as const;
 
 // ─── Internal: photo path helpers (mirror multi-ai.ts) ────────
 
@@ -129,6 +152,11 @@ relevant fields. Be specific. Return ONLY valid JSON, no markdown fences.${selle
 interface ProviderRawResult {
   text: string;
   tokens: TokenUsage;
+  // CMD-RECONBOT-API-A: optional grounding citations from Gemini
+  // when callGeminiRaw is invoked with enableGrounding=true.
+  // Other providers always leave this undefined. Existing callers
+  // (runProvider, ListBot/BuyerBot fallback paths) ignore it.
+  geminiWebSources?: Array<{ url: string; title: string }>;
 }
 
 const openaiClient =
@@ -227,7 +255,16 @@ async function callClaudeRaw(
 async function callGeminiRaw(
   absPath: string,
   prompt: string,
-  options: { timeoutMs?: number; maxTokens?: number } = {},
+  options: {
+    timeoutMs?: number;
+    maxTokens?: number;
+    // CMD-RECONBOT-API-A: opt-in Google Search grounding flag.
+    // Default false → behaves IDENTICALLY to the pre-Round-6A
+    // implementation. When true, Gemini runs with native
+    // google_search tools on first attempt and falls back to
+    // plain JSON if grounding fails or returns empty.
+    enableGrounding?: boolean;
+  } = {},
 ): Promise<ProviderRawResult> {
   const key = process.env.GEMINI_API_KEY;
   if (!key || key.length < 10) throw new Error("No Gemini key configured");
@@ -235,34 +272,96 @@ async function callGeminiRaw(
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
   const { base64, mime } = fileToDataUrl(absPath);
 
-  const res = await Promise.race([
-    fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { inline_data: { mime_type: mime, data: base64 } },
-              { text: prompt },
-            ],
-          },
+  // CMD-RECONBOT-API-A: dual-attempt grounding pattern.
+  // Pattern adapted from lib/megabot/run-specialized.ts (lines
+  // 631-755 — read-only blueprint, NOT imported). When
+  // enableGrounding=true we try with google_search tools first,
+  // falling back to plain JSON if grounding errors or returns
+  // empty content. When false, exactly one plain request fires
+  // (backward compatible — no behavior change for existing
+  // callers like runProvider, ListBot/BuyerBot fallback paths).
+  const baseReqBody = {
+    contents: [
+      {
+        parts: [
+          { inline_data: { mime_type: mime, data: base64 } },
+          { text: prompt },
         ],
-        generationConfig: {
-          responseMimeType: "application/json",
-          maxOutputTokens: options.maxTokens ?? 4096,
-        },
+      },
+    ],
+    generationConfig: {
+      responseMimeType: "application/json",
+      maxOutputTokens: options.maxTokens ?? 4096,
+    },
+  };
+  const useGrounding = options.enableGrounding === true;
+  const reqBodyWithSearch = useGrounding
+    ? JSON.stringify({ ...baseReqBody, tools: [{ google_search: {} }] })
+    : null;
+  const reqBodyPlain = JSON.stringify(baseReqBody);
+
+  let data: any = null;
+  let triedWithSearch = false;
+  let groundingError: string | null = null;
+
+  // ── ATTEMPT 1: with google_search grounding (only when opted-in) ──
+  if (useGrounding && reqBodyWithSearch) {
+    try {
+      const res = await Promise.race([
+        fetch(url, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: reqBodyWithSearch,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error("Provider timeout (grounding)")),
+            options.timeoutMs ?? PROVIDER_TIMEOUT_MS,
+          ),
+        ),
+      ]);
+      if (res.ok) {
+        const candidate = await res.json();
+        // Validate response has actual text content (grounding
+        // sometimes returns empty when search yields nothing)
+        const responseText = candidate?.candidates?.[0]?.content?.parts
+          ?.map((p: any) => p.text || "").join("") || "";
+        if (responseText && responseText.trim().length >= 10) {
+          data = candidate;
+          triedWithSearch = true;
+        } else {
+          groundingError = "grounding returned empty content, falling back to plain";
+        }
+      } else {
+        groundingError = `grounding ${res.status}, falling back to plain`;
+      }
+    } catch (err: any) {
+      groundingError = `grounding error: ${err?.message ?? String(err)}, falling back to plain`;
+    }
+    if (groundingError) {
+      console.log("[bot-ai-router/callGeminiRaw]", groundingError);
+    }
+  }
+
+  // ── ATTEMPT 2 (or only attempt when useGrounding=false): plain JSON ──
+  if (!data) {
+    const res = await Promise.race([
+      fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: reqBodyPlain,
       }),
-    }),
-    new Promise<never>((_, reject) =>
-      setTimeout(
-        () => reject(new Error("Provider timeout")),
-        options.timeoutMs ?? PROVIDER_TIMEOUT_MS,
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error("Provider timeout")),
+          options.timeoutMs ?? PROVIDER_TIMEOUT_MS,
+        ),
       ),
-    ),
-  ]);
-  if (!res.ok) throw new Error(`Gemini API ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  const data = await res.json();
+    ]);
+    if (!res.ok) throw new Error(`Gemini API ${res.status}: ${(await res.text()).slice(0, 300)}`);
+    data = await res.json();
+  }
+
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   // CARRY-OVER FIX: capture real token usage
   const usage = data.usageMetadata ?? {};
@@ -271,7 +370,37 @@ async function callGeminiRaw(
     outputTokens: usage.candidatesTokenCount ?? null,
     totalTokens: usage.totalTokenCount ?? null,
   };
-  return { text, tokens };
+
+  // CMD-RECONBOT-API-A: extract grounding citations when grounding
+  // fired AND succeeded. Walk groundingMetadata.groundingChunks per
+  // the megabot blueprint. webSearchQueries (if present) is logged
+  // for diagnostics but not surfaced in the return shape.
+  const geminiWebSources: Array<{ url: string; title: string }> = [];
+  if (triedWithSearch) {
+    try {
+      const candidate = data?.candidates?.[0];
+      if (candidate?.groundingMetadata?.groundingChunks) {
+        for (const chunk of candidate.groundingMetadata.groundingChunks) {
+          if (chunk.web?.uri) {
+            geminiWebSources.push({
+              url: chunk.web.uri,
+              title: chunk.web.title || chunk.web.uri,
+            });
+          }
+        }
+      }
+      if (candidate?.groundingMetadata?.webSearchQueries) {
+        console.log(
+          "[bot-ai-router/callGeminiRaw] Search queries used:",
+          candidate.groundingMetadata.webSearchQueries.join(", "),
+        );
+      }
+    } catch {
+      /* citation extraction is non-critical */
+    }
+  }
+
+  return { text, tokens, geminiWebSources };
 }
 
 async function callGrokRaw(
@@ -330,7 +459,14 @@ async function callProviderRaw(
   provider: ProviderName,
   absPath: string,
   prompt: string,
-  options: { timeoutMs?: number; maxTokens?: number } = {},
+  // CMD-RECONBOT-API-A: options widened with optional enableGrounding
+  // flag (Gemini-only). Other providers ignore it. Backward compatible
+  // for all existing callers (timeoutMs/maxTokens still work as-is).
+  options: {
+    timeoutMs?: number;
+    maxTokens?: number;
+    enableGrounding?: boolean;
+  } = {},
 ): Promise<ProviderRawResult> {
   switch (provider) {
     case "openai": return callOpenAIRaw(absPath, prompt, options);
@@ -738,6 +874,526 @@ export async function routeListBotHybrid(
         timestamp: new Date().toISOString(),
       },
     });
+  }
+
+  return result;
+}
+
+// ─── Public: routeBuyerBotHybrid() ─────────────────────────
+//
+// CMD-BUYERBOT-HYBRID-5A — Step 5 Round A
+//
+// BuyerBot router entry point. Grok-primary for buyer
+// psychology + outreach hooks. Claude-secondary fires
+// conditionally on specialty items (antique, collectible,
+// vehicle) for collector-tone refinement.
+//
+// Pattern mirrors the Step 3 ListBot hybrid runner above.
+// Returns RAW JSON payload — caller is responsible for
+// shape preservation since BuyerBot's response schema is
+// not AiAnalysis-compatible.
+//
+// IMPORTANT: this function NEVER throws to its caller. All
+// failures (provider errors, fallback exhaustion, log write
+// failures) are surfaced via the BuyerBotHybridResult shape
+// (degraded=true + error string).
+// ─────────────────────────────────────────────────────────
+
+const BUYERBOT_HYBRID_TIMEOUT_MS = 60_000;
+const BUYERBOT_HYBRID_MAX_TOKENS = 16384;
+
+export async function routeBuyerBotHybrid(
+  input: BuyerBotHybridInput,
+): Promise<BuyerBotHybridResult> {
+  // CMD-BUYERBOT-HYBRID-5A: hybrid runner for BuyerBot (Round A export)
+  const startedAt = Date.now();
+  // BOT_AI_CONFIG.buyerbot is locked to grok primary + claude secondary +
+  // specialty_item trigger + balanced cost tier (Step 2). We resolve it
+  // here for parity with routeBotAI() even though Round A doesn't branch
+  // on the value — Round B's caller will use signals.flags to set
+  // input.shouldRunSecondary, this resolve keeps the audit trail honest.
+  const config = getBotConfig("buyerbot");
+  // CMD-BUYERBOT-API-B: validate config.triggers contains the
+  // specialty_item trigger that Round B's caller pre-evaluates.
+  // Fail loudly at boot if config drifts (defense in depth).
+  if (!config.triggers.includes("specialty_item")) {
+    throw new Error(
+      "[routeBuyerBotHybrid] BOT_AI_CONFIG.buyerbot.triggers must " +
+      "include 'specialty_item' — got: " + JSON.stringify(config.triggers)
+    );
+  }
+  const demoMode = isDemoMode();
+
+  const photoArr = Array.isArray(input.photoPath) ? input.photoPath : [input.photoPath];
+  const absPath = publicUrlToAbsPath(photoArr[0]);
+
+  // CMD-BUYERBOT-HYBRID-5A: raw-JSON single-provider runner.
+  // Mirrors the runOne closure in the Step 3 ListBot hybrid runner
+  // above but is local to this function so the proven Step 3 template
+  // stays byte-identical.
+  type RawRunOutcome = ProviderRunResult & { rawResult: any };
+
+  const runRaw = async (
+    provider: ProviderName,
+    prompt: string,
+  ): Promise<RawRunOutcome> => {
+    const start = Date.now();
+    try {
+      const { text, tokens } = await callProviderRaw(provider, absPath, prompt, {
+        timeoutMs: BUYERBOT_HYBRID_TIMEOUT_MS,
+        maxTokens: BUYERBOT_HYBRID_MAX_TOKENS,
+      });
+      const rawResult = parseAnyLooseJson(text);
+      if (!rawResult) {
+        return {
+          provider,
+          result: null,
+          error: `${provider} returned unparseable JSON`,
+          durationMs: Date.now() - start,
+          tokens,
+          actualCostUsd: computeActualCost(provider, tokens),
+          rawResult: null,
+        };
+      }
+      return {
+        provider,
+        result: null, // BuyerBot output is not AiAnalysis-shaped
+        error: null,
+        durationMs: Date.now() - start,
+        tokens,
+        actualCostUsd: computeActualCost(provider, tokens),
+        rawResult,
+      };
+    } catch (e: any) {
+      return {
+        provider,
+        result: null,
+        error: e?.message ?? String(e),
+        durationMs: Date.now() - start,
+        rawResult: null,
+      };
+    }
+  };
+
+  const providersAttempted: ProviderName[] = [];
+  const providersUsed: ProviderName[] = [];
+  let totalEstCost = 0;
+  let totalActualCost = 0;
+  let fallbackUsed = false;
+
+  // ── PRIMARY: Grok ──────────────────────────────────────
+  let primary: RawRunOutcome = await runRaw("grok", input.buyerPrompt);
+  providersAttempted.push("grok");
+  totalEstCost += estimateProviderCost("grok");
+  if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
+  if (primary.rawResult) providersUsed.push("grok");
+
+  // ── Graceful fallback chain on primary failure ────────
+  if (!primary.rawResult) {
+    const chain = fallbackChain("grok", providersAttempted);
+    let attempts = 0;
+    for (const fallback of chain) {
+      if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
+      attempts++;
+      fallbackUsed = true;
+      const fallbackOutcome = await runRaw(fallback, input.buyerPrompt);
+      providersAttempted.push(fallback);
+      totalEstCost += estimateProviderCost(fallback);
+      if (fallbackOutcome.actualCostUsd != null) {
+        totalActualCost += fallbackOutcome.actualCostUsd;
+      }
+      if (fallbackOutcome.rawResult) {
+        primary = fallbackOutcome;
+        providersUsed.push(fallback);
+        break;
+      }
+    }
+  }
+
+  // ── SECONDARY: Claude (conditional, best-effort) ──────
+  // Only fires when:
+  //   1. caller pre-evaluated shouldRunSecondary === true
+  //   2. primary (or its fallback) succeeded
+  //   3. collectorContext is present
+  // Secondary failure does NOT mark the run degraded.
+  let secondary: RawRunOutcome | undefined;
+  const wantsSecondary =
+    input.shouldRunSecondary === true &&
+    !!primary.rawResult &&
+    typeof input.collectorContext === "string" &&
+    input.collectorContext.length > 0;
+
+  if (wantsSecondary) {
+    const secondaryOutcome = await runRaw("claude", input.collectorContext as string);
+    providersAttempted.push("claude");
+    totalEstCost += estimateProviderCost("claude");
+    if (secondaryOutcome.actualCostUsd != null) {
+      totalActualCost += secondaryOutcome.actualCostUsd;
+    }
+    if (secondaryOutcome.rawResult) {
+      secondary = secondaryOutcome;
+      providersUsed.push("claude");
+    } else {
+      // Best-effort: log + continue, do NOT mark degraded.
+      console.warn(
+        `[routeBuyerBotHybrid] Claude secondary failed for item ${input.itemId}: ${secondaryOutcome.error ?? "unknown"}`,
+      );
+    }
+  }
+
+  const degraded = !primary.rawResult;
+
+  const result: BuyerBotHybridResult = {
+    primary,
+    secondary,
+    costUsd: Number(totalEstCost.toFixed(5)),
+    actualCostUsd: Number(totalActualCost.toFixed(6)),
+    latencyMs: Date.now() - startedAt,
+    degraded,
+    error: degraded ? primary.error ?? "All providers failed" : undefined,
+  };
+
+  // ── Fire-and-forget routing log (Step 4.8 apifyCostUsd plumbed) ──
+  // CMD-BUYERBOT-HYBRID-5A: log dispatch is wrapped in try/catch so
+  // a logging exception cannot bubble up to the caller. The inner
+  // logRoutingDecision already swallows DB errors via console.warn.
+  if (!input.skipLogging) {
+    try {
+      // NOTE: RoutingLogPayload.mergedStrategy union (locked in
+      // logging.ts) is "primary_only" | "merged_consensus" | "degraded".
+      // The 5A spec mentions a "primary_plus_collector" label; we map it
+      // to "merged_consensus" because (a) logging.ts is locked and (b)
+      // semantically a successful primary+secondary run already maps to
+      // merged_consensus across the rest of the router.
+      const mergedStrategy: "primary_only" | "merged_consensus" | "degraded" =
+        degraded
+          ? "degraded"
+          : secondary
+            ? "merged_consensus"
+            : "primary_only";
+
+      void logRoutingDecision({
+        itemId: input.itemId,
+        payload: {
+          botName: "buyerbot",
+          primary: primary.provider, // actual provider used (may be a fallback)
+          secondary: secondary?.provider,
+          triggersFired: wantsSecondary ? ["specialty_item"] : [],
+          providersAttempted,
+          providersUsed,
+          costUsd: result.costUsd,
+          actualCostUsd: result.actualCostUsd,
+          // Step 4.8 plumbing: caller-tracked Apify scraper spend.
+          // Spread conditionally so we don't pass null into a number
+          // field on the locked RoutingLogPayload type.
+          ...(input.apifyCostUsd != null ? { apifyCostUsd: input.apifyCostUsd } : {}),
+          latencyMs: result.latencyMs,
+          fallbackUsed,
+          degraded,
+          confidence: null, // BuyerBot does not produce AiAnalysis confidence
+          mergedStrategy,
+          tokens: {
+            [primary.provider]: {
+              input: primary.tokens?.inputTokens ?? null,
+              output: primary.tokens?.outputTokens ?? null,
+              total: primary.tokens?.totalTokens ?? null,
+            },
+            ...(secondary?.tokens
+              ? {
+                  [secondary.provider]: {
+                    input: secondary.tokens.inputTokens,
+                    output: secondary.tokens.outputTokens,
+                    total: secondary.tokens.totalTokens,
+                  },
+                }
+              : {}),
+          },
+          demoMode,
+          error: result.error,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (e: any) {
+      // Logging must NEVER bubble up to the caller.
+      console.warn(
+        `[routeBuyerBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
+      );
+    }
+  }
+
+  return result;
+}
+
+// ─── Public: routeReconBotHybrid() ─────────────────────────
+//
+// CMD-RECONBOT-API-A — Step 6 Round A
+//
+// ReconBot router entry point. Gemini-primary for research
+// synthesis + market trend detection (with optional Google
+// Search grounding for real-time competitor data). Grok-
+// secondary fires conditionally on the high_disagreement
+// trigger when caller pre-evaluates that ReconBot's
+// market_average disagrees with the prior valuation by >20%.
+//
+// Pattern mirrors the Step 5 hybrid runner above (BuyerBot,
+// proven in production). Returns RAW JSON payload — caller is
+// responsible for shape preservation since ReconBot's response
+// schema is not AiAnalysis-compatible.
+//
+// GROUNDING NOTE: When enableGrounding=true, Gemini runs with
+// google_search tools on first attempt, falling back to plain
+// JSON if grounding fails. Citations are returned in
+// geminiWebSources for the caller to merge into result.web_sources.
+//
+// IMPORTANT: this function NEVER throws to its caller. All
+// failures (provider errors, fallback exhaustion, log write
+// failures) are surfaced via the ReconBotHybridResult shape
+// (degraded=true + error string).
+// ─────────────────────────────────────────────────────────
+
+// CMD-RECONBOT-API-B: now references HYBRID_DEFAULTS (Part E
+// promotion). The two prior per-bot inline timeout/token constants
+// were removed in this round; their values now live in
+// HYBRID_DEFAULTS.TIMEOUT_MS and HYBRID_DEFAULTS.MAX_TOKENS.
+
+export async function routeReconBotHybrid(
+  input: ReconBotHybridInput,
+): Promise<ReconBotHybridResult> {
+  // CMD-RECONBOT-API-A: hybrid runner for ReconBot (Round 6A export)
+  const startedAt = Date.now();
+  const config = getBotConfig("reconbot");
+  // Defense-in-depth: validate config.triggers contains the
+  // high_disagreement trigger that Round 6B's caller pre-evaluates.
+  // Mirrors the Step 5 Round B specialty_item validator pattern —
+  // if anyone edits config.ts and accidentally drops the trigger,
+  // callers get a clear error instead of silent wrong-routing.
+  if (!config.triggers.includes("high_disagreement")) {
+    throw new Error(
+      "[routeReconBotHybrid] BOT_AI_CONFIG.reconbot.triggers must " +
+      "include 'high_disagreement' — got: " + JSON.stringify(config.triggers)
+    );
+  }
+  const demoMode = isDemoMode();
+
+  const photoArr = Array.isArray(input.photoPath) ? input.photoPath : [input.photoPath];
+  const absPath = publicUrlToAbsPath(photoArr[0]);
+
+  // CMD-RECONBOT-API-A: raw-JSON single-provider runner.
+  // Local closure (not extracted) so the proven Step 3/Step 5
+  // hybrid templates above stay byte-identical. Note: only the
+  // first call (Gemini primary) opts into grounding; fallbacks
+  // and the secondary always run with grounding disabled because
+  // OpenAI/Claude/Grok don't support it.
+  type RawRunOutcome = ProviderRunResult & {
+    rawResult: any;
+    geminiWebSources?: Array<{ url: string; title: string }>;
+  };
+
+  const runRaw = async (
+    provider: ProviderName,
+    prompt: string,
+    enableGrounding: boolean,
+  ): Promise<RawRunOutcome> => {
+    const start = Date.now();
+    try {
+      const { text, tokens, geminiWebSources } = await callProviderRaw(
+        provider,
+        absPath,
+        prompt,
+        {
+          timeoutMs: HYBRID_DEFAULTS.TIMEOUT_MS,
+          maxTokens: HYBRID_DEFAULTS.MAX_TOKENS,
+          enableGrounding,
+        },
+      );
+      const rawResult = parseAnyLooseJson(text);
+      if (!rawResult) {
+        return {
+          provider,
+          result: null,
+          error: `${provider} returned unparseable JSON`,
+          durationMs: Date.now() - start,
+          tokens,
+          actualCostUsd: computeActualCost(provider, tokens),
+          rawResult: null,
+          geminiWebSources,
+        };
+      }
+      return {
+        provider,
+        result: null, // ReconBot output is not AiAnalysis-shaped
+        error: null,
+        durationMs: Date.now() - start,
+        tokens,
+        actualCostUsd: computeActualCost(provider, tokens),
+        rawResult,
+        geminiWebSources,
+      };
+    } catch (e: any) {
+      return {
+        provider,
+        result: null,
+        error: e?.message ?? String(e),
+        durationMs: Date.now() - start,
+        rawResult: null,
+      };
+    }
+  };
+
+  const providersAttempted: ProviderName[] = [];
+  const providersUsed: ProviderName[] = [];
+  let totalEstCost = 0;
+  let totalActualCost = 0;
+  let fallbackUsed = false;
+
+  // ── PRIMARY: Gemini (with optional grounding) ──────────
+  const wantsGrounding = input.enableGrounding === true;
+  let primary: RawRunOutcome = await runRaw("gemini", input.reconPrompt, wantsGrounding);
+  providersAttempted.push("gemini");
+  totalEstCost += estimateProviderCost("gemini");
+  if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
+  if (primary.rawResult) providersUsed.push("gemini");
+
+  // ── Graceful fallback chain on primary failure ────────
+  // Fallback providers do NOT inherit enableGrounding — only
+  // Gemini supports it, and the others have no equivalent.
+  if (!primary.rawResult) {
+    const chain = fallbackChain("gemini", providersAttempted);
+    let attempts = 0;
+    for (const fallback of chain) {
+      if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
+      attempts++;
+      fallbackUsed = true;
+      const fallbackOutcome = await runRaw(fallback, input.reconPrompt, false);
+      providersAttempted.push(fallback);
+      totalEstCost += estimateProviderCost(fallback);
+      if (fallbackOutcome.actualCostUsd != null) {
+        totalActualCost += fallbackOutcome.actualCostUsd;
+      }
+      if (fallbackOutcome.rawResult) {
+        primary = fallbackOutcome;
+        providersUsed.push(fallback);
+        break;
+      }
+    }
+  }
+
+  // ── SECONDARY: Grok (conditional, best-effort) ────────
+  // Only fires when:
+  //   1. caller pre-evaluated shouldRunSecondary === true
+  //   2. primary (or its fallback) succeeded
+  //   3. culturalContext is present
+  // Secondary failure does NOT mark the run degraded.
+  let secondary: RawRunOutcome | undefined;
+  const wantsSecondary =
+    input.shouldRunSecondary === true &&
+    !!primary.rawResult &&
+    typeof input.culturalContext === "string" &&
+    input.culturalContext.length > 0;
+
+  if (wantsSecondary) {
+    const secondaryOutcome = await runRaw("grok", input.culturalContext as string, false);
+    providersAttempted.push("grok");
+    totalEstCost += estimateProviderCost("grok");
+    if (secondaryOutcome.actualCostUsd != null) {
+      totalActualCost += secondaryOutcome.actualCostUsd;
+    }
+    if (secondaryOutcome.rawResult) {
+      secondary = secondaryOutcome;
+      providersUsed.push("grok");
+    } else {
+      // Best-effort: log + continue, do NOT mark degraded.
+      console.warn(
+        `[routeReconBotHybrid] Grok secondary failed for item ${input.itemId}: ${secondaryOutcome.error ?? "unknown"}`,
+      );
+    }
+  }
+
+  const degraded = !primary.rawResult;
+
+  // CMD-RECONBOT-API-A: hoist grounding citations to top-level
+  // result. Only Gemini (when grounded + successful) populates
+  // them. Empty array when grounding off, fallback fired, or no
+  // citations returned.
+  const geminiWebSources: Array<{ url: string; title: string }> =
+    primary.provider === "gemini" && Array.isArray(primary.geminiWebSources)
+      ? primary.geminiWebSources
+      : [];
+
+  const result: ReconBotHybridResult = {
+    primary,
+    secondary,
+    geminiWebSources,
+    costUsd: Number(totalEstCost.toFixed(5)),
+    actualCostUsd: Number(totalActualCost.toFixed(6)),
+    latencyMs: Date.now() - startedAt,
+    degraded,
+    error: degraded ? primary.error ?? "All providers failed" : undefined,
+  };
+
+  // ── Fire-and-forget routing log (Step 4.8 apifyCostUsd plumbed) ──
+  // CMD-RECONBOT-API-A: log dispatch wrapped in try/catch so a
+  // logging exception cannot bubble up to the caller. The inner
+  // logRoutingDecision already swallows DB errors via console.warn.
+  if (!input.skipLogging) {
+    try {
+      // NOTE: RoutingLogPayload.mergedStrategy union (locked in
+      // logging.ts) is "primary_only" | "merged_consensus" | "degraded".
+      // Same semantic mapping accepted in Step 5 Round A.
+      const mergedStrategy: "primary_only" | "merged_consensus" | "degraded" =
+        degraded
+          ? "degraded"
+          : secondary
+            ? "merged_consensus"
+            : "primary_only";
+
+      void logRoutingDecision({
+        itemId: input.itemId,
+        payload: {
+          botName: "reconbot",
+          primary: primary.provider, // actual provider used (may be a fallback)
+          secondary: secondary?.provider,
+          triggersFired: wantsSecondary ? ["high_disagreement"] : [],
+          providersAttempted,
+          providersUsed,
+          costUsd: result.costUsd,
+          actualCostUsd: result.actualCostUsd,
+          // Step 4.8 plumbing: caller-tracked Apify scraper spend.
+          // Spread conditionally so we don't pass null into a number
+          // field on the locked RoutingLogPayload type.
+          ...(input.apifyCostUsd != null ? { apifyCostUsd: input.apifyCostUsd } : {}),
+          latencyMs: result.latencyMs,
+          fallbackUsed,
+          degraded,
+          confidence: null, // ReconBot does not produce AiAnalysis confidence
+          mergedStrategy,
+          tokens: {
+            [primary.provider]: {
+              input: primary.tokens?.inputTokens ?? null,
+              output: primary.tokens?.outputTokens ?? null,
+              total: primary.tokens?.totalTokens ?? null,
+            },
+            ...(secondary?.tokens
+              ? {
+                  [secondary.provider]: {
+                    input: secondary.tokens.inputTokens,
+                    output: secondary.tokens.outputTokens,
+                    total: secondary.tokens.totalTokens,
+                  },
+                }
+              : {}),
+          },
+          demoMode,
+          error: result.error,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (e: any) {
+      // Logging must NEVER bubble up to the caller.
+      console.warn(
+        `[routeReconBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
+      );
+    }
   }
 
   return result;

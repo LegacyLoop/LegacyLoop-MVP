@@ -1,13 +1,20 @@
 import { NextResponse } from "next/server";
+import crypto from "crypto"; // CMD-BUYERBOT-MEGA-C: Node built-in, no npm dep
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
-import { runSpecializedMegaBot } from "@/lib/megabot/run-specialized";
+import { runSpecializedMegaBot, type RunSpecializedMegaBotOpts } from "@/lib/megabot/run-specialized";
 import { MEGA_PROMPT_MAP, type PromptContext } from "@/lib/megabot/prompts";
 import { getItemEnrichmentContext } from "@/lib/enrichment/item-context";
 import { getMarketInfo } from "@/lib/pricing/market-data";
 import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, hasPriorBotRun, refundCredits } from "@/lib/credits";
+// CMD-RECONBOT-MEGA-C: Bot Constitution + live market intelligence
+// for the ReconBot MegaBot branch (other bots get their own MEGA-C
+// rounds; only botType === "reconbot" consumes these here).
+import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
+import { summarizeSpecContext } from "@/lib/bots/spec-guards";
+import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 
 // MegaBot runs 4 AI agents in parallel — grok can take up to 180s with retries
 export const maxDuration = 300; // 5 minutes
@@ -15,6 +22,93 @@ export const maxDuration = 300; // 5 minutes
 function safeJson(s: string | null | undefined): any {
   if (!s) return null;
   try { return JSON.parse(s); } catch { return null; }
+}
+
+// ─── CMD-BUYERBOT-MEGA-C: telemetry helpers (FLAGS 1-7, 9 fix) ───
+//
+// Both helpers are PRIVATE to this route file. They read from each
+// agent's existing `raw` response field — no agent function body
+// edits, no run-specialized.ts edits beyond Part B's type tightening.
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * extractAgentTelemetry — read per-agent telemetry (token counts +
+ * web source counts) from the MegaBotResult's existing `raw` fields.
+ * Defensive: every field falls back to 0 if the provider response
+ * shape drifts.
+ *
+ * Resolves Round C FLAGS 3, 7, and 9 without touching any locked
+ * agent function body.
+ */
+function extractAgentTelemetry(result: any): {
+  perAgent: {
+    openai: { inputTokens: number; outputTokens: number; webSources: number };
+    claude: { inputTokens: number; outputTokens: number; webSources: number };
+    gemini: { inputTokens: number; outputTokens: number; webSources: number };
+    grok:   { inputTokens: number; outputTokens: number; webSources: number };
+  };
+  totals: { inputTokens: number; outputTokens: number; totalTokens: number; totalWebSources: number };
+} {
+  const safe = (n: any) => (typeof n === "number" && isFinite(n) ? n : 0);
+
+  const openai = result?.agents?.openai?.raw;
+  const claude = result?.agents?.claude?.raw;
+  const gemini = result?.agents?.gemini?.raw;
+  const grok   = result?.agents?.grok?.raw;
+
+  // OpenAI: chat.completions usage shape
+  const oi = safe(openai?.usage?.prompt_tokens);
+  const oo = safe(openai?.usage?.completion_tokens);
+  const ow = 0; // OpenAI vision call has no native grounding
+
+  // Claude: messages API usage shape
+  const ci = safe(claude?.usage?.input_tokens);
+  const co = safe(claude?.usage?.output_tokens);
+  const cw = 0; // Claude vision has no native grounding
+
+  // Gemini: usageMetadata shape + grounding chunks
+  const gi = safe(gemini?.usageMetadata?.promptTokenCount);
+  const go = safe(gemini?.usageMetadata?.candidatesTokenCount);
+  const gw = Array.isArray(gemini?.candidates?.[0]?.groundingMetadata?.groundingChunks)
+    ? gemini.candidates[0].groundingMetadata.groundingChunks.length
+    : 0;
+
+  // Grok: chat.completions-style usage
+  const xi = safe(grok?.usage?.prompt_tokens);
+  const xo = safe(grok?.usage?.completion_tokens);
+  const xw = 0; // Grok text-only
+
+  return {
+    perAgent: {
+      openai: { inputTokens: oi, outputTokens: oo, webSources: ow },
+      claude: { inputTokens: ci, outputTokens: co, webSources: cw },
+      gemini: { inputTokens: gi, outputTokens: go, webSources: gw },
+      grok:   { inputTokens: xi, outputTokens: xo, webSources: xw },
+    },
+    totals: {
+      inputTokens:     oi + ci + gi + xi,
+      outputTokens:    oo + co + go + xo,
+      totalTokens:     oi + oo + ci + co + gi + go + xi + xo,
+      totalWebSources: ow + cw + gw + xw,
+    },
+  };
+}
+
+/**
+ * Compact audit fingerprint for a prompt block. Returns
+ * { length, sha256Prefix } — the first 16 chars of SHA256, enough
+ * to verify content without storing full text. Resolves Round C
+ * FLAG 2.
+ */
+function fingerprintBlock(text: string | undefined | null): {
+  length: number;
+  sha256Prefix: string;
+} {
+  if (!text || typeof text !== "string" || text.length === 0) {
+    return { length: 0, sha256Prefix: "" };
+  }
+  const hash = crypto.createHash("sha256").update(text).digest("hex");
+  return { length: text.length, sha256Prefix: hash.slice(0, 16) };
 }
 
 // ─── GET: Fetch ALL stored MegaBot results for this item ─────────────────
@@ -269,10 +363,134 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     process.env.ENABLE_SUBSCRIPTION_SCRAPERS = "true";
   }
 
+  // CMD-RECONBOT-MEGA-C: assemble per-bot opts (currently ReconBot
+  // only). When botType !== "reconbot" OR isDemoMode() returns true,
+  // reconOpts stays undefined and runSpecializedMegaBot behaves
+  // byte-identically to its pre-edit Round 6B implementation. Each
+  // future bot gets its own MEGA-C command with its own opts shape.
+  let reconOpts: RunSpecializedMegaBotOpts | undefined;
+  if (botType === "reconbot" && !isDemoMode()) {
+    try {
+      // Refetch user for buildItemSpecContext (handleSpecializedMegaBot
+      // only has userId; spec-context reader needs the user.tier field
+      // for commission rate fallback).
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const specContext = await buildItemSpecContext(item.id, { item, user });
+      const specSummary = summarizeSpecContext(specContext);
+
+      // Note: User schema does not have a `zip` column — sellerZip
+      // comes solely from item.saleZip (matches the normal-path
+      // route from Round 6B).
+      const sellerZip = item.saleZip ?? null;
+      const marketIntel = await getMarketIntelligence(
+        ctx.itemName ?? item.title ?? "",
+        ctx.category ?? "",
+        sellerZip ?? undefined,
+      ).catch((err) => {
+        console.warn("[megabot/reconbot] getMarketIntelligence failed (non-critical):", err);
+        return null;
+      });
+
+      const marketIntelBlock = marketIntel?.comps?.length
+        ? `MARKET INTELLIGENCE (live comps from real eBay Browse API + free scrapers):\n${
+            marketIntel.comps.slice(0, 12).map((c: any) =>
+              `• ${c.platform}: ${c.item} — $${c.price}`
+            ).join("\n")
+          }`
+        : "";
+
+      const marketIntelMedian = marketIntel?.median ?? null;
+      const midPrice = v
+        ? Math.round((v.low + v.high) / 2)
+        : (ai?.estimated_value_mid ?? null);
+
+      reconOpts = {
+        specSummary,
+        specPromptBlock: specContext.promptBlock,
+        marketIntelBlock,
+        marketIntelMedian,
+        // RC-7 carry-forward: aggregator does not yet expose Apify
+        // spend per call; hardcode 0 until that lands.
+        apifyCostUsd: 0,
+        enableGrounding: true,
+        priorValuationMid: midPrice,
+      };
+    } catch (specErr) {
+      console.warn("[megabot/reconbot] specContext/marketIntel assembly failed (non-critical):", specErr);
+      reconOpts = undefined; // graceful degradation — fall through to plain MegaBot
+    }
+  }
+
+  // CMD-BUYERBOT-MEGA-C: BuyerBot opts assembly mirrors the ReconBot
+  // pattern from Round C. The two branches stay parallel/independent
+  // because botType is single-valued per request — no double work.
+  // Failure booleans (buyerSpecContextFailed / buyerMarketIntelFailed)
+  // resolve Round C FLAG 4 without forcing any spec-context refactor.
+  let buyerOpts: RunSpecializedMegaBotOpts | undefined;
+  let buyerSpecContextFailed = false;
+  let buyerMarketIntelFailed = false;
+  if (botType === "buyerbot" && !isDemoMode()) {
+    try {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const specContext = await buildItemSpecContext(item.id, { item, user });
+      const specSummary = summarizeSpecContext(specContext);
+
+      let marketIntel: any = null;
+      try {
+        marketIntel = await getMarketIntelligence(
+          ctx.itemName ?? item.title ?? "",
+          ctx.category ?? "",
+          item.saleZip ?? undefined,
+        );
+      } catch (err) {
+        buyerMarketIntelFailed = true;
+        console.warn("[megabot/buyerbot] getMarketIntelligence failed:", err);
+      }
+
+      const marketIntelBlock = marketIntel?.comps?.length
+        ? `MARKET INTELLIGENCE (live comps from real eBay Browse API + free scrapers — use these to identify real buyer demand pockets):\n${
+            marketIntel.comps.slice(0, 12).map((c: any) =>
+              `• ${c.platform}: ${c.item} — $${c.price}`
+            ).join("\n")
+          }`
+        : "";
+
+      const marketIntelMedian = marketIntel?.median ?? null;
+      const midPrice = v
+        ? Math.round((v.low + v.high) / 2)
+        : (ai?.estimated_value_mid ?? null);
+
+      buyerOpts = {
+        specSummary,
+        specPromptBlock: specContext.promptBlock,
+        marketIntelBlock,
+        marketIntelMedian,
+        // FLAG 8 (RC-7) carry-forward: aggregator does not yet
+        // expose Apify spend per call; hardcode 0. Multi-file
+        // change to all 49 scraper adapters — out of scope this
+        // round, deferred to a dedicated future round.
+        apifyCostUsd: 0,
+        enableGrounding: true,
+        priorValuationMid: midPrice,
+      };
+    } catch (specErr) {
+      buyerSpecContextFailed = true;
+      console.warn("[megabot/buyerbot] specContext assembly failed (non-critical):", specErr);
+      buyerOpts = undefined; // graceful degradation — fall through to plain MegaBot
+    }
+  }
+
   let result;
   try {
     const photoPaths = item.photos.slice(0, 6).map((p: any) => p.filePath);
-    result = await runSpecializedMegaBot(botType, prompt, photoPaths[0], itemId, photoPaths);
+    // CMD-BUYERBOT-MEGA-C: dispatch reconOpts vs buyerOpts vs undefined
+    // based on botType. Other bots stay on the undefined path until
+    // their respective MEGA-C rounds.
+    const activeOpts =
+      botType === "reconbot" ? reconOpts :
+      botType === "buyerbot" ? buyerOpts :
+      undefined;
+    result = await runSpecializedMegaBot(botType, prompt, photoPaths[0], itemId, photoPaths, activeOpts);
   } catch (e: any) {
     console.error(`[megabot/${botType}]`, e);
     return new Response(`MegaBot ${botType} failed: ${e.message}`, { status: 422 });
@@ -386,6 +604,97 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
       }),
     },
   });
+
+  // CMD-BUYERBOT-MEGA-C: unified MEGABOT_RUN telemetry for both
+  // ReconBot (Round C) and BuyerBot (this round). Same enriched
+  // payload shape — analytics layer sees identical schema across
+  // both bots from day one (retroactive Round C flag fix applied
+  // to ReconBot in the same pass). Other botTypes will get their
+  // own MEGABOT_RUN equivalents in their respective MEGA-C rounds.
+  // Wrapped in try/catch so a logging failure cannot block the
+  // user-facing response.
+  //
+  // Round C carry-forward flag fixes embedded in this payload:
+  //   FLAG 1: specSummary persisted
+  //   FLAG 2: specPromptBlockFingerprint + marketIntelBlockFingerprint
+  //   FLAG 3: perAgentTokens (input/output per provider)
+  //   FLAG 4: specContextFailed + marketIntelFailed booleans
+  //   FLAG 5: specSummary now typed as SpecContextSummary (Part B)
+  //   FLAG 6: marketIntelMedian persisted
+  //   FLAG 7: perAgentWebSources + totalWebSourceCount
+  //   FLAG 9: totalTokens aggregate
+  //   FLAG 8 (DEFERRED): apifyCostUsdReal placeholder (always 0)
+  if (botType === "reconbot" || botType === "buyerbot") {
+    try {
+      const telemetry = extractAgentTelemetry(result);
+      const specBlockFp = fingerprintBlock(
+        botType === "reconbot" ? reconOpts?.specPromptBlock : buyerOpts?.specPromptBlock
+      );
+      const marketBlockFp = fingerprintBlock(
+        botType === "reconbot" ? reconOpts?.marketIntelBlock : buyerOpts?.marketIntelBlock
+      );
+      const opts = botType === "reconbot" ? reconOpts : buyerOpts;
+      const specContextFailed =
+        botType === "reconbot" ? false : buyerSpecContextFailed;
+      const marketIntelFailed =
+        botType === "reconbot" ? false : buyerMarketIntelFailed;
+
+      await prisma.eventLog.create({
+        data: {
+          itemId,
+          eventType: "MEGABOT_RUN",
+          payload: JSON.stringify({
+            // Existing Round C fields (unchanged)
+            botType,
+            lastScan: result.lastScan,
+            mergedStrategy: result.mergedStrategy,
+            apifyCostUsd: result.apifyCostUsd,
+            groundingUsed: result.groundingUsed,
+            geminiWebSourceCount: result.geminiWebSourceCount,
+            successCount: result.successCount,
+            failCount: result.failCount,
+            agreementScore: result.agreementScore,
+
+            // FLAG 1 fix: spec summary persisted (typed as
+            // SpecContextSummary post-Part-B)
+            specSummary: opts?.specSummary ?? null,
+
+            // FLAG 2 fix: prompt-block fingerprints (compact)
+            specPromptBlockFingerprint: specBlockFp,
+            marketIntelBlockFingerprint: marketBlockFp,
+
+            // FLAG 3 + 9 fix: per-agent + total token counts
+            // (extracted from raw at route layer, no agent
+            // body changes)
+            perAgentTokens: telemetry.perAgent,
+            totalTokens: telemetry.totals,
+
+            // FLAG 4 fix: failure rate booleans
+            specContextFailed,
+            marketIntelFailed,
+
+            // FLAG 6 fix: median surfaced for analytics
+            marketIntelMedian: opts?.marketIntelMedian ?? null,
+
+            // FLAG 7 fix: per-agent web source counts
+            perAgentWebSources: {
+              openai: telemetry.perAgent.openai.webSources,
+              claude: telemetry.perAgent.claude.webSources,
+              gemini: telemetry.perAgent.gemini.webSources,
+              grok:   telemetry.perAgent.grok.webSources,
+            },
+            totalWebSourceCount: telemetry.totals.totalWebSources,
+
+            // FLAG 8 (RC-7): still deferred. Field present
+            // with value 0 for forward-compat schema.
+            apifyCostUsdReal: 0,
+          }),
+        },
+      });
+    } catch (logErr) {
+      console.warn(`[megabot/${botType}] MEGABOT_RUN log write failed (non-critical):`, logErr);
+    }
+  }
 
   // Mark megabotUsed on item
   await prisma.item.update({

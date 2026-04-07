@@ -111,3 +111,53 @@ export async function searchEbayComps(query: string, limit = 8): Promise<EbayCom
 
   return mapped.filter((x): x is EbayComp => x !== null);
 }
+
+// ─── CMD-RECONBOT-API-B: getEbayRateLimits() helper ─────────────
+//
+// Polls eBay's developer analytics endpoint for the Browse API
+// daily quota. Used by lib/market-intelligence/aggregator.ts to
+// gate the Phase 0 Browse API swap — when fewer than 500 calls
+// remain in the daily window, the aggregator falls back to the
+// scraper for that single invocation.
+//
+// FAIL-OPEN: if the rate-limit endpoint itself errors, assume
+// full quota. The safety net is for known-low scenarios, not
+// for breaking on transient errors. The 60s in-process cache
+// avoids spamming the analytics endpoint on every aggregator
+// call.
+// ────────────────────────────────────────────────────────────────
+
+export type EbayRateLimits = {
+  dailyLimit: number;
+  dailyLimitRemaining: number;
+  resetTime: string | null;
+};
+
+let rateLimitCache: { value: EbayRateLimits; cachedAt: number } | null = null;
+const RATE_LIMIT_CACHE_MS = 60_000; // 1 minute
+
+export async function getEbayRateLimits(): Promise<EbayRateLimits> {
+  if (rateLimitCache && Date.now() - rateLimitCache.cachedAt < RATE_LIMIT_CACHE_MS) {
+    return rateLimitCache.value;
+  }
+  try {
+    const token = await getEbayAppToken();
+    const res = await fetch(
+      `${ebayBase()}/developer/analytics/v1_beta/rate_limit/?api_name=Browse`,
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    if (!res.ok) throw new Error(`eBay rate_limit ${res.status}`);
+    const data = await res.json();
+    const browse = data?.rateLimits?.[0]?.resources?.[0]?.rates?.[0];
+    const value: EbayRateLimits = {
+      dailyLimit: browse?.limit ?? 5000,
+      dailyLimitRemaining: browse?.remaining ?? 5000,
+      resetTime: browse?.reset ?? null,
+    };
+    rateLimitCache = { value, cachedAt: Date.now() };
+    return value;
+  } catch (err) {
+    console.warn("[ebay] getEbayRateLimits failed, assuming full quota:", err);
+    return { dailyLimit: 5000, dailyLimitRemaining: 5000, resetTime: null };
+  }
+}

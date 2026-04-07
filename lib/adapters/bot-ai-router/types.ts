@@ -143,3 +143,181 @@ export interface RoutedAIResult {
   /** Last error message when degraded === true. */
   error?: string;
 }
+
+// ─── BuyerBot hybrid (Step 5 Round A) ────────────────────────────
+//
+// CMD-BUYERBOT-HYBRID-5A
+//
+// BuyerBot is the second hybrid bot after ListBot. Pattern mirrors
+// ListBotHybridInput / ListBotHybridResult (which live in index.ts
+// alongside their runner). These two interfaces are placed here in
+// types.ts because the BuyerBot route consumer (Round B) will import
+// them from the public router surface and we want them visible to
+// every future hybrid-bot migration in Steps 6-13.
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Input shape for routeBuyerBotHybrid().
+ * Mirrors ListBotHybridInput pattern from Step 3 but adds
+ * specialty-item secondary gating + apifyCostUsd tracking.
+ *
+ * CMD-BUYERBOT-HYBRID-5A — Step 5 Round A
+ */
+export interface BuyerBotHybridInput {
+  /** Item ID for EventLog correlation */
+  itemId: string;
+  /** Photo path(s) — accepts string or string[] for multi-photo bots */
+  photoPath: string | string[];
+  /** Raw system prompt for Grok primary (BuyerBot's full assembled
+   *  prompt including spec context, enrichment, web pre-pass, etc.) */
+  buyerPrompt: string;
+  /** Optional Claude secondary prompt — only used when
+   *  shouldRunSecondary=true. Typically the same as buyerPrompt
+   *  with an appended collector-tone refinement directive. */
+  collectorContext?: string;
+  /** Pre-evaluated by caller. When true, Claude secondary fires
+   *  in parallel with Grok primary. When false, only Grok runs.
+   *  Caller is responsible for trigger evaluation (specialty_item:
+   *  is_antique || is_collectible || is_vehicle). */
+  shouldRunSecondary: boolean;
+  /** Caller-tracked Apify scraper spend for this BuyerBot call.
+   *  Persisted in BOT_AI_ROUTING EventLog payload via the
+   *  apifyCostUsd field added in Step 4.8. */
+  apifyCostUsd?: number;
+  /** Optional logging skip flag for tests. Default false. */
+  skipLogging?: boolean;
+}
+
+/**
+ * Output shape for routeBuyerBotHybrid().
+ * Returns RAW JSON results (NOT AiAnalysis-shaped) so BuyerBot's
+ * existing payload schema (buyer_profiles, hot_leads,
+ * platform_opportunities, outreach_strategies) is preserved
+ * unchanged when consumed by BuyerFinderPanel.
+ */
+export interface BuyerBotHybridResult {
+  /** Grok primary result with raw JSON payload */
+  primary: ProviderRunResult & { rawResult: any };
+  /** Claude secondary result — only present when shouldRunSecondary
+   *  was true AND Claude succeeded. May be undefined. */
+  secondary?: ProviderRunResult & { rawResult: any };
+  /** Estimated USD cost for the run (sum of providers attempted) */
+  costUsd: number;
+  /** Actual USD cost from token metering (Step 3 carry-over) */
+  actualCostUsd: number;
+  /** Total wall-clock latency in milliseconds */
+  latencyMs: number;
+  /** True if all providers (primary + fallbacks + secondary) failed.
+   *  Caller should return a 422 error to the user when degraded. */
+  degraded: boolean;
+  /** Last error message when degraded=true */
+  error?: string;
+}
+
+// ─── ReconBot hybrid (Step 6 Round A) ────────────────────────────
+//
+// CMD-RECONBOT-API-A
+//
+// ReconBot is the third hybrid bot after ListBot (Step 3) and
+// BuyerBot (Step 5). Pattern mirrors the Step 5 hybrid input/result
+// pair but adds an opt-in `enableGrounding` flag for Gemini's
+// native Google Search grounding tool — the first hybrid runner
+// to consume real-time web data through the router layer. Step 8
+// CarBot (also Gemini-primary) inherits the grounding capability
+// for free when its router migration lands.
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Input shape for routeReconBotHybrid().
+ * Mirrors BuyerBotHybridInput pattern from Step 5 Round A but
+ * adds optional Gemini grounding flag for real-time market
+ * intelligence via Google Search.
+ *
+ * Caller is responsible for:
+ *  • Pre-evaluating shouldRunSecondary using config.triggers
+ *    (specifically the high_disagreement trigger — caller maps
+ *    result.price_intelligence.market_average → synthetic
+ *    estimated_value_mid before passing signals through)
+ *  • Tracking apifyCostUsd from any scraper calls fired prior
+ *    to invoking the router
+ *  • Setting enableGrounding=true to opt into real-time Google
+ *    Search results in Gemini's response (default off)
+ *
+ * CMD-RECONBOT-API-A — Step 6 Round A
+ */
+export interface ReconBotHybridInput {
+  /** Item ID for EventLog correlation */
+  itemId: string;
+  /** Photo path(s) — accepts string or string[] for multi-photo */
+  photoPath: string | string[];
+  /** Raw system prompt for Gemini primary (ReconBot's full
+   *  assembled prompt: enrichmentPrefix + specialtyBotContext +
+   *  amazonContext + realCompContext + boilerplate) */
+  reconPrompt: string;
+  /** Optional Grok secondary prompt — only used when
+   *  shouldRunSecondary=true. Typically the same as reconPrompt
+   *  with an appended cultural-interpretation refinement
+   *  directive for high-disagreement market scenarios. */
+  culturalContext?: string;
+  /** Pre-evaluated by caller. When true, Grok secondary fires
+   *  in parallel with Gemini primary. When false, only Gemini
+   *  runs. Caller responsibility to evaluate the
+   *  high_disagreement trigger using ReconBot's market_average
+   *  field as the synthetic estimated_value_mid. */
+  shouldRunSecondary: boolean;
+  /** Caller-tracked Apify scraper spend for this ReconBot call.
+   *  Persisted in BOT_AI_ROUTING EventLog payload via the
+   *  apifyCostUsd field added in Step 4.8. ReconBot becomes
+   *  the second bot to populate this field after BuyerBot. */
+  apifyCostUsd?: number;
+  /** Enable Gemini's native Google Search grounding tool.
+   *  Default false — opt-in only. When true, Gemini runs with
+   *  tools: [{ google_search: {} }] on first attempt and falls
+   *  back to plain JSON if grounding fails or returns empty.
+   *  Grounding citations are extracted into the result's
+   *  geminiWebSources field. Reserved for ReconBot (Step 6)
+   *  and CarBot (Step 8) — both Gemini-primary bots that
+   *  benefit from real-time web data. */
+  enableGrounding?: boolean;
+  /** Optional logging skip flag for tests. Default false. */
+  skipLogging?: boolean;
+}
+
+/**
+ * Output shape for routeReconBotHybrid().
+ * Returns RAW JSON results (NOT AiAnalysis-shaped) so ReconBot's
+ * existing payload schema (scan_summary, competitor_listings,
+ * price_intelligence, market_dynamics, platform_breakdown,
+ * alerts, competitive_advantages, competitive_disadvantages,
+ * strategic_recommendations, sold_tracker, market_forecast,
+ * executive_summary) is preserved unchanged when consumed by
+ * ReconBotPanel.
+ *
+ * geminiWebSources is populated when enableGrounding=true and
+ * the dual-attempt grounding pattern returned at least one
+ * citation chunk. Empty array otherwise.
+ */
+export interface ReconBotHybridResult {
+  /** Gemini primary result with raw JSON payload */
+  primary: ProviderRunResult & { rawResult: any };
+  /** Grok secondary result — only present when shouldRunSecondary
+   *  was true AND Grok succeeded. Best-effort, may be undefined. */
+  secondary?: ProviderRunResult & { rawResult: any };
+  /** Real-time Google Search citations from Gemini grounding.
+   *  Only populated when enableGrounding=true on the input.
+   *  Caller is responsible for merging this into the result's
+   *  web_sources field (ReconBot route does this in Round 6B). */
+  geminiWebSources: Array<{ url: string; title: string }>;
+  /** Estimated USD cost for the run (sum of providers attempted) */
+  costUsd: number;
+  /** Actual USD cost from token metering (Step 3 carry-over) */
+  actualCostUsd: number;
+  /** Total wall-clock latency in milliseconds */
+  latencyMs: number;
+  /** True if all providers (primary + fallbacks + secondary)
+   *  failed. Caller should return a 422 error to the user when
+   *  degraded. */
+  degraded: boolean;
+  /** Last error message when degraded=true */
+  error?: string;
+}
