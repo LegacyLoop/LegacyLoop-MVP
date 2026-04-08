@@ -381,6 +381,10 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   // CMD-LISTBOT-MEGA-C: hoist listSkillPack to function scope so
   // it's visible at the MEGABOT_RUN write block (mirrors recon/buyer).
   let listSkillPack: ReturnType<typeof loadSkillPack> | undefined;
+  // CMD-ANTIQUEBOT-CORE-A: hoist antiquebotSkillPack to function
+  // scope so it's visible at the MEGABOT_RUN write block (mirrors
+  // recon/buyer/list pattern).
+  let antiquebotSkillPack: ReturnType<typeof loadSkillPack> | undefined;
 
   let reconOpts: RunSpecializedMegaBotOpts | undefined;
   if (botType === "reconbot" && !isDemoMode()) {
@@ -397,10 +401,16 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
       // comes solely from item.saleZip (matches the normal-path
       // route from Round 6B).
       const sellerZip = item.saleZip ?? null;
+      // CMD-MEGABOT-SCRAPER-PARITY-FIX: pass isMegaBot=true (5th arg) to
+      // unlock the paid Apify scraper pool for ReconBot MegaBot scans —
+      // restores parity with the antiquebot branch from CMD-ANTIQUEBOT-CORE-A.
+      // Normal-path ReconBot scans remain at $0.00 Apify cost.
       const marketIntel = await getMarketIntelligence(
         ctx.itemName ?? item.title ?? "",
         ctx.category ?? "",
         sellerZip ?? undefined,
+        undefined, // phase1Only — keep default
+        true,      // isMegaBot — unlock paid scraper pool
       ).catch((err) => {
         console.warn("[megabot/reconbot] getMarketIntelligence failed (non-critical):", err);
         return null;
@@ -456,10 +466,15 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
 
       let marketIntel: any = null;
       try {
+        // CMD-MEGABOT-SCRAPER-PARITY-FIX: pass isMegaBot=true (5th arg) to
+        // unlock the paid Apify scraper pool for BuyerBot MegaBot scans —
+        // restores parity with the antiquebot branch.
         marketIntel = await getMarketIntelligence(
           ctx.itemName ?? item.title ?? "",
           ctx.category ?? "",
           item.saleZip ?? undefined,
+          undefined, // phase1Only — keep default
+          true,      // isMegaBot — unlock paid scraper pool
         );
       } catch (err) {
         buyerMarketIntelFailed = true;
@@ -502,6 +517,82 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     }
   }
 
+  // CMD-ANTIQUEBOT-CORE-A: AntiqueBot opts assembly mirrors the
+  // ReconBot/BuyerBot/ListBot pattern. Independent branch — botType
+  // is single-valued per request so the four blocks never overlap.
+  // Failure booleans (antiqueSpecContextFailed /
+  // antiqueMarketIntelFailed) surface in MEGABOT_RUN telemetry for
+  // ops visibility.
+  //
+  // CRITICAL DIFFERENCE FROM RECON/BUYER/LIST: this branch passes
+  // isMegaBot=true to getMarketIntelligence (the 5th arg added in
+  // this round). That single flag enables the paid Apify scraper
+  // pool (Sothebys, AmazonApify, EbayApify, etc.) for AntiqueBot
+  // MegaBot scans only — normal-path AntiqueBot scans guarantee
+  // $0.00 Apify cost via the same gating.
+  let antiqueOpts: RunSpecializedMegaBotOpts | undefined;
+  let antiqueSpecContextFailed = false;
+  let antiqueMarketIntelFailed = false;
+  if (botType === "antiquebot" && !isDemoMode()) {
+    try {
+      antiquebotSkillPack = loadSkillPack("antiquebot");
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const specContext = await buildItemSpecContext(item.id, { item, user });
+      const specSummary = summarizeSpecContext(specContext);
+
+      let marketIntel: any = null;
+      try {
+        // CMD-ANTIQUEBOT-CORE-A: pass isMegaBot=true (5th arg) to
+        // unlock the paid Apify scraper pool for this MegaBot scan.
+        // The 4th arg phase1Only stays undefined (default false).
+        marketIntel = await getMarketIntelligence(
+          ctx.itemName ?? item.title ?? "",
+          ctx.category ?? "",
+          item.saleZip ?? undefined,
+          undefined, // phase1Only — keep default
+          true,      // isMegaBot — enables paid scraper pool
+        );
+      } catch (err) {
+        antiqueMarketIntelFailed = true;
+        console.warn("[megabot/antiquebot] getMarketIntelligence failed:", err);
+      }
+
+      const marketIntelBlock = marketIntel?.comps?.length
+        ? `MARKET INTELLIGENCE (live antique market comps including auction houses — use these to anchor authentication, valuation, and selling strategy):\n${marketIntel.comps
+            .slice(0, 12)
+            .map(
+              (c: any) =>
+                `• ${c.platform}: ${c.item} — $${c.price}${c.condition ? ` (${c.condition})` : ""}`,
+            )
+            .join("\n")}`
+        : "";
+
+      const marketIntelMedian = marketIntel?.median ?? null;
+      const midPrice = v
+        ? Math.round((v.low + v.high) / 2)
+        : (ai?.estimated_value_mid ?? null);
+
+      antiqueOpts = {
+        specSummary,
+        specPromptBlock: specContext.promptBlock,
+        marketIntelBlock,
+        marketIntelMedian,
+        // FLAG 8 (RC-7) carry-forward: aggregator does not yet
+        // expose Apify spend per call; hardcode 0.
+        apifyCostUsd: 0,
+        enableGrounding: true,
+        priorValuationMid: midPrice,
+        // CMD-SKILLS-INFRA-A: prepended to enrichedPrompt before
+        // any item-specific context inside runSpecializedMegaBot.
+        skillPackBlock: antiquebotSkillPack.systemPromptBlock,
+      };
+    } catch (specErr) {
+      antiqueSpecContextFailed = true;
+      console.warn("[megabot/antiquebot] specContext assembly failed (non-critical):", specErr);
+      antiqueOpts = undefined; // graceful degradation
+    }
+  }
+
   // CMD-LISTBOT-MEGA-C: ListBot opts assembly mirrors the
   // ReconBot/BuyerBot pattern. The three branches stay parallel/
   // independent because botType is single-valued per request.
@@ -519,10 +610,15 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
 
       let marketIntel: any = null;
       try {
+        // CMD-MEGABOT-SCRAPER-PARITY-FIX: pass isMegaBot=true (5th arg) to
+        // unlock the paid Apify scraper pool for ListBot MegaBot scans —
+        // restores parity with the antiquebot branch.
         marketIntel = await getMarketIntelligence(
           ctx.itemName ?? item.title ?? "",
           ctx.category ?? "",
           item.saleZip ?? undefined,
+          undefined, // phase1Only — keep default
+          true,      // isMegaBot — unlock paid scraper pool
         );
       } catch (err) {
         listMarketIntelFailed = true;
@@ -570,9 +666,10 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     // undefined based on botType. Other bots stay on the undefined
     // path until their respective MEGA-C rounds.
     const activeOpts =
-      botType === "reconbot" ? reconOpts :
-      botType === "buyerbot" ? buyerOpts :
-      botType === "listbot"  ? listOpts  :
+      botType === "reconbot"   ? reconOpts   :
+      botType === "buyerbot"   ? buyerOpts   :
+      botType === "listbot"    ? listOpts    :
+      botType === "antiquebot" ? antiqueOpts :
       undefined;
     result = await runSpecializedMegaBot(botType, prompt, photoPaths[0], itemId, photoPaths, activeOpts);
   } catch (e: any) {
@@ -708,31 +805,36 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   //   FLAG 7: perAgentWebSources + totalWebSourceCount
   //   FLAG 9: totalTokens aggregate
   //   FLAG 8 (DEFERRED): apifyCostUsdReal placeholder (always 0)
-  if (botType === "reconbot" || botType === "buyerbot" || botType === "listbot") {
+  if (botType === "reconbot" || botType === "buyerbot" || botType === "listbot" || botType === "antiquebot") {
     try {
       const telemetry = extractAgentTelemetry(result);
       const specBlockFp = fingerprintBlock(
-        botType === "reconbot" ? reconOpts?.specPromptBlock :
-        botType === "buyerbot" ? buyerOpts?.specPromptBlock :
-        listOpts?.specPromptBlock
+        botType === "reconbot"   ? reconOpts?.specPromptBlock   :
+        botType === "buyerbot"   ? buyerOpts?.specPromptBlock   :
+        botType === "listbot"    ? listOpts?.specPromptBlock    :
+        antiqueOpts?.specPromptBlock
       );
       const marketBlockFp = fingerprintBlock(
-        botType === "reconbot" ? reconOpts?.marketIntelBlock :
-        botType === "buyerbot" ? buyerOpts?.marketIntelBlock :
-        listOpts?.marketIntelBlock
+        botType === "reconbot"   ? reconOpts?.marketIntelBlock   :
+        botType === "buyerbot"   ? buyerOpts?.marketIntelBlock   :
+        botType === "listbot"    ? listOpts?.marketIntelBlock    :
+        antiqueOpts?.marketIntelBlock
       );
       const opts =
-        botType === "reconbot" ? reconOpts :
-        botType === "buyerbot" ? buyerOpts :
-        listOpts;
+        botType === "reconbot"   ? reconOpts   :
+        botType === "buyerbot"   ? buyerOpts   :
+        botType === "listbot"    ? listOpts    :
+        antiqueOpts;
       const specContextFailed =
-        botType === "reconbot" ? false :
-        botType === "buyerbot" ? buyerSpecContextFailed :
-        listSpecContextFailed;
+        botType === "reconbot"   ? false :
+        botType === "buyerbot"   ? buyerSpecContextFailed :
+        botType === "listbot"    ? listSpecContextFailed  :
+        antiqueSpecContextFailed;
       const marketIntelFailed =
-        botType === "reconbot" ? false :
-        botType === "buyerbot" ? buyerMarketIntelFailed :
-        listMarketIntelFailed;
+        botType === "reconbot"   ? false :
+        botType === "buyerbot"   ? buyerMarketIntelFailed :
+        botType === "listbot"    ? listMarketIntelFailed  :
+        antiqueMarketIntelFailed;
 
       await prisma.eventLog.create({
         data: {
@@ -787,22 +889,26 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
             // CMD-SKILLS-INFRA-A: skill pack telemetry. A/B testing
             // of skill pack versions is now possible from day one.
             // CMD-LISTBOT-MEGA-C: listbot added to ternary chain.
+            // CMD-ANTIQUEBOT-CORE-A: antiquebot added to ternary chain.
             skillPackVersion: (
-              botType === "reconbot" ? reconSkillPack?.version :
-              botType === "buyerbot" ? buyerSkillPack?.version :
-              botType === "listbot"  ? listSkillPack?.version  :
+              botType === "reconbot"   ? reconSkillPack?.version       :
+              botType === "buyerbot"   ? buyerSkillPack?.version       :
+              botType === "listbot"    ? listSkillPack?.version        :
+              botType === "antiquebot" ? antiquebotSkillPack?.version  :
               "v0"
             ),
             skillPackCount: (
-              botType === "reconbot" ? reconSkillPack?.skillNames.length ?? 0 :
-              botType === "buyerbot" ? buyerSkillPack?.skillNames.length ?? 0 :
-              botType === "listbot"  ? listSkillPack?.skillNames.length ?? 0 :
+              botType === "reconbot"   ? reconSkillPack?.skillNames.length ?? 0       :
+              botType === "buyerbot"   ? buyerSkillPack?.skillNames.length ?? 0       :
+              botType === "listbot"    ? listSkillPack?.skillNames.length ?? 0        :
+              botType === "antiquebot" ? antiquebotSkillPack?.skillNames.length ?? 0  :
               0
             ),
             skillPackChars: (
-              botType === "reconbot" ? reconSkillPack?.totalChars ?? 0 :
-              botType === "buyerbot" ? buyerSkillPack?.totalChars ?? 0 :
-              botType === "listbot"  ? listSkillPack?.totalChars ?? 0 :
+              botType === "reconbot"   ? reconSkillPack?.totalChars ?? 0       :
+              botType === "buyerbot"   ? buyerSkillPack?.totalChars ?? 0       :
+              botType === "listbot"    ? listSkillPack?.totalChars ?? 0        :
+              botType === "antiquebot" ? antiquebotSkillPack?.totalChars ?? 0  :
               0
             ),
           }),
