@@ -165,13 +165,15 @@ const photobot: BotScraperAllowlist = {
 const carbot: BotScraperAllowlist = {
   bot: "carbot",
   normalAllowlist: [
+    "builtin/ebay-browse-api", // CMD-SCRAPER-CEILINGS-D1: restored after C2 coverage gap (A1 fix)
     "builtin/craigslist-html",
     "fatihtahta/cars-com-scraper",
   ],
   megaBotAddOns: ["parseforge/bringatrailer-auctions-scraper"],
   strategy:
-    "Cars.com is the cheap workhorse on Normal. BringATrailer rolled into MegaBot " +
-    "for premium motorcars. Autotrader + Cargurus blocked (monthly subs).",
+    "eBay Browse API + Cars.com on Normal — eBay Motors covers the wide vehicle " +
+    "marketplace, Cars.com is the cheap deep-data workhorse. BringATrailer rolled " +
+    "into MegaBot for premium motorcars. Autotrader + Cargurus blocked (monthly subs).",
 };
 
 const collectiblesbot: BotScraperAllowlist = {

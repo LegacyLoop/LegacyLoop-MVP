@@ -16,6 +16,17 @@ import {
   getAdapterForSlug,
   type ScraperDispatchContext,
 } from "./scraper-dispatch-map";
+// CMD-SCRAPER-CEILINGS-D1: fire-and-forget telemetry logger
+import { logScraperUsage } from "./usage-logger";
+// CMD-SCRAPER-CEILINGS-D2: hard cost ceiling enforcement
+import { enforceCeilings } from "./cost-ceiling";
+// CMD-SCRAPER-ENRICHMENT-E: persistent ScraperComp knowledge graph.
+// queryEnrichmentCache powers cache-first dispatch (zero-cost cache
+// hits before any paid scraper fires). persistEnrichmentComps writes
+// every successful pull back to the graph so each scrape compounds.
+import { queryEnrichmentCache } from "./enrichment-cache";
+import { persistEnrichmentComps } from "./enrichment-writer";
+import { prisma } from "@/lib/db";
 // CMD-RECONBOT-API-B: Phase 0 eBay swap — real Browse API replaces
 // the Phase 1 HTML scraper at line 93. Fallback to scrapeEbaySold
 // when the rate-limit safety net trips or the Browse API errors.
@@ -158,6 +169,11 @@ export async function getMarketIntelligence(
   // of category regex. All 15 existing callers omit this and
   // get the legacy path byte-identical.
   botName?: BotName,
+  // CMD-SCRAPER-ENRICHMENT-E: optional itemId/userId attribution.
+  // Closes the 3-round carry-forward by threading attribution all
+  // the way to logScraperUsage + persistEnrichmentComps. Optional
+  // with default {} so existing callers compile unchanged.
+  attribution?: { itemId?: string | null; userId?: string | null },
 ): Promise<MarketIntelligence> {
   const cacheKey = `${category.toLowerCase()}:${itemName.toLowerCase().slice(0, 80)}:${sellerZip || ""}`;
   const cached = resultCache.get(cacheKey);
@@ -173,26 +189,229 @@ export async function getMarketIntelligence(
   // This is the NEW canonical path — Round C2 flips all 10 bot
   // routes to use it.
   if (botName) {
+    // ─── CMD-SCRAPER-ENRICHMENT-E: cache-first dispatch ───
+    // Before resolving any allowlist or running any paid scraper,
+    // check the persistent ScraperComp graph for fresh comps that
+    // match this query. A hit serves every bot equally for $0.
+    // Misses fall through to the live scraper dispatch below.
+    const cacheKeywords = itemName
+      .split(/\s+/)
+      .filter((w: string) => w.length > 3)
+      .slice(0, 5);
+    const cacheResult = await queryEnrichmentCache({
+      category: category ?? null,
+      keywords: cacheKeywords,
+      minResults: 5,
+    });
+
+    if (cacheResult.hit) {
+      // Telemetry: log the cache hit as a distinct slug so /admin
+      // can show cache hit rate alongside paid scraper spend.
+      logScraperUsage({
+        slug: "enrichment-cache",
+        botName,
+        tier: 0,
+        cost: 0,
+        success: true,
+        blocked: false,
+        compsReturned: cacheResult.comps.length,
+        durationMs: 0,
+        itemId: attribution?.itemId ?? null,
+        userId: attribution?.userId ?? null,
+      });
+
+      // Fire-and-forget hit count increment so /admin can rank
+      // most-reused comps. Errors swallowed to keep the read fast.
+      prisma.scraperComp
+        .updateMany({
+          where: { id: { in: cacheResult.comps.map((c) => c.id) } },
+          data: { hitCount: { increment: 1 } },
+        })
+        .catch(() => {});
+
+      // Map ScraperComp rows back to MarketComp shape so the
+      // result is byte-compatible with the live dispatch path.
+      const mappedComps: MarketComp[] = cacheResult.comps.map((c) => ({
+        item: c.title,
+        price: c.priceUsd ?? c.soldPrice ?? 0,
+        date: c.lastSeenAt.toISOString(),
+        platform: c.sourcePlatform,
+        condition: c.condition ?? "Unknown",
+        url: c.sourceUrl ?? undefined,
+        location: null,
+      }));
+
+      const cachePrices = mappedComps
+        .map((c) => c.price)
+        .filter((p) => p > 0)
+        .sort((a, b) => a - b);
+      const cacheMedian =
+        cachePrices.length > 0
+          ? cachePrices[Math.floor(cachePrices.length / 2)]
+          : 0;
+      const cacheLow = percentile(cachePrices, 0.25);
+      const cacheHigh = percentile(cachePrices, 0.75);
+
+      const cacheBotResult: MarketIntelligence = {
+        comps: deduplicateComps(mappedComps).sort((a, b) =>
+          a.date > b.date ? -1 : a.date < b.date ? 1 : 0,
+        ),
+        median: Math.round(cacheMedian),
+        low: Math.round(cacheLow),
+        high: Math.round(cacheHigh),
+        trend: cachePrices.length > 0 ? "Stable" : "Unknown",
+        confidence: Math.min(
+          0.85,
+          0.4 + mappedComps.length * 0.03 + cacheResult.contributingBots.length * 0.05,
+        ),
+        sources: ["enrichment-cache", ...cacheResult.contributingBots],
+        queriedAt: new Date().toISOString(),
+        compCount: mappedComps.length,
+        tiktokDemand: null,
+      };
+
+      resultCache.set(cacheKey, { result: cacheBotResult, builtAt: Date.now() });
+      console.log(
+        `[market-intel] [${botName}] enrichment-cache HIT: ${mappedComps.length} comps, contributors=${cacheResult.contributingBots.join(",") || "—"}, $0 cost`,
+      );
+      return cacheBotResult;
+    }
+
     const allowed = getResolvedScrapersForBot(botName, isMegaBot === true);
 
     const dispatchable = allowed.filter((entry) => {
-      if (entry.status !== "active") return false;
+      if (entry.status !== "active") {
+        // CMD-SCRAPER-CEILINGS-D1: log non-active drops (defensive —
+        // getResolvedScrapersForBot already filters, but we log here
+        // for any future direct caller).
+        // CMD-SCRAPER-ENRICHMENT-E: attribution threading
+        logScraperUsage({
+          botName,
+          slug: entry.slug,
+          tier: entry.tier,
+          cost: 0,
+          success: false,
+          blocked: true,
+          blockReason: entry.status,
+          durationMs: 0,
+          itemId: attribution?.itemId ?? null,
+          userId: attribution?.userId ?? null,
+        });
+        return false;
+      }
       if (BLOCKED_SLUGS.has(entry.slug.toLowerCase())) {
         console.warn(
           `[aggregator] [${botName}] slug ${entry.slug} is BLOCKED — skipped`,
         );
+        // CMD-SCRAPER-CEILINGS-D1: killswitch drop
+        // CMD-SCRAPER-ENRICHMENT-E: attribution threading
+        logScraperUsage({
+          botName,
+          slug: entry.slug,
+          tier: entry.tier,
+          cost: 0,
+          success: false,
+          blocked: true,
+          blockReason: "killswitch",
+          durationMs: 0,
+          itemId: attribution?.itemId ?? null,
+          userId: attribution?.userId ?? null,
+        });
         return false;
       }
       return true;
     });
 
+    // CMD-SCRAPER-CEILINGS-D2: hard cost ceilings
+    // Greedy cost-ascending enforcement keeps Tier 1 FREE always,
+    // includes the cheapest paid adapters first, and drops the
+    // rest with blockReason="ceiling". Tier 3 entries only fit
+    // when isMegaBot === true.
+    const ceilingResult = enforceCeilings(
+      dispatchable,
+      isMegaBot === true,
+    );
+    for (const drop of ceilingResult.dropped) {
+      // CMD-SCRAPER-ENRICHMENT-E: attribution threading
+      logScraperUsage({
+        botName,
+        slug: drop.entry.slug,
+        tier: drop.entry.tier,
+        cost: 0,
+        success: false,
+        blocked: true,
+        blockReason: "ceiling",
+        compsReturned: 0,
+        durationMs: 0,
+        itemId: attribution?.itemId ?? null,
+        userId: attribution?.userId ?? null,
+      });
+    }
+    console.log(
+      `[aggregator] [${botName}] ceilings: ${ceilingResult.allowed.length} allowed, ${ceilingResult.dropped.length} dropped, projected $${ceilingResult.projectedCost.toFixed(4)}`,
+    );
+    const effectiveEntries = ceilingResult.allowed;
+
     const warnedMissing = new Set<string>();
     const botAdapters: Array<() => Promise<ScraperResult>> = [];
     const ctx: ScraperDispatchContext = { itemName, category, sellerZip };
 
-    for (const entry of dispatchable) {
+    for (const entry of effectiveEntries) {
       if (entry.slug === "builtin/ebay-browse-api") {
-        botAdapters.push(() => runEbayBrowseApi(itemName));
+        // CMD-SCRAPER-CEILINGS-D1: wrap with timing + telemetry
+        // CMD-SCRAPER-ENRICHMENT-E: attribution + persist on success
+        botAdapters.push(async () => {
+          const startMs = Date.now();
+          try {
+            const result = await runEbayBrowseApi(itemName);
+            logScraperUsage({
+              botName,
+              slug: entry.slug,
+              tier: entry.tier,
+              cost: entry.estimatedCostPerCall ?? 0,
+              success: result?.success ?? false,
+              compsReturned: result?.comps?.length ?? 0,
+              durationMs: Date.now() - startMs,
+              itemId: attribution?.itemId ?? null,
+              userId: attribution?.userId ?? null,
+            });
+            // Persist successful pulls into the enrichment graph
+            if (result?.success && result.comps && result.comps.length > 0) {
+              persistEnrichmentComps(
+                result.comps.map((c) => ({
+                  slug: entry.slug,
+                  sourceUrl: c.url ?? null,
+                  sourcePlatform: c.platform ?? "eBay",
+                  title: c.item ?? "",
+                  priceUsd: c.price ?? null,
+                  soldPrice: null,
+                  condition: c.condition ?? null,
+                  category: category ?? null,
+                  keywords: itemName
+                    .split(/\s+/)
+                    .filter((w: string) => w.length > 3)
+                    .slice(0, 10),
+                  contributingBot: botName,
+                  sourceItemId: attribution?.itemId ?? null,
+                  sourceUserId: attribution?.userId ?? null,
+                })),
+              ).catch(() => {});
+            }
+            return result;
+          } catch (err) {
+            logScraperUsage({
+              botName,
+              slug: entry.slug,
+              tier: entry.tier,
+              cost: 0,
+              success: false,
+              durationMs: Date.now() - startMs,
+              itemId: attribution?.itemId ?? null,
+              userId: attribution?.userId ?? null,
+            });
+            throw err;
+          }
+        });
         continue;
       }
       const fn = getAdapterForSlug(entry.slug);
@@ -203,9 +422,78 @@ export async function getMarketIntelligence(
           );
           warnedMissing.add(entry.slug);
         }
+        // CMD-SCRAPER-CEILINGS-D1: log every missing-slug skip
+        // (not just the first) so D2 can ceiling-check accurately
+        // and D3 can show the real attempt count in /admin.
+        // CMD-SCRAPER-ENRICHMENT-E: attribution threading
+        logScraperUsage({
+          botName,
+          slug: entry.slug,
+          tier: entry.tier,
+          cost: 0,
+          success: false,
+          blocked: true,
+          blockReason: "missing",
+          durationMs: 0,
+          itemId: attribution?.itemId ?? null,
+          userId: attribution?.userId ?? null,
+        });
         continue;
       }
-      botAdapters.push(() => fn(ctx));
+      // CMD-SCRAPER-CEILINGS-D1: wrap with timing + telemetry
+      // CMD-SCRAPER-ENRICHMENT-E: attribution + persist on success
+      botAdapters.push(async () => {
+        const startMs = Date.now();
+        try {
+          const result = await fn(ctx);
+          logScraperUsage({
+            botName,
+            slug: entry.slug,
+            tier: entry.tier,
+            cost: entry.estimatedCostPerCall ?? 0,
+            success: result?.success ?? false,
+            compsReturned: result?.comps?.length ?? 0,
+            durationMs: Date.now() - startMs,
+            itemId: attribution?.itemId ?? null,
+            userId: attribution?.userId ?? null,
+          });
+          // Persist successful pulls into the enrichment graph
+          if (result?.success && result.comps && result.comps.length > 0) {
+            persistEnrichmentComps(
+              result.comps.map((c) => ({
+                slug: entry.slug,
+                sourceUrl: c.url ?? null,
+                sourcePlatform: c.platform ?? "unknown",
+                title: c.item ?? "",
+                priceUsd: c.price ?? null,
+                soldPrice: null,
+                condition: c.condition ?? null,
+                category: category ?? null,
+                keywords: itemName
+                  .split(/\s+/)
+                  .filter((w: string) => w.length > 3)
+                  .slice(0, 10),
+                contributingBot: botName,
+                sourceItemId: attribution?.itemId ?? null,
+                sourceUserId: attribution?.userId ?? null,
+              })),
+            ).catch(() => {});
+          }
+          return result;
+        } catch (err) {
+          logScraperUsage({
+            botName,
+            slug: entry.slug,
+            tier: entry.tier,
+            cost: 0,
+            success: false,
+            durationMs: Date.now() - startMs,
+            itemId: attribution?.itemId ?? null,
+            userId: attribution?.userId ?? null,
+          });
+          throw err;
+        }
+      });
     }
 
     console.log(

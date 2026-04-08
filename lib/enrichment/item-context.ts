@@ -37,6 +37,15 @@ export interface ItemEnrichmentContext {
   hasEnrichment: boolean;
   contextBlock: string;
   summary: EnrichmentSummary;
+  // CMD-SCRAPER-ENRICHMENT-E: light-touch preview of the persistent
+  // ScraperComp knowledge graph. Lets bots reason about whether to
+  // scrape fresh data or trust what's already cached. Optional —
+  // omitted on graph read failure (fail-open).
+  enrichmentCachePreview?: {
+    availableComps: number;
+    cachedCategories: string[];
+    freshestComp: Date | null;
+  };
 }
 
 export interface EnrichmentSummary {
@@ -232,12 +241,19 @@ export async function getItemEnrichmentContext(
       );
     }
 
+    // CMD-SCRAPER-ENRICHMENT-E: light-touch enrichment graph preview.
+    // Single count + groupBy + first row — fail-open if Prisma errors.
+    const enrichmentCachePreview = await loadEnrichmentPreview(
+      item.category ?? null,
+    );
+
     const result: ItemEnrichmentContext = {
       itemId,
       itemName: item.title ?? "Unknown Item",
       hasEnrichment,
       contextBlock,
       summary,
+      enrichmentCachePreview,
     };
 
     // ── Cache the result ──
@@ -260,6 +276,56 @@ function safeJson(raw: string | null | undefined): any {
     return JSON.parse(raw);
   } catch {
     return null;
+  }
+}
+
+// ─────────────────────────────────────────────
+// CMD-SCRAPER-ENRICHMENT-E: knowledge graph preview
+// ─────────────────────────────────────────────
+
+/**
+ * Light-touch read of the ScraperComp graph for the bot prompt
+ * context. Tells the bot how much fresh comp data is already
+ * available so it can reason about whether to ask for more.
+ *
+ * Fail-open: any DB error returns undefined and the field is
+ * omitted from the context. No bot is blocked by graph failures.
+ */
+async function loadEnrichmentPreview(
+  category: string | null,
+): Promise<ItemEnrichmentContext["enrichmentCachePreview"]> {
+  try {
+    const now = new Date();
+    const [count, freshest, categoryGroups] = await Promise.all([
+      prisma.scraperComp.count({
+        where: {
+          ttlExpiresAt: { gt: now },
+          ...(category ? { category } : {}),
+        },
+      }),
+      prisma.scraperComp.findFirst({
+        where: { ttlExpiresAt: { gt: now } },
+        orderBy: { lastSeenAt: "desc" },
+        select: { lastSeenAt: true },
+      }),
+      prisma.scraperComp.groupBy({
+        by: ["category"],
+        where: { ttlExpiresAt: { gt: now } },
+        _count: true,
+        orderBy: { _count: { category: "desc" } },
+        take: 5,
+      }),
+    ]);
+
+    return {
+      availableComps: count,
+      cachedCategories: categoryGroups
+        .map((g) => g.category)
+        .filter((c): c is string => c !== null),
+      freshestComp: freshest?.lastSeenAt ?? null,
+    };
+  } catch {
+    return undefined;
   }
 }
 

@@ -12,6 +12,15 @@ import { isAdmin } from "@/lib/constants/admin";
 // CMD-RECONBOT-SKILLS: Skills Status widget reads loader directly
 // at server-component render time (no API roundtrip).
 import { loadSkillPack } from "@/lib/bots/skill-loader";
+// CMD-SCRAPER-CEILINGS-D3: Scraper Economy tile imports
+import { SCRAPER_REGISTRY } from "@/lib/market-intelligence/scraper-tiers";
+import { DISPATCH_MAP_STATS } from "@/lib/market-intelligence/scraper-dispatch-map";
+import { ALLOWLIST_STATS } from "@/lib/market-intelligence/bot-scraper-allowlist";
+import { BLOCKED_ACTORS } from "@/lib/market-intelligence/blocked-actors";
+import { CEILINGS } from "@/lib/market-intelligence/cost-ceiling";
+import { getTelemetryDropStats } from "@/lib/market-intelligence/telemetry-drop-counter";
+// CMD-SCRAPER-ENRICHMENT-E: knowledge graph TTL config
+import { CATEGORY_TTLS_DAYS } from "@/lib/market-intelligence/enrichment-ttl";
 
 export default async function AdminPage() {
   const user = await authAdapter.getSession();
@@ -202,6 +211,197 @@ export default async function AdminPage() {
     const mo = Math.floor(d / 30);
     return `${mo}mo ago`;
   }
+
+  // CMD-SCRAPER-CEILINGS-D3: Scraper Economy parallel data fetches.
+  // All queries hit indexed columns from D1's @@index declarations.
+  // Wrapped in try/catch so a scraper-specific DB failure does not
+  // break the admin page render.
+  const scraperLast24h = new Date();
+  scraperLast24h.setHours(scraperLast24h.getHours() - 24);
+  const scraperTodayStart = new Date();
+  scraperTodayStart.setUTCHours(0, 0, 0, 0);
+
+  let scraperTotalCalls = 0;
+  let scraperCostAggSum = 0;
+  let scraperSuccessCount = 0;
+  let scraperBlockedCount = 0;
+  let scraperByBot: Array<{ botName: string; _count: number; _sum: { cost: number | null } }> = [];
+  let scraperTopSlugs: Array<{ slug: string; _count: number; _sum: { cost: number | null; compsReturned: number | null } }> = [];
+  let scraperBlockReasons: Array<{ blockReason: string | null; _count: number }> = [];
+  let scraperYoutubeToday = 0;
+  // CMD-SCRAPER-ENRICHMENT-E: Enrichment Network state
+  let enrichmentTotalComps = 0;
+  let enrichmentByPlatform: Array<{ sourcePlatform: string; _count: number }> = [];
+  let enrichmentByContributor: Array<{ firstContributedBy: string | null; _count: number }> = [];
+  let enrichmentTopHit: { title: string; hitCount: number; sourcePlatform: string } | null = null;
+  let enrichmentFreshest: { lastSeenAt: Date } | null = null;
+  let enrichmentCacheHits24h = 0;
+  let enrichmentScraperCalls24h = 0;
+  try {
+    const [
+      _totalCalls,
+      _costAgg,
+      _successCount,
+      _blockedCount,
+      _byBot,
+      _topSlugs,
+      _blockReasons,
+      _youtubeToday,
+      _enrichmentTotalComps,
+      _enrichmentByPlatform,
+      _enrichmentByContributor,
+      _enrichmentTopHit,
+      _enrichmentFreshest,
+      _enrichmentCacheHits24h,
+      _enrichmentScraperCalls24h,
+    ] = await Promise.all([
+      prisma.scraperUsageLog.count({
+        where: { createdAt: { gte: scraperLast24h } },
+      }),
+      prisma.scraperUsageLog.aggregate({
+        where: { createdAt: { gte: scraperLast24h }, success: true },
+        _sum: { cost: true },
+      }),
+      prisma.scraperUsageLog.count({
+        where: { createdAt: { gte: scraperLast24h }, success: true },
+      }),
+      prisma.scraperUsageLog.count({
+        where: { createdAt: { gte: scraperLast24h }, blocked: true },
+      }),
+      prisma.scraperUsageLog.groupBy({
+        by: ["botName"],
+        where: { createdAt: { gte: scraperLast24h } },
+        _count: true,
+        _sum: { cost: true },
+        orderBy: { _count: { botName: "desc" } },
+        take: 10,
+      }),
+      prisma.scraperUsageLog.groupBy({
+        by: ["slug"],
+        where: { createdAt: { gte: scraperLast24h } },
+        _count: true,
+        _sum: { cost: true, compsReturned: true },
+        orderBy: { _count: { slug: "desc" } },
+        take: 10,
+      }),
+      prisma.scraperUsageLog.groupBy({
+        by: ["blockReason"],
+        where: { createdAt: { gte: scraperLast24h }, blocked: true },
+        _count: true,
+      }),
+      prisma.scraperUsageLog.count({
+        where: {
+          slug: "streamers/youtube-scraper",
+          success: true,
+          createdAt: { gte: scraperTodayStart },
+        },
+      }),
+      // CMD-SCRAPER-ENRICHMENT-E: knowledge graph stats
+      prisma.scraperComp.count(),
+      prisma.scraperComp.groupBy({
+        by: ["sourcePlatform"],
+        _count: true,
+        orderBy: { _count: { sourcePlatform: "desc" } },
+        take: 5,
+      }),
+      prisma.scraperComp.groupBy({
+        by: ["firstContributedBy"],
+        _count: true,
+        orderBy: { _count: { firstContributedBy: "desc" } },
+        take: 5,
+      }),
+      prisma.scraperComp.findFirst({
+        orderBy: { hitCount: "desc" },
+        select: { title: true, hitCount: true, sourcePlatform: true },
+      }),
+      prisma.scraperComp.findFirst({
+        orderBy: { lastSeenAt: "desc" },
+        select: { lastSeenAt: true },
+      }),
+      prisma.scraperUsageLog.count({
+        where: {
+          slug: "enrichment-cache",
+          createdAt: { gte: scraperLast24h },
+        },
+      }),
+      prisma.scraperUsageLog.count({
+        where: {
+          slug: { not: "enrichment-cache" },
+          success: true,
+          createdAt: { gte: scraperLast24h },
+        },
+      }),
+    ]);
+    scraperTotalCalls = _totalCalls;
+    scraperCostAggSum = _costAgg._sum.cost ?? 0;
+    scraperSuccessCount = _successCount;
+    scraperBlockedCount = _blockedCount;
+    scraperByBot = _byBot.map((r: { botName: string; _count: number; _sum: { cost: number | null } }) => ({
+      botName: r.botName,
+      _count: r._count,
+      _sum: { cost: r._sum.cost },
+    }));
+    scraperTopSlugs = _topSlugs.map((r: { slug: string; _count: number; _sum: { cost: number | null; compsReturned: number | null } }) => ({
+      slug: r.slug,
+      _count: r._count,
+      _sum: { cost: r._sum.cost, compsReturned: r._sum.compsReturned },
+    }));
+    scraperBlockReasons = _blockReasons.map((r: { blockReason: string | null; _count: number }) => ({
+      blockReason: r.blockReason,
+      _count: r._count,
+    }));
+    scraperYoutubeToday = _youtubeToday;
+    // CMD-SCRAPER-ENRICHMENT-E
+    enrichmentTotalComps = _enrichmentTotalComps;
+    enrichmentByPlatform = _enrichmentByPlatform.map((r: { sourcePlatform: string; _count: number }) => ({
+      sourcePlatform: r.sourcePlatform,
+      _count: r._count,
+    }));
+    enrichmentByContributor = _enrichmentByContributor.map((r: { firstContributedBy: string | null; _count: number }) => ({
+      firstContributedBy: r.firstContributedBy,
+      _count: r._count,
+    }));
+    enrichmentTopHit = _enrichmentTopHit
+      ? {
+          title: _enrichmentTopHit.title,
+          hitCount: _enrichmentTopHit.hitCount,
+          sourcePlatform: _enrichmentTopHit.sourcePlatform,
+        }
+      : null;
+    enrichmentFreshest = _enrichmentFreshest
+      ? { lastSeenAt: _enrichmentFreshest.lastSeenAt }
+      : null;
+    enrichmentCacheHits24h = _enrichmentCacheHits24h;
+    enrichmentScraperCalls24h = _enrichmentScraperCalls24h;
+  } catch (e) {
+    console.warn("[admin] Scraper Economy queries failed (non-critical):", e);
+  }
+
+  const telemetryDropStats = getTelemetryDropStats();
+  const scraperTotalCost = Number(scraperCostAggSum.toFixed(4));
+  const scraperSuccessRate = scraperTotalCalls > 0
+    ? Math.round((scraperSuccessCount / scraperTotalCalls) * 100)
+    : 0;
+  const youtubeQuotaPercent = Math.round((scraperYoutubeToday / 80) * 100);
+  // CMD-SCRAPER-ENRICHMENT-E: derived knowledge graph metrics
+  const cacheHitRate24h =
+    enrichmentCacheHits24h + enrichmentScraperCalls24h > 0
+      ? Math.round(
+          (enrichmentCacheHits24h /
+            (enrichmentCacheHits24h + enrichmentScraperCalls24h)) *
+            100,
+        )
+      : 0;
+  const oldestLiveAge = enrichmentFreshest?.lastSeenAt
+    ? Math.floor(
+        (Date.now() - new Date(enrichmentFreshest.lastSeenAt).getTime()) /
+          86400000,
+      )
+    : 0;
+  const killswitchGlobalActive = process.env.APIFY_KILL_SWITCH === "true";
+  const registryActiveCount = SCRAPER_REGISTRY.filter((e) => e.status === "active").length;
+  const registryMaintCount = SCRAPER_REGISTRY.filter((e) => e.status === "maintenance").length;
+  const dispatchWiredCount = registryActiveCount - DISPATCH_MAP_STATS.missingActiveSlugs.length;
 
   // CMD-RECONBOT-SKILLS: per-bot Skill Pack status table.
   // Reads the loader synchronously (process-cached after first call
@@ -502,6 +702,448 @@ export default async function AdminPage() {
           </table>
         </div>
       </div>
+
+      {/* ═══ Scraper Economy (CMD-SCRAPER-CEILINGS-D3) ═══ */}
+      <section style={{
+        marginTop: "1.5rem",
+        background: "var(--bg-card-solid)",
+        border: "1px solid var(--border-card)",
+        borderRadius: "1.25rem",
+        padding: "1.5rem",
+      }}>
+        {/* Header */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "1.25rem",
+          flexWrap: "wrap",
+          gap: "0.75rem",
+        }}>
+          <h2 style={{
+            margin: 0,
+            color: "var(--accent)",
+            fontSize: "1.125rem",
+            fontWeight: 700,
+          }}>
+            🕸️ Scraper Economy
+          </h2>
+          <span style={{
+            color: "var(--text-muted)",
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+          }}>
+            Last 24h snapshot
+          </span>
+        </div>
+
+        {/* Headline stats grid */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+          gap: "1rem",
+          marginBottom: "1.5rem",
+        }}>
+          <div>
+            <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Calls</div>
+            <div style={{ color: "var(--text-primary)", fontSize: "1.6rem", fontWeight: 900, lineHeight: 1.1 }}>{scraperTotalCalls}</div>
+          </div>
+          <div>
+            <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Cost</div>
+            <div style={{ color: "var(--accent)", fontSize: "1.6rem", fontWeight: 900, lineHeight: 1.1 }}>${scraperTotalCost.toFixed(4)}</div>
+          </div>
+          <div>
+            <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Success Rate</div>
+            <div style={{
+              color: scraperTotalCalls === 0 ? "var(--text-muted)" : scraperSuccessRate >= 90 ? "#16a34a" : scraperSuccessRate >= 70 ? "#eab308" : "#ef4444",
+              fontSize: "1.6rem",
+              fontWeight: 900,
+              lineHeight: 1.1,
+            }}>{scraperTotalCalls === 0 ? "—" : `${scraperSuccessRate}%`}</div>
+          </div>
+          <div>
+            <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Blocked</div>
+            <div style={{
+              color: scraperBlockedCount === 0 ? "#16a34a" : "#eab308",
+              fontSize: "1.6rem",
+              fontWeight: 900,
+              lineHeight: 1.1,
+            }}>{scraperBlockedCount}</div>
+          </div>
+        </div>
+
+        {/* Per-bot breakdown */}
+        {scraperByBot.length > 0 && (
+          <div style={{ marginBottom: "1.25rem" }}>
+            <div style={{
+              color: "var(--text-secondary)",
+              fontSize: "0.78rem",
+              fontWeight: 700,
+              marginBottom: "0.5rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+            }}>Per-bot last 24h</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              {scraperByBot.map((row) => (
+                <div key={row.botName} style={{
+                  display: "grid",
+                  gridTemplateColumns: "2fr 1fr 1fr",
+                  gap: "0.75rem",
+                  padding: "0.5rem 0.75rem",
+                  background: "var(--ghost-bg)",
+                  borderRadius: "0.5rem",
+                  fontSize: "0.78rem",
+                }}>
+                  <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{row.botName}</span>
+                  <span style={{ color: "var(--text-muted)" }}>{row._count} calls</span>
+                  <span style={{ color: "var(--accent)", fontFamily: "monospace" }}>${(row._sum.cost ?? 0).toFixed(4)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Top slugs */}
+        {scraperTopSlugs.length > 0 && (
+          <div style={{ marginBottom: "1.25rem" }}>
+            <div style={{
+              color: "var(--text-secondary)",
+              fontSize: "0.78rem",
+              fontWeight: 700,
+              marginBottom: "0.5rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+            }}>Top scrapers (by call count)</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+              {scraperTopSlugs.slice(0, 5).map((row) => (
+                <div key={row.slug} style={{
+                  display: "grid",
+                  gridTemplateColumns: "3fr 1fr 1fr",
+                  gap: "0.75rem",
+                  padding: "0.5rem 0.75rem",
+                  background: "var(--ghost-bg)",
+                  borderRadius: "0.5rem",
+                  fontSize: "0.72rem",
+                }}>
+                  <span style={{ color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "monospace" }}>{row.slug}</span>
+                  <span style={{ color: "var(--text-muted)" }}>{row._count} calls</span>
+                  <span style={{ color: "var(--accent)", fontFamily: "monospace" }}>${(row._sum.cost ?? 0).toFixed(4)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Block reason breakdown */}
+        {scraperBlockReasons.length > 0 && (
+          <div style={{ marginBottom: "1.25rem" }}>
+            <div style={{
+              color: "var(--text-secondary)",
+              fontSize: "0.78rem",
+              fontWeight: 700,
+              marginBottom: "0.5rem",
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+            }}>Block reasons (last 24h)</div>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              {scraperBlockReasons.map((row) => {
+                const reason = row.blockReason ?? "unknown";
+                const accent = reason === "ceiling" ? "#eab308" : reason === "killswitch" ? "#ef4444" : reason === "missing" ? "#94a3b8" : "var(--text-secondary)";
+                const bg = reason === "ceiling" ? "rgba(234, 179, 8, 0.15)" : reason === "killswitch" ? "rgba(239, 68, 68, 0.15)" : "var(--ghost-bg)";
+                return (
+                  <span key={reason} style={{
+                    padding: "0.25rem 0.75rem",
+                    background: bg,
+                    color: accent,
+                    borderRadius: "9999px",
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                  }}>
+                    {reason}: {row._count}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* YouTube quota gauge */}
+        <div style={{ marginBottom: "1.25rem" }}>
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            color: "var(--text-secondary)",
+            fontSize: "0.78rem",
+            marginBottom: "0.4rem",
+          }}>
+            <span style={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>YouTube Data API quota (today UTC)</span>
+            <span style={{
+              color: youtubeQuotaPercent >= 90 ? "#ef4444" : youtubeQuotaPercent >= 70 ? "#eab308" : "var(--text-primary)",
+              fontWeight: 700,
+              fontFamily: "monospace",
+            }}>
+              {scraperYoutubeToday} / 80 ({youtubeQuotaPercent}%)
+            </span>
+          </div>
+          <div style={{
+            height: "8px",
+            background: "var(--ghost-bg)",
+            borderRadius: "9999px",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              height: "100%",
+              width: `${Math.min(100, youtubeQuotaPercent)}%`,
+              background: youtubeQuotaPercent >= 90 ? "#ef4444" : youtubeQuotaPercent >= 70 ? "#eab308" : "var(--accent)",
+              transition: "width 0.3s ease",
+            }} />
+          </div>
+        </div>
+
+        {/* System health footer */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+          gap: "1rem",
+          paddingTop: "1rem",
+          borderTop: "1px solid var(--border-default)",
+          fontSize: "0.72rem",
+        }}>
+          <div>
+            <div style={{ color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>Registry</div>
+            <div style={{ color: "var(--text-primary)", fontWeight: 600, marginTop: "0.15rem" }}>
+              {SCRAPER_REGISTRY.length} entries
+            </div>
+            <div style={{ color: "var(--text-muted)", marginTop: "0.1rem" }}>
+              {registryActiveCount} active · {registryMaintCount} maint.
+            </div>
+          </div>
+          <div>
+            <div style={{ color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>Dispatch Map</div>
+            <div style={{ color: "var(--text-primary)", fontWeight: 600, marginTop: "0.15rem" }}>
+              {dispatchWiredCount} wired
+            </div>
+            <div style={{
+              color: DISPATCH_MAP_STATS.missingActiveSlugs.length === 0 ? "#16a34a" : "#eab308",
+              marginTop: "0.1rem",
+            }}>
+              {DISPATCH_MAP_STATS.missingActiveSlugs.length} missing
+            </div>
+          </div>
+          <div>
+            <div style={{ color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>Allowlist</div>
+            <div style={{ color: "var(--text-primary)", fontWeight: 600, marginTop: "0.15rem" }}>
+              {ALLOWLIST_STATS.totalBots} bots
+            </div>
+            <div style={{ color: "var(--text-muted)", marginTop: "0.1rem" }}>
+              {ALLOWLIST_STATS.totalNormalSlots} normal · {ALLOWLIST_STATS.totalMegaBotSlots} mega
+            </div>
+          </div>
+          <div>
+            <div style={{ color: "var(--text-muted)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>Kill Switch</div>
+            <div style={{
+              color: killswitchGlobalActive ? "#ef4444" : "#16a34a",
+              fontWeight: 700,
+              marginTop: "0.15rem",
+            }}>
+              {killswitchGlobalActive ? "🔴 ACTIVE" : "🟢 off"}
+            </div>
+            <div style={{ color: "var(--text-muted)", marginTop: "0.1rem" }}>
+              {BLOCKED_ACTORS.length} hard-blocked
+            </div>
+          </div>
+        </div>
+
+        {/* Ceilings + telemetry footer */}
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "0.5rem",
+          marginTop: "1rem",
+          paddingTop: "1rem",
+          borderTop: "1px solid var(--border-default)",
+          fontSize: "0.7rem",
+          color: "var(--text-muted)",
+        }}>
+          <span>
+            Ceilings: Normal ${CEILINGS.normalMax} · MegaBot +${CEILINGS.megaBotAddOnMax} · Combined ${CEILINGS.combinedMax}
+          </span>
+          <span style={{
+            color: telemetryDropStats.sinceBoot > 0 ? "#eab308" : "var(--text-muted)",
+            fontWeight: telemetryDropStats.sinceBoot > 0 ? 700 : 500,
+          }}>
+            Telemetry drops since boot: {telemetryDropStats.sinceBoot}
+          </span>
+        </div>
+
+        {/* ─── Enrichment Network (CMD-SCRAPER-ENRICHMENT-E) ─── */}
+        <div style={{
+          marginTop: "1.5rem",
+          paddingTop: "1.5rem",
+          borderTop: "1px solid var(--border-default)",
+        }}>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: "1rem",
+            flexWrap: "wrap",
+            gap: "0.5rem",
+          }}>
+            <h4 style={{
+              margin: 0,
+              color: "var(--accent)",
+              fontSize: "1rem",
+              fontWeight: 600,
+            }}>
+              🧠 Enrichment Network
+            </h4>
+            <span style={{
+              color: "var(--text-muted)",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+            }}>
+              Knowledge graph · {Object.keys(CATEGORY_TTLS_DAYS).length - 1} TTL bands
+            </span>
+          </div>
+
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+            gap: "1rem",
+            marginBottom: "1rem",
+          }}>
+            <div>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Total Comps</div>
+              <div style={{ color: "var(--text-primary)", fontSize: "1.6rem", fontWeight: 900, lineHeight: 1.1 }}>{enrichmentTotalComps}</div>
+            </div>
+            <div>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Cache Hit Rate (24h)</div>
+              <div style={{
+                color: cacheHitRate24h >= 50 ? "#16a34a" : cacheHitRate24h >= 25 ? "#eab308" : "var(--text-primary)",
+                fontSize: "1.6rem",
+                fontWeight: 900,
+                lineHeight: 1.1,
+              }}>{cacheHitRate24h}%</div>
+            </div>
+            <div>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Cache Hits (24h)</div>
+              <div style={{ color: "var(--accent)", fontSize: "1.6rem", fontWeight: 900, lineHeight: 1.1 }}>{enrichmentCacheHits24h}</div>
+            </div>
+            <div>
+              <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Freshest Comp</div>
+              <div style={{ color: "var(--text-primary)", fontSize: "1.6rem", fontWeight: 900, lineHeight: 1.1 }}>
+                {enrichmentFreshest?.lastSeenAt ? `${oldestLiveAge}d` : "—"}
+              </div>
+            </div>
+          </div>
+
+          {enrichmentTopHit && enrichmentTopHit.hitCount > 0 && (
+            <div style={{
+              padding: "0.6rem 0.85rem",
+              background: "var(--accent-dim)",
+              border: "1px solid var(--accent-border)",
+              borderRadius: "0.6rem",
+              fontSize: "0.75rem",
+              color: "var(--text-secondary)",
+              marginBottom: "1rem",
+            }}>
+              🔥 Most-reused comp: <strong style={{ color: "var(--text-primary)" }}>{enrichmentTopHit.title.slice(0, 60)}{enrichmentTopHit.title.length > 60 ? "…" : ""}</strong>
+              {" "}from <span style={{ color: "var(--accent)", fontWeight: 700 }}>{enrichmentTopHit.sourcePlatform}</span>
+              {" "}— served <strong style={{ color: "var(--text-primary)" }}>{enrichmentTopHit.hitCount}</strong> bot scan{enrichmentTopHit.hitCount === 1 ? "" : "s"}
+            </div>
+          )}
+
+          {enrichmentByContributor.length > 0 && (
+            <div style={{ marginBottom: "1rem" }}>
+              <div style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                marginBottom: "0.5rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}>Top Contributing Bots</div>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                {enrichmentByContributor.map((row) => (
+                  <span key={row.firstContributedBy ?? "unknown"} style={{
+                    padding: "0.25rem 0.75rem",
+                    background: "var(--ghost-bg)",
+                    color: "var(--text-secondary)",
+                    borderRadius: "9999px",
+                    fontSize: "0.72rem",
+                    fontWeight: 600,
+                  }}>
+                    {row.firstContributedBy ?? "unknown"}: {row._count}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {enrichmentByPlatform.length > 0 && (
+            <div>
+              <div style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.72rem",
+                fontWeight: 700,
+                marginBottom: "0.5rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+              }}>Platforms in Graph</div>
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                {enrichmentByPlatform.map((row) => (
+                  <span key={row.sourcePlatform} style={{
+                    padding: "0.25rem 0.75rem",
+                    background: "var(--accent-dim)",
+                    color: "var(--accent)",
+                    borderRadius: "9999px",
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                  }}>
+                    {row.sourcePlatform}: {row._count}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {enrichmentTotalComps === 0 && (
+            <div style={{
+              padding: "0.75rem",
+              background: "var(--ghost-bg)",
+              borderRadius: "0.5rem",
+              color: "var(--text-muted)",
+              fontSize: "0.78rem",
+              textAlign: "center",
+              marginTop: "0.5rem",
+            }}>
+              Knowledge graph empty. Comps populate after the first scraper run post-E.
+            </div>
+          )}
+        </div>
+
+        {/* Empty state */}
+        {scraperTotalCalls === 0 && (
+          <div style={{
+            marginTop: "1rem",
+            padding: "1rem",
+            background: "var(--ghost-bg)",
+            borderRadius: "0.5rem",
+            color: "var(--text-muted)",
+            fontSize: "0.82rem",
+            textAlign: "center",
+          }}>
+            No scraper activity in the last 24h. Data will populate after the next bot scan.
+          </div>
+        )}
+      </section>
 
       {/* ═══ Bot Accuracy Leaderboard ═══ */}
       <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "12px", padding: "1.5rem", marginTop: "1.5rem" }}>

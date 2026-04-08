@@ -94,3 +94,42 @@ export function buildBlockedScraperResult(actorSlug: string) {
       : `Actor ${actorSlug} is blocked by the kill switch.`,
   };
 }
+
+/**
+ * Kill switch check WITH a bypass parameter for controlled
+ * re-enable (Tier 5 AI generators behind explicit credit gates).
+ *
+ * ⚠️ CRITICAL — bypass=true completely disables the kill switch
+ * for this call. ONLY use from PhotoBot/VideoBot Tier 5
+ * AI-generator code paths that have already deducted user credits.
+ * NEVER use from general scraper dispatch. There is no second
+ * safety net behind this — the bypass is the entire safety
+ * boundary.
+ *
+ * This is the API surface for CMD-PHOTOBOT-CORE-A and
+ * CMD-VIDEOBOT-CORE-A to eventually wire the Tier 5 generators
+ * (AI Video Ads, AI Voiceover, Social Trend AI, AI Ad Music
+ * Factory) behind explicit user credit gates. Each future
+ * caller must:
+ *   1. Authenticate the user
+ *   2. Check + deduct credits BEFORE this call
+ *   3. Pass bypass=true ONLY after successful credit deduction
+ *   4. Refund credits on adapter failure
+ *
+ * Added by CMD-SCRAPER-CEILINGS-D2. D2 does NOT add any
+ * bypass=true call sites — only the API surface. The first
+ * legitimate consumer ships in a future bot CORE round.
+ */
+export function checkActorKillSwitchWithBypass(
+  slug: string,
+  bypass: boolean,
+): KillSwitchResult {
+  if (bypass) {
+    return {
+      blocked: false,
+      reason: "bypassed",
+      actorSlug: slug,
+    };
+  }
+  return checkActorKillSwitch(slug);
+}

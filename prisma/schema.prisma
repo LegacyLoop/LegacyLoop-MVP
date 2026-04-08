@@ -1113,3 +1113,67 @@ model ListingPublish {
   item         Item      @relation(fields: [itemId], references: [id])
   user         User      @relation(fields: [userId], references: [id])
 }
+
+// CMD-SCRAPER-CEILINGS-D1: scraper dispatch telemetry.
+// Every per-bot allowlist dispatch attempt writes one row here
+// via lib/market-intelligence/usage-logger.ts (fire-and-forget).
+// D2 queries this table to enforce cost ceilings + YouTube quota.
+// D3 surfaces aggregates in /admin.
+model ScraperUsageLog {
+  id            String   @id @default(cuid())
+  botName       String
+  slug          String
+  tier          Int
+  cost          Float    @default(0)
+  success       Boolean
+  blocked       Boolean  @default(false)
+  blockReason   String?
+  compsReturned Int      @default(0)
+  durationMs    Int      @default(0)
+  itemId        String?
+  userId        String?
+  createdAt     DateTime @default(now())
+
+  @@index([botName, createdAt])
+  @@index([slug, createdAt])
+  @@index([blocked, createdAt])
+  @@index([userId, createdAt])
+}
+
+// CMD-SCRAPER-ENRICHMENT-E: persistent comp knowledge graph.
+// Every successful scraper pull is persisted here so future scans
+// of similar items can be served from cache instead of paying for
+// the same data twice. JSON-as-string columns match the existing
+// SQLite pattern (e.g., ReconBot.latestCompetitorsJson). Per-
+// category TTL is computed at write time via ttlForCategory.
+model ScraperComp {
+  id                  String   @id @default(cuid())
+  slug                String
+  sourceUrl           String?
+  sourcePlatform      String
+  title               String
+  description         String?
+  priceUsd            Float?
+  soldPrice           Float?
+  condition           String?
+  category            String?
+  keywordsJson        String?
+  imageUrlsJson       String?
+  metadataJson        String?
+  firstSeenAt         DateTime @default(now())
+  lastSeenAt          DateTime @updatedAt
+  ttlExpiresAt        DateTime
+  hitCount            Int      @default(0)
+  contributorBotsJson String?
+  firstContributedBy  String?
+  qualityScore        Float?
+  sourceItemId        String?
+  sourceUserId        String?
+
+  @@unique([slug, sourceUrl])
+  @@index([category, ttlExpiresAt])
+  @@index([slug, firstSeenAt])
+  @@index([sourcePlatform, soldPrice])
+  @@index([sourceItemId])
+  @@index([sourceUserId])
+}

@@ -10,6 +10,8 @@
 // per video, so 10 videos = 10 units extra per search).
 
 import type { ScraperResult } from "../types";
+// CMD-SCRAPER-CEILINGS-D2: prisma client for ScraperUsageLog quota count
+import { prisma } from "@/lib/db";
 
 export interface YouTubeResult {
   success: boolean;
@@ -27,6 +29,46 @@ const EMPTY_RESULT: YouTubeResult = {
 
 let warnedNoKey = false;
 
+// CMD-SCRAPER-CEILINGS-D2: YouTube Data API v3 quota counter.
+// Free tier ~10,000 units/day; search.list costs 100 units per call,
+// so the practical ceiling is ~100 calls/day. We hard-cap at 80
+// (20% buffer) to leave room for the videos.list call a future round
+// may add for view counts.
+const YOUTUBE_DAILY_CAP = 80;
+const QUOTA_CACHE_TTL_MS = 60_000; // 1 minute in-process cache
+let quotaCache: { count: number; expiresAt: number } | null = null;
+
+/**
+ * Returns the count of successful YouTube Data API v3 calls so far
+ * today (UTC). Reads from the in-process cache if fresh, otherwise
+ * queries ScraperUsageLog. Fail-open: any DB error returns 0 so
+ * YouTube calls still succeed during transient outages.
+ */
+async function getYoutubeQuotaUsedToday(): Promise<number> {
+  const now = Date.now();
+  if (quotaCache && quotaCache.expiresAt > now) {
+    return quotaCache.count;
+  }
+
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+
+  try {
+    const count = await prisma.scraperUsageLog.count({
+      where: {
+        slug: "streamers/youtube-scraper",
+        success: true,
+        createdAt: { gte: todayStart },
+      },
+    });
+    quotaCache = { count, expiresAt: now + QUOTA_CACHE_TTL_MS };
+    return count;
+  } catch {
+    // Fail open on DB error — YouTube calls still succeed.
+    return 0;
+  }
+}
+
 export async function scrapeYoutube(query: string, _category?: string): Promise<YouTubeResult> {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!apiKey || apiKey.length < 10) {
@@ -40,6 +82,18 @@ export async function scrapeYoutube(query: string, _category?: string): Promise<
   }
 
   if (!query || query.trim().length === 0) return EMPTY_RESULT;
+
+  // CMD-SCRAPER-CEILINGS-D2: daily quota soft-cap. Skip the API
+  // call entirely once we hit YOUTUBE_DAILY_CAP successful calls
+  // for the UTC day. Aggregator-level logScraperUsage will record
+  // the upstream skip; this gate just stops the network call.
+  const quotaUsed = await getYoutubeQuotaUsedToday();
+  if (quotaUsed >= YOUTUBE_DAILY_CAP) {
+    console.warn(
+      `[market-intel] YouTube daily quota cap hit (${quotaUsed}/${YOUTUBE_DAILY_CAP}) — returning empty`,
+    );
+    return EMPTY_RESULT;
+  }
 
   try {
     const params = new URLSearchParams({
