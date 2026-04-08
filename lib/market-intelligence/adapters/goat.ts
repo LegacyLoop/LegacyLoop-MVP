@@ -1,8 +1,19 @@
 import { runApifyTask } from "./apify-client";
 import type { ScraperResult, MarketComp } from "../types";
 import { parsePrice, parseDate } from "../scraper-base";
+import {
+  checkActorKillSwitch,
+  buildBlockedScraperResult,
+} from "../scraper-killswitch";
 
 export async function scrapeGoat(query: string): Promise<ScraperResult> {
+  // ─── KILL SWITCH GUARD (CMD-SCRAPER-KILLSWITCH-A) ───
+  // Goat Product Search Scraper is monthly-subscription only ($15/mo + usage).
+  const __ks = checkActorKillSwitch("ecomscrape/goat-product-search-scraper");
+  if (__ks.blocked) {
+    return buildBlockedScraperResult("ecomscrape/goat-product-search-scraper") as any;
+  }
+  // ───────────────────────────────────────────────────
   const taskId = process.env.APIFY_TASK_GOAT;
   if (!taskId) return { success: false, comps: [], source: "GOAT" };
 

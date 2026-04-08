@@ -1,8 +1,21 @@
 import { runApifyTask } from "./apify-client";
 import type { ScraperResult, MarketComp } from "../types";
 import { parsePrice, parseDate } from "../scraper-base";
+import {
+  checkActorKillSwitch,
+  buildBlockedScraperResult,
+} from "../scraper-killswitch";
 
 export async function scrapeSothebys(query: string): Promise<ScraperResult> {
+  // ─── KILL SWITCH GUARD (CMD-SCRAPER-KILLSWITCH-A) ───
+  // Sotheby's Search Scraper is dangerous_cost — pay-per-usage with
+  // UNKNOWN ceiling. Hard-blocked until a per-bot allowlist + cost
+  // ceiling is wired in CMD-SCRAPER-CEILINGS-D.
+  const __ks = checkActorKillSwitch("powerai/sothebys-search-scraper");
+  if (__ks.blocked) {
+    return buildBlockedScraperResult("powerai/sothebys-search-scraper") as any;
+  }
+  // ───────────────────────────────────────────────────
   const taskId = process.env.APIFY_TASK_SOTHEBYS;
   if (!taskId) return { success: false, comps: [], source: "Sotheby's" };
 

@@ -1,6 +1,10 @@
 import { runApifyTask } from "./apify-client";
 import type { ScraperResult, MarketComp } from "../types";
 import { parsePrice } from "../scraper-base";
+import {
+  checkActorKillSwitch,
+  buildBlockedScraperResult,
+} from "../scraper-killswitch";
 
 export interface EtsyTopListing {
   title: string;
@@ -13,6 +17,13 @@ export interface EtsyTopListing {
 }
 
 export async function scrapeEtsy(query: string): Promise<ScraperResult & { topListings: EtsyTopListing[] }> {
+  // ─── KILL SWITCH GUARD (CMD-SCRAPER-KILLSWITCH-A) ───
+  // Etsy Scraper is monthly-subscription only ($30/mo + usage).
+  const __ks = checkActorKillSwitch("epctex/etsy-scraper");
+  if (__ks.blocked) {
+    return buildBlockedScraperResult("epctex/etsy-scraper") as any;
+  }
+  // ───────────────────────────────────────────────────
   const taskId = process.env.APIFY_TASK_ETSY;
   if (!taskId) return { success: false, comps: [], topListings: [], source: "Etsy" };
 

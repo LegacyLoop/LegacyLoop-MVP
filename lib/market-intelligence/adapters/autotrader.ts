@@ -1,8 +1,19 @@
 import { runApifyTask } from "./apify-client";
 import type { ScraperResult, MarketComp } from "../types";
 import { parsePrice, parseDate } from "../scraper-base";
+import {
+  checkActorKillSwitch,
+  buildBlockedScraperResult,
+} from "../scraper-killswitch";
 
 export async function scrapeAutoTrader(query: string, zip?: string): Promise<ScraperResult> {
+  // ─── KILL SWITCH GUARD (CMD-SCRAPER-KILLSWITCH-A) ───
+  // Autotrader Scraper is monthly-subscription only ($15/mo + usage).
+  const __ks = checkActorKillSwitch("epctex/autotrader-scraper");
+  if (__ks.blocked) {
+    return buildBlockedScraperResult("epctex/autotrader-scraper") as any;
+  }
+  // ───────────────────────────────────────────────────
   const taskId = process.env.APIFY_TASK_AUTOTRADER;
   if (!taskId) return { success: false, comps: [], source: "AutoTrader" };
 

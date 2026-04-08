@@ -1,8 +1,19 @@
 import { runApifyTask } from "./apify-client";
 import type { ScraperResult, MarketComp } from "../types";
 import { parsePrice, parseDate } from "../scraper-base";
+import {
+  checkActorKillSwitch,
+  buildBlockedScraperResult,
+} from "../scraper-killswitch";
 
 export async function scrapeCarGurus(query: string, zip?: string): Promise<ScraperResult> {
+  // ─── KILL SWITCH GUARD (CMD-SCRAPER-KILLSWITCH-A) ───
+  // Cargurus Scraper is monthly-subscription only ($29/mo + usage).
+  const __ks = checkActorKillSwitch("lexis-solutions/cargurus-com");
+  if (__ks.blocked) {
+    return buildBlockedScraperResult("lexis-solutions/cargurus-com") as any;
+  }
+  // ───────────────────────────────────────────────────
   const taskId = process.env.APIFY_TASK_CARGURUS;
   if (!taskId) return { success: false, comps: [], source: "CarGurus" };
 
