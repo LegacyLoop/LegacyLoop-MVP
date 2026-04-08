@@ -13,8 +13,11 @@ import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { scrapeRubyLane } from "@/lib/market-intelligence/adapters/ruby-lane";
 import { scrapeShopGoodwill } from "@/lib/market-intelligence/adapters/shop-goodwill";
 import { scrapeLiveAuctioneers } from "@/lib/market-intelligence/adapters/live-auctioneers";
-import fs from "fs";
-import path from "path";
+// CMD-ANTIQUEBOT-CORE-A: hybrid router + spec context + skill pack
+import { routeAntiqueBotHybrid } from "@/lib/adapters/bot-ai-router";
+import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
+import { summarizeSpecContext } from "@/lib/bots/spec-guards";
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -133,6 +136,21 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "antiquebot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
+    // CMD-ANTIQUEBOT-CORE-A: skill pack + spec context (gap closure).
+    // skill-loader is process-cached → zero cost on warm calls.
+    // buildItemSpecContext reads live Item fields (saleZip, saleMethod,
+    // shippingDifficulty, weightLbs, etc.) and produces a prompt-ready
+    // block + a structured summary persisted in ANTIQUEBOT_RUN.
+    const skillPack = loadSkillPack("antiquebot");
+    const specContext = await buildItemSpecContext(item.id, { item, user });
+    const specSummary = summarizeSpecContext(specContext);
+    const skillPackPrefix = skillPack.systemPromptBlock
+      ? skillPack.systemPromptBlock + "\n\n"
+      : "";
+    const specPromptPrefix = specContext.promptBlock
+      ? specContext.promptBlock + "\n\n"
+      : "";
+
     // ── REAL AUCTION & MARKET DATA ──
     let auctionContext = "";
     try {
@@ -188,7 +206,10 @@ ${la.comps.slice(0, 5).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${
     );
 
     // ── ANTIQUEBOT DEEP-DIVE PROMPT ──
-    const systemPrompt = enrichmentPrefix + auctionContext + webEnrichment + `You are a world-class antique appraiser, auction specialist, and collector-market expert with 30+ years of experience in fine antiques, collectibles, decorative arts, and estate appraisal. You have been given an item that has ALREADY been identified and flagged as a potential antique by another AI.
+    // CMD-ANTIQUEBOT-CORE-A: skill pack + spec context prepended to
+    // the existing prompt assembly. Order: skills → seller spec → cross-bot
+    // enrichment → auction comps → web pre-pass → core appraisal prompt.
+    const systemPrompt = skillPackPrefix + specPromptPrefix + enrichmentPrefix + auctionContext + webEnrichment + `You are a world-class antique appraiser, auction specialist, and collector-market expert with 30+ years of experience in fine antiques, collectibles, decorative arts, and estate appraisal. You have been given an item that has ALREADY been identified and flagged as a potential antique by another AI.
 
 Your ONLY job is ANTIQUE DEEP-DIVE — authentication, provenance, history, collector market, and selling strategy.
 
@@ -388,59 +409,107 @@ IMPORTANT:
 - Project 5-year and 10-year value with specific reasoning.`;
 
     let antiquebotResult: any;
+    // CMD-ANTIQUEBOT-CORE-A: track hybrid run for telemetry. Hoisted
+    // so the post-processing block + ANTIQUEBOT_RUN write below have
+    // access to the merge strategy + confidence + cost data.
+    let hybridRun: Awaited<ReturnType<typeof routeAntiqueBotHybrid>> | null =
+      null;
 
     if (openai) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60_000);
       try {
-        // Build real image content for Vision (antiques NEED visual inspection)
-        const imageContent: any[] = [];
-        for (const photo of item.photos.slice(0, 4)) {
-          try {
-            const clean = photo.filePath.startsWith("/") ? photo.filePath.slice(1) : photo.filePath;
-            const absPath = path.join(process.cwd(), "public", clean);
-            if (fs.existsSync(absPath) && fs.statSync(absPath).size <= 10 * 1024 * 1024) {
-              const base64 = fs.readFileSync(absPath, "base64");
-              const ext = path.extname(absPath).toLowerCase();
-              const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
-              imageContent.push({ type: "input_image", image_url: `data:${mime};base64,${base64}`, detail: "high" });
-            }
-          } catch { /* skip unreadable */ }
+        // CMD-ANTIQUEBOT-CORE-A: route through routeAntiqueBotHybrid.
+        // Claude primary (museum-grade reasoning) + OpenAI secondary
+        // (fires when authentication.confidence < 80). photoUrls maps
+        // the item's photo file paths from the included relation.
+        const photoUrls = item.photos.slice(0, 4).map((p: any) => p.filePath);
+        if (photoUrls.length === 0) {
+          return NextResponse.json(
+            { error: "AntiqueBot requires at least one photo for visual inspection." },
+            { status: 400 },
+          );
         }
 
-        const userContent: any[] = [
-          { type: "input_text", text: `Perform a deep antique analysis.${imageContent.length > 0 ? ` ${imageContent.length} photo(s) attached — examine maker marks, patina, construction, material, wear patterns, and authenticity indicators.` : " No photos — assess from item data only."} Return ONLY valid JSON.` },
-          ...imageContent,
-        ];
+        hybridRun = await routeAntiqueBotHybrid({
+          itemId: item.id,
+          photoPath: photoUrls,
+          appraisalPrompt: systemPrompt,
+          authConfidenceThreshold: 80,
+          // ListBot/BuyerBot/ReconBot use HYBRID_DEFAULTS (60s/16k);
+          // AntiqueBot widens to 90s + 16k tokens to give Claude room
+          // for the 12-section appraisal schema.
+          timeoutMs: 90_000,
+          maxTokens: 16_384,
+        });
 
-        const response = await openai.responses.create({
-          model: "gpt-4o",
-          input: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userContent },
-          ],
-          max_output_tokens: 6000,
-        }, { signal: controller.signal });
-
-        const text = typeof response.output === "string"
-          ? response.output
-          : response.output_text || JSON.stringify(response.output);
-
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          antiquebotResult = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("No JSON in response");
+        if (hybridRun.degraded || !hybridRun.mergedResult) {
+          console.error(
+            "[antiquebot] hybrid degraded:",
+            hybridRun.error ?? "all providers failed",
+          );
+          return NextResponse.json(
+            {
+              error: `AntiqueBot AI analysis failed: ${hybridRun.error ?? "all providers failed"}`,
+            },
+            { status: 422 },
+          );
         }
+
+        antiquebotResult = hybridRun.mergedResult;
       } catch (aiErr: any) {
-        console.error("[antiquebot] OpenAI error:", aiErr);
-        return NextResponse.json({ error: `AntiqueBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` }, { status: 422 });
-      } finally {
-        clearTimeout(timeoutId);
+        console.error("[antiquebot] router error:", aiErr);
+        return NextResponse.json(
+          { error: `AntiqueBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` },
+          { status: 422 },
+        );
       }
     } else {
       antiquebotResult = generateDemoResult(itemName, category, material, era, style, maker, markings, conditionScore, conditionLabel, estimatedLow, estimatedMid, estimatedHigh, auctionLow, auctionHigh);
       antiquebotResult._isDemo = true;
+    }
+
+    // CMD-ANTIQUEBOT-CORE-A: confidence_bands post-processing.
+    // Sizes a recommended price range based on the AI's authentication
+    // confidence — narrow (±10%), standard (±15%), or wide (±40%). Gives
+    // sellers a calibrated range instead of false-precision point
+    // estimates. The confidence_bands payload nests under
+    // valuation.auction_estimate so the existing UI tree finds it
+    // alongside the auction range. Computed AFTER the AI returns
+    // and runs in BOTH live and demo paths so the UI always has a
+    // confidence_bands record to display.
+    if (antiquebotResult?.valuation?.auction_estimate) {
+      const ae = antiquebotResult.valuation.auction_estimate;
+      const aeLow = typeof ae.low === "number" ? ae.low : 0;
+      const aeHigh = typeof ae.high === "number" ? ae.high : 0;
+      const confidence =
+        typeof antiquebotResult?.authentication?.confidence === "number"
+          ? antiquebotResult.authentication.confidence
+          : 50;
+      const median = (aeLow + aeHigh) / 2;
+
+      ae.median = Math.round(median);
+      ae.confidence_bands = {
+        narrow: {
+          low: Math.round(median * 0.9),
+          high: Math.round(median * 1.1),
+        },
+        standard: {
+          low: Math.round(median * 0.85),
+          high: Math.round(median * 1.15),
+        },
+        wide: {
+          low: Math.round(median * 0.6),
+          high: Math.round(median * 1.4),
+        },
+      };
+      ae.confidence_score = confidence;
+      ae.recommended_band =
+        confidence >= 90 ? "narrow" : confidence >= 70 ? "standard" : "wide";
+
+      // Diagnostic log so the production audit can confirm
+      // confidence_bands fired and which band tier was recommended.
+      console.log(
+        `[antiquebot] confidence_bands recommended=${ae.recommended_band} (auth confidence ${confidence}%) — median=$${ae.median}`,
+      );
     }
 
     // Validate required fields
@@ -466,13 +535,44 @@ IMPORTANT:
       },
     });
 
-    await prisma.eventLog.create({
-      data: {
-        itemId,
-        eventType: "ANTIQUEBOT_RUN",
-        payload: JSON.stringify({ userId: user.id, timestamp: new Date().toISOString() }),
-      },
-    });
+    // CMD-ANTIQUEBOT-CORE-A: extended ANTIQUEBOT_RUN telemetry.
+    // Adds skill pack version/count/chars (parity with LISTBOT_RUN /
+    // BUYERBOT_RUN / RECONBOT_RUN), spec context summary, hybrid
+    // routing telemetry (mergedStrategy, primaryConfidence,
+    // secondaryTriggered), and aggregated cost + token metrics.
+    // Wrapped in try/catch so a logging failure cannot block the
+    // user-facing response.
+    try {
+      await prisma.eventLog.create({
+        data: {
+          itemId,
+          eventType: "ANTIQUEBOT_RUN",
+          payload: JSON.stringify({
+            userId: user.id,
+            timestamp: new Date().toISOString(),
+            // Skill pack telemetry (Round B will populate antiquebot/*.md
+            // packs; Round A surfaces version metadata and the count of
+            // shared packs that load on day one).
+            skillPackVersion: skillPack.version,
+            skillPackCount: skillPack.skillNames.length,
+            skillPackChars: skillPack.totalChars,
+            // Spec context summary (Constitution audit)
+            specSummary,
+            // Hybrid router telemetry (live runs only — demo path is null)
+            mergedStrategy: hybridRun?.mergedStrategy ?? null,
+            primaryConfidence: hybridRun?.primaryConfidence ?? null,
+            secondaryTriggered: hybridRun?.secondaryTriggered ?? false,
+            actualCostUsd: hybridRun?.actualCostUsd ?? 0,
+            costUsd: hybridRun?.costUsd ?? 0,
+            latencyMs: hybridRun?.latencyMs ?? 0,
+            tokens: hybridRun?.tokens ?? { input: 0, output: 0, total: 0 },
+            isDemo: !!antiquebotResult?._isDemo,
+          }),
+        },
+      });
+    } catch (logErr) {
+      console.warn("[antiquebot] ANTIQUEBOT_RUN log write failed (non-critical):", logErr);
+    }
 
     // Fire-and-forget: PriceSnapshot from antique valuation
     const abFmv = antiquebotResult.valuation?.fair_market_value;

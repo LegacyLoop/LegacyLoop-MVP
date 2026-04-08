@@ -7509,6 +7509,75 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
                     </div>
                   ))}
                 </div>
+
+                {/* CMD-ANTIQUEBOT-CORE-A: confidence bands display.
+                    Sized by the AI's authentication confidence (narrow ±10%,
+                    standard ±15%, wide ±40%). Theme-aware via CSS vars; band
+                    color is semantic (green/yellow/red) and works in both modes. */}
+                {val?.auction_estimate?.confidence_bands && val?.auction_estimate?.recommended_band && (() => {
+                  const ae = val.auction_estimate;
+                  const band = ae.recommended_band as "narrow" | "standard" | "wide";
+                  const bandData = ae.confidence_bands?.[band];
+                  if (!bandData) return null;
+                  const bandColor =
+                    band === "narrow" ? "#16a34a" :
+                    band === "standard" ? "#ca8a04" :
+                    "#dc2626";
+                  const bandBg =
+                    band === "narrow" ? "rgba(34,197,94,0.15)" :
+                    band === "standard" ? "rgba(234,179,8,0.15)" :
+                    "rgba(239,68,68,0.15)";
+                  return (
+                    <div style={{
+                      marginTop: "0.5rem",
+                      padding: "0.6rem 0.75rem",
+                      background: "var(--bg-card-solid)",
+                      border: "1px solid var(--border-default)",
+                      borderRadius: "0.75rem",
+                    }}>
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "0.5rem",
+                        marginBottom: "0.4rem",
+                        flexWrap: "wrap" as const,
+                      }}>
+                        <span style={{
+                          fontSize: "0.55rem",
+                          color: "var(--text-secondary)",
+                          textTransform: "uppercase" as const,
+                          letterSpacing: "0.08em",
+                          fontWeight: 700,
+                        }}>
+                          Recommended Range
+                        </span>
+                        <span style={{
+                          fontSize: "0.6rem",
+                          padding: "0.2rem 0.55rem",
+                          borderRadius: "9999px",
+                          background: bandBg,
+                          color: bandColor,
+                          fontWeight: 700,
+                          textTransform: "uppercase" as const,
+                          letterSpacing: "0.04em",
+                        }}>
+                          {band} · {typeof ae.confidence_score === "number" ? ae.confidence_score : "?"}% conf
+                        </span>
+                      </div>
+                      <div style={{
+                        fontSize: "1rem",
+                        fontWeight: 800,
+                        color: "var(--text-primary)",
+                        textAlign: "center" as const,
+                      }}>
+                        {typeof bandData.low === "number" ? `$${bandData.low.toLocaleString()}` : "—"}
+                        {" – "}
+                        {typeof bandData.high === "number" ? `$${bandData.high.toLocaleString()}` : "—"}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
