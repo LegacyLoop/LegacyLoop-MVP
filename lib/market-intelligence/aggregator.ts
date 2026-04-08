@@ -7,6 +7,15 @@ import { getApifyBudgetMode, isItemBudgetExceeded } from "./adapters/apify-clien
 // KILLSWITCH-A for the 3 NOT_FOUND blocked actors (UGC video maker,
 // voiceover, music factory) which have no in-file guard.
 import { BLOCKED_SLUGS } from "./blocked-actors";
+// CMD-SCRAPER-WIRING-C1: per-bot dispatch foundation
+import {
+  getResolvedScrapersForBot,
+  type BotName,
+} from "./bot-scraper-allowlist";
+import {
+  getAdapterForSlug,
+  type ScraperDispatchContext,
+} from "./scraper-dispatch-map";
 // CMD-RECONBOT-API-B: Phase 0 eBay swap — real Browse API replaces
 // the Phase 1 HTML scraper at line 93. Fallback to scrapeEbaySold
 // when the rate-limit safety net trips or the Browse API errors.
@@ -102,6 +111,34 @@ function ebayCompToMarketComp(c: EbayComp): MarketComp {
   };
 }
 
+// CMD-SCRAPER-WIRING-C1: extracted from inline closure so the
+// "builtin/ebay-browse-api" slug can be dispatched from the
+// per-bot allowlist path. Function body is BYTE-IDENTICAL to
+// the previous inline version.
+async function runEbayBrowseApi(itemName: string): Promise<ScraperResult> {
+  try {
+    const limits = await getEbayRateLimits();
+    if (limits.dailyLimitRemaining < 500) {
+      console.warn(
+        `[aggregator] eBay rate-limit safety net tripped (${limits.dailyLimitRemaining} remaining), falling back to scraper`,
+      );
+      return scrapeEbaySold(itemName);
+    }
+    const comps = await searchEbayComps(itemName, 8);
+    return {
+      success: true,
+      comps: comps.map(ebayCompToMarketComp),
+      source: "eBay",
+    };
+  } catch (err) {
+    console.warn(
+      "[aggregator] eBay Browse API failed, falling back to scraper:",
+      err,
+    );
+    return scrapeEbaySold(itemName);
+  }
+}
+
 export async function getMarketIntelligence(
   itemName: string,
   category: string,
@@ -114,11 +151,138 @@ export async function getMarketIntelligence(
   // scrapers may fire if the sufficiency check requires them.
   // Locked pattern for ALL bots going forward: any bot route
   // that wants paid scrapers MUST pass isMegaBot=true explicitly.
-  isMegaBot?: boolean
+  isMegaBot?: boolean,
+  // CMD-SCRAPER-WIRING-C1: when provided, aggregator uses the
+  // allowlist-driven dispatch path (Phase 1 list built from
+  // getResolvedScrapersForBot + SCRAPER_DISPATCH_MAP) instead
+  // of category regex. All 15 existing callers omit this and
+  // get the legacy path byte-identical.
+  botName?: BotName,
 ): Promise<MarketIntelligence> {
   const cacheKey = `${category.toLowerCase()}:${itemName.toLowerCase().slice(0, 80)}:${sellerZip || ""}`;
   const cached = resultCache.get(cacheKey);
   if (cached && Date.now() - cached.builtAt < RESULT_TTL) return cached.result;
+
+  // ═══════════════════════════════════════════════════════════
+  // CMD-SCRAPER-WIRING-C1: PER-BOT ALLOWLIST-DRIVEN DISPATCH
+  // ═══════════════════════════════════════════════════════════
+  // When botName is provided, the aggregator builds its Phase 1
+  // adapter list exclusively from the bot's allowlist + the slug
+  // dispatch map. Maintenance-flagged and blocked slugs are
+  // skipped. MegaBot add-ons join only when isMegaBot === true.
+  // This is the NEW canonical path — Round C2 flips all 10 bot
+  // routes to use it.
+  if (botName) {
+    const allowed = getResolvedScrapersForBot(botName, isMegaBot === true);
+
+    const dispatchable = allowed.filter((entry) => {
+      if (entry.status !== "active") return false;
+      if (BLOCKED_SLUGS.has(entry.slug.toLowerCase())) {
+        console.warn(
+          `[aggregator] [${botName}] slug ${entry.slug} is BLOCKED — skipped`,
+        );
+        return false;
+      }
+      return true;
+    });
+
+    const warnedMissing = new Set<string>();
+    const botAdapters: Array<() => Promise<ScraperResult>> = [];
+    const ctx: ScraperDispatchContext = { itemName, category, sellerZip };
+
+    for (const entry of dispatchable) {
+      if (entry.slug === "builtin/ebay-browse-api") {
+        botAdapters.push(() => runEbayBrowseApi(itemName));
+        continue;
+      }
+      const fn = getAdapterForSlug(entry.slug);
+      if (!fn) {
+        if (!warnedMissing.has(entry.slug)) {
+          console.warn(
+            `[aggregator] [${botName}] no dispatch entry for ${entry.slug} — skipped (Round CUSTOM-SCRAPERS gap)`,
+          );
+          warnedMissing.add(entry.slug);
+        }
+        continue;
+      }
+      botAdapters.push(() => fn(ctx));
+    }
+
+    console.log(
+      `[market-intel] [${botName}] allowlist dispatch: ${botAdapters.length} adapters (${dispatchable.length} allowed, ${warnedMissing.size} missing, isMegaBot=${isMegaBot === true})`,
+    );
+
+    const botPhase1 = await Promise.allSettled(
+      botAdapters.map((fn) => {
+        const t = setTimeout(() => {}, 30000);
+        return fn().finally(() => clearTimeout(t));
+      }),
+    );
+
+    const botComps: MarketComp[] = [];
+    const botSources: string[] = [];
+    for (const result of botPhase1) {
+      if (result.status === "fulfilled" && result.value.success) {
+        botComps.push(...result.value.comps);
+        if (!botSources.includes(result.value.source)) {
+          botSources.push(result.value.source);
+        }
+      }
+    }
+
+    const botPrices = botComps
+      .map((c) => c.price)
+      .filter((p) => p > 0)
+      .sort((a, b) => a - b);
+    const botMedian =
+      botPrices.length > 0
+        ? botPrices[Math.floor(botPrices.length / 2)]
+        : 0;
+    const botLow = percentile(botPrices, 0.25);
+    const botHigh = percentile(botPrices, 0.75);
+
+    let botTrend: MarketIntelligence["trend"] = "Unknown";
+    if (botPrices.length >= 6) {
+      const sortedByDate = [...botComps].sort((a, b) =>
+        a.date > b.date ? -1 : a.date < b.date ? 1 : 0,
+      );
+      const newestAvg =
+        sortedByDate.slice(0, 3).reduce((s, c) => s + c.price, 0) / 3;
+      const oldestAvg =
+        sortedByDate.slice(-3).reduce((s, c) => s + c.price, 0) / 3;
+      const change = (newestAvg - oldestAvg) / oldestAvg;
+      botTrend =
+        change > 0.1 ? "Rising" : change < -0.1 ? "Declining" : "Stable";
+    } else if (botPrices.length > 0) {
+      botTrend = "Stable";
+    }
+
+    const botConfidence = Math.min(
+      0.95,
+      0.3 + botComps.length * 0.05 + botSources.length * 0.05,
+    );
+
+    const botResult: MarketIntelligence = {
+      comps: deduplicateComps(botComps).sort((a, b) =>
+        a.date > b.date ? -1 : a.date < b.date ? 1 : 0,
+      ),
+      median: Math.round(botMedian),
+      low: Math.round(botLow),
+      high: Math.round(botHigh),
+      trend: botTrend,
+      confidence: botConfidence,
+      sources: botSources,
+      queriedAt: new Date().toISOString(),
+      compCount: botComps.length,
+      tiktokDemand: null,
+    };
+
+    resultCache.set(cacheKey, { result: botResult, builtAt: Date.now() });
+    console.log(
+      `[market-intel] [${botName}] allowlist result: ${botResult.comps.length} comps from ${botSources.join(", ")} (median $${botResult.median})`,
+    );
+    return botResult;
+  }
 
   // Category-specific scrapers
   const categoryAdapters = CATEGORY_ADAPTER_MAP[category] || [];
@@ -129,31 +293,10 @@ export async function getMarketIntelligence(
 
   // ═══ PHASE 1: FREE built-in + cheap essential Apify scrapers ═══
   const freeAdapters: Array<() => Promise<ScraperResult>> = [
-    // CMD-RECONBOT-API-B Phase 0 swap: real eBay Browse API replaces
-    // the HTML scraper. Default ON, gated by getEbayRateLimits — falls
-    // back to scrapeEbaySold when fewer than 500 calls remain in the
-    // daily window or when the Browse API errors. Browse API is FREE
-    // under the 5,000-call/day default tier (~14% utilization today).
-    async () => {
-      try {
-        const limits = await getEbayRateLimits();
-        if (limits.dailyLimitRemaining < 500) {
-          console.warn(
-            `[aggregator] eBay rate-limit safety net tripped (${limits.dailyLimitRemaining} remaining), falling back to scraper`,
-          );
-          return scrapeEbaySold(itemName);
-        }
-        const comps = await searchEbayComps(itemName, 8);
-        return {
-          success: true,
-          comps: comps.map(ebayCompToMarketComp),
-          source: "eBay",
-        };
-      } catch (err) {
-        console.warn("[aggregator] eBay Browse API failed, falling back to scraper:", err);
-        return scrapeEbaySold(itemName);
-      }
-    },
+    // CMD-SCRAPER-WIRING-C1: inline closure replaced with named
+    // runEbayBrowseApi function so the "builtin/ebay-browse-api"
+    // slug can also be dispatched from the per-bot allowlist path.
+    () => runEbayBrowseApi(itemName),
     () => scrapeCraigslist(itemName, sellerZip),
     () => scrapeMercari(itemName),
     () => scrapeOfferUp(itemName, sellerZip),
@@ -235,17 +378,15 @@ export async function getMarketIntelligence(
 
   console.log(`[market-intel] Phase 1: ${compCount} comps from ${sourceCount} sources (est. $${Math.round(estimatedValue)}) [${budgetMode} mode]${itemBudgetBlocked ? " — ITEM BUDGET EXCEEDED" : needsMoreData ? ` — Phase 2 needed: ${reason}` : " — sufficient, Phase 2 skipped"}`);
 
-  // ═══ KILLSWITCH INTERCEPTION (CMD-SCRAPER-TIERS-B) ═══
-  // The 9 blocked adapters that have in-file guards from
-  // Round A (autotrader, cargurus, etsy, goat, tiktok-ads,
-  // tiktok-songs, sothebys, ai-video-ads, social-trends) are
-  // no longer dispatched here. The 3 NOT_FOUND blocked actors
-  // (UGC video maker, voiceover, music factory) are blocked at
-  // the registry level via BLOCKED_SLUGS — any future dispatch
-  // path that builds a slug-keyed adapter map (Round C) will
-  // intercept them automatically. The BLOCKED_SLUGS import above
-  // is intentional and reserved for that wiring. ─────────────
-  void BLOCKED_SLUGS; // type-level reference; Round C consumes it
+  // ═══ KILLSWITCH INTERCEPTION (CMD-SCRAPER-WIRING-C1) ═══
+  // The real killswitch check now lives inside the per-bot
+  // allowlist path above (EDIT 4). BLOCKED_SLUGS is filtered
+  // at dispatch time there. The legacy category-regex path
+  // below does NOT yet apply the killswitch at the slug level —
+  // Round B's in-file adapter guards still protect it, and
+  // Round C2 will delete the legacy path entirely once all 10
+  // bot routes opt into the allowlist path.
+  // ─────────────────────────────────────────────────────
 
   // ═══ PHASE 2: PAID Apify scrapers ═══
   // CMD-ANTIQUEBOT-CORE-A: SCRAPER BUDGET DISCIPLINE.

@@ -78,7 +78,7 @@ const listbot: BotScraperAllowlist = {
     "builtin/craigslist-html",
     "ivanvs/ebay-scraper-pay-per-result",
     "damilo/google-shopping-apify",
-    "trudax/reddit-scraper-lite",
+    "builtin/reddit-builtin-html",
     "fatihtahta/pinterest-scraper-search",
   ],
   megaBotAddOns: [
@@ -95,7 +95,7 @@ const buyerbot: BotScraperAllowlist = {
   normalAllowlist: [
     "builtin/ebay-browse-api",
     "builtin/craigslist-html",
-    "trudax/reddit-scraper-lite",
+    "builtin/reddit-builtin-html",
     "fatihtahta/pinterest-scraper-search",
     "apidojo/tweet-scraper",
     "apify/facebook-groups-scraper",

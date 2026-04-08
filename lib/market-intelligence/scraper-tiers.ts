@@ -143,6 +143,16 @@ const TIER_1_BUILTINS: ScraperRegistryEntry[] = [
     source: "builtin",
     note: "Local resale signal. Free HTML scrape variant.",
   },
+  {
+    slug: "builtin/reddit-builtin-html",
+    displayName: "Reddit (built-in HTML)",
+    tier: 1,
+    costPer1k: 0,
+    estimatedCostPerCall: 0,
+    status: "active",
+    source: "builtin",
+    note: "Free old.reddit.com HTML scraper. Buyer-intent WTB signal for BuyerBot + ListBot. Added by CMD-SCRAPER-CUSTOM-SCRAPERS to replace the paid Apify version.",
+  },
 ];
 
 // ─── TIER 2 — CHEAP Apify (under $5/1k, Normal scans) ───
@@ -243,9 +253,9 @@ const TIER_2_CHEAP_APIFY: ScraperRegistryEntry[] = [
     tier: 2,
     costPer1k: 3.8,
     estimatedCostPerCall: 0.0038,
-    status: "active",
+    status: "deferred",
     source: "apify",
-    note: "Subreddit signal for BuyerBot + ListBot social discovery.",
+    note: "DEFERRED by CMD-SCRAPER-CUSTOM-SCRAPERS — replaced by free builtin/reddit-builtin-html (old.reddit.com HTML scraper). BuyerBot + ListBot allowlists swapped to the free built-in. Kept in registry as a fallback option in case the HTML scraper degrades.",
   },
   {
     slug: "fatihtahta/pinterest-scraper-search",
@@ -337,9 +347,9 @@ const TIER_3_MID_APIFY: ScraperRegistryEntry[] = [
     tier: 3,
     costPer1k: 10.0,
     estimatedCostPerCall: 0.01,
-    status: "active",
+    status: "deferred",
     source: "apify",
-    note: "Deeper LiveAuctioneers data than HTML built-in. AntiqueBot MegaBot.",
+    note: "DEFERRED by CMD-SCRAPER-CUSTOM-SCRAPERS — the free builtin/liveauctioneers-html already covers this data. Kept in registry for completeness but never dispatched.",
   },
   {
     slug: "parseforge/bringatrailer-auctions-scraper",
