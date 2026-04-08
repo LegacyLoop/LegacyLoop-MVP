@@ -1,4 +1,5 @@
 import { runApifyTask } from "./apify-client";
+import { checkAndBuildBlocked } from "../killswitch-typed-wrapper";
 
 export interface AiVideoAdsResult {
   success: boolean;
@@ -15,6 +16,14 @@ export async function generateAiVideoAd(
   images: string[],
   script: string
 ): Promise<AiVideoAdsResult> {
+  // ─── KILL SWITCH GUARD — typed wrapper (CMD-SCRAPER-TIERS-B) ───
+  // AI Video Ads Generator is dangerous_cost — $500 per 1,000 results.
+  const blocked = checkAndBuildBlocked<AiVideoAdsResult>(
+    "peaceful_pushpins/ai-video-ads-generator",
+    { success: false, data: null, source: "ai-video-ads" },
+  );
+  if (blocked) return blocked;
+  // ──────────────────────────────────────────────────────────────
   const taskId = process.env.APIFY_TASK_AI_VIDEO_ADS;
   if (!taskId) {
     console.log("[market-intel] AI Video Ads: no APIFY_TASK_AI_VIDEO_ADS configured — skipping");

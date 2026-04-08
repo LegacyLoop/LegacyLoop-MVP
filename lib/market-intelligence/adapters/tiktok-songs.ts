@@ -1,4 +1,5 @@
 import { runApifyTask } from "./apify-client";
+import { checkAndBuildBlocked } from "../killswitch-typed-wrapper";
 
 export interface TikTokSongsResult {
   success: boolean;
@@ -12,6 +13,14 @@ export interface TikTokSongsResult {
  * Uses Apify task APIFY_TASK_TIKTOK_SONGS.
  */
 export async function scrapeTikTokSongs(category?: string): Promise<TikTokSongsResult> {
+  // ─── KILL SWITCH GUARD — typed wrapper (CMD-SCRAPER-TIERS-B) ───
+  // TikTok Trending Songs Scraper is monthly-subscription only ($39/mo + usage).
+  const blocked = checkAndBuildBlocked<TikTokSongsResult>(
+    "lexis-solutions/tiktok-trending-songs-scraper",
+    { success: false, data: null, source: "tiktok-songs" },
+  );
+  if (blocked) return blocked;
+  // ──────────────────────────────────────────────────────────────
   const taskId = process.env.APIFY_TASK_TIKTOK_SONGS;
   if (!taskId) {
     console.log("[market-intel] TikTok Songs: no APIFY_TASK_TIKTOK_SONGS configured — skipping");

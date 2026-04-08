@@ -1,4 +1,5 @@
 import { runApifyTask } from "./apify-client";
+import { checkAndBuildBlocked } from "../killswitch-typed-wrapper";
 
 export interface TikTokAdsResult {
   success: boolean;
@@ -12,6 +13,14 @@ export interface TikTokAdsResult {
  * Uses Apify task APIFY_TASK_TIKTOK_ADS.
  */
 export async function scrapeTikTokAds(query: string): Promise<TikTokAdsResult> {
+  // ─── KILL SWITCH GUARD — typed wrapper (CMD-SCRAPER-TIERS-B) ───
+  // TikTok Ads Scraper is monthly-subscription only ($30/mo + usage).
+  const blocked = checkAndBuildBlocked<TikTokAdsResult>(
+    "lexis-solutions/tiktok-ads-scraper",
+    { success: false, data: null, source: "tiktok-ads" },
+  );
+  if (blocked) return blocked;
+  // ──────────────────────────────────────────────────────────────
   const taskId = process.env.APIFY_TASK_TIKTOK_ADS;
   if (!taskId) {
     console.log("[market-intel] TikTok Ads: no APIFY_TASK_TIKTOK_ADS configured — skipping");

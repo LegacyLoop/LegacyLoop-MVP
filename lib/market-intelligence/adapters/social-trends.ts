@@ -1,4 +1,5 @@
 import { runApifyTask } from "./apify-client";
+import { checkAndBuildBlocked } from "../killswitch-typed-wrapper";
 
 export interface SocialTrendsResult {
   success: boolean;
@@ -12,6 +13,15 @@ export interface SocialTrendsResult {
  * Uses Apify task APIFY_TASK_SOCIAL_TRENDS.
  */
 export async function scrapeSocialTrends(query: string): Promise<SocialTrendsResult> {
+  // ─── KILL SWITCH GUARD — typed wrapper (CMD-SCRAPER-TIERS-B) ───
+  // Social Media Trend Scraper 6-in-1 AI Analysis is dangerous_cost
+  // — $750 per 1,000 results.
+  const blocked = checkAndBuildBlocked<SocialTrendsResult>(
+    "manju4k/social-media-trend-scraper-6-in-1-ai-analysis",
+    { success: false, data: null, source: "social-trends" },
+  );
+  if (blocked) return blocked;
+  // ──────────────────────────────────────────────────────────────
   const taskId = process.env.APIFY_TASK_SOCIAL_TRENDS;
   if (!taskId) {
     console.log("[market-intel] Social Trends: no APIFY_TASK_SOCIAL_TRENDS configured — skipping");

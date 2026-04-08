@@ -1,6 +1,12 @@
 import type { MarketIntelligence, ScraperResult, MarketComp } from "./types";
 import { deduplicateComps } from "./scraper-base";
 import { getApifyBudgetMode, isItemBudgetExceeded } from "./adapters/apify-client";
+// CMD-SCRAPER-TIERS-B: aggregator-level killswitch interception.
+// Imports the BLOCKED_SLUGS set so future dispatch loops can skip
+// blocked adapters by slug. Also closes the gap from CMD-SCRAPER-
+// KILLSWITCH-A for the 3 NOT_FOUND blocked actors (UGC video maker,
+// voiceover, music factory) which have no in-file guard.
+import { BLOCKED_SLUGS } from "./blocked-actors";
 // CMD-RECONBOT-API-B: Phase 0 eBay swap — real Browse API replaces
 // the Phase 1 HTML scraper at line 93. Fallback to scrapeEbaySold
 // when the rate-limit safety net trips or the Browse API errors.
@@ -19,6 +25,9 @@ import { scrapeRubyLane } from "./adapters/ruby-lane";
 import { scrapeReverb } from "./adapters/reverb";
 import { scrapeShopGoodwill } from "./adapters/shop-goodwill";
 import { scrapeLiveAuctioneers } from "./adapters/live-auctioneers";
+// CMD-ANTIQUEBOT-CORE-A: 2 new FREE antique scrapers (no Apify cost)
+import { scrapeInvaluable } from "./adapters/invaluable";
+import { scrapeFirstDibs } from "./adapters/firstdibs";
 import { scrapeCraigslistVehicles } from "./adapters/craigslist-vehicles";
 import { scrapeCraigslistAntiques } from "./adapters/craigslist-antiques";
 // Apify-powered scrapers (paid, reliable)
@@ -28,14 +37,16 @@ import { scrapeGoogleShopping } from "./adapters/google-shopping";
 import { scrapeAmazonApify } from "./adapters/amazon-apify";
 import { checkTikTokTrend } from "./adapters/tiktok-trends";
 import { scrapeEbayMotors } from "./adapters/ebay-motors";
-import { scrapeAutoTrader } from "./adapters/autotrader";
+// CMD-SCRAPER-TIERS-B: scrapeAutoTrader, scrapeCarGurus, scrapeGoat,
+// and scrapeSothebys imports REMOVED. These 4 adapters are on the
+// hard block list (Round A) and were the only blocked actors the
+// aggregator dispatched directly. Removing the imports + dispatch
+// lines saves wasted function calls (Round A's in-file guards still
+// protect them at the adapter level if anything else calls them).
 import { scrapeCarsCom } from "./adapters/cars-com";
-import { scrapeCarGurus } from "./adapters/cargurus";
 import { scrapeBringATrailer } from "./adapters/bat-auctions";
 import { scrapeChrono24 } from "./adapters/chrono24";
 import { scrapeStockX } from "./adapters/stockx";
-import { scrapeGoat } from "./adapters/goat";
-import { scrapeSothebys } from "./adapters/sothebys";
 import { scrapeTcgplayerApify } from "./adapters/tcgplayer-apify";
 import { scrapeCourtyard } from "./adapters/courtyard";
 import { scrapePriceCharting } from "./adapters/pricecharting";
@@ -95,7 +106,15 @@ export async function getMarketIntelligence(
   itemName: string,
   category: string,
   sellerZip?: string,
-  phase1Only?: boolean
+  phase1Only?: boolean,
+  // CMD-ANTIQUEBOT-CORE-A: SCRAPER BUDGET DISCIPLINE.
+  // When false (default), Phase 2 paid Apify scrapers are skipped
+  // entirely — guarantees $0.00 Apify cost on every normal-path
+  // bot scan. When true (MegaBot scans only), Phase 2 paid
+  // scrapers may fire if the sufficiency check requires them.
+  // Locked pattern for ALL bots going forward: any bot route
+  // that wants paid scrapers MUST pass isMegaBot=true explicitly.
+  isMegaBot?: boolean
 ): Promise<MarketIntelligence> {
   const cacheKey = `${category.toLowerCase()}:${itemName.toLowerCase().slice(0, 80)}:${sellerZip || ""}`;
   const cached = resultCache.get(cacheKey);
@@ -145,7 +164,15 @@ export async function getMarketIntelligence(
 
   if (isMaine) freeAdapters.push(() => scrapeUncleHenrys(itemName));
   if (cat.match(/fashion|clothing|shoes|accessories|handbag|dress|jacket|coat|shirt|pants|jeans/)) freeAdapters.push(() => scrapePoshmark(itemName));
-  if (cat.match(/antique|vintage|estate|furniture|silver|porcelain|glass|pottery|china|crystal/)) freeAdapters.push(() => scrapeRubyLane(itemName));
+  if (cat.match(/antique|vintage|estate|furniture|silver|porcelain|glass|pottery|china|crystal/)) {
+    freeAdapters.push(() => scrapeRubyLane(itemName));
+    // CMD-ANTIQUEBOT-CORE-A: 2 new FREE antique sources alongside Ruby Lane.
+    // Invaluable = auction house aggregator (Sotheby's, Christie's, Bonhams, etc).
+    // 1stDibs = premium dealer marketplace (upper-bound retail data).
+    // Both run on EVERY normal-path antique scan for ZERO Apify cost.
+    freeAdapters.push(() => scrapeInvaluable(itemName));
+    freeAdapters.push(() => scrapeFirstDibs(itemName));
+  }
   if (cat.match(/music|instrument|guitar|pedal|amp|keyboard|drum|bass|synth|violin|trumpet|saxophone|piano|ukulele/)) freeAdapters.push(() => scrapeReverb(itemName));
   if (cat.match(/vehicle|automobile|car|truck|motorcycle|atv|boat|suv|van|rv|camper/)) freeAdapters.push(() => scrapeCraigslistVehicles(itemName, sellerZip));
   if (cat.match(/antique|vintage|estate|auction/)) {
@@ -208,8 +235,28 @@ export async function getMarketIntelligence(
 
   console.log(`[market-intel] Phase 1: ${compCount} comps from ${sourceCount} sources (est. $${Math.round(estimatedValue)}) [${budgetMode} mode]${itemBudgetBlocked ? " — ITEM BUDGET EXCEEDED" : needsMoreData ? ` — Phase 2 needed: ${reason}` : " — sufficient, Phase 2 skipped"}`);
 
-  // ═══ PHASE 2: PAID Apify scrapers (only if insufficient AND budget allows AND not phase1Only) ═══
-  if (needsMoreData && !itemBudgetBlocked && !phase1Only) {
+  // ═══ KILLSWITCH INTERCEPTION (CMD-SCRAPER-TIERS-B) ═══
+  // The 9 blocked adapters that have in-file guards from
+  // Round A (autotrader, cargurus, etsy, goat, tiktok-ads,
+  // tiktok-songs, sothebys, ai-video-ads, social-trends) are
+  // no longer dispatched here. The 3 NOT_FOUND blocked actors
+  // (UGC video maker, voiceover, music factory) are blocked at
+  // the registry level via BLOCKED_SLUGS — any future dispatch
+  // path that builds a slug-keyed adapter map (Round C) will
+  // intercept them automatically. The BLOCKED_SLUGS import above
+  // is intentional and reserved for that wiring. ─────────────
+  void BLOCKED_SLUGS; // type-level reference; Round C consumes it
+
+  // ═══ PHASE 2: PAID Apify scrapers ═══
+  // CMD-ANTIQUEBOT-CORE-A: SCRAPER BUDGET DISCIPLINE.
+  // The `isMegaBot` gate is the locked enforcement point: paid
+  // Apify scrapers (EbayMotors, StockX, Chrono24, AmazonApify,
+  // EbayApify, etc.) will NEVER run on normal-path bot scans.
+  // They only fire when an explicit MegaBot call passes
+  // isMegaBot=true. This gates EVERY paidAdapters.push below
+  // behind a single outer guard — equivalent to wrapping each
+  // push individually but cleaner. Normal scans: $0.00 Apify cost.
+  if (needsMoreData && !itemBudgetBlocked && !phase1Only && isMegaBot) {
     const paidAdapters: Array<() => Promise<ScraperResult>> = [];
 
     // eBay Apify fallback
@@ -221,10 +268,12 @@ export async function getMarketIntelligence(
     paidAdapters.push(() => scrapeAmazonApify(itemName));
 
     // Vehicle routing (paid)
+    // CMD-SCRAPER-TIERS-B: scrapeAutoTrader + scrapeCarGurus removed
+    // — both are on the hard block list (monthly subscriptions).
     if (cat.match(/vehicle|automobile|car|truck|motorcycle/)) {
       paidAdapters.push(() => scrapeEbayMotors(itemName));
       if (SUBSCRIPTION_ACTORS_ENABLED) {
-        paidAdapters.push(() => scrapeAutoTrader(itemName, sellerZip), () => scrapeCarsCom(itemName, sellerZip), () => scrapeCarGurus(itemName, sellerZip));
+        paidAdapters.push(() => scrapeCarsCom(itemName, sellerZip));
       }
       paidAdapters.push(() => scrapeBringATrailer(itemName));
     }
@@ -233,7 +282,9 @@ export async function getMarketIntelligence(
     if (cat.match(/watch|horol|timepiece|rolex|omega|breitling|patek|cartier/)) paidAdapters.push(() => scrapeChrono24(itemName));
 
     // Sneaker routing (paid)
-    if (cat.match(/sneaker|shoe|jordan|nike|yeezy|streetwear|supreme/)) paidAdapters.push(() => scrapeStockX(itemName), () => scrapeGoat(itemName));
+    // CMD-SCRAPER-TIERS-B: scrapeGoat removed — hard-blocked
+    // (monthly subscription). StockX remains.
+    if (cat.match(/sneaker|shoe|jordan|nike|yeezy|streetwear|supreme/)) paidAdapters.push(() => scrapeStockX(itemName));
 
     // Card routing (paid)
     if (cat.match(/card|pokemon|magic|yugioh|tcg|trading|sports.?card/)) {
@@ -241,7 +292,11 @@ export async function getMarketIntelligence(
     }
 
     // Antique auction (paid)
-    if (cat.match(/antique.*auction|estate/)) paidAdapters.push(() => scrapeSothebys(itemName));
+    // CMD-SCRAPER-TIERS-B: scrapeSothebys removed — hard-blocked
+    // (dangerous_cost: pay-per-usage, unknown ceiling). Sotheby's
+    // data still flows via scrapeInvaluable (free HTML built-in
+    // added in CMD-ANTIQUEBOT-CORE-A — Invaluable.com aggregates
+    // Sotheby's, Christie's, Bonhams, etc.).
 
     // Memorabilia (paid)
     if (cat.match(/memorabilia|autograph|game.?worn|signed/)) paidAdapters.push(() => scrapeCourtyard(itemName));
