@@ -214,7 +214,14 @@ export async function POST(
   try {
     const miItemName = analysis.item_name || item.title || "item";
     const miCategory = analysis.category || "General";
-    marketIntel = await getMarketIntelligence(miItemName, miCategory, item.saleZip || undefined, true);
+    marketIntel = await getMarketIntelligence(
+      miItemName,
+      miCategory,
+      item.saleZip || undefined,
+      true, // phase1Only
+      undefined, // isMegaBot
+      "analyzebot", // CMD-SCRAPER-WIRING-C2
+    );
 
     if (marketIntel && marketIntel.comps?.length > 0) {
       await prisma.eventLog.create({

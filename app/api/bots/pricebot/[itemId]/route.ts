@@ -194,7 +194,14 @@ This is a HARD RULE — do not ignore it.`;
     // If no valid cache, fetch fresh market intelligence
     if (!marketIntel) {
       try {
-        marketIntel = await getMarketIntelligence(itemName, category, sellerZip);
+        marketIntel = await getMarketIntelligence(
+          itemName,
+          category,
+          sellerZip,
+          undefined, // phase1Only
+          undefined, // isMegaBot
+          "pricebot", // CMD-SCRAPER-WIRING-C2
+        );
         console.log(`[PriceBot] Fresh market intelligence: ${marketIntel?.comps?.length ?? 0} real comps from ${marketIntel?.sources?.join(", ") || "none"}`);
       } catch (miErr: any) {
         console.error("[PriceBot] Market intelligence failed (non-fatal):", miErr?.message);

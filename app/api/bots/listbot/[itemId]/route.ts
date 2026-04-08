@@ -266,7 +266,14 @@ INSTRUCTION: Use these buyer profiles to tailor your listing language.
     let realListingContext = "";
     try {
       const corePromises: Promise<any>[] = [
-        getMarketIntelligence(itemName, category, sellerZip), // likely cached from PriceBot
+        getMarketIntelligence(
+          itemName,
+          category,
+          sellerZip,
+          undefined, // phase1Only
+          undefined, // isMegaBot
+          "listbot", // CMD-SCRAPER-WIRING-C2
+        ), // likely cached from PriceBot
       ];
       // Etsy is Apify-powered — only in normal/full mode
       if (runExtraSocial) {

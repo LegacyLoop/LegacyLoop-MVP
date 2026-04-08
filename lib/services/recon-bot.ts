@@ -498,7 +498,14 @@ export async function runScan(botId: string): Promise<void> {
   } else {
     try {
       // Phase 1: Real market intelligence from 49 scraper adapters (phase1Only = cheap)
-      const marketIntel = await getMarketIntelligence(title, category, item.saleZip ?? undefined, true);
+      const marketIntel = await getMarketIntelligence(
+        title,
+        category,
+        item.saleZip ?? undefined,
+        true, // phase1Only
+        undefined, // isMegaBot
+        "reconbot", // CMD-SCRAPER-WIRING-C2
+      );
       if (marketIntel?.comps && marketIntel.comps.length >= 3) {
         scrapedCompetitors = scraperCompsToMockCompetitors(marketIntel.comps, category);
         console.log(`[ReconBot] Real scrapers: ${scrapedCompetitors.length} competitors from ${marketIntel.sources?.join(", ") || "various"}`);

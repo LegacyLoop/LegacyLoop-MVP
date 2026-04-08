@@ -226,7 +226,14 @@ When specialty bot findings conflict with raw market data:
     // mapping, zero changes to provider-selector.ts).
     let marketIntelMedian: number | null = null;
     try {
-      const marketIntel = await getMarketIntelligence(itemName, category, sellerZip);
+      const marketIntel = await getMarketIntelligence(
+        itemName,
+        category,
+        sellerZip,
+        undefined, // phase1Only
+        undefined, // isMegaBot
+        "reconbot", // CMD-SCRAPER-WIRING-C2
+      );
       marketIntelMedian = marketIntel?.median ?? null;
       if (marketIntel?.comps?.length > 0) {
         console.log(`[ReconBot] ${marketIntel.comps.length} real competitors from ${marketIntel.sources?.join(", ")}`);

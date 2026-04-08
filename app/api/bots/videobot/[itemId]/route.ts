@@ -138,7 +138,14 @@ export async function POST(
     // are called internally by the video pipeline in lib/video/pipeline.ts
     const [enrichment, marketIntel] = await Promise.all([
       getItemEnrichmentContext(itemId, "videobot").catch(() => null),
-      getMarketIntelligence(itemName, category, item.saleZip || "04901").catch(() => null),
+      getMarketIntelligence(
+        itemName,
+        category,
+        item.saleZip || "04901",
+        undefined, // phase1Only
+        undefined, // isMegaBot
+        "videobot", // CMD-SCRAPER-WIRING-C2
+      ).catch(() => null),
     ]);
 
     // Build photo context from AI analysis

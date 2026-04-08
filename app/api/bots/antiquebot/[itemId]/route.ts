@@ -155,7 +155,14 @@ export async function POST(
     let auctionContext = "";
     try {
       const sellerZip = item.saleZip || "04901";
-      const marketIntel = await getMarketIntelligence(itemName, "antique", sellerZip);
+      const marketIntel = await getMarketIntelligence(
+        itemName,
+        "antique",
+        sellerZip,
+        undefined, // phase1Only
+        undefined, // isMegaBot
+        "antiquebot", // CMD-SCRAPER-WIRING-C2
+      );
       if (marketIntel?.comps?.length > 0) {
         const auctionComps = marketIntel.comps.filter((c: any) => c.platform.includes("Heritage") || c.platform.toLowerCase().includes("auction"));
         const allComps = marketIntel.comps;

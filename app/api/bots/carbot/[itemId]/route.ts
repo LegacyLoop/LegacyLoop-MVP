@@ -216,7 +216,14 @@ export async function POST(
     let vehicleCompsContext = "";
     try {
       const query = `${vehicleYear} ${vehicleMake} ${vehicleModel}`.trim();
-      const marketIntel = await getMarketIntelligence(query || ai.item_name || item.title || "", "vehicle", sellerZip);
+      const marketIntel = await getMarketIntelligence(
+        query || ai.item_name || item.title || "",
+        "vehicle",
+        sellerZip,
+        undefined, // phase1Only
+        undefined, // isMegaBot
+        "carbot", // CMD-SCRAPER-WIRING-C2
+      );
       if (marketIntel?.comps?.length > 0) {
         vehicleCompsContext = `\n\nREAL VEHICLE MARKET DATA (${marketIntel.comps.length} listings from ${marketIntel.sources?.join(", ")}):
 ${marketIntel.comps.slice(0, 12).map((c: any, i: number) =>

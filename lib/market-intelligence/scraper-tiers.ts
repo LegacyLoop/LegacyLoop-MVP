@@ -193,9 +193,9 @@ const TIER_2_CHEAP_APIFY: ScraperRegistryEntry[] = [
     tier: 2,
     costPer1k: 3.0,
     estimatedCostPerCall: 0.003,
-    status: "active",
+    status: "deferred",
     source: "apify",
-    note: "VideoBot research source. Trending content discovery.",
+    note: "DEFERRED by CMD-SCRAPER-WIRING-C2 — no adapter file exists in the codebase. VideoBot's allowlist can drop this slug when a real TikTok adapter ships (future round). Filtered out of dispatch by the allowlist status check until then.",
   },
   {
     slug: "streamers/youtube-scraper",

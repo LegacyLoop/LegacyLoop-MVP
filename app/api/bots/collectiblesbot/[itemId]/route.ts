@@ -135,7 +135,14 @@ export async function POST(
     let collectiblesMarketContext = "";
     try {
       const sellerZip = item.saleZip || "04901";
-      const marketIntel = await getMarketIntelligence(itemName, category, sellerZip);
+      const marketIntel = await getMarketIntelligence(
+        itemName,
+        category,
+        sellerZip,
+        undefined, // phase1Only
+        undefined, // isMegaBot
+        "collectiblesbot", // CMD-SCRAPER-WIRING-C2
+      );
       if (marketIntel?.comps?.length > 0) {
         const specialtyComps = marketIntel.comps.filter((c: any) =>
           c.platform.includes("TCGPlayer") || c.platform.includes("Discogs") ||
@@ -644,7 +651,11 @@ Be specific to the actual collectible category. All prices USD. Return ONLY JSON
     // ── MARKET INTELLIGENCE — Real sold data from public marketplaces ──
     const marketData = await getMarketIntelligence(
       result.item_name || itemName,
-      result.category || category
+      result.category || category,
+      undefined, // sellerZip
+      undefined, // phase1Only
+      undefined, // isMegaBot
+      "collectiblesbot", // CMD-SCRAPER-WIRING-C2
     ).catch(() => null);
 
     if (marketData && marketData.compCount > 0) {

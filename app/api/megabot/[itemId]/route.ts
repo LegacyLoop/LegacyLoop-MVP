@@ -411,6 +411,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         sellerZip ?? undefined,
         undefined, // phase1Only — keep default
         true,      // isMegaBot — unlock paid scraper pool
+        "reconbot", // CMD-SCRAPER-WIRING-C2
       ).catch((err) => {
         console.warn("[megabot/reconbot] getMarketIntelligence failed (non-critical):", err);
         return null;
@@ -475,6 +476,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
           item.saleZip ?? undefined,
           undefined, // phase1Only — keep default
           true,      // isMegaBot — unlock paid scraper pool
+          "buyerbot", // CMD-SCRAPER-WIRING-C2
         );
       } catch (err) {
         buyerMarketIntelFailed = true;
@@ -551,6 +553,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
           item.saleZip ?? undefined,
           undefined, // phase1Only — keep default
           true,      // isMegaBot — enables paid scraper pool
+          "antiquebot", // CMD-SCRAPER-WIRING-C2
         );
       } catch (err) {
         antiqueMarketIntelFailed = true;
@@ -619,6 +622,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
           item.saleZip ?? undefined,
           undefined, // phase1Only — keep default
           true,      // isMegaBot — unlock paid scraper pool
+          "listbot", // CMD-SCRAPER-WIRING-C2
         );
       } catch (err) {
         listMarketIntelFailed = true;
