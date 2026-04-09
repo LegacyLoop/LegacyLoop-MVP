@@ -17,10 +17,11 @@ import { scrapeStockX } from "@/lib/market-intelligence/adapters/stockx";
 import { scrapeGoat } from "@/lib/market-intelligence/adapters/goat";
 import { scrapeTcgplayerApify } from "@/lib/market-intelligence/adapters/tcgplayer-apify";
 import { scrapeCourtyard } from "@/lib/market-intelligence/adapters/courtyard";
-import { scrapePriceCharting } from "@/lib/market-intelligence/adapters/pricecharting";
-import { scrapePsaCard } from "@/lib/market-intelligence/adapters/psacard";
-// CMD-COLLECTIBLESBOT-CORE-A: free Beckett HTML scraper (Tier 1 builtin)
-import { scrapeBeckettHtml } from "@/lib/market-intelligence/adapters/beckett";
+// CMD-FLAG-FINAL-WIRING: cache-first wrappers replace direct scraper imports.
+// On cache hit → $0 cost, on miss → live scrape + persist to ScraperComp.
+import { cachedPriceCharting as scrapePriceCharting } from "@/lib/market-intelligence/scraper-dispatch";
+import { cachedPsaCard as scrapePsaCard } from "@/lib/market-intelligence/scraper-dispatch";
+import { cachedBeckett as scrapeBeckettHtml } from "@/lib/market-intelligence/scraper-dispatch";
 // CMD-COLLECTIBLESBOT-CORE-A: hybrid router + spec context + skill pack
 import { routeCollectiblesBotHybrid } from "@/lib/adapters/bot-ai-router";
 import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
@@ -757,6 +758,10 @@ Be specific to the actual collectible category. All prices USD. Return ONLY JSON
             costUsd: hybridRun?.costUsd ?? 0,
             latencyMs: hybridRun?.latencyMs ?? 0,
             tokens: hybridRun?.tokens ?? { input: 0, output: 0, total: 0 },
+            // CMD-FLAG-FINAL-WIRING: Claude prompt cache telemetry
+            claudeCacheHit: (hybridRun?.primary as any)?.cacheInfo?.cacheHit ?? false,
+            claudeCacheReadTokens: (hybridRun?.primary as any)?.cacheInfo?.cacheReadInputTokens ?? 0,
+            claudeCacheSavingsUsd: (hybridRun?.primary as any)?.cacheInfo?.estimatedSavingsUsd ?? 0,
             isDemo: !!result?._isDemo,
           }),
         },

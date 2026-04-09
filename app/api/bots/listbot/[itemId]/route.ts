@@ -563,6 +563,8 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
     let listbotResult: any;
     let webSources: Array<{ url: string; title: string }> = [];
     let aiBreakdown: any = null;
+    // CMD-FLAG-FINAL-WIRING: hoisted for LISTBOT_RUN cache telemetry
+    let listbotHybridRun: Awaited<ReturnType<typeof routeListBotHybrid>> | null = null;
 
     if (openai) {
       // ══ STEP 3: HYBRID CLAUDE + GROK via bot-ai-router ══
@@ -579,7 +581,7 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
         const marketplacePrompt = buildMarketplacePrompt(systemPrompt);
         const socialPrompt = buildSocialPrompt(systemPrompt);
 
-        const hybrid = await routeListBotHybrid({
+        const hybrid = listbotHybridRun = await routeListBotHybrid({
           itemId,
           photoPath: photoUrls,
           marketplacePrompt,
@@ -673,6 +675,10 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
           skillPackVersion: skillPack.version,
           skillPackCount: skillPack.skillNames.length,
           skillPackChars: skillPack.totalChars,
+          // CMD-FLAG-FINAL-WIRING: Claude prompt cache telemetry
+          claudeCacheHit: (listbotHybridRun?.marketplace as any)?.cacheInfo?.cacheHit ?? false,
+          claudeCacheReadTokens: (listbotHybridRun?.marketplace as any)?.cacheInfo?.cacheReadInputTokens ?? 0,
+          claudeCacheSavingsUsd: (listbotHybridRun?.marketplace as any)?.cacheInfo?.estimatedSavingsUsd ?? 0,
         }),
       },
     });

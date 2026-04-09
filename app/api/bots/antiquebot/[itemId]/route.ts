@@ -573,6 +573,10 @@ IMPORTANT:
             costUsd: hybridRun?.costUsd ?? 0,
             latencyMs: hybridRun?.latencyMs ?? 0,
             tokens: hybridRun?.tokens ?? { input: 0, output: 0, total: 0 },
+            // CMD-FLAG-FINAL-WIRING: Claude prompt cache telemetry
+            claudeCacheHit: (hybridRun?.primary as any)?.cacheInfo?.cacheHit ?? false,
+            claudeCacheReadTokens: (hybridRun?.primary as any)?.cacheInfo?.cacheReadInputTokens ?? 0,
+            claudeCacheSavingsUsd: (hybridRun?.primary as any)?.cacheInfo?.estimatedSavingsUsd ?? 0,
             isDemo: !!antiquebotResult?._isDemo,
           }),
         },

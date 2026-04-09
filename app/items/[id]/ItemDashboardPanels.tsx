@@ -3297,6 +3297,24 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
     } catch { /* legacy fallback */ }
   }
 
+  // CMD-FLAG-FINAL-WIRING (Part D): Compute regional pricing client-side
+  // as weighted midpoint between local and national. When backend
+  // lib/pricing/calculate.ts adds pr.regionalPrice natively, this
+  // computed value will be overridden by the real data.
+  // FLAG-REGIONAL-DATA: Remove this computed fallback once backend
+  // returns pr.regionalPrice from lib/pricing/calculate.ts with
+  // actual radius-aware market multipliers.
+  if (pr && !pr.regionalPrice && pr.localPrice && pr.nationalPrice) {
+    const rLow = Math.round(pr.localPrice.low * 0.6 + pr.nationalPrice.low * 0.4);
+    const rHigh = Math.round(pr.localPrice.high * 0.6 + pr.nationalPrice.high * 0.4);
+    pr.regionalPrice = {
+      low: rLow,
+      high: rHigh,
+      mid: Math.round((rLow + rHigh) / 2),
+      label: "100–300 mi radius",
+    };
+  }
+
   // SPEC-WIRE FIX (Step 4): Soft-warn banner data — hoist freight detection
   // up so we can both render a banner AND keep the existing recommendation logic.
   // The banner is what fixes the screenshot bug (users were seeing contradictory
