@@ -673,6 +673,87 @@ html.light .card:hover {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
+   Mobile breakpoints (CMD-MOBILE-8A)
+   Added: April 9, 2026
+
+   Strategy: Override desktop defaults for mobile viewports.
+   Uses !important sparingly — only where inline styles would win.
+   Breakpoints: 768px (tablet/phone), 480px (small phone).
+───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Body — prevent horizontal scroll on all mobile */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Typography scaling — prevent overflow on narrow screens */
+  .h1 {
+    font-size: 1.5rem !important;
+    line-height: 1.3;
+  }
+
+  .h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.35;
+  }
+
+  /* Container padding reduction — reclaim horizontal space */
+  .container-app {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Main content padding — less vertical breathing room on mobile */
+  main.container-app {
+    padding-top: 1.5rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  /* Card padding — slightly tighter on mobile */
+  .card {
+    border-radius: 1rem;
+  }
+
+  /* Tables — allow horizontal scroll rather than overflow */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens — aggressive space reclamation */
+  .h1 {
+    font-size: 1.25rem !important;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .h2 {
+    font-size: 1.1rem !important;
+    line-height: 1.3;
+  }
+
+  /* Further padding reduction */
+  .container-app {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* Utility: force full-width buttons on tiny screens */
+  .btn-block-mobile {
+    width: 100% !important;
+    justify-content: center;
+  }
+
+  /* Body font slightly smaller on very small screens */
+  body {
+    font-size: 16px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
    Print styles
 ───────────────────────────────────────────────────────────────────────────── */
 @media print {

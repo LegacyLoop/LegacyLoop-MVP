@@ -76,7 +76,7 @@ export default async function HomePage() {
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section style={{
         textAlign: "center",
-        padding: "5rem 1.5rem 4rem",
+        padding: "clamp(2rem, 8vw, 5rem) 1.5rem clamp(2rem, 6vw, 4rem)",
         background: "radial-gradient(ellipse at 50% 0%, rgba(0,188,212,0.08) 0%, transparent 60%)",
         position: "relative",
       }}>

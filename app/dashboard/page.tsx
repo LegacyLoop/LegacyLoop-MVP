@@ -441,7 +441,7 @@ export default async function DashboardPage() {
 
       {/* ── Row 5: Quick links ──────────────────────────────────────────────── */}
       <div style={{
-        display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem",
+        display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem",
       }}>
         {[
           { label: "Sales", href: "/projects", sub: "Sale events" },

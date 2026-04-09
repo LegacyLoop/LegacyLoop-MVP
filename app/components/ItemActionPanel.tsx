@@ -892,7 +892,7 @@ export default function ItemActionPanel({
                 top: 0,
                 right: 0,
                 bottom: 0,
-                width: "420px",
+                width: "min(420px, 100%)",
               }),
           background: "rgba(8,8,12,0.98)",
           backdropFilter: "blur(24px)",
