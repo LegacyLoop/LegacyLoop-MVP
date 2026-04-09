@@ -891,8 +891,10 @@ function PotentialBuyersPanel({ aiData, itemId }: { aiData: any; itemId: string 
 
 /* ─── Bot Summary Panel ─── */
 function BotSummaryPanel({ aiData, valuation, antique, photos, megabotUsed, itemId, category }: { aiData: any; valuation: any; antique: any; photos: any[]; megabotUsed: boolean; itemId: string; category: string }) {
-  const VEHICLE_KEYWORDS = ["car", "truck", "vehicle", "automobile", "suv", "van", "motorcycle", "atv", "boat", "tractor", "trailer", "rv", "camper"];
-  const isVehicle = VEHICLE_KEYWORDS.some((kw) => (category || "").toLowerCase().includes(kw));
+  // CMD-ANALYZEBOT-BUG-FIX: removed "tractor", added outdoor equipment exclusion
+  const VEHICLE_KEYWORDS = ["car", "truck", "vehicle", "automobile", "suv", "van", "motorcycle", "atv", "boat", "trailer", "rv", "camper"];
+  const isOutdoorEquipment = (category || "").toLowerCase().includes("outdoor") || (category || "").toLowerCase().includes("garden") || /riding\s*mow|lawn\s*mow|garden\s*tract|lawn\s*tract|chainsaw|leaf\s*blow|snow\s*blow/i.test((aiData?.subcategory || "") + " " + (aiData?.item_name || ""));
+  const isVehicle = !isOutdoorEquipment && VEHICLE_KEYWORDS.some((kw) => (category || "").toLowerCase().includes(kw));
   const isAntique = antique?.isAntique === true;
 
   const bots: { name: string; icon: string; status: string; finding: string; link: string; highlight?: boolean }[] = [

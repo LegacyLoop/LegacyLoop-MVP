@@ -5743,7 +5743,8 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
    PANEL 7: Vehicle Specialist (PAID — CONDITIONAL)
    ═══════════════════════════════════════════ */
 
-const VEHICLE_KEYWORDS = ["car", "truck", "vehicle", "automobile", "suv", "van", "motorcycle", "atv", "boat", "tractor", "trailer", "rv", "camper"];
+// CMD-ANALYZEBOT-BUG-FIX: removed "tractor" — garden tractors are NOT vehicles
+const VEHICLE_KEYWORDS = ["car", "truck", "vehicle", "automobile", "suv", "van", "motorcycle", "atv", "boat", "trailer", "rv", "camper"];
 
 function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResult, carBotLoading, onCarBotRun, onSuperBoost, boosting, boosted, boostResult, isVehicle }: {
   aiData: any;
@@ -9512,7 +9513,9 @@ export default function ItemDashboardPanels({
   }
 
   const hasAnalysis = !!aiData;
-  const isVehicle = VEHICLE_KEYWORDS.some((kw) => (category || "").toLowerCase().includes(kw)) || !!aiData?.vehicle_year || !!aiData?.vehicle_make || !!aiData?.vehicle_model;
+  // CMD-ANALYZEBOT-BUG-FIX: outdoor equipment exclusion prevents riding mowers from showing VEHICLE badge
+  const isOutdoorEquipment = (category || "").toLowerCase().includes("outdoor") || (category || "").toLowerCase().includes("garden") || /riding\s*mow|lawn\s*mow|garden\s*tract|lawn\s*tract|chainsaw|leaf\s*blow|snow\s*blow|pressure\s*wash/i.test((aiData?.subcategory || "") + " " + (aiData?.item_name || ""));
+  const isVehicle = !isOutdoorEquipment && (VEHICLE_KEYWORDS.some((kw) => (category || "").toLowerCase().includes(kw)) || !!aiData?.vehicle_year || !!aiData?.vehicle_make || !!aiData?.vehicle_model);
   const isAntique = antique?.isAntique === true || (aiData?.is_antique === true);
 
   // Antique alert banner — detect from AI analysis fields

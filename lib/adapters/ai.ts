@@ -432,6 +432,35 @@ Return ONLY the JSON object matching the schema.`.trim();
       parsed.vehicle_drivetrain = null;
     }
 
+    // ── SECOND GUARD: Nullify vehicle fields when category IS "Outdoor Equipment"
+    // even if GPT-4o got the category right on its own (the override above only
+    // fires when category was initially "Vehicles"). This catches the edge case
+    // where GPT-4o returns category="Outdoor Equipment" correctly but ALSO
+    // populates vehicle_make="John Deere", vehicle_year="1974", etc. ──
+    const parsedCatLower = (parsed.category || "").toLowerCase();
+    const parsedSubLower = (parsed.subcategory || "").toLowerCase();
+    if (
+      parsedCatLower.includes("outdoor") ||
+      parsedCatLower.includes("garden") ||
+      /riding\s*mow|lawn\s*mow|garden\s*tract|lawn\s*tract/i.test(parsedSubLower) ||
+      OUTDOOR_EQUIPMENT_PATTERNS.test(parsed.item_name || "")
+    ) {
+      if (parsed.vehicle_year || parsed.vehicle_make || parsed.vehicle_model || (parsed as any).is_vehicle || (parsed as any).vehicle_type) {
+        console.warn(`[AI Post-Process] VEHICLE FIELD CLEANUP: Category="${parsed.category}" is outdoor equipment but vehicle fields were populated. Nullifying.`);
+        parsed.vehicle_year = null;
+        parsed.vehicle_make = null;
+        parsed.vehicle_model = null;
+        parsed.vehicle_mileage = null;
+        parsed.vin_visible = null;
+        parsed.vehicle_transmission = null;
+        parsed.vehicle_fuel_type = null;
+        parsed.vehicle_engine = null;
+        parsed.vehicle_drivetrain = null;
+        (parsed as any).is_vehicle = false;
+        (parsed as any).vehicle_type = null;
+      }
+    }
+
     // ── Confidence floor for items with identifiable brand + model ──
     if (parsed.brand && parsed.brand !== "Unknown" && parsed.brand !== "Generic" && parsed.model && parsed.model !== "Unknown") {
       if (parsed.confidence < 0.88) {
