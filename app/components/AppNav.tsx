@@ -545,8 +545,8 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   )}
                 </div>
 
-                {/* Settings panel button — always visible (replaces mobile-only hamburger) */}
-                <div style={{ position: "relative" }}>
+                {/* Settings panel button — desktop only (hamburger replaces on mobile) */}
+                <div className="hidden md:block" style={{ position: "relative" }}>
                   <button onClick={() => { setSettingsOpen((v) => !v); setDropdownOpen(false); }} style={{
                     display: "flex", alignItems: "center", justifyContent: "center",
                     width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
@@ -595,6 +595,31 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                     </div>
                   )}
                 </div>
+
+                {/* CMD-MOBILE-8C: Hamburger menu for logged-in mobile users.
+                    Replaces settings gear on mobile (md:hidden). Triggers the
+                    existing full-screen mobileOpen overlay at line 634 which
+                    already renders ALL nav sections for logged-in users. */}
+                <button
+                  className="md:hidden"
+                  onClick={() => { setMobileOpen((v) => !v); setDropdownOpen(false); setSettingsOpen(false); setBellOpen(false); }}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
+                    background: mobileOpen ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.06)",
+                    border: `1px solid ${mobileOpen ? "rgba(0,188,212,0.3)" : "rgba(255,255,255,0.09)"}`,
+                    color: mobileOpen ? TEAL : "rgba(255,255,255,0.7)",
+                    cursor: "pointer", transition: "all 0.15s ease", padding: 0,
+                  }}
+                  aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                  aria-expanded={mobileOpen}
+                >
+                  {mobileOpen ? <X size={18} /> : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                  )}
+                </button>
               </>
             ) : (
               <>
