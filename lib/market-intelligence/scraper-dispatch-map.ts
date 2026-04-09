@@ -88,6 +88,8 @@ import { scrapeTwitter } from "./adapters/twitter-x";
 import { scrapeFacebookGroups } from "./adapters/facebook-groups";
 import { scrapeFacebookPages } from "./adapters/facebook-pages";
 import { scrapeCraigslistPpr } from "./adapters/craigslist-ppr";
+// CMD-NETWORK-AUDIT-FIX: wire Beckett HTML (free Tier 1, created in CMD-COLLECTIBLESBOT-CORE-A)
+import { scrapeBeckettHtml } from "./adapters/beckett";
 
 /** Dispatch context passed to every adapter call in the new path. */
 export interface ScraperDispatchContext {
@@ -165,6 +167,9 @@ export const SCRAPER_DISPATCH_MAP: Record<string, ScraperDispatchFn> = {
   },
   "ivanvs/craigslist-scraper-pay-per-result": ({ itemName, sellerZip }) =>
     scrapeCraigslistPpr(itemName, sellerZip),
+
+  // CMD-NETWORK-AUDIT-FIX: Beckett free HTML scraper (Tier 1 builtin)
+  "builtin/beckett-html": ({ itemName }) => scrapeBeckettHtml(itemName),
 };
 
 /** Look up a dispatch function by slug. Undefined = no adapter. */

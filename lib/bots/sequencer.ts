@@ -17,6 +17,8 @@ interface SequenceContext {
   isAntique: boolean;
   isCollectible: boolean;
   isVehicle: boolean;
+  // CMD-NETWORK-AUDIT-FIX: high value flag for VideoBot trigger
+  isHighValue?: boolean;
   cookie: string;
 }
 
@@ -26,7 +28,11 @@ interface SequenceContext {
  *
  * Sequence (when enabled):
  * AnalyzeBot → PriceBot
- * PriceBot → ListBot + BuyerBot (parallel) + category-specific bots
+ * PriceBot → ListBot + BuyerBot + ReconBot (parallel)
+ *          → AntiqueBot (if antique)
+ *          → CollectiblesBot (if collectible)
+ *          → CarBot (if vehicle)
+ *          → VideoBot (if high value ≥$500)
  *
  * Gated by AUTO_SEQUENCE_ENABLED env var (default: "false").
  */
@@ -45,9 +51,13 @@ export async function triggerNextBots(ctx: SequenceContext): Promise<void> {
       break;
     case "pricebot":
       nextBots.push("listbot", "buyerbot");
+      // CMD-NETWORK-AUDIT-FIX: ReconBot now auto-fires after PriceBot
+      nextBots.push("reconbot");
       if (ctx.isAntique) nextBots.push("antiquebot");
       if (ctx.isCollectible) nextBots.push("collectiblesbot");
       if (ctx.isVehicle) nextBots.push("carbot");
+      // CMD-NETWORK-AUDIT-FIX: HIGH VALUE → VideoBot auto-trigger
+      if (ctx.isHighValue) nextBots.push("videobot");
       break;
     default:
       return;

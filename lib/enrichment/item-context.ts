@@ -58,6 +58,8 @@ export interface EnrichmentSummary {
   listBotFindings: string | null;
   buyerBotFindings: string | null;
   photoBotFindings: string | null;
+  // CMD-NETWORK-AUDIT-FIX: VideoBot was an enrichment island — now contributes social signals
+  videoBotFindings: string | null;
   megaBotFindings: string | null;
   valuationFindings: string | null;
   amazonFindings: string | null;
@@ -114,6 +116,7 @@ export async function getItemEnrichmentContext(
               "PHOTOBOT_EDIT",
               "RAINFOREST_RESULT",
               "ANALYZEBOT_MARKET_INTEL",
+              "VIDEOBOT_RESULT", // CMD-NETWORK-AUDIT-FIX
             ],
           },
         },
@@ -202,6 +205,8 @@ export async function getItemEnrichmentContext(
       listBotFindings: extractFromEventLog(logByType["LISTBOT_RESULT"], extractListBot),
       buyerBotFindings: extractFromEventLog(logByType["BUYERBOT_RESULT"], extractBuyerBot),
       photoBotFindings: extractPhotoBot(logByType),
+      // CMD-NETWORK-AUDIT-FIX: VideoBot enrichment — social/video demand signals
+      videoBotFindings: extractFromEventLog(logByType["VIDEOBOT_RESULT"], extractVideoBot),
       megaBotFindings: extractMegaBot(megaBotLogs),
       valuationFindings: extractValuation(item),
       amazonFindings: extractFromEventLog(logByType["RAINFOREST_RESULT"], extractAmazonData),
@@ -815,6 +820,25 @@ function extractPhotoBot(logByType: Record<string, string | null>): string | nul
   return parts.length ? parts.join(" · ") : null;
 }
 
+// CMD-NETWORK-AUDIT-FIX: VideoBot was an enrichment island — now contributes
+// social/video demand signals to PriceBot, BuyerBot, and ListBot.
+function extractVideoBot(d: any): string | null {
+  if (!d) return null;
+  const parts: string[] = [];
+  if (d.script?.hook) parts.push(`Video Hook: "${String(d.script.hook).slice(0, 80)}"`);
+  if (d.script?.platform) parts.push(`Platform: ${d.script.platform}`);
+  if (d.script?.duration) parts.push(`Duration: ${d.script.duration}s`);
+  if (d.script?.hashtags?.length) parts.push(`Hashtags: ${d.script.hashtags.slice(0, 5).join(", ")}`);
+  if (d.voiceName) parts.push(`Voice: ${d.voiceName}`);
+  if (d.videoUrl) parts.push("Video: Generated");
+  if (d.narrationUrl) parts.push("Narration: Generated");
+  if (d.intelligence?.tiktokAds?.count) parts.push(`TikTok Ads: ${d.intelligence.tiktokAds.count} found`);
+  if (d.intelligence?.fbAds?.count) parts.push(`FB Ads: ${d.intelligence.fbAds.count} found`);
+  if (d.intelligence?.socialTrends?.trending) parts.push("Social: Trending");
+  if (d.tier) parts.push(`Tier: ${d.tier}`);
+  return parts.length ? parts.join(" · ") : null;
+}
+
 function extractMarketIntelligence(logByType: Record<string, string | null>): string | null {
   const payload = logByType["ANALYZEBOT_MARKET_INTEL"];
   const d = safeJson(payload);
@@ -1153,6 +1177,7 @@ function emptyContext(itemId: string): ItemEnrichmentContext {
       listBotFindings: null,
       buyerBotFindings: null,
       photoBotFindings: null,
+      videoBotFindings: null,
       megaBotFindings: null,
       valuationFindings: null,
       amazonFindings: null,

@@ -657,6 +657,8 @@ export async function POST(
 
   // Fire-and-forget: auto-sequence → trigger PriceBot
   const cookieHeader = req.headers.get("cookie") || "";
+  // CMD-NETWORK-AUDIT-FIX: pass isHighValue for VideoBot auto-trigger
+  const seqMid = pricingResult?.localPrice?.mid ?? (analysis.estimated_value_mid ?? 0);
   import("@/lib/bots/sequencer").then(m => m.triggerNextBots({
     itemId: item.id,
     completedBot: "analyze",
@@ -664,6 +666,7 @@ export async function POST(
     isAntique: !!antiqueResult?.isAntique,
     isCollectible: !!collectibleResult?.isCollectible,
     isVehicle: !!(analysis.vehicle_year || analysis.vehicle_make),
+    isHighValue: seqMid >= 500,
     cookie: cookieHeader,
   })).catch(() => null);
 

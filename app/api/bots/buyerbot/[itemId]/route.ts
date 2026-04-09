@@ -3,6 +3,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import OpenAI from "openai";
 import { getItemEnrichmentContext } from "@/lib/enrichment";
+// CMD-NETWORK-AUDIT-FIX: BuyerBot was the only specialist bot not calling market intel
+import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { logUserEvent } from "@/lib/data/user-events";
 import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
@@ -208,6 +210,26 @@ export async function POST(
     // ── CROSS-BOT ENRICHMENT ──
     const enrichment = await getItemEnrichmentContext(itemId, "buyerbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
+
+    // CMD-NETWORK-AUDIT-FIX: BuyerBot market intelligence for buyer demand signals
+    let buyerMarketContext = "";
+    try {
+      const marketIntel = await getMarketIntelligence(
+        itemName, category, sellerZip,
+        undefined, // phase1Only
+        undefined, // isMegaBot
+        "buyerbot", // CMD-SCRAPER-WIRING-C2
+      );
+      if (marketIntel?.comps?.length > 0) {
+        buyerMarketContext = `\n\nMARKET INTELLIGENCE FOR BUYER TARGETING (${marketIntel.comps.length} live comps):
+${marketIntel.comps.slice(0, 8).map((c: any, i: number) => `${i + 1}. [${c.platform}] "${c.item}" — $${c.price}`).join("\n")}
+Median: $${marketIntel.median} | Trend: ${marketIntel.trend}
+Use this data to identify WHERE buyers are active and WHAT price brackets they're shopping in.`;
+        console.log(`[BuyerBot] Market intel: ${marketIntel.compCount} comps for buyer targeting`);
+      }
+    } catch {
+      console.log("[BuyerBot] Market intelligence unavailable (non-fatal)");
+    }
 
     // ── SPECIALTY BOT ENRICHMENT FOR PRECISION BUYER TARGETING ──
     // Labeled blocks make specialty bot findings legible to the AI prompt.
@@ -435,6 +457,7 @@ ${fbPages.sellers.slice(0, 5).map((s: any) => `${s.name} (${s.followers.toLocale
       specCtx.promptBlock + "\n\n" +     // Bot Constitution FIRST
       enrichmentPrefix +
       specialtyBotContext + "\n\n" +
+      buyerMarketContext +                // CMD-NETWORK-AUDIT-FIX: market comps for buyer demand
       listingIntelligence +
       realBuyerContext +
       webEnrichment +                    // Web pre-pass injected here
