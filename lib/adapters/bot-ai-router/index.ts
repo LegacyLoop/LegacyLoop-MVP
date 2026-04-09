@@ -73,6 +73,9 @@ import type {
   // CMD-PHOTOBOT-CORE-A: Step 11 Round A
   PhotoBotHybridInput,
   PhotoBotHybridResult,
+  // CMD-VIDEOBOT-CORE-A: Step 12 Round A
+  VideoBotHybridInput,
+  VideoBotHybridResult,
 } from "./types";
 
 // ─── Re-exports — public surface ───────────────────────────────
@@ -119,6 +122,9 @@ export type {
   // CMD-PHOTOBOT-CORE-A: Step 11 Round A
   PhotoBotHybridInput,
   PhotoBotHybridResult,
+  // CMD-VIDEOBOT-CORE-A: Step 12 Round A
+  VideoBotHybridInput,
+  VideoBotHybridResult,
 } from "./types";
 
 // ─── Constants ──────────────────────────────────────────────────
@@ -2833,6 +2839,249 @@ export async function routePhotoBotHybrid(
     } catch (e: any) {
       console.warn(
         `[routePhotoBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
+      );
+    }
+  }
+
+  return result;
+}
+
+// ─── Public: routeVideoBotHybrid() ─────────────────────────
+//
+// CMD-VIDEOBOT-CORE-A — Step 12 Round A
+//
+// VideoBot router entry point. Grok-primary for viral content,
+// cultural trends, Gen Z hooks, and social-platform native
+// voice. OpenAI-secondary fires on high_value trigger for
+// structured script quality on premium items.
+//
+// This wraps SCRIPT GENERATION ONLY. Pipeline steps 3-5
+// (video assembly, narration, final assembly) stay outside
+// the router.
+//
+// IMPORTANT: this function NEVER throws to its caller.
+// ─────────────────────────────────────────────────────────
+
+export async function routeVideoBotHybrid(
+  input: VideoBotHybridInput,
+): Promise<VideoBotHybridResult> {
+  const startedAt = Date.now();
+  const config = getBotConfig("videobot");
+  if (!config.triggers.includes("high_value")) {
+    throw new Error(
+      "[routeVideoBotHybrid] BOT_AI_CONFIG.videobot.triggers must " +
+        "include 'high_value' — got: " + JSON.stringify(config.triggers),
+    );
+  }
+  const demoMode = isDemoMode();
+
+  const photoArr = Array.isArray(input.photoPath)
+    ? input.photoPath
+    : [input.photoPath];
+  const absPath = publicUrlToAbsPath(photoArr[0]);
+
+  const timeoutMs = input.timeoutMs ?? HYBRID_DEFAULTS.TIMEOUT_MS;
+  const maxTokens = input.maxTokens ?? HYBRID_DEFAULTS.MAX_TOKENS;
+
+  type RawRunOutcome = ProviderRunResult & { rawResult: any };
+
+  const runRaw = async (
+    provider: ProviderName,
+    prompt: string,
+  ): Promise<RawRunOutcome> => {
+    const start = Date.now();
+    try {
+      const { text, tokens } = await callProviderRaw(
+        provider, absPath, prompt,
+        { timeoutMs, maxTokens },
+      );
+      const rawResult = parseAnyLooseJson(text);
+      if (!rawResult) {
+        return {
+          provider, result: null,
+          error: `${provider} returned unparseable JSON`,
+          durationMs: Date.now() - start, tokens,
+          actualCostUsd: computeActualCost(provider, tokens),
+          rawResult: null,
+        };
+      }
+      return {
+        provider, result: null, error: null,
+        durationMs: Date.now() - start, tokens,
+        actualCostUsd: computeActualCost(provider, tokens),
+        rawResult,
+      };
+    } catch (e: any) {
+      return {
+        provider, result: null,
+        error: e?.message ?? String(e),
+        durationMs: Date.now() - start,
+        rawResult: null,
+      };
+    }
+  };
+
+  const providersAttempted: ProviderName[] = [];
+  const providersUsed: ProviderName[] = [];
+  let totalEstCost = 0;
+  let totalActualCost = 0;
+  let fallbackUsed = false;
+
+  // ── PRIMARY: Grok (viral content, social hooks) ────────
+  let primary: RawRunOutcome = await runRaw("grok", input.scriptPrompt);
+  providersAttempted.push("grok");
+  totalEstCost += estimateProviderCost("grok");
+  if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
+  if (primary.rawResult) providersUsed.push("grok");
+
+  // ── Graceful fallback chain on primary failure ────────
+  if (!primary.rawResult) {
+    const chain = fallbackChain("grok", providersAttempted);
+    let attempts = 0;
+    for (const fallback of chain) {
+      if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
+      attempts++;
+      fallbackUsed = true;
+      const fallbackOutcome = await runRaw(fallback, input.scriptPrompt);
+      providersAttempted.push(fallback);
+      totalEstCost += estimateProviderCost(fallback);
+      if (fallbackOutcome.actualCostUsd != null) {
+        totalActualCost += fallbackOutcome.actualCostUsd;
+      }
+      if (fallbackOutcome.rawResult) {
+        primary = fallbackOutcome;
+        providersUsed.push(fallback);
+        break;
+      }
+    }
+  }
+
+  // Read primary confidence from script quality score
+  const rawConf: any =
+    primary.rawResult?.script_quality_score ??
+    primary.rawResult?.confidence ??
+    70;
+  const primaryConfidence: number =
+    typeof rawConf === "number"
+      ? rawConf <= 1 ? Math.round(rawConf * 100) : Math.round(rawConf)
+      : 70;
+
+  // ── SECONDARY: OpenAI (high_value, best-effort) ────────
+  let secondary: RawRunOutcome | undefined;
+  let secondaryTriggered = false;
+
+  const wantsSecondary =
+    !!primary.rawResult &&
+    (input.shouldRunSecondary === true || primaryConfidence < 60);
+
+  if (wantsSecondary) {
+    secondaryTriggered = true;
+    const secondaryOutcome = await runRaw("openai", input.scriptPrompt);
+    providersAttempted.push("openai");
+    totalEstCost += estimateProviderCost("openai");
+    if (secondaryOutcome.actualCostUsd != null) {
+      totalActualCost += secondaryOutcome.actualCostUsd;
+    }
+    if (secondaryOutcome.rawResult) {
+      secondary = secondaryOutcome;
+      providersUsed.push("openai");
+    } else {
+      console.warn(
+        `[routeVideoBotHybrid] OpenAI secondary failed for item ${input.itemId}: ${secondaryOutcome.error ?? "unknown"}`,
+      );
+    }
+  }
+
+  // ── Merge: primary as base, overlay secondary's
+  //    higher-quality script elements ──
+  let mergedResult: any;
+  let mergedStrategy: "primary_only" | "merged_consensus" | "degraded";
+
+  if (primary.rawResult && secondary?.rawResult) {
+    mergedResult = { ...primary.rawResult };
+    // OpenAI secondary may produce better-structured scripts —
+    // overlay the script fields if secondary quality is higher
+    const secConf: any =
+      secondary.rawResult?.script_quality_score ??
+      secondary.rawResult?.confidence;
+    const secConfNum =
+      typeof secConf === "number"
+        ? secConf <= 1 ? Math.round(secConf * 100) : Math.round(secConf)
+        : null;
+    if (secConfNum != null && secConfNum > primaryConfidence) {
+      // Keep Grok's hooks + cultural elements, overlay OpenAI's structure
+      if (secondary.rawResult?.platform_variants) {
+        mergedResult.platform_variants = secondary.rawResult.platform_variants;
+      }
+    }
+    mergedStrategy = "merged_consensus";
+  } else if (primary.rawResult) {
+    mergedResult = primary.rawResult;
+    mergedStrategy = "primary_only";
+  } else {
+    mergedResult = null;
+    mergedStrategy = "degraded";
+  }
+
+  const degraded = !primary.rawResult;
+
+  const aggregatedTokens = {
+    input: (primary.tokens?.inputTokens ?? 0) + (secondary?.tokens?.inputTokens ?? 0),
+    output: (primary.tokens?.outputTokens ?? 0) + (secondary?.tokens?.outputTokens ?? 0),
+    total: (primary.tokens?.totalTokens ?? 0) + (secondary?.tokens?.totalTokens ?? 0),
+  };
+
+  const result: VideoBotHybridResult = {
+    primary, secondary, mergedResult,
+    primaryConfidence, secondaryTriggered, mergedStrategy,
+    costUsd: Number(totalEstCost.toFixed(5)),
+    actualCostUsd: Number(totalActualCost.toFixed(6)),
+    tokens: aggregatedTokens,
+    latencyMs: Date.now() - startedAt,
+    degraded,
+    error: degraded ? primary.error ?? "All providers failed" : undefined,
+  };
+
+  // ── Fire-and-forget routing log ───────────────────────
+  if (!input.skipLogging) {
+    try {
+      void logRoutingDecision({
+        itemId: input.itemId,
+        payload: {
+          botName: "videobot",
+          primary: primary.provider,
+          secondary: secondary?.provider,
+          triggersFired: secondaryTriggered ? ["high_value"] : [],
+          providersAttempted, providersUsed,
+          costUsd: result.costUsd,
+          actualCostUsd: result.actualCostUsd,
+          ...(input.apifyCostUsd != null ? { apifyCostUsd: input.apifyCostUsd } : {}),
+          latencyMs: result.latencyMs,
+          fallbackUsed, degraded,
+          confidence: primaryConfidence,
+          mergedStrategy,
+          tokens: {
+            [primary.provider]: {
+              input: primary.tokens?.inputTokens ?? null,
+              output: primary.tokens?.outputTokens ?? null,
+              total: primary.tokens?.totalTokens ?? null,
+            },
+            ...(secondary?.tokens ? {
+              [secondary.provider]: {
+                input: secondary.tokens.inputTokens,
+                output: secondary.tokens.outputTokens,
+                total: secondary.tokens.totalTokens,
+              },
+            } : {}),
+          },
+          demoMode,
+          error: result.error,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (e: any) {
+      console.warn(
+        `[routeVideoBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
       );
     }
   }

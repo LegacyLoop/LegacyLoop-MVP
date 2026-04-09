@@ -27,6 +27,7 @@ export type BotName =
   | "antiquebot"
   | "collectiblesbot"
   | "carbot"
+  | "videobot"
   | "megabot";
 
 /** AI providers wired into multi-ai.ts. */
@@ -736,6 +737,42 @@ export interface PhotoBotHybridInput {
 }
 
 export interface PhotoBotHybridResult {
+  primary: ProviderRunResult & { rawResult: any };
+  secondary?: ProviderRunResult & { rawResult: any };
+  mergedResult: any;
+  primaryConfidence: number;
+  secondaryTriggered: boolean;
+  mergedStrategy: "primary_only" | "merged_consensus" | "degraded";
+  costUsd: number;
+  actualCostUsd: number;
+  tokens: { input: number; output: number; total: number };
+  latencyMs: number;
+  degraded: boolean;
+  error?: string;
+}
+
+// ─── VideoBot hybrid (Step 12 Round A) ───────────────────────────
+//
+// CMD-VIDEOBOT-CORE-A
+//
+// VideoBot is the first Grok-primary hybrid bot. Grok owns viral
+// content, cultural trends, Gen Z hooks, and social-platform native
+// voice. OpenAI secondary fires on high_value items for structured
+// script quality. Premium cost tier (highest revenue bot).
+// ──────────────────────────────────────────────────────────────────
+
+export interface VideoBotHybridInput {
+  itemId: string;
+  photoPath: string | string[];
+  scriptPrompt: string;
+  shouldRunSecondary?: boolean;
+  timeoutMs?: number;
+  maxTokens?: number;
+  apifyCostUsd?: number;
+  skipLogging?: boolean;
+}
+
+export interface VideoBotHybridResult {
   primary: ProviderRunResult & { rawResult: any };
   secondary?: ProviderRunResult & { rawResult: any };
   mergedResult: any;

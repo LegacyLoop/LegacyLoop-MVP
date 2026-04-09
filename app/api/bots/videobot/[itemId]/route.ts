@@ -7,6 +7,16 @@ import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { runVideoPipeline } from "@/lib/video/pipeline";
 import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
+// CMD-VIDEOBOT-CORE-A: skill pack + spec context + web pre-pass
+import { loadSkillPack } from "@/lib/bots/skill-loader";
+import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
+import { summarizeSpecContext } from "@/lib/bots/spec-guards";
+import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
+import OpenAI from "openai";
+
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  : null;
 
 function safeJson(s: string | null | undefined): any {
   if (!s) return null;
@@ -133,6 +143,22 @@ export async function POST(
     const conditionLabel = conditionScore >= 8 ? "Excellent" : conditionScore >= 5 ? "Good" : "Fair";
     const photoPaths = item.photos.map((p) => p.filePath);
 
+    // CMD-VIDEOBOT-CORE-A: skill pack + spec context + web pre-pass
+    const skillPack = loadSkillPack("videobot");
+    const specCtx = await buildItemSpecContext(itemId, { item, user });
+    const specSummary = summarizeSpecContext(specCtx);
+    const skillPackPrefix = skillPack.systemPromptBlock
+      ? skillPack.systemPromptBlock + "\n\n"
+      : "";
+
+    // CMD-VIDEOBOT-CORE-A: web search pre-pass for trending content
+    const { webEnrichment: trendWebEnrichment } = await runWebSearchPrepass(
+      openai,
+      `${itemName} ${category}`,
+      category,
+      item.saleZip || "04901",
+    );
+
     // ── Gather enrichment + market intelligence (non-blocking failures) ──
     // Note: Video-specific scrapers (TikTok Ads, FB Ads Library, Social Trends, TikTok Songs, AI Video Ads)
     // are called internally by the video pipeline in lib/video/pipeline.ts
@@ -210,7 +236,14 @@ export async function POST(
       photos: photoPaths,
       platform,
       tier,
-      enrichmentContext: enrichment?.hasEnrichment ? enrichment.contextBlock : undefined,
+      // CMD-VIDEOBOT-CORE-A: prepend skill pack + spec context + trend web enrichment
+      // to the enrichment context so the script generator sees all context.
+      enrichmentContext: [
+        skillPackPrefix,
+        specCtx.promptBlock ? specCtx.promptBlock + "\n\n" : "",
+        trendWebEnrichment || "",
+        enrichment?.hasEnrichment ? enrichment.contextBlock : "",
+      ].filter(Boolean).join("") || undefined,
       marketContext: marketIntel?.comps?.length ? `${marketIntel.comps.length} real comparables, median $${marketIntel.median}` : undefined,
       photoContext,
       brand: ai.maker || ai.brand || undefined,
@@ -235,9 +268,39 @@ export async function POST(
     await prisma.eventLog.create({
       data: { itemId, eventType: "VIDEOBOT_RESULT", payload: JSON.stringify(resultPayload) },
     });
-    await prisma.eventLog.create({
-      data: { itemId, eventType: "VIDEOBOT_RUN", payload: JSON.stringify({ userId: user.id, tier, platform, voiceMode: pipelineResult.voiceMode, timestamp: new Date().toISOString() }) },
-    });
+    // CMD-VIDEOBOT-CORE-A: extended VIDEOBOT_RUN telemetry
+    try {
+      await prisma.eventLog.create({
+        data: {
+          itemId,
+          eventType: "VIDEOBOT_RUN",
+          payload: JSON.stringify({
+            userId: user.id,
+            timestamp: new Date().toISOString(),
+            tier,
+            platform,
+            voiceMode: pipelineResult.voiceMode,
+            voiceName: pipelineResult.voiceName,
+            skillPackVersion: skillPack.version,
+            skillPackCount: skillPack.skillNames.length,
+            skillPackChars: skillPack.totalChars,
+            specSummary,
+            hasEnrichment: !!enrichment?.hasEnrichment,
+            hasMarketIntel: !!(marketIntel?.comps?.length),
+            hasTrendWebEnrichment: !!trendWebEnrichment,
+            pipelineSuccess: pipelineResult.success,
+            videoGenerated: !!pipelineResult.videoUrl,
+            narrationGenerated: !!pipelineResult.narrationUrl,
+            scriptGenerated: !!pipelineResult.script,
+            totalDurationMs: pipelineResult.totalDurationMs,
+            publishReady: !!(pipelineResult.videoUrl && pipelineResult.script),
+            isDemo: false,
+          }),
+        },
+      });
+    } catch (logErr) {
+      console.warn("[videobot] VIDEOBOT_RUN log write failed (non-critical):", logErr);
+    }
 
     return NextResponse.json({
       success: pipelineResult.success,

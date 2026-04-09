@@ -394,6 +394,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   let pricebotSkillPack: ReturnType<typeof loadSkillPack> | undefined;
   // CMD-PHOTOBOT-CORE-A: hoist photobotSkillPack to function scope.
   let photobotSkillPack: ReturnType<typeof loadSkillPack> | undefined;
+  // CMD-VIDEOBOT-CORE-A: hoist videobotSkillPack to function scope.
+  let videobotSkillPack: ReturnType<typeof loadSkillPack> | undefined;
 
   // CMD-MEGABOT-SHARED-SKILLS: load MegaBot-only shared packs ONCE.
   // These packs teach the 4-AI consensus how to argue, disagree, and
@@ -885,6 +887,39 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     }
   }
 
+  // CMD-VIDEOBOT-CORE-A: VideoBot opts assembly. Script generation
+  // context injection. VideoBot uses Grok primary — the MegaBot
+  // consensus runs all 4 AIs on the script prompt with skill packs.
+  let videobotOpts: RunSpecializedMegaBotOpts | undefined;
+  let videobotSpecContextFailed = false;
+  if (botType === "videobot" && !isDemoMode()) {
+    try {
+      videobotSkillPack = loadSkillPack("videobot");
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const specContext = await buildItemSpecContext(item.id, { item, user });
+      const specSummary = summarizeSpecContext(specContext);
+
+      const midPrice = v
+        ? Math.round((v.low + v.high) / 2)
+        : (ai?.estimated_value_mid ?? null);
+
+      videobotOpts = {
+        specSummary,
+        specPromptBlock: specContext.promptBlock,
+        marketIntelBlock: "", // VideoBot uses its own intelligence pipeline
+        marketIntelMedian: null,
+        apifyCostUsd: 0,
+        enableGrounding: false,
+        priorValuationMid: midPrice,
+        skillPackBlock: megaBotSharedBlock + botMegaBlock + videobotSkillPack.systemPromptBlock,
+      };
+    } catch (specErr) {
+      videobotSpecContextFailed = true;
+      console.warn("[megabot/videobot] specContext assembly failed (non-critical):", specErr);
+      videobotOpts = undefined;
+    }
+  }
+
   // CMD-LISTBOT-MEGA-C: ListBot opts assembly mirrors the
   // ReconBot/BuyerBot pattern. The three branches stay parallel/
   // independent because botType is single-valued per request.
@@ -968,6 +1003,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
       botType === "carbot"          ? carbotOpts       :
       botType === "pricebot"        ? pricebotOpts     :
       botType === "photobot"        ? photobotOpts     :
+      botType === "videobot"        ? videobotOpts     :
       undefined;
     result = await runSpecializedMegaBot(botType, prompt, photoPaths[0], itemId, photoPaths, activeOpts);
   } catch (e: any) {
@@ -1103,7 +1139,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   //   FLAG 7: perAgentWebSources + totalWebSourceCount
   //   FLAG 9: totalTokens aggregate
   //   FLAG 8 (DEFERRED): apifyCostUsdReal placeholder (always 0)
-  if (botType === "reconbot" || botType === "buyerbot" || botType === "listbot" || botType === "antiquebot" || botType === "collectiblesbot" || botType === "carbot" || botType === "pricebot" || botType === "photobot") {
+  if (botType === "reconbot" || botType === "buyerbot" || botType === "listbot" || botType === "antiquebot" || botType === "collectiblesbot" || botType === "carbot" || botType === "pricebot" || botType === "photobot" || botType === "videobot") {
     try {
       const telemetry = extractAgentTelemetry(result);
       const specBlockFp = fingerprintBlock(
@@ -1114,7 +1150,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         botType === "collectiblesbot" ? collectiblesOpts?.specPromptBlock :
         botType === "carbot"          ? carbotOpts?.specPromptBlock       :
         botType === "pricebot"        ? pricebotOpts?.specPromptBlock     :
-        photobotOpts?.specPromptBlock
+        botType === "photobot"        ? photobotOpts?.specPromptBlock     :
+        videobotOpts?.specPromptBlock
       );
       const marketBlockFp = fingerprintBlock(
         botType === "reconbot"        ? reconOpts?.marketIntelBlock        :
@@ -1124,7 +1161,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         botType === "collectiblesbot" ? collectiblesOpts?.marketIntelBlock :
         botType === "carbot"          ? carbotOpts?.marketIntelBlock       :
         botType === "pricebot"        ? pricebotOpts?.marketIntelBlock     :
-        photobotOpts?.marketIntelBlock
+        botType === "photobot"        ? photobotOpts?.marketIntelBlock     :
+        videobotOpts?.marketIntelBlock
       );
       const opts =
         botType === "reconbot"        ? reconOpts        :
@@ -1134,7 +1172,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         botType === "collectiblesbot" ? collectiblesOpts :
         botType === "carbot"          ? carbotOpts       :
         botType === "pricebot"        ? pricebotOpts     :
-        photobotOpts;
+        botType === "photobot"        ? photobotOpts     :
+        videobotOpts;
       const specContextFailed =
         botType === "reconbot"        ? false                            :
         botType === "buyerbot"        ? buyerSpecContextFailed           :
@@ -1143,7 +1182,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         botType === "collectiblesbot" ? collectiblesSpecContextFailed    :
         botType === "carbot"          ? carSpecContextFailed             :
         botType === "pricebot"        ? pricebotSpecContextFailed        :
-        photobotSpecContextFailed;
+        botType === "photobot"        ? photobotSpecContextFailed        :
+        videobotSpecContextFailed;
       const marketIntelFailed =
         botType === "reconbot"        ? false                             :
         botType === "buyerbot"        ? buyerMarketIntelFailed            :
@@ -1152,7 +1192,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         botType === "collectiblesbot" ? collectiblesMarketIntelFailed     :
         botType === "carbot"          ? carMarketIntelFailed              :
         botType === "pricebot"        ? pricebotMarketIntelFailed         :
-        false; // PhotoBot has no market intel
+        false; // PhotoBot + VideoBot have no market intel
 
       await prisma.eventLog.create({
         data: {
@@ -1204,8 +1244,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
             // with value 0 for forward-compat schema.
             apifyCostUsdReal: 0,
 
-            // CMD-SKILLS-INFRA-A: skill pack telemetry.
-            // CMD-PHOTOBOT-CORE-A: photobot added to ternary chain.
+            // CMD-VIDEOBOT-CORE-A: videobot added to ternary chain.
             skillPackVersion: (
               botType === "reconbot"        ? reconSkillPack?.version             :
               botType === "buyerbot"        ? buyerSkillPack?.version             :
@@ -1215,6 +1254,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
               botType === "carbot"          ? carbotSkillPack?.version            :
               botType === "pricebot"        ? pricebotSkillPack?.version          :
               botType === "photobot"        ? photobotSkillPack?.version          :
+              botType === "videobot"        ? videobotSkillPack?.version          :
               "v0"
             ),
             skillPackCount: (
@@ -1226,6 +1266,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
               botType === "carbot"          ? carbotSkillPack?.skillNames.length ?? 0            :
               botType === "pricebot"        ? pricebotSkillPack?.skillNames.length ?? 0          :
               botType === "photobot"        ? photobotSkillPack?.skillNames.length ?? 0          :
+              botType === "videobot"        ? videobotSkillPack?.skillNames.length ?? 0          :
               0
             ),
             skillPackChars: (
@@ -1237,6 +1278,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
               botType === "carbot"          ? carbotSkillPack?.totalChars ?? 0            :
               botType === "pricebot"        ? pricebotSkillPack?.totalChars ?? 0          :
               botType === "photobot"        ? photobotSkillPack?.totalChars ?? 0          :
+              botType === "videobot"        ? videobotSkillPack?.totalChars ?? 0          :
               0
             ),
           }),

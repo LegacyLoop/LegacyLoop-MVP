@@ -99,6 +99,15 @@ export const BOT_AI_CONFIG: Record<BotName, BotAIConfig> = {
     triggers: ["rare_vehicle"],
     costTier: "balanced",
   },
+  // CMD-VIDEOBOT-CORE-A: Grok primary for viral content + social hooks.
+  // OpenAI secondary on high_value items for structured script quality.
+  // Premium tier — VideoBot is the highest-revenue bot in the fleet.
+  videobot: {
+    primary: "grok",
+    secondary: "openai",
+    triggers: ["high_value"],
+    costTier: "premium",
+  },
   megabot: {
     primary: "openai", // placeholder — router defers to runMegabot()
     secondary: null,
