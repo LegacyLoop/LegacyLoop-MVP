@@ -403,6 +403,17 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     ? megaBotSharedPack.systemPromptBlock + "\n\n"
     : "";
 
+  // CMD-MEGABOT-BOT-PACK-WIRING: load per-bot MegaBot specialty packs.
+  // Each bot's megabot/ subfolder contains 5 M01-M05 packs that teach
+  // the 4-AI consensus team bot-specific specialist depth. Loaded via
+  // loadSkillFolder (reads single folder, no _shared/ prefix, process-
+  // cached). Only loads the active botType's megabot/ packs — the other
+  // 5 bots' megabot/ folders are not touched. Skipped in demo mode.
+  const botMegaPack = isDemoMode() ? null : loadSkillFolder(`${botType}/megabot`);
+  const botMegaBlock = botMegaPack?.systemPromptBlock
+    ? botMegaPack.systemPromptBlock + "\n\n"
+    : "";
+
   let reconOpts: RunSpecializedMegaBotOpts | undefined;
   if (botType === "reconbot" && !isDemoMode()) {
     try {
@@ -459,8 +470,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         priorValuationMid: midPrice,
         // CMD-SKILLS-INFRA-A: prepended to enrichedPrompt before
         // any item-specific context inside runSpecializedMegaBot.
-        // CMD-MEGABOT-SHARED-SKILLS: consensus packs prepended
-        skillPackBlock: megaBotSharedBlock + reconSkillPack.systemPromptBlock,
+        // CMD-MEGABOT-BOT-PACK-WIRING: consensus + bot mega + normal
+        skillPackBlock: megaBotSharedBlock + botMegaBlock + reconSkillPack.systemPromptBlock,
       };
     } catch (specErr) {
       console.warn("[megabot/reconbot] specContext/marketIntel assembly failed (non-critical):", specErr);
@@ -528,8 +539,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         priorValuationMid: midPrice,
         // CMD-SKILLS-INFRA-A: prepended to enrichedPrompt before
         // any item-specific context inside runSpecializedMegaBot.
-        // CMD-MEGABOT-SHARED-SKILLS: consensus packs prepended
-        skillPackBlock: megaBotSharedBlock + buyerSkillPack.systemPromptBlock,
+        // CMD-MEGABOT-BOT-PACK-WIRING: consensus + bot mega + normal
+        skillPackBlock: megaBotSharedBlock + botMegaBlock + buyerSkillPack.systemPromptBlock,
       };
     } catch (specErr) {
       buyerSpecContextFailed = true;
@@ -606,8 +617,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         priorValuationMid: midPrice,
         // CMD-SKILLS-INFRA-A: prepended to enrichedPrompt before
         // any item-specific context inside runSpecializedMegaBot.
-        // CMD-MEGABOT-SHARED-SKILLS: consensus packs prepended
-        skillPackBlock: megaBotSharedBlock + antiquebotSkillPack.systemPromptBlock,
+        // CMD-MEGABOT-BOT-PACK-WIRING: consensus + bot mega + normal
+        skillPackBlock: megaBotSharedBlock + botMegaBlock + antiquebotSkillPack.systemPromptBlock,
       };
     } catch (specErr) {
       antiqueSpecContextFailed = true;
@@ -682,8 +693,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         priorValuationMid: midPrice,
         // CMD-SKILLS-INFRA-A: prepended to enrichedPrompt before
         // any item-specific context inside runSpecializedMegaBot.
-        // CMD-MEGABOT-SHARED-SKILLS: consensus packs prepended
-        skillPackBlock: megaBotSharedBlock + collectiblesbotSkillPack.systemPromptBlock,
+        // CMD-MEGABOT-BOT-PACK-WIRING: consensus + bot mega + normal
+        skillPackBlock: megaBotSharedBlock + botMegaBlock + collectiblesbotSkillPack.systemPromptBlock,
       };
     } catch (specErr) {
       collectiblesSpecContextFailed = true;
@@ -769,8 +780,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         priorValuationMid: midPrice,
         // CMD-SKILLS-INFRA-A: prepended to enrichedPrompt before
         // any item-specific context inside runSpecializedMegaBot.
-        // CMD-MEGABOT-SHARED-SKILLS: consensus packs prepended
-        skillPackBlock: megaBotSharedBlock + carbotSkillPack.systemPromptBlock,
+        // CMD-MEGABOT-BOT-PACK-WIRING: consensus + bot mega + normal
+        skillPackBlock: megaBotSharedBlock + botMegaBlock + carbotSkillPack.systemPromptBlock,
       };
     } catch (specErr) {
       carSpecContextFailed = true;
@@ -837,8 +848,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         priorValuationMid: midPrice,
         // CMD-SKILLS-INFRA-A: prepended to enrichedPrompt before
         // any item-specific context inside runSpecializedMegaBot.
-        // CMD-MEGABOT-SHARED-SKILLS: consensus packs prepended
-        skillPackBlock: megaBotSharedBlock + listSkillPack.systemPromptBlock,
+        // CMD-MEGABOT-BOT-PACK-WIRING: consensus + bot mega + normal
+        skillPackBlock: megaBotSharedBlock + botMegaBlock + listSkillPack.systemPromptBlock,
       };
     } catch (specErr) {
       listSpecContextFailed = true;
