@@ -144,6 +144,69 @@ export function loadSkillPack(botType: string): SkillPack {
 }
 
 /**
+ * CMD-MEGABOT-SHARED-SKILLS: Load a SINGLE named skill folder
+ * WITHOUT prepending _shared/ packs. Used by the megabot route
+ * to load _shared_megabot/ packs that should only fire during
+ * MegaBot 4-AI consensus runs, never during normal single-AI
+ * bot scans.
+ *
+ * Process-cached on first call per folder — subsequent calls
+ * return the cached object (zero disk I/O). Safe to call
+ * multiple times per request. Returns an empty pack when no
+ * .md files exist in the folder — never throws.
+ *
+ * Unlike loadSkillPack(botType), this function does NOT
+ * concatenate _shared/ packs. It reads ONLY the named folder.
+ */
+export function loadSkillFolder(folderName: string): SkillPack {
+  const cacheKey = `__folder__${folderName}`;
+  const cached = cache.get(cacheKey);
+  if (cached) return cached;
+
+  const folderPath = path.join(SKILLS_DIR, folderName);
+  let skills: { name: string; body: string; mtimeMs: number }[] = [];
+  try {
+    skills = readSkillFolder(folderPath);
+  } catch (err) {
+    console.warn(`[skill-loader] loadSkillFolder(${folderName}) failed:`, err);
+  }
+
+  if (skills.length === 0) {
+    const empty: SkillPack = {
+      systemPromptBlock: "",
+      skillNames: [],
+      totalChars: 0,
+      version: SKILLS_VERSION,
+      lastUpdated: new Date(0).toISOString(),
+    };
+    cache.set(cacheKey, empty);
+    return empty;
+  }
+
+  const systemPromptBlock = skills
+    .map((s) => `# SKILL PACK: ${s.name}\n\n${s.body}`)
+    .join("\n\n---\n\n");
+
+  let maxMtimeMs = 0;
+  for (const s of skills) {
+    if (s.mtimeMs > maxMtimeMs) maxMtimeMs = s.mtimeMs;
+  }
+
+  const pack: SkillPack = {
+    systemPromptBlock,
+    skillNames: skills.map((s) => s.name),
+    totalChars: systemPromptBlock.length,
+    version: SKILLS_VERSION,
+    lastUpdated: maxMtimeMs > 0
+      ? new Date(maxMtimeMs).toISOString()
+      : new Date(0).toISOString(),
+  };
+
+  cache.set(cacheKey, pack);
+  return pack;
+}
+
+/**
  * Internal helper for tests / debug — clears the process cache.
  * Not exported for production use.
  */
