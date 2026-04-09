@@ -100,6 +100,68 @@ export default async function AdminPage() {
     } catch { /* skip malformed */ }
   }
 
+  // CMD-ADMIN-CACHE-WIDGET: Claude prompt cache + ScraperComp specialty cache stats.
+  // Queries EventLog.payload JSON for cache hit/miss data from Claude-primary bots
+  // + MEGABOT_RUN. Server-side so it renders in the initial page load.
+  const cacheThirtyDaysAgo = new Date();
+  cacheThirtyDaysAgo.setDate(cacheThirtyDaysAgo.getDate() - 30);
+  const CACHE_EVENT_TYPES = ["ANTIQUEBOT_RUN", "COLLECTIBLESBOT_RUN", "LISTBOT_RUN", "MEGABOT_RUN"];
+
+  type CacheBotStats = { totalCalls: number; cacheHits: number; hitRate: number; totalSavingsUsd: number; totalReadTokens: number };
+  const cacheBotMap: Record<string, CacheBotStats> = {};
+  for (const et of CACHE_EVENT_TYPES) {
+    cacheBotMap[et.replace("_RUN", "").toLowerCase()] = { totalCalls: 0, cacheHits: 0, hitRate: 0, totalSavingsUsd: 0, totalReadTokens: 0 };
+  }
+  let cacheCombined = { totalCalls: 0, cacheHits: 0, hitRate: 0, totalSavingsUsd: 0, projectedMonthlySavings: 0, projectedAnnualSavings: 0 };
+  let scraperCompSpecialty: Record<string, number> = {};
+  let scraperCompTotal = 0;
+
+  try {
+    const cacheLogs = await prisma.eventLog.findMany({
+      where: { eventType: { in: CACHE_EVENT_TYPES }, createdAt: { gte: cacheThirtyDaysAgo } },
+      select: { eventType: true, payload: true },
+    });
+    for (const log of cacheLogs) {
+      const key = log.eventType.replace("_RUN", "").toLowerCase();
+      if (!cacheBotMap[key]) continue;
+      cacheBotMap[key].totalCalls++;
+      if (!log.payload) continue;
+      try {
+        const d = JSON.parse(log.payload);
+        if (d.claudeCacheHit === true) cacheBotMap[key].cacheHits++;
+        if (typeof d.claudeCacheReadTokens === "number") cacheBotMap[key].totalReadTokens += d.claudeCacheReadTokens;
+        if (typeof d.claudeCacheSavingsUsd === "number") cacheBotMap[key].totalSavingsUsd += d.claudeCacheSavingsUsd;
+      } catch { /* skip */ }
+    }
+    let cc = 0, ch = 0, cs = 0;
+    for (const [, s] of Object.entries(cacheBotMap)) {
+      s.hitRate = s.totalCalls > 0 ? Math.round((s.cacheHits / s.totalCalls) * 100) : 0;
+      s.totalSavingsUsd = Number(s.totalSavingsUsd.toFixed(6));
+      cc += s.totalCalls; ch += s.cacheHits; cs += s.totalSavingsUsd;
+    }
+    const periodDays = Math.max(1, Math.round((Date.now() - cacheThirtyDaysAgo.getTime()) / 86400000));
+    const monthly = Number(((cs / periodDays) * 30).toFixed(4));
+    cacheCombined = {
+      totalCalls: cc, cacheHits: ch,
+      hitRate: cc > 0 ? Math.round((ch / cc) * 100) : 0,
+      totalSavingsUsd: Number(cs.toFixed(6)),
+      projectedMonthlySavings: monthly,
+      projectedAnnualSavings: Number((monthly * 12).toFixed(2)),
+    };
+
+    const scCounts = await prisma.scraperComp.groupBy({
+      by: ["sourcePlatform"],
+      where: { sourcePlatform: { in: ["PriceCharting", "PSAcard", "Beckett", "TCGPlayer"] } },
+      _count: true,
+    });
+    for (const row of scCounts) {
+      scraperCompSpecialty[row.sourcePlatform] = row._count;
+      scraperCompTotal += row._count;
+    }
+  } catch (e) {
+    console.warn("[admin] Cache stats queries failed (non-critical):", e);
+  }
+
   const MODULES = [
     {
       icon: "👥",
@@ -1144,6 +1206,139 @@ export default async function AdminPage() {
           </div>
         )}
       </section>
+
+      {/* ═══ Cache Performance (CMD-ADMIN-CACHE-WIDGET) ═══ */}
+      <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "12px", padding: "1.5rem", marginTop: "1.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem", flexWrap: "wrap", gap: "0.5rem" }}>
+          <h2 style={{ margin: 0, color: "var(--accent)", fontSize: "1rem", fontWeight: 700 }}>
+            💾 Cache Performance
+          </h2>
+          <span style={{ color: "var(--text-muted)", fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            Last 30 days
+          </span>
+        </div>
+
+        {cacheCombined.totalCalls === 0 && scraperCompTotal === 0 ? (
+          <div style={{ padding: "1rem", background: "var(--ghost-bg)", borderRadius: "0.5rem", color: "var(--text-muted)", fontSize: "0.82rem", textAlign: "center" }}>
+            No cache data yet — run some bot scans to populate.
+          </div>
+        ) : (
+          <>
+            {/* Two-column layout: Claude | ScraperComp */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.25rem", marginBottom: "1.25rem" }}>
+              {/* LEFT — Claude Prompt Cache */}
+              <div>
+                <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 700, marginBottom: "0.6rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>Claude Prompt Cache</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  {Object.entries(cacheBotMap).map(([bot, stats]) => (
+                    <div key={bot} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.4rem 0.6rem", background: "var(--ghost-bg)", borderRadius: "0.5rem" }}>
+                      <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{bot}</span>
+                      <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+                        <span style={{
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                          color: stats.hitRate >= 70 ? "#16a34a" : stats.hitRate >= 50 ? "#f59e0b" : stats.totalCalls === 0 ? "var(--text-muted)" : "#ef4444",
+                        }}>
+                          {stats.totalCalls > 0 ? `${stats.hitRate}%` : "—"}
+                        </span>
+                        <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
+                          {stats.totalCalls > 0 ? `${stats.cacheHits}/${stats.totalCalls}` : "0 calls"}
+                        </span>
+                        {stats.totalSavingsUsd > 0 && (
+                          <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#16a34a" }}>
+                            ${stats.totalSavingsUsd.toFixed(4)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {/* Combined row */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.6rem", background: "rgba(0,188,212,0.06)", borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.15)", marginTop: "0.15rem" }}>
+                    <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)" }}>Combined</span>
+                    <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+                      <span style={{
+                        fontSize: "0.78rem",
+                        fontWeight: 700,
+                        color: cacheCombined.hitRate >= 70 ? "#16a34a" : cacheCombined.hitRate >= 50 ? "#f59e0b" : cacheCombined.totalCalls === 0 ? "var(--text-muted)" : "#ef4444",
+                      }}>
+                        {cacheCombined.totalCalls > 0 ? `${cacheCombined.hitRate}%` : "—"}
+                      </span>
+                      <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>
+                        {cacheCombined.cacheHits}/{cacheCombined.totalCalls}
+                      </span>
+                      {cacheCombined.totalSavingsUsd > 0 && (
+                        <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#16a34a" }}>
+                          ${cacheCombined.totalSavingsUsd.toFixed(4)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT — ScraperComp Specialty Cache */}
+              <div>
+                <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", fontWeight: 700, marginBottom: "0.6rem", textTransform: "uppercase", letterSpacing: "0.04em" }}>ScraperComp Specialty Cache</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  {["PriceCharting", "PSAcard", "Beckett", "TCGPlayer"].map((platform) => (
+                    <div key={platform} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.4rem 0.6rem", background: "var(--ghost-bg)", borderRadius: "0.5rem" }}>
+                      <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{platform}</span>
+                      <span style={{ fontSize: "0.75rem", fontWeight: 700, color: (scraperCompSpecialty[platform] ?? 0) > 0 ? "#16a34a" : "var(--text-muted)" }}>
+                        {scraperCompSpecialty[platform] ?? 0} comps
+                      </span>
+                    </div>
+                  ))}
+                  {/* Combined row */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0.6rem", background: "rgba(0,188,212,0.06)", borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.15)", marginTop: "0.15rem" }}>
+                    <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--accent)" }}>Total Cached</span>
+                    <span style={{ fontSize: "0.78rem", fontWeight: 700, color: scraperCompTotal > 0 ? "#16a34a" : "var(--text-muted)" }}>
+                      {scraperCompTotal} comps
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* FULL WIDTH BOTTOM BAR — Savings projection (investor metrics) */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "2rem",
+              padding: "0.85rem 1.25rem",
+              background: "rgba(0,188,212,0.06)",
+              border: "1px solid rgba(0,188,212,0.2)",
+              borderRadius: "0.75rem",
+              flexWrap: "wrap",
+            }}>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Est. Monthly Savings</div>
+                <div style={{ fontSize: "1.6rem", fontWeight: 900, color: "var(--accent)", lineHeight: 1.1 }}>
+                  ${cacheCombined.projectedMonthlySavings > 0 ? cacheCombined.projectedMonthlySavings.toFixed(2) : "0.00"}
+                </div>
+              </div>
+              <div style={{ width: "1px", height: "2.5rem", background: "rgba(0,188,212,0.2)" }} />
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Annual Projection</div>
+                <div style={{ fontSize: "1.6rem", fontWeight: 900, color: "var(--accent)", lineHeight: 1.1 }}>
+                  ${cacheCombined.projectedAnnualSavings > 0 ? cacheCombined.projectedAnnualSavings.toFixed(2) : "0.00"}
+                </div>
+              </div>
+              {cacheCombined.hitRate > 0 && cacheCombined.hitRate < 50 && (
+                <>
+                  <div style={{ width: "1px", height: "2.5rem", background: "rgba(239,68,68,0.3)" }} />
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: "0.62rem", fontWeight: 600, color: "#ef4444", textTransform: "uppercase", letterSpacing: "0.05em" }}>⚠️ Low Hit Rate</div>
+                    <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#ef4444", lineHeight: 1.4 }}>
+                      {cacheCombined.hitRate}% — investigate cache TTL
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </>
+        )}
+      </div>
 
       {/* ═══ Bot Accuracy Leaderboard ═══ */}
       <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "12px", padding: "1.5rem", marginTop: "1.5rem" }}>
