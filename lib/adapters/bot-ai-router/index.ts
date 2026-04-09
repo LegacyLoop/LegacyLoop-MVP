@@ -61,6 +61,9 @@ import type {
   // CMD-ANTIQUEBOT-CORE-A: Step 7 Round A
   AntiqueBotHybridInput,
   AntiqueBotHybridResult,
+  // CMD-COLLECTIBLESBOT-CORE-A: Step 8 Round A
+  CollectiblesBotHybridInput,
+  CollectiblesBotHybridResult,
 } from "./types";
 
 // ─── Re-exports — public surface ───────────────────────────────
@@ -95,6 +98,9 @@ export type {
   // CMD-ANTIQUEBOT-CORE-A: Step 7 Round A
   AntiqueBotHybridInput,
   AntiqueBotHybridResult,
+  // CMD-COLLECTIBLESBOT-CORE-A: Step 8 Round A
+  CollectiblesBotHybridInput,
+  CollectiblesBotHybridResult,
 } from "./types";
 
 // ─── Constants ──────────────────────────────────────────────────
@@ -1695,6 +1701,321 @@ export async function routeAntiqueBotHybrid(
       // Logging must NEVER bubble up to the caller.
       console.warn(
         `[routeAntiqueBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
+      );
+    }
+  }
+
+  return result;
+}
+
+// ─── Public: routeCollectiblesBotHybrid() ──────────────────
+//
+// CMD-COLLECTIBLESBOT-CORE-A — Step 8 Round A
+//
+// CollectiblesBot router entry point. Claude-primary for nuanced
+// grading + collector-market reasoning across 15+ specialty
+// markets (sports cards, trading cards, comics, coins, stamps,
+// autographs, toys, video games, vinyl, watches, jewelry,
+// rare books, sneakers, minerals). OpenAI-secondary fires
+// conditionally on the borderline_grading trigger when primary's
+// visual_grading.grade_confidence is below the threshold
+// (default 80) — collector-opinion backup pass.
+//
+// Pattern mirrors routeAntiqueBotHybrid (Step 7A — proven in
+// production). Returns RAW JSON payload + a fused mergedResult —
+// caller is responsible for shape preservation since
+// CollectiblesBot's response schema is not AiAnalysis-compatible.
+//
+// IMPORTANT: this function NEVER throws to its caller. All
+// failures (provider errors, fallback exhaustion, log write
+// failures) are surfaced via the CollectiblesBotHybridResult
+// shape (degraded=true + error string).
+// ─────────────────────────────────────────────────────────
+
+const COLLECTIBLESBOT_HYBRID_TIMEOUT_MS = HYBRID_DEFAULTS.TIMEOUT_MS;
+const COLLECTIBLESBOT_HYBRID_MAX_TOKENS = HYBRID_DEFAULTS.MAX_TOKENS;
+
+export async function routeCollectiblesBotHybrid(
+  input: CollectiblesBotHybridInput,
+): Promise<CollectiblesBotHybridResult> {
+  // CMD-COLLECTIBLESBOT-CORE-A: hybrid runner (Round 8A export)
+  const startedAt = Date.now();
+  const config = getBotConfig("collectiblesbot");
+  // Defense-in-depth: validate config.triggers contains the
+  // borderline_grading trigger this round's caller relies on.
+  // Mirrors AntiqueBot validator — if anyone edits config.ts and
+  // accidentally drops the trigger, callers get a clear error
+  // instead of silent wrong-routing.
+  if (!config.triggers.includes("borderline_grading")) {
+    throw new Error(
+      "[routeCollectiblesBotHybrid] BOT_AI_CONFIG.collectiblesbot.triggers must " +
+        "include 'borderline_grading' — got: " + JSON.stringify(config.triggers),
+    );
+  }
+  const demoMode = isDemoMode();
+
+  const photoArr = Array.isArray(input.photoPath)
+    ? input.photoPath
+    : [input.photoPath];
+  const absPath = publicUrlToAbsPath(photoArr[0]);
+
+  const threshold = input.authConfidenceThreshold ?? 80;
+  const timeoutMs = input.timeoutMs ?? COLLECTIBLESBOT_HYBRID_TIMEOUT_MS;
+  const maxTokens = input.maxTokens ?? COLLECTIBLESBOT_HYBRID_MAX_TOKENS;
+
+  // CMD-COLLECTIBLESBOT-CORE-A: raw-JSON single-provider runner.
+  // Local closure (not extracted) — mirrors the proven AntiqueBot
+  // Step 7A pattern exactly.
+  type RawRunOutcome = ProviderRunResult & { rawResult: any };
+
+  const runRaw = async (
+    provider: ProviderName,
+    prompt: string,
+  ): Promise<RawRunOutcome> => {
+    const start = Date.now();
+    try {
+      const { text, tokens } = await callProviderRaw(
+        provider,
+        absPath,
+        prompt,
+        {
+          timeoutMs,
+          maxTokens,
+        },
+      );
+      const rawResult = parseAnyLooseJson(text);
+      if (!rawResult) {
+        return {
+          provider,
+          result: null,
+          error: `${provider} returned unparseable JSON`,
+          durationMs: Date.now() - start,
+          tokens,
+          actualCostUsd: computeActualCost(provider, tokens),
+          rawResult: null,
+        };
+      }
+      return {
+        provider,
+        result: null, // CollectiblesBot output is not AiAnalysis-shaped
+        error: null,
+        durationMs: Date.now() - start,
+        tokens,
+        actualCostUsd: computeActualCost(provider, tokens),
+        rawResult,
+      };
+    } catch (e: any) {
+      return {
+        provider,
+        result: null,
+        error: e?.message ?? String(e),
+        durationMs: Date.now() - start,
+        rawResult: null,
+      };
+    }
+  };
+
+  const providersAttempted: ProviderName[] = [];
+  const providersUsed: ProviderName[] = [];
+  let totalEstCost = 0;
+  let totalActualCost = 0;
+  let fallbackUsed = false;
+
+  // ── PRIMARY: Claude (nuanced grading reasoning) ────────
+  let primary: RawRunOutcome = await runRaw("claude", input.gradingPrompt);
+  providersAttempted.push("claude");
+  totalEstCost += estimateProviderCost("claude");
+  if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
+  if (primary.rawResult) providersUsed.push("claude");
+
+  // ── Graceful fallback chain on primary failure ────────
+  if (!primary.rawResult) {
+    const chain = fallbackChain("claude", providersAttempted);
+    let attempts = 0;
+    for (const fallback of chain) {
+      if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
+      attempts++;
+      fallbackUsed = true;
+      const fallbackOutcome = await runRaw(fallback, input.gradingPrompt);
+      providersAttempted.push(fallback);
+      totalEstCost += estimateProviderCost(fallback);
+      if (fallbackOutcome.actualCostUsd != null) {
+        totalActualCost += fallbackOutcome.actualCostUsd;
+      }
+      if (fallbackOutcome.rawResult) {
+        primary = fallbackOutcome;
+        providersUsed.push(fallback);
+        break;
+      }
+    }
+  }
+
+  // Read primary grading confidence (1-100). CollectiblesBot
+  // stores it under visual_grading.grade_confidence (often 0-1
+  // decimal). Also probe authentication.confidence and a
+  // top-level confidence fallback. Neutral 50 if none present.
+  const rawGradeConf: any =
+    primary.rawResult?.visual_grading?.grade_confidence ??
+    primary.rawResult?.authentication?.confidence ??
+    primary.rawResult?.confidence;
+  const primaryConfidence: number =
+    typeof rawGradeConf === "number"
+      ? rawGradeConf <= 1
+        ? Math.round(rawGradeConf * 100)
+        : Math.round(rawGradeConf)
+      : 50;
+
+  // ── SECONDARY: OpenAI (conditional, best-effort) ──────
+  // Fires when:
+  //   1. primary (or its fallback) succeeded
+  //   2. caller forced it (shouldRunSecondary === true) OR
+  //      primary confidence < threshold
+  // Secondary failure does NOT mark the run degraded.
+  let secondary: RawRunOutcome | undefined;
+  let secondaryTriggered = false;
+
+  const wantsSecondary =
+    !!primary.rawResult &&
+    (input.shouldRunSecondary === true || primaryConfidence < threshold);
+
+  if (wantsSecondary) {
+    secondaryTriggered = true;
+    const secondaryOutcome = await runRaw("openai", input.gradingPrompt);
+    providersAttempted.push("openai");
+    totalEstCost += estimateProviderCost("openai");
+    if (secondaryOutcome.actualCostUsd != null) {
+      totalActualCost += secondaryOutcome.actualCostUsd;
+    }
+    if (secondaryOutcome.rawResult) {
+      secondary = secondaryOutcome;
+      providersUsed.push("openai");
+    } else {
+      // Best-effort: log + continue, do NOT mark degraded.
+      console.warn(
+        `[routeCollectiblesBotHybrid] OpenAI secondary failed for item ${input.itemId}: ${secondaryOutcome.error ?? "unknown"}`,
+      );
+    }
+  }
+
+  // ── Merge: primary as base, overlay secondary's higher-
+  //    confidence visual_grading block ──
+  let mergedResult: any;
+  let mergedStrategy: "primary_only" | "merged_consensus" | "degraded";
+
+  if (primary.rawResult && secondary?.rawResult) {
+    mergedResult = { ...primary.rawResult };
+    const secRawConf: any =
+      secondary.rawResult?.visual_grading?.grade_confidence ??
+      secondary.rawResult?.authentication?.confidence ??
+      secondary.rawResult?.confidence;
+    const secGradeConf: number | null =
+      typeof secRawConf === "number"
+        ? secRawConf <= 1
+          ? Math.round(secRawConf * 100)
+          : Math.round(secRawConf)
+        : null;
+    if (
+      secGradeConf != null &&
+      secGradeConf > primaryConfidence &&
+      secondary.rawResult?.visual_grading
+    ) {
+      mergedResult.visual_grading = secondary.rawResult.visual_grading;
+    }
+    if (
+      secondary.rawResult?.authentication &&
+      !mergedResult.authentication
+    ) {
+      mergedResult.authentication = secondary.rawResult.authentication;
+    }
+    mergedStrategy = "merged_consensus";
+  } else if (primary.rawResult) {
+    mergedResult = primary.rawResult;
+    mergedStrategy = "primary_only";
+  } else {
+    mergedResult = null;
+    mergedStrategy = "degraded";
+  }
+
+  const degraded = !primary.rawResult;
+
+  // Aggregated token usage (primary + secondary, when present).
+  const aggregatedTokens = {
+    input:
+      (primary.tokens?.inputTokens ?? 0) +
+      (secondary?.tokens?.inputTokens ?? 0),
+    output:
+      (primary.tokens?.outputTokens ?? 0) +
+      (secondary?.tokens?.outputTokens ?? 0),
+    total:
+      (primary.tokens?.totalTokens ?? 0) +
+      (secondary?.tokens?.totalTokens ?? 0),
+  };
+
+  const result: CollectiblesBotHybridResult = {
+    primary,
+    secondary,
+    mergedResult,
+    primaryConfidence,
+    secondaryTriggered,
+    mergedStrategy,
+    costUsd: Number(totalEstCost.toFixed(5)),
+    actualCostUsd: Number(totalActualCost.toFixed(6)),
+    tokens: aggregatedTokens,
+    latencyMs: Date.now() - startedAt,
+    degraded,
+    error: degraded ? primary.error ?? "All providers failed" : undefined,
+  };
+
+  // ── Fire-and-forget routing log ───────────────────────
+  // Wrapped in try/catch so a logging exception cannot bubble
+  // up to the caller. Inner logRoutingDecision already swallows
+  // DB errors via console.warn.
+  if (!input.skipLogging) {
+    try {
+      void logRoutingDecision({
+        itemId: input.itemId,
+        payload: {
+          botName: "collectiblesbot",
+          primary: primary.provider,
+          secondary: secondary?.provider,
+          triggersFired: secondaryTriggered ? ["borderline_grading"] : [],
+          providersAttempted,
+          providersUsed,
+          costUsd: result.costUsd,
+          actualCostUsd: result.actualCostUsd,
+          ...(input.apifyCostUsd != null
+            ? { apifyCostUsd: input.apifyCostUsd }
+            : {}),
+          latencyMs: result.latencyMs,
+          fallbackUsed,
+          degraded,
+          confidence: primaryConfidence,
+          mergedStrategy,
+          tokens: {
+            [primary.provider]: {
+              input: primary.tokens?.inputTokens ?? null,
+              output: primary.tokens?.outputTokens ?? null,
+              total: primary.tokens?.totalTokens ?? null,
+            },
+            ...(secondary?.tokens
+              ? {
+                  [secondary.provider]: {
+                    input: secondary.tokens.inputTokens,
+                    output: secondary.tokens.outputTokens,
+                    total: secondary.tokens.totalTokens,
+                  },
+                }
+              : {}),
+          },
+          demoMode,
+          error: result.error,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (e: any) {
+      // Logging must NEVER bubble up to the caller.
+      console.warn(
+        `[routeCollectiblesBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
       );
     }
   }

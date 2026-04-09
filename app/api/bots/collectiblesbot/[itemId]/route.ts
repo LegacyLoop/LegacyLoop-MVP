@@ -19,6 +19,13 @@ import { scrapeTcgplayerApify } from "@/lib/market-intelligence/adapters/tcgplay
 import { scrapeCourtyard } from "@/lib/market-intelligence/adapters/courtyard";
 import { scrapePriceCharting } from "@/lib/market-intelligence/adapters/pricecharting";
 import { scrapePsaCard } from "@/lib/market-intelligence/adapters/psacard";
+// CMD-COLLECTIBLESBOT-CORE-A: free Beckett HTML scraper (Tier 1 builtin)
+import { scrapeBeckettHtml } from "@/lib/market-intelligence/adapters/beckett";
+// CMD-COLLECTIBLESBOT-CORE-A: hybrid router + spec context + skill pack
+import { routeCollectiblesBotHybrid } from "@/lib/adapters/bot-ai-router";
+import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
+import { summarizeSpecContext } from "@/lib/bots/spec-guards";
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -131,11 +138,34 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "collectiblesbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
+    // CMD-COLLECTIBLESBOT-CORE-A: skill pack + spec context (gap closure).
+    // skill-loader is process-cached → zero cost on warm calls.
+    // buildItemSpecContext reads live Item fields (saleZip, saleMethod,
+    // shippingDifficulty, weightLbs, etc.) and produces a prompt-ready
+    // block + a structured summary persisted in COLLECTIBLESBOT_RUN.
+    // Skills folder is empty until CMD-COLLECTIBLESBOT-SKILLS-B ships —
+    // loadSkillPack returns empty SkillPack, skillPackPrefix is "" until
+    // Round B. Wiring lives here from CORE-A so the telemetry schema is
+    // complete on day one.
+    const skillPack = loadSkillPack("collectiblesbot");
+    const specContext = await buildItemSpecContext(item.id, { item, user });
+    const specSummary = summarizeSpecContext(specContext);
+    const skillPackPrefix = skillPack.systemPromptBlock
+      ? skillPack.systemPromptBlock + "\n\n"
+      : "";
+    const specPromptPrefix = specContext.promptBlock
+      ? specContext.promptBlock + "\n\n"
+      : "";
+
     // ── REAL COLLECTIBLES MARKET DATA ──
+    // CMD-COLLECTIBLESBOT-CORE-A: hoist marketIntel so the post-AI
+    // block below can reuse it instead of firing a duplicate
+    // getMarketIntelligence call (FLAG-CB-2 cleanup).
+    let marketIntel: Awaited<ReturnType<typeof getMarketIntelligence>> | null = null;
     let collectiblesMarketContext = "";
     try {
       const sellerZip = item.saleZip || "04901";
-      const marketIntel = await getMarketIntelligence(
+      marketIntel = await getMarketIntelligence(
         itemName,
         category,
         sellerZip,
@@ -201,13 +231,18 @@ ${tcgApify.comps.slice(0, 8).map((c: any, i: number) => `${i + 1}. "${c.item}" �
           : catLower.match(/lego/) ? "lego-sets"
           : "trading-cards";
 
-        const [pcResult, psaResult] = await Promise.allSettled([
+        // CMD-COLLECTIBLESBOT-CORE-A: Beckett HTML (free Tier 1 builtin)
+        // joins PriceCharting + PSACard in the card-specialty parallel
+        // pull. Free = $0.00 Apify cost. Graceful degrade on DOM drift.
+        const [pcResult, psaResult, beckettResult] = await Promise.allSettled([
           scrapePriceCharting(itemName, pcCategory),
           scrapePsaCard(itemName),
+          scrapeBeckettHtml(itemName),
         ]);
 
         const pc = pcResult.status === "fulfilled" ? pcResult.value : null;
         const psa = psaResult.status === "fulfilled" ? psaResult.value : null;
+        const beckett = beckettResult.status === "fulfilled" ? beckettResult.value : null;
 
         if (pc?.success && pc.comps.length > 0) {
           const ungraded = pc.comps.filter((c: any) => c.condition?.includes("Ungraded"));
@@ -226,6 +261,13 @@ ${tcgApify.comps.slice(0, 8).map((c: any, i: number) => `${i + 1}. "${c.item}" �
 ${psa.comps.slice(0, 8).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price} [${c.condition}]${c.date ? ` (${c.date})` : ""}`).join("\n")}
 These are REAL PSA graded card auction results. Use these to validate your graded value estimates at each PSA tier.`;
         }
+
+        // CMD-COLLECTIBLESBOT-CORE-A: Beckett Marketplace (free HTML)
+        if (beckett?.success && beckett.comps.length > 0) {
+          specialtyContext += `\n\nBECKETT MARKETPLACE (${beckett.comps.length} collector listings):
+${beckett.comps.slice(0, 8).map((c: any, i: number) => `${i + 1}. "${c.item}" — $${c.price}${c.condition ? ` [${c.condition}]` : ""}`).join("\n")}
+These are REAL collector-market listings from Beckett. Combined with PriceCharting + PSACard, you now have three independent graded-card price sources to triangulate your estimate.`;
+        }
       }
     } catch { /* non-critical */ }
 
@@ -238,7 +280,11 @@ These are REAL PSA graded card auction results. Use these to validate your grade
       _sellerZip,
     );
 
-    const systemPrompt = enrichmentPrefix + collectiblesMarketContext + specialtyContext + webEnrichment + `You are a world-class collectibles specialist with deep expertise across ALL major collector markets. You have encyclopedic knowledge of grading standards, auction records, population reports, and current market conditions.
+    // CMD-COLLECTIBLESBOT-CORE-A: skill pack + spec context prepended to
+    // the existing prompt assembly. Order: skills → seller spec →
+    // cross-bot enrichment → market context → specialty scrapers →
+    // web pre-pass → core specialist prompt.
+    const systemPrompt = skillPackPrefix + specPromptPrefix + enrichmentPrefix + collectiblesMarketContext + specialtyContext + webEnrichment + `You are a world-class collectibles specialist with deep expertise across ALL major collector markets. You have encyclopedic knowledge of grading standards, auction records, population reports, and current market conditions.
 
 YOUR SPECIALTY MARKETS — you must actively reference these in every analysis:
 - Sports Cards: PSA, BGS/Beckett, SGC grading scales. eBay sold listings, PWCC Marketplace, Goldin Auctions, Beckett Marketplace, SportLots, Comc.com, MySlabs
@@ -464,73 +510,56 @@ MINERALS & FOSSILS:
 Be specific to the actual collectible category. All prices USD. Return ONLY JSON. Start with {. No markdown fences.`;
 
     let result: any;
+    // CMD-COLLECTIBLESBOT-CORE-A: track hybrid run for telemetry.
+    // Hoisted so the COLLECTIBLESBOT_RUN write below has access to
+    // the merge strategy + confidence + cost data.
+    let hybridRun: Awaited<ReturnType<typeof routeCollectiblesBotHybrid>> | null = null;
 
     if (openai) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60_000);
       try {
-        // Build real image content for OpenAI Vision
-        const imageContent: any[] = [];
-        for (const photo of item.photos) {
-          try {
-            const absPath = publicUrlToAbsolutePath(photo.filePath);
-            if (fs.existsSync(absPath)) {
-              const stats = fs.statSync(absPath);
-              if (stats.size > 10 * 1024 * 1024) {
-                console.warn("[collectiblesbot] Skipping oversized photo:", photo.filePath, `${Math.round(stats.size / 1024 / 1024)}MB`);
-                continue;
-              }
-              imageContent.push({
-                type: "input_image",
-                image_url: fileToDataUrl(absPath),
-                detail: "high",
-              });
-            }
-          } catch (photoErr) {
-            console.warn("[collectiblesbot] Skipping unreadable photo:", photo.filePath, photoErr);
-          }
+        // CMD-COLLECTIBLESBOT-CORE-A: route through routeCollectiblesBotHybrid.
+        // Claude primary (nuanced grading reasoning) + OpenAI secondary
+        // (fires when visual_grading.grade_confidence < 80). photoUrls
+        // maps the item's photo file paths from the included relation.
+        const photoUrls = item.photos.slice(0, 4).map((p: any) => p.filePath);
+        if (photoUrls.length === 0) {
+          return NextResponse.json(
+            { error: "CollectiblesBot requires at least one photo for visual inspection." },
+            { status: 400 },
+          );
         }
 
-        const userContent: any[] = [
-          {
-            type: "input_text",
-            text: `Analyze this item as a collectible.${
-              imageContent.length > 0
-                ? ` ${imageContent.length} photo(s) attached — examine closely for grading details: corners, edges, surface condition, centering, marks, wear patterns, authenticity indicators, maker marks, and any condition issues visible in the images.`
-                : " No photos available — assess based on item data only."
-            }${
-              imageContent.length < item.photos.length
-                ? ` (${item.photos.length - imageContent.length} photo(s) could not be loaded)`
-                : ""
-            } Return ONLY valid JSON.`,
-          },
-          ...imageContent,
-        ];
+        hybridRun = await routeCollectiblesBotHybrid({
+          itemId: item.id,
+          photoPath: photoUrls,
+          gradingPrompt: systemPrompt,
+          authConfidenceThreshold: 80,
+          // AntiqueBot parity — 90s + 16k tokens to give Claude room
+          // for the 15-category specialty grading schema.
+          timeoutMs: 90_000,
+          maxTokens: 16_384,
+        });
 
-        const response = await openai.responses.create({
-          model: "gpt-4o",
-          input: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userContent },
-          ],
-          max_output_tokens: 6000,
-        }, { signal: controller.signal });
-
-        const text = typeof response.output === "string"
-          ? response.output
-          : response.output_text || JSON.stringify(response.output);
-
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          result = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("No JSON in response");
+        if (hybridRun.degraded || !hybridRun.mergedResult) {
+          console.error(
+            "[collectiblesbot] hybrid degraded:",
+            hybridRun.error ?? "all providers failed",
+          );
+          return NextResponse.json(
+            {
+              error: `CollectiblesBot AI analysis failed: ${hybridRun.error ?? "all providers failed"}`,
+            },
+            { status: 422 },
+          );
         }
+
+        result = hybridRun.mergedResult;
       } catch (aiErr: any) {
-        console.error("[collectiblesbot] OpenAI error:", aiErr);
-        return NextResponse.json({ error: `CollectiblesBot failed: ${aiErr?.message ?? String(aiErr)}` }, { status: 422 });
-      } finally {
-        clearTimeout(timeoutId);
+        console.error("[collectiblesbot] router error:", aiErr);
+        return NextResponse.json(
+          { error: `CollectiblesBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` },
+          { status: 422 },
+        );
       }
     } else {
       // Demo generator with deterministic variation + category awareness
@@ -649,29 +678,25 @@ Be specific to the actual collectible category. All prices USD. Return ONLY JSON
     }
 
     // ── MARKET INTELLIGENCE — Real sold data from public marketplaces ──
-    const marketData = await getMarketIntelligence(
-      result.item_name || itemName,
-      result.category || category,
-      undefined, // sellerZip
-      undefined, // phase1Only
-      undefined, // isMegaBot
-      "collectiblesbot", // CMD-SCRAPER-WIRING-C2
-    ).catch(() => null);
-
-    if (marketData && marketData.compCount > 0) {
-      result.market_comps = marketData.comps.slice(0, 5);
-      result.market_median = marketData.median;
-      result.market_low = marketData.low;
-      result.market_high = marketData.high;
-      result.market_confidence = marketData.confidence;
-      result.pricing_sources = marketData.sources;
-      result.market_trend = marketData.trend;
+    // CMD-COLLECTIBLESBOT-CORE-A: FLAG-CB-2 cleanup. Previously this
+    // block fired a SECOND getMarketIntelligence call after the AI
+    // returned — double scraper spend, double ScraperComp cache hits.
+    // Now reuses the hoisted `marketIntel` variable from the primary
+    // pre-prompt call. Same data, zero duplicate cost.
+    if (marketIntel && marketIntel.compCount > 0) {
+      result.market_comps = marketIntel.comps.slice(0, 5);
+      result.market_median = marketIntel.median;
+      result.market_low = marketIntel.low;
+      result.market_high = marketIntel.high;
+      result.market_confidence = marketIntel.confidence;
+      result.pricing_sources = marketIntel.sources;
+      result.market_trend = marketIntel.trend;
 
       // Flag pricing discrepancy if AI vs market differ by >40%
       const aiMid = result.raw_value_mid;
-      if (aiMid && marketData.median && Math.abs(aiMid - marketData.median) / Math.max(aiMid, marketData.median) > 0.4) {
+      if (aiMid && marketIntel.median && Math.abs(aiMid - marketIntel.median) / Math.max(aiMid, marketIntel.median) > 0.4) {
         result.pricing_discrepancy = true;
-        result.pricing_discrepancy_note = `Market data ($${marketData.median}) differs significantly from AI estimate ($${aiMid})`;
+        result.pricing_discrepancy_note = `Market data ($${marketIntel.median}) differs significantly from AI estimate ($${aiMid})`;
       }
     }
 
@@ -688,9 +713,42 @@ Be specific to the actual collectible category. All prices USD. Return ONLY JSON
       data: { itemId, eventType: "COLLECTIBLESBOT_RESULT", payload: JSON.stringify(result) },
     });
 
-    await prisma.eventLog.create({
-      data: { itemId, eventType: "COLLECTIBLESBOT_RUN", payload: JSON.stringify({ userId: user.id, timestamp: new Date().toISOString() }) },
-    });
+    // CMD-COLLECTIBLESBOT-CORE-A: extended COLLECTIBLESBOT_RUN telemetry.
+    // Parity with ANTIQUEBOT_RUN / LISTBOT_RUN / BUYERBOT_RUN /
+    // RECONBOT_RUN. Logs skill pack stats + spec summary + hybrid
+    // routing telemetry. Wrapped in try/catch so a logging failure
+    // cannot block the user-facing response.
+    try {
+      await prisma.eventLog.create({
+        data: {
+          itemId,
+          eventType: "COLLECTIBLESBOT_RUN",
+          payload: JSON.stringify({
+            userId: user.id,
+            timestamp: new Date().toISOString(),
+            // Skill pack telemetry (Round B will populate
+            // collectiblesbot/*.md; Round A surfaces version +
+            // shared-pack count that load on day one)
+            skillPackVersion: skillPack.version,
+            skillPackCount: skillPack.skillNames.length,
+            skillPackChars: skillPack.totalChars,
+            // Spec context summary (Constitution audit)
+            specSummary,
+            // Hybrid router telemetry (live runs only — demo path null)
+            mergedStrategy: hybridRun?.mergedStrategy ?? null,
+            primaryConfidence: hybridRun?.primaryConfidence ?? null,
+            secondaryTriggered: hybridRun?.secondaryTriggered ?? false,
+            actualCostUsd: hybridRun?.actualCostUsd ?? 0,
+            costUsd: hybridRun?.costUsd ?? 0,
+            latencyMs: hybridRun?.latencyMs ?? 0,
+            tokens: hybridRun?.tokens ?? { input: 0, output: 0, total: 0 },
+            isDemo: !!result?._isDemo,
+          }),
+        },
+      });
+    } catch (logErr) {
+      console.warn("[collectiblesbot] COLLECTIBLESBOT_RUN log write failed (non-critical):", logErr);
+    }
 
     // Fire-and-forget: PriceSnapshot from collectibles valuation
     prisma.priceSnapshot.create({

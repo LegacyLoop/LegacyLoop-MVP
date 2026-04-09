@@ -437,3 +437,118 @@ export interface AntiqueBotHybridResult {
   /** Last error message when degraded=true */
   error?: string;
 }
+
+// ─── CollectiblesBot hybrid (Step 8 Round A) ─────────────────────
+//
+// CMD-COLLECTIBLESBOT-CORE-A
+//
+// CollectiblesBot is the fifth hybrid bot after ListBot (Step 3),
+// BuyerBot (Step 5), ReconBot (Step 6), and AntiqueBot (Step 7).
+// Pattern mirrors AntiqueBotHybrid* exactly: Claude primary for
+// nuanced grading + collector-market reasoning, OpenAI secondary
+// (collector-opinion backup) that fires when primary's
+// grading.confidence OR authentication.confidence < threshold.
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Input shape for routeCollectiblesBotHybrid().
+ *
+ * Caller is responsible for:
+ *  • Pre-evaluating shouldRunSecondary if forcing the OpenAI
+ *    secondary regardless of confidence (typically false — let
+ *    the threshold gate decide)
+ *  • Tracking apifyCostUsd from any scraper calls fired prior
+ *    to invoking the router
+ *  • Setting authConfidenceThreshold (default 80) — primary
+ *    confidence below this triggers the OpenAI secondary
+ *
+ * CMD-COLLECTIBLESBOT-CORE-A — Step 8 Round A
+ */
+export interface CollectiblesBotHybridInput {
+  /** Item ID for EventLog correlation */
+  itemId: string;
+  /** Photo path(s) — accepts string or string[] for multi-photo */
+  photoPath: string | string[];
+  /** Raw grading prompt — passed AS-IS to Claude primary
+   *  (and to the OpenAI secondary if it fires). Should include
+   *  the full assembled prompt: skill pack + spec context +
+   *  enrichment + market intel + specialty scrapers +
+   *  grading instructions. */
+  gradingPrompt: string;
+  /** Force the OpenAI secondary to run regardless of primary
+   *  confidence. Default false — the confidence threshold gate
+   *  drives secondary firing automatically. */
+  shouldRunSecondary?: boolean;
+  /** Primary confidence threshold (1-100). When the primary
+   *  result's visual_grading.grade_confidence is BELOW this
+   *  number (as a percentage, so 0.80 → 80), the OpenAI
+   *  secondary fires for a collector-opinion backup pass.
+   *  Default 80. */
+  authConfidenceThreshold?: number;
+  /** Override timeout for both primary and secondary calls.
+   *  Defaults to HYBRID_DEFAULTS.TIMEOUT_MS. */
+  timeoutMs?: number;
+  /** Override max output tokens for both primary and secondary.
+   *  Defaults to HYBRID_DEFAULTS.MAX_TOKENS. */
+  maxTokens?: number;
+  /** Caller-tracked Apify scraper spend for this CollectiblesBot
+   *  call. Persisted in BOT_AI_ROUTING EventLog payload via the
+   *  apifyCostUsd field added in Step 4.8. */
+  apifyCostUsd?: number;
+  /** Optional logging skip flag for tests. Default false. */
+  skipLogging?: boolean;
+}
+
+/**
+ * Output shape for routeCollectiblesBotHybrid().
+ * Returns RAW JSON results (NOT AiAnalysis-shaped) so
+ * CollectiblesBot's existing payload schema (visual_grading,
+ * graded_values, collection_context, price_history, investment,
+ * authentication_services, liquidity_assessment, insurance_valuation,
+ * condition_history, comparable_sales, executive_summary) is
+ * preserved unchanged when consumed by CollectiblesPanel.
+ *
+ * mergedResult contains the fused output: primary as base, with
+ * secondary's higher-confidence visual_grading overlay if both
+ * succeeded. mergedStrategy reports which path was taken so
+ * downstream telemetry can audit consensus quality.
+ */
+export interface CollectiblesBotHybridResult {
+  /** Claude primary result with raw JSON payload */
+  primary: ProviderRunResult & { rawResult: any };
+  /** OpenAI secondary result — only present when fired AND
+   *  succeeded. Best-effort: secondary failure does NOT mark
+   *  the run degraded. */
+  secondary?: ProviderRunResult & { rawResult: any };
+  /** Merged final result. primary as base, with secondary's
+   *  higher-confidence visual_grading block overlaid if both
+   *  succeeded. Falls back to primary alone or secondary alone
+   *  per mergedStrategy. */
+  mergedResult: any;
+  /** Grading confidence (1-100) read from the primary result.
+   *  Used by callers to size confidence bands. */
+  primaryConfidence: number;
+  /** True if the OpenAI secondary fired (either because primary
+   *  confidence was below threshold OR caller forced it). */
+  secondaryTriggered: boolean;
+  /** Merge strategy taken:
+   *   - "primary_only":      primary OK, secondary did not fire
+   *   - "merged_consensus":  both OK, fused
+   *   - "degraded":          primary failed, fallback or secondary used,
+   *                          or both failed (caller checks .degraded) */
+  mergedStrategy: "primary_only" | "merged_consensus" | "degraded";
+  /** Estimated USD cost for the run (sum of providers attempted) */
+  costUsd: number;
+  /** Actual USD cost from token metering (Step 3 carry-over) */
+  actualCostUsd: number;
+  /** Aggregated token usage across primary + secondary */
+  tokens: { input: number; output: number; total: number };
+  /** Total wall-clock latency in milliseconds */
+  latencyMs: number;
+  /** True if all providers (primary + fallbacks + secondary)
+   *  failed. Caller should return a 422 error to the user when
+   *  degraded. */
+  degraded: boolean;
+  /** Last error message when degraded=true */
+  error?: string;
+}
