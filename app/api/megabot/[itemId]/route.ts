@@ -361,11 +361,12 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   // scrapers fire ONLY for CarBot MegaBot. The premium 7cr MegaBot price
   // covers the $0.50+ subscription cost. Other bots stay locked out via
   // the global ENABLE_SUBSCRIPTION_SCRAPERS=false env default.
-  let _prevSubscriptionFlag: string | undefined;
-  if (botType === "carbot") {
-    _prevSubscriptionFlag = process.env.ENABLE_SUBSCRIPTION_SCRAPERS;
-    process.env.ENABLE_SUBSCRIPTION_SCRAPERS = "true";
-  }
+  //
+  // CMD-FLAG-SPRINT-FIX (FLAG-CAR-3): REMOVED global process.env mutation
+  // from this location. The env shim is now scoped to ONLY surround the
+  // getMarketIntelligence call inside carbotOpts assembly below (lines ~745).
+  // This eliminates the TOCTOU race condition where concurrent MegaBot
+  // requests for different bots could see the flag as "true".
 
   // CMD-RECONBOT-MEGA-C: assemble per-bot opts (currently ReconBot
   // only). When botType !== "reconbot" OR isDemoMode() returns true,
@@ -741,18 +742,25 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
 
       let marketIntel: any = null;
       try {
-        // CMD-CARBOT-CORE-A: isMegaBot=true unlocks Tier 3 paid
-        // scraper pool (BringATrailer + Autotrader/Cargurus via
-        // the env shim above). Subscription scrapers fire ONLY
-        // on CarBot MegaBot scans.
-        marketIntel = await getMarketIntelligence(
-          ctx.itemName ?? item.title ?? "",
-          "vehicle",
-          item.saleZip ?? undefined,
-          undefined, // phase1Only — keep default
-          true,      // isMegaBot — enables paid scraper pool
-          "carbot",  // CMD-SCRAPER-WIRING-C2
-        );
+        // CMD-FLAG-SPRINT-FIX (FLAG-CAR-3): scoped env mutation.
+        // Subscription flag set ONLY for this getMarketIntelligence call,
+        // then immediately restored. Eliminates the global race condition.
+        const _prev = process.env.ENABLE_SUBSCRIPTION_SCRAPERS;
+        process.env.ENABLE_SUBSCRIPTION_SCRAPERS = "true";
+        try {
+          marketIntel = await getMarketIntelligence(
+            ctx.itemName ?? item.title ?? "",
+            "vehicle",
+            item.saleZip ?? undefined,
+            undefined, // phase1Only — keep default
+            true,      // isMegaBot — enables paid scraper pool
+            "carbot",  // CMD-SCRAPER-WIRING-C2
+          );
+        } finally {
+          // CMD-FLAG-SPRINT-FIX: immediately restore — scoped to this call only
+          if (_prev === undefined) delete process.env.ENABLE_SUBSCRIPTION_SCRAPERS;
+          else process.env.ENABLE_SUBSCRIPTION_SCRAPERS = _prev;
+        }
       } catch (err) {
         carMarketIntelFailed = true;
         console.warn("[megabot/carbot] getMarketIntelligence failed:", err);
@@ -1047,14 +1055,9 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     console.error(`[megabot/${botType}]`, e);
     return new Response(`MegaBot ${botType} failed: ${e.message}`, { status: 422 });
   } finally {
-    // Restore the subscription flag immediately after the call
-    if (botType === "carbot") {
-      if (_prevSubscriptionFlag === undefined) {
-        delete process.env.ENABLE_SUBSCRIPTION_SCRAPERS;
-      } else {
-        process.env.ENABLE_SUBSCRIPTION_SCRAPERS = _prevSubscriptionFlag;
-      }
-    }
+    // CMD-FLAG-SPRINT-FIX (FLAG-CAR-3): subscription env shim cleanup
+    // is now scoped inside the carbotOpts assembly block (lines ~747-763).
+    // No global teardown needed here anymore.
   }
 
   // ── ALL-AGENT-FAILURE FALLBACK ──

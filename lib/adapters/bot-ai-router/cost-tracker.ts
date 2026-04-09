@@ -22,39 +22,53 @@ import type { CostTier, ProviderName, TokenUsage } from "./types";
 
 // ─── Cost ceilings (USD per single routeBotAI call) ────────────
 
+/**
+ * CMD-FLAG-SPRINT-FIX (FLAG-SB-1): Cost ceilings updated to reflect
+ * real token volumes with skill packs. Previous values assumed 4.5k
+ * tokens/call; real calls are 30-40k tokens with skill packs loaded.
+ *
+ * Budget: AnalyzeBot, PhotoBot (OpenAI primary, no skill packs yet or minimal)
+ * Balanced: AntiqueBot, CollectiblesBot, CarBot, PriceBot (Claude/Gemini/OpenAI)
+ * Premium: ListBot (always-both hybrid), VideoBot (Grok + OpenAI)
+ */
 /** Budget tier: ~one cheap provider only (1cr bots). */
-export const TIER_BUDGET_USD = 0.008;
+export const TIER_BUDGET_USD = 0.015;
 
-/** Balanced tier: primary + conditional secondary (2cr bots). */
-export const TIER_BALANCED_USD = 0.020;
+/** Balanced tier: primary + conditional secondary (2-4cr bots). */
+export const TIER_BALANCED_USD = 0.060;
 
 /** Premium tier: primary + secondary always (hybrid bots). */
-export const TIER_PREMIUM_USD = 0.050;
+export const TIER_PREMIUM_USD = 0.100;
 
 /**
- * Hard ceiling — 2% of $3.57 revenue floor. NO call may exceed this.
- * If a routing decision would push past this, the secondary is
- * dropped and the call proceeds with primary only.
+ * Hard ceiling — ~3% of $2.84 revenue floor (4cr bot). NO call may exceed.
+ * If a routing decision would push past this, the secondary is dropped.
  */
-export const HARD_CEILING_USD = 0.071;
+export const HARD_CEILING_USD = 0.120;
 
 // ─── Per-provider estimated cost per call ───────────────────────
 
 /**
- * Estimated USD cost per single provider call. Based on:
- *  • OpenAI gpt-4o-mini @ 4.5k tokens (in+out) ≈ $0.0025
- *  • Anthropic Claude Haiku 4.5 @ 4.5k tokens   ≈ $0.0044
- *  • Google Gemini 2.5 Flash @ 4.5k tokens      ≈ $0.00125
- *  • xAI Grok-4 @ 4.5k tokens                   ≈ $0.0025
+ * CMD-FLAG-SPRINT-FIX (FLAG-SB-1): Updated cost estimates to reflect
+ * real token volumes with skill packs (~30-40k input tokens per call).
  *
- * These are estimates until token metering ships. They lean high
- * to keep margin protection conservative.
+ * Previous estimates assumed 4.5k tokens (pre-skill-pack era). With
+ * 186 skill packs loaded, bots now inject 28-40k tokens of system
+ * prompt per call. These updated estimates reflect the real cost:
+ *
+ *  • OpenAI gpt-4o-mini @ 35k in + 2k out ≈ $0.0065
+ *  • Anthropic Claude Haiku 4.5 @ 35k in + 2k out ≈ $0.045
+ *  • Google Gemini 2.5 Flash @ 35k in + 2k out ≈ $0.004
+ *  • xAI Grok-4 @ 35k in + 2k out ≈ $0.045
+ *
+ * computeActualCost() still uses real token counts when available.
+ * These estimates are the FALLBACK for affordability pre-checks.
  */
 const PROVIDER_COST_USD: Record<ProviderName, number> = {
-  openai: 0.0025,
-  claude: 0.0044,
-  gemini: 0.00125,
-  grok: 0.0025,
+  openai: 0.007,
+  claude: 0.045,
+  gemini: 0.004,
+  grok: 0.045,
 };
 
 /** Lookup the cost ceiling for a given tier. */

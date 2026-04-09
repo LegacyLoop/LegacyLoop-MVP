@@ -234,6 +234,21 @@ ${tcgApify.comps.slice(0, 8).map((c: any, i: number) => `${i + 1}. "${c.item}" â
         // CMD-COLLECTIBLESBOT-CORE-A: Beckett HTML (free Tier 1 builtin)
         // joins PriceCharting + PSACard in the card-specialty parallel
         // pull. Free = $0.00 Apify cost. Graceful degrade on DOM drift.
+        // FLAG-CB-3-DEFERRED: PSA Population Report Integration
+        // Currently, scrapePsaCard returns AUCTION HISTORY (graded card sales),
+        // NOT population data (total graded count by grade level).
+        // Live pop report integration would require:
+        //   1. New adapter: lib/market-intelligence/adapters/psa-pop.ts
+        //   2. Scraper registry entry with cost tier
+        //   3. ScraperComp cache integration
+        //   4. Context formatting for the prompt
+        // PSA pop data is behind psacard.com/pop (no official public API).
+        // Would need Apify scraper or HTML parser.
+        // For now, pop report data is advisory only â€” the AI references
+        // population data from its training knowledge. Live data would
+        // improve accuracy for high-value graded cards.
+        // Injection point for future live pop report: add to this
+        // Promise.allSettled block alongside PriceCharting + PSACard + Beckett.
         const [pcResult, psaResult, beckettResult] = await Promise.allSettled([
           scrapePriceCharting(itemName, pcCategory),
           scrapePsaCard(itemName),
