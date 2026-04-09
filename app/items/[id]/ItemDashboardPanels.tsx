@@ -3145,7 +3145,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
             {/* ── SECTION: SHIPPING PROFILE ── */}
             <AccordionHeader id="ai-shipping" icon="📦" title="SHIPPING PROFILE" subtitle={`${aiData?.weight_estimate_lbs ?? "?"} lbs · ${aiData?.shipping_difficulty ?? ""}`} isOpen={aiOpenSections.has("ai-shipping")} onToggle={toggleAiSection} />
             {aiOpenSections.has("ai-shipping") && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem", marginBottom: "0.25rem" }}>
+              <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem", marginBottom: "0.25rem" }}>
                 <div style={{ textAlign: "center", padding: "0.4rem", background: "var(--ghost-bg)", borderRadius: "0.35rem" }}>
                   <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>⚖️ WEIGHT</div>
                   <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)" }}>{aiData?.weight_estimate_lbs ?? "—"} lbs</div>
@@ -3477,7 +3477,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 in the onlineRationale JSON (lib/adapters/pricing.ts) with
                 { low, mid, high, label } for a 100-300 mile radius estimate.
                 Until then, the column gracefully degrades. */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.5rem" }}>
+            <div className="pricing-tier-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.5rem" }}>
               <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                 <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Local</div>
                 <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--accent)", marginTop: "0.15rem" }}>${Math.round((pr.localPrice.low + pr.localPrice.high) / 2)}</div>
@@ -3844,7 +3844,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               <AccordionHeader id="price-confidence" icon="📊" title="CONFIDENCE & DEMAND" subtitle={`${conf ?? "?"}% · ${demand || "—"}`} isOpen={priceOpenSections.has("price-confidence")} onToggle={togglePriceSection} />
               {priceOpenSections.has("price-confidence") && (
               <div style={{ padding: "0.35rem 0" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem" }}>
+              <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem" }}>
                 {conf != null && (
                   <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.45rem 0.5rem", textAlign: "center" }}>
                     <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>📊 Confidence</div>
@@ -6370,7 +6370,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
                   </div>
                   {/* Condition detail notes */}
                   {cond && (
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.3rem", marginTop: "0.25rem" }}>
+                    <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.3rem", marginTop: "0.25rem" }}>
                       {[
                         { label: "Exterior", notes: cond.exterior?.overall_exterior_notes || cond.exterior?.notes, items: [cond.exterior?.paint_condition, cond.exterior?.body_damage, cond.exterior?.glass_condition, cond.exterior?.tire_condition].flat().filter(Boolean) },
                         { label: "Interior", notes: cond.interior?.overall_interior_notes || cond.interior?.notes, items: [cond.interior?.seats, cond.interior?.dashboard, cond.interior?.electronics, cond.interior?.odors_likely].filter(Boolean) },
@@ -6395,7 +6395,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
               <AccordionHeader id="car-valuation" icon="💰" title="MARKET VALUATION" subtitle={val?.private_party_value?.mid ? `Private: $${Math.round(val.private_party_value.mid).toLocaleString()}` : ""} isOpen={carSections.has("car-valuation")} onToggle={toggleCarSection} accentColor="#4ade80" />
               {carSections.has("car-valuation") && (
                 <div style={{ padding: "0.35rem 0" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.35rem" }}>
+                  <div className="car-valuation-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.35rem" }}>
                     {[
                       { label: "Retail", data: val.retail_value, color: CB },
                       { label: "Private", data: val.private_party_value, color: "#4ade80" },
@@ -7935,7 +7935,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
           {/* ═══ STAT CARDS ═══ */}
           <div style={{
             display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.65rem",
-          }}>
+          }} className="megabot-stat-grid">
             {[
               { label: "Bots Enhanced", value: `${boostedCount}/${allBots.length}`, color: "var(--accent)", icon: "🤖" },
               { label: "Agreement", value: boostedCount > 0 ? `${avgAgreement}%` : "—", color: avgAgreement >= 75 ? "#4caf50" : avgAgreement > 0 ? "#ff9800" : "var(--text-muted)", icon: "📊" },
@@ -7992,7 +7992,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
           )}
 
           {/* ═══ BOT STATUS GRID ═══ */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "0.4rem" }}>
+          <div className="megabot-bot-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "0.4rem" }}>
             {allBots.map((b) => {
               const isBoosted = boostedBots.has(b.key);
               const result = boostResults[b.key];
@@ -8045,7 +8045,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
           {boostedCount > 0 && (
             <div>
               <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.5rem", fontWeight: 700 }}>AI ENGINE PERFORMANCE</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
+              <div className="megabot-engine-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
                 {agentStats.map((a) => {
                   const rate = a.total > 0 ? Math.round((a.successes / a.total) * 100) : 0;
                   return (
@@ -9010,7 +9010,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
           <div style={{ padding: "0.75rem 1rem" }}>
             {/* Overview stats */}
             {scan && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.4rem", marginBottom: "0.75rem" }}>
+              <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.4rem", marginBottom: "0.75rem" }}>
                 <div style={{ textAlign: "center", padding: "0.5rem", borderRadius: "0.4rem", background: "var(--bg-card)" }}>
                   <div style={{ fontSize: "1rem", fontWeight: 800, color: "#00bcd4" }}>{scan.total_competitors_found}</div>
                   <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>Competitors</div>
@@ -9626,6 +9626,58 @@ export default function ItemDashboardPanels({
         @media (max-width: 768px) {
           .bot-dashboard-grid {
             grid-template-columns: 1fr;
+          }
+
+          /* CMD-MOBILE-8B: 4-column grids → 2 columns on tablet/phone */
+          .pricing-tier-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.5rem !important;
+          }
+          .car-valuation-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.5rem !important;
+          }
+          .megabot-stat-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.5rem !important;
+          }
+          .megabot-engine-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.5rem !important;
+          }
+
+          /* 5-column grid → 3 columns */
+          .megabot-bot-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 0.4rem !important;
+          }
+
+          /* 3-column grids → 2 columns */
+          .three-col-stat-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.5rem !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          /* CMD-MOBILE-8B: Extra small — further collapse */
+          .pricing-tier-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .car-valuation-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .megabot-stat-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .megabot-engine-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .megabot-bot-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .three-col-stat-grid {
+            grid-template-columns: 1fr 1fr !important;
           }
         }
       `}</style>
