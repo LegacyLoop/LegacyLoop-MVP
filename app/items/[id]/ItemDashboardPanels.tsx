@@ -3027,6 +3027,33 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
               </div>
             )}
 
+            {/* ── SECTION D2: HIGH VALUE DETECTED ── */}
+            {(() => {
+              const hvMid = aiData?.estimated_value_mid ?? (aiData?.estimated_value_low != null && aiData?.estimated_value_high != null ? Math.round((aiData.estimated_value_low + aiData.estimated_value_high) / 2) : 0);
+              const hvHigh = aiData?.estimated_value_high ?? 0;
+              const showHV = (hvMid >= 500) || (hvHigh >= 500);
+              if (!showHV) return null;
+              return (
+                <div style={{
+                  background: "linear-gradient(135deg, rgba(245,158,11,0.06), rgba(251,191,36,0.04))",
+                  border: "1px solid rgba(245,158,11,0.2)",
+                  borderRadius: "0.65rem",
+                  padding: "0.75rem 0.85rem",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem" }}>
+                    <span style={{ fontSize: "0.9rem" }}>💎</span>
+                    <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#F59E0B", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
+                      High Value Item Detected
+                      {hvMid > 0 ? ` — $${hvMid.toLocaleString()}` : ""}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.4 }}>
+                    Consider professional appraisal and premium listing strategy. High-value items benefit from MegaBot multi-AI consensus for maximum pricing accuracy.
+                  </p>
+                </div>
+              );
+            })()}
+
             {/* ── SECTION E: LISTING SUGGESTIONS ── */}
             <AccordionHeader id="ai-listing" icon="📝" title="LISTING SUGGESTIONS" subtitle={aiData?.recommended_title || ""} isOpen={aiOpenSections.has("ai-listing")} onToggle={toggleAiSection} />
             {aiOpenSections.has("ai-listing") && (aiData.recommended_title || aiData.recommended_description || (Array.isArray(aiData.keywords) && aiData.keywords.length > 0)) && (
@@ -9517,6 +9544,8 @@ export default function ItemDashboardPanels({
   const isOutdoorEquipment = (category || "").toLowerCase().includes("outdoor") || (category || "").toLowerCase().includes("garden") || /riding\s*mow|lawn\s*mow|garden\s*tract|lawn\s*tract|chainsaw|leaf\s*blow|snow\s*blow|pressure\s*wash/i.test((aiData?.subcategory || "") + " " + (aiData?.item_name || ""));
   const isVehicle = !isOutdoorEquipment && (VEHICLE_KEYWORDS.some((kw) => (category || "").toLowerCase().includes(kw)) || !!aiData?.vehicle_year || !!aiData?.vehicle_make || !!aiData?.vehicle_model);
   const isAntique = antique?.isAntique === true || (aiData?.is_antique === true);
+  // CMD-ANALYZEBOT-HIGH-VALUE-BANNER: derived from valuation, no schema change
+  const isHighValue = (valuation?.mid ?? valuation?.high ?? 0) >= 500;
 
   // Antique alert banner — detect from AI analysis fields
   const estimatedAge = Number(aiData?.estimated_age_years ?? aiData?.estimated_age ?? 0);
