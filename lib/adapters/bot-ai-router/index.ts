@@ -70,6 +70,9 @@ import type {
   // CMD-PRICEBOT-CORE-A: Step 10 Round A
   PriceBotHybridInput,
   PriceBotHybridResult,
+  // CMD-PHOTOBOT-CORE-A: Step 11 Round A
+  PhotoBotHybridInput,
+  PhotoBotHybridResult,
 } from "./types";
 
 // ─── Re-exports — public surface ───────────────────────────────
@@ -113,6 +116,9 @@ export type {
   // CMD-PRICEBOT-CORE-A: Step 10 Round A
   PriceBotHybridInput,
   PriceBotHybridResult,
+  // CMD-PHOTOBOT-CORE-A: Step 11 Round A
+  PhotoBotHybridInput,
+  PhotoBotHybridResult,
 } from "./types";
 
 // ─── Constants ──────────────────────────────────────────────────
@@ -2594,6 +2600,239 @@ export async function routePriceBotHybrid(
     } catch (e: any) {
       console.warn(
         `[routePriceBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
+      );
+    }
+  }
+
+  return result;
+}
+
+// ─── Public: routePhotoBotHybrid() ─────────────────────────
+//
+// CMD-PHOTOBOT-CORE-A — Step 11 Round A
+//
+// PhotoBot ASSESSMENT-ONLY router. OpenAI-primary for GPT-4o
+// Vision photo quality scoring. Gemini-secondary fires on
+// low_confidence trigger (overallScore < 5). Budget cost tier.
+//
+// This wraps Step A ONLY. Steps B+C (DALL-E image generation)
+// stay outside the router — image gen does not benefit from
+// multi-provider routing.
+//
+// IMPORTANT: this function NEVER throws to its caller.
+// ─────────────────────────────────────────────────────────
+
+export async function routePhotoBotHybrid(
+  input: PhotoBotHybridInput,
+): Promise<PhotoBotHybridResult> {
+  const startedAt = Date.now();
+  const config = getBotConfig("photobot");
+  if (!config.triggers.includes("low_confidence")) {
+    throw new Error(
+      "[routePhotoBotHybrid] BOT_AI_CONFIG.photobot.triggers must " +
+        "include 'low_confidence' — got: " + JSON.stringify(config.triggers),
+    );
+  }
+  const demoMode = isDemoMode();
+
+  const photoArr = Array.isArray(input.photoPath)
+    ? input.photoPath
+    : [input.photoPath];
+  const absPath = publicUrlToAbsPath(photoArr[0]);
+
+  const timeoutMs = input.timeoutMs ?? HYBRID_DEFAULTS.TIMEOUT_MS;
+  const maxTokens = input.maxTokens ?? HYBRID_DEFAULTS.MAX_TOKENS;
+
+  type RawRunOutcome = ProviderRunResult & { rawResult: any };
+
+  const runRaw = async (
+    provider: ProviderName,
+    prompt: string,
+  ): Promise<RawRunOutcome> => {
+    const start = Date.now();
+    try {
+      const { text, tokens } = await callProviderRaw(
+        provider, absPath, prompt,
+        { timeoutMs, maxTokens },
+      );
+      const rawResult = parseAnyLooseJson(text);
+      if (!rawResult) {
+        return {
+          provider, result: null,
+          error: `${provider} returned unparseable JSON`,
+          durationMs: Date.now() - start, tokens,
+          actualCostUsd: computeActualCost(provider, tokens),
+          rawResult: null,
+        };
+      }
+      return {
+        provider, result: null, error: null,
+        durationMs: Date.now() - start, tokens,
+        actualCostUsd: computeActualCost(provider, tokens),
+        rawResult,
+      };
+    } catch (e: any) {
+      return {
+        provider, result: null,
+        error: e?.message ?? String(e),
+        durationMs: Date.now() - start,
+        rawResult: null,
+      };
+    }
+  };
+
+  const providersAttempted: ProviderName[] = [];
+  const providersUsed: ProviderName[] = [];
+  let totalEstCost = 0;
+  let totalActualCost = 0;
+  let fallbackUsed = false;
+
+  // ── PRIMARY: OpenAI (GPT-4o Vision assessment) ─────────
+  let primary: RawRunOutcome = await runRaw("openai", input.assessmentPrompt);
+  providersAttempted.push("openai");
+  totalEstCost += estimateProviderCost("openai");
+  if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
+  if (primary.rawResult) providersUsed.push("openai");
+
+  // ── Graceful fallback chain on primary failure ────────
+  if (!primary.rawResult) {
+    const chain = fallbackChain("openai", providersAttempted);
+    let attempts = 0;
+    for (const fallback of chain) {
+      if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
+      attempts++;
+      fallbackUsed = true;
+      const fallbackOutcome = await runRaw(fallback, input.assessmentPrompt);
+      providersAttempted.push(fallback);
+      totalEstCost += estimateProviderCost(fallback);
+      if (fallbackOutcome.actualCostUsd != null) {
+        totalActualCost += fallbackOutcome.actualCostUsd;
+      }
+      if (fallbackOutcome.rawResult) {
+        primary = fallbackOutcome;
+        providersUsed.push(fallback);
+        break;
+      }
+    }
+  }
+
+  // Read primary confidence from overallScore (1-10 → 0-100)
+  const rawScore: any = primary.rawResult?.overallScore ?? primary.rawResult?.overall_score ?? 5;
+  const primaryConfidence: number =
+    typeof rawScore === "number" ? Math.round(rawScore * 10) : 50;
+
+  // ── SECONDARY: Gemini (low_confidence, best-effort) ────
+  let secondary: RawRunOutcome | undefined;
+  let secondaryTriggered = false;
+
+  const wantsSecondary =
+    !!primary.rawResult &&
+    (input.shouldRunSecondary === true || primaryConfidence < 50);
+
+  if (wantsSecondary) {
+    secondaryTriggered = true;
+    const secondaryOutcome = await runRaw("gemini", input.assessmentPrompt);
+    providersAttempted.push("gemini");
+    totalEstCost += estimateProviderCost("gemini");
+    if (secondaryOutcome.actualCostUsd != null) {
+      totalActualCost += secondaryOutcome.actualCostUsd;
+    }
+    if (secondaryOutcome.rawResult) {
+      secondary = secondaryOutcome;
+      providersUsed.push("gemini");
+    } else {
+      console.warn(
+        `[routePhotoBotHybrid] Gemini secondary failed for item ${input.itemId}: ${secondaryOutcome.error ?? "unknown"}`,
+      );
+    }
+  }
+
+  // ── Merge: primary as base, overlay secondary's higher-
+  //    confidence scoring blocks ──
+  let mergedResult: any;
+  let mergedStrategy: "primary_only" | "merged_consensus" | "degraded";
+
+  if (primary.rawResult && secondary?.rawResult) {
+    mergedResult = { ...primary.rawResult };
+    const secScore: any = secondary.rawResult?.overallScore ?? secondary.rawResult?.overall_score;
+    const secConf = typeof secScore === "number" ? Math.round(secScore * 10) : null;
+    if (secConf != null && secConf > primaryConfidence) {
+      // Overlay secondary's enhancement recommendations
+      if (secondary.rawResult?.enhancementSteps) {
+        mergedResult.enhancementSteps = secondary.rawResult.enhancementSteps;
+      }
+      if (secondary.rawResult?.coverPhotoBlockers) {
+        mergedResult.coverPhotoBlockers = secondary.rawResult.coverPhotoBlockers;
+      }
+    }
+    mergedStrategy = "merged_consensus";
+  } else if (primary.rawResult) {
+    mergedResult = primary.rawResult;
+    mergedStrategy = "primary_only";
+  } else {
+    mergedResult = null;
+    mergedStrategy = "degraded";
+  }
+
+  const degraded = !primary.rawResult;
+
+  const aggregatedTokens = {
+    input: (primary.tokens?.inputTokens ?? 0) + (secondary?.tokens?.inputTokens ?? 0),
+    output: (primary.tokens?.outputTokens ?? 0) + (secondary?.tokens?.outputTokens ?? 0),
+    total: (primary.tokens?.totalTokens ?? 0) + (secondary?.tokens?.totalTokens ?? 0),
+  };
+
+  const result: PhotoBotHybridResult = {
+    primary, secondary, mergedResult,
+    primaryConfidence, secondaryTriggered, mergedStrategy,
+    costUsd: Number(totalEstCost.toFixed(5)),
+    actualCostUsd: Number(totalActualCost.toFixed(6)),
+    tokens: aggregatedTokens,
+    latencyMs: Date.now() - startedAt,
+    degraded,
+    error: degraded ? primary.error ?? "All providers failed" : undefined,
+  };
+
+  // ── Fire-and-forget routing log ───────────────────────
+  if (!input.skipLogging) {
+    try {
+      void logRoutingDecision({
+        itemId: input.itemId,
+        payload: {
+          botName: "photobot",
+          primary: primary.provider,
+          secondary: secondary?.provider,
+          triggersFired: secondaryTriggered ? ["low_confidence"] : [],
+          providersAttempted, providersUsed,
+          costUsd: result.costUsd,
+          actualCostUsd: result.actualCostUsd,
+          ...(input.apifyCostUsd != null ? { apifyCostUsd: input.apifyCostUsd } : {}),
+          latencyMs: result.latencyMs,
+          fallbackUsed, degraded,
+          confidence: primaryConfidence,
+          mergedStrategy,
+          tokens: {
+            [primary.provider]: {
+              input: primary.tokens?.inputTokens ?? null,
+              output: primary.tokens?.outputTokens ?? null,
+              total: primary.tokens?.totalTokens ?? null,
+            },
+            ...(secondary?.tokens ? {
+              [secondary.provider]: {
+                input: secondary.tokens.inputTokens,
+                output: secondary.tokens.outputTokens,
+                total: secondary.tokens.totalTokens,
+              },
+            } : {}),
+          },
+          demoMode,
+          error: result.error,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (e: any) {
+      console.warn(
+        `[routePhotoBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
       );
     }
   }

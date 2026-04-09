@@ -635,7 +635,8 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
     if (generateHeroImage && openai && listbotResult.hero_image_prompt) {
       try {
         const imageResp = await openai.images.generate({
-          model: "dall-e-3",
+          // CMD-PHOTOBOT-CORE-A: migrated dall-e-3 → gpt-image-1
+          model: "gpt-image-1",
           prompt: listbotResult.hero_image_prompt,
           n: 1,
           size: "1024x1024",

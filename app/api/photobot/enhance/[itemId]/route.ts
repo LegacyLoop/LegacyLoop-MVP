@@ -10,6 +10,9 @@ import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
 import { findBackgroundPhoto } from "@/lib/adapters/stock-photos";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
+// CMD-PHOTOBOT-CORE-A: hybrid router + skill pack
+import { routePhotoBotHybrid } from "@/lib/adapters/bot-ai-router";
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -103,6 +106,13 @@ export async function POST(
     const hasEnrichment = enrichmentContext.length > 0;
     console.log("[photobot-enhance] Enrichment context:", hasEnrichment ? enrichmentContext.slice(0, 150) : "none — proceeding without analysis data");
 
+    // CMD-PHOTOBOT-CORE-A: skill pack loading (content empty until Skills-B,
+    // wiring here for telemetry completeness + future pack readiness).
+    const skillPack = loadSkillPack("photobot");
+    const skillPackPrefix = skillPack.systemPromptBlock
+      ? skillPack.systemPromptBlock + "\n\n"
+      : "";
+
     // Find the target photo — use photoId if provided, otherwise use primary/first
     const photo = photoId
       ? item.photos.find((p) => p.id === photoId)
@@ -132,7 +142,10 @@ export async function POST(
     let editedPhotoUrl: string | null = null;
     let generatedPhotoUrl: string | null = null;
 
-    // ── STEP A: ASSESSMENT (OpenAI Vision) — skip for variations ──────────
+    // CMD-PHOTOBOT-CORE-A: track hybrid run for PHOTOBOT_RUN telemetry
+    let hybridRun: Awaited<ReturnType<typeof routePhotoBotHybrid>> | null = null;
+
+    // ── STEP A: ASSESSMENT (via routePhotoBotHybrid) — skip for variations ──
     if (!isVariation) {
       try {
         const customPromptDirective = hasCustomPrompt
@@ -143,13 +156,10 @@ export async function POST(
           ? `\n\nKNOWN ITEM DATA (from prior AI analysis):\n${enrichmentContext}\nUse this data to build more accurate physical descriptions and DALL-E prompts.`
           : "";
 
-        console.log("[photobot-enhance] Step A: Assessing photo with precision physical extraction...", hasCustomPrompt ? `Custom: "${customPrompt}"` : "standard");
-        const assessResp = await openai.responses.create({
-          model: "gpt-4o",
-          input: [
-            {
-              role: "system",
-              content: `You are a world-class product photography analyst and visual merchandising expert with 20 years of experience shooting for Sotheby's, eBay, Etsy, and luxury resale platforms.
+        // CMD-PHOTOBOT-CORE-A: build the full assessment prompt (system +
+        // user instructions combined into one string for the hybrid router).
+        // The router's callProviderRaw handles photo attachment via photoPath.
+        const assessmentPrompt = skillPackPrefix + `You are a world-class product photography analyst and visual merchandising expert with 20 years of experience shooting for Sotheby's, eBay, Etsy, and luxury resale platforms.
 
 Your PRIMARY MISSION: Extract EXACT, LITERAL physical descriptions for AI image generation. Every detail you describe will be fed directly into DALL-E to recreate the item — your accuracy determines whether the generated image looks correct.
 
@@ -164,65 +174,54 @@ You must NEVER suggest hiding, minimizing, smoothing, or altering ANY condition 
 - Scratches, dents, chips, cracks, scuffs, wear marks
 - Stains, discoloration, fading, patina, tarnish
 - Missing parts, repairs, alterations, replaced components
-Every condition detail MUST appear in your generated descriptions. Buyer trust depends on this.${enrichmentDirective}${customPromptDirective}`,
-            },
-            {
-              role: "user",
-              content: [
-                {
-                  type: "input_text",
-                  text: `Analyze this product listing photo with absolute precision. Return flat JSON only — no wrapper keys — with these exact fields:
+Every condition detail MUST appear in your generated descriptions. Buyer trust depends on this.${enrichmentDirective}${customPromptDirective}
 
-physicalDescription: ULTRA-PRECISE literal description of exactly what you see. Count every component. State exact numbers, exact shapes, exact positions. This will be directly injected into a DALL-E prompt. Example: "6-drawer wooden dresser, 3 drawers stacked in left column and 3 in right column, approximately 48 inches wide by 34 inches tall, dark walnut finish with visible wood grain, brass ring-pull handles on each drawer, flat rectangular top surface, tapered round legs, rectangular beveled edge trim on each drawer face"
+Analyze this product listing photo with absolute precision. Return flat JSON only — no wrapper keys — with these exact fields:
 
-exactCount: EXACT counts of every repeated element visible. This is non-negotiable — if you say 6 drawers, DALL-E draws exactly 6. Example: "6 drawers (3 per column, 2 columns), 4 tapered legs, 6 brass ring pulls, 1 flat top surface"
-
-colorDescription: Multi-layer color description with primary, secondary, accent, and hardware colors. Example: "Primary: dark walnut brown with warm amber undertones. Hardware: aged brass with slight tarnish. Interior drawer surfaces: raw pine, lighter honey color"
-
-styleDescription: Design era, style movement, construction approach, aesthetic. Example: "American mid-century modern circa 1960s, Danish-influenced clean lines, minimal ornamentation, function-forward design"
-
-dimensionEstimate: Size estimate with comparison references. Example: "approximately 48 inches wide, 34 inches tall, 18 inches deep — standard double dresser dimensions"
-
-surfaceDetails: EVERY visible surface characteristic that must appear in the generated image. Be exhaustive. Example: "light wear ring on top surface left side, minor scratches on right column second drawer, slight darkening at handle touch points, small chip in bottom-left trim, original finish 85% intact"
-
-materialAnalysis: What materials you can identify and how confident you are. Example: "Solid walnut construction (high confidence), brass hardware (confirmed by patina pattern), likely dovetail joint drawers (visible edge profile)"
-
+physicalDescription: ULTRA-PRECISE literal description of exactly what you see. Count every component. State exact numbers, exact shapes, exact positions. This will be directly injected into a DALL-E prompt.
+exactCount: EXACT counts of every repeated element visible. This is non-negotiable.
+colorDescription: Multi-layer color description with primary, secondary, accent, and hardware colors.
+styleDescription: Design era, style movement, construction approach, aesthetic.
+dimensionEstimate: Size estimate with comparison references.
+surfaceDetails: EVERY visible surface characteristic that must appear in the generated image. Be exhaustive.
+materialAnalysis: What materials you can identify and how confident you are.
 backgroundDescription: Detailed description of everything in the background that should be removed or replaced
 distractingElements: array of specific background elements to remove (people, clutter, walls, furniture, pets, cables, reflections)
 backgroundReplacement: Recommended replacement background description for professional listing
-
 isolationScore: 1-10 how well the item stands out from surroundings
 lightingScore: 1-10 quality and evenness of lighting
 framingScore: 1-10 how well item fills the frame and is centered
 focusScore: 1-10 sharpness and clarity of the item
 colorAccuracy: 1-10 how true-to-life the colors appear
-
 backgroundRemovalNeeded: true/false
 enhancementSteps: array of up to 7 specific, actionable improvement steps prioritized by impact
-conditionDetails: array of ALL visible condition issues that MUST remain visible in every enhanced version — this is critical for buyer trust
+conditionDetails: array of ALL visible condition issues that MUST remain visible in every enhanced version — critical for buyer trust
 coverPhotoReady: true/false — would this pass as a lead listing image on eBay/Etsy right now?
 coverPhotoBlockers: array of specific issues preventing cover-photo readiness (empty if ready)
+editPrompt: Precise description (under 300 chars) of ONLY background/staging/lighting improvements. Never mention condition changes.
+dallePrompt: Build this EXACTLY from your physical descriptors with CRITICAL PHYSICAL ACCURACY constraints. Include exactCount, colorDescription, styleDescription, dimensionEstimate, surfaceDetails. Professional product photography on clean neutral background, item centered filling 70% of frame, soft even studio lighting, no harsh shadows, photorealistic quality.
+overallScore: 1-10 composite quality score`;
 
-editPrompt: Precise description (under 300 chars) of ONLY background/staging/lighting improvements. Never mention condition changes. Be specific: "Remove cluttered bookshelf background, replace with clean soft-white gradient, add even fill light from left to eliminate harsh right-side shadow"
+        console.log("[photobot-enhance] Step A: Routing through routePhotoBotHybrid...", hasCustomPrompt ? `Custom: "${customPrompt}"` : "standard");
 
-dallePrompt: Build this EXACTLY from your physical descriptors: "[physicalDescription]. CRITICAL PHYSICAL ACCURACY: this item has EXACTLY [exactCount] — reproduce every component precisely, do not add, remove, or alter any elements. [exactCount] is non-negotiable. Color accuracy: [colorDescription]. Style: [styleDescription]. Scale: [dimensionEstimate]. CONDITION AUTHENTICITY: these details must be visible: [surfaceDetails]. Professional product photography on a clean neutral background, item centered filling 70% of frame, soft even studio lighting, no harsh shadows, photorealistic quality."
-
-overallScore: 1-10 composite quality score`,
-                },
-                { type: "input_image", image_url: dataUrl, detail: "high" },
-              ],
-            },
-          ],
-          text: { format: { type: "text" } },
-          max_output_tokens: 4000,
+        // CMD-PHOTOBOT-CORE-A: route through hybrid router for assessment.
+        // OpenAI primary (GPT-4o Vision). Gemini secondary fires when
+        // overallScore < 5 (low_confidence). Photo path passed to router
+        // for automatic image attachment.
+        hybridRun = await routePhotoBotHybrid({
+          itemId: item.id,
+          photoPath: photo.filePath,
+          assessmentPrompt,
+          // low_confidence trigger: let the router evaluate post-primary
+          shouldRunSecondary: false, // router auto-fires on overallScore < 5
+          timeoutMs: 60_000,
+          maxTokens: 4_000,
         });
 
-        const rawAssess = assessResp.output_text;
-        const jsonMatch = rawAssess.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          assessment = JSON.parse(jsonMatch[0]);
+        if (hybridRun.degraded || !hybridRun.mergedResult) {
+          console.error("[photobot-enhance] Assessment hybrid degraded:", hybridRun.error ?? "all providers failed");
         } else {
-          console.error("[photobot-enhance] Assessment returned no JSON");
+          assessment = hybridRun.mergedResult;
         }
       } catch (assessErr: any) {
         console.error("[photobot-enhance] Assessment failed:", assessErr?.message);
@@ -341,8 +340,9 @@ overallScore: 1-10 composite quality score`,
         "Even, soft professional lighting. No harsh shadows. Clean and marketplace-ready.",
       ].filter(Boolean).join(" ").slice(0, 1000);
 
+      // CMD-PHOTOBOT-CORE-A: migrated dall-e-2 → gpt-image-1
       const editResponse = await openai.images.edit({
-        model: "dall-e-2",
+        model: "gpt-image-1",
         image: fs.createReadStream(tempPath) as any,
         prompt: editFinalPrompt,
         n: 1,
@@ -363,8 +363,9 @@ overallScore: 1-10 composite quality score`,
     if (!assessOnly) try {
       console.log("[photobot-enhance] Step C: Generating AI storefront version...");
 
+      // CMD-PHOTOBOT-CORE-A: migrated dall-e-3 → gpt-image-1
       const generateResponse = await openai.images.generate({
-        model: "dall-e-3",
+        model: "gpt-image-1",
         prompt: dallePromptText,
         n: 1,
         size: "1024x1024",
@@ -549,6 +550,39 @@ overallScore: 1-10 composite quality score`,
         payload: JSON.stringify(result),
       },
     });
+
+    // CMD-PHOTOBOT-CORE-A: PHOTOBOT_RUN telemetry with full
+    // ANTIQUEBOT_RUN parity. Wrapped in try/catch — non-critical.
+    try {
+      await prisma.eventLog.create({
+        data: {
+          itemId,
+          eventType: "PHOTOBOT_RUN",
+          payload: JSON.stringify({
+            userId: user.id,
+            timestamp: new Date().toISOString(),
+            skillPackVersion: skillPack.version,
+            skillPackCount: skillPack.skillNames.length,
+            skillPackChars: skillPack.totalChars,
+            overallScore: assessment?.overallScore ?? null,
+            coverPhotoReady: assessment?.coverPhotoReady ?? null,
+            anglesMissingCount: Array.isArray(assessment?.missing_angles) ? assessment.missing_angles.length : 0,
+            dalleMigrated: true,
+            mode: assessOnly ? "assess" : isVariation ? "variation" : "enhance",
+            mergedStrategy: hybridRun?.mergedStrategy ?? null,
+            primaryConfidence: hybridRun?.primaryConfidence ?? null,
+            secondaryTriggered: hybridRun?.secondaryTriggered ?? false,
+            actualCostUsd: hybridRun?.actualCostUsd ?? 0,
+            costUsd: hybridRun?.costUsd ?? 0,
+            latencyMs: hybridRun?.latencyMs ?? 0,
+            tokens: hybridRun?.tokens ?? { input: 0, output: 0, total: 0 },
+            isDemo: false,
+          }),
+        },
+      });
+    } catch (logErr) {
+      console.warn("[photobot-enhance] PHOTOBOT_RUN log write failed (non-critical):", logErr);
+    }
 
     return NextResponse.json({ success: true, result });
   } catch (e: any) {

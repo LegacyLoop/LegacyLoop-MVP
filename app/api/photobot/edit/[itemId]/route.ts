@@ -267,7 +267,8 @@ Return flat JSON only. No wrapper keys.`,
         : corePrompt;
 
       const editResponse = await openai.images.edit({
-        model: "dall-e-2",
+        // CMD-PHOTOBOT-CORE-A: migrated dall-e-2 → gpt-image-1
+        model: "gpt-image-1",
         image: imageFile,
         mask: maskFile,
         prompt: fullPrompt,

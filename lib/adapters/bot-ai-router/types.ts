@@ -712,3 +712,40 @@ export interface PriceBotHybridResult {
   degraded: boolean;
   error?: string;
 }
+
+// ─── PhotoBot hybrid (Step 11 Round A) ───────────────────────────
+//
+// CMD-PHOTOBOT-CORE-A
+//
+// PhotoBot assessment-only hybrid. OpenAI primary for GPT-4o Vision
+// photo quality assessment. Gemini secondary fires on low_confidence
+// (overallScore < 5) for a second opinion. Budget cost tier.
+// NOTE: This wraps assessment ONLY. DALL-E image generation (Steps
+// B+C in the enhance route) stays outside the router.
+// ──────────────────────────────────────────────────────────────────
+
+export interface PhotoBotHybridInput {
+  itemId: string;
+  photoPath: string | string[];
+  assessmentPrompt: string;
+  shouldRunSecondary?: boolean;
+  timeoutMs?: number;
+  maxTokens?: number;
+  apifyCostUsd?: number;
+  skipLogging?: boolean;
+}
+
+export interface PhotoBotHybridResult {
+  primary: ProviderRunResult & { rawResult: any };
+  secondary?: ProviderRunResult & { rawResult: any };
+  mergedResult: any;
+  primaryConfidence: number;
+  secondaryTriggered: boolean;
+  mergedStrategy: "primary_only" | "merged_consensus" | "degraded";
+  costUsd: number;
+  actualCostUsd: number;
+  tokens: { input: number; output: number; total: number };
+  latencyMs: number;
+  degraded: boolean;
+  error?: string;
+}
