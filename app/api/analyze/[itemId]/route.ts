@@ -14,6 +14,8 @@ import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
 import { BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, isFreeAnalysisAvailable } from "@/lib/credits";
+// CMD-ANALYZEBOT-CORE-A: skill pack loading (content empty until Skills-B)
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -190,10 +192,20 @@ export async function POST(
     console.error("[analyze] Amazon pre-fetch failed (non-fatal):", amazonErr?.message);
   }
 
+  // CMD-ANALYZEBOT-CORE-A: skill pack loading. Content empty until Skills-B —
+  // skillPackBlock will be empty string. Wiring here for telemetry + future packs.
+  const skillPack = loadSkillPack("analyzebot");
+  const skillPackBlock = skillPack.systemPromptBlock
+    ? skillPack.systemPromptBlock + "\n\n"
+    : "";
+
+  // Prepend skill pack to sellerContext so it feeds into aiAdapter.analyze()
+  const enrichedSellerContext = skillPackBlock + (sellerContext || "");
+
   // 1) Vision analysis
   let analysis;
   try {
-    analysis = await aiAdapter.analyze(photoPaths, sellerContext || undefined);
+    analysis = await aiAdapter.analyze(photoPaths, enrichedSellerContext || undefined);
   } catch (aiErr: any) {
     const msg = aiErr?.message ?? String(aiErr);
     return new Response(`AI analysis failed: ${msg}`, { status: 422 });
@@ -208,21 +220,40 @@ export async function POST(
   // Fire-and-forget: populate structured intelligence fields from AI analysis
   populateFromAnalysis(itemId, analysis as unknown as Record<string, unknown>).catch(() => null);
 
-  // 1b) Market Intelligence prefetch — Phase 1 only (free scrapers + cheap Apify)
-  // Runs in parallel, non-blocking. Results stored for downstream bot reuse.
-  let marketIntel: any = null;
-  try {
-    const miItemName = analysis.item_name || item.title || "item";
-    const miCategory = analysis.category || "General";
-    marketIntel = await getMarketIntelligence(
+  // 1b) Market Intelligence + Pricing — run in parallel via Promise.allSettled
+  // CMD-ANALYZEBOT-CORE-A: Both depend on AI output only, not on each other.
+  // Promise.allSettled ensures if either fails the other still completes.
+  const miItemName = analysis.item_name || item.title || "item";
+  const miCategory = analysis.category || "General";
+  const numOwners = (item as any).numberOfOwners || extractTag(item.description, "Owners");
+
+  const [marketIntelResult, pricingSettled] = await Promise.allSettled([
+    // Market Intelligence prefetch — Phase 1 only (free scrapers + cheap Apify)
+    getMarketIntelligence(
       miItemName,
       miCategory,
       item.saleZip || undefined,
       true, // phase1Only
       undefined, // isMegaBot
       "analyzebot", // CMD-SCRAPER-WIRING-C2
-    );
+    ),
+    // New pricing pipeline (calculate.ts)
+    Promise.resolve(calculatePricing({
+      ai: analysis,
+      sellerCondition: item.condition,
+      numOwners,
+      saleZip: item.saleZip,
+      userTier: user.tier,
+      isHero: false,
+      purchasePrice: item.purchasePrice,
+      category: analysis.category,
+    })),
+  ]);
 
+  // Extract market intel result
+  let marketIntel: any = null;
+  if (marketIntelResult.status === "fulfilled") {
+    marketIntel = marketIntelResult.value;
     if (marketIntel && marketIntel.comps?.length > 0) {
       await prisma.eventLog.create({
         data: {
@@ -243,28 +274,17 @@ export async function POST(
       }).catch(() => null);
       console.log(`[analyze] Market intel: ${marketIntel.compCount} comps from ${marketIntel.sources?.length || 0} sources (Phase 1 only)`);
     }
-  } catch (miErr: any) {
-    console.error("[analyze] Market intelligence prefetch failed (non-fatal):", miErr?.message);
+  } else {
+    console.error("[analyze] Market intelligence prefetch failed (non-fatal):", (marketIntelResult as PromiseRejectedResult).reason?.message);
   }
 
-  // 2) New pricing pipeline (calculate.ts) — pass all seller data
-  const numOwners = (item as any).numberOfOwners || extractTag(item.description, "Owners");
-
+  // Extract pricing result
   let pricingResult;
-  try {
-    pricingResult = calculatePricing({
-      ai: analysis,
-      sellerCondition: item.condition,
-      numOwners,
-      saleZip: item.saleZip,
-      userTier: user.tier,
-      isHero: false,
-      purchasePrice: item.purchasePrice,
-      category: analysis.category,
-    });
-  } catch (pricingErr: any) {
-    console.error("Pricing pipeline error:", pricingErr);
-    return new Response(`AI analysis succeeded but pricing failed: ${pricingErr?.message || "unknown error"}`, { status: 422 });
+  if (pricingSettled.status === "fulfilled") {
+    pricingResult = pricingSettled.value;
+  } else {
+    console.error("Pricing pipeline error:", (pricingSettled as PromiseRejectedResult).reason);
+    return new Response(`AI analysis succeeded but pricing failed: ${(pricingSettled as PromiseRejectedResult).reason?.message || "unknown error"}`, { status: 422 });
   }
 
   // 3) Also run legacy pricing pipeline for comps + backward compat
@@ -612,6 +632,16 @@ export async function POST(
           amazonEnriched: !!amazonData,
           amazonResultCount: amazonData?.resultCount ?? 0,
           amazonPriceRange: amazonData?.priceRange ?? null,
+          // CMD-ANALYZEBOT-CORE-A: extended telemetry (ANTIQUEBOT_RUN parity)
+          skillPackVersion: skillPack.version,
+          skillPackCount: skillPack.skillNames.length,
+          skillPackChars: skillPack.totalChars,
+          parallelPipelineUsed: true,
+          confidence: analysis.confidence,
+          category: analysis.category,
+          isCollectible: !!(analysis as any).is_collectible || !!collectibleResult?.isCollectible,
+          isVehicle,
+          isOutdoorEquipment,
         }),
       },
     });
