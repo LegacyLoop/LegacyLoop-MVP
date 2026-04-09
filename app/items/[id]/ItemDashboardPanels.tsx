@@ -2725,7 +2725,7 @@ function MegaBotBoostResults(props: { botType: string; result: any; aiData: any 
    PANEL 1: AI Analysis (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boosted, boostResult, collapsed, onToggle, demandScore, botDisagreement, photoCount }: {
+function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boosted, boostResult, collapsed, onToggle, demandScore, botDisagreement, photoCount, valuation }: {
   aiData: any;
   itemId: string;
   status: string;
@@ -2738,6 +2738,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
   demandScore?: { score: number; label: string; signals?: any[] } | null;
   botDisagreement?: { disagreements?: any[]; summary?: string } | null;
   photoCount?: number;
+  valuation?: any;
 }) {
   const router = useRouter();
   const [analyzing, setAnalyzing] = useState(false);
@@ -3029,9 +3030,13 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
 
             {/* ── SECTION D2: HIGH VALUE DETECTED ── */}
             {(() => {
+              // Check BOTH aiData (AnalyzeBot initial) AND valuation (PriceBot revised)
               const hvMid = aiData?.estimated_value_mid ?? (aiData?.estimated_value_low != null && aiData?.estimated_value_high != null ? Math.round((aiData.estimated_value_low + aiData.estimated_value_high) / 2) : 0);
               const hvHigh = aiData?.estimated_value_high ?? 0;
-              const showHV = (hvMid >= 500) || (hvHigh >= 500);
+              const vMid = valuation?.mid ?? (valuation?.low != null && valuation?.high != null ? Math.round((valuation.low + valuation.high) / 2) : 0);
+              const vHigh = valuation?.high ?? 0;
+              const bestMid = Math.max(hvMid, vMid);
+              const showHV = (bestMid >= 500) || (hvHigh >= 500) || (vHigh >= 500);
               if (!showHV) return null;
               return (
                 <div style={{
@@ -3044,7 +3049,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
                     <span style={{ fontSize: "0.9rem" }}>💎</span>
                     <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#F59E0B", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
                       High Value Item Detected
-                      {hvMid > 0 ? ` — $${hvMid.toLocaleString()}` : ""}
+                      {bestMid > 0 ? ` — $${bestMid.toLocaleString()}` : ""}
                     </span>
                   </div>
                   <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.4 }}>
@@ -9656,6 +9661,7 @@ export default function ItemDashboardPanels({
           demandScore={demandScore}
           botDisagreement={botDisagreement}
           photoCount={photos?.length ?? 0}
+          valuation={valuation}
         />
 
         {/* Pricing */}
