@@ -64,6 +64,9 @@ import type {
   // CMD-COLLECTIBLESBOT-CORE-A: Step 8 Round A
   CollectiblesBotHybridInput,
   CollectiblesBotHybridResult,
+  // CMD-CARBOT-CORE-A: Step 9 Round A
+  CarBotHybridInput,
+  CarBotHybridResult,
 } from "./types";
 
 // ─── Re-exports — public surface ───────────────────────────────
@@ -101,6 +104,9 @@ export type {
   // CMD-COLLECTIBLESBOT-CORE-A: Step 8 Round A
   CollectiblesBotHybridInput,
   CollectiblesBotHybridResult,
+  // CMD-CARBOT-CORE-A: Step 9 Round A
+  CarBotHybridInput,
+  CarBotHybridResult,
 } from "./types";
 
 // ─── Constants ──────────────────────────────────────────────────
@@ -2016,6 +2022,325 @@ export async function routeCollectiblesBotHybrid(
       // Logging must NEVER bubble up to the caller.
       console.warn(
         `[routeCollectiblesBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
+      );
+    }
+  }
+
+  return result;
+}
+
+// ─── Public: routeCarBotHybrid() ───────────────────────────
+//
+// CMD-CARBOT-CORE-A — Step 9 Round A
+//
+// CarBot router entry point. Gemini-primary for vehicle market
+// reasoning with native Google Search grounding (real-time
+// Bring a Trailer, Cars.com, recall data). OpenAI-secondary
+// fires conditionally on the rare_vehicle trigger when caller
+// pre-evaluates year < 1980 OR mileage < 30000 — rare-car
+// specialist backup pass.
+//
+// Pattern mirrors routeReconBotHybrid (Step 6A — proven in
+// production). CarBot becomes the second Gemini-primary hybrid
+// runner. Returns RAW JSON payload + a fused mergedResult —
+// caller is responsible for shape preservation since CarBot's
+// response schema is not AiAnalysis-compatible.
+//
+// GROUNDING NOTE: CarBot callers SHOULD set enableGrounding=true
+// on every scan because vehicle market data is highly real-time.
+// Gemini runs with google_search tools on first attempt, falling
+// back to plain JSON if grounding fails. Citations returned in
+// geminiWebSources for the caller to merge into result.web_sources.
+//
+// IMPORTANT: this function NEVER throws to its caller. All
+// failures (provider errors, fallback exhaustion, log write
+// failures) are surfaced via the CarBotHybridResult shape
+// (degraded=true + error string).
+// ─────────────────────────────────────────────────────────
+
+const CARBOT_HYBRID_TIMEOUT_MS = HYBRID_DEFAULTS.TIMEOUT_MS;
+const CARBOT_HYBRID_MAX_TOKENS = HYBRID_DEFAULTS.MAX_TOKENS;
+
+export async function routeCarBotHybrid(
+  input: CarBotHybridInput,
+): Promise<CarBotHybridResult> {
+  // CMD-CARBOT-CORE-A: hybrid runner for CarBot (Round 9A export)
+  const startedAt = Date.now();
+  const config = getBotConfig("carbot");
+  // Defense-in-depth: validate config.triggers contains the
+  // rare_vehicle trigger this round's caller relies on.
+  if (!config.triggers.includes("rare_vehicle")) {
+    throw new Error(
+      "[routeCarBotHybrid] BOT_AI_CONFIG.carbot.triggers must " +
+        "include 'rare_vehicle' — got: " + JSON.stringify(config.triggers),
+    );
+  }
+  const demoMode = isDemoMode();
+
+  const photoArr = Array.isArray(input.photoPath)
+    ? input.photoPath
+    : [input.photoPath];
+  const absPath = publicUrlToAbsPath(photoArr[0]);
+
+  const timeoutMs = input.timeoutMs ?? CARBOT_HYBRID_TIMEOUT_MS;
+  const maxTokens = input.maxTokens ?? CARBOT_HYBRID_MAX_TOKENS;
+
+  // CMD-CARBOT-CORE-A: raw-JSON single-provider runner.
+  // Mirrors ReconBot's grounding-aware pattern exactly. Only the
+  // first call (Gemini primary) opts into grounding; fallbacks
+  // and the secondary always run with grounding disabled because
+  // OpenAI/Claude/Grok don't support it.
+  type RawRunOutcome = ProviderRunResult & {
+    rawResult: any;
+    geminiWebSources?: Array<{ url: string; title: string }>;
+  };
+
+  const runRaw = async (
+    provider: ProviderName,
+    prompt: string,
+    enableGrounding: boolean,
+  ): Promise<RawRunOutcome> => {
+    const start = Date.now();
+    try {
+      const { text, tokens, geminiWebSources } = await callProviderRaw(
+        provider,
+        absPath,
+        prompt,
+        {
+          timeoutMs,
+          maxTokens,
+          enableGrounding,
+        },
+      );
+      const rawResult = parseAnyLooseJson(text);
+      if (!rawResult) {
+        return {
+          provider,
+          result: null,
+          error: `${provider} returned unparseable JSON`,
+          durationMs: Date.now() - start,
+          tokens,
+          actualCostUsd: computeActualCost(provider, tokens),
+          rawResult: null,
+          geminiWebSources,
+        };
+      }
+      return {
+        provider,
+        result: null, // CarBot output is not AiAnalysis-shaped
+        error: null,
+        durationMs: Date.now() - start,
+        tokens,
+        actualCostUsd: computeActualCost(provider, tokens),
+        rawResult,
+        geminiWebSources,
+      };
+    } catch (e: any) {
+      return {
+        provider,
+        result: null,
+        error: e?.message ?? String(e),
+        durationMs: Date.now() - start,
+        rawResult: null,
+      };
+    }
+  };
+
+  const providersAttempted: ProviderName[] = [];
+  const providersUsed: ProviderName[] = [];
+  let totalEstCost = 0;
+  let totalActualCost = 0;
+  let fallbackUsed = false;
+
+  // ── PRIMARY: Gemini (with optional grounding) ──────────
+  const wantsGrounding = input.enableGrounding === true;
+  let primary: RawRunOutcome = await runRaw(
+    "gemini",
+    input.vehiclePrompt,
+    wantsGrounding,
+  );
+  providersAttempted.push("gemini");
+  totalEstCost += estimateProviderCost("gemini");
+  if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
+  if (primary.rawResult) providersUsed.push("gemini");
+
+  // ── Graceful fallback chain on primary failure ────────
+  // Fallback providers do NOT inherit enableGrounding — only
+  // Gemini supports it, and the others have no equivalent.
+  if (!primary.rawResult) {
+    const chain = fallbackChain("gemini", providersAttempted);
+    let attempts = 0;
+    for (const fallback of chain) {
+      if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
+      attempts++;
+      fallbackUsed = true;
+      const fallbackOutcome = await runRaw(
+        fallback,
+        input.vehiclePrompt,
+        false,
+      );
+      providersAttempted.push(fallback);
+      totalEstCost += estimateProviderCost(fallback);
+      if (fallbackOutcome.actualCostUsd != null) {
+        totalActualCost += fallbackOutcome.actualCostUsd;
+      }
+      if (fallbackOutcome.rawResult) {
+        primary = fallbackOutcome;
+        providersUsed.push(fallback);
+        break;
+      }
+    }
+  }
+
+  // ── SECONDARY: OpenAI (conditional, best-effort) ──────
+  // Only fires when:
+  //   1. caller pre-evaluated shouldRunSecondary === true
+  //      (caller checks year < 1980 OR mileage < 30000)
+  //   2. primary (or its fallback) succeeded
+  //   3. rareVehicleContext is present
+  // Secondary failure does NOT mark the run degraded.
+  let secondary: RawRunOutcome | undefined;
+  let secondaryTriggered = false;
+
+  const wantsSecondary =
+    input.shouldRunSecondary === true &&
+    !!primary.rawResult &&
+    typeof input.rareVehicleContext === "string" &&
+    input.rareVehicleContext.length > 0;
+
+  if (wantsSecondary) {
+    secondaryTriggered = true;
+    const secondaryOutcome = await runRaw(
+      "openai",
+      input.rareVehicleContext as string,
+      false,
+    );
+    providersAttempted.push("openai");
+    totalEstCost += estimateProviderCost("openai");
+    if (secondaryOutcome.actualCostUsd != null) {
+      totalActualCost += secondaryOutcome.actualCostUsd;
+    }
+    if (secondaryOutcome.rawResult) {
+      secondary = secondaryOutcome;
+      providersUsed.push("openai");
+    } else {
+      // Best-effort: log + continue, do NOT mark degraded.
+      console.warn(
+        `[routeCarBotHybrid] OpenAI secondary failed for item ${input.itemId}: ${secondaryOutcome.error ?? "unknown"}`,
+      );
+    }
+  }
+
+  // ── Merge: primary as base, overlay secondary's rare-
+  //    vehicle specialist blocks ──
+  let mergedResult: any;
+  let mergedStrategy: "primary_only" | "merged_consensus" | "degraded";
+
+  if (primary.rawResult && secondary?.rawResult) {
+    mergedResult = { ...primary.rawResult };
+    // CarBot secondary overlays specialist rare-vehicle context:
+    // value_drivers + market + ownership_costs blocks get the
+    // OpenAI rare-car specialist treatment when present.
+    if (secondary.rawResult?.value_drivers) {
+      mergedResult.value_drivers = secondary.rawResult.value_drivers;
+    }
+    if (secondary.rawResult?.market && !mergedResult.market) {
+      mergedResult.market = secondary.rawResult.market;
+    }
+    mergedStrategy = "merged_consensus";
+  } else if (primary.rawResult) {
+    mergedResult = primary.rawResult;
+    mergedStrategy = "primary_only";
+  } else {
+    mergedResult = null;
+    mergedStrategy = "degraded";
+  }
+
+  const degraded = !primary.rawResult;
+
+  // Hoist grounding citations to top-level result. Only Gemini
+  // (when grounded + successful) populates them. Empty array
+  // when grounding off, fallback fired, or no citations returned.
+  const geminiWebSources: Array<{ url: string; title: string }> =
+    primary.provider === "gemini" && Array.isArray(primary.geminiWebSources)
+      ? primary.geminiWebSources
+      : [];
+
+  // Aggregated token usage (primary + secondary, when present).
+  const aggregatedTokens = {
+    input:
+      (primary.tokens?.inputTokens ?? 0) +
+      (secondary?.tokens?.inputTokens ?? 0),
+    output:
+      (primary.tokens?.outputTokens ?? 0) +
+      (secondary?.tokens?.outputTokens ?? 0),
+    total:
+      (primary.tokens?.totalTokens ?? 0) +
+      (secondary?.tokens?.totalTokens ?? 0),
+  };
+
+  const result: CarBotHybridResult = {
+    primary,
+    secondary,
+    mergedResult,
+    geminiWebSources,
+    secondaryTriggered,
+    mergedStrategy,
+    costUsd: Number(totalEstCost.toFixed(5)),
+    actualCostUsd: Number(totalActualCost.toFixed(6)),
+    tokens: aggregatedTokens,
+    latencyMs: Date.now() - startedAt,
+    degraded,
+    error: degraded ? primary.error ?? "All providers failed" : undefined,
+  };
+
+  // ── Fire-and-forget routing log ───────────────────────
+  if (!input.skipLogging) {
+    try {
+      void logRoutingDecision({
+        itemId: input.itemId,
+        payload: {
+          botName: "carbot",
+          primary: primary.provider,
+          secondary: secondary?.provider,
+          triggersFired: secondaryTriggered ? ["rare_vehicle"] : [],
+          providersAttempted,
+          providersUsed,
+          costUsd: result.costUsd,
+          actualCostUsd: result.actualCostUsd,
+          ...(input.apifyCostUsd != null
+            ? { apifyCostUsd: input.apifyCostUsd }
+            : {}),
+          latencyMs: result.latencyMs,
+          fallbackUsed,
+          degraded,
+          confidence: null, // CarBot does not produce AiAnalysis confidence
+          mergedStrategy,
+          tokens: {
+            [primary.provider]: {
+              input: primary.tokens?.inputTokens ?? null,
+              output: primary.tokens?.outputTokens ?? null,
+              total: primary.tokens?.totalTokens ?? null,
+            },
+            ...(secondary?.tokens
+              ? {
+                  [secondary.provider]: {
+                    input: secondary.tokens.inputTokens,
+                    output: secondary.tokens.outputTokens,
+                    total: secondary.tokens.totalTokens,
+                  },
+                }
+              : {}),
+          },
+          demoMode,
+          error: result.error,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (e: any) {
+      // Logging must NEVER bubble up to the caller.
+      console.warn(
+        `[routeCarBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
       );
     }
   }

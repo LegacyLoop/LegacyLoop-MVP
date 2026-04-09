@@ -4,6 +4,11 @@ import { prisma } from "@/lib/db";
 import OpenAI from "openai";
 // STEP 4.7: pre-pass OpenAI web search for real-time vehicle market data
 import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
+// CMD-CARBOT-CORE-A: hybrid router + spec context + skill pack
+import { routeCarBotHybrid } from "@/lib/adapters/bot-ai-router";
+import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
+import { summarizeSpecContext } from "@/lib/bots/spec-guards";
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { logUserEvent } from "@/lib/data/user-events";
 import { getVehicleHistoryReport, decodeVinNHTSA } from "@/lib/vehicle/nhtsa";
@@ -212,6 +217,25 @@ export async function POST(
     const enrichment = await getItemEnrichmentContext(itemId, "carbot").catch(() => null);
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
+    // CMD-CARBOT-CORE-A: skill pack + spec context (gap closure).
+    // skill-loader is process-cached → zero cost on warm calls.
+    // buildItemSpecContext reads live Item fields (saleZip, saleMethod,
+    // shippingDifficulty, weightLbs, etc.) and produces a prompt-ready
+    // block + a structured summary persisted in CARBOT_RUN.
+    // Skills folder is empty until CMD-CARBOT-SKILLS-B ships —
+    // loadSkillPack returns empty SkillPack, skillPackPrefix is "" until
+    // Round B. Wiring lives here from CORE-A so telemetry is complete
+    // on day one.
+    const skillPack = loadSkillPack("carbot");
+    const specContext = await buildItemSpecContext(item.id, { item, user });
+    const specSummary = summarizeSpecContext(specContext);
+    const skillPackPrefix = skillPack.systemPromptBlock
+      ? skillPack.systemPromptBlock + "\n\n"
+      : "";
+    const specPromptPrefix = specContext.promptBlock
+      ? specContext.promptBlock + "\n\n"
+      : "";
+
     // ── REAL VEHICLE MARKET DATA ──
     let vehicleCompsContext = "";
     try {
@@ -254,7 +278,11 @@ CRITICAL: Use these REAL comparable vehicles to anchor your valuation. Do NOT gu
       sellerZip,
     );
 
-    const systemPrompt = enrichmentPrefix + vehicleCompsContext + webEnrichment + `You are an elite automotive appraiser, mechanic, and vehicle market analyst with 25 years of experience. You've evaluated thousands of vehicles — from classic cars to modern trucks to motorcycles to boats. You know every make, model, year, common problem, market value, and selling strategy.
+    // CMD-CARBOT-CORE-A: skill pack + spec context prepended to the
+    // existing prompt assembly. Order: skills → seller spec →
+    // cross-bot enrichment → market context → web pre-pass → core
+    // appraisal prompt.
+    const systemPrompt = skillPackPrefix + specPromptPrefix + enrichmentPrefix + vehicleCompsContext + webEnrichment + `You are an elite automotive appraiser, mechanic, and vehicle market analyst with 25 years of experience. You've evaluated thousands of vehicles — from classic cars to modern trucks to motorcycles to boats. You know every make, model, year, common problem, market value, and selling strategy.
 
 You are evaluating a vehicle from photos and seller-provided data.${sellerContext ? `\n\nSELLER-PROVIDED VEHICLE DATA:${sellerContext}\n\nUse this seller data to provide a more accurate and specific evaluation.` : ""}
 
@@ -412,55 +440,87 @@ IMPORTANT:
 - All prices in USD.`;
 
     let carbotResult: any;
+    // CMD-CARBOT-CORE-A: track hybrid run for telemetry. Hoisted so
+    // the CARBOT_RUN write below has access to merge strategy +
+    // cost + tokens + grounding citations.
+    let hybridRun: Awaited<ReturnType<typeof routeCarBotHybrid>> | null = null;
 
     if (openai) {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60_000);
       try {
-        // Build real image content for Vision (vehicles need visual inspection)
-        const imageContent: any[] = [];
-        for (const photo of item.photos.slice(0, 6)) {
-          try {
-            const clean = photo.filePath.startsWith("/") ? photo.filePath.slice(1) : photo.filePath;
-            const absPath = path.join(process.cwd(), "public", clean);
-            if (fs.existsSync(absPath) && fs.statSync(absPath).size <= 10 * 1024 * 1024) {
-              const base64 = fs.readFileSync(absPath, "base64");
-              const ext = path.extname(absPath).toLowerCase();
-              const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
-              imageContent.push({ type: "input_image", image_url: `data:${mime};base64,${base64}`, detail: "auto" });
-            }
-          } catch { /* skip unreadable */ }
+        // CMD-CARBOT-CORE-A: route through routeCarBotHybrid.
+        // Gemini primary (with native Google Search grounding for
+        // real-time vehicle market data + recall info) + OpenAI
+        // secondary (fires on rare_vehicle trigger: year < 1980
+        // OR mileage < 30000). photoUrls maps the item's photo
+        // file paths from the included relation.
+        const photoUrls = item.photos.slice(0, 4).map((p: any) => p.filePath);
+        if (photoUrls.length === 0) {
+          return NextResponse.json(
+            { error: "CarBot requires at least one photo for visual inspection." },
+            { status: 400 },
+          );
         }
 
-        const userContent: any[] = [
-          { type: "input_text", text: `Evaluate this vehicle comprehensively.${imageContent.length > 0 ? ` ${imageContent.length} photo(s) attached — examine body condition, paint, tires, interior, rust, dents, modifications, VIN plate, and odometer if visible.` : " No photos — assess from data only."} Return ONLY valid JSON.` },
-          ...imageContent,
-        ];
+        // Caller-side rare_vehicle trigger evaluation (year < 1980
+        // OR mileage < 30000). Produces shouldRunSecondary + an
+        // optional rareVehicleContext string for the OpenAI pass.
+        const vehYearNum = typeof vehicleYear === "number"
+          ? vehicleYear
+          : parseInt(String(vehicleYear), 10);
+        const vehMileageNum = typeof vehData?.mileage === "number"
+          ? vehData.mileage
+          : parseInt(String(vehData?.mileage ?? "999999"), 10);
+        const isRareYear = !isNaN(vehYearNum) && vehYearNum > 0 && vehYearNum < 1980;
+        const isLowMileage = !isNaN(vehMileageNum) && vehMileageNum > 0 && vehMileageNum < 30000;
+        const shouldRunSecondary = isRareYear || isLowMileage;
+        const rareVehicleContext = shouldRunSecondary
+          ? systemPrompt + `\n\nRARE VEHICLE SPECIALIST DIRECTIVE: This vehicle qualifies for rare-vehicle specialist review (${isRareYear ? "pre-1980 classic" : ""}${isRareYear && isLowMileage ? " + " : ""}${isLowMileage ? "sub-30k miles" : ""}). Emphasize collector value, auction house routing (Bring a Trailer, Mecum, Barrett-Jackson), documentation requirements (title chain, service records, matching-numbers verification), and appreciation outlook. Do NOT inflate values — give honest classic-car market math.`
+          : undefined;
 
-        const response = await openai.responses.create({
-          model: "gpt-4o-mini",
-          input: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userContent },
-          ],
-          max_output_tokens: 8192,
-        }, { signal: controller.signal });
+        hybridRun = await routeCarBotHybrid({
+          itemId: item.id,
+          photoPath: photoUrls,
+          vehiclePrompt: systemPrompt,
+          rareVehicleContext,
+          shouldRunSecondary,
+          // Vehicle market data is highly real-time — enable
+          // Gemini native Google Search grounding on every scan.
+          enableGrounding: true,
+          // CarBot uses 90s / 16k like AntiqueBot for its dense
+          // 10-section vehicle appraisal schema.
+          timeoutMs: 90_000,
+          maxTokens: 16_384,
+        });
 
-        const text = typeof response.output === "string"
-          ? response.output
-          : response.output_text || JSON.stringify(response.output);
+        if (hybridRun.degraded || !hybridRun.mergedResult) {
+          console.error(
+            "[carbot] hybrid degraded:",
+            hybridRun.error ?? "all providers failed",
+          );
+          return NextResponse.json(
+            {
+              error: `CarBot AI analysis failed: ${hybridRun.error ?? "all providers failed"}`,
+            },
+            { status: 422 },
+          );
+        }
 
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          carbotResult = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("No JSON in response");
+        carbotResult = hybridRun.mergedResult;
+
+        // Merge Gemini grounding citations into result.web_sources
+        // alongside the OpenAI web pre-pass citations.
+        if (hybridRun.geminiWebSources.length > 0) {
+          carbotResult.web_sources = [
+            ...(Array.isArray(carbotResult.web_sources) ? carbotResult.web_sources : []),
+            ...hybridRun.geminiWebSources,
+          ];
         }
       } catch (aiErr: any) {
-        console.error("[carbot] OpenAI error:", aiErr);
-        return NextResponse.json({ error: `CarBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` }, { status: 422 });
-      } finally {
-        clearTimeout(timeoutId);
+        console.error("[carbot] router error:", aiErr);
+        return NextResponse.json(
+          { error: `CarBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` },
+          { status: 422 },
+        );
       }
     } else {
       carbotResult = generateDemoResult(vehicleYear, vehicleMake, vehicleModel, vehicleMileage, condScore, estimatedLow, estimatedMid, estimatedHigh, sellerZip);
@@ -488,9 +548,43 @@ IMPORTANT:
         vinDecoded: vinDecoded || null,
       }) },
     });
-    await prisma.eventLog.create({
-      data: { itemId, eventType: "CARBOT_RUN", payload: JSON.stringify({ userId: user.id, timestamp: new Date().toISOString() }) },
-    });
+    // CMD-CARBOT-CORE-A: extended CARBOT_RUN telemetry. Parity with
+    // ANTIQUEBOT_RUN / COLLECTIBLESBOT_RUN / LISTBOT_RUN / BUYERBOT_RUN
+    // / RECONBOT_RUN. Logs skill pack stats + spec summary + hybrid
+    // routing telemetry + Gemini grounding citation count. Wrapped
+    // in try/catch so a logging failure cannot block the user-facing
+    // response.
+    try {
+      await prisma.eventLog.create({
+        data: {
+          itemId,
+          eventType: "CARBOT_RUN",
+          payload: JSON.stringify({
+            userId: user.id,
+            timestamp: new Date().toISOString(),
+            // Skill pack telemetry (Round B will populate carbot/*.md;
+            // Round A surfaces version + shared-pack count that load
+            // on day one)
+            skillPackVersion: skillPack.version,
+            skillPackCount: skillPack.skillNames.length,
+            skillPackChars: skillPack.totalChars,
+            // Spec context summary (Constitution audit)
+            specSummary,
+            // Hybrid router telemetry (live runs only — demo path null)
+            mergedStrategy: hybridRun?.mergedStrategy ?? null,
+            secondaryTriggered: hybridRun?.secondaryTriggered ?? false,
+            geminiGroundingCitations: hybridRun?.geminiWebSources?.length ?? 0,
+            actualCostUsd: hybridRun?.actualCostUsd ?? 0,
+            costUsd: hybridRun?.costUsd ?? 0,
+            latencyMs: hybridRun?.latencyMs ?? 0,
+            tokens: hybridRun?.tokens ?? { input: 0, output: 0, total: 0 },
+            isDemo: !!carbotResult?._isDemo,
+          }),
+        },
+      });
+    } catch (logErr) {
+      console.warn("[carbot] CARBOT_RUN log write failed (non-critical):", logErr);
+    }
 
     // Fire-and-forget: PriceSnapshot from vehicle valuation (private party)
     const cbPP = carbotResult.valuation?.private_party_value;

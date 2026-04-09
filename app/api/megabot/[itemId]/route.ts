@@ -388,6 +388,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   // CMD-COLLECTIBLESBOT-CORE-A: hoist collectiblesbotSkillPack to
   // function scope for MEGABOT_RUN telemetry parity.
   let collectiblesbotSkillPack: ReturnType<typeof loadSkillPack> | undefined;
+  // CMD-CARBOT-CORE-A: hoist carbotSkillPack to function scope.
+  let carbotSkillPack: ReturnType<typeof loadSkillPack> | undefined;
 
   let reconOpts: RunSpecializedMegaBotOpts | undefined;
   if (botType === "reconbot" && !isDemoMode()) {
@@ -674,6 +676,92 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     }
   }
 
+  // CMD-CARBOT-CORE-A: CarBot opts assembly mirrors the ReconBot
+  // grounding pattern — Gemini primary with enableGrounding=true,
+  // plus spec context + market intel + skill pack injection.
+  // Independent branch — botType is single-valued per request so
+  // branches never overlap. Failure booleans (carSpecContextFailed /
+  // carMarketIntelFailed) surface in MEGABOT_RUN telemetry.
+  //
+  // The ENABLE_SUBSCRIPTION_SCRAPERS env shim at lines 365-368
+  // (setup) and 763-770 (teardown) is PRESERVED unchanged — it
+  // runs BEFORE this block and unlocks subscription-gated
+  // Autotrader/Cargurus for CarBot MegaBot scans only. This
+  // assembly runs WHILE the shim is active, so getMarketIntelligence
+  // sees the unlocked scraper pool.
+  //
+  // CRITICAL: isMegaBot=true passed to getMarketIntelligence to
+  // unlock the paid Tier 3 scraper pool (BringATrailer, etc.)
+  // for this MegaBot scan only. Normal-path CarBot scans keep
+  // Apify cost bounded via the same gating.
+  let carbotOpts: RunSpecializedMegaBotOpts | undefined;
+  let carSpecContextFailed = false;
+  let carMarketIntelFailed = false;
+  if (botType === "carbot" && !isDemoMode()) {
+    try {
+      carbotSkillPack = loadSkillPack("carbot");
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const specContext = await buildItemSpecContext(item.id, { item, user });
+      const specSummary = summarizeSpecContext(specContext);
+
+      let marketIntel: any = null;
+      try {
+        // CMD-CARBOT-CORE-A: isMegaBot=true unlocks Tier 3 paid
+        // scraper pool (BringATrailer + Autotrader/Cargurus via
+        // the env shim above). Subscription scrapers fire ONLY
+        // on CarBot MegaBot scans.
+        marketIntel = await getMarketIntelligence(
+          ctx.itemName ?? item.title ?? "",
+          "vehicle",
+          item.saleZip ?? undefined,
+          undefined, // phase1Only — keep default
+          true,      // isMegaBot — enables paid scraper pool
+          "carbot",  // CMD-SCRAPER-WIRING-C2
+        );
+      } catch (err) {
+        carMarketIntelFailed = true;
+        console.warn("[megabot/carbot] getMarketIntelligence failed:", err);
+      }
+
+      const marketIntelBlock = marketIntel?.comps?.length
+        ? `MARKET INTELLIGENCE (live vehicle market comps from eBay Motors, Cars.com, Craigslist, Bring a Trailer — use these to anchor valuation, condition assessment, and selling strategy):\n${marketIntel.comps
+            .slice(0, 12)
+            .map(
+              (c: any) =>
+                `• ${c.platform}: ${c.item} — $${c.price}${c.location ? ` (${c.location})` : ""}`,
+            )
+            .join("\n")}`
+        : "";
+
+      const marketIntelMedian = marketIntel?.median ?? null;
+      const midPrice = v
+        ? Math.round((v.low + v.high) / 2)
+        : (ai?.estimated_value_mid ?? null);
+
+      carbotOpts = {
+        specSummary,
+        specPromptBlock: specContext.promptBlock,
+        marketIntelBlock,
+        marketIntelMedian,
+        // FLAG 8 (RC-7) carry-forward: aggregator does not yet
+        // expose Apify spend per call; hardcode 0.
+        apifyCostUsd: 0,
+        // CarBot MUST enable grounding — vehicle market data is
+        // highly real-time (Bring a Trailer active auctions,
+        // recall notices, Cars.com listings).
+        enableGrounding: true,
+        priorValuationMid: midPrice,
+        // CMD-SKILLS-INFRA-A: prepended to enrichedPrompt before
+        // any item-specific context inside runSpecializedMegaBot.
+        skillPackBlock: carbotSkillPack.systemPromptBlock,
+      };
+    } catch (specErr) {
+      carSpecContextFailed = true;
+      console.warn("[megabot/carbot] specContext assembly failed (non-critical):", specErr);
+      carbotOpts = undefined; // graceful degradation
+    }
+  }
+
   // CMD-LISTBOT-MEGA-C: ListBot opts assembly mirrors the
   // ReconBot/BuyerBot pattern. The three branches stay parallel/
   // independent because botType is single-valued per request.
@@ -753,6 +841,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
       botType === "listbot"         ? listOpts         :
       botType === "antiquebot"      ? antiqueOpts      :
       botType === "collectiblesbot" ? collectiblesOpts :
+      botType === "carbot"          ? carbotOpts       :
       undefined;
     result = await runSpecializedMegaBot(botType, prompt, photoPaths[0], itemId, photoPaths, activeOpts);
   } catch (e: any) {
@@ -888,7 +977,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   //   FLAG 7: perAgentWebSources + totalWebSourceCount
   //   FLAG 9: totalTokens aggregate
   //   FLAG 8 (DEFERRED): apifyCostUsdReal placeholder (always 0)
-  if (botType === "reconbot" || botType === "buyerbot" || botType === "listbot" || botType === "antiquebot" || botType === "collectiblesbot") {
+  if (botType === "reconbot" || botType === "buyerbot" || botType === "listbot" || botType === "antiquebot" || botType === "collectiblesbot" || botType === "carbot") {
     try {
       const telemetry = extractAgentTelemetry(result);
       const specBlockFp = fingerprintBlock(
@@ -896,33 +985,38 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         botType === "buyerbot"        ? buyerOpts?.specPromptBlock        :
         botType === "listbot"         ? listOpts?.specPromptBlock         :
         botType === "antiquebot"      ? antiqueOpts?.specPromptBlock      :
-        collectiblesOpts?.specPromptBlock
+        botType === "collectiblesbot" ? collectiblesOpts?.specPromptBlock :
+        carbotOpts?.specPromptBlock
       );
       const marketBlockFp = fingerprintBlock(
         botType === "reconbot"        ? reconOpts?.marketIntelBlock        :
         botType === "buyerbot"        ? buyerOpts?.marketIntelBlock        :
         botType === "listbot"         ? listOpts?.marketIntelBlock         :
         botType === "antiquebot"      ? antiqueOpts?.marketIntelBlock      :
-        collectiblesOpts?.marketIntelBlock
+        botType === "collectiblesbot" ? collectiblesOpts?.marketIntelBlock :
+        carbotOpts?.marketIntelBlock
       );
       const opts =
         botType === "reconbot"        ? reconOpts        :
         botType === "buyerbot"        ? buyerOpts        :
         botType === "listbot"         ? listOpts         :
         botType === "antiquebot"      ? antiqueOpts      :
-        collectiblesOpts;
+        botType === "collectiblesbot" ? collectiblesOpts :
+        carbotOpts;
       const specContextFailed =
         botType === "reconbot"        ? false                            :
         botType === "buyerbot"        ? buyerSpecContextFailed           :
         botType === "listbot"         ? listSpecContextFailed            :
         botType === "antiquebot"      ? antiqueSpecContextFailed         :
-        collectiblesSpecContextFailed;
+        botType === "collectiblesbot" ? collectiblesSpecContextFailed    :
+        carSpecContextFailed;
       const marketIntelFailed =
         botType === "reconbot"        ? false                             :
         botType === "buyerbot"        ? buyerMarketIntelFailed            :
         botType === "listbot"         ? listMarketIntelFailed             :
         botType === "antiquebot"      ? antiqueMarketIntelFailed          :
-        collectiblesMarketIntelFailed;
+        botType === "collectiblesbot" ? collectiblesMarketIntelFailed     :
+        carMarketIntelFailed;
 
       await prisma.eventLog.create({
         data: {
@@ -979,12 +1073,14 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
             // CMD-LISTBOT-MEGA-C: listbot added to ternary chain.
             // CMD-ANTIQUEBOT-CORE-A: antiquebot added to ternary chain.
             // CMD-COLLECTIBLESBOT-CORE-A: collectiblesbot added.
+            // CMD-CARBOT-CORE-A: carbot added.
             skillPackVersion: (
               botType === "reconbot"        ? reconSkillPack?.version             :
               botType === "buyerbot"        ? buyerSkillPack?.version             :
               botType === "listbot"         ? listSkillPack?.version              :
               botType === "antiquebot"      ? antiquebotSkillPack?.version        :
               botType === "collectiblesbot" ? collectiblesbotSkillPack?.version   :
+              botType === "carbot"          ? carbotSkillPack?.version            :
               "v0"
             ),
             skillPackCount: (
@@ -993,6 +1089,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
               botType === "listbot"         ? listSkillPack?.skillNames.length ?? 0              :
               botType === "antiquebot"      ? antiquebotSkillPack?.skillNames.length ?? 0        :
               botType === "collectiblesbot" ? collectiblesbotSkillPack?.skillNames.length ?? 0   :
+              botType === "carbot"          ? carbotSkillPack?.skillNames.length ?? 0            :
               0
             ),
             skillPackChars: (
@@ -1001,6 +1098,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
               botType === "listbot"         ? listSkillPack?.totalChars ?? 0              :
               botType === "antiquebot"      ? antiquebotSkillPack?.totalChars ?? 0        :
               botType === "collectiblesbot" ? collectiblesbotSkillPack?.totalChars ?? 0   :
+              botType === "carbot"          ? carbotSkillPack?.totalChars ?? 0            :
               0
             ),
           }),

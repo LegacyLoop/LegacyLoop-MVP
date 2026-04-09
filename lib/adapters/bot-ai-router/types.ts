@@ -438,6 +438,130 @@ export interface AntiqueBotHybridResult {
   error?: string;
 }
 
+// ─── CarBot hybrid (Step 9 Round A) ──────────────────────────────
+//
+// CMD-CARBOT-CORE-A
+//
+// CarBot is the second Gemini-primary hybrid after ReconBot (Step 6).
+// Pattern mirrors ReconBotHybrid*: Gemini primary with optional
+// native Google Search grounding for real-time vehicle market data,
+// OpenAI secondary fires conditionally on the rare_vehicle trigger
+// (pre-1980 OR under 30k miles) for specialist backup.
+// ──────────────────────────────────────────────────────────────────
+
+/**
+ * Input shape for routeCarBotHybrid().
+ *
+ * Caller is responsible for:
+ *  • Pre-evaluating shouldRunSecondary via the rare_vehicle trigger
+ *    (caller checks year < 1980 OR mileage < 30000)
+ *  • Setting enableGrounding=true to opt into Gemini native Google
+ *    Search results for real-time vehicle pricing, recall data, and
+ *    market trend information
+ *  • Tracking apifyCostUsd from any scraper calls fired prior to
+ *    invoking the router
+ *
+ * CMD-CARBOT-CORE-A — Step 9 Round A
+ */
+export interface CarBotHybridInput {
+  /** Item ID for EventLog correlation */
+  itemId: string;
+  /** Photo path(s) — accepts string or string[] for multi-photo */
+  photoPath: string | string[];
+  /** Raw system prompt for Gemini primary (CarBot's full assembled
+   *  prompt: skill pack + spec context + enrichment + NHTSA data +
+   *  market intel + inline vehicle appraisal schema) */
+  vehiclePrompt: string;
+  /** Optional OpenAI secondary prompt — only used when
+   *  shouldRunSecondary=true. Typically the same as vehiclePrompt
+   *  with an appended rare-vehicle specialist directive for
+   *  collectors, classics, low-mileage, or specialty markets. */
+  rareVehicleContext?: string;
+  /** Pre-evaluated by caller. When true, OpenAI secondary fires
+   *  in parallel with Gemini primary. Caller evaluates the
+   *  rare_vehicle trigger (year < 1980 OR mileage < 30k). */
+  shouldRunSecondary: boolean;
+  /** Enable Gemini's native Google Search grounding tool. Default
+   *  false — opt-in only. CarBot SHOULD set this true for every
+   *  scan because vehicle market data is highly real-time
+   *  (Bring a Trailer active auctions, Cars.com listings, recall
+   *  notices). When true, Gemini runs with tools: [{ google_search:
+   *  {} }] on first attempt and falls back to plain JSON if
+   *  grounding fails or returns empty. Citations are extracted into
+   *  geminiWebSources. */
+  enableGrounding?: boolean;
+  /** Override timeout for both primary and secondary calls.
+   *  Defaults to HYBRID_DEFAULTS.TIMEOUT_MS. */
+  timeoutMs?: number;
+  /** Override max output tokens for both primary and secondary.
+   *  Defaults to HYBRID_DEFAULTS.MAX_TOKENS. */
+  maxTokens?: number;
+  /** Caller-tracked Apify scraper spend for this CarBot call.
+   *  Persisted in BOT_AI_ROUTING EventLog payload via the
+   *  apifyCostUsd field added in Step 4.8. */
+  apifyCostUsd?: number;
+  /** Optional logging skip flag for tests. Default false. */
+  skipLogging?: boolean;
+}
+
+/**
+ * Output shape for routeCarBotHybrid().
+ * Returns RAW JSON results (NOT AiAnalysis-shaped) so CarBot's
+ * existing payload schema (identification, condition, mechanical,
+ * market, selling_strategy, ownership_costs, modifications, recalls,
+ * value_drivers, executive_summary) is preserved unchanged when
+ * consumed by CarBotPanel.
+ *
+ * mergedResult contains the fused output: primary as base, with
+ * secondary's rare-vehicle specialist blocks overlaid if both
+ * succeeded. mergedStrategy reports which path was taken so
+ * downstream telemetry can audit consensus quality.
+ *
+ * geminiWebSources is populated when enableGrounding=true and
+ * Gemini returned citation chunks. Caller merges into result's
+ * web_sources field.
+ */
+export interface CarBotHybridResult {
+  /** Gemini primary result with raw JSON payload */
+  primary: ProviderRunResult & {
+    rawResult: any;
+    geminiWebSources?: Array<{ url: string; title: string }>;
+  };
+  /** OpenAI secondary result — only present when fired AND
+   *  succeeded. Best-effort: secondary failure does NOT mark
+   *  the run degraded. */
+  secondary?: ProviderRunResult & { rawResult: any };
+  /** Merged final result. primary as base, with secondary's
+   *  rare-vehicle blocks overlaid when available. */
+  mergedResult: any;
+  /** Real-time Google Search citations from Gemini grounding.
+   *  Only populated when enableGrounding=true on the input.
+   *  Empty array otherwise. */
+  geminiWebSources: Array<{ url: string; title: string }>;
+  /** True if the OpenAI secondary fired (caller forced it via
+   *  rare_vehicle trigger pre-evaluation). */
+  secondaryTriggered: boolean;
+  /** Merge strategy taken:
+   *   - "primary_only":      primary OK, secondary did not fire
+   *   - "merged_consensus":  both OK, fused
+   *   - "degraded":          primary failed or both failed */
+  mergedStrategy: "primary_only" | "merged_consensus" | "degraded";
+  /** Estimated USD cost for the run (sum of providers attempted) */
+  costUsd: number;
+  /** Actual USD cost from token metering (Step 3 carry-over) */
+  actualCostUsd: number;
+  /** Aggregated token usage across primary + secondary */
+  tokens: { input: number; output: number; total: number };
+  /** Total wall-clock latency in milliseconds */
+  latencyMs: number;
+  /** True if all providers (primary + fallbacks + secondary)
+   *  failed. Caller should return a 422 error to the user when
+   *  degraded. */
+  degraded: boolean;
+  /** Last error message when degraded=true */
+  error?: string;
+}
+
 // ─── CollectiblesBot hybrid (Step 8 Round A) ─────────────────────
 //
 // CMD-COLLECTIBLESBOT-CORE-A
