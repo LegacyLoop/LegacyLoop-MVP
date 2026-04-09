@@ -126,22 +126,27 @@ export async function POST(req: NextRequest) {
       `\ud83d\udcc8 Annual Projection:    *$${projectedAnnual.toFixed(2)}*`,
     ].join("\n");
 
-    // ── Post to Slack ──
+    // ── Post to Slack via Bot Token + chat.postMessage ──
     let slackPosted = false;
-    const slackUrl = process.env.SLACK_WEBHOOK_URL;
+    const botToken = process.env.SLACK_BOT_TOKEN;
+    const channelId = process.env.SLACK_CHANNEL_ID ?? "C08S7BGQABH";
 
-    if (!slackUrl) {
-      console.warn("[CRON/cache-report] SLACK_WEBHOOK_URL not set — skipping Slack post");
+    if (!botToken) {
+      console.warn("[CRON/cache-report] SLACK_BOT_TOKEN not set — skipping Slack post");
     } else {
       try {
-        const slackRes = await fetch(slackUrl, {
+        const slackRes = await fetch("https://slack.com/api/chat.postMessage", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: slackMessage }),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${botToken}`,
+          },
+          body: JSON.stringify({ channel: channelId, text: slackMessage }),
         });
-        slackPosted = slackRes.ok;
-        if (!slackRes.ok) {
-          console.error(`[CRON/cache-report] Slack POST failed: ${slackRes.status}`);
+        const slackData = await slackRes.json();
+        slackPosted = slackData.ok === true;
+        if (!slackPosted) {
+          console.error(`[CRON/cache-report] Slack chat.postMessage failed: ${slackData.error ?? slackRes.status}`);
         }
       } catch (slackErr: any) {
         console.error("[CRON/cache-report] Slack POST error:", slackErr.message);
@@ -174,7 +179,7 @@ export async function POST(req: NextRequest) {
       success: true,
       reportedAt: new Date().toISOString(),
       slackPosted,
-      slackSkipped: !slackUrl,
+      slackSkipped: !botToken,
       stats: {
         combinedHitRate,
         combinedCalls,
