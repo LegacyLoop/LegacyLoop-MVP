@@ -1,14 +1,48 @@
 {
+  "id": "/",
   "name": "LegacyLoop",
   "short_name": "LegacyLoop",
-  "description": "AI-powered estate and garage sale assistant",
+  "description": "AI-powered resale automation. Sell smarter, faster.",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#0a0a1a",
   "theme_color": "#00bcd4",
   "orientation": "portrait-primary",
+  "categories": ["productivity", "shopping", "finance"],
   "icons": [
-    { "src": "/images/logos/logo-icon.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/images/logos/logo-icon.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "/images/logos/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logos/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logos/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Add Item",
+      "short_name": "Add Item",
+      "description": "Upload a new item for sale",
+      "url": "/items/new",
+      "icons": [{ "src": "/images/logos/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your seller dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "/images/logos/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }

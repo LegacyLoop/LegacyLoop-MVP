@@ -11,6 +11,7 @@ import HelpWidget from "@/app/components/HelpWidget";
 import ThemeProvider from "@/app/components/ThemeProvider";
 import NoiseOverlay from "@/app/components/effects/NoiseOverlay";
 import GradientOrbs from "@/app/components/effects/GradientOrbs";
+import InstallPrompt from "@/app/components/InstallPrompt";
 
 export const viewport = {
   width: "device-width",
@@ -134,6 +135,16 @@ export default async function RootLayout({
         <link rel="icon" type="image/png" href="/images/logos/favicon-teal.png" media="(prefers-color-scheme: light)" sizes="454x451" />
         <link rel="icon" type="image/png" href="/images/logos/favicon-white.png" media="(prefers-color-scheme: dark)" sizes="454x451" />
         <link rel="apple-touch-icon" href="/images/logos/favicon-teal.png" />
+        {/* CMD-PWA-INSTALL: Register service worker for PWA install + offline */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+              navigator.serviceWorker.register('/sw.js')
+                .then(function(reg) { console.log('SW registered:', reg.scope); })
+                .catch(function(err) { console.log('SW registration failed:', err); });
+            });
+          }
+        `}} />
       </head>
       <body className="min-h-screen">
         <ThemeProvider>
@@ -151,6 +162,7 @@ export default async function RootLayout({
           <main className="container-app py-10">{children}</main>
           <Footer />
           <HelpWidget />
+          <InstallPrompt />
           <DataConsentModal show={showConsentModal} />
           <CookieConsent />
         </ThemeProvider>
