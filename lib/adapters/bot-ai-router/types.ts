@@ -676,3 +676,39 @@ export interface CollectiblesBotHybridResult {
   /** Last error message when degraded=true */
   error?: string;
 }
+
+// ─── PriceBot hybrid (Step 10 Round A) ───────────────────────────
+//
+// CMD-PRICEBOT-CORE-A
+//
+// PriceBot is the first OpenAI-primary hybrid bot routed through
+// the bot-ai-router layer. OpenAI primary with inline web_search
+// tool for real-time pricing. Gemini secondary fires on high_value
+// (≥$500) or specialty_item triggers for a second pricing opinion.
+// ──────────────────────────────────────────────────────────────────
+
+export interface PriceBotHybridInput {
+  itemId: string;
+  photoPath: string | string[];
+  pricingPrompt: string;
+  shouldRunSecondary?: boolean;
+  timeoutMs?: number;
+  maxTokens?: number;
+  apifyCostUsd?: number;
+  skipLogging?: boolean;
+}
+
+export interface PriceBotHybridResult {
+  primary: ProviderRunResult & { rawResult: any };
+  secondary?: ProviderRunResult & { rawResult: any };
+  mergedResult: any;
+  primaryConfidence: number;
+  secondaryTriggered: boolean;
+  mergedStrategy: "primary_only" | "merged_consensus" | "degraded";
+  costUsd: number;
+  actualCostUsd: number;
+  tokens: { input: number; output: number; total: number };
+  latencyMs: number;
+  degraded: boolean;
+  error?: string;
+}

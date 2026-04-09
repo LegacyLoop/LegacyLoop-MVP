@@ -10,6 +10,10 @@ import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
+// CMD-PRICEBOT-CORE-A: hybrid router + skill pack
+import { routePriceBotHybrid } from "@/lib/adapters/bot-ai-router";
+import { loadSkillPack } from "@/lib/bots/skill-loader";
+import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
 // SPEC-WIRE FIX (Step 4): single source of truth for seller location + shippability
 import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
 import {
@@ -115,6 +119,16 @@ export async function POST(
     // item.isFragile, item.saleRadiusMi DIRECTLY from the live Item model
     // (not stale aiResult.rawJson). This is the data PriceBot was missing.
     const specCtx = await buildItemSpecContext(itemId, { item, user });
+
+    // CMD-PRICEBOT-CORE-A: skill pack + spec summary for telemetry.
+    // Skills folder is empty until CMD-PRICEBOT-SKILLS-B ships —
+    // loadSkillPack returns empty SkillPack, skillPackPrefix is ""
+    // until Round B. Wiring here from CORE-A for telemetry completeness.
+    const skillPack = loadSkillPack("pricebot");
+    const specSummary = summarizeSpecContext(specCtx);
+    const skillPackPrefix = skillPack.systemPromptBlock
+      ? skillPack.systemPromptBlock + "\n\n"
+      : "";
 
     // Build context from existing analysis
     const itemName = ai.item_name || item.title || "Unknown item";
@@ -259,13 +273,24 @@ CRITICAL: These are REAL comparable sales from actual marketplaces. Your revised
       console.log("[PriceBot] Market intelligence unavailable — proceeding with AI-only pricing");
     }
 
+    // CMD-PRICEBOT-CORE-A: OpenAI web search pre-pass for real-time
+    // pricing data. Supplements the inline web_search_preview tool
+    // on the OpenAI call with a dedicated pre-pass that all bots use.
+    const { webEnrichment, webSources: prepassWebSources } = await runWebSearchPrepass(
+      openai,
+      itemName,
+      category,
+      sellerZip,
+    );
+
     // ── PRICEBOT PROMPT ──
     // SPEC-WIRE FIX (Step 4): inject the seller constraint block at the
     // VERY TOP so the AI sees freight + radius + local-only constraints
     // before any other context.
+    // CMD-PRICEBOT-CORE-A: skill pack prepended BEFORE spec prefix.
     const specPrefix = specCtx.promptBlock + "\n\n";
 
-    const systemPrompt = specPrefix + enrichmentPrefix + realCompsContext + `You are a world-class resale pricing analyst and market researcher with 20 years of experience in antiques, collectibles, electronics, furniture, and general resale. You have been given an item that has ALREADY been identified by another AI. Your ONLY job is pricing — go as deep as possible.
+    const systemPrompt = skillPackPrefix + specPrefix + enrichmentPrefix + realCompsContext + webEnrichment + `You are a world-class resale pricing analyst and market researcher with 20 years of experience in antiques, collectibles, electronics, furniture, and general resale. You have been given an item that has ALREADY been identified by another AI. Your ONLY job is pricing — go as deep as possible.
 
 You are analyzing: ${itemName} — ${category} — ${material} — ${era} — ${conditionLabel} (${conditionScore}/10)
 
@@ -424,91 +449,62 @@ If you cannot find real comparables via search, provide your best AI estimate an
 Include a "web_sources" array in your response with objects like {"url": "...", "title": "..."} for pages you found during research. If no web search was performed, return an empty array.`;
 
     let pricebotResult: any;
+    // CMD-PRICEBOT-CORE-A: track hybrid run for telemetry.
+    let hybridRun: Awaited<ReturnType<typeof routePriceBotHybrid>> | null = null;
 
     if (openai) {
-      // ── REAL OpenAI call ──
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60_000);
       try {
-        // Build real photo content for AI vision
-        const fs = await import("fs");
-        const path = await import("path");
-        const imageContent: any[] = [];
-        for (const photo of item.photos.slice(0, 4)) {
-          try {
-            const absPath = path.join(process.cwd(), "public", photo.filePath);
-            if (fs.existsSync(absPath) && fs.statSync(absPath).size <= 10 * 1024 * 1024) {
-              const base64 = fs.readFileSync(absPath, "base64");
-              const ext = photo.filePath.split(".").pop()?.toLowerCase() || "jpg";
-              const mime = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
-              imageContent.push({ type: "input_image", image_url: `data:${mime};base64,${base64}`, detail: "high" });
-            }
-          } catch { /* skip unreadable */ }
+        // CMD-PRICEBOT-CORE-A: route through routePriceBotHybrid.
+        // OpenAI primary (structured pricing output) + Gemini secondary
+        // (fires on high_value ≥$500 OR specialty_item). photoUrls maps
+        // the item's photo file paths.
+        const photoUrls = item.photos.slice(0, 4).map((p: any) => p.filePath);
+        if (photoUrls.length === 0) {
+          return NextResponse.json(
+            { error: "PriceBot requires at least one photo." },
+            { status: 400 },
+          );
         }
 
-        const userContent: any[] = [
-          { type: "input_text", text: `${imageContent.length > 0 ? `${imageContent.length} photo(s) attached — examine condition, brand marks, material quality, and completeness for pricing accuracy. ` : ""}Analyze the pricing for this item in detail. Return ONLY valid JSON.` },
-          ...imageContent,
-        ];
+        // Caller-side trigger evaluation: high_value OR specialty_item
+        const shouldRunSecondary =
+          estimatedMid >= 500 || isAntique ||
+          !!(ai as any).is_collectible ||
+          !!(ai as any).is_vehicle;
 
-        const response = await openai.responses.create({
-          model: "gpt-4o-mini",
-          input: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userContent },
-          ],
-          tools: [{ type: "web_search_preview" as any }],
-          max_output_tokens: 16384,
-        }, { signal: controller.signal });
+        hybridRun = await routePriceBotHybrid({
+          itemId: item.id,
+          photoPath: photoUrls,
+          pricingPrompt: systemPrompt,
+          shouldRunSecondary,
+          timeoutMs: 90_000,
+          maxTokens: 16_384,
+        });
 
-        const text = typeof response.output === "string"
-          ? response.output
-          : response.output_text || JSON.stringify(response.output);
-
-        // Extract JSON from response
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          pricebotResult = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error("No JSON in response");
+        if (hybridRun.degraded || !hybridRun.mergedResult) {
+          console.error(
+            "[pricebot] hybrid degraded:",
+            hybridRun.error ?? "all providers failed",
+          );
+          return NextResponse.json(
+            { error: `PriceBot AI analysis failed: ${hybridRun.error ?? "all providers failed"}` },
+            { status: 422 },
+          );
         }
 
-        // Extract web search citations from response output
-        const webSources: Array<{ url: string; title: string }> = [];
-        try {
-          const outputArr = Array.isArray(response.output) ? response.output : [];
-          for (const outItem of outputArr) {
-            // Check for web_search_call results
-            if ((outItem as any).type === "web_search_call" && Array.isArray((outItem as any).results)) {
-              for (const r of (outItem as any).results) {
-                if (r.url && r.title) webSources.push({ url: r.url, title: r.title });
-              }
-            }
-            // Also check message content for URL annotations
-            if ((outItem as any).type === "message" && Array.isArray((outItem as any).content)) {
-              for (const c of (outItem as any).content) {
-                if (c.annotations) {
-                  for (const ann of c.annotations) {
-                    if (ann.type === "url_citation" && ann.url) {
-                      webSources.push({ url: ann.url, title: ann.title || ann.url });
-                    }
-                  }
-                }
-              }
-            }
-          }
-        } catch { /* citation extraction non-critical */ }
+        pricebotResult = hybridRun.mergedResult;
 
-        // Add web sources to result
-        if (!pricebotResult.web_sources) pricebotResult.web_sources = [];
-        if (webSources.length > 0) {
-          pricebotResult.web_sources = [...webSources, ...(pricebotResult.web_sources || [])];
+        // Merge web pre-pass citations into result
+        if (prepassWebSources.length > 0) {
+          if (!pricebotResult.web_sources) pricebotResult.web_sources = [];
+          pricebotResult.web_sources = [...prepassWebSources, ...pricebotResult.web_sources];
         }
       } catch (aiErr: any) {
-        console.error("[pricebot] OpenAI error:", aiErr);
-        return NextResponse.json({ error: `PriceBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` }, { status: 422 });
-      } finally {
-        clearTimeout(timeoutId);
+        console.error("[pricebot] router error:", aiErr);
+        return NextResponse.json(
+          { error: `PriceBot AI analysis failed: ${aiErr?.message ?? String(aiErr)}` },
+          { status: 422 },
+        );
       }
     } else {
       // ── DEMO MODE ──
@@ -636,14 +632,38 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
       },
     });
 
-    // Also log the run event
-    await prisma.eventLog.create({
-      data: {
-        itemId,
-        eventType: "PRICEBOT_RUN",
-        payload: JSON.stringify({ userId: user.id, timestamp: new Date().toISOString() }),
-      },
-    });
+    // CMD-PRICEBOT-CORE-A: extended PRICEBOT_RUN telemetry. Parity
+    // with ANTIQUEBOT_RUN / COLLECTIBLESBOT_RUN / CARBOT_RUN.
+    try {
+      await prisma.eventLog.create({
+        data: {
+          itemId,
+          eventType: "PRICEBOT_RUN",
+          payload: JSON.stringify({
+            userId: user.id,
+            timestamp: new Date().toISOString(),
+            skillPackVersion: skillPack.version,
+            skillPackCount: skillPack.skillNames.length,
+            skillPackChars: skillPack.totalChars,
+            specSummary,
+            locationScope: saleMethod,
+            saleRadiusMi: saleRadius,
+            marketTier: marketInfo.tier,
+            marketMultiplier: marketInfo.multiplier,
+            mergedStrategy: hybridRun?.mergedStrategy ?? null,
+            primaryConfidence: hybridRun?.primaryConfidence ?? null,
+            secondaryTriggered: hybridRun?.secondaryTriggered ?? false,
+            actualCostUsd: hybridRun?.actualCostUsd ?? 0,
+            costUsd: hybridRun?.costUsd ?? 0,
+            latencyMs: hybridRun?.latencyMs ?? 0,
+            tokens: hybridRun?.tokens ?? { input: 0, output: 0, total: 0 },
+            isDemo: !!pricebotResult?._isDemo,
+          }),
+        },
+      });
+    } catch (logErr) {
+      console.warn("[pricebot] PRICEBOT_RUN log write failed (non-critical):", logErr);
+    }
 
     // Fire-and-forget: create structured PriceSnapshot via populate function
     populateFromPriceBot(itemId, pricebotResult as Record<string, unknown>).catch(() => null);

@@ -390,6 +390,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   let collectiblesbotSkillPack: ReturnType<typeof loadSkillPack> | undefined;
   // CMD-CARBOT-CORE-A: hoist carbotSkillPack to function scope.
   let carbotSkillPack: ReturnType<typeof loadSkillPack> | undefined;
+  // CMD-PRICEBOT-CORE-A: hoist pricebotSkillPack to function scope.
+  let pricebotSkillPack: ReturnType<typeof loadSkillPack> | undefined;
 
   // CMD-MEGABOT-SHARED-SKILLS: load MegaBot-only shared packs ONCE.
   // These packs teach the 4-AI consensus how to argue, disagree, and
@@ -790,6 +792,68 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
     }
   }
 
+  // CMD-PRICEBOT-CORE-A: PriceBot opts assembly mirrors the
+  // AntiqueBot/CollectiblesBot/CarBot pattern. Independent branch.
+  // PriceBot is unique: it already has a cached AnalyzeBot market
+  // intel check in its normal route, but MegaBot always pulls fresh
+  // via isMegaBot=true. Amazon MegaBot add-on unlocked via allowlist.
+  let pricebotOpts: RunSpecializedMegaBotOpts | undefined;
+  let pricebotSpecContextFailed = false;
+  let pricebotMarketIntelFailed = false;
+  if (botType === "pricebot" && !isDemoMode()) {
+    try {
+      pricebotSkillPack = loadSkillPack("pricebot");
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const specContext = await buildItemSpecContext(item.id, { item, user });
+      const specSummary = summarizeSpecContext(specContext);
+
+      let marketIntel: any = null;
+      try {
+        marketIntel = await getMarketIntelligence(
+          ctx.itemName ?? item.title ?? "",
+          ctx.category ?? "",
+          item.saleZip ?? undefined,
+          undefined, // phase1Only
+          true,      // isMegaBot — unlocks Amazon + paid pool
+          "pricebot", // CMD-SCRAPER-WIRING-C2
+        );
+      } catch (err) {
+        pricebotMarketIntelFailed = true;
+        console.warn("[megabot/pricebot] getMarketIntelligence failed:", err);
+      }
+
+      const marketIntelBlock = marketIntel?.comps?.length
+        ? `MARKET INTELLIGENCE (live pricing comps from eBay, Ruby Lane, ShopGoodwill, LiveAuctioneers, Google Shopping, Amazon — use these to anchor and validate your revised price estimate):\n${marketIntel.comps
+            .slice(0, 12)
+            .map(
+              (c: any) =>
+                `• ${c.platform}: ${c.item} — $${c.price}${c.condition ? ` (${c.condition})` : ""}`,
+            )
+            .join("\n")}`
+        : "";
+
+      const marketIntelMedian = marketIntel?.median ?? null;
+      const midPrice = v
+        ? Math.round((v.low + v.high) / 2)
+        : (ai?.estimated_value_mid ?? null);
+
+      pricebotOpts = {
+        specSummary,
+        specPromptBlock: specContext.promptBlock,
+        marketIntelBlock,
+        marketIntelMedian,
+        apifyCostUsd: 0,
+        enableGrounding: false, // PriceBot is OpenAI primary, no Gemini grounding
+        priorValuationMid: midPrice,
+        skillPackBlock: megaBotSharedBlock + botMegaBlock + pricebotSkillPack.systemPromptBlock,
+      };
+    } catch (specErr) {
+      pricebotSpecContextFailed = true;
+      console.warn("[megabot/pricebot] specContext assembly failed (non-critical):", specErr);
+      pricebotOpts = undefined;
+    }
+  }
+
   // CMD-LISTBOT-MEGA-C: ListBot opts assembly mirrors the
   // ReconBot/BuyerBot pattern. The three branches stay parallel/
   // independent because botType is single-valued per request.
@@ -871,6 +935,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
       botType === "antiquebot"      ? antiqueOpts      :
       botType === "collectiblesbot" ? collectiblesOpts :
       botType === "carbot"          ? carbotOpts       :
+      botType === "pricebot"        ? pricebotOpts     :
       undefined;
     result = await runSpecializedMegaBot(botType, prompt, photoPaths[0], itemId, photoPaths, activeOpts);
   } catch (e: any) {
@@ -1006,7 +1071,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
   //   FLAG 7: perAgentWebSources + totalWebSourceCount
   //   FLAG 9: totalTokens aggregate
   //   FLAG 8 (DEFERRED): apifyCostUsdReal placeholder (always 0)
-  if (botType === "reconbot" || botType === "buyerbot" || botType === "listbot" || botType === "antiquebot" || botType === "collectiblesbot" || botType === "carbot") {
+  if (botType === "reconbot" || botType === "buyerbot" || botType === "listbot" || botType === "antiquebot" || botType === "collectiblesbot" || botType === "carbot" || botType === "pricebot") {
     try {
       const telemetry = extractAgentTelemetry(result);
       const specBlockFp = fingerprintBlock(
@@ -1015,7 +1080,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         botType === "listbot"         ? listOpts?.specPromptBlock         :
         botType === "antiquebot"      ? antiqueOpts?.specPromptBlock      :
         botType === "collectiblesbot" ? collectiblesOpts?.specPromptBlock :
-        carbotOpts?.specPromptBlock
+        botType === "carbot"          ? carbotOpts?.specPromptBlock       :
+        pricebotOpts?.specPromptBlock
       );
       const marketBlockFp = fingerprintBlock(
         botType === "reconbot"        ? reconOpts?.marketIntelBlock        :
@@ -1023,7 +1089,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         botType === "listbot"         ? listOpts?.marketIntelBlock         :
         botType === "antiquebot"      ? antiqueOpts?.marketIntelBlock      :
         botType === "collectiblesbot" ? collectiblesOpts?.marketIntelBlock :
-        carbotOpts?.marketIntelBlock
+        botType === "carbot"          ? carbotOpts?.marketIntelBlock       :
+        pricebotOpts?.marketIntelBlock
       );
       const opts =
         botType === "reconbot"        ? reconOpts        :
@@ -1031,21 +1098,24 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
         botType === "listbot"         ? listOpts         :
         botType === "antiquebot"      ? antiqueOpts      :
         botType === "collectiblesbot" ? collectiblesOpts :
-        carbotOpts;
+        botType === "carbot"          ? carbotOpts       :
+        pricebotOpts;
       const specContextFailed =
         botType === "reconbot"        ? false                            :
         botType === "buyerbot"        ? buyerSpecContextFailed           :
         botType === "listbot"         ? listSpecContextFailed            :
         botType === "antiquebot"      ? antiqueSpecContextFailed         :
         botType === "collectiblesbot" ? collectiblesSpecContextFailed    :
-        carSpecContextFailed;
+        botType === "carbot"          ? carSpecContextFailed             :
+        pricebotSpecContextFailed;
       const marketIntelFailed =
         botType === "reconbot"        ? false                             :
         botType === "buyerbot"        ? buyerMarketIntelFailed            :
         botType === "listbot"         ? listMarketIntelFailed             :
         botType === "antiquebot"      ? antiqueMarketIntelFailed          :
         botType === "collectiblesbot" ? collectiblesMarketIntelFailed     :
-        carMarketIntelFailed;
+        botType === "carbot"          ? carMarketIntelFailed              :
+        pricebotMarketIntelFailed;
 
       await prisma.eventLog.create({
         data: {
@@ -1097,12 +1167,8 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
             // with value 0 for forward-compat schema.
             apifyCostUsdReal: 0,
 
-            // CMD-SKILLS-INFRA-A: skill pack telemetry. A/B testing
-            // of skill pack versions is now possible from day one.
-            // CMD-LISTBOT-MEGA-C: listbot added to ternary chain.
-            // CMD-ANTIQUEBOT-CORE-A: antiquebot added to ternary chain.
-            // CMD-COLLECTIBLESBOT-CORE-A: collectiblesbot added.
-            // CMD-CARBOT-CORE-A: carbot added.
+            // CMD-SKILLS-INFRA-A: skill pack telemetry.
+            // CMD-PRICEBOT-CORE-A: pricebot added to ternary chain.
             skillPackVersion: (
               botType === "reconbot"        ? reconSkillPack?.version             :
               botType === "buyerbot"        ? buyerSkillPack?.version             :
@@ -1110,6 +1176,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
               botType === "antiquebot"      ? antiquebotSkillPack?.version        :
               botType === "collectiblesbot" ? collectiblesbotSkillPack?.version   :
               botType === "carbot"          ? carbotSkillPack?.version            :
+              botType === "pricebot"        ? pricebotSkillPack?.version          :
               "v0"
             ),
             skillPackCount: (
@@ -1119,6 +1186,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
               botType === "antiquebot"      ? antiquebotSkillPack?.skillNames.length ?? 0        :
               botType === "collectiblesbot" ? collectiblesbotSkillPack?.skillNames.length ?? 0   :
               botType === "carbot"          ? carbotSkillPack?.skillNames.length ?? 0            :
+              botType === "pricebot"        ? pricebotSkillPack?.skillNames.length ?? 0          :
               0
             ),
             skillPackChars: (
@@ -1128,6 +1196,7 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
               botType === "antiquebot"      ? antiquebotSkillPack?.totalChars ?? 0        :
               botType === "collectiblesbot" ? collectiblesbotSkillPack?.totalChars ?? 0   :
               botType === "carbot"          ? carbotSkillPack?.totalChars ?? 0            :
+              botType === "pricebot"        ? pricebotSkillPack?.totalChars ?? 0          :
               0
             ),
           }),

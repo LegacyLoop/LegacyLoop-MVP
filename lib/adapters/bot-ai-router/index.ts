@@ -67,6 +67,9 @@ import type {
   // CMD-CARBOT-CORE-A: Step 9 Round A
   CarBotHybridInput,
   CarBotHybridResult,
+  // CMD-PRICEBOT-CORE-A: Step 10 Round A
+  PriceBotHybridInput,
+  PriceBotHybridResult,
 } from "./types";
 
 // ─── Re-exports — public surface ───────────────────────────────
@@ -107,6 +110,9 @@ export type {
   // CMD-CARBOT-CORE-A: Step 9 Round A
   CarBotHybridInput,
   CarBotHybridResult,
+  // CMD-PRICEBOT-CORE-A: Step 10 Round A
+  PriceBotHybridInput,
+  PriceBotHybridResult,
 } from "./types";
 
 // ─── Constants ──────────────────────────────────────────────────
@@ -2341,6 +2347,253 @@ export async function routeCarBotHybrid(
       // Logging must NEVER bubble up to the caller.
       console.warn(
         `[routeCarBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
+      );
+    }
+  }
+
+  return result;
+}
+
+// ─── Public: routePriceBotHybrid() ─────────────────────────
+//
+// CMD-PRICEBOT-CORE-A — Step 10 Round A
+//
+// PriceBot router entry point. OpenAI-primary for structured
+// pricing output with inline web_search tool. Gemini-secondary
+// fires conditionally on high_value (≥$500) or specialty_item
+// triggers when caller pre-evaluates the item qualifies.
+//
+// Pattern mirrors routeAntiqueBotHybrid (Step 7A) but swaps
+// Claude → OpenAI for primary and OpenAI → Gemini for secondary.
+// Returns RAW JSON payload + a fused mergedResult.
+//
+// IMPORTANT: this function NEVER throws to its caller.
+// ─────────────────────────────────────────────────────────
+
+export async function routePriceBotHybrid(
+  input: PriceBotHybridInput,
+): Promise<PriceBotHybridResult> {
+  const startedAt = Date.now();
+  const config = getBotConfig("pricebot");
+  if (!config.triggers.includes("high_value")) {
+    throw new Error(
+      "[routePriceBotHybrid] BOT_AI_CONFIG.pricebot.triggers must " +
+        "include 'high_value' — got: " + JSON.stringify(config.triggers),
+    );
+  }
+  const demoMode = isDemoMode();
+
+  const photoArr = Array.isArray(input.photoPath)
+    ? input.photoPath
+    : [input.photoPath];
+  const absPath = publicUrlToAbsPath(photoArr[0]);
+
+  const timeoutMs = input.timeoutMs ?? HYBRID_DEFAULTS.TIMEOUT_MS;
+  const maxTokens = input.maxTokens ?? HYBRID_DEFAULTS.MAX_TOKENS;
+
+  type RawRunOutcome = ProviderRunResult & { rawResult: any };
+
+  const runRaw = async (
+    provider: ProviderName,
+    prompt: string,
+  ): Promise<RawRunOutcome> => {
+    const start = Date.now();
+    try {
+      const { text, tokens } = await callProviderRaw(
+        provider,
+        absPath,
+        prompt,
+        { timeoutMs, maxTokens },
+      );
+      const rawResult = parseAnyLooseJson(text);
+      if (!rawResult) {
+        return {
+          provider, result: null,
+          error: `${provider} returned unparseable JSON`,
+          durationMs: Date.now() - start, tokens,
+          actualCostUsd: computeActualCost(provider, tokens),
+          rawResult: null,
+        };
+      }
+      return {
+        provider, result: null, error: null,
+        durationMs: Date.now() - start, tokens,
+        actualCostUsd: computeActualCost(provider, tokens),
+        rawResult,
+      };
+    } catch (e: any) {
+      return {
+        provider, result: null,
+        error: e?.message ?? String(e),
+        durationMs: Date.now() - start,
+        rawResult: null,
+      };
+    }
+  };
+
+  const providersAttempted: ProviderName[] = [];
+  const providersUsed: ProviderName[] = [];
+  let totalEstCost = 0;
+  let totalActualCost = 0;
+  let fallbackUsed = false;
+
+  // ── PRIMARY: OpenAI (pricing with web_search) ──────────
+  let primary: RawRunOutcome = await runRaw("openai", input.pricingPrompt);
+  providersAttempted.push("openai");
+  totalEstCost += estimateProviderCost("openai");
+  if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
+  if (primary.rawResult) providersUsed.push("openai");
+
+  // ── Graceful fallback chain on primary failure ────────
+  if (!primary.rawResult) {
+    const chain = fallbackChain("openai", providersAttempted);
+    let attempts = 0;
+    for (const fallback of chain) {
+      if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
+      attempts++;
+      fallbackUsed = true;
+      const fallbackOutcome = await runRaw(fallback, input.pricingPrompt);
+      providersAttempted.push(fallback);
+      totalEstCost += estimateProviderCost(fallback);
+      if (fallbackOutcome.actualCostUsd != null) {
+        totalActualCost += fallbackOutcome.actualCostUsd;
+      }
+      if (fallbackOutcome.rawResult) {
+        primary = fallbackOutcome;
+        providersUsed.push(fallback);
+        break;
+      }
+    }
+  }
+
+  // Read primary confidence. PriceBot stores it under
+  // confidence.overall_confidence (0-100 or 0-1 decimal).
+  const rawConf: any =
+    primary.rawResult?.confidence?.overall_confidence ??
+    primary.rawResult?.confidence ??
+    50;
+  const primaryConfidence: number =
+    typeof rawConf === "number"
+      ? rawConf <= 1 ? Math.round(rawConf * 100) : Math.round(rawConf)
+      : 50;
+
+  // ── SECONDARY: Gemini (conditional, best-effort) ──────
+  let secondary: RawRunOutcome | undefined;
+  let secondaryTriggered = false;
+
+  const wantsSecondary =
+    !!primary.rawResult &&
+    (input.shouldRunSecondary === true || primaryConfidence < 60);
+
+  if (wantsSecondary) {
+    secondaryTriggered = true;
+    const secondaryOutcome = await runRaw("gemini", input.pricingPrompt);
+    providersAttempted.push("gemini");
+    totalEstCost += estimateProviderCost("gemini");
+    if (secondaryOutcome.actualCostUsd != null) {
+      totalActualCost += secondaryOutcome.actualCostUsd;
+    }
+    if (secondaryOutcome.rawResult) {
+      secondary = secondaryOutcome;
+      providersUsed.push("gemini");
+    } else {
+      console.warn(
+        `[routePriceBotHybrid] Gemini secondary failed for item ${input.itemId}: ${secondaryOutcome.error ?? "unknown"}`,
+      );
+    }
+  }
+
+  // ── Merge: primary as base, overlay secondary's higher-
+  //    confidence pricing blocks ──
+  let mergedResult: any;
+  let mergedStrategy: "primary_only" | "merged_consensus" | "degraded";
+
+  if (primary.rawResult && secondary?.rawResult) {
+    mergedResult = { ...primary.rawResult };
+    // If secondary has a higher-confidence revised estimate, overlay it
+    const secConf: any =
+      secondary.rawResult?.confidence?.overall_confidence ??
+      secondary.rawResult?.confidence;
+    const secConfNum =
+      typeof secConf === "number"
+        ? secConf <= 1 ? Math.round(secConf * 100) : Math.round(secConf)
+        : null;
+    if (secConfNum != null && secConfNum > primaryConfidence) {
+      if (secondary.rawResult?.revised_estimate) {
+        mergedResult.revised_estimate = secondary.rawResult.revised_estimate;
+      }
+      if (secondary.rawResult?.regional_pricing) {
+        mergedResult.regional_pricing = secondary.rawResult.regional_pricing;
+      }
+    }
+    mergedStrategy = "merged_consensus";
+  } else if (primary.rawResult) {
+    mergedResult = primary.rawResult;
+    mergedStrategy = "primary_only";
+  } else {
+    mergedResult = null;
+    mergedStrategy = "degraded";
+  }
+
+  const degraded = !primary.rawResult;
+
+  const aggregatedTokens = {
+    input: (primary.tokens?.inputTokens ?? 0) + (secondary?.tokens?.inputTokens ?? 0),
+    output: (primary.tokens?.outputTokens ?? 0) + (secondary?.tokens?.outputTokens ?? 0),
+    total: (primary.tokens?.totalTokens ?? 0) + (secondary?.tokens?.totalTokens ?? 0),
+  };
+
+  const result: PriceBotHybridResult = {
+    primary, secondary, mergedResult,
+    primaryConfidence, secondaryTriggered, mergedStrategy,
+    costUsd: Number(totalEstCost.toFixed(5)),
+    actualCostUsd: Number(totalActualCost.toFixed(6)),
+    tokens: aggregatedTokens,
+    latencyMs: Date.now() - startedAt,
+    degraded,
+    error: degraded ? primary.error ?? "All providers failed" : undefined,
+  };
+
+  // ── Fire-and-forget routing log ───────────────────────
+  if (!input.skipLogging) {
+    try {
+      void logRoutingDecision({
+        itemId: input.itemId,
+        payload: {
+          botName: "pricebot",
+          primary: primary.provider,
+          secondary: secondary?.provider,
+          triggersFired: secondaryTriggered ? ["high_value"] : [],
+          providersAttempted, providersUsed,
+          costUsd: result.costUsd,
+          actualCostUsd: result.actualCostUsd,
+          ...(input.apifyCostUsd != null ? { apifyCostUsd: input.apifyCostUsd } : {}),
+          latencyMs: result.latencyMs,
+          fallbackUsed, degraded,
+          confidence: primaryConfidence,
+          mergedStrategy,
+          tokens: {
+            [primary.provider]: {
+              input: primary.tokens?.inputTokens ?? null,
+              output: primary.tokens?.outputTokens ?? null,
+              total: primary.tokens?.totalTokens ?? null,
+            },
+            ...(secondary?.tokens ? {
+              [secondary.provider]: {
+                input: secondary.tokens.inputTokens,
+                output: secondary.tokens.outputTokens,
+                total: secondary.tokens.totalTokens,
+              },
+            } : {}),
+          },
+          demoMode,
+          error: result.error,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (e: any) {
+      console.warn(
+        `[routePriceBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
       );
     }
   }
