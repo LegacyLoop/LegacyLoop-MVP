@@ -285,15 +285,28 @@ async function analyzeWithClaude(absPath: string, context?: string, extraPaths?:
     imageBlocks.push({ type: "image", source: { type: "base64", media_type: mime, data: base64 } });
   }
 
+  // CMD-CLAUDE-PROMPT-CACHING (FLAG-SB-2): Split prompt into
+  // system (cacheable base prompt + specialty) and user (images
+  // + short instruction). In MegaBot, the prompt includes skill
+  // packs via context → buildComprehensivePrompt(context).
+  // These are 28-40k tokens and identical for the same bot —
+  // perfect cache targets. Cache hits cost 0.1x normal input.
   const body = {
     model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
     max_tokens: 4096,
+    system: [
+      {
+        type: "text" as const,
+        text: prompt,
+        cache_control: { type: "ephemeral" as const },
+      },
+    ],
     messages: [
       {
-        role: "user",
+        role: "user" as const,
         content: [
           ...imageBlocks,
-          { type: "text", text: `${imageBlocks.length} photo(s) — cross-reference all. ${prompt}` },
+          { type: "text", text: `${imageBlocks.length} photo(s) — cross-reference all angles for grading. Return ONLY valid JSON.` },
         ],
       },
     ],
@@ -308,6 +321,7 @@ async function analyzeWithClaude(absPath: string, context?: string, extraPaths?:
       headers: {
         "x-api-key": key,
         "anthropic-version": "2023-06-01",
+        "anthropic-beta": "prompt-caching-2024-07-31",
         "content-type": "application/json",
       },
       body: JSON.stringify(body),
@@ -321,6 +335,20 @@ async function analyzeWithClaude(absPath: string, context?: string, extraPaths?:
 
     const data = await res.json();
     const text = data.content?.[0]?.text ?? "";
+
+    // CMD-CLAUDE-PROMPT-CACHING: log cache metrics
+    const usage = data.usage ?? {};
+    const cacheCreation = usage.cache_creation_input_tokens ?? 0;
+    const cacheRead = usage.cache_read_input_tokens ?? 0;
+    if (cacheCreation > 0 || cacheRead > 0) {
+      const hit = cacheRead > 0;
+      const savings = Number((cacheRead * 0.9 * 0.000001).toFixed(6));
+      console.log(
+        `[analyzeWithClaude] cache ${hit ? "HIT" : "MISS/WRITE"} — ` +
+        `created=${cacheCreation} read=${cacheRead} savings=$${savings}`,
+      );
+    }
+
     const parsed = parseLooseJson(text);
     if (!parsed) throw new Error("Claude returned unparseable JSON");
     return parsed;

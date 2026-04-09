@@ -193,6 +193,14 @@ interface ProviderRawResult {
   // Other providers always leave this undefined. Existing callers
   // (runProvider, ListBot/BuyerBot fallback paths) ignore it.
   geminiWebSources?: Array<{ url: string; title: string }>;
+  // CMD-CLAUDE-PROMPT-CACHING (FLAG-SB-2): cache telemetry from
+  // Claude calls. Only populated when Claude returns cache metrics.
+  cacheInfo?: {
+    cacheCreationInputTokens: number;
+    cacheReadInputTokens: number;
+    cacheHit: boolean;
+    estimatedSavingsUsd: number;
+  };
 }
 
 const openaiClient =
@@ -248,22 +256,44 @@ async function callClaudeRaw(
     options.timeoutMs ?? PROVIDER_TIMEOUT_MS,
   );
   try {
+    // CMD-CLAUDE-PROMPT-CACHING (FLAG-SB-2): Split prompt into
+    // system (cacheable skill packs + base prompt) and user
+    // (image + short instruction). The system block is the
+    // largest repeated content — skill packs are 28-40k tokens
+    // and identical across calls for the same bot. Caching cuts
+    // input token cost by 90% on cache hits.
+    //
+    // Structure:
+    //   system: [{ type: "text", text: <full prompt>, cache_control }]
+    //   user:   [{ type: "image", ... }, { type: "text", text: <short> }]
+    //
+    // The anthropic-beta header enables prompt caching.
+    // cache_control on the LAST system content block tells
+    // Anthropic to cache everything up to and including it.
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
         "x-api-key": key,
         "anthropic-version": "2023-06-01",
+        "anthropic-beta": "prompt-caching-2024-07-31",
         "content-type": "application/json",
       },
       body: JSON.stringify({
         model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
         max_tokens: options.maxTokens ?? 4096,
+        system: [
+          {
+            type: "text",
+            text: prompt,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
         messages: [
           {
             role: "user",
             content: [
               { type: "image", source: { type: "base64", media_type: mime, data: base64 } },
-              { type: "text", text: prompt },
+              { type: "text", text: "Analyze the photo(s) and return ONLY valid JSON." },
             ],
           },
         ],
@@ -282,7 +312,32 @@ async function callClaudeRaw(
       outputTokens: outputT,
       totalTokens: inputT != null && outputT != null ? inputT + outputT : null,
     };
-    return { text, tokens };
+
+    // CMD-CLAUDE-PROMPT-CACHING: capture cache metrics from response.
+    // Anthropic returns cache_creation_input_tokens (tokens written
+    // to cache, billed at 1.25x) and cache_read_input_tokens (tokens
+    // read from cache, billed at 0.1x — the 90% savings).
+    const cacheCreation = usage.cache_creation_input_tokens ?? 0;
+    const cacheRead = usage.cache_read_input_tokens ?? 0;
+    const cacheHit = cacheRead > 0;
+    // Savings estimate: cache_read tokens cost 0.1x vs 1.0x normal.
+    // So savings = cacheRead * 0.9 * per-token-rate.
+    // Haiku input rate: $0.001/1k tokens → $0.000001/token
+    const perTokenRate = 0.000001; // Haiku 4.5 input $/token
+    const estimatedSavingsUsd = Number((cacheRead * 0.9 * perTokenRate).toFixed(6));
+    const cacheInfo = (cacheCreation > 0 || cacheRead > 0)
+      ? { cacheCreationInputTokens: cacheCreation, cacheReadInputTokens: cacheRead, cacheHit, estimatedSavingsUsd }
+      : undefined;
+
+    if (cacheInfo) {
+      console.log(
+        `[callClaudeRaw] cache ${cacheHit ? "HIT" : "MISS/WRITE"} — ` +
+        `created=${cacheCreation} read=${cacheRead} ` +
+        `savings=$${estimatedSavingsUsd}`,
+      );
+    }
+
+    return { text, tokens, cacheInfo };
   } finally {
     clearTimeout(timeout);
   }
