@@ -1288,6 +1288,16 @@ async function handleSpecializedMegaBot(itemId: string, botType: string, userId:
             // with value 0 for forward-compat schema.
             apifyCostUsdReal: 0,
 
+            // CMD-CLAUDE-PROMPT-CACHING: cache telemetry from Claude agent
+            claudeCacheHit: result.agents.claude?.data?._claudeCacheHit ?? false,
+            claudeCacheReadTokens: result.agents.claude?.data?._claudeCacheReadTokens ?? 0,
+            claudeCacheCreateTokens: result.agents.claude?.data?._claudeCacheCreateTokens ?? 0,
+
+            // CMD-FLAG-CLEANUP-FINAL (FLAG-MB-2): spread-based confidence
+            consensusSpread: result.consensus?._consensusSpread ?? 0,
+            confidenceAdjustment: result.consensus?._confidenceAdjustment ?? 0,
+            amplificationApplied: result.consensus?._amplificationApplied ?? false,
+
             // CMD-ANALYZEBOT-CORE-A: all 10 bots now in ternary chain.
             skillPackVersion: (
               botType === "reconbot"        ? reconSkillPack?.version             :

@@ -343,6 +343,21 @@ async function callClaudeRaw(
   }
 }
 
+// FLAG-GEMINI-CACHE-DEFERRED: Gemini context caching requires a
+// fundamentally different architecture from Claude's ephemeral caching:
+//   1. Separate cachedContents.create API call to create a named cache
+//   2. Cache name returned and referenced via cachedContent field in
+//      subsequent generateContent calls
+//   3. Cache TTL management (min 1 min, max 1 year)
+//   4. Minimum 32,768 tokens (vs Claude's 1,024)
+//   5. Only supported on stable model versions (gemini-X.Y-NNN, not "latest")
+// Implementation path when ready:
+//   - Add lib/adapters/gemini-cache-registry.ts with create/lookup/expire
+//   - Modify callGeminiRaw to check registry before calling generateContent
+//   - Key cache on: botType + skillPackVersion (same pack = same cache)
+//   - Add cache hit telemetry (same pattern as Claude cacheInfo)
+// Estimated savings: Similar to Claude (~85-90% on cache hits for skill packs)
+// Risk: Cache invalidation on skill pack updates requires registry flush
 async function callGeminiRaw(
   absPath: string,
   prompt: string,
@@ -863,10 +878,12 @@ export async function routeListBotHybrid(
   const runOne = async (
     provider: ProviderName,
     prompt: string,
-  ): Promise<ProviderRunResult & { rawResult: any }> => {
+  // CMD-CLAUDE-PROMPT-CACHING: extended return with cacheInfo
+  ): Promise<ProviderRunResult & { rawResult: any; cacheInfo?: ProviderRawResult["cacheInfo"] }> => {
     const start = Date.now();
     try {
-      const { text, tokens } = await callProviderRaw(provider, absPath, prompt, {
+      // CMD-CLAUDE-PROMPT-CACHING: capture cacheInfo from Claude calls
+      const { text, tokens, cacheInfo } = await callProviderRaw(provider, absPath, prompt, {
         timeoutMs: HYBRID_TIMEOUT_MS,
         maxTokens: 16384, // ListBot needs the room — 13 platforms each
       });
@@ -880,6 +897,7 @@ export async function routeListBotHybrid(
           tokens,
           actualCostUsd: computeActualCost(provider, tokens),
           rawResult: null,
+          cacheInfo,
         };
       }
       return {
@@ -890,6 +908,7 @@ export async function routeListBotHybrid(
         tokens,
         actualCostUsd: computeActualCost(provider, tokens),
         rawResult,
+        cacheInfo,
       };
     } catch (e: any) {
       return {
@@ -1022,7 +1041,8 @@ export async function routeBuyerBotHybrid(
   // Mirrors the runOne closure in the Step 3 ListBot hybrid runner
   // above but is local to this function so the proven Step 3 template
   // stays byte-identical.
-  type RawRunOutcome = ProviderRunResult & { rawResult: any };
+  // CMD-CLAUDE-PROMPT-CACHING: extended with cacheInfo for Claude calls
+  type RawRunOutcome = ProviderRunResult & { rawResult: any; cacheInfo?: ProviderRawResult["cacheInfo"] };
 
   const runRaw = async (
     provider: ProviderName,
@@ -1547,7 +1567,8 @@ export async function routeAntiqueBotHybrid(
   // CMD-ANTIQUEBOT-CORE-A: raw-JSON single-provider runner.
   // Local closure (not extracted) so the proven Step 3/5/6
   // hybrid templates above stay byte-identical.
-  type RawRunOutcome = ProviderRunResult & { rawResult: any };
+  // CMD-CLAUDE-PROMPT-CACHING: extended with cacheInfo for Claude calls
+  type RawRunOutcome = ProviderRunResult & { rawResult: any; cacheInfo?: ProviderRawResult["cacheInfo"] };
 
   const runRaw = async (
     provider: ProviderName,
@@ -1555,7 +1576,8 @@ export async function routeAntiqueBotHybrid(
   ): Promise<RawRunOutcome> => {
     const start = Date.now();
     try {
-      const { text, tokens } = await callProviderRaw(
+      // CMD-CLAUDE-PROMPT-CACHING: capture cacheInfo from Claude calls
+      const { text, tokens, cacheInfo } = await callProviderRaw(
         provider,
         absPath,
         prompt,
@@ -1574,6 +1596,7 @@ export async function routeAntiqueBotHybrid(
           tokens,
           actualCostUsd: computeActualCost(provider, tokens),
           rawResult: null,
+          cacheInfo,
         };
       }
       return {
@@ -1584,6 +1607,7 @@ export async function routeAntiqueBotHybrid(
         tokens,
         actualCostUsd: computeActualCost(provider, tokens),
         rawResult,
+        cacheInfo,
       };
     } catch (e: any) {
       return {
@@ -1845,7 +1869,8 @@ export async function routeCollectiblesBotHybrid(
   // CMD-COLLECTIBLESBOT-CORE-A: raw-JSON single-provider runner.
   // Local closure (not extracted) — mirrors the proven AntiqueBot
   // Step 7A pattern exactly.
-  type RawRunOutcome = ProviderRunResult & { rawResult: any };
+  // CMD-CLAUDE-PROMPT-CACHING: extended with cacheInfo for Claude calls
+  type RawRunOutcome = ProviderRunResult & { rawResult: any; cacheInfo?: ProviderRawResult["cacheInfo"] };
 
   const runRaw = async (
     provider: ProviderName,
@@ -1853,7 +1878,8 @@ export async function routeCollectiblesBotHybrid(
   ): Promise<RawRunOutcome> => {
     const start = Date.now();
     try {
-      const { text, tokens } = await callProviderRaw(
+      // CMD-CLAUDE-PROMPT-CACHING: capture cacheInfo from Claude calls
+      const { text, tokens, cacheInfo } = await callProviderRaw(
         provider,
         absPath,
         prompt,
@@ -1872,6 +1898,7 @@ export async function routeCollectiblesBotHybrid(
           tokens,
           actualCostUsd: computeActualCost(provider, tokens),
           rawResult: null,
+          cacheInfo,
         };
       }
       return {
@@ -1882,6 +1909,7 @@ export async function routeCollectiblesBotHybrid(
         tokens,
         actualCostUsd: computeActualCost(provider, tokens),
         rawResult,
+        cacheInfo,
       };
     } catch (e: any) {
       return {
@@ -2458,7 +2486,8 @@ export async function routePriceBotHybrid(
   const timeoutMs = input.timeoutMs ?? HYBRID_DEFAULTS.TIMEOUT_MS;
   const maxTokens = input.maxTokens ?? HYBRID_DEFAULTS.MAX_TOKENS;
 
-  type RawRunOutcome = ProviderRunResult & { rawResult: any };
+  // CMD-CLAUDE-PROMPT-CACHING: extended with cacheInfo for Claude calls
+  type RawRunOutcome = ProviderRunResult & { rawResult: any; cacheInfo?: ProviderRawResult["cacheInfo"] };
 
   const runRaw = async (
     provider: ProviderName,
@@ -2704,7 +2733,8 @@ export async function routePhotoBotHybrid(
   const timeoutMs = input.timeoutMs ?? HYBRID_DEFAULTS.TIMEOUT_MS;
   const maxTokens = input.maxTokens ?? HYBRID_DEFAULTS.MAX_TOKENS;
 
-  type RawRunOutcome = ProviderRunResult & { rawResult: any };
+  // CMD-CLAUDE-PROMPT-CACHING: extended with cacheInfo for Claude calls
+  type RawRunOutcome = ProviderRunResult & { rawResult: any; cacheInfo?: ProviderRawResult["cacheInfo"] };
 
   const runRaw = async (
     provider: ProviderName,
@@ -2938,7 +2968,8 @@ export async function routeVideoBotHybrid(
   const timeoutMs = input.timeoutMs ?? HYBRID_DEFAULTS.TIMEOUT_MS;
   const maxTokens = input.maxTokens ?? HYBRID_DEFAULTS.MAX_TOKENS;
 
-  type RawRunOutcome = ProviderRunResult & { rawResult: any };
+  // CMD-CLAUDE-PROMPT-CACHING: extended with cacheInfo for Claude calls
+  type RawRunOutcome = ProviderRunResult & { rawResult: any; cacheInfo?: ProviderRawResult["cacheInfo"] };
 
   const runRaw = async (
     provider: ProviderName,

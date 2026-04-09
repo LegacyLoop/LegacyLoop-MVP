@@ -3451,7 +3451,15 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 <span><strong style={{ fontWeight: 700 }}>Shipping constraint:</strong> {specWarning}</span>
               </div>
             )}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
+            {/* CMD-FLAG-CLEANUP-FINAL: 4-column pricing grid.
+                Local → Regional → National → Best Market.
+                Regional column shows real data when pr.regionalPrice exists,
+                otherwise shows "unlock" prompt.
+                FLAG-REGIONAL-DATA: Backend needs to populate pr.regionalPrice
+                in the onlineRationale JSON (lib/adapters/pricing.ts) with
+                { low, mid, high, label } for a 100-300 mile radius estimate.
+                Until then, the column gracefully degrades. */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.5rem" }}>
               <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                 <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Local</div>
                 <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--accent)", marginTop: "0.15rem" }}>${Math.round((pr.localPrice.low + pr.localPrice.high) / 2)}</div>
@@ -3463,6 +3471,21 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   }}>{pr.regionalIntel.localDemand} demand</div>
                 )}
                 {pr.sellerNet && <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4caf50", marginTop: "0.25rem" }}>You get: ${pr.sellerNet.local.toFixed(0)}</div>}
+              </div>
+              {/* Regional tier — 100-300 mile radius */}
+              <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a78bfa" }}>Regional</div>
+                {pr.regionalPrice ? (
+                  <>
+                    <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "#a78bfa", marginTop: "0.15rem" }}>${Math.round((pr.regionalPrice.low + pr.regionalPrice.high) / 2)}</div>
+                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{pr.regionalPrice.label || "100-300 mi"}</div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-muted)", marginTop: "0.35rem" }}>—</div>
+                    <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", marginTop: "0.15rem", lineHeight: 1.35 }}>Set sale radius to unlock</div>
+                  </>
+                )}
               </div>
               <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                 <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>National</div>

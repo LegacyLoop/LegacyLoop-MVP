@@ -429,15 +429,7 @@ Return a JSON object:
   "executive_summary": "5-8 sentences for the seller. What vehicle this is, what it's worth, where to sell it, any concerns, and the single most important action. Written warmly for a senior. LOCAL PICKUP ONLY."
 }
 
-IMPORTANT:
-- Identify the vehicle as specifically as possible from available data.
-- Be HONEST about condition. Sellers need truth to price correctly.
-- Pricing must reflect PRIVATE PARTY values (not dealer retail).
-- ALWAYS remind: LOCAL PICKUP ONLY. Vehicles cannot be shipped.
-- If classic/vintage vehicle: note collector value, appreciation, specialty auctions.
-- Common problems section is crucial — buyers will ask.
-- This may be a senior selling a deceased spouse's vehicle. Be warm and practical.
-- All prices in USD.`;
+IMPORTANT: All prices in USD. PRIVATE PARTY values only (not dealer retail). LOCAL PICKUP ONLY — vehicles cannot be shipped.`;
 
     let carbotResult: any;
     // CMD-CARBOT-CORE-A: track hybrid run for telemetry. Hoisted so

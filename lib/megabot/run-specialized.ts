@@ -562,18 +562,30 @@ async function callClaude(
     for (let attempt = 0; attempt < 2; attempt++) {
       const { signal, clear } = withTimeout(CLAUDE_TIMEOUT);
       try {
+        // CMD-CLAUDE-PROMPT-CACHING (FLAG-SB-2): Split prompt into
+        // system (cacheable skill packs + base) and user (short
+        // instruction). Prefill trick preserved in assistant message.
+        // Skill packs are 28-40k tokens — cache hits cost 0.1x.
         const res = await fetch("https://api.anthropic.com/v1/messages", {
           method: "POST",
           headers: {
             "x-api-key": key,
             "anthropic-version": "2023-06-01",
+            "anthropic-beta": "prompt-caching-2024-07-31",
             "content-type": "application/json",
           },
           body: JSON.stringify({
             model,
             max_tokens: 16384,
+            system: [
+              {
+                type: "text",
+                text: claudePrompt,
+                cache_control: { type: "ephemeral" },
+              },
+            ],
             messages: [
-              { role: "user", content: claudePrompt },
+              { role: "user", content: "Analyze and return ONLY valid JSON. Start directly with {." },
               { role: "assistant", content: "{" }, // PREFILL — forces raw JSON, no markdown fences
             ],
           }),
@@ -622,12 +634,26 @@ async function callClaude(
           raw = "{" + raw;
         }
 
+        // CMD-CLAUDE-PROMPT-CACHING: log cache metrics
+        const _usage = json.usage ?? {};
+        const _cacheCreate = _usage.cache_creation_input_tokens ?? 0;
+        const _cacheRead = _usage.cache_read_input_tokens ?? 0;
+        if (_cacheCreate > 0 || _cacheRead > 0) {
+          const _hit = _cacheRead > 0;
+          const _savings = Number((_cacheRead * 0.9 * 0.000001).toFixed(6));
+          console.log(`[MegaBot][Claude] cache ${_hit ? "HIT" : "MISS/WRITE"} — created=${_cacheCreate} read=${_cacheRead} savings=$${_savings}`);
+        }
+
         console.log(`[MegaBot][Claude] Model: ${model}, Response length: ${raw.length} chars, stop: ${json.stop_reason || "unknown"}`);
 
         const parsed = parseAgentResponse(raw, "Claude");
         const data = normalizeKeys(unwrapAgentData(normalizeKeys(parsed)));
         data._claudeMode = "text";
         data._claudeModel = model;
+        // CMD-CLAUDE-PROMPT-CACHING: embed cache metrics in data for telemetry
+        data._claudeCacheHit = _cacheRead > 0;
+        data._claudeCacheReadTokens = _cacheRead;
+        data._claudeCacheCreateTokens = _cacheCreate;
         console.log(`[MEGABOT DEBUG][Claude] Top keys: ${Object.keys(data || {}).slice(0, 15).join(", ")}`);
         debugAgentShape("Claude", data);
         return { data, raw };
@@ -1070,6 +1096,68 @@ function buildConsensus(agents: MegaBotAgentResult[]): { consensus: any; agreeme
   }
 
   const agreementScore = totalChecks > 0 ? Math.round((agreeCount / totalChecks) * 100) : 75;
+
+  // CMD-FLAG-CLEANUP-FINAL (FLAG-MB-2): Spread-based confidence
+  // amplification. When agents agree tightly on pricing, boost
+  // confidence. When they diverge widely, suppress it.
+  //
+  // Spread is computed from pricing fields across successful agents.
+  // Tight agreement (spread < 5%): +15% uplift, cap 98%
+  // High disagreement (spread > 25%): -25% reduction, floor 20%
+  // Normal (5-25%): no adjustment
+  let consensusSpread = 0;
+  let confidenceAdjustment = 0;
+  let amplificationApplied = false;
+
+  const PRICE_KEYS = ["estimated_value_mid", "revised_mid", "recommended_price", "expected_sell_price", "list_price"];
+  const priceValues: number[] = [];
+  for (const agent of successful) {
+    if (!agent.data) continue;
+    for (const pk of PRICE_KEYS) {
+      const val = agent.data[pk];
+      if (typeof val === "number" && val > 0) {
+        priceValues.push(val);
+        break; // One price per agent
+      }
+      // Check nested
+      const nested = agent.data.valuation?.[pk] ?? agent.data.pricing?.[pk];
+      if (typeof nested === "number" && nested > 0) {
+        priceValues.push(nested);
+        break;
+      }
+    }
+  }
+
+  if (priceValues.length >= 2) {
+    const pMax = Math.max(...priceValues);
+    const pMin = Math.min(...priceValues);
+    consensusSpread = pMax > 0 ? Math.round(((pMax - pMin) / pMax) * 100) : 0;
+
+    if (consensusSpread < 5) {
+      // Tight agreement — boost confidence
+      confidenceAdjustment = 15;
+      amplificationApplied = true;
+    } else if (consensusSpread > 25) {
+      // High disagreement — suppress confidence
+      confidenceAdjustment = -25;
+      amplificationApplied = true;
+    }
+
+    // Apply to merged confidence fields
+    if (amplificationApplied) {
+      for (const cKey of ["confidence", "pricing_confidence"]) {
+        if (typeof merged[cKey] === "number") {
+          const adjusted = merged[cKey] + confidenceAdjustment;
+          merged[cKey] = Math.max(20, Math.min(98, Math.round(adjusted)));
+        }
+      }
+    }
+  }
+
+  // Attach spread metadata to consensus for telemetry
+  merged._consensusSpread = consensusSpread;
+  merged._confidenceAdjustment = confidenceAdjustment;
+  merged._amplificationApplied = amplificationApplied;
 
   const summaries = successful
     .map((a) => a.data?.executive_summary)
