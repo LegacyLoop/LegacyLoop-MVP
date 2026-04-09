@@ -253,12 +253,13 @@ export default async function ItemPage({ params }: { params: Params }) {
               </span>
             )}
 
-            {/* Vehicle detected badge */}
+            {/* Vehicle detected badge — CMD-ANALYZEBOT-BUG-FIX: removed "tractor", added outdoor exclusion */}
             {(() => {
-              const VEHICLE_KW = ["car", "truck", "vehicle", "automobile", "suv", "van", "motorcycle", "atv", "boat", "tractor", "trailer", "rv", "camper"];
+              const VEHICLE_KW = ["car", "truck", "vehicle", "automobile", "suv", "van", "motorcycle", "atv", "boat", "trailer", "rv", "camper"];
               const cat = (aiObj?.category || "").toLowerCase();
               const hasVehicleFields = !!(aiObj?.vehicle_year || aiObj?.vehicle_make || aiObj?.vehicle_model);
-              const isVehicle = VEHICLE_KW.some((kw) => cat.includes(kw)) || hasVehicleFields;
+              const isOutdoorEq = cat.includes("outdoor") || cat.includes("garden") || /riding\s*mow|lawn\s*mow|garden\s*tract|lawn\s*tract/i.test((aiObj?.item_name || "") + " " + (aiObj?.subcategory || ""));
+              const isVehicle = !isOutdoorEq && (VEHICLE_KW.some((kw) => cat.includes(kw)) || hasVehicleFields);
               return isVehicle ? (
                 <span style={{
                   padding: "0.2rem 0.65rem",
@@ -271,6 +272,26 @@ export default async function ItemPage({ params }: { params: Params }) {
                   boxShadow: "0 2px 6px rgba(33,150,243,0.3)",
                 }}>
                   🚗 VEHICLE
+                </span>
+              ) : null;
+            })()}
+
+            {/* High value badge */}
+            {(() => {
+              const midVal = v?.mid ?? (v?.low != null && v?.high != null ? Math.round((v.low + v.high) / 2) : 0);
+              const highVal = v?.high ?? 0;
+              return (midVal >= 500 || highVal >= 500) ? (
+                <span style={{
+                  padding: "0.2rem 0.65rem",
+                  borderRadius: "9999px",
+                  fontSize: "0.65rem",
+                  fontWeight: 700,
+                  letterSpacing: "0.04em",
+                  background: "linear-gradient(135deg, #d97706, #f59e0b)",
+                  color: "#fff",
+                  boxShadow: "0 2px 6px rgba(245,158,11,0.3)",
+                }}>
+                  💎 HIGH VALUE
                 </span>
               ) : null;
             })()}

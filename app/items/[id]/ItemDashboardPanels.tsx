@@ -8532,7 +8532,6 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           {(extra?.inquiries ?? 0) > 0 && <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}><span style={{ fontSize: "0.55rem", color: "#a78bfa" }}>{"\u{1F4AC}"}</span><span style={{ fontSize: "0.6rem", fontWeight: 600, color: "#a78bfa" }}>{extra!.inquiries}</span></div>}
           {(extra?.buyersFound ?? 0) > 0 && <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}><span style={{ fontSize: "0.55rem", color: "#f59e0b" }}>{"\u{1F916}"}</span><span style={{ fontSize: "0.6rem", fontWeight: 600, color: "#f59e0b" }}>{extra!.buyersFound}</span></div>}
           {(extra?.documentCount ?? 0) > 0 && <div style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}><span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F4C4}"}</span><span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>{extra!.documentCount}</span></div>}
-          {(valuation?.mid ?? valuation?.high ?? 0) >= 500 && <span style={{ fontSize: "0.5rem", fontWeight: 700, color: "#f59e0b", background: "rgba(245,158,11,0.08)", padding: "1px 5px", borderRadius: "4px" }}>{"\u{1F48E}"} HIGH VALUE</span>}
           {extra?.shippingReady && <span style={{ fontSize: "0.5rem", fontWeight: 700, color: "#22c55e", background: "rgba(34,197,94,0.08)", padding: "1px 5px", borderRadius: "4px" }}>SHIP {"\u2713"}</span>}
           {(() => {
             const checks = [
