@@ -37,11 +37,19 @@ export async function POST(
 
   for (let i = 0; i < validFiles.length; i++) {
     const order = existing + i + 1;
-    const filePath = await storageAdapter.savePhoto(validFiles[i], itemId);
-    await prisma.itemPhoto.create({
-      data: { itemId, filePath, order, isPrimary: existing === 0 && i === 0 },
-    });
-    added.push(filePath);
+    try {
+      const filePath = await storageAdapter.savePhoto(validFiles[i], itemId);
+      await prisma.itemPhoto.create({
+        data: { itemId, filePath, order, isPrimary: existing === 0 && i === 0 },
+      });
+      added.push(filePath);
+    } catch (err: any) {
+      console.error(`[photos] Photo ${i + 1} upload failed:`, err.message);
+      return Response.json(
+        { error: `Photo upload failed. Please try again.`, detail: err.message, uploaded: added.length },
+        { status: 500 },
+      );
+    }
   }
 
   // Auto-trigger AnalyzeBot if this is the first photo upload (free first run, cost-neutral)
@@ -82,11 +90,14 @@ export async function DELETE(
   const photo = await prisma.itemPhoto.findUnique({ where: { id: photoId } });
   if (!photo || photo.itemId !== itemId) return new Response("Photo not found", { status: 404 });
 
-  // Delete the file
-  try {
-    const abs = path.join(process.cwd(), "public", photo.filePath.replace(/^\//, ""));
-    if (fs.existsSync(abs)) fs.unlinkSync(abs);
-  } catch { /* ignore file errors */ }
+  // Delete the file — only for local uploads, skip Cloudinary URLs
+  if (photo.filePath.startsWith("/uploads/")) {
+    try {
+      const abs = path.join(process.cwd(), "public", photo.filePath.replace(/^\//, ""));
+      if (fs.existsSync(abs)) fs.unlinkSync(abs);
+    } catch { /* ignore file errors */ }
+  }
+  // Cloudinary URLs (https://...) are managed by Cloudinary — no local delete needed
 
   await prisma.itemPhoto.delete({ where: { id: photoId } });
 

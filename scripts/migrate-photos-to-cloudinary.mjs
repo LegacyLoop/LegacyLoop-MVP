@@ -1,32 +1,36 @@
 /**
- * CMD-NAV-PHOTO-FIX: Migrate local photos + documents to Cloudinary.
+ * CMD-PHOTO-MIGRATION-TURSO: Migrate photos to Cloudinary via Turso production DB.
  *
- * Reads all ItemPhoto + ItemDocument records with /uploads/ paths,
- * uploads each file to Cloudinary, and updates the DB record with
- * the new secure_url.
+ * Connects to Turso (libsql) production database, finds all ItemPhoto +
+ * ItemDocument records with /uploads/ paths, uploads each file from local
+ * public/uploads/ to Cloudinary, and updates the production DB record
+ * with the Cloudinary secure_url.
  *
  * Usage:
- *   node scripts/migrate-photos-to-cloudinary.mjs
  *   node scripts/migrate-photos-to-cloudinary.mjs --dry-run
+ *   node scripts/migrate-photos-to-cloudinary.mjs
  *
- * Requires env vars (from .env.local):
+ * Requires env vars (from .env):
+ *   TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN
  *   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
  *
- * Run LOCALLY (not on Vercel) — needs access to public/uploads/ files.
+ * Run LOCALLY — needs access to public/uploads/ files on disk.
  */
 
 import { v2 as cloudinary } from "cloudinary";
-import { PrismaClient } from "@prisma/client";
+import { createClient } from "@libsql/client";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import { config } from "dotenv";
 
-// Load env vars from .env.local
+// Load env vars — try .env (where Turso + Cloudinary vars live)
+config({ path: ".env" });
+// Also load .env.local as override
 config({ path: ".env.local" });
 
 const DRY_RUN = process.argv.includes("--dry-run");
 
-// Validate Cloudinary config
+// ── Validate Cloudinary config ────────────────────────────────────
 const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const apiKey = process.env.CLOUDINARY_API_KEY;
 const apiSecret = process.env.CLOUDINARY_API_SECRET;
@@ -34,15 +38,27 @@ const apiSecret = process.env.CLOUDINARY_API_SECRET;
 if (!cloudName || !apiKey || !apiSecret) {
   console.error("❌ Missing Cloudinary env vars. Required:");
   console.error("   CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET");
-  console.error("   Set them in .env.local");
   process.exit(1);
 }
 
 cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret, secure: true });
 
-const prisma = new PrismaClient();
+// ── Validate Turso config ─────────────────────────────────────────
+const tursoUrl = process.env.TURSO_CONNECTION_URL;
+const tursoToken = process.env.TURSO_AUTH_TOKEN;
+
+if (!tursoUrl || !tursoToken) {
+  console.error("❌ Missing Turso env vars. Required:");
+  console.error("   TURSO_CONNECTION_URL, TURSO_AUTH_TOKEN");
+  console.error(`   Found: URL=${tursoUrl ? "✅" : "❌"} TOKEN=${tursoToken ? "✅" : "❌"}`);
+  process.exit(1);
+}
+
+const db = createClient({ url: tursoUrl, authToken: tursoToken });
+
 const uploadsDir = join(process.cwd(), "public", "uploads");
 
+// ── Cloudinary upload helper ──────────────────────────────────────
 async function uploadToCloudinary(localPath, folder) {
   const buffer = readFileSync(localPath);
   return new Promise((resolve, reject) => {
@@ -56,29 +72,32 @@ async function uploadToCloudinary(localPath, folder) {
   });
 }
 
+// ── Main migration ────────────────────────────────────────────────
 async function migrate() {
   console.log(`\n${"═".repeat(50)}`);
   console.log(`  LegacyLoop Photo Migration → Cloudinary`);
-  console.log(`  Mode: ${DRY_RUN ? "DRY RUN (no changes)" : "LIVE"}`);
+  console.log(`  Mode: ${DRY_RUN ? "DRY RUN (no changes)" : "🔴 LIVE"}`);
   console.log(`  Cloud: ${cloudName}`);
+  console.log(`  DB: Turso (${tursoUrl.slice(0, 50)}...)`);
   console.log(`${"═".repeat(50)}\n`);
 
   // ── Photos ──────────────────────────────────────────
-  const photos = await prisma.itemPhoto.findMany({
-    where: { filePath: { startsWith: "/uploads/" } },
-  });
-  console.log(`📷 Found ${photos.length} photos with local /uploads/ paths`);
+  const photosResult = await db.execute(
+    "SELECT id, filePath FROM ItemPhoto WHERE filePath LIKE '/uploads/%'"
+  );
+  const photos = photosResult.rows;
+  console.log(`📷 Found ${photos.length} photos with local /uploads/ paths in Turso`);
 
   let photoSuccess = 0;
   let photoFailed = 0;
   let photoSkipped = 0;
 
   for (const photo of photos) {
-    const filename = photo.filePath.replace("/uploads/", "");
+    const filename = String(photo.filePath).replace("/uploads/", "");
     const localPath = join(uploadsDir, filename);
 
     if (!existsSync(localPath)) {
-      console.log(`   ⚠️  File missing: ${filename} — skipping`);
+      console.log(`   ⚠️  File missing locally: ${filename} — skipping`);
       photoSkipped++;
       continue;
     }
@@ -91,9 +110,9 @@ async function migrate() {
 
     try {
       const result = await uploadToCloudinary(localPath, "legacyloop/migrated");
-      await prisma.itemPhoto.update({
-        where: { id: photo.id },
-        data: { filePath: result.secure_url },
+      await db.execute({
+        sql: "UPDATE ItemPhoto SET filePath = ? WHERE id = ?",
+        args: [result.secure_url, photo.id],
       });
       console.log(`   ✅ ${filename} → ${result.secure_url.slice(0, 70)}...`);
       photoSuccess++;
@@ -104,21 +123,22 @@ async function migrate() {
   }
 
   // ── Documents ───────────────────────────────────────
-  const docs = await prisma.itemDocument.findMany({
-    where: { fileUrl: { startsWith: "/uploads/" } },
-  });
-  console.log(`\n📄 Found ${docs.length} documents with local /uploads/ paths`);
+  const docsResult = await db.execute(
+    "SELECT id, fileUrl FROM ItemDocument WHERE fileUrl LIKE '/uploads/%'"
+  );
+  const docs = docsResult.rows;
+  console.log(`\n📄 Found ${docs.length} documents with local /uploads/ paths in Turso`);
 
   let docSuccess = 0;
   let docFailed = 0;
   let docSkipped = 0;
 
   for (const doc of docs) {
-    const filename = doc.fileUrl.replace("/uploads/", "");
+    const filename = String(doc.fileUrl).replace("/uploads/", "");
     const localPath = join(uploadsDir, filename);
 
     if (!existsSync(localPath)) {
-      console.log(`   ⚠️  File missing: ${filename} — skipping`);
+      console.log(`   ⚠️  File missing locally: ${filename} — skipping`);
       docSkipped++;
       continue;
     }
@@ -131,9 +151,9 @@ async function migrate() {
 
     try {
       const result = await uploadToCloudinary(localPath, "legacyloop/migrated/docs");
-      await prisma.itemDocument.update({
-        where: { id: doc.id },
-        data: { fileUrl: result.secure_url },
+      await db.execute({
+        sql: "UPDATE ItemDocument SET fileUrl = ? WHERE id = ?",
+        args: [result.secure_url, doc.id],
       });
       console.log(`   ✅ ${filename} → ${result.secure_url.slice(0, 70)}...`);
       docSuccess++;
@@ -150,7 +170,7 @@ async function migrate() {
   console.log(`  Documents: ${docSuccess} migrated, ${docFailed} failed, ${docSkipped} skipped`);
   console.log(`${"─".repeat(50)}\n`);
 
-  await prisma.$disconnect();
+  db.close();
 }
 
 migrate().catch((err) => {

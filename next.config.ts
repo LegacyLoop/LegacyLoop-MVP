@@ -35,15 +35,20 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // CMD-UPLOAD-FIX: sharp must be bundled for HEIC→JPEG conversion on Vercel.
+  // Only exclude ffmpeg (unused in production, large binary).
   outputFileTracingExcludes: {
-    '/**': ['node_modules/ffmpeg-static/**', 'node_modules/sharp/**', 'node_modules/@img/**'],
+    '/**': ['node_modules/ffmpeg-static/**'],
   },
   // CMD-RECONBOT-SKILLS: guarantee Vercel bundles all .md skill
-  // pack files into every /api/* serverless function deployment
-  // regardless of default tracing behavior. Insurance for the
-  // skill-loader runtime fs.readFileSync calls.
+  // pack files into every /api/* serverless function deployment.
+  // CMD-UPLOAD-FIX: sharp + @img explicitly included for HEIC support.
   outputFileTracingIncludes: {
-    "/api/**/*": ["./lib/bots/skills/**/*"],
+    "/api/**/*": [
+      "./lib/bots/skills/**/*",
+      "./node_modules/sharp/**/*",
+      "./node_modules/@img/**/*",
+    ],
   },
   async headers() {
     return [

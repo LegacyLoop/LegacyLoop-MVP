@@ -82,12 +82,15 @@ export const storageAdapter = {
         console.log(`[photo-upload] Cloudinary: uploaded ${(buffer.length / 1024).toFixed(0)}KB → ${result.secure_url.slice(0, 80)}...`);
         return result.secure_url;
       } catch (err: any) {
-        console.error("[photo-upload] Cloudinary upload failed, falling back to local:", err.message);
-        // Fall through to local disk as safety net
+        console.error("[storage] Cloudinary photo upload failed:", err.message);
+        // CMD-UPLOAD-FIX: Do NOT fall back to local disk on production.
+        // Local disk on Vercel is ephemeral — files disappear after request.
+        // Throw so callers can show a real error to the user.
+        throw new Error(`Photo upload failed: ${err.message}`);
       }
     }
 
-    // ── Local disk fallback (original logic, unchanged) ───────────
+    // ── Local disk path (dev only — when SSTORAGE !== "cloudinary") ──
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
     await fs.mkdir(uploadsDir, { recursive: true });
 
@@ -147,12 +150,12 @@ export const storageAdapter = {
         console.log(`[doc-upload] Cloudinary: uploaded ${(buffer.length / 1024).toFixed(0)}KB → ${result.secure_url.slice(0, 80)}...`);
         return result.secure_url;
       } catch (err: any) {
-        console.error("[doc-upload] Cloudinary upload failed, falling back to local:", err.message);
-        // Fall through to local disk as safety net
+        console.error("[storage] Cloudinary document upload failed:", err.message);
+        throw new Error(`Document upload failed: ${err.message}`);
       }
     }
 
-    // ── Local disk fallback (original logic, unchanged) ───────────
+    // ── Local disk path (dev only — when SSTORAGE !== "cloudinary") ──
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
     await fs.mkdir(uploadsDir, { recursive: true });
 
