@@ -42,6 +42,13 @@ model User {
   phoneNumber  String?  @unique
   createdAt    DateTime @default(now())
 
+  // CMD-ONBOARDING-7A: Onboarding fields
+  quizCompletedAt    DateTime?
+  sellerType         String?   // "estate" | "garage" | "neighborhood"
+  recommendedTier    String?   // quiz-recommended tier
+  servicePreference  String?   // "diy" | "whiteGlove"
+  onboardingStep     Int       @default(0) // 0=new, 1=quiz done, 2=first item, 3=complete
+
   items                 Item[]
   projects              Project[]
   transactions          Transaction[]

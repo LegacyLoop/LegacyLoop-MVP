@@ -270,15 +270,29 @@ function ResultsContent() {
     LEGACY: "Unlimited items, dedicated project manager, printed legacy book, premium photography, and white-glove everything.",
   };
 
-  // Persist quiz completion to localStorage (bridge until schema migration)
+  // Persist quiz completion to localStorage + DB
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    // localStorage backup (always works, even if not logged in)
     try {
       localStorage.setItem("legacyloop_quiz_completed", new Date().toISOString());
       localStorage.setItem("legacyloop_quiz_results", JSON.stringify(rec));
     } catch {
       // localStorage not available — silently fail
     }
+
+    // CMD-ONBOARDING-7A: Persist to DB via API (non-blocking)
+    fetch("/api/onboarding/quiz", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sellerType: rec.primaryCategory,
+        recommendedTier: rec.recommendedTier,
+        servicePreference: rec.serviceLevel,
+      }),
+    }).catch(() => {
+      // Non-blocking — localStorage backup ensures UX is unbroken
+    });
   }, []);
 
   // userNotes available for future storage/display

@@ -112,7 +112,9 @@ export async function GET(request: NextRequest) {
     // Issue session
     await authAdapter.issueSession(user.id, user.tier);
 
-    return NextResponse.redirect(`${APP_URL}/dashboard`);
+    // CMD-ONBOARDING-7A: New users → quiz, returning users → dashboard
+    const isNewUser = !user.quizCompletedAt && (user.onboardingStep ?? 0) === 0;
+    return NextResponse.redirect(`${APP_URL}/${isNewUser ? "onboarding/quiz" : "dashboard"}`);
   } catch (error) {
     console.error("Google OAuth callback error:", error);
     return NextResponse.redirect(`${APP_URL}/auth/login?error=oauth_failed`);
