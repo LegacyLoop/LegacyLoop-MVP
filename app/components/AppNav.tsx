@@ -372,11 +372,11 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   <span className="lg:hidden">New</span>
                 </Link>
 
-                {/* Credit balance pill */}
+                {/* Credit balance pill — hidden on mobile to prevent nav overflow */}
                 <Link
                   href="/credits"
+                  className="hidden sm:flex"
                   style={{
-                    display: "flex",
                     alignItems: "center",
                     gap: "0.3rem",
                     padding: "0.3rem 0.65rem",

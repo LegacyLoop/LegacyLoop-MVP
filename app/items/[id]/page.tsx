@@ -160,6 +160,18 @@ export default async function ItemPage({ params }: { params: Params }) {
 
   return (
     <div className="mx-auto max-w-4xl">
+      {/* CMD-MOBILE-QA-FIX: Item header stacks vertically on mobile */}
+      <style>{`
+        @media (max-width: 768px) {
+          .item-header-row {
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+          }
+          .item-header-row > div:last-child {
+            align-items: flex-start !important;
+          }
+        }
+      `}</style>
       <Breadcrumbs items={[
         { label: "Dashboard", href: "/dashboard" },
         { label: "Items", href: "/items" },
@@ -185,7 +197,7 @@ export default async function ItemPage({ params }: { params: Params }) {
         marginBottom: "0.75rem",
         boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
       }}>
-      <div style={{
+      <div className="item-header-row" style={{
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-start",

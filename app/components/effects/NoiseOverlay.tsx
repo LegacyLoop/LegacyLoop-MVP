@@ -24,7 +24,7 @@ export default function NoiseOverlay() {
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: 2,
+          zIndex: 0,
           pointerEvents: "none",
           opacity,
           filter: "url(#ll-noise-filter)",
