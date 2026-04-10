@@ -2,6 +2,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email/send";
 import { newBuyerMessageEmail } from "@/lib/email/templates";
+import { tryAutoReply } from "@/lib/messaging/auto-reply";
 
 // ─── Bot/Platform helpers ──────────────────────────────────────────────────
 
@@ -149,6 +150,9 @@ export async function POST(req: Request) {
   } catch (notifErr) {
     console.error("[CONV] Notification failed (non-blocking):", notifErr);
   }
+
+  // CMD-MESSAGE-AUTOPILOT: fire-and-forget auto-reply if seller has it enabled
+  void tryAutoReply(conversation.id, item.userId);
 
   return Response.json({ ok: true, conversationId: conversation.id, botScore: score, flags, platform });
 }
