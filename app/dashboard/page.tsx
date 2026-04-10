@@ -59,6 +59,21 @@ export default async function DashboardPage() {
 
   const founderStats = await getFoundingMemberStats();
 
+  // CMD-ONBOARDING-7B: Fetch onboarding fields for dashboard personalization
+  let onboardingData = { firstName: user.email.split("@")[0].split(" ")[0], sellerType: null as string | null, recommendedTier: null as string | null, onboardingStep: 0, quizCompletedAt: null as string | null };
+  try {
+    const ob = await prisma.user.findUnique({ where: { id: user.id }, select: { displayName: true, sellerType: true, recommendedTier: true, onboardingStep: true, quizCompletedAt: true } });
+    if (ob) {
+      onboardingData = {
+        firstName: (ob.displayName || user.email.split("@")[0] || "").split(" ")[0],
+        sellerType: ob.sellerType ?? null,
+        recommendedTier: ob.recommendedTier ?? null,
+        onboardingStep: ob.onboardingStep ?? 0,
+        quizCompletedAt: ob.quizCompletedAt?.toISOString() ?? null,
+      };
+    }
+  } catch { /* non-critical */ }
+
   // ── Items ──────────────────────────────────────────────────────────────────
   let items: Awaited<ReturnType<typeof prisma.item.findMany<{
     include: {
@@ -436,6 +451,7 @@ export default async function DashboardPage() {
             totalEarnings,
           }}
           events={eventLogs}
+          onboardingUser={onboardingData}
         />
       )}
 

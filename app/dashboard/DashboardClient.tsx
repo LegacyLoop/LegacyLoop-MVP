@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import ItemCard from "./ItemCard";
 import BundleSuggestions from "@/app/components/BundleSuggestions";
 import BudgetGuard from "@/app/components/BudgetGuard";
+import WelcomeModal from "@/app/components/WelcomeModal";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -149,6 +150,15 @@ function describeEvent(eventType: string, payload: any): string {
 
 // ── Props ────────────────────────────────────────────────────────────────────
 
+// CMD-ONBOARDING-7B: onboarding fields from User model
+interface OnboardingUser {
+  firstName: string;
+  sellerType: string | null;
+  recommendedTier: string | null;
+  onboardingStep: number;
+  quizCompletedAt: string | null;
+}
+
 interface DashboardClientProps {
   items: CardItem[];
   stats: {
@@ -163,15 +173,19 @@ interface DashboardClientProps {
     totalEarnings: number;
   };
   events: EventLogEntry[];
+  onboardingUser?: OnboardingUser;
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export default function DashboardClient({ items, stats, events }: DashboardClientProps) {
+export default function DashboardClient({ items, stats, events, onboardingUser }: DashboardClientProps) {
   const [activeFilter, setActiveFilter] = useState<StatFilter>("all");
   const [statusFilter, setStatusFilter] = useState<ItemStatus | null>(null);
   const [showAllEvents, setShowAllEvents] = useState(false);
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
+
+  // CMD-ONBOARDING-7B: Welcome modal + checklist state
+  const [showWelcome, setShowWelcome] = useState(onboardingUser?.onboardingStep === 1);
   const [eventTypeFilter, setEventTypeFilter] = useState<string | null>(null);
   const [showQuizBanner, setShowQuizBanner] = useState(false);
 
@@ -313,8 +327,83 @@ export default function DashboardClient({ items, stats, events }: DashboardClien
   const visibleEvents = showAllEvents ? typeFilteredEvents : typeFilteredEvents.slice(0, INITIAL_EVENT_COUNT);
   const hasMoreEvents = typeFilteredEvents.length > INITIAL_EVENT_COUNT;
 
+  // CMD-ONBOARDING-7B: Getting-started checklist data
+  const checklistSteps = [
+    { id: "account", label: "Create your account", done: true, cta: "" },
+    { id: "quiz", label: "Take the assessment", done: !!onboardingUser?.quizCompletedAt, cta: "/onboarding/quiz" },
+    { id: "upload", label: "Upload your first item", done: stats.totalItems > 0, cta: "/items/new" },
+    { id: "analyze", label: "Run your first AI analysis", done: stats.analyzedItems > 0, cta: items[0]?.id ? `/items/${items[0].id}` : "/items/new" },
+    { id: "list", label: "Get your first listing live", done: stats.listedItems > 0 || stats.soldItems > 0, cta: "/items" },
+  ];
+  const completedCount = checklistSteps.filter((s) => s.done).length;
+  const allComplete = completedCount === 5;
+  const showChecklist = onboardingUser && (onboardingUser.onboardingStep ?? 0) < 3 && !allComplete;
+
+  // Auto-advance onboardingStep to 3 when all complete
+  useEffect(() => {
+    if (allComplete && onboardingUser && (onboardingUser.onboardingStep ?? 0) < 3) {
+      fetch("/api/user/onboarding-step", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ onboardingStep: 3 }),
+      }).catch(() => {});
+    }
+  }, [allComplete, onboardingUser]);
+
   return (
     <div>
+      {/* CMD-ONBOARDING-7B: Welcome Modal */}
+      {showWelcome && onboardingUser && (
+        <WelcomeModal
+          user={onboardingUser}
+          onClose={() => setShowWelcome(false)}
+        />
+      )}
+
+      {/* CMD-ONBOARDING-7B: Getting Started Checklist */}
+      {showChecklist && (
+        <div style={{
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid rgba(0,188,212,0.2)",
+          borderRadius: "1.25rem",
+          padding: "1.5rem",
+          marginBottom: "1.5rem",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+            <div>
+              <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)" }}>🚀 Getting Started</div>
+              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>{completedCount} of 5 steps complete</div>
+            </div>
+            <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#00bcd4" }}>{Math.round((completedCount / 5) * 100)}%</div>
+          </div>
+          {/* Progress bar */}
+          <div style={{ height: "6px", background: "var(--ghost-bg)", borderRadius: "999px", overflow: "hidden", marginBottom: "1rem" }}>
+            <div style={{ height: "100%", width: `${(completedCount / 5) * 100}%`, background: "linear-gradient(90deg, #00bcd4, #0097a7)", borderRadius: "999px", transition: "width 0.5s ease" }} />
+          </div>
+          {/* Steps */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            {checklistSteps.map((step) => (
+              <div key={step.id} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.5rem 0.65rem", borderRadius: "0.5rem", background: step.done ? "rgba(0,188,212,0.04)" : "transparent" }}>
+                <div style={{
+                  width: "22px", height: "22px", borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                  background: step.done ? "#00bcd4" : "transparent",
+                  border: step.done ? "none" : "2px solid var(--border-default)",
+                  fontSize: "0.65rem", color: "#fff", fontWeight: 700,
+                }}>
+                  {step.done ? "✓" : ""}
+                </div>
+                <span style={{ flex: 1, fontSize: "0.88rem", fontWeight: step.done ? 400 : 600, color: step.done ? "var(--text-muted)" : "var(--text-primary)", textDecoration: step.done ? "line-through" : "none" }}>
+                  {step.label}
+                </span>
+                {!step.done && step.cta && (
+                  <a href={step.cta} style={{ fontSize: "0.75rem", fontWeight: 600, color: "#00bcd4", textDecoration: "none", flexShrink: 0 }}>Start →</a>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Quiz Assessment Banner ── */}
       {showQuizBanner && (
         <div
