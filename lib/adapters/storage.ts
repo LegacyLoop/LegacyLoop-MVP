@@ -1,6 +1,23 @@
 import fs from "fs/promises";
 import path from "path";
 import heicConvert from "heic-convert";
+import { v2 as cloudinary } from "cloudinary";
+
+// CMD-CLOUDINARY-STORAGE: Configure Cloudinary when credentials are present.
+// Config is lazy — only runs once on first import. If env vars are missing,
+// the local disk fallback handles everything (zero breaking change).
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
+});
+
+/** Check if Cloudinary storage is enabled and properly configured. */
+const useCloudinary = () =>
+  process.env.SSTORAGE === "cloudinary" &&
+  !!process.env.CLOUDINARY_CLOUD_NAME &&
+  !!process.env.CLOUDINARY_API_KEY;
 
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]);
 const ALLOWED_EXTS = new Set(["jpg", "jpeg", "png", "webp", "gif", "heic", "heif"]);
@@ -18,9 +35,6 @@ export const storageAdapter = {
     if (file.size > MAX_FILE_SIZE) {
       throw new Error(`File too large (${Math.round(file.size / 1024 / 1024)}MB). Max: 15MB.`);
     }
-
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
 
     let buffer = Buffer.from(await file.arrayBuffer());
     const mimeType = (file.type ?? "").toLowerCase();
@@ -43,6 +57,39 @@ export const storageAdapter = {
       const ext = (file.name.split(".").pop() || "jpg").replace(/[^a-z0-9]/gi, "").toLowerCase();
       finalExt = ALLOWED_EXTS.has(ext) ? ext : "jpg";
     }
+
+    // ── Cloudinary upload path ────────────────────────────────────
+    if (useCloudinary()) {
+      try {
+        const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: `legacyloop/items/${itemId}`,
+              resource_type: "image",
+              format: finalExt === "jpg" ? "jpg" : undefined,
+              transformation: [
+                { quality: "auto:good" },
+                { fetch_format: "auto" },
+              ],
+            },
+            (error, result) => {
+              if (error || !result) reject(error ?? new Error("Cloudinary upload returned no result"));
+              else resolve(result as { secure_url: string });
+            },
+          );
+          uploadStream.end(buffer);
+        });
+        console.log(`[photo-upload] Cloudinary: uploaded ${(buffer.length / 1024).toFixed(0)}KB → ${result.secure_url.slice(0, 80)}...`);
+        return result.secure_url;
+      } catch (err: any) {
+        console.error("[photo-upload] Cloudinary upload failed, falling back to local:", err.message);
+        // Fall through to local disk as safety net
+      }
+    }
+
+    // ── Local disk fallback (original logic, unchanged) ───────────
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    await fs.mkdir(uploadsDir, { recursive: true });
 
     const fileName = `${itemId}-${Date.now()}.${finalExt}`;
     const absPath = path.join(uploadsDir, fileName);
@@ -80,6 +127,32 @@ export const storageAdapter = {
       throw new Error(`Document too large (${Math.round(buffer.length / 1024 / 1024)}MB). Max: 25MB.`);
     }
 
+    // ── Cloudinary upload path ────────────────────────────────────
+    if (useCloudinary()) {
+      try {
+        const isImage = mimeType.startsWith("image/");
+        const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: `legacyloop/items/${itemId}/docs`,
+              resource_type: isImage ? "image" : "auto",
+            },
+            (error, result) => {
+              if (error || !result) reject(error ?? new Error("Cloudinary upload returned no result"));
+              else resolve(result as { secure_url: string });
+            },
+          );
+          uploadStream.end(buffer);
+        });
+        console.log(`[doc-upload] Cloudinary: uploaded ${(buffer.length / 1024).toFixed(0)}KB → ${result.secure_url.slice(0, 80)}...`);
+        return result.secure_url;
+      } catch (err: any) {
+        console.error("[doc-upload] Cloudinary upload failed, falling back to local:", err.message);
+        // Fall through to local disk as safety net
+      }
+    }
+
+    // ── Local disk fallback (original logic, unchanged) ───────────
     const uploadsDir = path.join(process.cwd(), "public", "uploads");
     await fs.mkdir(uploadsDir, { recursive: true });
 
