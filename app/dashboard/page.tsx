@@ -349,7 +349,7 @@ export default async function DashboardPage() {
 
       {/* ── Pre-launch pricing banner ────────────────────────────────────── */}
       <div style={{
-        display: "flex", alignItems: "center", gap: "1rem",
+        display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" as const,
         padding: "1rem 1.25rem", borderRadius: "0.75rem", marginBottom: "1.75rem",
         background: "linear-gradient(135deg, rgba(0,188,212,0.08), rgba(0,188,212,0.02))",
         border: "1px solid var(--accent-border)",
@@ -361,7 +361,7 @@ export default async function DashboardPage() {
         }}>
           Founding Member
         </span>
-        <span style={{ flex: 1, fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+        <span style={{ flex: 1, fontSize: "0.85rem", color: "var(--text-secondary)", minWidth: "150px" }}>
           Lock in pre-launch pricing — <strong style={{ color: "var(--text-primary)" }}>{founderStats.remaining} of {founderStats.totalSpots} founding member spots left</strong> — 50% off for life
         </span>
         <Link
