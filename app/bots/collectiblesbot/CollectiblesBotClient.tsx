@@ -1569,7 +1569,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
               {sr.cond.overall_assessment && (
                 <p style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.55, margin: "0 0 0.65rem 0" }}>{sr.cond.overall_assessment}</p>
               )}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem" }}>
+              <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem" }}>
                 {[
                   { label: "Centering", value: sr.cond.centering },
                   { label: "Corners", value: sr.cond.corners },

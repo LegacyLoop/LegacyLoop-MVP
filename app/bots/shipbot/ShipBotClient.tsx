@@ -506,7 +506,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
             </div>
 
             {/* Dimension inputs */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem", marginBottom: "1.25rem" }}>
+            <div className="bot-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem", marginBottom: "1.25rem" }}>
               {[
                 { label: "Length (in)", key: "length" as const },
                 { label: "Width (in)", key: "width" as const },

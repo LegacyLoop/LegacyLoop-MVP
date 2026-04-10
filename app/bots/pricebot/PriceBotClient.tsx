@@ -1097,7 +1097,7 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
           {openSections.has("regional") && pb.regional_pricing && (
             <Card>
               <SectionLabel>Regional Pricing</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.6rem", marginBottom: "0.75rem" }}>
+              <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.6rem", marginBottom: "0.75rem" }}>
                 <div style={{ padding: "0.6rem", borderRadius: "0.5rem", border: "1px solid var(--border-default)", textAlign: "center" }}>
                   <div style={{ fontSize: "0.6rem", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: "0.15rem" }}>Local</div>
                   <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--accent)" }}>${pb.regional_pricing.local_price_estimate}</div>
@@ -1172,7 +1172,7 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
           {openSections.has("negotiation") && pb.negotiation_guide && (
             <Card>
               <SectionLabel>Negotiation Guide</SectionLabel>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.6rem", marginBottom: "0.75rem" }}>
+              <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.6rem", marginBottom: "0.75rem" }}>
                 <div style={{ textAlign: "center", padding: "0.6rem", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                   <div style={{ fontSize: "0.6rem", textTransform: "uppercase", color: "var(--text-muted)" }}>List At</div>
                   <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--accent)" }}>${pb.negotiation_guide.list_price}</div>
@@ -1262,7 +1262,7 @@ export default function PriceBotClient({ items }: { items: ItemData[] }) {
               <AccordionHeader id="amazon" icon="📦" title="AMAZON MARKET DATA" subtitle={`${item.amazonData.resultCount ?? item.amazonData.result_count ?? 0} products`} isOpen={openSections.has("amazon")} onToggle={toggleSection} accentColor="#ff9900" badge="ENRICHED" />
               {openSections.has("amazon") && (
                 <Card>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
+                  <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
                     <div style={{ textAlign: "center", padding: "0.4rem", background: "rgba(255,153,0,0.06)", borderRadius: "0.4rem" }}>
                       <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", fontWeight: 600 }}>NEW RETAIL AVG</div>
                       <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "#ff9900" }}>${item.amazonData.priceAvg ?? item.amazonData.price_avg ?? "—"}</div>

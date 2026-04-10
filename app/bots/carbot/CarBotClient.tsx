@@ -1665,7 +1665,7 @@ export default function CarBotClient({ items }: { items: Item[] }) {
             {/* ── Market Tab ── */}
             {activeTab === "market" && market && (
               <div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "1.25rem" }}>
+                <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "1.25rem" }}>
                   {[
                     { label: "Demand", value: market.demand_level },
                     { label: "Trend", value: market.demand_trend },

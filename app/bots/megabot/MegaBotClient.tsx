@@ -2363,7 +2363,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
 
       {/* ── FEATURE 1: Clickable Stat Panels ── */}
       <div style={{ marginTop: "1.25rem", marginBottom: "1rem" }}>
-        <div style={{
+        <div className="bot-4col-grid" style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
           gap: "0.75rem",
@@ -2689,7 +2689,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
             <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "#8b5cf6", fontWeight: 700, marginBottom: "0.75rem" }}>
               AI ENGINE STATUS
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.65rem" }}>
+            <div className="bot-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.65rem" }}>
               {[
                 { key: "openai", name: "GPT-4o", icon: "🤖", color: "#10a37f", specialty: "Balanced & Data-Driven", model: "gpt-4o" },
                 { key: "claude", name: "Claude", icon: "🧠", color: "#d97706", specialty: "Craftsmanship & History", model: "claude-3.5-haiku" },
@@ -2796,7 +2796,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                   </div>
 
                   {/* KPIs */}
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", marginBottom: "1rem" }}>
+                  <div className="bot-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", marginBottom: "1rem" }}>
                     {[
                       { label: "Runs", value: `${totalSuccess}/${totalRuns}`, color: em.color },
                       { label: "Success", value: `${successRate}%`, color: successRate >= 80 ? "#10b981" : "#f59e0b" },
@@ -3097,7 +3097,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                                 </span>
                               )}
                             </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", fontSize: "0.72rem" }}>
+                            <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", fontSize: "0.72rem" }}>
                               {p.itemName && <div><span style={{ color: "var(--text-muted)", fontSize: "0.6rem" }}>Item: </span><span style={{ color: "var(--text-primary)" }}>{p.itemName}</span></div>}
                               {p.conditionScore != null && <div><span style={{ color: "var(--text-muted)", fontSize: "0.6rem" }}>Condition: </span><span style={{ color: "var(--text-primary)" }}>{p.conditionScore}/10</span></div>}
                               {p.priceLow != null && p.priceHigh != null && <div><span style={{ color: "var(--text-muted)", fontSize: "0.6rem" }}>Price: </span><span style={{ color: "var(--text-primary)" }}>${Math.round(p.priceLow)} \u2013 ${Math.round(p.priceHigh)}</span></div>}
@@ -3121,7 +3121,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                         borderRadius: "0.65rem", padding: "0.75rem 0.85rem",
                       }}>
                         <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.4rem" }}>Consensus Result</div>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem", fontSize: "0.72rem" }}>
+                        <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem", fontSize: "0.72rem" }}>
                           {activeResult.consensus.item_name && <div><span style={{ color: "var(--text-muted)", fontSize: "0.6rem" }}>Item: </span><span style={{ color: "var(--text-primary)", fontWeight: 600 }}>{activeResult.consensus.item_name}</span></div>}
                           {activeResult.consensus.category && <div><span style={{ color: "var(--text-muted)", fontSize: "0.6rem" }}>Category: </span><span style={{ color: "var(--text-primary)" }}>{activeResult.consensus.category}</span></div>}
                           {activeResult.consensus.condition_score != null && <div><span style={{ color: "var(--text-muted)", fontSize: "0.6rem" }}>Condition: </span><span style={{ color: "var(--text-primary)" }}>{activeResult.consensus.condition_score}/10</span></div>}
@@ -3146,7 +3146,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
               <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--accent)", marginBottom: "1rem", fontWeight: 700 }}>
                 HOW MEGABOT WORKS
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.85rem" }}>
+              <div className="bot-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.85rem" }}>
                 {[
                   { step: "1", icon: "🎯", title: "Pick a Bot", desc: "Go to any specialist bot on the item page" },
                   { step: "2", icon: "⚡", title: "Activate MegaBot", desc: "Click MegaBot to enter multi-agent mode" },

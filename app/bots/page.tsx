@@ -210,7 +210,7 @@ export default async function BotsPage() {
       </div>
 
       {/* Stats bar */}
-      <div
+      <div className="bot-4col-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",

@@ -295,7 +295,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
         ];
         return (
           <div style={{ marginBottom: "1.5rem" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem" }}>
+            <div className="bot-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem" }}>
               {statPanels.map((s) => (
                 <div
                   key={s.key}
@@ -1176,7 +1176,7 @@ export default function AntiqueBotClient({ items }: { items: Item[] }) {
             {/* ── Market Tab ── */}
             {activeTab === "market" && market && (
               <div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.65rem", marginBottom: "1.25rem" }}>
+                <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.65rem", marginBottom: "1.25rem" }}>
                   {[
                     { label: "Collector Demand", value: market.collector_demand, color: market.collector_demand === "High" || market.collector_demand === "Strong" ? "#22c55e" : market.collector_demand === "Low" ? "#ef4444" : "#f59e0b", icon: "📊" },
                     { label: "Market Outlook", value: market.market_outlook, color: GOLD, icon: "📈" },

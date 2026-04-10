@@ -329,7 +329,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
   return (
     <div>
       {/* ═══ STAT PANELS ═══ */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem", marginBottom: "1.25rem" }}>
+      <div className="bot-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem", marginBottom: "1.25rem" }}>
         {([
           { key: "total", icon: "\uD83D\uDCE6", label: "Total Items", value: String(items.length), sub: `${analyzedItems.length} analyzed, ${pendingItems.length} pending` },
           { key: "analyzed", icon: "\u2705", label: "Analyzed", value: String(analyzedItems.length), sub: analyzedItems.length > 0 ? `${Math.round((analyzedItems.length / items.length) * 100)}% complete` : "None yet" },
@@ -368,7 +368,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
           <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
             {"\uD83D\uDCE6"} Item Breakdown
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.65rem", marginBottom: "1rem" }}>
+          <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.65rem", marginBottom: "1rem" }}>
             <div style={{ padding: "0.65rem", borderRadius: "0.6rem", background: "rgba(0,188,212,0.06)", textAlign: "center" }}>
               <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "#00bcd4" }}>{items.length}</div>
               <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>TOTAL</div>
@@ -507,7 +507,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
           <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
             {"\uD83D\uDCB0"} Value Summary
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.65rem", marginBottom: "1rem" }}>
+          <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.65rem", marginBottom: "1rem" }}>
             <div style={{ padding: "0.65rem", borderRadius: "0.6rem", background: "rgba(0,188,212,0.06)", textAlign: "center" }}>
               <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>${avgValue.toLocaleString()}</div>
               <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>AVG VALUE</div>
@@ -648,7 +648,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
               padding: "1.25rem",
             }}>
               <div style={{ display: "none" }}>Condition Assessment</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem" }}>
+              <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem" }}>
                 {[
                   { label: "Overall", value: `${ai.condition_score || d.conditionScore}/10`, color: (ai.condition_score || d.conditionScore) >= 7 ? "#4caf50" : (ai.condition_score || d.conditionScore) >= 5 ? "#ff9800" : "#ef5350" },
                   { label: "Cosmetic", value: `${ai.condition_cosmetic || d.conditionScore}/10`, color: "var(--text-primary)" },
@@ -764,7 +764,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
               <AccordionHeader id="shipping" icon="📦" title="SHIPPING PROFILE" subtitle={`${ai?.weight_estimate_lbs ?? "?"} lbs · ${ai?.shipping_difficulty ?? "Unknown"}`} isOpen={openSections.has("shipping")} onToggle={toggleSection} badge={ai?.shipping_difficulty} />
               {openSections.has("shipping") && (
               <div style={{ background: "var(--bg-card, var(--ghost-bg))", padding: "1.25rem" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
                   <div style={{ textAlign: "center", padding: "0.5rem", background: "var(--ghost-bg)", borderRadius: "0.4rem" }}>
                     <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>⚖️ WEIGHT</div>
                     <div style={{ fontSize: "0.9rem", fontWeight: 700, color: "var(--text-primary)" }}>{ai.weight_estimate_lbs ?? "—"} lbs</div>

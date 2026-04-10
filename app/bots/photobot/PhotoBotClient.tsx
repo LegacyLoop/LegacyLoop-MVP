@@ -587,7 +587,7 @@ export default function PhotoBotClient({ items }: { items: ItemData[] }) {
 
       {/* ═══ CLICKABLE STAT PANELS ═══ */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem" }}>
+        <div className="bot-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.75rem" }}>
           {statPanels.map((s) => (
             <div
               key={s.key}
@@ -1596,7 +1596,7 @@ export default function PhotoBotClient({ items }: { items: ItemData[] }) {
 
                   {enhanceResult?.assessment && !enhanceLoading && (
                     <div>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", marginBottom: "1rem" }}>
+                      <div className="bot-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", marginBottom: "1rem" }}>
                         {[
                           { label: "Isolation", score: enhanceResult.assessment.isolationScore },
                           { label: "Lighting", score: enhanceResult.assessment.lightingScore },

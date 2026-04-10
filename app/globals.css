@@ -720,6 +720,17 @@ html.light .card:hover {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+
+  /* CMD-MOBILE-8F: Bot sub-page grids */
+  .bot-4col-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+  }
+
+  .bot-3col-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -750,6 +761,15 @@ html.light .card:hover {
   /* Body font slightly smaller on very small screens */
   body {
     font-size: 16px;
+  }
+
+  /* CMD-MOBILE-8F: Bot sub-page grids — stay 2-col on tiny screens */
+  .bot-4col-grid {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .bot-3col-grid {
+    grid-template-columns: 1fr 1fr !important;
   }
 }
 

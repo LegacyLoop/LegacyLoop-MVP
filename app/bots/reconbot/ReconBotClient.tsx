@@ -230,7 +230,7 @@ export default function ReconBotClient({ items, userTier = 1 }: { items: ItemDat
   const statsBanner = (
     <div style={{ marginBottom: "1rem" }}>
       {/* Stats grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
+      <div className="bot-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
         {statPanels.map((sp) => {
           const isActive = expandedStat === sp.key;
           return (
@@ -617,7 +617,7 @@ export default function ReconBotClient({ items, userTier = 1 }: { items: ItemDat
                 </div>
               )}
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
+              <div className="bot-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
                 {[
                   { label: "Competitors", value: data.scan_summary.total_competitors_found, color: "#00bcd4" },
                   { label: "Active", value: data.scan_summary.active_listings, color: "#4ade80" },

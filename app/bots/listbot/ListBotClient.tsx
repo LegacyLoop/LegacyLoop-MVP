@@ -468,7 +468,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
       {!hasResult && !listBotLoading && (
         <div style={{ marginBottom: "1rem" }}>
           {/* Stats grid */}
-          <div style={{
+          <div className="bot-4col-grid" style={{
             display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem",
             marginBottom: expandedStat ? "0.5rem" : "0",
           }}>
@@ -517,7 +517,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
               <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.6rem" }}>
                 {"\u{1F4E6}"} Item Breakdown
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.75rem" }}>
+              <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.75rem" }}>
                 {[
                   { label: "Analyzed", count: items.filter((i) => i.hasAnalysis).length, color: "#4caf50" },
                   { label: "With Value", count: statItemsWithValue.length, color: "#00bcd4" },
@@ -657,7 +657,7 @@ export default function ListBotClient({ items }: { items: ItemData[] }) {
               <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: "0.6rem" }}>
                 {"\u{1F4B0}"} Value Summary
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.75rem" }}>
+              <div className="bot-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.75rem" }}>
                 {[
                   { label: "Total Portfolio", value: `$${Math.round(statTotalValue).toLocaleString()}`, color: "#4caf50" },
                   { label: "Average", value: `$${statAvgValue.toLocaleString()}`, color: "#00bcd4" },
