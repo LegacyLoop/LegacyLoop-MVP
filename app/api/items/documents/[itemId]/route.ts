@@ -147,11 +147,13 @@ export async function DELETE(
   const doc = await prisma.itemDocument.findUnique({ where: { id: documentId } });
   if (!doc || doc.itemId !== itemId) return new Response("Document not found", { status: 404 });
 
-  // Delete file from disk
-  try {
-    const abs = path.join(process.cwd(), "public", doc.fileUrl.replace(/^\//, ""));
-    if (fs.existsSync(abs)) fs.unlinkSync(abs);
-  } catch { /* ignore file errors */ }
+  // Delete file — only for local uploads, skip Cloudinary URLs
+  if (doc.fileUrl.startsWith("/uploads/")) {
+    try {
+      const abs = path.join(process.cwd(), "public", doc.fileUrl.replace(/^\//, ""));
+      if (fs.existsSync(abs)) fs.unlinkSync(abs);
+    } catch { /* ignore file errors */ }
+  }
 
   await prisma.itemDocument.delete({ where: { id: documentId } });
 

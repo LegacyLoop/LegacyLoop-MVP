@@ -122,19 +122,14 @@ export async function POST(
       return NextResponse.json({ error: "No photo found" }, { status: 400 });
     }
 
-    const absPath = path.join(process.cwd(), "public", photo.filePath);
-    if (!fs.existsSync(absPath)) {
-      return NextResponse.json({ error: "Photo file not found on disk" }, { status: 400 });
-    }
-
     if (!openai) {
       return NextResponse.json({ error: "OpenAI not configured" }, { status: 500 });
     }
 
-    // Read photo buffer
-    const photoBuffer = fs.readFileSync(absPath);
-    const ext = path.extname(absPath).toLowerCase();
-    const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
+    // CMD-CLOUDINARY-PHOTO-READ-FIX: read from URL or local disk
+    const { readPhotoAsBuffer, guessMimeType } = await import("@/lib/adapters/storage");
+    const photoBuffer = await readPhotoAsBuffer(photo.filePath);
+    const mime = guessMimeType(photo.filePath);
     const base64 = photoBuffer.toString("base64");
     const dataUrl = `data:${mime};base64,${base64}`;
 

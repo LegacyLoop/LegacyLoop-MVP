@@ -153,17 +153,15 @@ export async function POST(
     const photoImageContent: Array<{ type: "input_image"; image_url: string; detail: "auto" }> = [];
     for (const p of item.photos) {
       try {
-        const absPhotoPath = path.join(process.cwd(), "public", p.filePath);
-        if (fs.existsSync(absPhotoPath)) {
-          const photoBuf = fs.readFileSync(absPhotoPath);
-          const photoExt = path.extname(p.filePath).toLowerCase();
-          const photoMime = photoExt === ".png" ? "image/png" : photoExt === ".webp" ? "image/webp" : "image/jpeg";
-          photoImageContent.push({
-            type: "input_image",
-            image_url: `data:${photoMime};base64,${photoBuf.toString("base64")}`,
-            detail: "auto",
-          });
-        }
+        // CMD-CLOUDINARY-PHOTO-READ-FIX: read from URL or local disk
+        const { readPhotoAsBuffer, guessMimeType } = await import("@/lib/adapters/storage");
+        const photoBuf = await readPhotoAsBuffer(p.filePath);
+        const photoMime = guessMimeType(p.filePath);
+        photoImageContent.push({
+          type: "input_image",
+          image_url: `data:${photoMime};base64,${photoBuf.toString("base64")}`,
+          detail: "auto",
+        });
       } catch {
         // Skip unreadable photos — non-fatal
       }

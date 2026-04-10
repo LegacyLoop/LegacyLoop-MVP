@@ -168,3 +168,33 @@ export const storageAdapter = {
     return `/uploads/${fileName}`;
   },
 };
+
+// ── CMD-CLOUDINARY-PHOTO-READ-FIX ────────────────────────────────
+// Shared helper: read a photo as Buffer from Cloudinary URL or local path.
+// Used by ALL AI bots, MegaBot, PhotoBot, and utility functions.
+// Replaces the broken publicUrlToAbsPath + fs.readFileSync pattern.
+
+export async function readPhotoAsBuffer(filePath: string): Promise<Buffer> {
+  if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+    const response = await fetch(filePath, { signal: AbortSignal.timeout(15000) });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch photo: ${response.status} ${response.statusText} (${filePath.slice(0, 80)})`);
+    }
+    return Buffer.from(await response.arrayBuffer());
+  }
+  // Local file (dev mode)
+  const fullPath = filePath.startsWith("/")
+    ? path.join(process.cwd(), "public", filePath)
+    : filePath;
+  return fs.readFile(fullPath);
+}
+
+/** Guess MIME type from a URL or file path. */
+export function guessMimeType(filePathOrUrl: string): string {
+  const lower = filePathOrUrl.toLowerCase();
+  if (lower.includes(".png")) return "image/png";
+  if (lower.includes(".webp")) return "image/webp";
+  if (lower.includes(".gif")) return "image/gif";
+  if (lower.includes(".pdf")) return "application/pdf";
+  return "image/jpeg";
+}

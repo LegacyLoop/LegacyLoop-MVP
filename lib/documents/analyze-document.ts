@@ -410,19 +410,20 @@ export async function analyzeDocument(
     let imageMime: string | undefined;
     let textContent: string | undefined;
 
-    const absPath = path.join(process.cwd(), "public", fileUrl.replace(/^\//, ""));
+    // CMD-CLOUDINARY-PHOTO-READ-FIX: read from URL or local disk
+    const { readPhotoAsBuffer, guessMimeType } = await import("@/lib/adapters/storage");
 
     if (IMAGE_TYPES.has(fileType)) {
-      const buffer = await fs.readFile(absPath);
+      const buffer = await readPhotoAsBuffer(fileUrl);
       imageBase64 = buffer.toString("base64");
-      const ext = fileUrl.split(".").pop()?.toLowerCase() || "jpeg";
-      imageMime = ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : "image/jpeg";
+      imageMime = guessMimeType(fileUrl);
     } else if (fileType === "text/plain" || fileType === "text/csv" || fileType === "text/rtf") {
-      const raw = await fs.readFile(absPath, "utf-8");
+      const buffer = await readPhotoAsBuffer(fileUrl);
+      const raw = buffer.toString("utf-8");
       textContent = raw.slice(0, 5000);
     } else if (fileType === "application/pdf") {
       // Attempt text extraction from PDF bytes
-      const buffer = await fs.readFile(absPath);
+      const buffer = await readPhotoAsBuffer(fileUrl);
       const rawText = buffer
         .toString("utf-8")
         .replace(/[^\x20-\x7E\n\r\t]/g, " ")

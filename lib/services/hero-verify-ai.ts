@@ -72,8 +72,9 @@ export async function analyzeHeroDocument(
   let mimeType: string;
 
   try {
-    const fullPath = path.join(process.cwd(), "public", proofFilePath);
-    const buffer = await readFile(fullPath);
+    // CMD-CLOUDINARY-PHOTO-READ-FIX: read from URL or local disk
+    const { readPhotoAsBuffer, guessMimeType: gmt } = await import("@/lib/adapters/storage");
+    const buffer = await readPhotoAsBuffer(proofFilePath);
     base64Data = buffer.toString("base64");
 
     const ext = proofFilePath.split(".").pop()?.toLowerCase() || "";

@@ -146,18 +146,13 @@ export const HYBRID_DEFAULTS = {
 
 // ─── Internal: photo path helpers (mirror multi-ai.ts) ────────
 
-function publicUrlToAbsPath(publicUrl: string): string {
-  const clean = publicUrl.startsWith("/") ? publicUrl.slice(1) : publicUrl;
-  return path.join(process.cwd(), "public", clean);
-}
+// CMD-CLOUDINARY-PHOTO-READ-FIX: URL-aware photo reading
+import { readPhotoAsBuffer, guessMimeType } from "@/lib/adapters/storage";
 
-function fileToDataUrl(absPath: string): { dataUrl: string; base64: string; mime: string } {
-  const ext = path.extname(absPath).toLowerCase();
-  const mime =
-    ext === ".png" ? "image/png"
-    : ext === ".webp" ? "image/webp"
-    : "image/jpeg";
-  const base64 = fs.readFileSync(absPath, "base64");
+async function fileToDataUrl(filePath: string): Promise<{ dataUrl: string; base64: string; mime: string }> {
+  const buffer = await readPhotoAsBuffer(filePath);
+  const mime = guessMimeType(filePath);
+  const base64 = buffer.toString("base64");
   return { dataUrl: `data:${mime};base64,${base64}`, base64, mime };
 }
 
@@ -214,7 +209,7 @@ async function callOpenAIRaw(
   options: { timeoutMs?: number; maxTokens?: number } = {},
 ): Promise<ProviderRawResult> {
   if (!openaiClient) throw new Error("No OpenAI key configured");
-  const { dataUrl } = fileToDataUrl(absPath);
+  const { dataUrl } = await fileToDataUrl(absPath);
   const completion = await openaiClient.chat.completions.create(
     {
       model: process.env.OPENAI_MODEL || "gpt-4o-mini",
@@ -249,7 +244,7 @@ async function callClaudeRaw(
 ): Promise<ProviderRawResult> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key || key.length < 10) throw new Error("No Anthropic key configured");
-  const { base64, mime } = fileToDataUrl(absPath);
+  const { base64, mime } = await fileToDataUrl(absPath);
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
@@ -376,7 +371,7 @@ async function callGeminiRaw(
   if (!key || key.length < 10) throw new Error("No Gemini key configured");
   const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-  const { base64, mime } = fileToDataUrl(absPath);
+  const { base64, mime } = await fileToDataUrl(absPath);
 
   // CMD-RECONBOT-API-A: dual-attempt grounding pattern.
   // Pattern adapted from lib/megabot/run-specialized.ts (lines
@@ -518,7 +513,7 @@ async function callGrokRaw(
   if (!apiKey || apiKey.length < 10) throw new Error("No XAI_API_KEY configured");
   const baseUrl = process.env.XAI_BASE_URL || "https://api.x.ai/v1";
   const model = process.env.XAI_MODEL_VISION || "grok-4";
-  const { dataUrl } = fileToDataUrl(absPath);
+  const { dataUrl } = await fileToDataUrl(absPath);
 
   const res = await Promise.race([
     fetch(`${baseUrl}/chat/completions`, {
@@ -648,7 +643,7 @@ export async function routeBotAI(input: RouterInput): Promise<RoutedAIResult> {
   const demoMode = isDemoMode();
 
   const photoArr = Array.isArray(input.photoPath) ? input.photoPath : [input.photoPath];
-  const absPath = publicUrlToAbsPath(photoArr[0]);
+  const absPath = photoArr[0];
 
   // ── Special case: megabot defers to runMegabot ──
   if (input.botName === "megabot") {
@@ -872,7 +867,7 @@ export async function routeListBotHybrid(
 ): Promise<ListBotHybridResult> {
   const startedAt = Date.now();
   const photoArr = Array.isArray(input.photoPath) ? input.photoPath : [input.photoPath];
-  const absPath = publicUrlToAbsPath(photoArr[0]);
+  const absPath = photoArr[0];
   const demoMode = isDemoMode();
 
   const runOne = async (
@@ -1035,7 +1030,7 @@ export async function routeBuyerBotHybrid(
   const demoMode = isDemoMode();
 
   const photoArr = Array.isArray(input.photoPath) ? input.photoPath : [input.photoPath];
-  const absPath = publicUrlToAbsPath(photoArr[0]);
+  const absPath = photoArr[0];
 
   // CMD-BUYERBOT-HYBRID-5A: raw-JSON single-provider runner.
   // Mirrors the runOne closure in the Step 3 ListBot hybrid runner
@@ -1287,7 +1282,7 @@ export async function routeReconBotHybrid(
   const demoMode = isDemoMode();
 
   const photoArr = Array.isArray(input.photoPath) ? input.photoPath : [input.photoPath];
-  const absPath = publicUrlToAbsPath(photoArr[0]);
+  const absPath = photoArr[0];
 
   // CMD-RECONBOT-API-A: raw-JSON single-provider runner.
   // Local closure (not extracted) so the proven Step 3/Step 5
@@ -1558,7 +1553,7 @@ export async function routeAntiqueBotHybrid(
   const photoArr = Array.isArray(input.photoPath)
     ? input.photoPath
     : [input.photoPath];
-  const absPath = publicUrlToAbsPath(photoArr[0]);
+  const absPath = photoArr[0];
 
   const threshold = input.authConfidenceThreshold ?? 80;
   const timeoutMs = input.timeoutMs ?? ANTIQUEBOT_HYBRID_TIMEOUT_MS;
@@ -1860,7 +1855,7 @@ export async function routeCollectiblesBotHybrid(
   const photoArr = Array.isArray(input.photoPath)
     ? input.photoPath
     : [input.photoPath];
-  const absPath = publicUrlToAbsPath(photoArr[0]);
+  const absPath = photoArr[0];
 
   const threshold = input.authConfidenceThreshold ?? 80;
   const timeoutMs = input.timeoutMs ?? COLLECTIBLESBOT_HYBRID_TIMEOUT_MS;
@@ -2181,7 +2176,7 @@ export async function routeCarBotHybrid(
   const photoArr = Array.isArray(input.photoPath)
     ? input.photoPath
     : [input.photoPath];
-  const absPath = publicUrlToAbsPath(photoArr[0]);
+  const absPath = photoArr[0];
 
   const timeoutMs = input.timeoutMs ?? CARBOT_HYBRID_TIMEOUT_MS;
   const maxTokens = input.maxTokens ?? CARBOT_HYBRID_MAX_TOKENS;
@@ -2481,7 +2476,7 @@ export async function routePriceBotHybrid(
   const photoArr = Array.isArray(input.photoPath)
     ? input.photoPath
     : [input.photoPath];
-  const absPath = publicUrlToAbsPath(photoArr[0]);
+  const absPath = photoArr[0];
 
   const timeoutMs = input.timeoutMs ?? HYBRID_DEFAULTS.TIMEOUT_MS;
   const maxTokens = input.maxTokens ?? HYBRID_DEFAULTS.MAX_TOKENS;
@@ -2728,7 +2723,7 @@ export async function routePhotoBotHybrid(
   const photoArr = Array.isArray(input.photoPath)
     ? input.photoPath
     : [input.photoPath];
-  const absPath = publicUrlToAbsPath(photoArr[0]);
+  const absPath = photoArr[0];
 
   const timeoutMs = input.timeoutMs ?? HYBRID_DEFAULTS.TIMEOUT_MS;
   const maxTokens = input.maxTokens ?? HYBRID_DEFAULTS.MAX_TOKENS;
@@ -2963,7 +2958,7 @@ export async function routeVideoBotHybrid(
   const photoArr = Array.isArray(input.photoPath)
     ? input.photoPath
     : [input.photoPath];
-  const absPath = publicUrlToAbsPath(photoArr[0]);
+  const absPath = photoArr[0];
 
   const timeoutMs = input.timeoutMs ?? HYBRID_DEFAULTS.TIMEOUT_MS;
   const maxTokens = input.maxTokens ?? HYBRID_DEFAULTS.MAX_TOKENS;

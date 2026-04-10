@@ -1,24 +1,11 @@
-import fs from "fs";
-import path from "path";
 import OpenAI from "openai";
 import type { AiAnalysis } from "../types";
+import { readPhotoAsBuffer, guessMimeType } from "@/lib/adapters/storage";
 
-function publicUrlToAbsolutePath(publicUrl: string) {
-  const clean = publicUrl.startsWith("/") ? publicUrl.slice(1) : publicUrl;
-  return path.join(process.cwd(), "public", clean);
-}
-
-function guessMime(absPath: string) {
-  const ext = path.extname(absPath).toLowerCase();
-  if (ext === ".png") return "image/png";
-  if (ext === ".webp") return "image/webp";
-  return "image/jpeg";
-}
-
-function fileToDataUrl(absPath: string) {
-  const mime = guessMime(absPath);
-  const base64 = fs.readFileSync(absPath, "base64");
-  return `data:${mime};base64,${base64}`;
+async function fileToDataUrl(filePath: string) {
+  const buffer = await readPhotoAsBuffer(filePath);
+  const mime = guessMimeType(filePath);
+  return `data:${mime};base64,${buffer.toString("base64")}`;
 }
 
 const openai =
@@ -205,11 +192,13 @@ export const aiAdapter = {
     if (!photoPaths[0]) throw new Error("No photo provided for analysis.");
 
     // Build image content for up to 6 photos
-    const imageContent: any[] = photoPaths.slice(0, 6).map((p) => ({
-      type: "input_image",
-      image_url: fileToDataUrl(publicUrlToAbsolutePath(p)),
-      detail: "auto",
-    }));
+    const imageContent: any[] = await Promise.all(
+      photoPaths.slice(0, 6).map(async (p) => ({
+        type: "input_image",
+        image_url: await fileToDataUrl(p),
+        detail: "auto",
+      }))
+    );
 
     const photoCount = Math.min(photoPaths.length, 6);
     const photoNote =

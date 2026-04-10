@@ -37,22 +37,13 @@ function safeJson(s: string | null | undefined): any {
   try { return JSON.parse(s); } catch { return null; }
 }
 
-function publicUrlToAbsolutePath(publicUrl: string) {
-  const clean = publicUrl.startsWith("/") ? publicUrl.slice(1) : publicUrl;
-  return path.join(process.cwd(), "public", clean);
-}
+// CMD-CLOUDINARY-PHOTO-READ-FIX: URL-aware photo reading
+import { readPhotoAsBuffer, guessMimeType } from "@/lib/adapters/storage";
 
-function guessMime(p: string) {
-  const ext = path.extname(p).toLowerCase();
-  if (ext === ".png") return "image/png";
-  if (ext === ".webp") return "image/webp";
-  return "image/jpeg";
-}
-
-function fileToDataUrl(absPath: string) {
-  const mime = guessMime(absPath);
-  const base64 = fs.readFileSync(absPath, "base64");
-  return `data:${mime};base64,${base64}`;
+async function fileToDataUrl(filePath: string) {
+  const buffer = await readPhotoAsBuffer(filePath);
+  const mime = guessMimeType(filePath);
+  return `data:${mime};base64,${buffer.toString("base64")}`;
 }
 
 export async function GET(

@@ -1,22 +1,13 @@
-import fs from "fs";
-import path from "path";
 import OpenAI from "openai";
 import type { AiAnalysis } from "@/lib/types";
+import { readPhotoAsBuffer, guessMimeType } from "@/lib/adapters/storage";
 
 // ─── Shared helpers ────────────────────────────────────────────────────────
 
-function publicUrlToAbsPath(publicUrl: string) {
-  const clean = publicUrl.startsWith("/") ? publicUrl.slice(1) : publicUrl;
-  return path.join(process.cwd(), "public", clean);
-}
-
-function fileToDataUrl(absPath: string) {
-  const ext = path.extname(absPath).toLowerCase();
-  const mime =
-    ext === ".png" ? "image/png"
-    : ext === ".webp" ? "image/webp"
-    : "image/jpeg";
-  const base64 = fs.readFileSync(absPath, "base64");
+async function fileToDataUrl(filePath: string) {
+  const buffer = await readPhotoAsBuffer(filePath);
+  const mime = guessMimeType(filePath);
+  const base64 = buffer.toString("base64");
   return { dataUrl: `data:${mime};base64,${base64}`, base64, mime };
 }
 
@@ -228,14 +219,14 @@ async function analyzeWithOpenAI(absPath: string, context?: string, extraPaths?:
   const allPaths = [absPath, ...(extraPaths || [])];
   for (const p of allPaths) {
     try {
-      if (fs.existsSync(p) && fs.statSync(p).size <= 10 * 1024 * 1024) {
-        const { dataUrl } = fileToDataUrl(p);
+      if (p.startsWith("http://") || p.startsWith("https://") || (await import("fs")).existsSync(p)) {
+        const { dataUrl } = await fileToDataUrl(p);
         imageContent.push({ type: "input_image", image_url: dataUrl, detail: "high" });
       }
     } catch { /* skip unreadable */ }
   }
   if (imageContent.length === 0) {
-    const { dataUrl } = fileToDataUrl(absPath);
+    const { dataUrl } = await fileToDataUrl(absPath);
     imageContent.push({ type: "input_image", image_url: dataUrl, detail: "auto" });
   }
 
@@ -274,14 +265,14 @@ async function analyzeWithClaude(absPath: string, context?: string, extraPaths?:
   const allPaths = [absPath, ...(extraPaths || [])];
   for (const p of allPaths) {
     try {
-      if (fs.existsSync(p) && fs.statSync(p).size <= 10 * 1024 * 1024) {
-        const { base64: b64, mime: m } = fileToDataUrl(p);
+      if (p.startsWith("http://") || p.startsWith("https://") || (await import("fs")).existsSync(p)) {
+        const { base64: b64, mime: m } = await fileToDataUrl(p);
         imageBlocks.push({ type: "image", source: { type: "base64", media_type: m, data: b64 } });
       }
     } catch { /* skip */ }
   }
   if (imageBlocks.length === 0) {
-    const { base64, mime } = fileToDataUrl(absPath);
+    const { base64, mime } = await fileToDataUrl(absPath);
     imageBlocks.push({ type: "image", source: { type: "base64", media_type: mime, data: base64 } });
   }
 
@@ -372,14 +363,14 @@ async function analyzeWithGemini(absPath: string, context?: string, extraPaths?:
   const allPaths = [absPath, ...(extraPaths || [])];
   for (const p of allPaths) {
     try {
-      if (fs.existsSync(p) && fs.statSync(p).size <= 10 * 1024 * 1024) {
-        const { base64: b64, mime: m } = fileToDataUrl(p);
+      if (p.startsWith("http://") || p.startsWith("https://") || (await import("fs")).existsSync(p)) {
+        const { base64: b64, mime: m } = await fileToDataUrl(p);
         imageParts.push({ inline_data: { mime_type: m, data: b64 } });
       }
     } catch { /* skip */ }
   }
   if (imageParts.length === 0) {
-    const { base64, mime } = fileToDataUrl(absPath);
+    const { base64, mime } = await fileToDataUrl(absPath);
     imageParts.push({ inline_data: { mime_type: mime, data: base64 } });
   }
 
@@ -434,14 +425,14 @@ async function analyzeWithGrok(absPath: string, context?: string, extraPaths?: s
   const allPaths = [absPath, ...(extraPaths || [])];
   for (const p of allPaths) {
     try {
-      if (fs.existsSync(p) && fs.statSync(p).size <= 10 * 1024 * 1024) {
-        const { dataUrl } = fileToDataUrl(p);
+      if (p.startsWith("http://") || p.startsWith("https://") || (await import("fs")).existsSync(p)) {
+        const { dataUrl } = await fileToDataUrl(p);
         imageUrls.push({ type: "image_url", image_url: { url: dataUrl } });
       }
     } catch { /* skip */ }
   }
   if (imageUrls.length === 0) {
-    const { dataUrl } = fileToDataUrl(absPath);
+    const { dataUrl } = await fileToDataUrl(absPath);
     imageUrls.push({ type: "image_url", image_url: { url: dataUrl } });
   }
 
@@ -762,9 +753,10 @@ export async function runMegabot(
   photoPath: string | string[],
   context?: string
 ): Promise<MegabotResult> {
+  // CMD-CLOUDINARY-PHOTO-READ-FIX: pass URLs directly — fileToDataUrl handles both
   const paths = Array.isArray(photoPath) ? photoPath : [photoPath];
-  const absPath = publicUrlToAbsPath(paths[0]);
-  const extraAbsPaths = paths.slice(1).map(publicUrlToAbsPath);
+  const absPath = paths[0];
+  const extraAbsPaths = paths.slice(1);
 
   const runWithTimer = async (
     provider: "openai" | "claude" | "gemini" | "grok",

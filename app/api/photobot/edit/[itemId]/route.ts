@@ -72,12 +72,9 @@ export async function POST(
       return NextResponse.json({ error: "Photo not found" }, { status: 404 });
     }
 
-    const absPath = path.join(process.cwd(), "public", photo.filePath);
-    if (!fs.existsSync(absPath)) {
-      return NextResponse.json({ error: "Photo file not found on disk" }, { status: 400 });
-    }
-
-    const imageBuffer = fs.readFileSync(absPath);
+    // CMD-CLOUDINARY-PHOTO-READ-FIX: read from URL or local disk
+    const { readPhotoAsBuffer } = await import("@/lib/adapters/storage");
+    const imageBuffer = await readPhotoAsBuffer(photo.filePath);
     const metadata = await sharp(imageBuffer).metadata();
     const width = metadata.width ?? 1024;
     const height = metadata.height ?? 1024;
@@ -102,8 +99,8 @@ export async function POST(
     console.log("[photobot-edit] Photo loaded:", photo.id, `${width}x${height}`);
 
     // ── STEP B: GPT-4O VISION SCAN ─────────────────────────────────────────
-    const ext = path.extname(absPath).toLowerCase();
-    const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
+    const { guessMimeType } = await import("@/lib/adapters/storage");
+    const mime = guessMimeType(photo.filePath);
     const base64 = imageBuffer.toString("base64");
     const dataUrl = `data:${mime};base64,${base64}`;
 

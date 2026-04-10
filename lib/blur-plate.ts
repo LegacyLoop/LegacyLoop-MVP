@@ -247,19 +247,22 @@ export async function blurPlatesForItem(itemId: string): Promise<{ blurredCount:
 
   for (const photo of photos) {
     try {
-      // Read the original (non-blurred) file if it exists, otherwise use current
+      // CMD-CLOUDINARY-PHOTO-READ-FIX: read from URL or local disk
+      const { readPhotoAsBuffer } = await import("@/lib/adapters/storage");
       const currentPath = photo.filePath;
-      const originalPath = currentPath.replace(/_blurred(\.\w+)$/, "$1");
-      const absOriginal = path.join(process.cwd(), "public", originalPath);
-      const absCurrent = path.join(process.cwd(), "public", currentPath);
-      const filePath = fs.existsSync(absOriginal) ? absOriginal : absCurrent;
-
-      if (!fs.existsSync(filePath)) {
-        console.log("[blur-plate] File not found:", filePath);
-        continue;
+      let imageBuffer: Buffer;
+      try {
+        imageBuffer = await readPhotoAsBuffer(currentPath);
+      } catch {
+        // Try original (non-blurred) path
+        const originalPath = currentPath.replace(/_blurred(\.\w+)$/, "$1");
+        try {
+          imageBuffer = await readPhotoAsBuffer(originalPath);
+        } catch {
+          console.log("[blur-plate] File not found:", currentPath);
+          continue;
+        }
       }
-
-      const imageBuffer = fs.readFileSync(filePath);
       const metadata = await sharp(imageBuffer).metadata();
       const W = metadata.width ?? 800;
       const H = metadata.height ?? 600;

@@ -92,23 +92,21 @@ export async function POST(
     for (let i = 0; i < Math.min(item.photos.length, 10); i++) {
       const photo = item.photos[i];
       try {
-        const absPath = path.join(process.cwd(), "public", photo.filePath);
-        if (fs.existsSync(absPath)) {
-          const stats = fs.statSync(absPath);
-          if (stats.size > 10 * 1024 * 1024) {
-            console.warn(`[photobot-analyze] Skipping oversized photo: ${photo.filePath}`);
-            continue;
-          }
-          const ext = path.extname(absPath).toLowerCase();
-          const mime = ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
-          const base64 = fs.readFileSync(absPath, "base64");
-          imageContent.push({
-            type: "input_image",
-            image_url: `data:${mime};base64,${base64}`,
-            detail: "high",
-          });
-          photoMap.push({ id: photo.id, filePath: photo.filePath, order: photo.order, isPrimary: photo.isPrimary, index: i + 1 });
+        // CMD-CLOUDINARY-PHOTO-READ-FIX: read from URL or local disk
+        const { readPhotoAsBuffer, guessMimeType } = await import("@/lib/adapters/storage");
+        const buffer = await readPhotoAsBuffer(photo.filePath);
+        if (buffer.length > 10 * 1024 * 1024) {
+          console.warn(`[photobot-analyze] Skipping oversized photo: ${photo.filePath}`);
+          continue;
         }
+        const mime = guessMimeType(photo.filePath);
+        const base64 = buffer.toString("base64");
+        imageContent.push({
+          type: "input_image",
+          image_url: `data:${mime};base64,${base64}`,
+          detail: "high",
+        });
+        photoMap.push({ id: photo.id, filePath: photo.filePath, order: photo.order, isPrimary: photo.isPrimary, index: i + 1 });
       } catch {
         console.warn(`[photobot-analyze] Skipping unreadable photo: ${photo.filePath}`);
       }

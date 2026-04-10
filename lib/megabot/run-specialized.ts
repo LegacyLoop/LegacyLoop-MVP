@@ -1,6 +1,5 @@
-import fs from "fs";
-import path from "path";
 import OpenAI from "openai";
+import { readPhotoAsBuffer, guessMimeType } from "@/lib/adapters/storage";
 // CMD-BUYERBOT-MEGA-C: type-only import (runtime-erased, no bundle
 // impact). Tightens RunSpecializedMegaBotOpts.specSummary from
 // `unknown` to the structured SpecContextSummary shape — resolves
@@ -141,17 +140,11 @@ CRITICAL CLASSIFICATION RULES (OVERRIDE ALL OTHER REASONING):
 
 // ─── Shared helpers ───────────────────────────────────────────────────────
 
-function fileToDataUrl(absPath: string) {
-  const ext = path.extname(absPath).toLowerCase();
-  const mime =
-    ext === ".png" ? "image/png" : ext === ".webp" ? "image/webp" : "image/jpeg";
-  const base64 = fs.readFileSync(absPath, "base64");
+async function fileToDataUrl(filePath: string) {
+  const buffer = await readPhotoAsBuffer(filePath);
+  const mime = guessMimeType(filePath);
+  const base64 = buffer.toString("base64");
   return { dataUrl: `data:${mime};base64,${base64}`, base64, mime };
-}
-
-function publicUrlToAbsPath(publicUrl: string) {
-  const clean = publicUrl.startsWith("/") ? publicUrl.slice(1) : publicUrl;
-  return path.join(process.cwd(), "public", clean);
 }
 
 /** Bulletproof JSON extraction: handles raw, markdown-fenced, text-wrapped, BOM, etc. */
@@ -453,13 +446,13 @@ async function callOpenAI(
   const imageContent: any[] = [];
   for (const p of photoPaths) {
     try {
-      const absP = p.startsWith("/") ? p : publicUrlToAbsPath(p);
-      const { dataUrl: du } = fileToDataUrl(absP);
+      const absP = p;
+      const { dataUrl: du } = await fileToDataUrl(absP);
       imageContent.push({ type: "input_image", image_url: du, detail: "auto" });
     } catch { /* skip unreadable */ }
   }
   if (imageContent.length === 0) {
-    const { dataUrl } = fileToDataUrl(photoPath);
+    const { dataUrl } = await fileToDataUrl(photoPath);
     imageContent.push({ type: "input_image", image_url: dataUrl, detail: "auto" });
   }
 
@@ -697,13 +690,13 @@ async function callGemini(
   const imageParts: any[] = [];
   for (const p of photoPaths) {
     try {
-      const absP = p.startsWith("/") ? p : publicUrlToAbsPath(p);
-      const { base64: b64, mime: m } = fileToDataUrl(absP);
+      const absP = p;
+      const { base64: b64, mime: m } = await fileToDataUrl(absP);
       imageParts.push({ inline_data: { mime_type: m, data: b64 } });
     } catch { /* skip unreadable */ }
   }
   if (imageParts.length === 0) {
-    const { base64, mime } = fileToDataUrl(photoPath);
+    const { base64, mime } = await fileToDataUrl(photoPath);
     imageParts.push({ inline_data: { mime_type: mime, data: base64 } });
   }
 
@@ -1182,9 +1175,9 @@ export async function runSpecializedMegaBot(
   // implementation (every existing 5-arg caller is unaffected).
   opts?: RunSpecializedMegaBotOpts,
 ): Promise<MegaBotResult> {
-  const absPath = publicUrlToAbsPath(photoPublicUrl);
+  const absPath = photoPublicUrl;
   const allAbsPaths = allPhotoUrls?.map(u => {
-    try { return publicUrlToAbsPath(u); } catch { return null; }
+    return u;
   }).filter((p): p is string => p !== null);
 
   // CMD-RECONBOT-MEGA-C: assemble enrichedPrompt before the agent
