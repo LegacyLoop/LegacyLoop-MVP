@@ -307,7 +307,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
           {/* CENTER: Desktop nav (logged-in) */}
           {user && (
-            <nav style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.125rem" }} className="hidden md:flex">
+            <nav style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: "0.125rem" }} className="hidden md:flex">
               {CENTER_LINKS.map(({ href, label, icon: Icon }) => {
                 const active = isActive(href);
                 return (
@@ -338,7 +338,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
           {/* CENTER: Logged-out nav */}
           {!user && (
-            <nav style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.125rem" }} className="hidden sm:flex">
+            <nav style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: "0.125rem" }} className="hidden sm:flex">
               {[
                 { href: "/search", label: "Browse", icon: Search },
                 { href: "/heroes", label: "Heroes", icon: Trophy },
