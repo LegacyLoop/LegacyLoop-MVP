@@ -124,6 +124,17 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
   const [convs, setConvs] = useState<Conversation[]>(initialConversations);
   const [selectedId, setSelectedId] = useState<string | null>(convs[0]?.id ?? null);
   const [composing, setComposing] = useState(false);
+
+  // CMD-MOBILE-8D: mobile tab-switching state.
+  // On mobile (≤768px): show sidebar OR thread, not both.
+  // selectedId controls which "tab" is active.
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
   const [reply, setReply] = useState("");
   const [busyReply, setBusyReply] = useState(false);
   const [newConvBusy, setNewConvBusy] = useState(false);
@@ -696,13 +707,15 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
       {/* ─── MAIN LAYOUT (sidebar + thread + right panel) ── */}
       <div style={{ display: "flex", gap: 0, flex: 1, minHeight: 0, overflow: "hidden" }}>
         {/* ─── LEFT SIDEBAR ───────────────────────────────────── */}
+        {/* CMD-MOBILE-8D: On mobile, sidebar is full-width when no thread
+            selected, hidden when a thread is open or composing */}
         <div
           style={{
-            width: "300px",
-            borderRight: "1px solid var(--border-default)",
+            width: isMobile ? "100%" : "300px",
+            borderRight: isMobile ? "none" : "1px solid var(--border-default)",
             flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
+            display: isMobile && (selectedId !== null || composing) ? "none" : "flex",
+            flexDirection: "column" as const,
             gap: "0.5rem",
             height: "100%",
             overflow: "hidden",
@@ -954,9 +967,28 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
         </div>
 
         {/* ─── MAIN THREAD AREA ──────────────────────────────── */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0, overflow: "hidden" }}>
+        {/* CMD-MOBILE-8D: Hidden when no thread selected on mobile */}
+        <div style={{ flex: 1, display: isMobile && selectedId === null && !composing ? "none" : "flex", flexDirection: "column" as const, minWidth: 0, minHeight: 0, overflow: "hidden" }}>
           {composing ? (
             <div className="card p-6">
+              {/* CMD-MOBILE-8D: Back button in compose mode on mobile */}
+              {isMobile && (
+                <button
+                  onClick={() => { setComposing(false); setSelectedId(null); }}
+                  style={{
+                    background: "none", border: "none", cursor: "pointer",
+                    color: "var(--accent)", display: "flex", alignItems: "center",
+                    gap: "0.4rem", fontSize: "0.85rem", fontWeight: 600,
+                    padding: "0.3rem 0", marginBottom: "0.5rem", minHeight: "44px",
+                  }}
+                  aria-label="Back to conversations"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="15 18 9 12 15 6" />
+                  </svg>
+                  ← Conversations
+                </button>
+              )}
               <div style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: "1rem" }}>
                 New Conversation
               </div>
@@ -1032,6 +1064,32 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
 
               {/* ═══ ZONE 0: Buyer Header (fixed) ═══ */}
               <div style={{ flexShrink: 0, padding: "12px 16px", borderBottom: "1px solid var(--border-default)", background: "var(--bg-card)" }}>
+                {/* CMD-MOBILE-8D: Back button on mobile */}
+                {isMobile && (
+                  <button
+                    onClick={() => setSelectedId(null)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "var(--accent)",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.4rem",
+                      fontSize: "0.85rem",
+                      fontWeight: 600,
+                      padding: "0.3rem 0",
+                      marginBottom: "0.4rem",
+                      minHeight: "44px",
+                    }}
+                    aria-label="Back to conversations"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    ← Conversations
+                  </button>
+                )}
                 <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>{selected.buyerName}</div>
