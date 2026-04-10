@@ -70,7 +70,7 @@ function AiPanel({ aiData, itemId, status }: { aiData: any; itemId: string; stat
             ...(isDraft && !analyzing ? { animation: "pulse 2s ease-in-out infinite", boxShadow: "0 0 20px rgba(0,188,212,0.4)" } : {}),
           }}
         >
-          {analyzing ? "Analyzing... (this takes 10-30 seconds)" : isDraft ? "Analyze This Item with AI" : "Run AI Analysis"}
+          {analyzing ? "Analyzing... (usually 60–120 seconds)" : isDraft ? "Analyze This Item with AI" : "Run AI Analysis"}
         </button>
         {error && (
           <div style={{ marginTop: "0.75rem", padding: "0.65rem 1rem", borderRadius: "0.75rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", fontSize: "0.82rem", textAlign: "left" }}>

@@ -290,7 +290,7 @@ export default function ItemIntelligenceSummary(props: Props) {
   // ── Next action ──
   const getNextAction = () => {
     if (status === "DRAFT" && !hasPhotos) return { icon: "📸", msg: "Upload photos to get started", href: `/items/${itemId}/edit` };
-    if (status === "DRAFT" && hasPhotos && !aiData) return { icon: "🧠", msg: "Run AI Analysis — free and takes 30 seconds", href: null };
+    if (status === "DRAFT" && hasPhotos && !aiData) return { icon: "🧠", msg: "Run AI Analysis — free, takes about 60 seconds", href: null };
     if ((status === "ANALYZED" || status === "READY") && !listingPrice) {
       const sweetSpot = aiIntel?.pricingIntel?.sweetSpot;
       return { icon: "💰", msg: sweetSpot ? `Set your price — Claude recommends $${Math.round(sweetSpot)}` : `Set your listing price${valuation ? ` — AI suggests $${Math.round(valuation.low || 0)}–$${Math.round(valuation.high || 0)}` : ""}`, href: null };

@@ -249,7 +249,7 @@ export default function BotLoadingState({ botName }: { botName: string }) {
           fontStyle: "italic",
         }}
       >
-        This usually takes 10–25 seconds…
+        AI engines running — usually 60–120 seconds…
       </div>
 
       {/* Progress dots — 3 cascading teal */}

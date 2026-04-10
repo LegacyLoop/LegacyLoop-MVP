@@ -83,7 +83,7 @@ export default function AnalyzeActions({ itemId, hasPhotos, isAnalyzed, megabotU
             }}
           >
             {analyzing ? (
-              <>🧠 Analyzing... <span style={{ fontSize: "0.7rem", opacity: 0.8 }}>(Our AI is examining your photos — usually 10-30 seconds)</span></>
+              <>🧠 Analyzing... <span style={{ fontSize: "0.7rem", opacity: 0.8 }}>(AI engines running — usually 60–120 seconds)</span></>
             ) : (
               "🧠 Analyze with AI"
             )}

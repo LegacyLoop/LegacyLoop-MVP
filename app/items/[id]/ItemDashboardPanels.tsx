@@ -2827,7 +2827,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
                   } : {}),
                 }}
               >
-                {analyzing ? "Analyzing... (10-30 seconds)" : isDraft ? "Analyze This Item with AI" : "Run AI Analysis"}
+                {analyzing ? "Analyzing... (usually 60–120 seconds)" : isDraft ? "Analyze This Item with AI" : "Run AI Analysis"}
               </button>
             </div>
             {error && (

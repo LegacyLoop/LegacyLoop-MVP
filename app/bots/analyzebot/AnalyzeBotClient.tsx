@@ -917,7 +917,7 @@ export default function AnalyzeBotClient({ items }: { items: ItemData[] }) {
                 ))}
               </div>
               <div style={{ marginTop: "1rem", fontSize: "0.72rem", color: "var(--text-muted)", textAlign: "center" }}>
-                This typically takes 30-90 seconds...
+                AI engines running — usually 60–120 seconds...
               </div>
             </div>
           )}
