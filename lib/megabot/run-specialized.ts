@@ -728,7 +728,9 @@ async function callGemini(
   const reqBodyPlain = JSON.stringify(baseReqBody);
   let triedWithSearch = false;
 
-  const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.0-flash"];
+  // CMD-GEMINI-FALLBACK-FIX: 3-deep chain. gemini-2.0-flash is DEAD (404).
+  // gemini-2.5-flash-lite is cheap + reliable fallback. gemini-3-flash-preview is third.
+  const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3-flash-preview"];
   let json: any;
   let lastError = "";
 

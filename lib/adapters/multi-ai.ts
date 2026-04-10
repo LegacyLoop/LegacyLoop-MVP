@@ -354,8 +354,12 @@ async function analyzeWithGemini(absPath: string, context?: string, extraPaths?:
   const key = process.env.GEMINI_API_KEY;
   if (!key || key.includes("YOUR_GEMINI") || key.length < 10) throw new Error("No Gemini key configured");
 
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  // CMD-GEMINI-FALLBACK-FIX: 3-deep model chain for reliability
+  const GEMINI_FALLBACK_MODELS = [
+    process.env.GEMINI_MODEL || "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-3-flash-preview",
+  ];
   const prompt = buildComprehensivePrompt(context) + GEMINI_SPECIALTY;
 
   // Build multi-image parts for Gemini
@@ -389,25 +393,43 @@ async function analyzeWithGemini(absPath: string, context?: string, extraPaths?:
     },
   };
 
-  const res = await Promise.race([
-    fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    }),
-    new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Provider timeout (40s)")), 40_000)),
-  ]);
+  // CMD-GEMINI-FALLBACK-FIX: try each model in fallback chain
+  for (let mi = 0; mi < GEMINI_FALLBACK_MODELS.length; mi++) {
+    const tryModel = GEMINI_FALLBACK_MODELS[mi];
+    const tryUrl = `https://generativelanguage.googleapis.com/v1beta/models/${tryModel}:generateContent?key=${key}`;
+    try {
+      const res = await Promise.race([
+        fetch(tryUrl, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        }),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Provider timeout (40s)")), 40_000)),
+      ]);
 
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`Gemini API ${res.status}: ${t.slice(0, 300)}`);
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        console.log(`[analyzeWithGemini] ${tryModel} ${res.status} — trying next fallback... (${t.slice(0, 80)})`);
+        continue;
+      }
+
+      const data = await res.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+      const parsed = parseLooseJson(text);
+      if (!parsed) {
+        console.log(`[analyzeWithGemini] ${tryModel} returned unparseable JSON — trying next fallback...`);
+        continue;
+      }
+      if (mi > 0) console.log(`[analyzeWithGemini] Succeeded on fallback model: ${tryModel}`);
+      return parsed;
+    } catch (err: any) {
+      console.log(`[analyzeWithGemini] ${tryModel} error: ${err.message?.slice(0, 80)} — trying next fallback...`);
+      if (mi === GEMINI_FALLBACK_MODELS.length - 1) {
+        throw new Error(`All Gemini models failed. Last: ${err.message}`);
+      }
+    }
   }
-
-  const data = await res.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-  const parsed = parseLooseJson(text);
-  if (!parsed) throw new Error("Gemini returned unparseable JSON");
-  return parsed;
+  throw new Error("All Gemini models exhausted");
 }
 
 // ─── Grok analysis (xAI — OpenAI-compatible chat completions) ─────────

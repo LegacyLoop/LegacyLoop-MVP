@@ -369,8 +369,15 @@ async function callGeminiRaw(
 ): Promise<ProviderRawResult> {
   const key = process.env.GEMINI_API_KEY;
   if (!key || key.length < 10) throw new Error("No Gemini key configured");
-  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  // CMD-GEMINI-FALLBACK-FIX: 3-deep model chain. Primary env override,
+  // then gemini-2.5-flash, then lite + preview fallbacks.
+  const GEMINI_FALLBACK_MODELS = [
+    process.env.GEMINI_MODEL || "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-3-flash-preview",
+  ];
+  let model = GEMINI_FALLBACK_MODELS[0];
+  let url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
   const { base64, mime } = await fileToDataUrl(absPath);
 
   // CMD-RECONBOT-API-A: dual-attempt grounding pattern.
@@ -445,22 +452,40 @@ async function callGeminiRaw(
   }
 
   // ── ATTEMPT 2 (or only attempt when useGrounding=false): plain JSON ──
+  // CMD-GEMINI-FALLBACK-FIX: try each model in the fallback chain
   if (!data) {
-    const res = await Promise.race([
-      fetch(url, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: reqBodyPlain,
-      }),
-      new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error("Provider timeout")),
-          options.timeoutMs ?? PROVIDER_TIMEOUT_MS,
-        ),
-      ),
-    ]);
-    if (!res.ok) throw new Error(`Gemini API ${res.status}: ${(await res.text()).slice(0, 300)}`);
-    data = await res.json();
+    for (let mi = 0; mi < GEMINI_FALLBACK_MODELS.length; mi++) {
+      model = GEMINI_FALLBACK_MODELS[mi];
+      url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+      try {
+        const res = await Promise.race([
+          fetch(url, {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: reqBodyPlain,
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error("Provider timeout")),
+              options.timeoutMs ?? PROVIDER_TIMEOUT_MS,
+            ),
+          ),
+        ]);
+        if (!res.ok) {
+          const t = await res.text().catch(() => "");
+          console.log(`[callGeminiRaw] ${model} ${res.status} — trying next fallback... (${t.slice(0, 80)})`);
+          continue; // Try next model
+        }
+        data = await res.json();
+        if (mi > 0) console.log(`[callGeminiRaw] Succeeded on fallback model: ${model}`);
+        break;
+      } catch (err: any) {
+        console.log(`[callGeminiRaw] ${model} error: ${err.message?.slice(0, 80)} — trying next fallback...`);
+        if (mi === GEMINI_FALLBACK_MODELS.length - 1) {
+          throw new Error(`All Gemini models failed. Last: ${err.message}`);
+        }
+      }
+    }
   }
 
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
