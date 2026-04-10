@@ -49,6 +49,11 @@ model User {
   servicePreference  String?   // "diy" | "whiteGlove"
   onboardingStep     Int       @default(0) // 0=new, 1=quiz done, 2=first item, 3=complete
 
+  // CMD-EMAIL-VERIFICATION: Email verification
+  emailVerified       Boolean   @default(false)
+  emailVerifyToken    String?
+  emailVerifyExpires  DateTime?
+
   items                 Item[]
   projects              Project[]
   transactions          Transaction[]

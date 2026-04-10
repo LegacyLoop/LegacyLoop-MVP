@@ -83,19 +83,21 @@ export async function GET(request: NextRequest) {
       user = await prisma.user.findUnique({ where: { email: cleanEmail } });
 
       if (user) {
-        // Link Google account to existing user
+        // Link Google account to existing user + auto-verify email
         user = await prisma.user.update({
           where: { id: user.id },
           data: {
             googleId,
             displayName: user.displayName || name || undefined,
             avatarUrl: user.avatarUrl || picture || undefined,
+            emailVerified: true,
           },
         });
       } else {
         // Create new user
         const passwordHash = await bcrypt.hash(crypto.randomUUID(), 12);
 
+        // CMD-EMAIL-VERIFICATION: Google-verified emails auto-verified
         user = await prisma.user.create({
           data: {
             email: cleanEmail,
@@ -104,6 +106,7 @@ export async function GET(request: NextRequest) {
             avatarUrl: picture || undefined,
             passwordHash,
             tier: 1,
+            emailVerified: true,
           },
         });
       }

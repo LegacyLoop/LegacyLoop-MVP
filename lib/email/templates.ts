@@ -73,6 +73,24 @@ export function welcomeEmail(name: string): { subject: string; html: string } {
   };
 }
 
+export function verificationEmail(firstName: string, verifyUrl: string): { subject: string; html: string } {
+  return {
+    subject: "Verify your LegacyLoop email",
+    html: wrapper(`
+      <h1 style="font-size:24px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 16px">Confirm your email address</h1>
+      <p style="font-size:16px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
+        Hi ${firstName}, thanks for joining LegacyLoop! Click the button below to verify your email and unlock all features.
+      </p>
+      <div style="text-align:center;margin:32px 0 24px">
+        ${ctaButton("Verify My Email \u2192", verifyUrl)}
+      </div>
+      <p style="font-size:13px;color:${TEXT_MUTED};text-align:center;line-height:1.5;margin:0">
+        This link expires in 24 hours. If you didn\u2019t create a LegacyLoop account, you can safely ignore this email.
+      </p>
+    `),
+  };
+}
+
 export function itemSoldEmail(
   sellerName: string,
   itemTitle: string,

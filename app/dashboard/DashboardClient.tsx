@@ -157,6 +157,7 @@ interface OnboardingUser {
   recommendedTier: string | null;
   onboardingStep: number;
   quizCompletedAt: string | null;
+  emailVerified: boolean;
 }
 
 interface DashboardClientProps {
@@ -186,6 +187,20 @@ export default function DashboardClient({ items, stats, events, onboardingUser }
 
   // CMD-ONBOARDING-7B: Welcome modal + checklist state
   const [showWelcome, setShowWelcome] = useState(onboardingUser?.onboardingStep === 1);
+
+  // CMD-EMAIL-VERIFICATION: banner + success toast state
+  const [verifyBannerDismissed, setVerifyBannerDismissed] = useState(false);
+  const [showVerifiedToast, setShowVerifiedToast] = useState(false);
+
+  useEffect(() => {
+    try { if (sessionStorage.getItem("ll-verify-banner-dismissed")) setVerifyBannerDismissed(true); } catch {}
+    if (typeof window !== "undefined" && window.location.search.includes("verified=true")) {
+      setShowVerifiedToast(true);
+      setTimeout(() => setShowVerifiedToast(false), 5000);
+      // Clean URL
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
   const [eventTypeFilter, setEventTypeFilter] = useState<string | null>(null);
   const [showQuizBanner, setShowQuizBanner] = useState(false);
 
@@ -358,6 +373,27 @@ export default function DashboardClient({ items, stats, events, onboardingUser }
           user={onboardingUser}
           onClose={() => setShowWelcome(false)}
         />
+      )}
+
+      {/* CMD-EMAIL-VERIFICATION: Verified toast */}
+      {showVerifiedToast && (
+        <div style={{ position: "fixed", top: "80px", left: "50%", transform: "translateX(-50%)", zIndex: 9998, padding: "0.75rem 1.5rem", background: "rgba(22,163,74,0.95)", color: "#fff", borderRadius: "0.75rem", fontSize: "0.9rem", fontWeight: 600, boxShadow: "0 4px 20px rgba(0,0,0,0.3)", animation: "fadeSlideUp 0.3s ease forwards" }}>
+          ✅ Email verified! Welcome to LegacyLoop.
+        </div>
+      )}
+
+      {/* CMD-EMAIL-VERIFICATION: Verify email banner */}
+      {onboardingUser && !onboardingUser.emailVerified && !verifyBannerDismissed && (
+        <div style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: "0.75rem", padding: "0.75rem 1.25rem", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+          <span style={{ fontSize: "1.1rem", flexShrink: 0 }}>⚠️</span>
+          <div style={{ flex: 1, minWidth: "200px", fontSize: "0.88rem", color: "var(--text-secondary)" }}>
+            Please verify your email to unlock all features.
+          </div>
+          <button onClick={() => { fetch("/api/auth/resend-verification", { method: "POST" }).catch(() => {}); alert("Verification email sent! Check your inbox."); }} style={{ padding: "0.4rem 0.85rem", background: "transparent", border: "1px solid rgba(245,158,11,0.3)", borderRadius: "0.5rem", color: "#f59e0b", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" as const }}>
+            Resend email
+          </button>
+          <button onClick={() => { setVerifyBannerDismissed(true); try { sessionStorage.setItem("ll-verify-banner-dismissed", "1"); } catch {} }} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "1rem", padding: "0.25rem", flexShrink: 0 }} aria-label="Dismiss">✕</button>
+        </div>
       )}
 
       {/* CMD-ONBOARDING-7B: Getting Started Checklist */}

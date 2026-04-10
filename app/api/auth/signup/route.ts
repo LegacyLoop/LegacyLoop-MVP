@@ -2,10 +2,11 @@ import { NextRequest } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email/send";
-import { welcomeEmail } from "@/lib/email/templates";
+import { welcomeEmail, verificationEmail } from "@/lib/email/templates";
 import { prisma } from "@/lib/db";
 import { DISCOUNTS } from "@/lib/constants/pricing";
 import { n8nNewUser, n8nNewUserCheck } from "@/lib/n8n";
+import { randomBytes } from "crypto";
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
@@ -64,6 +65,22 @@ export async function POST(req: NextRequest) {
     const name = trimmedEmail.split("@")[0];
     const welcome = welcomeEmail(name);
     sendEmail({ to: trimmedEmail, ...welcome });
+
+    // CMD-EMAIL-VERIFICATION: Generate token + send verification email
+    try {
+      const newUser = await prisma.user.findUnique({ where: { email: trimmedEmail }, select: { id: true } });
+      if (newUser) {
+        const token = randomBytes(32).toString("hex");
+        const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+        await prisma.user.update({
+          where: { id: newUser.id },
+          data: { emailVerifyToken: token, emailVerifyExpires: expires, emailVerified: false },
+        });
+        const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://app.legacy-loop.com"}/api/auth/verify-email?token=${token}`;
+        const verify = verificationEmail(name, verifyUrl);
+        sendEmail({ to: trimmedEmail, ...verify });
+      }
+    } catch { /* verification email is non-blocking */ }
 
     // n8n: WF1 drip sequence + WF12 health check (fire-and-forget)
     n8nNewUser(trimmedEmail, name);

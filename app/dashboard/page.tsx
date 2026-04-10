@@ -60,9 +60,9 @@ export default async function DashboardPage() {
   const founderStats = await getFoundingMemberStats();
 
   // CMD-ONBOARDING-7B: Fetch onboarding fields for dashboard personalization
-  let onboardingData = { firstName: user.email.split("@")[0].split(" ")[0], sellerType: null as string | null, recommendedTier: null as string | null, onboardingStep: 0, quizCompletedAt: null as string | null };
+  let onboardingData = { firstName: user.email.split("@")[0].split(" ")[0], sellerType: null as string | null, recommendedTier: null as string | null, onboardingStep: 0, quizCompletedAt: null as string | null, emailVerified: false };
   try {
-    const ob = await prisma.user.findUnique({ where: { id: user.id }, select: { displayName: true, sellerType: true, recommendedTier: true, onboardingStep: true, quizCompletedAt: true } });
+    const ob = await prisma.user.findUnique({ where: { id: user.id }, select: { displayName: true, sellerType: true, recommendedTier: true, onboardingStep: true, quizCompletedAt: true, emailVerified: true } });
     if (ob) {
       onboardingData = {
         firstName: (ob.displayName || user.email.split("@")[0] || "").split(" ")[0],
@@ -70,6 +70,7 @@ export default async function DashboardPage() {
         recommendedTier: ob.recommendedTier ?? null,
         onboardingStep: ob.onboardingStep ?? 0,
         quizCompletedAt: ob.quizCompletedAt?.toISOString() ?? null,
+        emailVerified: ob.emailVerified ?? false,
       };
     }
   } catch { /* non-critical */ }
