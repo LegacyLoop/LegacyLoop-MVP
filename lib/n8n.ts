@@ -20,6 +20,21 @@ export function n8nNewUser(email: string, firstName: string) {
   fireN8nWebhook("new-user", { email, firstName, signupDate: new Date().toISOString() });
 }
 
+/** WF20: New listing — triggers social post generator */
+export function n8nNewListing(title: string, category: string, description: string, price: number, itemId: string, photoUrl?: string | null) {
+  fireN8nWebhook("new-listing", { title, category, description, price, itemUrl: `https://app.legacy-loop.com/items/${itemId}`, ...(photoUrl ? { photoUrl } : {}) });
+}
+
+/** WF21: Renewal reminder — notifies user their subscription renewed */
+export function n8nRenewalReminder(email: string, firstName: string, tierName: string, renewalDate: string, price: number) {
+  fireN8nWebhook("renewal-reminder", { email, firstName, tierName, renewalDate, price });
+}
+
+/** WF22: Referral used — notifies referrer their code was redeemed */
+export function n8nReferralUsed(referrerEmail: string, referrerName: string, newUserEmail: string, creditsAwarded: number) {
+  fireN8nWebhook("referral-used", { referrerEmail, referrerName, newUserEmail, creditsAwarded });
+}
+
 /** WF11: SMS alert for critical events */
 export function n8nSmsAlert(message: string) {
   fireN8nWebhook("sms-alert", { message, timestamp: new Date().toISOString() });

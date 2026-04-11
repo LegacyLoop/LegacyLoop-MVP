@@ -2,7 +2,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { NextRequest } from "next/server";
 import { CREDIT_PACK_LIST } from "@/lib/constants/pricing";
-import { isConfigured } from "@/lib/square";
+import { isConfigured } from "@/lib/stripe";
 
 const PACKAGES = CREDIT_PACK_LIST.map((p) => ({
   id: p.id,
@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   const pkg = PACKAGES.find((p) => p.id === packageId);
   if (!pkg) return new Response("Invalid package", { status: 400 });
 
-  // When Square is configured, redirect to the proper checkout flow
+  // When Stripe is configured, redirect to the proper checkout flow
   // so payment is collected before credits are awarded.
   if (isConfigured) {
     return Response.json({
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     }, { status: 303 });
   }
 
-  // ── Production safety: block free credits when Square is misconfigured ──
+  // ── Production safety: block free credits when Stripe is misconfigured ──
   const { isDemoMode } = await import("@/lib/bot-mode");
   if (!isDemoMode() && process.env.NODE_ENV === "production") {
     return Response.json({

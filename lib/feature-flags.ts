@@ -4,7 +4,7 @@
  */
 export const FEATURES = {
   LIVE_AI: !!process.env.OPENAI_API_KEY,
-  LIVE_PAYMENTS: !!process.env.SQUARE_ACCESS_TOKEN,
+  LIVE_PAYMENTS: !!process.env.STRIPE_SECRET_KEY,
   LIVE_SHIPPING: !!process.env.SHIPPO_API_KEY,
   LIVE_EMAIL: !!process.env.SENDGRID_API_KEY,
   LIVE_SMS: !!process.env.TWILIO_AUTH_TOKEN,

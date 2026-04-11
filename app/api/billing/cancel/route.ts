@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       refundAmount = proRate.creditsEquivalent;
     } else if (refundType === "cash") {
       refundAmount = proRate.cashRefundAmount;
-      // Square refund would go here in production
+      // Stripe refund would go here in production
     }
 
     await prisma.subscription.update({ where: { id: sub.id }, data: { status: "CANCELLED" } });

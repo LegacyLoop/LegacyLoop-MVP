@@ -39,8 +39,9 @@ model User {
   googleId     String?  @unique
   displayName  String?
   avatarUrl    String?
-  phoneNumber  String?  @unique
-  createdAt    DateTime @default(now())
+  phoneNumber       String?  @unique
+  stripeCustomerId  String?  @unique
+  createdAt         DateTime @default(now())
 
   // CMD-ONBOARDING-7A: Onboarding fields
   quizCompletedAt    DateTime?
@@ -891,8 +892,8 @@ model PaymentLedger {
   id              String   @id @default(cuid())
   userId          String
   type            String   // subscription, credit_pack, item_purchase, refund, payout, estate_service
-  squarePaymentId String?  @unique
-  squareOrderId   String?
+  stripePaymentId String?  @unique
+  stripeSessionId String?
   subtotal        Float    // amount before processing fee
   processingFee   Float    // 3.5% fee charged to buyer/purchaser
   totalCharged    Float    // subtotal + processingFee = what buyer actually paid

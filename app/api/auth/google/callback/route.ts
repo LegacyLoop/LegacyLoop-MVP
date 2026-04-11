@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { prisma } from "@/lib/db";
 import { authAdapter } from "@/lib/adapters/auth";
+import { redeemReferralCode } from "@/lib/referrals";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
@@ -114,6 +115,12 @@ export async function GET(request: NextRequest) {
 
     // Issue session
     await authAdapter.issueSession(user.id, user.tier);
+
+    // Referral code auto-redemption for Google OAuth (fire-and-forget)
+    const refCode = searchParams.get("ref") || (state ? (() => { try { const s = JSON.parse(state); return s.ref; } catch { return null; } })() : null);
+    if (refCode && typeof refCode === "string") {
+      void redeemReferralCode(refCode, { id: user.id, email: user.email }, { skipDuplicateCheck: true }).catch(() => {});
+    }
 
     // CMD-ONBOARDING-7A: New users → quiz, returning users → dashboard
     const isNewUser = !user.quizCompletedAt && (user.onboardingStep ?? 0) === 0;

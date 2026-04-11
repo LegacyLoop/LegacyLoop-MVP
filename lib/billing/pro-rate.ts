@@ -5,7 +5,7 @@ export interface ProRateResult {
   dailyRate: number;
   creditForUnused: number;
   cashRefundAmount: number;
-  squareFeeAmount: number;
+  stripeFeeAmount: number;
   upgradeCharge: number;
   creditsEquivalent: number;
 }
@@ -20,10 +20,10 @@ export function calculateProRate(currentPlanPrice: number, billingStartDate: Dat
   const dailyRate = Math.round((currentPlanPrice / daysInCycle) * 100) / 100;
   const creditForUnused = Math.round(dailyRate * daysRemaining * 100) / 100;
   // No seller processing fee deducted — the 3.5% buyer fee is irrelevant to subscription refunds
-  const squareFeeAmount = 0;
+  const stripeFeeAmount = 0;
   const cashRefundAmount = creditForUnused;
   const upgradeCharge = newPlanPrice ? Math.max(Math.round((newPlanPrice - creditForUnused) * 100) / 100, 0) : 0;
   const creditsEquivalent = Math.round(creditForUnused * 10);
 
-  return { daysInCycle, daysUsed, daysRemaining, dailyRate, creditForUnused, cashRefundAmount, squareFeeAmount, upgradeCharge, creditsEquivalent };
+  return { daysInCycle, daysUsed, daysRemaining, dailyRate, creditForUnused, cashRefundAmount, stripeFeeAmount, upgradeCharge, creditsEquivalent };
 }

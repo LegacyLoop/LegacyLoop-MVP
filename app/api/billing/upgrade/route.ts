@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
+import { stripe, isConfigured, getOrCreateStripeCustomer } from "@/lib/stripe";
 import { calculateProRate } from "@/lib/billing/pro-rate";
 import { PLANS, TIER_NUMBER_TO_KEY, calculateTierPrice } from "@/lib/constants/pricing";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { recordPayment } from "@/lib/services/payment-ledger";
 
 /** Map legacy tier keys (from TIER_NUMBER_TO_KEY) to PLANS keys */
 const LEGACY_TO_PLAN: Record<string, keyof typeof PLANS> = {
@@ -47,6 +49,47 @@ export async function POST(req: NextRequest) {
       periodEnd.setMonth(periodEnd.getMonth() + 1);
     }
 
+    // When Stripe is configured, create PaymentIntent and return clientSecret
+    if (isConfigured && stripe && proRate.upgradeCharge > 0) {
+      try {
+        const fullUser = await prisma.user.findUnique({ where: { id: user.id }, select: { id: true, email: true, displayName: true, stripeCustomerId: true } });
+        const stripeCustomerId = fullUser ? await getOrCreateStripeCustomer(fullUser) : null;
+
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round(proRate.upgradeCharge * 100),
+          currency: "usd",
+          ...(stripeCustomerId ? { customer: stripeCustomerId, receipt_email: user.email } : {}),
+          metadata: {
+            type: "subscription_upgrade",
+            userId: user.id,
+            fromTier: sub.tier,
+            toTier: newTierKey.toUpperCase(),
+            billingPeriod,
+          },
+          description: `Upgrade to ${newPlan.name} — ${billingPeriod}`,
+        });
+
+        await recordPayment(user.id, "subscription_upgrade", proRate.upgradeCharge, `Upgrade to ${newPlan.name}`, {
+          stripePaymentId: paymentIntent.id,
+          metadata: { fromTier: sub.tier, toTier: newTierKey.toUpperCase(), credited: proRate.creditForUnused },
+        });
+
+        // Return clientSecret — frontend confirms payment, then webhook finalizes
+        return NextResponse.json({
+          success: true,
+          clientSecret: paymentIntent.client_secret,
+          newPlan: newPlan.name,
+          charged: proRate.upgradeCharge,
+          credited: proRate.creditForUnused,
+          pendingConfirmation: true,
+        });
+      } catch (stripeErr) {
+        console.error("Stripe upgrade error:", stripeErr);
+        return NextResponse.json({ error: "Payment processing failed. Please try again." }, { status: 500 });
+      }
+    }
+
+    // Demo mode or $0 upgrade — activate immediately
     await prisma.subscription.update({
       where: { id: sub.id },
       data: { tier: newTierKey.toUpperCase(), price: newPrice, billingPeriod, commission: newPlan.commission, currentPeriodStart: now, currentPeriodEnd: periodEnd },

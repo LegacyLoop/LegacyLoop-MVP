@@ -1,7 +1,7 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { populateSoldPrice } from "@/lib/data/populate-intelligence";
-import { n8nSaleComplete } from "@/lib/n8n";
+import { n8nNewListing, n8nSaleComplete } from "@/lib/n8n";
 
 const VALID_STATUSES = ["DRAFT", "ANALYZED", "READY", "LISTED", "INTERESTED", "SOLD", "SHIPPED", "COMPLETED", "RETURN_REQUESTED", "RETURNED", "REFUNDED"] as const;
 type ItemStatus = typeof VALID_STATUSES[number];
@@ -58,6 +58,12 @@ export async function PATCH(
       payload: JSON.stringify({ from: item.status, to: status ?? item.status }),
     },
   });
+
+  // n8n: WF20 new listing — triggers social post generator (fire-and-forget)
+  if (status === "LISTED" && item.status !== "LISTED") {
+    const photo = await prisma.itemPhoto.findFirst({ where: { itemId }, orderBy: { order: "asc" }, select: { filePath: true } }).catch(() => null);
+    n8nNewListing(item.title || "Item", item.category || "", item.description || "", Number(item.listingPrice) || 0, itemId, photo?.filePath);
+  }
 
   // Capture sold price when item transitions to SOLD
   if (status === "SOLD" && item.status !== "SOLD") {

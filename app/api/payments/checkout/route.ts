@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
-import { squareClient, isConfigured, SQUARE_LOCATION_ID } from "@/lib/square";
+import { stripe, isConfigured, getOrCreateStripeCustomer } from "@/lib/stripe";
 import { recordPayment } from "@/lib/services/payment-ledger";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email/send";
@@ -20,32 +20,28 @@ import {
   calculateCommission,
 } from "@/lib/constants/pricing";
 
-function getSquareErrorMessage(err: unknown): { message: string; status: number } {
-  const sqErr = err as { errors?: { code?: string; category?: string; detail?: string }[] };
-  const code = sqErr?.errors?.[0]?.code;
-  const category = sqErr?.errors?.[0]?.category;
+function getStripeErrorMessage(err: unknown): { message: string; status: number } {
+  const stripeErr = err as { type?: string; code?: string; decline_code?: string; message?: string };
+  const declineCode = stripeErr?.decline_code;
 
-  if (category === "PAYMENT_METHOD_ERROR") {
+  if (stripeErr?.type === "StripeCardError") {
     const messages: Record<string, string> = {
-      CARD_DECLINED: "Your card was declined. Please try another payment method.",
-      CARD_EXPIRED: "Your card has expired. Please use a different card.",
-      INSUFFICIENT_FUNDS: "Insufficient funds. Please check your account balance.",
-      CVV_FAILURE: "The security code is incorrect. Please check and try again.",
-      INVALID_CARD: "The card number is invalid. Please check and try again.",
-      GENERIC_DECLINE: "Payment was declined. Please contact your card issuer.",
-      ADDRESS_VERIFICATION_FAILURE: "Address verification failed. Check your billing address.",
-      INVALID_EXPIRATION: "The card expiration date is invalid.",
-      CARD_DECLINED_CALL_ISSUER: "Card declined. Please call your card issuer.",
-      CARD_DECLINED_VERIFICATION_REQUIRED: "Additional verification required. Contact your card issuer.",
-      TRANSACTION_LIMIT: "This transaction exceeds your card limit.",
+      card_declined: "Your card was declined. Please try another payment method.",
+      expired_card: "Your card has expired. Please use a different card.",
+      insufficient_funds: "Insufficient funds. Please check your account balance.",
+      incorrect_cvc: "The security code is incorrect. Please check and try again.",
+      incorrect_number: "The card number is invalid. Please check and try again.",
+      generic_decline: "Payment was declined. Please contact your card issuer.",
+      processing_error: "A processing error occurred. Please try again.",
+      do_not_honor: "Card declined. Please call your card issuer.",
     };
     return {
-      message: messages[code || ""] || "Payment was declined. Please try another card.",
-      status: 402
+      message: messages[declineCode || ""] || stripeErr?.message || "Payment was declined. Please try another card.",
+      status: 402,
     };
   }
 
-  if (category === "RATE_LIMIT_ERROR") {
+  if (stripeErr?.type === "StripeRateLimitError") {
     return { message: "Too many payment attempts. Please wait a moment.", status: 429 };
   }
 
@@ -61,6 +57,9 @@ function getSquareErrorMessage(err: unknown): { message: string; status: number 
  * For credit_pack: id = "pack_25" | "pack_50" | "pack_100" | "pack_200"
  * For subscription: id = "starter" | "plus" | "pro", billing?: "monthly" | "annual"
  * For item_purchase: id = itemId, shippingCost?: number, offeredPrice?: number
+ *
+ * When Stripe is configured: creates a PaymentIntent, returns { clientSecret }
+ * When Stripe is NOT configured: runs in demo mode (no real charge)
  */
 export async function POST(req: NextRequest) {
   const user = await authAdapter.getSession();
@@ -85,10 +84,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing type or id" }, { status: 400 });
     }
 
-    // Require payment source when Square is configured (production safety)
-    if (isConfigured && !body.sourceId) {
-      return NextResponse.json({ error: "Payment source required" }, { status: 400 });
-    }
+    // Get or create Stripe customer for this user (persists to DB)
+    const fullUser = await prisma.user.findUnique({ where: { id: user.id }, select: { id: true, email: true, displayName: true, stripeCustomerId: true } });
+    const stripeCustomerId = (isConfigured && fullUser) ? await getOrCreateStripeCustomer(fullUser) : null;
 
     // ── Credit Pack Purchase ──────────────────────────────────────────────
     if (type === "credit_pack") {
@@ -97,43 +95,49 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Invalid pack id" }, { status: 400 });
       }
 
-      // Fee absorbed: customer pays flat sticker price, Square takes their cut from it
       const chargeAmount = pack.price;
-      const squareFee = calculateProcessingFee(chargeAmount);
-      const ourRevenue = Math.round((chargeAmount - squareFee) * 100) / 100;
+      const processingFee = calculateProcessingFee(chargeAmount);
+      const ourRevenue = Math.round((chargeAmount - processingFee) * 100) / 100;
       const totalCredits = pack.credits + pack.bonus;
 
-      if (isConfigured && squareClient) {
-        // Real Square checkout
+      if (isConfigured && stripe) {
         try {
-          const payment = await squareClient.payments.create({
-            sourceId: body.sourceId,
-            amountMoney: { amount: BigInt(Math.round(chargeAmount * 100)), currency: "USD" },
-            locationId: SQUARE_LOCATION_ID,
-            idempotencyKey: `credit_${user.id}_${id}_${Date.now()}`,
-            note: `type:credit_pack|userId:${user.id}|credits:${totalCredits}|desc:${pack.label}`,
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(chargeAmount * 100),
+            currency: "usd",
+            ...(stripeCustomerId ? { customer: stripeCustomerId, receipt_email: user.email } : {}),
+            metadata: { type: "credit_pack", userId: user.id, packId: id, credits: String(totalCredits) },
+            description: `Credit Pack — ${totalCredits} credits`,
           });
 
           await recordPayment(user.id, "credit_pack", chargeAmount, `Credit Pack — ${totalCredits} credits ($${chargeAmount})`, {
-            squarePaymentId: payment.payment?.id,
-            squareOrderId: payment.payment?.orderId,
+            stripePaymentId: paymentIntent.id,
             metadata: { packId: id, credits: totalCredits, ourRevenue },
           });
-        } catch (sqErr) {
-          console.error("Square payment error:", sqErr);
-          const { message, status } = getSquareErrorMessage(sqErr);
+
+          // Return clientSecret so frontend can confirm payment
+          return NextResponse.json({
+            ok: true,
+            type: "credit_pack",
+            clientSecret: paymentIntent.client_secret,
+            charged: chargeAmount,
+            credits: totalCredits,
+          });
+        } catch (stripeErr) {
+          console.error("Stripe payment error:", stripeErr);
+          const { message, status } = getStripeErrorMessage(stripeErr);
           return NextResponse.json({ error: message }, { status });
         }
       } else {
-        // Demo mode — record payment without Square
+        // Demo mode — record payment without Stripe
         await recordPayment(user.id, "credit_pack", chargeAmount, `Credit Pack — ${totalCredits} credits ($${chargeAmount})`, {
-          squarePaymentId: `demo_credit_${Date.now()}`,
+          stripePaymentId: `demo_credit_${Date.now()}`,
           metadata: { packId: id, credits: totalCredits, ourRevenue, demo: true },
           isDemo: true,
         });
       }
 
-      // Fulfill credits
+      // Fulfill credits (in demo mode, fulfills immediately; in Stripe mode, webhook confirms)
       let uc = await prisma.userCredits.findUnique({ where: { userId: user.id } });
       if (!uc) {
         uc = await prisma.userCredits.create({
@@ -156,7 +160,6 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Send confirmation email (fire-and-forget)
       const cpName = user.email.split("@")[0];
       const cpEmail = creditPurchaseEmail(cpName, totalCredits, newBalance, chargeAmount);
       sendEmail({ to: user.email, ...cpEmail });
@@ -187,31 +190,41 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Invalid credit calculation" }, { status: 400 });
       }
 
-      const squareFee = calculateProcessingFee(chargeAmount);
-      const ourRevenue = Math.round((chargeAmount - squareFee) * 100) / 100;
+      const processingFee = calculateProcessingFee(chargeAmount);
+      const ourRevenue = Math.round((chargeAmount - processingFee) * 100) / 100;
 
-      if (isConfigured && squareClient) {
+      if (isConfigured && stripe) {
         try {
-          const payment = await squareClient.payments.create({
-            sourceId: body.sourceId,
-            amountMoney: { amount: BigInt(Math.round(chargeAmount * 100)), currency: "USD" },
-            locationId: SQUARE_LOCATION_ID,
-            idempotencyKey: `custom_credit_${user.id}_${chargeAmount}_${Date.now()}`,
-            note: `type:custom_credit|userId:${user.id}|credits:${totalCredits}|rate:${rate}|tier:${tierName}`,
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(chargeAmount * 100),
+            currency: "usd",
+            ...(stripeCustomerId ? { customer: stripeCustomerId, receipt_email: user.email } : {}),
+            metadata: { type: "custom_credit", userId: user.id, credits: String(totalCredits), rate: String(rate), tierName },
+            description: `Custom Credits — ${totalCredits} credits [${tierName}]`,
           });
           await recordPayment(user.id, "custom_credit", chargeAmount,
             `Custom Credits — ${totalCredits} credits ($${chargeAmount}) [${tierName} rate]`,
-            { squarePaymentId: payment.payment?.id, squareOrderId: payment.payment?.orderId,
+            { stripePaymentId: paymentIntent.id,
               metadata: { credits: totalCredits, rate, tierName, ourRevenue, requestedAmount: amount } });
-        } catch (sqErr) {
-          console.error("Square payment error:", sqErr);
-          const { message, status } = getSquareErrorMessage(sqErr);
+
+          return NextResponse.json({
+            ok: true,
+            type: "custom_credit",
+            clientSecret: paymentIntent.client_secret,
+            charged: chargeAmount,
+            credits: totalCredits,
+            rate,
+            tierName,
+          });
+        } catch (stripeErr) {
+          console.error("Stripe payment error:", stripeErr);
+          const { message, status } = getStripeErrorMessage(stripeErr);
           return NextResponse.json({ error: message }, { status });
         }
       } else {
         await recordPayment(user.id, "custom_credit", chargeAmount,
           `Custom Credits — ${totalCredits} credits ($${chargeAmount}) [${tierName} rate]`,
-          { squarePaymentId: `demo_custom_${Date.now()}`,
+          { stripePaymentId: `demo_custom_${Date.now()}`,
             metadata: { credits: totalCredits, rate, tierName, ourRevenue, requestedAmount: amount, demo: true },
             isDemo: true });
       }
@@ -233,7 +246,6 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Send confirmation email (fire-and-forget)
       const ccName = user.email.split("@")[0];
       const ccEmail = creditPurchaseEmail(ccName, totalCredits, newBalance, chargeAmount);
       sendEmail({ to: user.email, ...ccEmail });
@@ -254,36 +266,44 @@ export async function POST(req: NextRequest) {
 
       const billing = body.billing || "monthly";
       const isHero = user.heroVerified ?? false;
-      // Fee absorbed: customer pays the flat advertised price
-      const chargeAmount = calculateTierPrice(tierKey, billing, true, isHero); // pre-launch
+      const chargeAmount = calculateTierPrice(tierKey, billing, true, isHero);
 
       if (chargeAmount === 0) {
         return NextResponse.json({ error: "Cannot checkout free tier" }, { status: 400 });
       }
 
-      if (isConfigured && squareClient) {
+      if (isConfigured && stripe) {
         try {
-          const payment = await squareClient.payments.create({
-            sourceId: body.sourceId,
-            amountMoney: { amount: BigInt(Math.round(chargeAmount * 100)), currency: "USD" },
-            locationId: SQUARE_LOCATION_ID,
-            idempotencyKey: `sub_${user.id}_${tierKey}_${Date.now()}`,
-            note: `type:subscription|userId:${user.id}|tier:${tierKey}|billing:${billing}|desc:${tier.name} ${billing}`,
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(chargeAmount * 100),
+            currency: "usd",
+            ...(stripeCustomerId ? { customer: stripeCustomerId, receipt_email: user.email } : {}),
+            metadata: { type: "subscription", userId: user.id, tier: tierKey, billing },
+            description: `${tier.name} plan — ${billing}`,
           });
 
           await recordPayment(user.id, "subscription", chargeAmount, `${tier.name} plan — ${billing}`, {
-            squarePaymentId: payment.payment?.id,
-            squareOrderId: payment.payment?.orderId,
+            stripePaymentId: paymentIntent.id,
             metadata: { tier: tierKey, billing },
           });
-        } catch (sqErr) {
-          console.error("Square payment error:", sqErr);
-          const { message, status } = getSquareErrorMessage(sqErr);
+
+          return NextResponse.json({
+            ok: true,
+            type: "subscription",
+            clientSecret: paymentIntent.client_secret,
+            tier: tierKey,
+            tierName: tier.name,
+            charged: chargeAmount,
+            billing,
+          });
+        } catch (stripeErr) {
+          console.error("Stripe payment error:", stripeErr);
+          const { message, status } = getStripeErrorMessage(stripeErr);
           return NextResponse.json({ error: message }, { status });
         }
       } else {
         await recordPayment(user.id, "subscription", chargeAmount, `${tier.name} plan — ${billing}`, {
-          squarePaymentId: `demo_sub_${Date.now()}`,
+          stripePaymentId: `demo_sub_${Date.now()}`,
           metadata: { tier: tierKey, billing, demo: true },
           isDemo: true,
         });
@@ -332,7 +352,6 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // Send confirmation email (fire-and-forget)
       const subName = user.email.split("@")[0];
       const subEmail = subscriptionUpgradeEmail(subName, tier.name, chargeAmount, billing);
       sendEmail({ to: user.email, ...subEmail });
@@ -374,29 +393,48 @@ export async function POST(req: NextRequest) {
       const subtotal = itemPrice + shippingCost;
       const { processingFee, total } = calculateTotalWithFee(subtotal);
 
-      if (isConfigured && squareClient) {
+      if (isConfigured && stripe) {
         try {
-          const payment = await squareClient.payments.create({
-            sourceId: body.sourceId,
-            amountMoney: { amount: BigInt(Math.round(total * 100)), currency: "USD" },
-            locationId: SQUARE_LOCATION_ID,
-            idempotencyKey: `item_${id}_${user.id}_${Date.now()}`,
-            note: `type:item_purchase|userId:${user.id}|itemId:${id}|desc:Purchase of ${item.title || "item"}`,
+          const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(total * 100),
+            currency: "usd",
+            ...(stripeCustomerId ? { customer: stripeCustomerId, receipt_email: user.email } : {}),
+            metadata: {
+              type: "item_purchase",
+              userId: user.id,
+              itemId: id,
+              sellerId: item.userId,
+              itemPrice: String(itemPrice),
+              shippingCost: String(shippingCost),
+            },
+            description: `Purchase: ${item.title || "Item"}`,
           });
 
           await recordPayment(user.id, "item_purchase", subtotal, `Purchase: ${item.title || "Item"}`, {
-            squarePaymentId: payment.payment?.id,
-            squareOrderId: payment.payment?.orderId,
+            stripePaymentId: paymentIntent.id,
             metadata: { itemId: id, itemPrice, shippingCost, buyerName: body.buyerName },
           });
-        } catch (sqErr) {
-          console.error("Square payment error:", sqErr);
-          const { message, status } = getSquareErrorMessage(sqErr);
+
+          return NextResponse.json({
+            ok: true,
+            type: "item_purchase",
+            clientSecret: paymentIntent.client_secret,
+            itemId: id,
+            itemTitle: item.title,
+            itemPrice,
+            shippingCost,
+            subtotal,
+            processingFee,
+            total,
+          });
+        } catch (stripeErr) {
+          console.error("Stripe payment error:", stripeErr);
+          const { message, status } = getStripeErrorMessage(stripeErr);
           return NextResponse.json({ error: message }, { status });
         }
       } else {
         await recordPayment(user.id, "item_purchase", subtotal, `Purchase: ${item.title || "Item"}`, {
-          squarePaymentId: `demo_item_${Date.now()}`,
+          stripePaymentId: `demo_item_${Date.now()}`,
           metadata: { itemId: id, itemPrice, shippingCost, buyerName: body.buyerName, demo: true },
           isDemo: true,
         });
@@ -408,7 +446,7 @@ export async function POST(req: NextRequest) {
         data: { status: "SOLD" },
       });
 
-      // First sale bonus: award 25 credits to seller on their first completed sale
+      // First sale bonus: award 25 credits to seller
       try {
         const priorSales = await prisma.item.count({
           where: { userId: item.userId, status: { in: ["SOLD", "SHIPPED", "COMPLETED"] }, id: { not: item.id } },
@@ -420,7 +458,7 @@ export async function POST(req: NextRequest) {
               data: { userId: item.userId, balance: 0, lifetime: 0, spent: 0 },
             });
           }
-          const bonusAmount = 25; // DISCOUNTS.firstSale.credits
+          const bonusAmount = 25;
           await prisma.userCredits.update({
             where: { userId: item.userId },
             data: { balance: { increment: bonusAmount }, lifetime: { increment: bonusAmount } },
@@ -434,13 +472,13 @@ export async function POST(req: NextRequest) {
         }
       } catch { /* sale must not fail if bonus fails */ }
 
-      // Record seller earnings (use seller's tier, not buyer's)
+      // Record seller earnings
       const { recordEarning } = await import("@/lib/services/payment-ledger");
       const sellerTierKey = ["free", "starter", "plus", "pro"][(item.user?.tier ?? 1) - 1] || "free";
       const isSellerHero = item.user?.heroVerified ?? false;
       await recordEarning(item.userId, item.id, itemPrice, sellerTierKey, isSellerHero);
 
-      // Create notification for seller
+      // Notification for seller
       try {
         await prisma.notification.create({
           data: {
@@ -451,14 +489,14 @@ export async function POST(req: NextRequest) {
             link: `/items/${item.id}`,
           },
         });
-      } catch (e) { /* notification is optional */ }
+      } catch { /* notification is optional */ }
 
-      // Send confirmation emails (fire-and-forget)
+      // Emails (fire-and-forget)
       const buyerName = body.buyerName || user.email.split("@")[0];
       const buyerEmail = orderConfirmationEmail(buyerName, item.title || "Item", itemPrice, shippingCost, processingFee, total);
       sendEmail({ to: user.email, ...buyerEmail });
 
-      // n8n: WF15 payment alert + WF11 SMS (fire-and-forget)
+      // n8n webhooks (fire-and-forget)
       n8nPaymentReceived(itemPrice, user.email, item.title || "Item", "item_purchase");
       n8nSmsAlert(`SALE: $${itemPrice.toFixed(2)} — ${item.title || "Item"}`);
 

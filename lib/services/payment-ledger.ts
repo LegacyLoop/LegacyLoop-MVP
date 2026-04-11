@@ -17,8 +17,8 @@ export async function recordPayment(
   subtotal: number,
   description: string,
   options?: {
-    squarePaymentId?: string;
-    squareOrderId?: string;
+    stripePaymentId?: string;
+    stripeSessionId?: string;
     metadata?: Record<string, unknown>;
     isDemo?: boolean;
   }
@@ -34,8 +34,8 @@ export async function recordPayment(
         totalCharged: Math.round((subtotal + processingFee) * 100) / 100,
         description,
         status: "completed",
-        squarePaymentId: options?.squarePaymentId,
-        squareOrderId: options?.squareOrderId,
+        stripePaymentId: options?.stripePaymentId,
+        stripeSessionId: options?.stripeSessionId,
         metadata: options?.metadata
           ? JSON.stringify(options.metadata)
           : null,

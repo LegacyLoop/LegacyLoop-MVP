@@ -6,6 +6,7 @@ import { welcomeEmail, verificationEmail } from "@/lib/email/templates";
 import { prisma } from "@/lib/db";
 import { DISCOUNTS } from "@/lib/constants/pricing";
 import { n8nNewUser, n8nNewUserCheck } from "@/lib/n8n";
+import { redeemReferralCode } from "@/lib/referrals";
 import { randomBytes } from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { email, password } = await req.json();
+    const { email, password, referralCode } = await req.json();
 
     if (!email || !password) {
       return new Response("Please enter your email and password.", {
@@ -85,6 +86,17 @@ export async function POST(req: NextRequest) {
     // n8n: WF1 drip sequence + WF12 health check (fire-and-forget)
     n8nNewUser(trimmedEmail, name);
     n8nNewUserCheck(trimmedEmail, name);
+
+    // Referral code auto-redemption (fire-and-forget — never blocks signup)
+    const refCode = referralCode || req.nextUrl.searchParams.get("ref");
+    if (refCode && typeof refCode === "string") {
+      try {
+        const refUser = await prisma.user.findUnique({ where: { email: trimmedEmail }, select: { id: true, email: true } });
+        if (refUser) {
+          void redeemReferralCode(refCode, refUser, { skipDuplicateCheck: true }).catch(() => {});
+        }
+      } catch { /* referral must never block signup */ }
+    }
 
     return new Response("OK", { status: 200 });
   } catch (err: any) {

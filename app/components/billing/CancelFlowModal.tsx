@@ -20,7 +20,7 @@ export default function CancelFlowModal({ planName, currentTier, onClose, onCanc
     creditForUnused?: number;
     creditsEquivalent?: number;
     cashRefundAmount?: number;
-    squareFeeAmount?: number;
+    stripeFeeAmount?: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const downgradeOption = DOWNGRADE_MAP[currentTier] || null;
@@ -180,7 +180,7 @@ export default function CancelFlowModal({ planName, currentTier, onClose, onCanc
               {selectedRefund === "credits"
                 ? `You'll receive ${proRate?.creditsEquivalent || 0} credits instantly. Credits never expire.`
                 : selectedRefund === "cash"
-                  ? `You'll receive $${proRate?.cashRefundAmount || 0} back to your card after 3.5% Square processing fee ($${proRate?.squareFeeAmount || 0}). 3-5 business days.`
+                  ? `You'll receive $${proRate?.cashRefundAmount || 0} back to your card after 3.5% processing fee ($${proRate?.stripeFeeAmount || 0}). 3-5 business days.`
                   : "Your plan stays active until the end of the current billing period."}
             </div>
             <div

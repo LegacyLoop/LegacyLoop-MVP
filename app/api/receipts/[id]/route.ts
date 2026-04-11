@@ -63,7 +63,7 @@ export async function GET(
         totalCharged: pl.totalCharged,
         currency: pl.currency,
         status: pl.status,
-        squarePaymentId: pl.squarePaymentId,
+        stripePaymentId: pl.stripePaymentId,
         metadata: meta,
         user: { id: user.id, email: user.email, name: userName },
       });

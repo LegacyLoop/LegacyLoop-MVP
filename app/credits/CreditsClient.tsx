@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { calculateCustomCredits, CUSTOM_CREDIT_MINIMUM, CUSTOM_CREDIT_MAXIMUM, CUSTOM_CREDIT_SCALE } from "@/lib/constants/pricing";
+import CreditPurchaseModal from "@/app/components/billing/CreditPurchaseModal";
 
 type Transaction = {
   id: string;
@@ -69,6 +70,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
   const [purchaseSuccess, setPurchaseSuccess] = useState<{ name: string; id: string } | null>(null);
   const [customAmount, setCustomAmount] = useState<string>("");
   const [customPurchasing, setCustomPurchasing] = useState(false);
+  const [stripeModal, setStripeModal] = useState<{ clientSecret: string; packageName: string; credits: number; charged: number } | null>(null);
 
   useEffect(() => {
     fetch("/api/addons").then(r => r.json()).then(d => {
@@ -88,6 +90,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
   async function purchase(pkgId: string) {
     setPurchasing(pkgId);
     try {
+      const pkg = PACKAGES.find((p) => p.id === pkgId);
       const res = await fetch("/api/payments/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -95,6 +98,17 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
       });
       if (res.ok) {
         const data = await res.json();
+        // Stripe live: open card confirmation modal
+        if (data.clientSecret) {
+          setStripeModal({
+            clientSecret: data.clientSecret,
+            packageName: pkg?.name || "Credit Pack",
+            credits: data.credits,
+            charged: data.charged,
+          });
+          return;
+        }
+        // Demo mode: credits already awarded
         setBalance(data.balance);
         showToast(`${data.credits} credits added! New balance: ${data.balance}`);
         const newTx: Transaction = {
@@ -125,6 +139,17 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
       });
       if (res.ok) {
         const data = await res.json();
+        // Stripe live: open card confirmation modal
+        if (data.clientSecret) {
+          setStripeModal({
+            clientSecret: data.clientSecret,
+            packageName: `Custom Credits (${data.tierName || "Standard"})`,
+            credits: data.credits,
+            charged: data.charged,
+          });
+          return;
+        }
+        // Demo mode
         setBalance(data.balance);
         showToast(`${data.credits} credits added! New balance: ${data.balance}`);
         const newTx: Transaction = {
@@ -780,6 +805,24 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
             </div>
           )}
         </div>
+      )}
+      {/* Stripe card confirmation modal */}
+      {stripeModal && (
+        <CreditPurchaseModal
+          clientSecret={stripeModal.clientSecret}
+          packageName={stripeModal.packageName}
+          credits={stripeModal.credits}
+          charged={stripeModal.charged}
+          onSuccess={() => {
+            setStripeModal(null);
+            showToast(`${stripeModal.credits} credits purchased! Refreshing...`);
+            // Refresh balance from server
+            fetch("/api/credits/balance").then(r => r.json()).then(d => {
+              if (d.balance != null) setBalance(d.balance);
+            }).catch(() => {});
+          }}
+          onClose={() => setStripeModal(null)}
+        />
       )}
     </div>
   );

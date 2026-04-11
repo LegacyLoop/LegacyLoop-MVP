@@ -135,6 +135,50 @@ export async function refundCredits(
   }
 }
 
+/** Add credits to a user's balance (bonus, referral, purchase fulfillment, etc.)
+ * Upserts UserCredits + creates CreditTransaction. Fire-and-forget safe. */
+export async function addCredits(
+  userId: string,
+  amount: number,
+  description: string,
+  type: string = "bonus",
+): Promise<CreditDeductResult> {
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      let uc = await tx.userCredits.findUnique({ where: { userId } });
+      if (!uc) {
+        uc = await tx.userCredits.create({
+          data: { userId, balance: 0, lifetime: 0, spent: 0 },
+        });
+      }
+
+      const newBalance = uc.balance + amount;
+
+      await tx.userCredits.update({
+        where: { id: uc.id },
+        data: { balance: newBalance, lifetime: uc.lifetime + amount },
+      });
+
+      await tx.creditTransaction.create({
+        data: {
+          userCreditsId: uc.id,
+          type,
+          amount,
+          balance: newBalance,
+          description,
+        },
+      });
+
+      return { success: true, newBalance };
+    });
+
+    return result;
+  } catch (err: any) {
+    console.error("[credits] addCredits error:", err);
+    return { success: false, newBalance: 0, error: err?.message ?? "Credit addition failed" };
+  }
+}
+
 /** Check if user still has their free first AnalyzeBot run available */
 export async function isFreeAnalysisAvailable(userId: string): Promise<boolean> {
   try {
