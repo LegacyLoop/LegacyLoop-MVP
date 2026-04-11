@@ -8,6 +8,7 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import ItemPhotoStrip from "./ItemPhotoStrip";
 import { computeAuthenticityScore } from "@/lib/antique-score";
 import { computeCollectiblesScore } from "@/lib/collectibles-score";
+import { calculateGarageSalePrices } from "@/lib/pricing/garage-sale";
 import { detectCollectible } from "@/lib/collectible-detect";
 import AmazonPriceBadge from "./AmazonPriceBadge";
 import DetectionHUD from "./DetectionHUD";
@@ -65,6 +66,15 @@ export default async function ItemPage({ params }: { params: Params }) {
       <div className="card p-8 max-w-xl mx-auto mt-10">Item not found.</div>
     );
   }
+
+  // Calculate garage sale prices server-side for header pills
+  const valForGs = item.valuation;
+  const marketMid = (valForGs as any)?.mid ?? (valForGs ? Math.round((valForGs.low + valForGs.high) / 2) : 0);
+  let aiDataForGs: any = {};
+  try { aiDataForGs = item.aiResult?.rawJson ? JSON.parse(item.aiResult.rawJson) : {}; } catch { /* */ }
+  const gsCalc = marketMid > 0
+    ? calculateGarageSalePrices(marketMid, aiDataForGs.category || (item as any).category || "", aiDataForGs.condition_guess || (item as any).condition || "good", (item as any).saleZip)
+    : null;
 
   // Fetch engagement metrics + document count + latest shipping quote for control center
   const [engagement, docCount, latestShippingQuote, demandScoreLog, disagreementLog] = await Promise.all([
@@ -363,16 +373,22 @@ export default async function ItemPage({ params }: { params: Params }) {
                   <div style={{ fontSize: "0.92rem", fontWeight: 800, color: (v.confidence > 0.7 || v.confidence > 70) ? "#22c55e" : "#f59e0b" }}>{Math.round(v.confidence > 1 ? v.confidence : v.confidence * 100)}%</div>
                 </div>
               )}
-              {(item as any).garageSalePrice && (item as any).garageSalePriceHigh && (
+              {gsCalc && !gsCalc.isExempt && (
                 <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.2)", minWidth: "70px" }}>
                   <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#00bcd4", fontWeight: 700 }}>Garage Sale</div>
-                  <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#00bcd4" }}>${(item as any).garageSalePrice}–${(item as any).garageSalePriceHigh}</div>
+                  <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#00bcd4" }}>${gsCalc.garageSalePrice}–${gsCalc.garageSalePriceHigh}</div>
                 </div>
               )}
-              {(item as any).quickSalePrice && (item as any).quickSalePriceHigh && (
+              {gsCalc && !gsCalc.isExempt && (
                 <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(29,158,117,0.06)", border: "1px solid rgba(29,158,117,0.2)", minWidth: "70px" }}>
                   <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#1D9E75", fontWeight: 700 }}>Quick Sale</div>
-                  <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#1D9E75" }}>${(item as any).quickSalePrice}–${(item as any).quickSalePriceHigh}</div>
+                  <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#1D9E75" }}>${gsCalc.quickSalePrice}–${gsCalc.quickSalePriceHigh}</div>
+                </div>
+              )}
+              {gsCalc?.isExempt && (
+                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)" }}>
+                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#D4AF37", fontWeight: 700 }}>Value Holds</div>
+                  <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#D4AF37" }}>Collectible</div>
                 </div>
               )}
             </div>
