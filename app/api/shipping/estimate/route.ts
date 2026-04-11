@@ -213,6 +213,27 @@ export async function POST(req: NextRequest) {
       },
     }).catch(() => null);
 
+    // AI shipping recommendation (free — never blocks estimate)
+    let aiRecommendation: string | null = null;
+    try {
+      const { loadSkillPack } = await import("@/lib/bots/skill-loader");
+      const skillPack = loadSkillPack("shipping-center");
+      const cheapestPrice = cheapest?.price ?? 0;
+      const itemData = await prisma.item.findUnique({ where: { id: itemId }, select: { title: true, category: true, garageSalePrice: true, valuation: { select: { mid: true } } } });
+      const marketPrice = (itemData?.valuation as any)?.mid ?? 0;
+      const gsPrice = (itemData as any)?.garageSalePrice ?? 0;
+
+      const prompt = `${skillPack.systemPromptBlock}\n\nITEM: ${itemData?.title || "Unknown"}\nCATEGORY: ${itemData?.category || "general"}\nWEIGHT: ${weight} lbs\nFRAGILE: ${isFragile}\nCHEAPEST RATE: $${cheapestPrice} via ${cheapest?.carrier ?? "N/A"}\nONLINE VALUE: $${marketPrice}\nGARAGE SALE PRICE: $${gsPrice || "not set"}\nSHIPPING FROM: ${fromZip} TO: ${toZip}\n\nProvide a brief 2-3 sentence shipping recommendation. Best carrier, packing tips, and whether local pickup is better if shipping cost is high relative to value.`;
+
+      const OpenAI = (await import("openai")).default;
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const aiRes = await openai.responses.create({
+        model: "gpt-4o-mini",
+        input: [{ role: "user", content: prompt }],
+      });
+      aiRecommendation = (aiRes as any).output_text ?? null;
+    } catch { /* AI is non-critical — never block shipping estimate */ }
+
     return NextResponse.json({
       itemId,
       weight,
@@ -224,6 +245,7 @@ export async function POST(req: NextRequest) {
       packagingTips,
       fromZip,
       toZip,
+      aiRecommendation,
     });
   } catch (e) {
     console.error("[shipping/estimate] error:", e);

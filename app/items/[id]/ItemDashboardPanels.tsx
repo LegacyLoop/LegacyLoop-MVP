@@ -4133,7 +4133,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
    PANEL 3: Shipping (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, category, onSuperBoost, boosting, boosted, boostResult, collapsed, onToggle, shippingData }: {
+function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, category, onSuperBoost, boosting, boosted, boostResult, collapsed, onToggle, shippingData, onQuotedRate }: {
   itemId: string;
   aiData: any;
   saleZip: string | null;
@@ -4147,6 +4147,7 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
   collapsed?: boolean;
   onToggle?: () => void;
   shippingData?: Props["shippingData"];
+  onQuotedRate?: (rate: number) => void;
 }) {
   const hasAnalysis = !!aiData;
   const [shipSections, setShipSections] = useState<Set<string>>(new Set(["megabot-results"]));
@@ -9284,6 +9285,7 @@ export default function ItemDashboardPanels({
   };
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(DEFAULT_COLLAPSED);
   const [panelsHydrated, setPanelsHydrated] = useState(false);
+  const [liveShippingRate, setLiveShippingRate] = useState<number | null>(null);
   const togglePanel = (id: string) => setCollapsed((prev) => ({ ...prev, [id]: !prev[id] }));
 
   // Restore saved panel layout from localStorage AFTER hydration (client-only)
@@ -9856,7 +9858,7 @@ export default function ItemDashboardPanels({
           priceBotLoading={priceBotLoading}
           collapsed={collapsed.pricing}
           onToggle={() => togglePanel("pricing")}
-          quotedShippingRate={shippingData?.quotedShippingRate ?? null}
+          quotedShippingRate={liveShippingRate ?? shippingData?.quotedShippingRate ?? null}
           quotedShippingAt={shippingData?.quotedShippingAt ?? null}
           shippingPreference={shippingData?.preference ?? "BUYER_PAYS"}
           sellerListingPrice={listingPrice ?? null}
@@ -9883,6 +9885,7 @@ export default function ItemDashboardPanels({
           collapsed={collapsed.shipping}
           onToggle={() => togglePanel("shipping")}
           shippingData={shippingData}
+          onQuotedRate={setLiveShippingRate}
         />
         </div>
 

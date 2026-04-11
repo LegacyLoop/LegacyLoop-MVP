@@ -310,6 +310,7 @@ function PostSaleWizard({
   const [rates, setRates] = useState<ShippingRate[]>([]);
   const [loadingRates, setLoadingRates] = useState(false);
   const [buyerZip, setBuyerZip] = useState("");
+  const [aiShippingRec, setAiShippingRec] = useState<string | null>(null);
   const [buyerName, setBuyerName] = useState("");
   const [buyerStreet, setBuyerStreet] = useState("");
   const [buyerCity, setBuyerCity] = useState("");
@@ -418,11 +419,13 @@ function PostSaleWizard({
       const rawRates = data.rates ?? [];
       const normalized = normalizeRates(rawRates);
       setRates(normalized.length > 0 ? normalized : generateFallbackRates(weight));
-      // Persist quote to Shipping Center via estimate API (fire-and-forget)
+      // Persist quote + get AI recommendation from Shipping Center
       fetch("/api/shipping/estimate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId, destZip: buyerZip }),
+      }).then(r => r.json()).then(d => {
+        if (d.aiRecommendation) setAiShippingRec(d.aiRecommendation);
       }).catch(() => {});
     } catch {
       setRates(generateFallbackRates(weight));
@@ -2863,6 +2866,7 @@ export default function ShippingPanel({
   const [buyerZip, setBuyerZip] = useState("");
   const [selectedPreSaleRate, setSelectedPreSaleRate] = useState<ShippingRate | null>(null);
   const [preSaleQuoteSaved, setPreSaleQuoteSaved] = useState(false);
+  const [aiShippingRec, setAiShippingRec] = useState<string | null>(null);
   const [savedQuoteData, setSavedQuoteData] = useState<any>(null);
 
   // Live metro rates (Shippo per-city)

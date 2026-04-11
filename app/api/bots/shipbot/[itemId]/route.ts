@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { isDemoMode } from "@/lib/bot-mode";
 import { suggestPackage, suggestShippingMethod } from "@/lib/shipping/package-suggestions";
 import { getMetroEstimates } from "@/lib/shipping/metro-estimates";
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 export async function GET(
   _req: NextRequest,
@@ -99,8 +100,26 @@ export async function POST(
 
   const cheapestCarrier = carriers.length > 0 ? carriers.reduce((a, b) => a.cost < b.cost ? a : b) : null;
 
+  // AI shipping recommendation (fire-and-forget, never blocks)
+  let aiRecommendation: string | null = null;
+  try {
+    const skillPack = loadSkillPack("shipping-center");
+    const aiPrompt = `${skillPack.systemPromptBlock}\n\nITEM: ${(item as any).title || "Unknown"}\nCATEGORY: ${category}\nESTIMATED WEIGHT: ${weight} lbs\nBOX: ${pkg.boxSize}\nFRAGILE: ${pkg.isFragile}\nCHEAPEST CARRIER: ${cheapestCarrier?.name ?? "Local Pickup"} at $${cheapestCarrier?.cost ?? 0}\nONLINE VALUE: $${valuationMid || "unknown"}\nGARAGE SALE PRICE: $${(item as any).garageSalePrice || "not set"}\nSHIPPING METHOD: ${method}\n\nProvide a brief 2-3 sentence shipping recommendation. Include: best carrier choice, any packing concerns, and whether local pickup might be better if shipping costs are high relative to value.`;
+
+    const OpenAI = (await import("openai")).default;
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const aiRes = await openai.responses.create({
+      model: "gpt-4o-mini",
+      input: [{ role: "user", content: aiPrompt }],
+    });
+    aiRecommendation = (aiRes as any).output_text ?? null;
+  } catch (aiErr) {
+    console.warn("[shipbot] AI recommendation failed (non-critical):", aiErr);
+  }
+
   const result = {
     _isDemo: false,
+    aiRecommendation,
     packageSuggestion: {
       type: pkg.label,
       boxSize: pkg.boxSize,
@@ -149,6 +168,24 @@ export async function POST(
   await prisma.eventLog.create({
     data: { itemId, eventType: "SHIPBOT_RESULT", payload: JSON.stringify(result) },
   });
+
+  // Also write SHIPPING_QUOTED so the Net Payout panel picks up the cheapest rate
+  if (cheapestCarrier) {
+    await prisma.eventLog.create({
+      data: {
+        itemId,
+        eventType: "SHIPPING_QUOTED",
+        payload: JSON.stringify({
+          cheapest: {
+            carrier: cheapestCarrier.name,
+            service: "Ground",
+            price: cheapestCarrier.cost,
+          },
+          source: "shipbot",
+        }),
+      },
+    }).catch(() => {});
+  }
 
   return NextResponse.json({ success: true, result, isDemo: false });
 }
