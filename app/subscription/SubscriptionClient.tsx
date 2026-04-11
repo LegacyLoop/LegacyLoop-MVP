@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { DIGITAL_TIERS } from "@/lib/pricing/constants";
+import { usePurchaseParams } from "@/lib/hooks/usePurchaseParams";
 import { TIERS, WHITE_GLOVE, NEIGHBORHOOD_BUNDLE, PROCESSING_FEE, BOT_COSTS, PLANS, TIER, TIER_KEY_TO_NUMBER } from "@/lib/constants/pricing";
 import CancelFlowModal from "@/app/components/billing/CancelFlowModal";
 import UpgradeFlowModal from "@/app/components/billing/UpgradeFlowModal";
@@ -198,6 +200,43 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
   const [upgradeTarget, setUpgradeTarget] = useState<string>("PLUS");
   const [activeSlide, setActiveSlide] = useState(0);
   const [wgBookingKey, setWgBookingKey] = useState<string | null>(null);
+
+  // URL param purchase intent (landing site → app → checkout)
+  const purchaseParams = usePurchaseParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (!purchaseParams.hasIntent) return;
+    const t = setTimeout(() => {
+      // Subscription upgrade
+      if (purchaseParams.tier && !purchaseParams.product) {
+        const tierMap: Record<string, string> = { diy: "STARTER", power: "PLUS", estate: "PRO" };
+        const target = tierMap[purchaseParams.tier] ?? purchaseParams.tier.toUpperCase();
+        if (purchaseParams.billing) setBillingPeriod(purchaseParams.billing);
+        if (purchaseParams.upgrade || TIER_KEYS.indexOf(target) > TIER_KEYS.indexOf(subscription?.tier || "FREE")) {
+          setUpgradeTarget(target);
+          setShowUpgradeModal(true);
+        }
+      }
+
+      // White Glove booking
+      if (purchaseParams.product === "white_glove" && purchaseParams.tier) {
+        setWgBookingKey(purchaseParams.tier);
+        setActiveSlide(0);
+      }
+
+      // Estate Care — switch to estate care tab
+      if (purchaseParams.product === "estate_care") {
+        setActiveSlide(1);
+      }
+
+      // Clean URL params after consuming
+      router.replace(pathname, { scroll: false });
+    }, 400);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const tier = subscription?.tier || "FREE";
   const isAnnualSub = subscription?.billingPeriod === "annual";

@@ -402,6 +402,22 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
   const [customPurchasing, setCustomPurchasing] = useState(false);
   const [stripeModal, setStripeModal] = useState<{ clientSecret: string; packageName: string; credits: number; charged: number } | null>(null);
 
+  // Auto-purchase from URL params (landing site → credits → checkout)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const product = params.get("product");
+    const pack = params.get("pack");
+    if (product === "credits" && pack) {
+      const packMap: Record<string, string> = { starter: "starter", popular: "plus", value: "power", best_deal: "pro" };
+      const pkgId = packMap[pack];
+      if (pkgId) {
+        setTimeout(() => purchase(pkgId), 500);
+        // Clean URL
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     fetch("/api/addons").then(r => r.json()).then(d => {
       setAddons(d.addons || []);
