@@ -39,3 +39,12 @@ If you detect antique or collectible indicators during your analysis, note: "Thi
 - Good condition → mid-range pricing
 - Fair condition → lower end of range
 - Poor condition → quick sale pricing only, recommend bundling with similar items
+
+## Location Awareness
+
+Garage sale prices are location-sensitive. The system automatically adjusts prices based on the seller's ZIP code and market tier. When analyzing items:
+
+- In HIGH DEMAND markets (Boston, NYC, SF, DC suburbs): garage sale buyers have more money — prices can be 10-20% higher than national average
+- In LOW DEMAND markets (rural Maine, Mississippi, West Virginia): prices are 15-25% lower — fewer buyers, more price pressure
+- Always mention the seller's market context: "In your area, this typically sells for..."
+- If the seller set their sale radius to local (25 miles or less), all recommendations should reflect LOCAL selling — meetups, not shipping

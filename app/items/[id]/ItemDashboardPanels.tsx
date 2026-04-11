@@ -3343,7 +3343,7 @@ function _removedGarageSaleStrip({ itemId, marketPrice, category, condition }: {
    PANEL 2: Pricing (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt, shippingPreference, sellerListingPrice }: {
+function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt, shippingPreference, sellerListingPrice, saleZip }: {
   valuation: any;
   antique: any;
   aiData: any;
@@ -3362,6 +3362,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   quotedShippingAt?: string | null;
   shippingPreference?: string;
   sellerListingPrice?: number | null;
+  saleZip?: string | null;
 }) {
   const [showCalc, setShowCalc] = useState(false);
   const [priceOpenSections, setPriceOpenSections] = useState<Set<string>>(
@@ -3377,13 +3378,13 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   const hasData = !!v;
 
   // Garage sale prices (calculated client-side from market price)
-  const [gsPrices, setGsPrices] = useState<{ garageSalePrice: number; garageSalePriceHigh: number; quickSalePrice: number; quickSalePriceHigh: number; isExempt: boolean } | null>(null);
+  const [gsPrices, setGsPrices] = useState<{ garageSalePrice: number; garageSalePriceHigh: number; quickSalePrice: number; quickSalePriceHigh: number; isExempt: boolean; locationTier: string; locationLabel: string; locationMultiplier: number } | null>(null);
   useEffect(() => {
     if (!v) return;
     const mid = v.mid ?? Math.round((v.low + v.high) / 2);
     if (mid <= 0) return;
     import("@/lib/pricing/garage-sale").then(({ calculateGarageSalePrices }) => {
-      setGsPrices(calculateGarageSalePrices(mid, (aiData as any)?.category || "", (aiData as any)?.condition_guess || "good"));
+      setGsPrices(calculateGarageSalePrices(mid, (aiData as any)?.category || "", (aiData as any)?.condition_guess || "good", saleZip ?? undefined));
     }).catch(() => {});
   }, [v, aiData]);
 
@@ -3636,7 +3637,11 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
             {/* ── IN-PERSON SELLING — right after price columns, before Local Pickup ── */}
             {gsPrices && !gsPrices.isExempt && (
               <div style={{ marginTop: "0.5rem" }}>
-                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", fontWeight: 700, marginBottom: "0.4rem", paddingLeft: "0.15rem" }}>IN-PERSON SELLING</div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem", paddingLeft: "0.15rem" }}>
+                  <span style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", fontWeight: 700 }}>IN-PERSON SELLING</span>
+                  {gsPrices.locationTier === "HIGH" && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>Strong local market</span>}
+                  {gsPrices.locationTier === "LOW" && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(245,158,11,0.1)", color: "#f59e0b" }}>Rural market adjusted</span>}
+                </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
                   <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                     <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#00bcd4", fontWeight: 600 }}>GARAGE SALE</div>
@@ -9904,6 +9909,7 @@ export default function ItemDashboardPanels({
           quotedShippingAt={shippingData?.quotedShippingAt ?? null}
           shippingPreference={shippingData?.preference ?? "BUYER_PAYS"}
           sellerListingPrice={listingPrice ?? null}
+          saleZip={saleZip}
         />
 
 

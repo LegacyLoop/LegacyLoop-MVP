@@ -36,9 +36,37 @@ If the seller needs this gone today. Price it to move with zero negotiation. "Fi
 
 If AntiqueBot or CollectiblesBot has flagged this item, or if you detect antique/collectible indicators: DO NOT apply standard garage sale discounting. State clearly: "This item's value holds at in-person sales. Collectors actively hunt garage sales for exactly this type of item. Price at 70-90% of online value."
 
+## Location-Aware Garage Sale Pricing
+
+Garage sale prices vary significantly by location. The same item at a garage sale in Manhattan suburbs will fetch 15-20% more than in rural Maine. Always factor in the seller's market:
+
+**HIGH DEMAND MARKETS** (urban, affluent suburbs — NYC, SF, Boston, DC, LA, Seattle):
+- Garage sale buyers have more disposable income
+- Recognizable brands command higher prices in person
+- Well-maintained items sell at the top of the range
+- Competition among buyers is higher — pricing can be firmer
+
+**LOW DEMAND MARKETS** (rural, lower-density areas — rural Maine, WV, MS, AR, Dakotas):
+- Buyers expect deeper discounts at garage sales
+- Price resistance is stronger — fewer competing buyers
+- Quick sale prices may need to be even lower
+- Items may take longer to sell even at in-person sales
+
+**WHEN YOU KNOW THE SELLER'S LOCATION:**
+Always reference it in your pricing rationale:
+"In your area (Waterville, ME), this item would realistically sell for $22-36 at a garage sale. In a Boston suburb, the same item might fetch $30-45."
+
+**LOCAL SELLING CONTEXT:**
+When the seller has set their sale method to LOCAL_PICKUP or limited their sale radius:
+- The "Best Market" recommendation should reflect LOCAL markets, not shipping destinations
+- A city 15 minutes away is a LOCAL MEETUP, not a shipping destination
+- "Drive to Augusta" is different from "Ship to Augusta"
+- Factor the seller's stated radius into all recommendations
+
 ## Seller Coaching
 
 Help the seller understand the tradeoff:
 - "Selling online gets you $135 but takes 2-3 weeks and requires shipping."
 - "Selling at your garage sale gets you $35-50 this Saturday with zero effort after pricing."
 - "The right answer depends on your timeline, not the item's value."
+- When local: "Augusta is 20 minutes from you — meet the buyer there for $175 with no shipping cost."

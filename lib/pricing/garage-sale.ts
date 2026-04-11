@@ -119,13 +119,61 @@ export interface GarageSalePrices {
   categoryKey: string;
   isExempt: boolean;
   conditionUsed: string;
+  locationTier: string;
+  locationLabel: string;
+  locationMultiplier: number;
 }
 
 export function calculateGarageSalePrices(
   marketPrice: number,
   category: string | null | undefined,
   condition: string | null | undefined,
+  zip?: string | null,
 ): GarageSalePrices {
+  // Import location data (same system PriceBot uses)
+  let locationMultiplier = 1.0;
+  let locationTier = "MEDIUM";
+  let locationLabel = "National average";
+  if (zip && zip.length >= 3) {
+    // Inline getMarketInfo logic to avoid circular import at module level
+    const prefix3 = zip.slice(0, 3);
+    // We can't dynamically import here (sync function), so we use a lightweight lookup
+    // The full getMarketInfo is in market-data.ts — for garage sales we apply a
+    // dampened version of the location multiplier (garage sales are more local-price-driven)
+    const HIGH: Record<string, number> = {
+      "100": 1.35, "101": 1.35, "102": 1.35, "103": 1.35, "104": 1.35,
+      "070": 1.35, "071": 1.35, "072": 1.35, "073": 1.35, "074": 1.35,
+      "940": 1.30, "941": 1.30, "943": 1.30, "944": 1.30, "945": 1.30,
+      "900": 1.25, "901": 1.25, "904": 1.25, "906": 1.25,
+      "980": 1.20, "981": 1.20,
+      "011": 1.25, "021": 1.25, "022": 1.25, "024": 1.25,
+      "606": 1.15, "607": 1.15,
+      "331": 1.20, "332": 1.20, "333": 1.20, "334": 1.20,
+      "200": 1.25, "202": 1.25, "220": 1.25, "222": 1.25,
+      "800": 1.15, "801": 1.15,
+    };
+    const LOW: Record<string, number> = {
+      "039": 0.75, "040": 0.75, "041": 0.75, "042": 0.75, "043": 0.75,
+      "044": 0.75, "045": 0.75, "046": 0.75, "047": 0.75, "048": 0.75, "049": 0.75,
+      "247": 0.70, "250": 0.70, "253": 0.70, "256": 0.70, "260": 0.70,
+      "386": 0.68, "389": 0.68, "392": 0.68,
+      "716": 0.70, "720": 0.70, "721": 0.70,
+      "574": 0.70, "575": 0.70, "576": 0.70, "587": 0.70,
+    };
+
+    if (HIGH[prefix3]) {
+      // Dampen for garage sales — high market = 10-20% more, not full 25-35%
+      locationMultiplier = 1.0 + (HIGH[prefix3] - 1.0) * 0.6;
+      locationTier = "HIGH";
+      locationLabel = "Strong local market";
+    } else if (LOW[prefix3]) {
+      // Dampen for garage sales — low market has moderate effect
+      locationMultiplier = 1.0 + (LOW[prefix3] - 1.0) * 0.7;
+      locationTier = "LOW";
+      locationLabel = "Rural/lower-density market";
+    }
+  }
+
   const categoryKey = getCategoryKey(category);
   const factor = GARAGE_SALE_FACTORS[categoryKey] ?? GARAGE_SALE_FACTORS.default;
   const conditionPos = getConditionPosition(condition);
@@ -134,15 +182,16 @@ export function calculateGarageSalePrices(
   let gsHigh: number;
 
   if (factor.flat) {
-    // Flat pricing (clothing, books, media)
-    gsLow = factor.flat.min;
-    gsHigh = factor.flat.max;
+    // Flat pricing (clothing, books, media) — location has minimal effect
+    gsLow = Math.round(factor.flat.min * locationMultiplier);
+    gsHigh = Math.round(factor.flat.max * locationMultiplier);
+    gsLow = Math.max(gsLow, factor.flat.min); // Never go below absolute minimum
   } else {
-    // Percentage-based
+    // Percentage-based — location multiplier adjusts the final price
     const range = factor.max - factor.min;
     const appliedFactor = factor.min + (range * conditionPos);
-    gsLow = Math.round(marketPrice * Math.max(0.05, appliedFactor - 0.05));
-    gsHigh = Math.round(marketPrice * Math.min(1, appliedFactor + 0.05));
+    gsLow = Math.round(marketPrice * Math.max(0.05, appliedFactor - 0.05) * locationMultiplier);
+    gsHigh = Math.round(marketPrice * Math.min(1, appliedFactor + 0.05) * locationMultiplier);
   }
 
   // Apply caps
@@ -165,5 +214,8 @@ export function calculateGarageSalePrices(
     categoryKey,
     isExempt: !!factor.exempt,
     conditionUsed: condition || "good",
+    locationTier,
+    locationLabel,
+    locationMultiplier,
   };
 }

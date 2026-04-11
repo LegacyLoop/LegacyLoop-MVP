@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "No market price available. Run PriceBot first." }, { status: 400 });
     }
 
-    const prices = calculateGarageSalePrices(marketPrice, item.category, (item as any).conditionGrade || item.condition);
+    const prices = calculateGarageSalePrices(marketPrice, item.category, (item as any).conditionGrade || item.condition, (item as any).saleZip);
 
     await prisma.item.update({
       where: { id: itemId },

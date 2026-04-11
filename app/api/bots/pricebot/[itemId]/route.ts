@@ -673,7 +673,7 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
       const revisedMid = (pricebotResult as any)?.price_validation?.revised_mid;
       const marketPrice = revisedMid || (item as any).valuation?.mid || Math.round(((item as any).valuation?.low + (item as any).valuation?.high) / 2) || 0;
       if (marketPrice > 0) {
-        const gsPrices = calculateGarageSalePrices(marketPrice, category, (item as any).conditionGrade || (item as any).condition || "good");
+        const gsPrices = calculateGarageSalePrices(marketPrice, category, (item as any).conditionGrade || (item as any).condition || "good", sellerZip);
         prisma.item.update({ where: { id: itemId }, data: {
           garageSalePrice: gsPrices.garageSalePrice,
           garageSalePriceHigh: gsPrices.garageSalePriceHigh,
