@@ -48,7 +48,7 @@ const MARKETPLACES: CardDef[] = [
 ];
 
 const PAYMENTS: CardDef[] = [
-  { key: "square",   name: "Square",        color: "#00bcd4", purpose: "Payment processing, buyer checkout", icon: "Sq" },
+  { key: "stripe",   name: "Stripe",        color: "#00bcd4", purpose: "Payment processing, buyer checkout", icon: "St" },
   { key: "paypal",   name: "PayPal",       color: "#003087", purpose: "Alternative payment collection", icon: "PP" },
   { key: "bank_ach", name: "Bank (ACH)",   color: "#00bcd4", purpose: "Direct deposit of earnings", icon: "$$" },
   { key: "venmo",    name: "Venmo",        color: "#3d95ce", purpose: "Person-to-person payments", icon: "V" },

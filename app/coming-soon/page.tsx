@@ -17,7 +17,7 @@ const MARKETPLACE_GROUPS = [
   {
     label: "Point-of-Sale Systems",
     platforms: [
-      { icon: "🏪", name: "Square POS", desc: "Catalog sync, inventory, payments", status: "In Development" },
+      { icon: "🏪", name: "Stripe POS", desc: "Catalog sync, inventory, payments", status: "In Development" },
       { icon: "💳", name: "Stripe", desc: "Product catalog, checkout, subscriptions", status: "In Development" },
       { icon: "🍀", name: "Clover POS", desc: "Menu sync, inventory management", status: "Planned" },
     ],
@@ -80,7 +80,7 @@ const PHASES = [
     label: "Phase 1 — Launching Now",
     borderColor: "#00bcd4",
     features: [
-      { icon: "🏪", title: "POS / Catalog Sync", desc: "Sync inventory directly to Square, Stripe, and other POS systems. Categories, pricing, and photos transfer automatically.", status: "In Development" },
+      { icon: "🏪", title: "POS / Catalog Sync", desc: "Sync inventory directly to Stripe and other POS systems. Categories, pricing, and photos transfer automatically.", status: "In Development" },
       { icon: "🔌", title: "Marketplace Connector SDK", desc: "The foundational API layer powering all marketplace integrations. REST endpoints, webhook delivery, and OAuth2 flows.", status: "In Development" },
       { icon: "📣", title: "Auto-Post to Platforms", desc: "One-click cross-posting to Facebook Marketplace, eBay, Craigslist, OfferUp, and 9 more platforms.", status: "In Development" },
       { icon: "🚚", title: "Advanced Shipping TMS", desc: "Full transportation management with LTL freight, white-glove delivery, and real-time tracking across all carriers.", status: "Beta" },
@@ -104,7 +104,7 @@ const PHASES = [
     features: [
       { icon: "🤖", title: "Full AI Support Workforce", desc: "AI-powered agents handle buyer inquiries, scheduling, and negotiations 24/7 across every platform.", status: "Exploring" },
       { icon: "📱", title: "Employee Operations Apps", desc: "Field tools for estate sale teams — check-in, inventory, cashiering, and real-time reporting.", status: "Exploring" },
-      { icon: "🔄", title: "Bidirectional POS Sync", desc: "Full two-way sync with Square/Stripe catalogs — real-time inventory, pricing, and sales data.", status: "Exploring" },
+      { icon: "🔄", title: "Bidirectional POS Sync", desc: "Full two-way sync with Stripe catalogs — real-time inventory, pricing, and sales data.", status: "Exploring" },
       { icon: "🌍", title: "National Marketplace", desc: "Browse and buy estate sale items from anywhere in the country with AI-verified listings.", status: "Exploring" },
       { icon: "🏢", title: "Enterprise & Franchise API", desc: "Multi-location estate sale companies manage everything through our API. White-label storefronts.", status: "Exploring" },
     ],

@@ -154,7 +154,7 @@ export default function PrivacyPage() {
             support inquiries, and feedback
           </li>
           <li>
-            <strong>Payment information:</strong> Processed securely via Square
+            <strong>Payment information:</strong> Processed securely via Stripe
             &mdash; we do not store your credit card details
           </li>
         </ul>
@@ -214,7 +214,7 @@ export default function PrivacyPage() {
             comparables
           </li>
           <li>
-            <strong>Square:</strong> Payment confirmation and transaction status
+            <strong>Stripe:</strong> Payment confirmation and transaction status
           </li>
         </ul>
       </div>
@@ -491,7 +491,7 @@ export default function PrivacyPage() {
           }}
         >
           <li>
-            <strong>Service providers:</strong> Square (payments), Resend
+            <strong>Service providers:</strong> Stripe (payments), Resend
             (email), Shippo (shipping), and Supabase (infrastructure) &mdash;
             only as necessary to provide the Service
           </li>

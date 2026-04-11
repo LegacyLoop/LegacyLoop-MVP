@@ -43,10 +43,10 @@ export async function GET() {
         balance: { available: 247.50, pending: 89.00, totalEarned: 336.50, totalCommissions: 28.12 },
         commissionPct,
         payouts: [
-          { id: "demo-1", date: "2026-02-28", itemName: "Vintage Rolex Submariner", salePrice: 185.00, commission: 14.80, processingFee: 6.48, net: 170.20, status: "completed", method: "Square Transfer" },
-          { id: "demo-2", date: "2026-02-25", itemName: "Sterling Silver Tea Service", salePrice: 95.00, commission: 7.60, processingFee: 3.33, net: 87.40, status: "completed", method: "Square Transfer" },
-          { id: "demo-3", date: "2026-03-01", itemName: "Fender Stratocaster Guitar", salePrice: 120.00, commission: 9.60, processingFee: 4.20, net: 110.40, status: "pending", method: "Square Transfer" },
-          { id: "demo-4", date: "2026-03-02", itemName: "Royal Albert Bone China Set", salePrice: 65.00, commission: 5.20, processingFee: 2.28, net: 59.80, status: "pending", method: "Square Transfer" },
+          { id: "demo-1", date: "2026-02-28", itemName: "Vintage Rolex Submariner", salePrice: 185.00, commission: 14.80, processingFee: 6.48, net: 170.20, status: "completed", method: "Stripe Transfer" },
+          { id: "demo-2", date: "2026-02-25", itemName: "Sterling Silver Tea Service", salePrice: 95.00, commission: 7.60, processingFee: 3.33, net: 87.40, status: "completed", method: "Stripe Transfer" },
+          { id: "demo-3", date: "2026-03-01", itemName: "Fender Stratocaster Guitar", salePrice: 120.00, commission: 9.60, processingFee: 4.20, net: 110.40, status: "pending", method: "Stripe Transfer" },
+          { id: "demo-4", date: "2026-03-02", itemName: "Royal Albert Bone China Set", salePrice: 65.00, commission: 5.20, processingFee: 2.28, net: 59.80, status: "pending", method: "Stripe Transfer" },
         ],
       });
     }
@@ -67,7 +67,7 @@ export async function GET() {
       processingFee: Math.round(e.saleAmount * 0.035 * 100) / 100,
       net: e.netEarnings,
       status: e.status,
-      method: "Square Transfer",
+      method: "Stripe Transfer",
     }));
 
     return NextResponse.json({

@@ -211,7 +211,7 @@ export default async function PaymentSuccessPage({
             color: "var(--text-muted)",
             lineHeight: 1.5,
           }}>
-            A {PROCESSING_FEE.display} processing fee is charged to the buyer on all transactions by our payment provider (Square).
+            A {PROCESSING_FEE.display} processing fee is charged to the buyer on all transactions by our payment provider (Stripe).
           </div>
         )}
       </div>

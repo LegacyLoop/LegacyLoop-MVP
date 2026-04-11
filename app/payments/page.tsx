@@ -1207,7 +1207,7 @@ export default async function PaymentsPage() {
               }}
             >
               Commission is deducted only when items sell. The {PROCESSING_FEE.display} processing
-              fee is charged to the buyer by our payment provider (Square).
+              fee is charged to the buyer by our payment provider (Stripe).
             </div>
 
             {/* All tier rates */}
@@ -1276,7 +1276,7 @@ export default async function PaymentsPage() {
             </Link>
           </div>
 
-          {/* Square Payments */}
+          {/* Stripe Payments */}
           <div
             style={{
               borderRadius: "1rem",
@@ -1301,7 +1301,7 @@ export default async function PaymentsPage() {
                   color: "var(--text-primary)",
                 }}
               >
-                Square Payments
+                Stripe Payments
               </span>
               <span
                 style={{
@@ -1325,7 +1325,7 @@ export default async function PaymentsPage() {
                 marginBottom: "0.75rem",
               }}
             >
-              Square handles all checkout securely. The{" "}
+              Stripe handles all checkout securely. The{" "}
               {(PROCESSING_FEE.rate * 100).toFixed(1)}% processing fee is
               transparently added at checkout.
             </p>
@@ -1339,7 +1339,7 @@ export default async function PaymentsPage() {
                 fontSize: "0.78rem",
               }}
             >
-              View Square Dashboard
+              View Stripe Dashboard
             </button>
           </div>
         </div>

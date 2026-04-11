@@ -353,7 +353,7 @@ To Upgrade Your Plan:
 1. Visit the /pricing page by clicking "Pricing" in the navigation bar or going directly to the URL.
 2. Compare the four tiers side by side. Each tier shows the monthly price, item limits, photo limits, which bots are available, and special features.
 3. Click "Choose Plan" on the tier you want.
-4. Enter your payment information if you have not already. LegacyLoop processes payments through Square.
+4. Enter your payment information if you have not already. LegacyLoop processes payments through Stripe.
 5. Your upgrade takes effect immediately. You get instant access to all the new features and higher limits.
 
 When you upgrade mid-billing-cycle, you are charged a prorated amount for the remainder of the current period. So if you upgrade halfway through the month, you only pay half the difference.
@@ -1184,7 +1184,7 @@ Tip: If you are not sure which tier you need, start with a phone consultation. W
       "How to avoid scams, verify buyers, and keep your personal information secure when selling online.",
     content: `Selling online is safe when you follow a few important guidelines. LegacyLoop builds in protections, but being aware of common risks keeps you even safer. Here is what you need to know.
 
-Use LegacyLoop's Payment System: When a buyer purchases through LegacyLoop, payment is processed securely by Square and held in escrow until delivery is confirmed. This protects you from fake payments and protects the buyer from non-delivery. Never accept payment outside the platform for shipped items.
+Use LegacyLoop's Payment System: When a buyer purchases through LegacyLoop, payment is processed securely by Stripe and held in escrow until delivery is confirmed. This protects you from fake payments and protects the buyer from non-delivery. Never accept payment outside the platform for shipped items.
 
 Watch for Common Scams:
 - Overpayment scams: A buyer sends more than the asking price and asks you to refund the difference. This is always a scam. Decline and report the buyer.

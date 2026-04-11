@@ -419,7 +419,7 @@ export default function TermsPage() {
           }}
         >
           <li>
-            All payments are processed securely through Square, Inc. in
+            All payments are processed securely through Stripe, Inc. in
             accordance with PCI-DSS standards.
           </li>
           <li>
