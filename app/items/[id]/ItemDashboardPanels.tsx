@@ -3252,6 +3252,92 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
 }
 
 /* ═══════════════════════════════════════════
+   GARAGE SALE PRICE STRIP
+   ═══════════════════════════════════════════ */
+
+function GarageSalePriceStrip({ itemId, marketPrice, category, condition }: { itemId: string; marketPrice: number; category: string; condition: string }) {
+  const [prices, setPrices] = useState<{ garageSalePrice: number; garageSalePriceHigh: number; quickSalePrice: number; quickSalePriceHigh: number; isExempt: boolean } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!marketPrice || marketPrice <= 0) return;
+    // Calculate client-side for instant display (same logic as server)
+    import("@/lib/pricing/garage-sale").then(({ calculateGarageSalePrices }) => {
+      const p = calculateGarageSalePrices(marketPrice, category, condition);
+      setPrices(p);
+    }).catch(() => {});
+  }, [marketPrice, category, condition]);
+
+  if (!prices) return null;
+
+  const priceCardStyle = (accent: string, featured?: boolean): React.CSSProperties => ({
+    flex: 1,
+    minWidth: "160px",
+    padding: featured ? "1.25rem 1rem" : "1rem",
+    borderRadius: 14,
+    background: featured ? `rgba(0,188,212,0.06)` : "rgba(255,255,255,0.02)",
+    border: featured ? "1.5px solid rgba(0,188,212,0.25)" : "1px solid rgba(255,255,255,0.06)",
+    textAlign: "center" as const,
+    position: "relative" as const,
+  });
+
+  return (
+    <div style={{
+      background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 16,
+      padding: "1.25rem", marginBottom: "0.75rem",
+      boxShadow: "0 2px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
+        <span style={{ fontSize: "1.1rem" }}>🏷️</span>
+        <span style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--text-primary)" }}>Selling Price Guide</span>
+        {prices.isExempt && (
+          <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 8px", borderRadius: 8, background: "rgba(212,175,55,0.12)", color: "#D4AF37", border: "1px solid rgba(212,175,55,0.2)" }}>
+            COLLECTIBLE — VALUE HOLDS
+          </span>
+        )}
+      </div>
+
+      <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+        {/* Online Marketplace */}
+        <div style={priceCardStyle("#8b949e")}>
+          <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.35rem" }}>SELL ONLINE</div>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: "'Barlow Condensed', sans-serif" }}>
+            ${marketPrice.toLocaleString()}
+          </div>
+          <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>eBay · Facebook · Our Network</div>
+          <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>1–4 weeks</div>
+        </div>
+
+        {/* Garage Sale — FEATURED */}
+        <div style={priceCardStyle("#00bcd4", true)}>
+          <div style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", fontSize: "0.5rem", fontWeight: 700, padding: "1px 8px", borderRadius: 6, background: "var(--accent)", color: "#fff", whiteSpace: "nowrap" }}>THIS WEEKEND</div>
+          <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.35rem" }}>GARAGE SALE</div>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.02em", fontFamily: "'Barlow Condensed', sans-serif" }}>
+            ${prices.garageSalePrice} – ${prices.garageSalePriceHigh}
+          </div>
+          <div style={{ fontSize: "0.6rem", color: "var(--text-secondary)", marginTop: "0.2rem" }}>What buyers will pay in person</div>
+          <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>Saturday morning</div>
+        </div>
+
+        {/* Quick Sale */}
+        <div style={priceCardStyle("#1D9E75")}>
+          <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "#1D9E75", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.35rem" }}>QUICK SALE</div>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1D9E75", letterSpacing: "-0.02em", fontFamily: "'Barlow Condensed', sans-serif" }}>
+            ${prices.quickSalePrice} – ${prices.quickSalePriceHigh}
+          </div>
+          <div style={{ fontSize: "0.6rem", color: "var(--text-secondary)", marginTop: "0.2rem" }}>Price it to move. No waiting.</div>
+          <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>Gone today</div>
+        </div>
+      </div>
+
+      <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", textAlign: "center", marginTop: "0.75rem" }}>
+        Based on {condition || "good"} condition · {category || "general"} category · marketplace comparable sales
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
    PANEL 2: Pricing (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
@@ -9775,6 +9861,16 @@ export default function ItemDashboardPanels({
           shippingPreference={shippingData?.preference ?? "BUYER_PAYS"}
           sellerListingPrice={listingPrice ?? null}
         />
+
+        {/* ── SELLING PRICE GUIDE — three-price strip ── */}
+        {valuation && (
+          <GarageSalePriceStrip
+            itemId={itemId}
+            marketPrice={valuation.mid ?? Math.round((valuation.low + valuation.high) / 2)}
+            category={category}
+            condition={(aiData as any)?.condition_guess || "good"}
+          />
+        )}
 
         {/* Shipping */}
         <div id="shipping-panel">

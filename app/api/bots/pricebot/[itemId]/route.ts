@@ -668,6 +668,22 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
     // Fire-and-forget: create structured PriceSnapshot via populate function
     populateFromPriceBot(itemId, pricebotResult as Record<string, unknown>).catch(() => null);
 
+    // Fire-and-forget: calculate garage sale prices from the market price
+    import("@/lib/pricing/garage-sale").then(({ calculateGarageSalePrices }) => {
+      const revisedMid = (pricebotResult as any)?.price_validation?.revised_mid;
+      const marketPrice = revisedMid || (item as any).valuation?.mid || Math.round(((item as any).valuation?.low + (item as any).valuation?.high) / 2) || 0;
+      if (marketPrice > 0) {
+        const gsPrices = calculateGarageSalePrices(marketPrice, category, (item as any).conditionGrade || (item as any).condition || "good");
+        prisma.item.update({ where: { id: itemId }, data: {
+          garageSalePrice: gsPrices.garageSalePrice,
+          garageSalePriceHigh: gsPrices.garageSalePriceHigh,
+          quickSalePrice: gsPrices.quickSalePrice,
+          quickSalePriceHigh: gsPrices.quickSalePriceHigh,
+          garageSaleCalcAt: new Date(),
+        }}).catch(() => null);
+      }
+    }).catch(() => null);
+
     // Fire-and-forget: log user event
     logUserEvent(user.id, "BOT_RUN", { itemId, metadata: { botType: "PRICEBOT", success: true } }).catch(() => null);
 

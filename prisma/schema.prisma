@@ -470,7 +470,12 @@ model Item {
   maker             String?
   itemStyle         String?
   countryOfOrigin   String?
-  conditionGrade    String?
+  conditionGrade      String?
+  garageSalePrice     Float?
+  garageSalePriceHigh Float?
+  quickSalePrice      Float?
+  quickSalePriceHigh  Float?
+  garageSaleCalcAt    DateTime?
 
   // ── Financial Truth Fields ──
   soldPrice         Int?
