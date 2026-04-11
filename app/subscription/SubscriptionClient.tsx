@@ -874,7 +874,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
         {/* Tab selector */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "2rem" }}>
           <div style={{ display: "inline-flex", background: "var(--bg-card)", border: "1px solid var(--accent-dim)", borderRadius: 28, padding: "4px" }}>
-            {["Estate Sale Services", "Neighborhood Bundle"].map((label, i) => (
+            {["Estate Sale Services", "Estate Care Plans", "Neighborhood Bundle"].map((label, i) => (
               <button
                 key={label}
                 onClick={() => setActiveSlide(i)}
@@ -909,6 +909,14 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
             left: 0,
             width: "100%",
           }}>
+            {/* Section intro */}
+            <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+              <div style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.35rem" }}>One-Time Estate Sale</div>
+              <div style={{ fontSize: "0.88rem", color: "var(--text-secondary)", maxWidth: 480, margin: "0 auto", lineHeight: 1.5 }}>
+                We handle everything from start to finish. One project. One flat fee. Done.
+              </div>
+            </div>
+
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem" }}>
               {WG_CARDS.map((card) => {
                 const wg = WHITE_GLOVE[card.key];
@@ -934,26 +942,147 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                       </div>
                     ))}
 
-                    <button onClick={() => window.location.href = `/quote?tier=${card.key}`} style={{ background: "transparent", border: `1px solid ${card.accent}`, borderRadius: 12, padding: "0.75rem 1.5rem", color: card.accent, fontWeight: 700, fontSize: "0.88rem", cursor: "pointer", width: "100%", marginTop: "1.25rem", transition: "all 0.2s ease" }}>
+                    <a href={`mailto:support@legacy-loop.com?subject=${encodeURIComponent(`White Glove ${wg.name} Inquiry`)}`} style={{ display: "block", textAlign: "center", background: "transparent", border: `1px solid ${card.accent}`, borderRadius: 12, padding: "0.75rem 1.5rem", color: card.accent, fontWeight: 700, fontSize: "0.88rem", textDecoration: "none", width: "100%", marginTop: "1.25rem", transition: "all 0.2s ease", boxSizing: "border-box" }}>
                       {card.cta}
-                    </button>
+                    </a>
                   </div>
                 );
               })}
             </div>
+
+            {/* Contact CTA */}
+            <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+              <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>Not sure which service is right for you?</div>
+              <a href="mailto:support@legacy-loop.com?subject=Estate%20Services%20Question" style={{ color: "#D4AF37", fontSize: "0.88rem", fontWeight: 600, textDecoration: "none" }}>
+                Email Our Estate Team →
+              </a>
+            </div>
           </div>
 
-          {/* Slide 1 — Neighborhood Bundle */}
+          {/* Slide 1 — Estate Care Plans */}
           <div style={{
             opacity: activeSlide === 1 ? 1 : 0,
-            transform: activeSlide === 1 ? "translateX(0)" : "translateX(30px)",
+            transform: activeSlide === 1 ? "translateX(0)" : `translateX(${activeSlide === 0 ? "30px" : "-30px"})`,
             transition: "opacity 0.4s ease, transform 0.4s ease",
             pointerEvents: activeSlide === 1 ? "auto" : "none",
             position: activeSlide === 1 ? "relative" : "absolute",
+            top: 0, left: 0, width: "100%",
+          }}>
+            {/* Section intro */}
+            <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+              <div style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.35rem" }}>Ongoing Estate Management</div>
+              <div style={{ fontSize: "0.88rem", color: "var(--text-secondary)", maxWidth: 480, margin: "0 auto", lineHeight: 1.5 }}>
+                Need help over several months? We stay by your side the whole time.
+              </div>
+            </div>
+
+            {/* Who is this for */}
+            <div style={{ background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: 12, padding: "0.85rem 1.25rem", marginBottom: "1.5rem", textAlign: "center" }}>
+              <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                Perfect if you have a parent downsizing slowly, an estate too large for one sale, or items you want to sell over time — not all at once.
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1.5rem" }}>
+              {/* Monthly */}
+              <div style={{ background: "var(--bg-card)", backdropFilter: "blur(16px)", border: "1px solid var(--border-default)", borderRadius: 20, padding: "1.75rem", transition: "transform 0.25s ease, box-shadow 0.25s ease", boxShadow: "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px var(--accent-dim)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)"; }}
+              >
+                <div style={{ borderLeft: "3px solid var(--accent)", paddingLeft: "1rem", marginBottom: "1rem" }}>
+                  <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.05rem" }}>Month-to-Month Care</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "0.25rem", marginTop: "0.25rem" }}>
+                    <span style={{ color: "var(--accent)", fontWeight: 800, fontSize: "2rem" }}>$149</span>
+                    <span style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>/mo</span>
+                    <span style={{ color: "var(--text-muted)", fontSize: "0.9rem", textDecoration: "line-through", marginLeft: "0.5rem" }}>$299/mo</span>
+                  </div>
+                </div>
+                <div style={{ color: "var(--text-secondary)", fontSize: "0.82rem", marginBottom: "1rem", lineHeight: 1.5 }}>
+                  We manage and sell your items every month. Cancel anytime — no long-term commitment.
+                </div>
+                <a href="mailto:support@legacy-loop.com?subject=Monthly%20Estate%20Care%20Inquiry" style={{ display: "block", textAlign: "center", background: "transparent", border: "1px solid var(--accent)", borderRadius: 12, padding: "0.75rem 1.5rem", color: "var(--accent)", fontWeight: 700, fontSize: "0.88rem", textDecoration: "none", transition: "all 0.2s ease" }}>
+                  Get Started
+                </a>
+              </div>
+
+              {/* 3-Month */}
+              <div style={{ background: "var(--accent-dim)", backdropFilter: "blur(16px)", border: "2px solid var(--accent-glow)", borderRadius: 20, padding: "2.25rem 1.75rem 1.75rem", position: "relative", overflow: "visible", transition: "transform 0.25s ease, box-shadow 0.25s ease", boxShadow: "0 8px 32px var(--accent-dim), inset 0 1px 0 rgba(255,255,255,0.06)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px var(--accent-dim)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 32px var(--accent-dim)"; }}
+              >
+                <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "white", borderRadius: 20, padding: "0.3rem 1.25rem", fontSize: "0.72rem", fontWeight: 700, whiteSpace: "nowrap", letterSpacing: "0.06em", boxShadow: "0 2px 12px var(--accent-glow)", zIndex: 10 }}>BEST VALUE</div>
+                <div style={{ borderLeft: "3px solid var(--accent)", paddingLeft: "1rem", marginBottom: "1rem" }}>
+                  <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.05rem" }}>3-Month Package</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "0.25rem", marginTop: "0.25rem" }}>
+                    <span style={{ color: "var(--accent)", fontWeight: 800, fontSize: "2rem" }}>$399</span>
+                    <span style={{ color: "var(--text-muted)", fontSize: "0.9rem", textDecoration: "line-through", marginLeft: "0.5rem" }}>$799</span>
+                  </div>
+                </div>
+                <div style={{ color: "var(--text-secondary)", fontSize: "0.82rem", marginBottom: "1rem", lineHeight: 1.5 }}>
+                  Three months of dedicated estate management. Best for medium-sized transitions.
+                </div>
+                <a href="mailto:support@legacy-loop.com?subject=3-Month%20Estate%20Care%20Package%20Inquiry" style={{ display: "block", textAlign: "center", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", border: "none", borderRadius: 12, padding: "0.75rem 1.5rem", color: "white", fontWeight: 700, fontSize: "0.88rem", textDecoration: "none", boxShadow: "0 4px 16px var(--accent-border)", transition: "all 0.2s ease" }}>
+                  Get Started
+                </a>
+              </div>
+
+              {/* Full Resolution */}
+              <div style={{ background: "var(--bg-card)", backdropFilter: "blur(16px)", border: "1px solid var(--border-default)", borderRadius: 20, padding: "2.25rem 1.75rem 1.75rem", position: "relative", overflow: "visible", transition: "transform 0.25s ease, box-shadow 0.25s ease", boxShadow: "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)" }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px var(--accent-dim)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)"; }}
+              >
+                <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "rgba(212,175,55,0.9)", color: "#fff", borderRadius: 20, padding: "0.3rem 1.25rem", fontSize: "0.72rem", fontWeight: 700, whiteSpace: "nowrap", letterSpacing: "0.06em", boxShadow: "0 2px 12px rgba(212,175,55,0.3)", zIndex: 10 }}>MOST COMPREHENSIVE</div>
+                <div style={{ borderLeft: "3px solid #D4AF37", paddingLeft: "1rem", marginBottom: "1rem" }}>
+                  <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.05rem" }}>Full Resolution — 6 Months</div>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "0.25rem", marginTop: "0.25rem" }}>
+                    <span style={{ color: "#D4AF37", fontWeight: 800, fontSize: "2rem" }}>$999</span>
+                    <span style={{ color: "var(--text-muted)", fontSize: "0.9rem", textDecoration: "line-through", marginLeft: "0.5rem" }}>$1,999</span>
+                  </div>
+                </div>
+                <div style={{ color: "var(--text-secondary)", fontSize: "0.82rem", marginBottom: "1rem", lineHeight: 1.5 }}>
+                  Six full months. We don{"'"}t stop until everything is resolved and sold.
+                </div>
+                <a href="mailto:support@legacy-loop.com?subject=Full%20Estate%20Resolution%20Inquiry" style={{ display: "block", textAlign: "center", background: "transparent", border: "1px solid #D4AF37", borderRadius: 12, padding: "0.75rem 1.5rem", color: "#D4AF37", fontWeight: 700, fontSize: "0.88rem", textDecoration: "none", transition: "all 0.2s ease" }}>
+                  Get Started
+                </a>
+              </div>
+            </div>
+
+            {/* Contact CTA */}
+            <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
+              <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>Not sure which plan is right for you?</div>
+              <a href="mailto:support@legacy-loop.com?subject=Estate%20Care%20Plan%20Question" style={{ color: "var(--accent)", fontSize: "0.88rem", fontWeight: 600, textDecoration: "none" }}>
+                Talk to our estate team — we{"'"}ll help you find the right fit →
+              </a>
+            </div>
+          </div>
+
+          {/* Slide 2 — Neighborhood Bundle */}
+          <div style={{
+            opacity: activeSlide === 2 ? 1 : 0,
+            transform: activeSlide === 2 ? "translateX(0)" : "translateX(30px)",
+            transition: "opacity 0.4s ease, transform 0.4s ease",
+            pointerEvents: activeSlide === 2 ? "auto" : "none",
+            position: activeSlide === 2 ? "relative" : "absolute",
             top: 0,
             left: 0,
             width: "100%",
           }}>
+            {/* Section intro */}
+            <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
+              <div style={{ fontSize: "1.15rem", fontWeight: 800, color: "var(--text-primary)", marginBottom: "0.35rem" }}>Community Sale Event</div>
+              <div style={{ fontSize: "0.88rem", color: "var(--text-secondary)", maxWidth: 480, margin: "0 auto", lineHeight: 1.5 }}>
+                Sell together with your neighbors as one coordinated event.
+              </div>
+            </div>
+
+            {/* Who is this for */}
+            <div style={{ background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: 12, padding: "0.85rem 1.25rem", marginBottom: "1.5rem", textAlign: "center", maxWidth: 640, margin: "0 auto 1.5rem" }}>
+              <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+                Selling with neighbors? A Neighborhood Bundle lets 2 to 8 families sell together in one coordinated community sale event. Better reach. Lower cost. More buyers.
+              </div>
+            </div>
+
             <div style={{ maxWidth: 640, margin: "0 auto" }}>
               <div style={{ background: "var(--accent-dim)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid var(--accent-glow)", borderRadius: 20, padding: "2.5rem", position: "relative", overflow: "hidden" }}>
                 {/* Decorative glow */}
@@ -989,9 +1118,9 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                     </div>
                   </div>
 
-                  <button onClick={() => window.location.href = "/services/neighborhood-bundle"} style={{ background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", border: "none", borderRadius: 12, padding: "0.85rem 2rem", color: "white", fontWeight: 700, fontSize: "0.95rem", cursor: "pointer", width: "100%", boxShadow: "0 4px 20px var(--accent-border)", transition: "all 0.2s ease" }}>
+                  <a href="mailto:support@legacy-loop.com?subject=Neighborhood%20Bundle%20Inquiry" style={{ display: "block", textAlign: "center", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", border: "none", borderRadius: 12, padding: "0.85rem 2rem", color: "white", fontWeight: 700, fontSize: "0.95rem", textDecoration: "none", width: "100%", boxShadow: "0 4px 20px var(--accent-border)", transition: "all 0.2s ease", boxSizing: "border-box" }}>
                     Start a Neighborhood Bundle
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -1000,7 +1129,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
 
         {/* Navigation dots */}
         <div style={{ display: "flex", justifyContent: "center", gap: "0.5rem", marginTop: "1.5rem" }}>
-          {[0, 1].map((i) => (
+          {[0, 1, 2].map((i) => (
             <button
               key={i}
               onClick={() => setActiveSlide(i)}

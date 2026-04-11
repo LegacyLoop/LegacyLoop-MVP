@@ -61,6 +61,7 @@ model User {
   subscriptions         Subscription[]
   whiteGloveProjects    WhiteGloveProject[]
   whiteGloveBookings    WhiteGloveBooking[]
+  estateCareContracts   EstateCareContract[]
   credits               UserCredits?
   connectedPlatforms    ConnectedPlatform[]
   referralsSent         Referral[]
@@ -254,6 +255,27 @@ model WhiteGloveBooking {
   internalNotes           String?
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model EstateCareContract {
+  id                   String    @id @default(cuid())
+  userId               String
+  user                 User      @relation(fields: [userId], references: [id])
+  contractType         String    // MONTHLY | THREE_MONTH | FULL_RESOLUTION
+  totalAmount          Float
+  prelaunchPricing     Boolean   @default(true)
+  heroesDiscount       Boolean   @default(false)
+  stripeSubscriptionId String?   @unique
+  stripePaymentId      String?
+  status               String    @default("ACTIVE") // ACTIVE | CANCELLED | COMPLETED
+  startedAt            DateTime  @default(now())
+  endsAt               DateTime?
+  cancelledAt          DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   @@index([userId])
   @@index([status])

@@ -244,9 +244,18 @@ export async function POST(req: NextRequest) {
           }).catch(() => {});
 
           // Fire WF21 on renewal (not first payment)
-          if (billingReason === "subscription_cycle") {
+          // Fire WF21 on subscription renewal (not estate care)
+          if (billingReason === "subscription_cycle" && subMeta.legacyloop_type !== "estate_care") {
             const firstName = user.displayName?.split(" ")[0] ?? "there";
             n8nRenewalReminder(user.email, firstName, tier, periodEnd.toISOString(), price);
+          }
+
+          // Estate Care monthly renewal — confirm contract still active
+          if (subMeta.legacyloop_type === "estate_care" && stripeSubId) {
+            await prisma.estateCareContract.updateMany({
+              where: { stripeSubscriptionId: stripeSubId, status: "ACTIVE" },
+              data: { updatedAt: new Date() },
+            }).catch(() => {});
           }
         }
       }
