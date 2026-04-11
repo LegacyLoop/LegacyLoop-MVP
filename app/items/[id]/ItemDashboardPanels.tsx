@@ -275,6 +275,8 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
           <div style={hS}><div style={hSL}>Confidence</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data?.confidence != null ? `${Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%` : "?"}</div></div>
           {data?.demand && <div style={hS}><div style={hSL}>Demand</div><div style={{ ...hSV, color: data.demand === "High" || data.demand === "Strong" || data.demand === "high" ? "#22c55e" : data.demand === "Low" || data.demand === "low" ? "#ef4444" : "#f59e0b" }}>{data.demand}</div></div>}
           {data?.netPayout && <div style={hS}><div style={hSL}>You Keep</div><div style={{ ...hSV, color: "#22c55e" }}>${Math.round(data.netPayout)}</div></div>}
+          {data?.garageSale && <div style={hS}><div style={hSL}>Garage Sale</div><div style={{ ...hSV, color: "var(--accent)" }}>{data.garageSale}</div></div>}
+          {data?.quickSale && <div style={hS}><div style={hSL}>Quick Sale</div><div style={{ ...hSV, color: "#1D9E75" }}>{data.quickSale}</div></div>}
         </div>
         {megaData && <span style={hM}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
       </div>
@@ -3252,10 +3254,10 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
 }
 
 /* ═══════════════════════════════════════════
-   GARAGE SALE PRICE STRIP
+   PANEL 2: Pricing (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function GarageSalePriceStrip({ itemId, marketPrice, category, condition }: { itemId: string; marketPrice: number; category: string; condition: string }) {
+function _removedGarageSaleStrip({ itemId, marketPrice, category, condition }: { itemId: string; marketPrice: number; category: string; condition: string }) {
   const [prices, setPrices] = useState<{ garageSalePrice: number; garageSalePriceHigh: number; quickSalePrice: number; quickSalePriceHigh: number; isExempt: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -3374,6 +3376,17 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   };
   const hasData = !!v;
 
+  // Garage sale prices (calculated client-side from market price)
+  const [gsPrices, setGsPrices] = useState<{ garageSalePrice: number; garageSalePriceHigh: number; quickSalePrice: number; quickSalePriceHigh: number; isExempt: boolean } | null>(null);
+  useEffect(() => {
+    if (!v) return;
+    const mid = v.mid ?? Math.round((v.low + v.high) / 2);
+    if (mid <= 0) return;
+    import("@/lib/pricing/garage-sale").then(({ calculateGarageSalePrices }) => {
+      setGsPrices(calculateGarageSalePrices(mid, (aiData as any)?.category || "", (aiData as any)?.condition_guess || "good"));
+    }).catch(() => {});
+  }, [v, aiData]);
+
   // Parse extended pricing from onlineRationale
   let pr: any = null;
   if (v?.onlineRationale) {
@@ -3422,10 +3435,10 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
     ? Math.max(95, Math.round((_aiWeight ?? 100) * 1.5 + 100))
     : null;
 
-  // Recalculate seller net + tip using CURRENT user tier (not stale analysis-time tier)
+  // Commission rate at panel level (used by garage sale section + net payout)
   const COMMISSION_RATES: Record<number, number> = { 1: 0.12, 2: 0.10, 3: 0.08, 4: 0.04 };
+  const commRate = COMMISSION_RATES[userTier] ?? 0.12;
   if (pr) {
-    const commRate = COMMISSION_RATES[userTier] ?? 0.12;
     const commPct = Math.round(commRate * 100);
 
     const localMid = pr.localPrice?.mid ?? 0;
@@ -3484,7 +3497,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
         preview={hasData ? `$${Math.round(v.low)} – $${Math.round(v.high)} · ${v.source || "AI estimate"}` : "Awaiting analysis"}
       />
 
-      {collapsed && hasData && <CollapsedSummary botType="pricing" data={{ low: v.low, high: v.high, confidence: v.confidence, demand: pr?.regionalIntel?.localDemand || null, netPayout: pr?.sellerNet?.local || null }} megaData={boosted ? boostResult : undefined} buttons={<>
+      {collapsed && hasData && <CollapsedSummary botType="pricing" data={{ low: v.low, high: v.high, confidence: v.confidence, demand: pr?.regionalIntel?.localDemand || null, netPayout: pr?.sellerNet?.local || null, garageSale: gsPrices ? `$${gsPrices.garageSalePrice}–${gsPrices.garageSalePriceHigh}` : null, quickSale: gsPrices ? `$${gsPrices.quickSalePrice}–${gsPrices.quickSalePriceHigh}` : null }} megaData={boosted ? boostResult : undefined} buttons={<>
         {onPriceBotRun && <button onClick={onPriceBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>💰 Re-Run · 1 cr</button>}
         {onSuperBoost && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>{boosted ? "🔄 MegaBot Re-Run · 4 cr" : "⚡ MegaBot · 7 cr"}</button>}
         <a href="/bots/pricebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PriceBot →</a>
@@ -3645,6 +3658,62 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
             {condBadge && (
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <span style={{ padding: "0.2rem 0.65rem", borderRadius: "9999px", fontSize: "0.68rem", fontWeight: 600, background: condBadge.bg, color: condBadge.color }}>{condBadge.label}</span>
+              </div>
+            )}
+
+            {/* ── GARAGE & YARD SALE SECTION ── */}
+            {gsPrices && (
+              <div style={{ marginTop: "0.5rem" }}>
+                <AccordionHeader id="garage-sale" icon="🏷️" title="GARAGE & YARD SALE" isOpen={priceOpenSections.has("garage-sale")} onToggle={togglePriceSection} />
+                {priceOpenSections.has("garage-sale") && (
+                  <div style={{ padding: "0.5rem 0" }}>
+                    {gsPrices.isExempt ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.75rem", background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.2)", borderRadius: 10 }}>
+                        <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "2px 8px", borderRadius: 8, background: "rgba(212,175,55,0.15)", color: "#D4AF37" }}>VALUE HOLDS</span>
+                        <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>This item may be worth full market value even at a garage sale. See AntiqueBot or CollectiblesBot before discounting.</span>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                        {/* Garage Sale Card */}
+                        <div style={{ flex: 1, minWidth: "140px", padding: "0.75rem", borderRadius: 10, background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", textAlign: "center" }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.35rem", marginBottom: "0.3rem" }}>
+                            <span style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Garage Sale</span>
+                            <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 6px", borderRadius: 6, background: "var(--accent)", color: "#fff" }}>THIS WEEKEND</span>
+                          </div>
+                          <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--accent)", fontFamily: "'Barlow Condensed', sans-serif" }}>
+                            ${gsPrices.garageSalePrice} – ${gsPrices.garageSalePriceHigh}
+                          </div>
+                          <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>What buyers pay in person</div>
+                          {commRate > 0 && (
+                            <div style={{ fontSize: "0.65rem", color: "#22c55e", fontWeight: 600, marginTop: "0.25rem" }}>
+                              You get: ${Math.round(gsPrices.garageSalePriceHigh * (1 - commRate))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Quick Sale Card */}
+                        <div style={{ flex: 1, minWidth: "140px", padding: "0.75rem", borderRadius: 10, background: "rgba(29,158,117,0.04)", border: "1px solid rgba(29,158,117,0.15)", textAlign: "center" }}>
+                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.35rem", marginBottom: "0.3rem" }}>
+                            <span style={{ fontSize: "0.55rem", fontWeight: 700, color: "#1D9E75", textTransform: "uppercase", letterSpacing: "0.06em" }}>Quick Sale</span>
+                            <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 6px", borderRadius: 6, background: "#1D9E75", color: "#fff" }}>GONE TODAY</span>
+                          </div>
+                          <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "#1D9E75", fontFamily: "'Barlow Condensed', sans-serif" }}>
+                            ${gsPrices.quickSalePrice} – ${gsPrices.quickSalePriceHigh}
+                          </div>
+                          <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>Price it to move. No waiting.</div>
+                          {commRate > 0 && (
+                            <div style={{ fontSize: "0.65rem", color: "#22c55e", fontWeight: 600, marginTop: "0.25rem" }}>
+                              You get: ${Math.round(gsPrices.quickSalePriceHigh * (1 - commRate))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textAlign: "center", marginTop: "0.5rem" }}>
+                      Based on {(aiData as any)?.condition_guess || "good"} condition · {(aiData as any)?.category || "general"} category · in-person market factors
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -9864,15 +9933,7 @@ export default function ItemDashboardPanels({
           sellerListingPrice={listingPrice ?? null}
         />
 
-        {/* ── SELLING PRICE GUIDE — three-price strip ── */}
-        {valuation && (
-          <GarageSalePriceStrip
-            itemId={itemId}
-            marketPrice={valuation.mid ?? Math.round((valuation.low + valuation.high) / 2)}
-            category={category}
-            condition={(aiData as any)?.condition_guess || "good"}
-          />
-        )}
+
 
         {/* Shipping */}
         <div id="shipping-panel">
