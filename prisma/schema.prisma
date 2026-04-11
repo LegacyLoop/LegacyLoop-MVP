@@ -952,6 +952,7 @@ model PaymentLedger {
   type            String   // subscription, credit_pack, item_purchase, refund, payout, estate_service
   stripePaymentId String?  @unique
   stripeSessionId String?
+  receiptUrl      String?
   subtotal        Float    // amount before processing fee
   processingFee   Float    // 3.5% fee charged to buyer/purchaser
   totalCharged    Float    // subtotal + processingFee = what buyer actually paid

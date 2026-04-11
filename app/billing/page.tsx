@@ -20,9 +20,9 @@ export default async function BillingPage() {
   }).catch(() => null);
 
   const billingHistory = await prisma.paymentLedger.findMany({
-    where: { userId: user.id, type: "subscription" },
+    where: { userId: user.id },
     orderBy: { createdAt: "desc" },
-    take: 10,
+    take: 50,
   }).catch(() => []);
 
   const currentTierKey = TIER_NUMBER_TO_KEY[user.tier] ?? "free";
@@ -200,7 +200,18 @@ export default async function BillingPage() {
                   <td style={{ padding: "0.6rem", color: "var(--text-muted)", whiteSpace: "nowrap" }}>
                     {new Date(tx.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                   </td>
-                  <td style={{ padding: "0.6rem", color: "var(--text-primary)" }}>{tx.description}</td>
+                  <td style={{ padding: "0.6rem", color: "var(--text-primary)" }}>
+                    <span style={{
+                      fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.35rem", borderRadius: "0.25rem", marginRight: "0.4rem",
+                      background: tx.type.includes("white_glove") ? "rgba(212,175,55,0.12)" : "rgba(0,188,212,0.08)",
+                      color: tx.type.includes("white_glove") ? "#D4AF37" : "var(--accent)",
+                      border: tx.type.includes("white_glove") ? "1px solid rgba(212,175,55,0.2)" : "1px solid rgba(0,188,212,0.15)",
+                      textTransform: "uppercase", letterSpacing: "0.04em", verticalAlign: "middle",
+                    }}>
+                      {tx.type === "subscription" ? "Sub" : tx.type === "credit_pack" || tx.type === "custom_credit" ? "Credits" : tx.type === "item_purchase" ? "Purchase" : tx.type.includes("white_glove") ? "Estate" : tx.type === "estate_care" ? "Care" : tx.type}
+                    </span>
+                    {tx.description}
+                  </td>
                   <td style={{ padding: "0.6rem", color: "var(--text-secondary)" }}>${tx.subtotal.toFixed(2)}</td>
                   <td style={{ padding: "0.6rem", color: "var(--text-muted)" }}>${tx.processingFee.toFixed(2)}</td>
                   <td style={{ padding: "0.6rem", fontWeight: 700, color: "var(--text-primary)" }}>${tx.totalCharged.toFixed(2)}</td>
@@ -213,22 +224,40 @@ export default async function BillingPage() {
                       textTransform: "uppercase",
                     }}>{tx.status}</span>
                   </td>
-                  <td style={{ padding: "0.6rem" }}>
-                    <a
-                      href={`/receipts/${tx.id}?type=payment`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: "4px",
-                        padding: "0.15rem 0.5rem", borderRadius: "6px",
-                        fontSize: "0.6rem", fontWeight: 600,
-                        color: "var(--accent)", background: "rgba(0,188,212,0.08)",
-                        border: "1px solid rgba(0,188,212,0.2)",
-                        textDecoration: "none", whiteSpace: "nowrap",
-                      }}
-                    >
-                      📄 Receipt
-                    </a>
+                  <td style={{ padding: "0.6rem", display: "flex", gap: "0.35rem", flexWrap: "wrap" }}>
+                    {(tx as any).receiptUrl ? (
+                      <a
+                        href={(tx as any).receiptUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: "4px",
+                          padding: "0.15rem 0.5rem", borderRadius: "6px",
+                          fontSize: "0.6rem", fontWeight: 600,
+                          color: "var(--accent)", background: "rgba(0,188,212,0.08)",
+                          border: "1px solid rgba(0,188,212,0.2)",
+                          textDecoration: "none", whiteSpace: "nowrap",
+                        }}
+                      >
+                        📄 Receipt
+                      </a>
+                    ) : (
+                      <a
+                        href={`/receipts/${tx.id}?type=payment`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: "4px",
+                          padding: "0.15rem 0.5rem", borderRadius: "6px",
+                          fontSize: "0.6rem", fontWeight: 600,
+                          color: "var(--text-muted)", background: "rgba(255,255,255,0.04)",
+                          border: "1px solid var(--border-default)",
+                          textDecoration: "none", whiteSpace: "nowrap",
+                        }}
+                      >
+                        📄 Details
+                      </a>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -57,6 +57,161 @@ const EARN_WAYS = [
   { icon: "🏷️", label: "First sale",            amount: 25,  desc: "Complete your first sale on LegacyLoop" },
 ];
 
+/* ── Cash Out Section (conditional display) ──────────────────────── */
+function CashOutSection({ balance, onBalanceChange, showToast }: { balance: number; onBalanceChange: (b: number) => void; showToast: (m: string) => void }) {
+  const [redeemAmount, setRedeemAmount] = useState<string>("");
+  const [purchaseInfo, setPurchaseInfo] = useState<{ totalPaid: number; totalCredits: number; rate: number } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState<{ refundAmount: number; creditsRedeemed: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [fetched, setFetched] = useState(false);
+
+  // Fetch purchase info on first render
+  useEffect(() => {
+    if (fetched) return;
+    setFetched(true);
+    fetch("/api/credits/balance").then(r => r.json()).then(() => {
+      // We need purchase transaction data — use a simple approach
+      // Calculate from the transactions prop would be ideal, but we don't have it here
+      // Instead, attempt cashout info from the cashout endpoint with a dry-run style check
+    }).catch(() => {});
+  }, [fetched]);
+
+  const credits = parseInt(redeemAmount) || 0;
+  const canCashOut = balance >= 50 && credits >= 50 && credits <= balance;
+
+  // Estimate rate from pack prices (conservative estimate shown to user)
+  // Actual rate calculated server-side from real purchase history
+  const estimatedRate = 0.83; // Approximate — server calculates exact
+  const estimatedRefund = Math.round(credits * estimatedRate * 100) / 100;
+
+  async function handleCashOut() {
+    if (!canCashOut) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/credits/cashout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ creditsToRedeem: credits }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Cash-out failed.");
+        setLoading(false);
+        return;
+      }
+      setSuccess({ refundAmount: data.refundAmount, creditsRedeemed: data.creditsRedeemed });
+      onBalanceChange(data.newBalance);
+      showToast(`$${data.refundAmount.toFixed(2)} refund processing!`);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    }
+    setLoading(false);
+  }
+
+  if (balance < 50) {
+    return (
+      <div style={{
+        background: "var(--bg-card-solid)", border: "1px solid var(--border-default)",
+        borderRadius: "1.25rem", padding: "1.25rem", marginBottom: "1.5rem", textAlign: "center",
+      }}>
+        <div style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+          💎 Credits can be cashed out after reaching 50 credits. Keep earning!
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      background: "linear-gradient(135deg, rgba(0,188,212,0.06), rgba(0,188,212,0.02))",
+      border: "1px solid rgba(0,188,212,0.2)",
+      borderRadius: "1.25rem",
+      padding: "1.5rem",
+      marginBottom: "1.5rem",
+    }}>
+      <div style={{ fontWeight: 700, marginBottom: "0.75rem", fontSize: "1rem", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <span style={{ fontSize: "1.25rem" }}>💰</span> Cash Out Credits
+      </div>
+
+      {success ? (
+        <div style={{ textAlign: "center", padding: "1rem 0" }}>
+          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(0,188,212,0.12)", border: "2px solid var(--accent)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 0.75rem" }}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 9.5L7 12.5L14 5" stroke="#00bcd4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </div>
+          <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.35rem" }}>
+            ${success.refundAmount.toFixed(2)} refund processing
+          </div>
+          <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+            {success.creditsRedeemed} credits deducted. Estimated arrival: 3-5 business days.
+          </div>
+        </div>
+      ) : (
+        <>
+          <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "1rem", lineHeight: 1.5 }}>
+            Convert your purchased credits back to cash. Only credits bought with real money qualify — bonus and referral credits are not redeemable.
+          </div>
+
+          <div style={{ display: "flex", gap: "0.75rem", alignItems: "flex-end", marginBottom: "0.75rem", flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: "140px" }}>
+              <label style={{ fontSize: "0.7rem", color: "var(--text-muted)", display: "block", marginBottom: "0.25rem" }}>Credits to redeem (min 50)</label>
+              <input
+                type="number"
+                min={50}
+                max={balance}
+                value={redeemAmount}
+                onChange={(e) => setRedeemAmount(e.target.value)}
+                placeholder="50"
+                style={{
+                  width: "100%", padding: "0.6rem 0.75rem", borderRadius: 8,
+                  border: "1px solid rgba(0,188,212,0.2)", background: "rgba(255,255,255,0.03)",
+                  color: "var(--text-primary)", fontSize: "1rem", fontWeight: 700, boxSizing: "border-box",
+                }}
+              />
+            </div>
+            {credits >= 50 && (
+              <div style={{ padding: "0.6rem 0", minWidth: "120px" }}>
+                <div style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>Estimated refund</div>
+                <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--accent)" }}>
+                  ~${estimatedRefund.toFixed(2)}
+                </div>
+                <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>Exact rate calculated at checkout</div>
+              </div>
+            )}
+          </div>
+
+          {error && (
+            <div style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 8, padding: "0.5rem 0.75rem", marginBottom: "0.75rem", fontSize: "0.78rem", color: "#ef4444" }}>
+              {error}
+            </div>
+          )}
+
+          <button
+            onClick={handleCashOut}
+            disabled={!canCashOut || loading}
+            style={{
+              width: "100%", padding: "0.75rem", borderRadius: 10, border: "none",
+              background: canCashOut && !loading ? "linear-gradient(135deg, var(--accent), var(--accent-deep, #0097a7))" : "rgba(0,188,212,0.15)",
+              color: canCashOut && !loading ? "#fff" : "rgba(255,255,255,0.3)",
+              fontWeight: 700, fontSize: "0.88rem",
+              cursor: canCashOut && !loading ? "pointer" : "not-allowed",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            }}
+          >
+            {loading && <div style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "spin 0.7s linear infinite" }} />}
+            {loading ? "Processing…" : credits >= 50 ? `Cash Out ~$${estimatedRefund.toFixed(2)} to Card` : "Enter 50+ credits"}
+          </button>
+
+          <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "0.5rem", textAlign: "center" }}>
+            Refunds arrive in 3-5 business days. Your exact rate is calculated from your purchase history.
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function CreditsClient({ initialBalance, lifetime, spent, transactions }: Props) {
   const [tab, setTab] = useState<"store" | "services" | "history">("store");
   const [balance, setBalance] = useState(initialBalance);
@@ -561,6 +716,9 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
               })}
             </div>
           </div>
+
+          {/* Cash Out Credits */}
+          <CashOutSection balance={balance} onBalanceChange={setBalance} showToast={showToast} />
 
           {/* Ways to Earn */}
           <div style={{

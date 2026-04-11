@@ -52,11 +52,18 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ received: true, message: "Already processed" }, { status: 200 });
       }
 
-      // Update ledger status to completed
+      // Update ledger status to completed + capture receipt URL
       if (existing) {
+        let receiptUrl: string | null = null;
+        if (stripe && pi.latest_charge) {
+          try {
+            const charge = await stripe.charges.retrieve(pi.latest_charge as string);
+            receiptUrl = charge.receipt_url ?? null;
+          } catch { /* receipt URL is nice-to-have, not critical */ }
+        }
         await prisma.paymentLedger.update({
           where: { id: existing.id },
-          data: { status: "completed" },
+          data: { status: "completed", ...(receiptUrl ? { receiptUrl } : {}) },
         });
       }
 

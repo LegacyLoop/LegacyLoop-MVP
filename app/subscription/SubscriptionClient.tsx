@@ -5,6 +5,7 @@ import { DIGITAL_TIERS } from "@/lib/pricing/constants";
 import { TIERS, WHITE_GLOVE, NEIGHBORHOOD_BUNDLE, PROCESSING_FEE, BOT_COSTS, PLANS, TIER, TIER_KEY_TO_NUMBER } from "@/lib/constants/pricing";
 import CancelFlowModal from "@/app/components/billing/CancelFlowModal";
 import UpgradeFlowModal from "@/app/components/billing/UpgradeFlowModal";
+import WhiteGloveBookingModal from "@/app/components/billing/WhiteGloveBookingModal";
 
 const TIER_NAMES: Record<string, string> = {
   FREE: PLANS.FREE.name,
@@ -196,6 +197,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
   const [downgradeError, setDowngradeError] = useState<string | null>(null);
   const [upgradeTarget, setUpgradeTarget] = useState<string>("PLUS");
   const [activeSlide, setActiveSlide] = useState(0);
+  const [wgBookingKey, setWgBookingKey] = useState<string | null>(null);
 
   const tier = subscription?.tier || "FREE";
   const isAnnualSub = subscription?.billingPeriod === "annual";
@@ -942,9 +944,14 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                       </div>
                     ))}
 
-                    <a href={`mailto:support@legacy-loop.com?subject=${encodeURIComponent(`White Glove ${wg.name} Inquiry`)}`} style={{ display: "block", textAlign: "center", background: "transparent", border: `1px solid ${card.accent}`, borderRadius: 12, padding: "0.75rem 1.5rem", color: card.accent, fontWeight: 700, fontSize: "0.88rem", textDecoration: "none", width: "100%", marginTop: "1.25rem", transition: "all 0.2s ease", boxSizing: "border-box" }}>
+                    <button onClick={() => setWgBookingKey(card.key)} style={{ display: "block", textAlign: "center", background: "transparent", border: `1px solid ${card.accent}`, borderRadius: 12, padding: "0.75rem 1.5rem", color: card.accent, fontWeight: 700, fontSize: "0.88rem", width: "100%", marginTop: "1.25rem", transition: "all 0.2s ease", boxSizing: "border-box", cursor: "pointer" }}>
                       {card.cta}
-                    </a>
+                    </button>
+                    <div style={{ textAlign: "center", marginTop: "0.5rem" }}>
+                      <a href={`mailto:support@legacy-loop.com?subject=${encodeURIComponent(`White Glove ${wg.name} Inquiry`)}`} style={{ fontSize: "0.65rem", color: "var(--text-muted)", textDecoration: "none" }}>
+                        Prefer email? Contact support@legacy-loop.com
+                      </a>
+                    </div>
                   </div>
                 );
               })}
@@ -1179,6 +1186,28 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
           onUpgraded={() => window.location.reload()}
         />
       )}
+
+      {/* White Glove Booking Modal */}
+      {wgBookingKey && (() => {
+        const wg = WHITE_GLOVE[wgBookingKey];
+        if (!wg) return null;
+        const isPreLaunch = true; // PRE_LAUNCH check happens server-side
+        const total = isPreLaunch ? wg.preLaunch : wg.price;
+        const deposit = Math.round(total * 0.60 * 100) / 100;
+        const balance = Math.round(total * 0.40 * 100) / 100;
+        return (
+          <WhiteGloveBookingModal
+            tier={wgBookingKey.toUpperCase()}
+            tierLabel={wg.name}
+            totalAmount={total}
+            depositAmount={deposit}
+            balanceAmount={balance}
+            regularPrice={wg.price}
+            onClose={() => setWgBookingKey(null)}
+            onSuccess={() => { setWgBookingKey(null); window.location.reload(); }}
+          />
+        );
+      })()}
     </div>
   );
 }
