@@ -4,7 +4,7 @@
  */
 
 import { prisma } from "@/lib/db";
-import { BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { BOT_CREDIT_COSTS, CREDIT_PACKS } from "@/lib/constants/pricing";
 
 export interface CreditCheckResult {
   hasEnough: boolean;
@@ -80,6 +80,11 @@ export async function deductCredits(
 
       return { success: true, newBalance };
     });
+
+    // Auto-reload check (fire-and-forget — never blocks the deduction)
+    if (result.success) {
+      void checkAutoReload(userId, result.newBalance).catch(() => {});
+    }
 
     return result;
   } catch (err: any) {
@@ -213,6 +218,106 @@ export async function hasPriorBotRun(
   } catch (err) {
     console.error("[credits] hasPriorBotRun error:", err);
     return false; // Fail open — charge first-run price
+  }
+}
+
+/** Check if auto-reload should fire after a deduction */
+async function checkAutoReload(userId: string, currentBalance: number): Promise<void> {
+  const uc = await prisma.userCredits.findUnique({ where: { userId } });
+  if (!uc || !uc.autoReloadEnabled) return;
+  if (currentBalance >= uc.autoReloadThreshold) return;
+
+  await triggerAutoReload(userId, uc);
+}
+
+/** Execute an auto-reload: charge Stripe, add credits, notify user */
+async function triggerAutoReload(userId: string, uc: { id: string; autoReloadPackId: string; balance: number }): Promise<void> {
+  const { stripe, isConfigured } = await import("@/lib/stripe");
+  const { n8nSmsAlert } = await import("@/lib/n8n");
+  const { sendEmail } = await import("@/lib/email/send");
+
+  const pack = CREDIT_PACKS[uc.autoReloadPackId as keyof typeof CREDIT_PACKS];
+  if (!pack) return;
+
+  const totalCredits = pack.credits + pack.bonus;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, displayName: true, stripeCustomerId: true },
+  });
+
+  if (!user?.stripeCustomerId) {
+    // No card on file — disable auto-reload
+    await prisma.userCredits.update({
+      where: { id: uc.id },
+      data: { autoReloadEnabled: false, autoReloadFailedAt: new Date() },
+    });
+    return;
+  }
+
+  if (!isConfigured || !stripe) {
+    // Demo mode — simulate success
+    const newBalance = uc.balance + totalCredits;
+    await prisma.userCredits.update({ where: { id: uc.id }, data: { balance: newBalance, lifetime: { increment: totalCredits } } });
+    await prisma.creditTransaction.create({
+      data: { userCreditsId: uc.id, type: "purchase", amount: totalCredits, balance: newBalance, description: `[DEMO] Auto-reload — ${pack.label} (${totalCredits} credits)`, paymentAmount: pack.price },
+    });
+    return;
+  }
+
+  try {
+    // Get default payment method
+    const paymentMethods = await stripe.paymentMethods.list({
+      customer: user.stripeCustomerId,
+      type: "card",
+      limit: 1,
+    });
+
+    if (!paymentMethods.data.length) {
+      await prisma.userCredits.update({ where: { id: uc.id }, data: { autoReloadEnabled: false, autoReloadFailedAt: new Date() } });
+      n8nSmsAlert(`LegacyLoop: Auto-reload failed for ${user.email} — no payment method.`);
+      return;
+    }
+
+    // Charge card
+    const pi = await stripe.paymentIntents.create({
+      amount: Math.round(pack.price * 100),
+      currency: "usd",
+      customer: user.stripeCustomerId,
+      payment_method: paymentMethods.data[0].id,
+      confirm: true,
+      off_session: true,
+      description: `LegacyLoop Auto-Reload — ${pack.label}`,
+      receipt_email: user.email,
+      metadata: { type: "auto_reload", userId, packId: uc.autoReloadPackId, creditsAdded: String(totalCredits) },
+    });
+
+    if (pi.status === "succeeded") {
+      const newBalance = uc.balance + totalCredits;
+      await prisma.userCredits.update({ where: { id: uc.id }, data: { balance: newBalance, lifetime: { increment: totalCredits } } });
+      await prisma.creditTransaction.create({
+        data: { userCreditsId: uc.id, type: "purchase", amount: totalCredits, balance: newBalance, description: `Auto-reload — ${pack.label} (${totalCredits} credits)`, paymentAmount: pack.price },
+      });
+
+      const cardLast4 = paymentMethods.data[0].card?.last4 ?? "****";
+      n8nSmsAlert(`LegacyLoop: Auto-reload complete. ${totalCredits} credits added. $${pack.price} charged to card ending ${cardLast4}.`);
+
+      // Email notification (fire-and-forget)
+      sendEmail({
+        to: user.email,
+        subject: `LegacyLoop — Auto-Reload: ${totalCredits} Credits Added`,
+        html: `<p>Hi ${user.displayName?.split(" ")[0] ?? "there"},</p><p>Your credit balance was low, so we auto-reloaded <strong>${totalCredits} credits</strong> ($${pack.price}) to your account.</p><p>New balance: <strong>${newBalance} credits</strong></p><p>Card charged: ending ${cardLast4}</p><p>You can manage auto-reload in your <a href="https://app.legacy-loop.com/credits">Credits Settings</a>.</p>`,
+      });
+    }
+  } catch (chargeErr) {
+    console.error("[auto-reload] Charge failed:", chargeErr);
+    await prisma.userCredits.update({ where: { id: uc.id }, data: { autoReloadEnabled: false, autoReloadFailedAt: new Date() } });
+
+    n8nSmsAlert(`LegacyLoop: Auto-reload failed for ${user.email}. Please update payment method.`);
+    sendEmail({
+      to: user.email,
+      subject: "LegacyLoop — Auto-Reload Failed",
+      html: `<p>Hi ${user.displayName?.split(" ")[0] ?? "there"},</p><p>Your auto-reload payment failed. We've paused auto-reload on your account.</p><p>Please <a href="https://app.legacy-loop.com/credits">update your payment method</a> and re-enable auto-reload.</p>`,
+    });
   }
 }
 

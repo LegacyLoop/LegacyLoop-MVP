@@ -57,6 +57,181 @@ const EARN_WAYS = [
   { icon: "🏷️", label: "First sale",            amount: 25,  desc: "Complete your first sale on LegacyLoop" },
 ];
 
+/* ── Auto-Reload Section ─────────────────────────────────────────── */
+const RELOAD_PACKS = [
+  { id: "pack_25", label: "Starter", price: 25, credits: 30 },
+  { id: "pack_50", label: "Popular", price: 50, credits: 65, badge: "MOST POPULAR" },
+  { id: "pack_100", label: "Value", price: 100, credits: 140, badge: "BEST VALUE" },
+  { id: "pack_200", label: "Best Deal", price: 200, credits: 300 },
+];
+
+function AutoReloadSection({ showToast }: { showToast: (m: string) => void }) {
+  const [enabled, setEnabled] = useState(false);
+  const [threshold, setThreshold] = useState(20);
+  const [packId, setPackId] = useState("pack_25");
+  const [failedAt, setFailedAt] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [dirty, setDirty] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/credits/auto-reload").then(r => r.json()).then(d => {
+      setEnabled(d.enabled ?? false);
+      setThreshold(d.threshold ?? 20);
+      setPackId(d.packId ?? "pack_25");
+      setFailedAt(d.failedAt ?? null);
+      setLoaded(true);
+    }).catch(() => setLoaded(true));
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/credits/auto-reload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ enabled, threshold, packId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        showToast(enabled ? "Auto-reload enabled!" : "Auto-reload disabled.");
+        setDirty(false);
+        if (enabled) setFailedAt(null);
+      } else {
+        showToast(data.error || "Failed to save.");
+      }
+    } catch {
+      showToast("Something went wrong.");
+    }
+    setSaving(false);
+  }
+
+  if (!loaded) return null;
+
+  const selectedPack = RELOAD_PACKS.find(p => p.id === packId) ?? RELOAD_PACKS[0];
+
+  return (
+    <div style={{
+      background: "var(--bg-card-solid)",
+      border: `1px solid ${failedAt ? "rgba(245,158,11,0.3)" : "var(--border-default)"}`,
+      borderRadius: "1.25rem",
+      padding: "1.5rem",
+      marginBottom: "1.5rem",
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+        <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <span style={{ fontSize: "1.25rem" }}>🔄</span> Auto-Reload
+        </div>
+        <button
+          onClick={() => { setEnabled(!enabled); setDirty(true); }}
+          style={{
+            width: 48, height: 26, borderRadius: 13, border: "none", cursor: "pointer",
+            position: "relative",
+            background: enabled ? "linear-gradient(135deg, var(--accent), var(--accent-deep, #0097a7))" : "var(--border-default)",
+            transition: "background 0.2s ease",
+          }}
+        >
+          <div style={{
+            width: 20, height: 20, borderRadius: "50%", background: "#fff",
+            position: "absolute", top: 3,
+            left: enabled ? 25 : 3,
+            transition: "left 0.2s ease",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+          }} />
+        </button>
+      </div>
+
+      <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "1rem", lineHeight: 1.5 }}>
+        Automatically top up your credits so you never run out mid-sale. You{"'"}ll get an email + SMS confirmation for every reload.
+      </div>
+
+      {failedAt && (
+        <div style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: 10, padding: "0.6rem 0.85rem", marginBottom: "1rem", fontSize: "0.78rem", color: "#f59e0b", lineHeight: 1.5 }}>
+          ⚠️ Auto-reload was paused after a failed payment. Update your card and re-enable.
+        </div>
+      )}
+
+      {enabled && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {/* Threshold */}
+          <div>
+            <label style={{ fontSize: "0.72rem", color: "var(--text-muted)", display: "block", marginBottom: "0.25rem" }}>
+              Reload when balance drops below
+            </label>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <input type="number" min={10} max={200} value={threshold}
+                onChange={(e) => { setThreshold(parseInt(e.target.value) || 20); setDirty(true); }}
+                style={{
+                  width: "80px", padding: "0.5rem 0.6rem", borderRadius: 8,
+                  border: "1px solid var(--border-default)", background: "rgba(255,255,255,0.03)",
+                  color: "var(--text-primary)", fontSize: "0.95rem", fontWeight: 700, textAlign: "center",
+                }}
+              />
+              <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>credits</span>
+            </div>
+          </div>
+
+          {/* Pack selector */}
+          <div>
+            <label style={{ fontSize: "0.72rem", color: "var(--text-muted)", display: "block", marginBottom: "0.4rem" }}>
+              Reload with
+            </label>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.5rem" }}>
+              {RELOAD_PACKS.map(p => (
+                <button key={p.id}
+                  onClick={() => { setPackId(p.id); setDirty(true); }}
+                  style={{
+                    padding: "0.6rem 0.75rem", borderRadius: 10, cursor: "pointer",
+                    background: packId === p.id ? "rgba(0,188,212,0.08)" : "transparent",
+                    border: packId === p.id ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
+                    textAlign: "left", position: "relative",
+                  }}
+                >
+                  {p.badge && (
+                    <span style={{ position: "absolute", top: -6, right: 8, fontSize: "0.5rem", fontWeight: 700, padding: "1px 6px", borderRadius: 8, background: "var(--accent)", color: "#fff" }}>{p.badge}</span>
+                  )}
+                  <div style={{ fontSize: "0.85rem", fontWeight: 700, color: packId === p.id ? "var(--accent)" : "var(--text-primary)" }}>
+                    {p.label} — ${p.price}
+                  </div>
+                  <div style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>{p.credits} credits</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Save button */}
+          <button onClick={handleSave} disabled={!dirty || saving}
+            style={{
+              padding: "0.7rem", borderRadius: 10, border: "none",
+              background: dirty && !saving ? "linear-gradient(135deg, var(--accent), var(--accent-deep, #0097a7))" : "rgba(0,188,212,0.15)",
+              color: dirty && !saving ? "#fff" : "rgba(255,255,255,0.3)",
+              fontWeight: 700, fontSize: "0.85rem",
+              cursor: dirty && !saving ? "pointer" : "not-allowed",
+            }}
+          >
+            {saving ? "Saving…" : "Save Auto-Reload Settings"}
+          </button>
+        </div>
+      )}
+
+      {!enabled && (
+        <button onClick={handleSave} disabled={!dirty || saving}
+          style={{
+            padding: "0.6rem", borderRadius: 10, border: "none",
+            background: dirty && !saving ? "rgba(0,188,212,0.1)" : "transparent",
+            color: dirty ? "var(--accent)" : "transparent",
+            fontWeight: 600, fontSize: "0.8rem",
+            cursor: dirty ? "pointer" : "default",
+            width: "100%",
+          }}
+        >
+          {dirty ? (saving ? "Saving…" : "Save") : ""}
+        </button>
+      )}
+    </div>
+  );
+}
+
 /* ── Cash Out Section (conditional display) ──────────────────────── */
 function CashOutSection({ balance, onBalanceChange, showToast }: { balance: number; onBalanceChange: (b: number) => void; showToast: (m: string) => void }) {
   const [redeemAmount, setRedeemAmount] = useState<string>("");
@@ -716,6 +891,9 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
               })}
             </div>
           </div>
+
+          {/* Auto-Reload Settings */}
+          <AutoReloadSection showToast={showToast} />
 
           {/* Cash Out Credits */}
           <CashOutSection balance={balance} onBalanceChange={setBalance} showToast={showToast} />

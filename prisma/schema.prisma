@@ -101,6 +101,12 @@ model UserCredits {
   balance      Int      @default(0)
   lifetime     Int      @default(0)
   spent        Int      @default(0)
+
+  autoReloadEnabled    Boolean   @default(false)
+  autoReloadThreshold  Int       @default(20)
+  autoReloadPackId     String    @default("pack_25")
+  autoReloadFailedAt   DateTime?
+
   transactions CreditTransaction[]
   updatedAt    DateTime @updatedAt
 }
