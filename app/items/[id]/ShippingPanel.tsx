@@ -2968,11 +2968,13 @@ export default function ShippingPanel({
       const rawRates = data.rates ?? [];
       const normalized = normalizeRates(rawRates);
       setRates(normalized.length > 0 ? normalized : generateFallbackRates(weight));
-      // Persist quote to Shipping Center via estimate API (fire-and-forget)
+      // Persist quote + get AI recommendation from Shipping Center
       fetch("/api/shipping/estimate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId, destZip: toZip || "10001" }),
+      }).then(r => r.json()).then(d => {
+        if (d.aiRecommendation) setAiShippingRec(d.aiRecommendation);
       }).catch(() => {});
     } catch {
       setRates(generateFallbackRates(weight));
@@ -4025,6 +4027,30 @@ export default function ShippingPanel({
                   isAntique={suggestion?.packagingNotes?.some((n: string) => n.toLowerCase().includes("antique"))}
                   itemDimensions={suggestion ? `${suggestion.length}×${suggestion.width}×${suggestion.height} in` : null}
                 />
+              </div>
+            )}
+
+            {/* ── AI Shipping Intelligence ── */}
+            {aiShippingRec && (
+              <div style={{
+                margin: "0.75rem 0", padding: "0.75rem 1rem",
+                background: "rgba(0,188,212,0.06)",
+                borderLeft: "3px solid #00BCD4",
+                borderRadius: "0 8px 8px 0",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00BCD4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="11" width="18" height="10" rx="2"/>
+                    <circle cx="12" cy="5" r="2"/>
+                    <path d="M12 7v4"/>
+                  </svg>
+                  <span style={{ fontSize: "0.68rem", fontWeight: 600, color: "#00BCD4", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                    Shipping Intelligence
+                  </span>
+                </div>
+                <p style={{ fontSize: "0.8rem", color: "var(--text-secondary, #e2e8f0)", lineHeight: 1.6, margin: 0 }}>
+                  {aiShippingRec}
+                </p>
               </div>
             )}
 
