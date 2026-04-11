@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 type PasswordStrength = "weak" | "fair" | "good" | "strong";
 
@@ -32,6 +32,17 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [referralCode, setReferralCode] = useState("");
+  const [billingPreference, setBillingPreference] = useState("");
+
+  // Read ?ref= and ?billing= from URL silently
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
+    const billing = params.get("billing");
+    if (ref) setReferralCode(ref);
+    if (billing === "annual") setBillingPreference("annual");
+  }, []);
 
   const strength = useMemo(() => getPasswordStrength(password), [password]);
   const strengthCfg = STRENGTH_CONFIG[strength];
@@ -56,7 +67,7 @@ export default function SignupPage() {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, ...(referralCode ? { referralCode } : {}), ...(billingPreference ? { billingPreference } : {}) }),
       });
 
       if (!res.ok) {

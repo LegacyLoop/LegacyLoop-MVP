@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
-import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { canUseBotOnTier, canUseVideoBotTier, BOT_CREDIT_COSTS, TIER_NAMES } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { runVideoPipeline } from "@/lib/video/pipeline";
@@ -90,12 +90,25 @@ export async function POST(
         );
       }
 
-      const creditCostMap: Record<string, number> = {
-        standard: BOT_CREDIT_COSTS.videoBotStandard,
-        pro: BOT_CREDIT_COSTS.videoBotPro,
-        mega: BOT_CREDIT_COSTS.megaBotVideo,
+      // Sub-tier level gate: Standard=DIY+, Pro=Power+, MegaBot=Estate only
+      const levelMap: Record<string, "standard" | "pro" | "megabot"> = { standard: "standard", pro: "pro", mega: "megabot" };
+      const mappedLevel = levelMap[tier] ?? "standard";
+      if (!canUseVideoBotTier(user.tier, mappedLevel)) {
+        const tierNames: Record<string, string> = { standard: "DIY Seller", pro: "Power Seller", megabot: "Estate Manager" };
+        return NextResponse.json(
+          { error: "upgrade_required", message: `VideoBot ${tier.charAt(0).toUpperCase() + tier.slice(1)} requires ${tierNames[mappedLevel]} plan.`, requiredTier: tierNames[mappedLevel], currentTier: TIER_NAMES[user.tier] ?? "Free", upgradeUrl: "/subscription" },
+          { status: 403 }
+        );
+      }
+
+      // Tiered credit costs — higher tiers get lower rates
+      const TIERED_COSTS: Record<string, Record<number, number>> = {
+        standard: { 2: 8, 3: 6, 4: 5 },  // DIY=8, Power=6, Estate=5
+        pro:      { 3: 15, 4: 12 },       // Power=15, Estate=12
+        mega:     { 4: 25 },              // Estate=25
       };
-      let cost = creditCostMap[tier] ?? BOT_CREDIT_COSTS.videoBotStandard;
+      const tierCosts = TIERED_COSTS[tier];
+      let cost = tierCosts?.[user.tier] ?? BOT_CREDIT_COSTS.videoBotStandard;
 
       // Re-run discount: 50% off if the user has run VideoBot on this item before
       const isRerun = await hasPriorBotRun(user.id, itemId, "VIDEOBOT_RESULT");

@@ -45,3 +45,31 @@ export async function getOrCreateStripeCustomer(
 
   return customer.id;
 }
+
+/**
+ * Create a Stripe Subscription for a LegacyLoop user.
+ * Uses payment_behavior: 'default_incomplete' so the first invoice
+ * creates a PaymentIntent that the frontend must confirm.
+ * Returns the Subscription including latest_invoice.payment_intent.client_secret.
+ */
+export async function createStripeSubscription(
+  stripeCustomerId: string,
+  stripePriceId: string,
+  metadata: Record<string, string>,
+): Promise<import("stripe").default.Subscription | null> {
+  if (!stripe) return null;
+
+  const subscription = await stripe.subscriptions.create({
+    customer: stripeCustomerId,
+    items: [{ price: stripePriceId }],
+    payment_behavior: "default_incomplete",
+    payment_settings: {
+      payment_method_types: ["card"],
+      save_default_payment_method: "on_subscription",
+    },
+    expand: ["latest_invoice.payment_intent"],
+    metadata,
+  });
+
+  return subscription;
+}

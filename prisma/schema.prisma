@@ -60,6 +60,7 @@ model User {
   transactions          Transaction[]
   subscriptions         Subscription[]
   whiteGloveProjects    WhiteGloveProject[]
+  whiteGloveBookings    WhiteGloveBooking[]
   credits               UserCredits?
   connectedPlatforms    ConnectedPlatform[]
   referralsSent         Referral[]
@@ -146,11 +147,12 @@ model Subscription {
   limitsJson String  @default("{}") // JSON: { items, photos, projects }
   featuresJson String @default("[]") // JSON array of feature keys
 
-  status    String   @default("ACTIVE") // ACTIVE | CANCELLED | EXPIRED
+  status    String   @default("ACTIVE") // ACTIVE | CANCELLED | EXPIRED | PAST_DUE
 
-  billingPeriod        String   @default("monthly")
-  currentPeriodStart   DateTime @default(now())
-  currentPeriodEnd     DateTime @default(now())
+  billingPeriod          String   @default("monthly")
+  currentPeriodStart     DateTime @default(now())
+  currentPeriodEnd       DateTime @default(now())
+  stripeSubscriptionId   String?  @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -221,6 +223,40 @@ model WhiteGlovePhase {
   createdAt   DateTime          @default(now())
 
   @@index([projectId])
+}
+
+model WhiteGloveBooking {
+  id                      String    @id @default(cuid())
+  userId                  String
+  user                    User      @relation(fields: [userId], references: [id])
+  tier                    String    // ESSENTIALS | PROFESSIONAL | LEGACY
+  serviceType             String    // ESTATE_SALE | NEIGHBORHOOD_BUNDLE
+  totalAmount             Float
+  depositAmount           Float
+  balanceAmount           Float
+  depositPaid             Boolean   @default(false)
+  depositPaidAt           DateTime?
+  depositStripePaymentId  String?
+  balancePaid             Boolean   @default(false)
+  balancePaidAt           DateTime?
+  balanceStripePaymentId  String?
+  addOnsTotal             Float     @default(0)
+  addOnsDetail            String?   // JSON: [{name, amount}]
+  status                  String    @default("PENDING_DEPOSIT") // PENDING_DEPOSIT | BOOKED | IN_PROGRESS | COMPLETED | CANCELLED
+  refundAmount            Float?
+  refundStripeId          String?
+  heroesDiscount          Boolean   @default(false)
+  scheduledAt             DateTime?
+  completedAt             DateTime?
+  cancelledAt             DateTime?
+  cancellationReason      String?
+  clientNotes             String?
+  internalNotes           String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
 }
 
 model Contractor {

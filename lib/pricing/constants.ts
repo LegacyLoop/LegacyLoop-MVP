@@ -18,7 +18,6 @@ export {
   TIER_NUMBER_TO_KEY,
   TIER_KEY_TO_NUMBER,
   // Helpers
-  toSquareCents,
   calculateProcessingFee,
   calculateTotalWithFee,
   calculateCommission,

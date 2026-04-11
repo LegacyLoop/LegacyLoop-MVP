@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
-import { stripe, isConfigured, getOrCreateStripeCustomer } from "@/lib/stripe";
+import { stripe, isConfigured, getOrCreateStripeCustomer, createStripeSubscription } from "@/lib/stripe";
+import { getOrCreateStripePrice } from "@/lib/stripe-products";
 import { recordPayment } from "@/lib/services/payment-ledger";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email/send";
@@ -272,32 +273,48 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Cannot checkout free tier" }, { status: 400 });
       }
 
-      if (isConfigured && stripe) {
+      if (isConfigured && stripe && stripeCustomerId) {
         try {
-          const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(chargeAmount * 100),
-            currency: "usd",
-            ...(stripeCustomerId ? { customer: stripeCustomerId, receipt_email: user.email } : {}),
-            metadata: { type: "subscription", userId: user.id, tier: tierKey, billing },
-            description: `${tier.name} plan — ${billing}`,
+          const stripePriceId = await getOrCreateStripePrice(tierKey, billing as "monthly" | "annual");
+          if (!stripePriceId) {
+            return NextResponse.json({ error: "Pricing configuration error." }, { status: 500 });
+          }
+
+          // Create recurring Stripe Subscription (not one-time PaymentIntent)
+          const subscription = await createStripeSubscription(stripeCustomerId, stripePriceId, {
+            legacyloop_type: "subscription",
+            userId: user.id,
+            tier: tierKey.toUpperCase(),
+            billingPeriod: billing,
           });
 
-          await recordPayment(user.id, "subscription", chargeAmount, `${tier.name} plan — ${billing}`, {
-            stripePaymentId: paymentIntent.id,
-            metadata: { tier: tierKey, billing },
-          });
+          if (!subscription) {
+            return NextResponse.json({ error: "Could not create subscription." }, { status: 500 });
+          }
+
+          const invoice = subscription.latest_invoice as any;
+          const pi = invoice?.payment_intent as import("stripe").default.PaymentIntent;
+          const clientSecret = pi?.client_secret;
+
+          if (pi?.id) {
+            await recordPayment(user.id, "subscription", chargeAmount, `${tier.name} plan — ${billing}`, {
+              stripePaymentId: pi.id,
+              metadata: { tier: tierKey, billing, stripeSubscriptionId: subscription.id },
+            });
+          }
 
           return NextResponse.json({
             ok: true,
             type: "subscription",
-            clientSecret: paymentIntent.client_secret,
+            clientSecret,
+            subscriptionId: subscription.id,
             tier: tierKey,
             tierName: tier.name,
             charged: chargeAmount,
             billing,
           });
         } catch (stripeErr) {
-          console.error("Stripe payment error:", stripeErr);
+          console.error("Stripe subscription error:", stripeErr);
           const { message, status } = getStripeErrorMessage(stripeErr);
           return NextResponse.json({ error: message }, { status });
         }

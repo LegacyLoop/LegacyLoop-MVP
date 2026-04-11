@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authAdapter } from "@/lib/adapters/auth";
 import { getItemEnrichmentContext } from "@/lib/enrichment";
-import { BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { BOT_CREDIT_COSTS, canUseAskClaude } from "@/lib/constants/pricing";
 
 /* ═══════════════════════════════════════════════════════════════════════
    GET  — Return chat history for this item
@@ -73,6 +73,14 @@ export async function POST(
     select: { id: true },
   });
   if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
+
+  // ── Tier gate: Ask Claude requires DIY Seller+ ──
+  if (!canUseAskClaude(user.tier)) {
+    return NextResponse.json(
+      { error: "upgrade_required", message: "Ask Claude requires DIY Seller plan or above.", upgradeUrl: "/subscription" },
+      { status: 403 }
+    );
+  }
 
   // ── Credit check ──
   const creditCost = BOT_CREDIT_COSTS.intelligenceChat;

@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
 
   if (!clientId) {
@@ -36,6 +36,18 @@ export async function GET() {
     path: "/",
     maxAge: 600,
   });
+
+  // Pass referral code through a separate cookie (if present)
+  const ref = request.nextUrl.searchParams.get("ref");
+  if (ref) {
+    jar.set("google-oauth-ref", ref, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 600,
+    });
+  }
 
   return NextResponse.redirect(authUrl);
 }

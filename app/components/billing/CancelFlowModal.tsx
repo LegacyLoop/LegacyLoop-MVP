@@ -24,14 +24,19 @@ export default function CancelFlowModal({ planName, currentTier, onClose, onCanc
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const downgradeOption = DOWNGRADE_MAP[currentTier] || null;
-  const [step, setStep] = useState<"downgrade" | "options" | "confirm" | "done">(
+  const [step, setStep] = useState<"downgrade" | "options" | "immediate" | "confirm" | "done">(
     downgradeOption ? "downgrade" : "options"
   );
   const [selectedRefund, setSelectedRefund] = useState<string | null>(null);
+  const [cancelType, setCancelType] = useState<"end_of_period" | "immediate">("end_of_period");
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<{
+    cancelType?: string;
     refundType?: string;
     refundAmount?: number;
+    effectiveDate?: string;
+    daysRemaining?: number;
+    message?: string;
   } | null>(null);
 
   useEffect(() => {
@@ -42,13 +47,13 @@ export default function CancelFlowModal({ planName, currentTier, onClose, onCanc
       .finally(() => setLoading(false));
   }, []);
 
-  async function handleCancel(refundType: string) {
+  async function handleCancel(refundType: string, type: "end_of_period" | "immediate" = "end_of_period") {
     setProcessing(true);
     try {
       const res = await fetch("/api/billing/cancel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refundType }),
+        body: JSON.stringify({ cancelType: type, refundType }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -135,11 +140,13 @@ export default function CancelFlowModal({ planName, currentTier, onClose, onCanc
                 marginBottom: 16,
               }}
             >
-              {result?.refundType === "credits"
-                ? `${result.refundAmount} credits added to your balance`
-                : result?.refundType === "cash"
-                  ? `$${result.refundAmount} refund processing`
-                  : "Your plan will remain active until the end of the billing period."}
+              {result?.message || (result?.cancelType === "end_of_period"
+                ? `Your plan stays active until ${result.effectiveDate ? new Date(result.effectiveDate).toLocaleDateString() : "the end of your billing period"}. No further charges.`
+                : result?.refundType === "credits"
+                  ? `${result.refundAmount} credits added to your balance`
+                  : result?.refundType === "cash"
+                    ? `$${(result.refundAmount ?? 0).toFixed(2)} refund processing (3-5 days)`
+                    : "Your plan has been cancelled.")}
             </div>
             <button
               onClick={onClose}
@@ -177,11 +184,13 @@ export default function CancelFlowModal({ planName, currentTier, onClose, onCanc
                 lineHeight: 1.6,
               }}
             >
-              {selectedRefund === "credits"
-                ? `You'll receive ${proRate?.creditsEquivalent || 0} credits instantly. Credits never expire.`
-                : selectedRefund === "cash"
-                  ? `You'll receive $${proRate?.cashRefundAmount || 0} back to your card after 3.5% processing fee ($${proRate?.stripeFeeAmount || 0}). 3-5 business days.`
-                  : "Your plan stays active until the end of the current billing period."}
+              {cancelType === "end_of_period"
+                ? `Your plan stays active for ${proRate?.daysRemaining || 0} more days. No further charges will be made.`
+                : selectedRefund === "credits"
+                  ? `You'll receive ${proRate?.creditsEquivalent || 0} credits instantly. Credits never expire.`
+                  : selectedRefund === "cash"
+                    ? `You'll receive $${proRate?.cashRefundAmount || 0} back to your card. 3-5 business days.`
+                    : "Your plan will be cancelled immediately. No refund."}
             </div>
             <div
               style={{
@@ -191,7 +200,7 @@ export default function CancelFlowModal({ planName, currentTier, onClose, onCanc
               }}
             >
               <button
-                onClick={() => handleCancel(selectedRefund || "none")}
+                onClick={() => handleCancel(selectedRefund || "none", cancelType)}
                 disabled={processing}
                 style={{
                   height: 48,
@@ -307,160 +316,117 @@ export default function CancelFlowModal({ planName, currentTier, onClose, onCanc
               </button>
             </div>
           </div>
-        ) : (
+        ) : step === "immediate" ? (
+          /* ── Immediate cancel: refund options ── */
           <div>
-            <div
-              style={{
-                fontSize: 18,
-                fontWeight: 700,
-                color: "#fff",
-                marginBottom: 6,
-              }}
-            >
-              Cancel {planName}?
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 6 }}>
+              Cancel Immediately
             </div>
-            <div
-              style={{
-                fontSize: 12,
-                color: "rgba(207,216,220,0.6)",
-                marginBottom: 20,
-              }}
-            >
-              Your plan stays active until the end of the billing period.
+            <div style={{ fontSize: 12, color: "rgba(207,216,220,0.6)", marginBottom: 20, lineHeight: 1.6 }}>
+              Your plan will end today. Choose how to handle your unused balance.
             </div>
 
             {!loading && proRate && (
-              <div
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: 12,
-                  padding: 16,
-                  marginBottom: 20,
-                }}
-              >
-                <div
-                  style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}
-                >
-                  You have {proRate.daysRemaining} days remaining
+              <div style={{
+                background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 12, padding: 16, marginBottom: 20,
+              }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>
+                  {proRate.daysRemaining} days remaining
                 </div>
-                <div
-                  style={{
-                    fontSize: 20,
-                    fontWeight: 800,
-                    color: "#00bcd4",
-                    marginTop: 4,
-                  }}
-                >
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#00bcd4", marginTop: 4 }}>
                   Unused value: ${proRate.creditForUnused?.toFixed(2)}
-                </div>
-                <div
-                  style={{
-                    fontSize: 11,
-                    color: "rgba(207,216,220,0.5)",
-                    marginTop: 6,
-                  }}
-                >
-                  Would you like a refund for unused days?
                 </div>
               </div>
             )}
 
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-              }}
-            >
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button
+                onClick={() => { setCancelType("immediate"); setSelectedRefund("credits"); setStep("confirm"); }}
+                style={{
+                  height: 48, background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.3)",
+                  color: "#00bcd4", fontWeight: 700, fontSize: 13, borderRadius: 10, cursor: "pointer", textAlign: "center",
+                }}
+              >
+                <span>Get {proRate?.creditsEquivalent || 0} Platform Credits</span>
+                <div style={{ fontSize: 10, color: "rgba(207,216,220,0.5)", marginTop: 2 }}>Instant — no fee</div>
+              </button>
+              <button
+                onClick={() => { setCancelType("immediate"); setSelectedRefund("cash"); setStep("confirm"); }}
+                style={{
+                  height: 44, background: "transparent", border: "1px solid rgba(255,255,255,0.12)",
+                  color: "rgba(255,255,255,0.6)", fontSize: 12, borderRadius: 10, cursor: "pointer", textAlign: "center",
+                }}
+              >
+                <span>Get ${proRate?.cashRefundAmount?.toFixed(2) || "0.00"} Cash Back</span>
+                <div style={{ fontSize: 10, color: "rgba(207,216,220,0.4)", marginTop: 2 }}>3-5 business days</div>
+              </button>
+              <button
+                onClick={() => { setCancelType("immediate"); setSelectedRefund("none"); setStep("confirm"); }}
+                style={{
+                  height: 36, background: "transparent", border: "none",
+                  color: "rgba(255,255,255,0.3)", fontSize: 11, cursor: "pointer",
+                }}
+              >
+                Cancel without refund
+              </button>
+              <button
+                onClick={() => setStep("options")}
+                style={{
+                  height: 36, background: "transparent", border: "none",
+                  color: "rgba(255,255,255,0.4)", fontSize: 11, cursor: "pointer",
+                }}
+              >
+                ← Go back
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* ── Options: cancel at period end (DEFAULT) vs immediate ── */
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 6 }}>
+              Cancel {planName}?
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(207,216,220,0.6)", marginBottom: 20 }}>
+              Choose how you'd like to cancel.
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {/* Keep plan — always first */}
               <button
                 onClick={onClose}
                 style={{
-                  height: 52,
-                  background: "linear-gradient(135deg, #00bcd4, #0097a7)",
-                  color: "#000",
-                  fontWeight: 800,
-                  fontSize: 14,
-                  borderRadius: 10,
-                  border: "none",
-                  cursor: "pointer",
+                  height: 52, background: "linear-gradient(135deg, #00bcd4, #0097a7)",
+                  color: "#000", fontWeight: 800, fontSize: 14, borderRadius: 10, border: "none", cursor: "pointer",
                 }}
               >
                 Keep My Plan
               </button>
+
+              {/* Cancel at period end — DEFAULT cancellation path */}
               <button
-                onClick={() => {
-                  setSelectedRefund("credits");
-                  setStep("confirm");
-                }}
+                onClick={() => { setCancelType("end_of_period"); setSelectedRefund("none"); setStep("confirm"); }}
                 style={{
-                  height: 48,
-                  background: "rgba(0,188,212,0.08)",
-                  border: "1px solid rgba(0,188,212,0.3)",
-                  color: "#00bcd4",
-                  fontWeight: 700,
-                  fontSize: 13,
-                  borderRadius: 10,
-                  cursor: "pointer",
-                  textAlign: "center",
+                  height: 52, background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.15)", color: "#fff",
+                  fontWeight: 700, fontSize: 13, borderRadius: 10, cursor: "pointer", textAlign: "center",
                 }}
               >
-                <span>Cancel + Get {proRate?.creditsEquivalent || 0} Credits</span>
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: "rgba(207,216,220,0.5)",
-                    marginTop: 2,
-                  }}
-                >
-                  Instant - No fee
+                <span>Cancel at End of Billing Period</span>
+                <div style={{ fontSize: 10, color: "rgba(207,216,220,0.5)", marginTop: 2 }}>
+                  Keep access until {proRate?.daysRemaining ? `${proRate.daysRemaining} more days` : "period end"} — no refund needed
                 </div>
               </button>
+
+              {/* Cancel immediately — secondary path */}
               <button
-                onClick={() => {
-                  setSelectedRefund("cash");
-                  setStep("confirm");
-                }}
+                onClick={() => setStep("immediate")}
                 style={{
-                  height: 44,
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  color: "rgba(255,255,255,0.6)",
-                  fontSize: 12,
-                  borderRadius: 10,
-                  cursor: "pointer",
-                  textAlign: "center",
+                  height: 40, background: "transparent", border: "none",
+                  color: "rgba(255,255,255,0.4)", fontSize: 12, cursor: "pointer",
                 }}
               >
-                <span>
-                  Cancel + Get ${proRate?.cashRefundAmount?.toFixed(2) || "0.00"} Cash
-                  Back
-                </span>
-                <div
-                  style={{
-                    fontSize: 10,
-                    color: "rgba(207,216,220,0.4)",
-                    marginTop: 2,
-                  }}
-                >
-                  After 3.5% fee - 3-5 business days
-                </div>
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedRefund("none");
-                  setStep("confirm");
-                }}
-                style={{
-                  height: 36,
-                  background: "transparent",
-                  border: "none",
-                  color: "rgba(255,255,255,0.3)",
-                  fontSize: 11,
-                  cursor: "pointer",
-                }}
-              >
-                Cancel without refund
+                Cancel immediately + get a refund →
               </button>
             </div>
           </div>

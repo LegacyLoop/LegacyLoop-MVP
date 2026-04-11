@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
-import { stripe, isConfigured, getOrCreateStripeCustomer } from "@/lib/stripe";
+import { stripe, isConfigured, getOrCreateStripeCustomer, createStripeSubscription } from "@/lib/stripe";
+import { getOrCreateStripePrice } from "@/lib/stripe-products";
 import { calculateProRate } from "@/lib/billing/pro-rate";
 import { PLANS, TIER_NUMBER_TO_KEY, calculateTierPrice } from "@/lib/constants/pricing";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
@@ -49,42 +50,92 @@ export async function POST(req: NextRequest) {
       periodEnd.setMonth(periodEnd.getMonth() + 1);
     }
 
-    // When Stripe is configured, create PaymentIntent and return clientSecret
-    if (isConfigured && stripe && proRate.upgradeCharge > 0) {
+    // When Stripe is configured — use Stripe Billing
+    if (isConfigured && stripe && newPrice > 0) {
       try {
         const fullUser = await prisma.user.findUnique({ where: { id: user.id }, select: { id: true, email: true, displayName: true, stripeCustomerId: true } });
         const stripeCustomerId = fullUser ? await getOrCreateStripeCustomer(fullUser) : null;
 
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount: Math.round(proRate.upgradeCharge * 100),
-          currency: "usd",
-          ...(stripeCustomerId ? { customer: stripeCustomerId, receipt_email: user.email } : {}),
-          metadata: {
-            type: "subscription_upgrade",
-            userId: user.id,
-            fromTier: sub.tier,
-            toTier: newTierKey.toUpperCase(),
-            billingPeriod,
-          },
-          description: `Upgrade to ${newPlan.name} — ${billingPeriod}`,
+        if (!stripeCustomerId) {
+          return NextResponse.json({ error: "Could not create payment customer. Please try again." }, { status: 500 });
+        }
+
+        const stripePriceId = await getOrCreateStripePrice(newTierKey, billingPeriod as "monthly" | "annual");
+        if (!stripePriceId) {
+          return NextResponse.json({ error: "Pricing configuration error. Please contact support." }, { status: 500 });
+        }
+
+        // ── PATH A: Update existing Stripe subscription (prorated) ──
+        if (sub.stripeSubscriptionId) {
+          const existingSub = await stripe.subscriptions.retrieve(sub.stripeSubscriptionId);
+          const itemId = existingSub.items.data[0]?.id;
+
+          if (itemId) {
+            const updatedSub = await stripe.subscriptions.update(sub.stripeSubscriptionId, {
+              items: [{ id: itemId, price: stripePriceId }],
+              proration_behavior: "create_prorations",
+              metadata: { userId: user.id, tier: newTierKey.toUpperCase(), billingPeriod, legacyloop_type: "subscription" },
+            });
+
+            // Update local DB immediately (Stripe handles billing)
+            await prisma.subscription.update({
+              where: { id: sub.id },
+              data: { tier: newTierKey.toUpperCase(), price: newPrice, billingPeriod, stripeSubscriptionId: updatedSub.id },
+            }).catch(() => {});
+            await prisma.user.update({ where: { id: user.id }, data: { tier: newTier } }).catch(() => {});
+
+            await prisma.userEvent.create({
+              data: { userId: user.id, eventType: "SUBSCRIPTION_UPGRADED", metadata: JSON.stringify({ fromTier: sub.tier, toTier: newTierKey.toUpperCase(), prorated: true }) },
+            }).catch(() => {});
+
+            return NextResponse.json({
+              success: true,
+              newPlan: newPlan.name,
+              charged: newPrice,
+              credited: proRate.creditForUnused,
+              prorated: true,
+              effectiveNow: true,
+              nextBillingDate: new Date(((updatedSub as any).current_period_end ?? 0) * 1000).toISOString(),
+            });
+          }
+        }
+
+        // ── PATH B: New Stripe subscription (from free tier or no existing sub) ──
+        const subscription = await createStripeSubscription(stripeCustomerId, stripePriceId, {
+          legacyloop_type: "subscription",
+          userId: user.id,
+          tier: newTierKey.toUpperCase(),
+          billingPeriod,
         });
 
-        await recordPayment(user.id, "subscription_upgrade", proRate.upgradeCharge, `Upgrade to ${newPlan.name}`, {
-          stripePaymentId: paymentIntent.id,
-          metadata: { fromTier: sub.tier, toTier: newTierKey.toUpperCase(), credited: proRate.creditForUnused },
+        if (!subscription) {
+          return NextResponse.json({ error: "Could not create subscription. Please try again." }, { status: 500 });
+        }
+
+        const invoice = subscription.latest_invoice as any;
+        const pi = invoice?.payment_intent as import("stripe").default.PaymentIntent;
+        const clientSecret = pi?.client_secret;
+
+        if (!clientSecret) {
+          return NextResponse.json({ error: "Payment setup incomplete. Please try again." }, { status: 500 });
+        }
+
+        await recordPayment(user.id, "subscription", newPrice, `${newPlan.name} plan — ${billingPeriod}`, {
+          stripePaymentId: pi.id,
+          metadata: { tier: newTierKey.toUpperCase(), billingPeriod, stripeSubscriptionId: subscription.id, fromTier: sub.tier },
         });
 
-        // Return clientSecret — frontend confirms payment, then webhook finalizes
         return NextResponse.json({
           success: true,
-          clientSecret: paymentIntent.client_secret,
+          clientSecret,
+          subscriptionId: subscription.id,
           newPlan: newPlan.name,
-          charged: proRate.upgradeCharge,
+          charged: newPrice,
           credited: proRate.creditForUnused,
           pendingConfirmation: true,
         });
       } catch (stripeErr) {
-        console.error("Stripe upgrade error:", stripeErr);
+        console.error("Stripe subscription error:", stripeErr);
         return NextResponse.json({ error: "Payment processing failed. Please try again." }, { status: 500 });
       }
     }

@@ -397,6 +397,106 @@ export function buyerOutreachEmail(message: string, itemName: string, itemUrl: s
   `);
 }
 
+// ─── White Glove Email Templates ──────────────────────────────────────────
+
+const GOLD = "#D4AF37";
+
+export function whiteGloveBookingConfirmEmail(
+  name: string, tier: string, depositAmount: number, balanceAmount: number, totalAmount: number, scheduledDate?: string
+): { subject: string; html: string } {
+  return {
+    subject: "Your LegacyLoop White Glove Service — Booking Confirmed",
+    html: wrapper(`
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="display:inline-block;width:48px;height:48px;border-radius:50%;background:${GOLD};color:#fff;font-size:22px;line-height:48px;font-weight:800">✦</div>
+      </div>
+      <h1 style="font-size:22px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 8px;text-align:center">Booking Confirmed</h1>
+      <p style="font-size:14px;color:${TEXT_SECONDARY};text-align:center;margin:0 0 28px;line-height:1.6">
+        Your estate service has been confirmed. Our team will contact you within 24 hours to coordinate next steps.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px">
+        <tr><td style="padding:10px 0;border-bottom:1px solid rgba(212,175,55,0.15)">
+          <span style="color:${TEXT_MUTED};font-size:13px">Service</span><br>
+          <span style="color:${TEXT_PRIMARY};font-weight:700;font-size:15px">White Glove ${tier}</span>
+        </td></tr>
+        ${scheduledDate ? `<tr><td style="padding:10px 0;border-bottom:1px solid rgba(212,175,55,0.15)">
+          <span style="color:${TEXT_MUTED};font-size:13px">Scheduled Date</span><br>
+          <span style="color:${TEXT_PRIMARY};font-weight:600;font-size:14px">${scheduledDate}</span>
+        </td></tr>` : ""}
+        <tr><td style="padding:10px 0;border-bottom:1px solid rgba(212,175,55,0.15)">
+          <span style="color:${TEXT_MUTED};font-size:13px">Deposit Paid (60%)</span><br>
+          <span style="color:${GOLD};font-weight:800;font-size:18px">$${depositAmount.toFixed(2)}</span>
+        </td></tr>
+        <tr><td style="padding:10px 0;border-bottom:1px solid rgba(212,175,55,0.15)">
+          <span style="color:${TEXT_MUTED};font-size:13px">Remaining Balance (40%)</span><br>
+          <span style="color:${TEXT_PRIMARY};font-weight:600;font-size:14px">$${balanceAmount.toFixed(2)} — due at service completion</span>
+        </td></tr>
+        <tr><td style="padding:10px 0">
+          <span style="color:${TEXT_MUTED};font-size:13px">Total Service Cost</span><br>
+          <span style="color:${TEXT_PRIMARY};font-weight:700;font-size:15px">$${totalAmount.toFixed(2)}</span>
+        </td></tr>
+      </table>
+      <div style="background:rgba(212,175,55,0.06);border:1px solid rgba(212,175,55,0.15);border-radius:8px;padding:14px;margin-bottom:24px">
+        <div style="font-size:12px;font-weight:700;color:${GOLD};margin-bottom:6px">CANCELLATION POLICY</div>
+        <div style="font-size:12px;color:${TEXT_SECONDARY};line-height:1.6">
+          Within 48 hours: Full deposit refund.<br>
+          After 48 hours, before service: 50% deposit refund.<br>
+          After service begins: No refund.
+        </div>
+      </div>
+      <p style="font-size:13px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 16px">
+        For questions or changes, contact us directly at
+        <a href="mailto:ryan@legacy-loop.com" style="color:${GOLD};text-decoration:none;font-weight:600">ryan@legacy-loop.com</a>.
+      </p>
+      <p style="font-size:14px;color:${TEXT_MUTED};font-style:italic;margin:0">
+        Thank you for trusting LegacyLoop with your family's legacy.<br>
+        — The LegacyLoop Estate Team
+      </p>
+    `),
+  };
+}
+
+export function whiteGloveBalanceDueEmail(
+  name: string, tier: string, baseBalance: number, addOns: { name: string; amount: number }[], finalBalance: number
+): { subject: string; html: string } {
+  const addOnsHtml = addOns.length > 0
+    ? addOns.map(a => `<tr><td style="padding:6px 0;color:${TEXT_SECONDARY};font-size:13px">${a.name}</td><td style="padding:6px 0;text-align:right;color:${TEXT_PRIMARY};font-weight:600;font-size:13px">$${a.amount.toFixed(2)}</td></tr>`).join("")
+    : "";
+
+  return {
+    subject: "LegacyLoop Estate Service Complete — Balance Due",
+    html: wrapper(`
+      <div style="text-align:center;margin-bottom:24px">
+        <div style="display:inline-block;width:48px;height:48px;border-radius:50%;background:${GOLD};color:#fff;font-size:22px;line-height:48px;font-weight:800">✦</div>
+      </div>
+      <h1 style="font-size:22px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 8px;text-align:center">Service Complete</h1>
+      <p style="font-size:14px;color:${TEXT_SECONDARY};text-align:center;margin:0 0 28px;line-height:1.6">
+        Your White Glove ${tier} estate service has been completed. Below is your final balance.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px">
+        <tr><td style="padding:8px 0;color:${TEXT_SECONDARY};font-size:13px">Base Balance (40%)</td>
+            <td style="padding:8px 0;text-align:right;color:${TEXT_PRIMARY};font-weight:600;font-size:13px">$${baseBalance.toFixed(2)}</td></tr>
+        ${addOnsHtml}
+        <tr><td colspan="2" style="border-top:1px solid rgba(212,175,55,0.2);padding-top:12px;margin-top:8px"></td></tr>
+        <tr><td style="padding:8px 0;color:${TEXT_PRIMARY};font-weight:800;font-size:16px">Total Due</td>
+            <td style="padding:8px 0;text-align:right;color:${GOLD};font-weight:800;font-size:20px">$${finalBalance.toFixed(2)}</td></tr>
+      </table>
+      <div style="text-align:center;margin:24px 0 16px">
+        ${ctaButton("Pay Balance Now", `${APP_URL}/payments`)}
+      </div>
+      <div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.15);border-radius:8px;padding:12px;margin-bottom:20px">
+        <div style="font-size:12px;color:#ef4444;line-height:1.6">
+          <strong>Payment is due within 24 hours.</strong> A $50/day late fee applies after 48 hours.
+        </div>
+      </div>
+      <p style="font-size:14px;color:${TEXT_MUTED};font-style:italic;margin:0">
+        Thank you for trusting LegacyLoop with your family's legacy.<br>
+        — The LegacyLoop Estate Team
+      </p>
+    `),
+  };
+}
+
 // ─── Exports ──────────────────────────────────────────────────────────────
 
 export { wrapper as emailWrapper, ctaButton, ACCENT, APP_URL, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, BG_DARK, BG_CARD, BORDER };

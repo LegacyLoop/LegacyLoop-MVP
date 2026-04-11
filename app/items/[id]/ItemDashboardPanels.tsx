@@ -9721,6 +9721,7 @@ export default function ItemDashboardPanels({
           isAntique={!!antique?.isAntique}
           isCollectible={itemIsCollectible ?? false}
           authenticityScore={authenticityScore?.score ?? null}
+          userTier={userTier}
           collapsed={collapsed.intelligence}
           onToggle={() => togglePanel("intelligence")}
         />

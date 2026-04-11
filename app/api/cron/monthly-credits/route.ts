@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { TIER } from "@/lib/constants/pricing";
+import { TIER, MONTHLY_CREDITS } from "@/lib/constants/pricing";
 
 export const maxDuration = 60;
-
-/** Monthly credit allocations by tier */
-const MONTHLY_CREDITS: Record<number, number> = {
-  [TIER.DIY_SELLER]: 20,
-  [TIER.POWER_SELLER]: 50,
-  [TIER.ESTATE_MANAGER]: 100,
-};
 
 /**
  * POST /api/cron/monthly-credits

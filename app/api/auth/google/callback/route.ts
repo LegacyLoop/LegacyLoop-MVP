@@ -117,7 +117,8 @@ export async function GET(request: NextRequest) {
     await authAdapter.issueSession(user.id, user.tier);
 
     // Referral code auto-redemption for Google OAuth (fire-and-forget)
-    const refCode = searchParams.get("ref") || (state ? (() => { try { const s = JSON.parse(state); return s.ref; } catch { return null; } })() : null);
+    const refCookie = (await cookies()).get("google-oauth-ref")?.value;
+    const refCode = searchParams.get("ref") || refCookie || null;
     if (refCode && typeof refCode === "string") {
       void redeemReferralCode(refCode, { id: user.id, email: user.email }, { skipDuplicateCheck: true }).catch(() => {});
     }

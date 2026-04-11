@@ -629,7 +629,7 @@ export default function PricingClient() {
                   {tier.trial && (
                     <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", textAlign: "center", marginBottom: "0.4rem" }}>✨ {tier.trial} — no card needed</div>
                   )}
-                  <Link href="/auth/signup"
+                  <Link href={`/auth/signup${annual ? "?billing=annual" : ""}`}
                     style={{
                       display: "block", textAlign: "center", padding: "0.7rem 1rem", borderRadius: "0.75rem",
                       background: tier.ctaVariant === "primary" ? tier.color : "transparent",

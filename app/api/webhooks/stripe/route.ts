@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { recordPayment } from "@/lib/services/payment-ledger";
 import { n8nRenewalReminder } from "@/lib/n8n";
+import { sendEmail } from "@/lib/email/send";
+import { whiteGloveBookingConfirmEmail } from "@/lib/email/templates";
 import type Stripe from "stripe";
 
 /**
@@ -119,6 +121,42 @@ export async function POST(req: NextRequest) {
           }
         }
       }
+
+      // ── White Glove deposit confirmed ──
+      if (paymentType === "white_glove_deposit") {
+        const bookingId = pi.metadata?.bookingId;
+        if (!bookingId) {
+          // Find by stripePaymentId
+          const booking = await prisma.whiteGloveBooking.findFirst({
+            where: { depositStripePaymentId: pi.id },
+          });
+          if (booking) {
+            await prisma.whiteGloveBooking.update({
+              where: { id: booking.id },
+              data: { depositPaid: true, depositPaidAt: new Date(), status: "BOOKED" },
+            }).catch(() => {});
+
+            // Send booking confirmation email
+            const bookingUser = await prisma.user.findUnique({ where: { id: booking.userId }, select: { email: true, displayName: true } });
+            if (bookingUser?.email) {
+              const name = bookingUser.displayName?.split(" ")[0] ?? "there";
+              const emailContent = whiteGloveBookingConfirmEmail(name, booking.tier, booking.depositAmount, booking.balanceAmount, booking.totalAmount);
+              sendEmail({ to: bookingUser.email, ...emailContent });
+            }
+          }
+        }
+      }
+
+      // ── White Glove balance confirmed ──
+      if (paymentType === "white_glove_balance") {
+        const bId = pi.metadata?.bookingId;
+        if (bId) {
+          await prisma.whiteGloveBooking.update({
+            where: { id: bId },
+            data: { balancePaid: true, balancePaidAt: new Date(), balanceStripePaymentId: pi.id, status: "COMPLETED", completedAt: new Date() },
+          }).catch(() => {});
+        }
+      }
     }
 
     // ── payment_intent.payment_failed ─────────────────────────────────────
@@ -134,29 +172,151 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // ── invoice.payment_succeeded (subscription renewal) ──────────────────
+    // ── invoice.payment_succeeded (subscription creation + renewal) ─────
     if (event.type === "invoice.payment_succeeded") {
-      const invoice = event.data.object as Stripe.Invoice;
+      const invoice = event.data.object as any;
+      const stripeSubId = invoice.subscription as string | undefined;
       const customerId = invoice.customer as string;
+      const billingReason = invoice.billing_reason as string;
 
-      // Find user by Stripe customer ID in metadata
-      if ((invoice as any).subscription && invoice.billing_reason === "subscription_cycle") {
-        // This is a renewal — fire WF21
-        const sub = await prisma.subscription.findFirst({
-          where: { status: "ACTIVE" },
-          include: { user: { select: { email: true, displayName: true } } },
+      if (stripeSubId) {
+        // Find user by stripeCustomerId
+        const user = await prisma.user.findFirst({
+          where: { stripeCustomerId: customerId },
+          select: { id: true, email: true, displayName: true },
         });
 
-        if (sub) {
-          const firstName = sub.user.displayName?.split(" ")[0] ?? "there";
-          n8nRenewalReminder(
-            sub.user.email,
-            firstName,
-            sub.tier,
-            sub.currentPeriodEnd.toISOString(),
-            sub.price,
-          );
+        if (user) {
+          // Extract period from invoice lines
+          const lineItem = invoice.lines?.data?.[0];
+          const periodEnd = lineItem?.period?.end
+            ? new Date(lineItem.period.end * 1000)
+            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          const periodStart = lineItem?.period?.start
+            ? new Date(lineItem.period.start * 1000)
+            : new Date();
+
+          // Extract tier from subscription metadata
+          const subMeta = invoice.subscription_details?.metadata || {};
+          const tier = subMeta.tier || "STARTER";
+          const billingPeriod = subMeta.billingPeriod || "monthly";
+          const tierMap: Record<string, number> = { free: 1, starter: 2, plus: 3, pro: 4 };
+          const tierNumber = tierMap[tier.toLowerCase()] ?? 1;
+          const price = (invoice.amount_paid ?? 0) / 100;
+
+          // Update or create subscription record
+          const existingSub = await prisma.subscription.findFirst({
+            where: { userId: user.id, status: { in: ["ACTIVE", "PAST_DUE"] } },
+          });
+
+          if (existingSub) {
+            await prisma.subscription.update({
+              where: { id: existingSub.id },
+              data: {
+                status: "ACTIVE",
+                tier: tier.toUpperCase(),
+                price,
+                billingPeriod,
+                stripeSubscriptionId: stripeSubId,
+                currentPeriodStart: periodStart,
+                currentPeriodEnd: periodEnd,
+              },
+            }).catch(() => {});
+          } else {
+            await prisma.subscription.create({
+              data: {
+                userId: user.id,
+                status: "ACTIVE",
+                tier: tier.toUpperCase(),
+                price,
+                billingPeriod,
+                stripeSubscriptionId: stripeSubId,
+                currentPeriodStart: periodStart,
+                currentPeriodEnd: periodEnd,
+              },
+            }).catch(() => {});
+          }
+
+          // Update user tier
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { tier: tierNumber },
+          }).catch(() => {});
+
+          // Fire WF21 on renewal (not first payment)
+          if (billingReason === "subscription_cycle") {
+            const firstName = user.displayName?.split(" ")[0] ?? "there";
+            n8nRenewalReminder(user.email, firstName, tier, periodEnd.toISOString(), price);
+          }
         }
+      }
+    }
+
+    // ── invoice.payment_failed ────────────────────────────────────────────
+    if (event.type === "invoice.payment_failed") {
+      const invoice = event.data.object as any;
+      const stripeSubId = invoice.subscription as string | undefined;
+      const customerId = invoice.customer as string;
+
+      if (stripeSubId) {
+        const user = await prisma.user.findFirst({
+          where: { stripeCustomerId: customerId },
+          select: { id: true },
+        });
+
+        if (user) {
+          // Mark subscription as PAST_DUE
+          await prisma.subscription.updateMany({
+            where: { userId: user.id, stripeSubscriptionId: stripeSubId },
+            data: { status: "PAST_DUE" },
+          }).catch(() => {});
+
+          // Create notification
+          await prisma.notification.create({
+            data: {
+              userId: user.id,
+              type: "PAYMENT_FAILED",
+              title: "Payment Failed",
+              message: "Your subscription payment failed. Please update your payment method to keep your plan active.",
+              link: "/subscription",
+            },
+          }).catch(() => {});
+        }
+      }
+    }
+
+    // ── customer.subscription.deleted ─────────────────────────────────────
+    if (event.type === "customer.subscription.deleted") {
+      const sub = event.data.object as Stripe.Subscription;
+      const customerId = sub.customer as string;
+
+      const user = await prisma.user.findFirst({
+        where: { stripeCustomerId: customerId },
+        select: { id: true },
+      });
+
+      if (user) {
+        // Cancel subscription in DB
+        await prisma.subscription.updateMany({
+          where: { userId: user.id, stripeSubscriptionId: sub.id },
+          data: { status: "CANCELLED" },
+        }).catch(() => {});
+
+        // Downgrade to free tier
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { tier: 1 },
+        }).catch(() => {});
+
+        await prisma.notification.create({
+          data: {
+            userId: user.id,
+            type: "SUBSCRIPTION_CANCELLED",
+            title: "Subscription Cancelled",
+            message: "Your subscription has been cancelled. You've been moved to the Free plan.",
+            link: "/pricing",
+          },
+        }).catch(() => {});
       }
     }
 

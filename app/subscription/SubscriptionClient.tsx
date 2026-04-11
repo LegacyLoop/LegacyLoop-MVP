@@ -193,13 +193,15 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
     subscription?.billingPeriod === "annual" ? "annual" : "monthly"
   );
   const [confirmingDowngrade, setConfirmingDowngrade] = useState<number | null>(null);
+  const [downgradeError, setDowngradeError] = useState<string | null>(null);
   const [upgradeTarget, setUpgradeTarget] = useState<string>("PLUS");
   const [activeSlide, setActiveSlide] = useState(0);
 
   const tier = subscription?.tier || "FREE";
-  // BUG 1 FIX: Use canonical tier pricing, not stale DB value
-  const normalPrice = getTierPrice(tier);
-  const preLaunchPrice = getPreLaunchPrice(tier);
+  const isAnnualSub = subscription?.billingPeriod === "annual";
+  // BUG 1 FIX: Use canonical tier pricing, billing-period aware
+  const normalPrice = isAnnualSub ? getAnnualPrice(tier) : getTierPrice(tier);
+  const preLaunchPrice = isAnnualSub ? getPreLaunchAnnualPrice(tier) : getPreLaunchPrice(tier);
   const displayPrice = preLaunchPrice ?? normalPrice;
   const periodEnd = subscription ? new Date(subscription.currentPeriodEnd) : null;
   const periodStart = subscription ? new Date(subscription.currentPeriodStart) : null;
@@ -222,10 +224,20 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
     { label: "PhotoBot", values: ["\u2014", "\u2713", "\u2713", "\u2713"] },
     { label: "ReconBot", values: ["\u2014", "\u2014", "\u2713", "\u2713"] },
     { label: "AntiqueBot", values: ["\u2014", "\u2014", "\u2713", "\u2713"] },
-    { label: "CollectorBot", values: ["\u2014", "\u2014", "\u2713", "\u2713"] },
+    { label: "CollectiblesBot", values: ["\u2014", "\u2014", "\u2713", "\u2713"] },
     { label: "CarBot", values: ["\u2014", "\u2014", "\u2014", "\u2713"] },
     { label: "MegaBot", values: ["\u2014", "\u2713", "\u2713", "\u2713"] },
+    { label: "ListBot", values: ["\u2014", "\u2713", "\u2713", "\u2713"] },
+    { label: "BuyerBot", values: ["\u2014", "\u2713", "\u2713", "\u2713"] },
+    { label: "VideoBot Standard", values: ["\u2014", "8 cr", "8 cr", "8 cr"] },
+    { label: "VideoBot Pro", values: ["\u2014", "\u2014", "15 cr", "15 cr"] },
+    { label: "VideoBot MegaBot", values: ["\u2014", "\u2014", "\u2014", "25 cr"] },
     { label: "Monthly Credits", values: ["\u2014", "20/mo", "50/mo", "100/mo"] },
+    { label: "Intel: Market + Ready", values: ["\u2014", "\u2713", "\u2713", "\u2713"] },
+    { label: "Intel: Sell + Alerts + Action", values: ["\u2014", "\u2014", "\u2713", "\u2713"] },
+    { label: "Ask Claude", values: ["\u2014", "0.25 cr/q", "0.25 cr/q", "0.25 cr/q"] },
+    { label: "Priority Bot Queue", values: ["\u2014", "\u2014", "\u2014", "Exclusive"] },
+    { label: "High Value Alert ($500+)", values: ["\u2713", "\u2713", "\u2713", "\u2713"] },
     { label: "Active Items", values: [String(TIERS.free.items), String(TIERS.starter.items), String(TIERS.plus.items), "Unlimited"] },
     { label: "Photos Per Item", values: [String(TIERS.free.photos), String(TIERS.starter.photos), String(TIERS.plus.photos), String(TIERS.pro.photos)] },
     { label: "Commission", values: [`${TIERS.free.commissionPct}%`, `${TIERS.starter.commissionPct}%`, `${TIERS.plus.commissionPct}%`, `${TIERS.pro.commissionPct}%`] },
@@ -311,13 +323,13 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   {/* Price display */}
                   <div style={{ marginBottom: "0.75rem" }}>
                     {preLaunchPrice != null && preLaunchPrice !== normalPrice ? (
-                      <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem" }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", flexWrap: "wrap" }}>
                         <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.03em" }}>
                           ${preLaunchPrice}
                         </span>
-                        <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span>
+                        <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>{isAnnualSub ? "/yr" : "/mo"}</span>
                         <span style={{ fontSize: "1rem", color: "var(--text-muted)", textDecoration: "line-through", marginLeft: "0.25rem" }}>
-                          ${normalPrice}/mo
+                          ${normalPrice}{isAnnualSub ? "/yr" : "/mo"}
                         </span>
                         <span style={{
                           fontSize: "0.65rem", fontWeight: 700, padding: "2px 8px", borderRadius: 9999,
@@ -329,7 +341,12 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                     ) : (
                       <div style={{ display: "flex", alignItems: "baseline", gap: "0.35rem" }}>
                         <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.03em" }}>${normalPrice}</span>
-                        <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>/mo</span>
+                        <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>{isAnnualSub ? "/yr" : "/mo"}</span>
+                      </div>
+                    )}
+                    {isAnnualSub && displayPrice > 0 && (
+                      <div style={{ fontSize: "0.78rem", color: "#16a34a", fontWeight: 600, marginTop: "-0.25rem" }}>
+                        ${Math.round(displayPrice / 12)}/mo effective
                       </div>
                     )}
                   </div>
@@ -710,8 +727,9 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                 <div style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.75rem" }}>Available Downgrades</div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1.25rem" }}>
                   {TIER_KEYS.filter((t) => TIER_KEYS.indexOf(t) < currentTierIndex).map((t) => {
-                    const tierPrice = getTierPrice(t);
-                    const preLaunch = getPreLaunchPrice(t);
+                    const tierPrice = billingPeriod === "annual" ? getAnnualPrice(t) : getTierPrice(t);
+                    const preLaunch = billingPeriod === "annual" ? getPreLaunchAnnualPrice(t) : getPreLaunchPrice(t);
+                    const periodLabel = billingPeriod === "annual" ? "/yr" : "/mo";
                     return (
                       <div
                         key={t}
@@ -723,13 +741,18 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                         <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem" }}>
                           {preLaunch != null && preLaunch !== tierPrice ? (
                             <>
-                              <span style={{ color: "var(--text-primary)", fontWeight: 800, fontSize: "1.75rem" }}>${preLaunch}/mo</span>
-                              <span style={{ color: "var(--text-muted)", fontSize: "0.9rem", textDecoration: "line-through" }}>${tierPrice}/mo</span>
+                              <span style={{ color: "var(--text-primary)", fontWeight: 800, fontSize: "1.75rem" }}>${preLaunch}{periodLabel}</span>
+                              <span style={{ color: "var(--text-muted)", fontSize: "0.9rem", textDecoration: "line-through" }}>${tierPrice}{periodLabel}</span>
                             </>
                           ) : (
-                            <span style={{ color: "var(--text-primary)", fontWeight: 800, fontSize: "1.75rem" }}>${tierPrice}/mo</span>
+                            <span style={{ color: "var(--text-primary)", fontWeight: 800, fontSize: "1.75rem" }}>${tierPrice}{periodLabel}</span>
                           )}
                         </div>
+                        {billingPeriod === "annual" && (preLaunch ?? tierPrice) > 0 && (
+                          <div style={{ fontSize: "0.72rem", color: "#16a34a", fontWeight: 600 }}>
+                            ${Math.round((preLaunch ?? tierPrice) / 12)}/mo effective
+                          </div>
+                        )}
                         <div style={{ color: "var(--text-secondary)", fontSize: "0.82rem" }}>
                           {getTierCommission(t)}% commission
                         </div>
@@ -747,7 +770,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                               window.location.reload();
                             } else {
                               const err = await res.json().catch(() => ({}));
-                              alert((err as { error?: string }).error || "Downgrade failed");
+                              setDowngradeError((err as { error?: string }).error || "Downgrade failed. Please try again.");
                             }
                           }}
                           style={{
@@ -768,6 +791,15 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                     );
                   })}
                 </div>
+                {downgradeError && (
+                  <div style={{
+                    marginTop: "0.75rem", padding: "0.6rem 1rem", borderRadius: 10,
+                    background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+                    color: "#ef4444", fontSize: "0.82rem", lineHeight: 1.4,
+                  }}>
+                    {downgradeError}
+                  </div>
+                )}
               </div>
             )}
 

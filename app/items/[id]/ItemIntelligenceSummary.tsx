@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { canAccessIntelTab } from "@/lib/constants/pricing";
 
 /* ═══════════════════════════════════════════════════════════════════════
    Types
@@ -71,6 +72,7 @@ interface Props {
   isAntique: boolean;
   isCollectible: boolean;
   authenticityScore: number | null;
+  userTier?: number;
   collapsed?: boolean;
   onToggle?: () => void;
 }
@@ -124,7 +126,7 @@ export default function ItemIntelligenceSummary(props: Props) {
     itemId, status, aiData, valuation, enriched, engagement,
     shippingData, saleMethod, listingPrice, hasPhotos, photoCount,
     isAntique, isCollectible, authenticityScore,
-    collapsed = false, onToggle,
+    userTier = 1, collapsed = false, onToggle,
   } = props;
 
   // ── AI Intelligence state ──
@@ -807,13 +809,20 @@ export default function ItemIntelligenceSummary(props: Props) {
 
         {/* ═══ TAB BAR ═══ */}
         <div className="intel-tabs">
-          {tabs.map(t => (
-            <button key={t.key} onClick={() => setActiveTab(t.key)}
-              className={`intel-tab${activeTab === t.key ? " active" : ""}`}>
-              <span className="intel-tab-icon">{t.icon}</span>
-              <span className="intel-tab-label">{t.label}</span>
-            </button>
-          ))}
+          {tabs.map(t => {
+            const hasAccess = canAccessIntelTab(userTier, t.key);
+            return (
+              <button key={t.key}
+                onClick={() => hasAccess ? setActiveTab(t.key) : undefined}
+                className={`intel-tab${activeTab === t.key ? " active" : ""}`}
+                style={!hasAccess ? { opacity: 0.4, cursor: "default", position: "relative" } : undefined}
+                title={!hasAccess ? `Requires ${t.key === "market" || t.key === "ready" ? "DIY Seller" : "Power Seller"} plan` : undefined}
+              >
+                <span className="intel-tab-icon">{hasAccess ? t.icon : "🔒"}</span>
+                <span className="intel-tab-label">{t.label}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* ═══ TAB CONTENT ═══ */}
@@ -830,8 +839,38 @@ export default function ItemIntelligenceSummary(props: Props) {
             </div>
           )}
 
+          {/* ── Locked tab upgrade prompt ── */}
+          {!canAccessIntelTab(userTier, activeTab) && (
+            <div style={{
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              padding: "2.5rem 1.5rem", textAlign: "center",
+            }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: "50%",
+                background: "rgba(0,188,212,0.08)", border: "1px solid rgba(0,188,212,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "1.25rem", marginBottom: "1rem",
+              }}>🔒</div>
+              <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.35rem" }}>
+                {activeTab === "market" || activeTab === "ready" ? "DIY Seller" : "Power Seller"} Plan Required
+              </div>
+              <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "1rem", maxWidth: 300 }}>
+                Upgrade your plan to unlock {activeTab === "market" ? "market intelligence" : activeTab === "ready" ? "readiness analysis" : activeTab === "sell" ? "selling strategy" : activeTab === "alerts" ? "smart alerts" : "action recommendations"}.
+              </div>
+              <a href="/subscription" style={{
+                display: "inline-flex", alignItems: "center", gap: "0.4rem",
+                padding: "0.55rem 1.25rem", borderRadius: 10,
+                background: "linear-gradient(135deg, var(--accent), var(--accent-deep, #0097a7))",
+                color: "#fff", fontWeight: 700, fontSize: "0.82rem", textDecoration: "none",
+                boxShadow: "0 2px 10px rgba(0,188,212,0.3)",
+              }}>
+                ⬆ Upgrade Plan
+              </a>
+            </div>
+          )}
+
           {/* ── MARKET TAB ── */}
-          {activeTab === "market" && (
+          {activeTab === "market" && canAccessIntelTab(userTier, "market") && (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {/* AI summary */}
               {aiIntel?.summary && <div className="intel-summary">{aiIntel.summary}</div>}
@@ -975,7 +1014,7 @@ export default function ItemIntelligenceSummary(props: Props) {
           )}
 
           {/* ── READY TAB ── */}
-          {activeTab === "ready" && (
+          {activeTab === "ready" && canAccessIntelTab(userTier, "ready") && (
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
                 <span style={{ fontSize: "18px", fontWeight: 800, color: readinessColor, fontVariantNumeric: "tabular-nums" }}>
@@ -1005,7 +1044,7 @@ export default function ItemIntelligenceSummary(props: Props) {
           )}
 
           {/* ── SELL TAB ── */}
-          {activeTab === "sell" && (
+          {activeTab === "sell" && canAccessIntelTab(userTier, "sell") && (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {/* AI selling strategy */}
               {aiIntel?.sellingStrategy ? (
@@ -1111,7 +1150,7 @@ export default function ItemIntelligenceSummary(props: Props) {
           )}
 
           {/* ── ALERTS TAB ── */}
-          {activeTab === "alerts" && (
+          {activeTab === "alerts" && canAccessIntelTab(userTier, "alerts") && (
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               {uniqueWarnings.length > 0 ? uniqueWarnings.map((w, i) => {
                 const c = w.type === "error"
@@ -1134,7 +1173,7 @@ export default function ItemIntelligenceSummary(props: Props) {
           )}
 
           {/* ── ACTION TAB ── */}
-          {activeTab === "action" && (
+          {activeTab === "action" && canAccessIntelTab(userTier, "action") && (
             <div>
               {/* AI next steps (prioritized list) */}
               {aiIntel?.nextSteps && aiIntel.nextSteps.length > 0 ? (

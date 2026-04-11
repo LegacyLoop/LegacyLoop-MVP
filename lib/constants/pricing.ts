@@ -4,7 +4,7 @@
  * This file defines ALL pricing, tier access, bot costs, credit packs,
  * add-ons, commissions, photo/item limits, and service pricing.
  *
- * Square processing fee (3.5%) is passed through to buyer/purchaser.
+ * Stripe processing fee (3.5%) is passed through to buyer/purchaser.
  * Sellers do NOT have processing fees deducted — only tier commission.
  *
  * IMPORTANT: Always use PROCESSING_FEE.display for UI display of the
@@ -186,7 +186,7 @@ export const BOT_ACCESS: Record<number, {
     collectiblesBot: false,
     carBot: false,
     megaBot: true,
-    videoBot: false,
+    videoBot: true, // Standard tier (8cr) — Pro requires Power+, MegaBot requires Estate
   },
   [TIER.POWER_SELLER]: {
     analyzeBot: true,
@@ -217,6 +217,45 @@ export const BOT_ACCESS: Record<number, {
 };
 
 export type BotName = keyof (typeof BOT_ACCESS)[1];
+
+// ── VideoBot Sub-Tier Access ────────────────────────────────────────────────
+// videoBot: true in BOT_ACCESS unlocks Standard (8cr). Higher tiers gated here.
+export const VIDEOBOT_TIER_ACCESS = {
+  standard: TIER.DIY_SELLER,   // DIY Seller+ (8 credits)
+  pro: TIER.POWER_SELLER,      // Power Seller+ (15 credits)
+  megabot: TIER.ESTATE_MANAGER, // Estate Manager only (25 credits)
+} as const;
+
+// ── Intel Center Tab Access ─────────────────────────────────────────────────
+export const INTEL_TAB_ACCESS: Record<string, number> = {
+  market: TIER.DIY_SELLER,     // DIY Seller+
+  ready: TIER.DIY_SELLER,      // DIY Seller+
+  sell: TIER.POWER_SELLER,     // Power Seller+
+  alerts: TIER.POWER_SELLER,   // Power Seller+
+  action: TIER.POWER_SELLER,   // Power Seller+
+};
+
+// ── Ask Claude Access ───────────────────────────────────────────────────────
+export const ASK_CLAUDE_MIN_TIER = TIER.DIY_SELLER; // 0.25cr/question
+
+// ── Priority Bot Queue ──────────────────────────────────────────────────────
+export const PRIORITY_QUEUE_TIER = TIER.ESTATE_MANAGER; // Estate Manager exclusive
+
+// ── Selling Network Access ──────────────────────────────────────────────────
+export const SELLING_NETWORK_ACCESS = {
+  garageSaleBrowse: TIER.FREE,         // All tiers
+  garageSaleNetwork: TIER.DIY_SELLER,  // DIY+
+  neighborhoodEvents: TIER.DIY_SELLER, // DIY+
+  estateSaleEvents: TIER.ESTATE_MANAGER, // Estate only
+} as const;
+
+// ── Monthly Credits Per Tier ────────────────────────────────────────────────
+export const MONTHLY_CREDITS: Record<number, number> = {
+  [TIER.FREE]: 0,
+  [TIER.DIY_SELLER]: 20,
+  [TIER.POWER_SELLER]: 50,
+  [TIER.ESTATE_MANAGER]: 100,
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SECTION E — FREE TIER RULES
@@ -533,6 +572,27 @@ export function getTierLimits(tier: number): (typeof TIER_LIMITS)[1] {
   return TIER_LIMITS[tier] ?? TIER_LIMITS[TIER.FREE];
 }
 
+/** Check if a user has priority bot queue access */
+export function hasPriorityQueue(tier: number): boolean {
+  return tier >= PRIORITY_QUEUE_TIER;
+}
+
+/** Check if a user can access an Intel tab */
+export function canAccessIntelTab(tier: number, tabName: string): boolean {
+  const minTier = INTEL_TAB_ACCESS[tabName.toLowerCase()];
+  return minTier !== undefined ? tier >= minTier : false;
+}
+
+/** Check if a user can use Ask Claude */
+export function canUseAskClaude(tier: number): boolean {
+  return tier >= ASK_CLAUDE_MIN_TIER;
+}
+
+/** Check if a user can use a VideoBot sub-tier */
+export function canUseVideoBotTier(tier: number, level: "standard" | "pro" | "megabot"): boolean {
+  return tier >= VIDEOBOT_TIER_ACCESS[level];
+}
+
 /** Check if a tier can use a specific bot */
 export function canUseBotOnTier(tier: number, botName: BotName): boolean {
   const access = BOT_ACCESS[tier];
@@ -582,10 +642,6 @@ export const calculateTotalWithFee = (
     total: Math.round((subtotal + fee) * 100) / 100,
   };
 };
-
-/** Convert dollars to Square cents (BigInt) */
-export const toSquareCents = (dollars: number): bigint =>
-  BigInt(Math.round(dollars * 100));
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // LEGACY EXPORTS — BACKWARD COMPATIBILITY
