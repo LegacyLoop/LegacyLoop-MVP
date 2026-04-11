@@ -3633,6 +3633,35 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               </div>
             </div>
 
+            {/* ── IN-PERSON SELLING — right after price columns, before Local Pickup ── */}
+            {gsPrices && !gsPrices.isExempt && (
+              <div style={{ marginTop: "0.5rem" }}>
+                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", fontWeight: 700, marginBottom: "0.4rem", paddingLeft: "0.15rem" }}>IN-PERSON SELLING</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                  <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#00bcd4", fontWeight: 600 }}>GARAGE SALE</div>
+                    <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "#00bcd4", marginTop: "0.15rem" }}>${gsPrices.garageSalePrice}–${gsPrices.garageSalePriceHigh}</div>
+                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>In person · This weekend</div>
+                    <div style={{ marginTop: "0.2rem", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontSize: "0.5rem", fontWeight: 600, display: "inline-block", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>Saturday pricing</div>
+                    <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4caf50", marginTop: "0.25rem" }}>You get: ${Math.round(gsPrices.garageSalePriceHigh * (1 - commRate))}</div>
+                  </div>
+                  <div style={{ background: "var(--bg-card)", border: "1px solid rgba(29,158,117,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#1D9E75", fontWeight: 600 }}>QUICK SALE</div>
+                    <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "#1D9E75", marginTop: "0.15rem" }}>${gsPrices.quickSalePrice}–${gsPrices.quickSalePriceHigh}</div>
+                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Gone today · No waiting</div>
+                    <div style={{ marginTop: "0.2rem", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontSize: "0.5rem", fontWeight: 600, display: "inline-block", background: "rgba(29,158,117,0.12)", color: "#1D9E75" }}>Move it now</div>
+                    <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4caf50", marginTop: "0.25rem" }}>You get: ${Math.round(gsPrices.quickSalePriceHigh * (1 - commRate))}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            {gsPrices?.isExempt && (
+              <div style={{ marginTop: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem", background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.2)", borderRadius: "0.65rem" }}>
+                <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "2px 8px", borderRadius: 8, background: "rgba(212,175,55,0.15)", color: "#D4AF37" }}>VALUE HOLDS</span>
+                <span style={{ fontSize: "0.55rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>This item holds value at garage sales. See AntiqueBot or CollectiblesBot.</span>
+              </div>
+            )}
+
             {/* Selling Options + Recommendation */}
             {pr?.sellerNet && (
               <div style={{ borderRadius: "0.5rem", overflow: "hidden", border: "1px solid var(--border-default)" }}>
@@ -3658,62 +3687,6 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
             {condBadge && (
               <div style={{ display: "flex", justifyContent: "center" }}>
                 <span style={{ padding: "0.2rem 0.65rem", borderRadius: "9999px", fontSize: "0.68rem", fontWeight: 600, background: condBadge.bg, color: condBadge.color }}>{condBadge.label}</span>
-              </div>
-            )}
-
-            {/* ── GARAGE & YARD SALE SECTION ── */}
-            {gsPrices && (
-              <div style={{ marginTop: "0.5rem" }}>
-                <AccordionHeader id="garage-sale" icon="🏷️" title="GARAGE & YARD SALE" isOpen={priceOpenSections.has("garage-sale")} onToggle={togglePriceSection} />
-                {priceOpenSections.has("garage-sale") && (
-                  <div style={{ padding: "0.5rem 0" }}>
-                    {gsPrices.isExempt ? (
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.75rem", background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.2)", borderRadius: 10 }}>
-                        <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "2px 8px", borderRadius: 8, background: "rgba(212,175,55,0.15)", color: "#D4AF37" }}>VALUE HOLDS</span>
-                        <span style={{ fontSize: "0.78rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>This item may be worth full market value even at a garage sale. See AntiqueBot or CollectiblesBot before discounting.</span>
-                      </div>
-                    ) : (
-                      <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                        {/* Garage Sale Card */}
-                        <div style={{ flex: 1, minWidth: "140px", padding: "0.75rem", borderRadius: 10, background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", textAlign: "center" }}>
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.35rem", marginBottom: "0.3rem" }}>
-                            <span style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Garage Sale</span>
-                            <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 6px", borderRadius: 6, background: "var(--accent)", color: "#fff" }}>THIS WEEKEND</span>
-                          </div>
-                          <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--accent)", fontFamily: "'Barlow Condensed', sans-serif" }}>
-                            ${gsPrices.garageSalePrice} – ${gsPrices.garageSalePriceHigh}
-                          </div>
-                          <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>What buyers pay in person</div>
-                          {commRate > 0 && (
-                            <div style={{ fontSize: "0.65rem", color: "#22c55e", fontWeight: 600, marginTop: "0.25rem" }}>
-                              You get: ${Math.round(gsPrices.garageSalePriceHigh * (1 - commRate))}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Quick Sale Card */}
-                        <div style={{ flex: 1, minWidth: "140px", padding: "0.75rem", borderRadius: 10, background: "rgba(29,158,117,0.04)", border: "1px solid rgba(29,158,117,0.15)", textAlign: "center" }}>
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.35rem", marginBottom: "0.3rem" }}>
-                            <span style={{ fontSize: "0.55rem", fontWeight: 700, color: "#1D9E75", textTransform: "uppercase", letterSpacing: "0.06em" }}>Quick Sale</span>
-                            <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 6px", borderRadius: 6, background: "#1D9E75", color: "#fff" }}>GONE TODAY</span>
-                          </div>
-                          <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "#1D9E75", fontFamily: "'Barlow Condensed', sans-serif" }}>
-                            ${gsPrices.quickSalePrice} – ${gsPrices.quickSalePriceHigh}
-                          </div>
-                          <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>Price it to move. No waiting.</div>
-                          {commRate > 0 && (
-                            <div style={{ fontSize: "0.65rem", color: "#22c55e", fontWeight: 600, marginTop: "0.25rem" }}>
-                              You get: ${Math.round(gsPrices.quickSalePriceHigh * (1 - commRate))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", textAlign: "center", marginTop: "0.5rem" }}>
-                      Based on {(aiData as any)?.condition_guess || "good"} condition · {(aiData as any)?.category || "general"} category · in-person market factors
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 

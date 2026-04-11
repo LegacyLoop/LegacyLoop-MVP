@@ -363,6 +363,18 @@ export default async function ItemPage({ params }: { params: Params }) {
                   <div style={{ fontSize: "0.92rem", fontWeight: 800, color: (v.confidence > 0.7 || v.confidence > 70) ? "#22c55e" : "#f59e0b" }}>{Math.round(v.confidence > 1 ? v.confidence : v.confidence * 100)}%</div>
                 </div>
               )}
+              {(item as any).garageSalePrice && (item as any).garageSalePriceHigh && (
+                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.2)", minWidth: "70px" }}>
+                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#00bcd4", fontWeight: 700 }}>Garage Sale</div>
+                  <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#00bcd4" }}>${(item as any).garageSalePrice}–${(item as any).garageSalePriceHigh}</div>
+                </div>
+              )}
+              {(item as any).quickSalePrice && (item as any).quickSalePriceHigh && (
+                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(29,158,117,0.06)", border: "1px solid rgba(29,158,117,0.2)", minWidth: "70px" }}>
+                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#1D9E75", fontWeight: 700 }}>Quick Sale</div>
+                  <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#1D9E75" }}>${(item as any).quickSalePrice}–${(item as any).quickSalePriceHigh}</div>
+                </div>
+              )}
             </div>
           )}
 
