@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { authAdapter } from "@/lib/adapters/auth";
 import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { BOT_CREDIT_COSTS, canUseAskClaude } from "@/lib/constants/pricing";
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 /* ═══════════════════════════════════════════════════════════════════════
    GET  — Return chat history for this item
@@ -124,7 +125,14 @@ export async function POST(
     return NextResponse.json({ error: "AI not configured" }, { status: 500 });
   }
 
-  const systemPrompt = `You are LegacyLoop's AI assistant helping a seller understand their item's intelligence data. You have access to ALL bot analysis results, market comps, pricing data, and enrichment info for this specific item.
+  // Load Intel Panel skill pack for enriched intelligence context
+  let skillContext = "";
+  try {
+    const pack = loadSkillPack("intel-panel");
+    if (pack.systemPromptBlock) skillContext = pack.systemPromptBlock + "\n\n";
+  } catch { /* skill pack is optional */ }
+
+  const systemPrompt = `${skillContext}You are LegacyLoop's AI assistant helping a seller understand their item's intelligence data. You have access to ALL bot analysis results, market comps, pricing data, and enrichment info for this specific item.
 
 Rules:
 - Be concise: 2-4 sentences max per answer

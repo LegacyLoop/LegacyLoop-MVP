@@ -12,6 +12,7 @@ import { prisma } from "@/lib/db";
 import fs from "fs/promises";
 import path from "path";
 import OpenAI from "openai";
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -54,11 +55,18 @@ export interface DocumentAnalysisResult {
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 function buildDocPrompt(docType: string, textContent?: string): string {
+  // Load DocumentBot skill pack for enriched analysis context
+  let skillContext = "";
+  try {
+    const pack = loadSkillPack("documentbot");
+    if (pack.systemPromptBlock) skillContext = pack.systemPromptBlock + "\n\n";
+  } catch { /* skill pack is optional — never block analysis */ }
+
   const textBlock = textContent
     ? `\n\nDOCUMENT TEXT CONTENT (extracted):\n${textContent}`
     : "";
 
-  return `You are an expert document analyst for a luxury resale and estate sale platform called LegacyLoop. You are analyzing a ${docType} document.
+  return `${skillContext}You are an expert document analyst for a luxury resale and estate sale platform called LegacyLoop. You are analyzing a ${docType} document.
 
 Your job: Extract EVERY piece of useful information from this document with precision.
 
