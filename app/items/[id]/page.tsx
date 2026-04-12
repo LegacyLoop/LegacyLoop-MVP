@@ -76,6 +76,20 @@ export default async function ItemPage({ params }: { params: Params }) {
     ? calculateGarageSalePrices(marketMid, aiDataForGs.category || (item as any).category || "", aiDataForGs.condition_guess || (item as any).condition || "good", (item as any).saleZip)
     : null;
 
+  // Auto-save garage prices to DB if calculated but not yet persisted (fire-and-forget)
+  if (gsCalc && !(item as any).garageSalePrice) {
+    prisma.item.update({
+      where: { id: item.id },
+      data: {
+        garageSalePrice: gsCalc.garageSalePrice,
+        garageSalePriceHigh: gsCalc.garageSalePriceHigh,
+        quickSalePrice: gsCalc.quickSalePrice,
+        quickSalePriceHigh: gsCalc.quickSalePriceHigh,
+        garageSaleCalcAt: new Date(),
+      },
+    }).catch(() => {});
+  }
+
   // Fetch engagement metrics + document count + latest shipping quote for control center
   const [engagement, docCount, latestShippingQuote, demandScoreLog, disagreementLog] = await Promise.all([
     prisma.itemEngagementMetrics.findUnique({ where: { itemId: item.id }, select: { totalViews: true, inquiries: true, buyersFound: true } }).catch(() => null),
