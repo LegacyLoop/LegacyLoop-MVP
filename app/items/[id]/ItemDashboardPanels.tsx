@@ -8764,40 +8764,41 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               {listPriceNum > 0 && <HudBadge text={`net ~$${netEst.toFixed(0)}`} color="#22c55e" />}
             </>} />
             {openSections.has("sell") && (
-              <div style={{ padding: "0.4rem 0.5rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+              <div style={{ padding: "0.65rem 0.75rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {/* Primary + secondary action buttons */}
-                <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                   {actions.filter(a => a.primary).map((a) => (
                     <button key={a.label} onClick={a.onClick} disabled={updating || deleting} style={{
-                      padding: "0.35rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer",
+                      padding: "0.5rem 1rem", borderRadius: "0.5rem", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer",
                       background: "linear-gradient(135deg, #00bcd4, #0097a7)", border: "none", color: "#fff",
                       opacity: (updating || deleting) ? 0.5 : 1, boxShadow: "0 2px 8px rgba(0,188,212,0.25)", transition: "all 0.2s ease",
+                      minHeight: "2.5rem",
                     }}>{a.label}</button>
                   ))}
                   {actions.filter(a => a.primary).length > 0 && actions.filter(a => !a.primary && !a.danger).length > 0 && (
-                    <div style={{ width: "1px", height: "20px", background: "var(--border-default)" }} />
+                    <div style={{ width: "1px", height: "24px", background: "var(--border-default)" }} />
                   )}
                   {actions.filter(a => !a.primary && !a.danger).map((a) => (
                     <button key={a.label} onClick={a.onClick} disabled={updating || deleting} style={{
-                      padding: "0.3rem 0.55rem", borderRadius: "0.35rem", fontSize: "0.65rem", fontWeight: 600, cursor: "pointer",
+                      padding: "0.45rem 0.85rem", borderRadius: "0.45rem", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
                       background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)",
-                      opacity: (updating || deleting) ? 0.5 : 1,
+                      opacity: (updating || deleting) ? 0.5 : 1, minHeight: "2.5rem", transition: "all 0.15s ease",
                     }}>{a.label}</button>
                   ))}
                   {actions.filter(a => a.danger).map((a) => (
                     <button key={a.label} onClick={a.onClick} disabled={updating || deleting} style={{
-                      padding: "0.25rem 0.4rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600, cursor: "pointer",
-                      background: "transparent", border: "1px solid rgba(239,68,68,0.15)", color: "#ef4444",
-                      opacity: (updating || deleting) ? 0.5 : 1, marginLeft: "auto",
+                      padding: "0.4rem 0.65rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 600, cursor: "pointer",
+                      background: "transparent", border: "1px solid rgba(239,68,68,0.2)", color: "#ef4444",
+                      opacity: (updating || deleting) ? 0.5 : 1, marginLeft: "auto", minHeight: "2.25rem",
                     }}>{a.label}</button>
                   ))}
                 </div>
                 {/* Price input row */}
-                <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                  <span style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)" }}>$</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-muted)" }}>$</span>
                   <input type="number" min="0" step="0.01" placeholder={valuation?.mid ? `${Math.round(valuation.mid)}` : "0"} value={priceInput} onChange={(e) => setPriceInput(e.target.value)} style={{
-                    background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "0.3rem", padding: "0.25rem 0.4rem",
-                    color: "var(--text-primary)", fontSize: "0.82rem", fontWeight: 700, width: "75px", outline: "none",
+                    background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "0.4rem", padding: "0.4rem 0.5rem",
+                    color: "var(--text-primary)", fontSize: "0.9rem", fontWeight: 700, fontFamily: "var(--font-data)", width: "85px", outline: "none",
                   }} />
                   <button onClick={async () => {
                     const val = parseFloat(priceInput); if (isNaN(val) || val < 0) return;
@@ -8809,14 +8810,14 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
                     } catch { setPriceSaveState("error"); setTimeout(() => setPriceSaveState("idle"), 2000); }
                   }} disabled={priceSaveState === "saving"} style={{
                     background: priceSaveState === "saved" ? "#22c55e" : priceSaveState === "error" ? "#ef4444" : "linear-gradient(135deg, #00bcd4, #009688)",
-                    border: "none", borderRadius: "0.3rem", padding: "0.25rem 0.5rem",
-                    color: "#fff", fontWeight: 700, fontSize: "0.62rem",
+                    border: "none", borderRadius: "0.4rem", padding: "0.4rem 0.75rem",
+                    color: "#fff", fontWeight: 700, fontSize: "0.78rem",
                     cursor: priceSaveState === "saving" ? "wait" : "pointer", opacity: priceSaveState === "saving" ? 0.6 : 1,
-                    minWidth: "36px", textAlign: "center" as const, boxShadow: "0 1px 4px rgba(0,188,212,0.2)",
+                    minWidth: "44px", minHeight: "2.25rem", textAlign: "center" as const, boxShadow: "0 1px 4px rgba(0,188,212,0.2)",
                   }}>{priceSaveState === "saving" ? "\u23F3" : priceSaveState === "saved" ? "\u2713" : priceSaveState === "error" ? "\u2717" : "SET"}</button>
-                  {listPriceNum > 0 && <span style={{ fontSize: "0.55rem", color: "#4ade80", fontWeight: 700, whiteSpace: "nowrap" }}>net ~${netEst.toFixed(0)}</span>}
+                  {listPriceNum > 0 && <span style={{ fontSize: "0.72rem", color: "#4ade80", fontWeight: 700, whiteSpace: "nowrap" }}>net ~${netEst.toFixed(0)}</span>}
                   <div style={{ flex: 1 }} />
-                  {listPriceNum > 0 && <span style={{ fontSize: "0.48rem", color: "var(--text-muted)" }}>5% comm + 1.75% fee</span>}
+                  {listPriceNum > 0 && <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>5% comm + 1.75% fee</span>}
                 </div>
               </div>
             )}
@@ -8828,45 +8829,45 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               {status === "LISTED" ? <HudBadge text="LIVE" color="#22c55e" /> : <HudBadge text="Not listed" />}
             </>} />
             {openSections.has("list") && (
-              <div style={{ padding: "0.4rem 0.5rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+              <div style={{ padding: "0.65rem 0.75rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {/* Action links as compact button row */}
-                <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                   <a href={`/bots/listbot?itemId=${itemId}`} style={{
-                    padding: "0.3rem 0.6rem", borderRadius: "0.35rem", fontSize: "0.6rem", fontWeight: 700,
+                    padding: "0.45rem 0.85rem", borderRadius: "0.45rem", fontSize: "0.78rem", fontWeight: 700,
                     background: "linear-gradient(135deg, rgba(0,188,212,0.1), rgba(0,188,212,0.03))",
                     border: "1px solid rgba(0,188,212,0.25)", color: "#00bcd4", textDecoration: "none",
-                    display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                    display: "inline-flex", alignItems: "center", gap: "0.35rem", minHeight: "2.25rem",
                     boxShadow: "0 0 10px rgba(0,188,212,0.08)", transition: "all 0.2s ease",
                   }}>{"\u{1F310}"} List Everywhere</a>
                   <a href={`/addons/listing-optimizer?itemId=${itemId}`} style={{
-                    padding: "0.3rem 0.6rem", borderRadius: "0.35rem", fontSize: "0.6rem", fontWeight: 600,
+                    padding: "0.45rem 0.85rem", borderRadius: "0.45rem", fontSize: "0.75rem", fontWeight: 600,
                     background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none",
-                    display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                    display: "inline-flex", alignItems: "center", gap: "0.35rem", minHeight: "2.25rem",
                   }}>{"\u2728"} Optimize Listing</a>
                   <a href={`/bundles/create?itemId=${itemId}`} style={{
-                    padding: "0.3rem 0.6rem", borderRadius: "0.35rem", fontSize: "0.6rem", fontWeight: 600,
+                    padding: "0.45rem 0.85rem", borderRadius: "0.45rem", fontSize: "0.75rem", fontWeight: 600,
                     background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none",
-                    display: "inline-flex", alignItems: "center", gap: "0.2rem",
+                    display: "inline-flex", alignItems: "center", gap: "0.35rem", minHeight: "2.25rem",
                   }}>{"\u{1F4E6}"} Create Bundle</a>
                 </div>
                 {/* Share row */}
-                <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
                   <button onClick={shareItem} style={{
-                    padding: "0.25rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600,
-                    background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", cursor: "pointer",
+                    padding: "0.4rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 600,
+                    background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "2rem",
                   }}>{shareCopied ? "\u2713 Copied!" : "\u{1F4E4} Share Link"}</button>
                   <button onClick={() => {
                     const url = `${typeof window !== "undefined" ? window.location.origin : ""}/store`;
                     navigator.clipboard.writeText(url);
                     setPublicLinkCopied(true); setTimeout(() => setPublicLinkCopied(false), 2000);
                   }} style={{
-                    padding: "0.25rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600,
-                    background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", cursor: "pointer",
+                    padding: "0.4rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 600,
+                    background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "2rem",
                   }}>{publicLinkCopied ? "\u2713 Copied!" : "\u{1F517} Store Link"}</button>
                   <a href="/bundles" style={{
-                    padding: "0.25rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600,
+                    padding: "0.4rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 600,
                     background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none",
-                    display: "inline-flex", alignItems: "center",
+                    display: "inline-flex", alignItems: "center", minHeight: "2rem",
                   }}>{"\u{1F4CB}"} My Bundles</a>
                 </div>
               </div>
@@ -8879,41 +8880,41 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               {projectId && <HudBadge text="Sale assigned" color="#00bcd4" />}
             </>} />
             {openSections.has("manage") && (
-              <div style={{ padding: "0.4rem 0.5rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              <div style={{ padding: "0.65rem 0.75rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                 {/* Trade + Sale Assignment row */}
                 <div style={{
                   display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap",
-                  padding: "0.3rem 0.4rem", borderRadius: "0.35rem",
+                  padding: "0.45rem 0.6rem", borderRadius: "0.45rem",
                   background: "linear-gradient(135deg, rgba(0,188,212,0.02), transparent)",
                   border: "1px solid rgba(0,188,212,0.06)",
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
                     <TradeToggle itemId={itemId} />
                   </div>
-                  <div style={{ width: "1px", height: "16px", background: "var(--border-default)", opacity: 0.5 }} />
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                    <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{"\u{1F3F7}\u{FE0F}"}</span>
+                  <div style={{ width: "1px", height: "20px", background: "var(--border-default)", opacity: 0.5 }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                    <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{"\u{1F3F7}\u{FE0F}"}</span>
                     <SaleAssignment itemId={itemId} initialProjectId={projectId ?? null} />
-                    {projectId && <span style={{ fontSize: "0.55rem", fontWeight: 600, padding: "1px 5px", borderRadius: "4px", background: "rgba(0,188,212,0.08)", color: "var(--accent)", border: "1px solid rgba(0,188,212,0.15)" }}>Assigned</span>}
-                    {!projectId && <a href="/projects" style={{ fontSize: "0.55rem", color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>+ New</a>}
+                    {projectId && <span style={{ fontSize: "0.68rem", fontWeight: 600, padding: "2px 8px", borderRadius: "6px", background: "rgba(0,188,212,0.08)", color: "var(--accent)", border: "1px solid rgba(0,188,212,0.15)" }}>Assigned</span>}
+                    {!projectId && <a href="/projects" style={{ fontSize: "0.68rem", color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>+ New</a>}
                   </div>
                   <div style={{ flex: 1 }} />
                   <button onClick={() => { const el = document.getElementById("active-offers-widget"); if (el) el.scrollIntoView({ behavior: "smooth" }); }} style={{
-                    fontSize: "0.55rem", fontWeight: 600, color: "var(--accent)",
+                    fontSize: "0.72rem", fontWeight: 600, color: "var(--accent)",
                     background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.12)",
-                    borderRadius: "0.3rem", padding: "0.15rem 0.4rem", cursor: "pointer",
+                    borderRadius: "0.4rem", padding: "0.3rem 0.6rem", cursor: "pointer", minHeight: "2rem",
                   }}>{"\u{1F91D}"} Offers</button>
                 </div>
                 {/* Quick actions row */}
-                <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap" }}>
-                  <a href={`/items/${itemId}/edit`} style={{ padding: "0.25rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none" }}>{"\u270F\u{FE0F}"} Edit Item</a>
-                  <a href={`/messages?itemId=${itemId}`} style={{ padding: "0.25rem 0.5rem", borderRadius: "0.3rem", fontSize: "0.58rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none" }}>{"\u{1F4AC}"} Messages</a>
-                  <button onClick={() => { window.print(); }} style={{ padding: "0.25rem 0.5rem", fontSize: "0.58rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.3rem", cursor: "pointer", color: "var(--text-secondary)" }}>{"\u{1F5A8}\u{FE0F}"} Print</button>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                  <a href={`/items/${itemId}/edit`} style={{ padding: "0.4rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none", minHeight: "2rem", display: "inline-flex", alignItems: "center" }}>{"\u270F\u{FE0F}"} Edit Item</a>
+                  <a href={`/messages?itemId=${itemId}`} style={{ padding: "0.4rem 0.75rem", borderRadius: "0.4rem", fontSize: "0.72rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", textDecoration: "none", minHeight: "2rem", display: "inline-flex", alignItems: "center" }}>{"\u{1F4AC}"} Messages</a>
+                  <button onClick={() => { window.print(); }} style={{ padding: "0.4rem 0.75rem", fontSize: "0.72rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.4rem", cursor: "pointer", color: "var(--text-secondary)", minHeight: "2rem" }}>{"\u{1F5A8}\u{FE0F}"} Print</button>
                   <button onClick={() => {
                     const blob = new Blob([JSON.stringify({ itemId, status, category, aiData, valuation, photos: photos?.map((p: any) => p.filePath) }, null, 2)], { type: "application/json" });
                     const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = `legacyloop-${itemId.slice(0, 8)}.json`; a.click(); URL.revokeObjectURL(url);
                     setExportDone(true); setTimeout(() => setExportDone(false), 2000);
-                  }} style={{ padding: "0.25rem 0.5rem", fontSize: "0.58rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.3rem", cursor: "pointer", color: "var(--text-secondary)" }}>{exportDone ? "\u2713 Exported" : "\u{1F4E5} Export"}</button>
+                  }} style={{ padding: "0.4rem 0.75rem", fontSize: "0.72rem", fontWeight: 600, background: "transparent", border: "1px solid var(--border-default)", borderRadius: "0.4rem", cursor: "pointer", color: "var(--text-secondary)", minHeight: "2rem" }}>{exportDone ? "\u2713 Exported" : "\u{1F4E5} Export"}</button>
                 </div>
               </div>
             )}
@@ -8996,8 +8997,8 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
 
         </div>{/* end accordion container */}
 
-        {/* ── QUICK NAV — mini keycap buttons ── */}
-        <div style={{ display: "flex", gap: "5px", flexWrap: "wrap", justifyContent: "center", marginTop: "0.5rem" }}>
+        {/* ── QUICK NAV — keycap buttons ── */}
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", justifyContent: "center", marginTop: "0.75rem", padding: "0 0.25rem" }}>
           {[
             { icon: "\u270F\u{FE0F}", label: "Edit", href: `/items/${itemId}/edit` },
             { icon: "+", label: "New", href: "/items/new" },
@@ -9007,14 +9008,11 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
             { icon: "\u{1F4E6}", label: "Bundles", href: "/bundles" },
             { icon: "\u{1F916}", label: "Bots", href: "/bots" },
           ].map((link) => (
-            // STEP 4.7 FIX: theme-aware quick-nav keycaps. The previous styling was
-            // hardcoded white gradient which looked great in light mode but became
-            // near-invisible against dark cards. Now uses CSS variables.
             <a key={link.label} href={link.href} style={{
               display: "inline-flex", flexDirection: "column" as const, alignItems: "center",
-              justifyContent: "center", gap: "1px",
-              padding: "5px 8px", minHeight: "32px", minWidth: "42px",
-              borderRadius: "6px", textDecoration: "none",
+              justifyContent: "center", gap: "3px",
+              padding: "8px 12px", minHeight: "48px", minWidth: "54px",
+              borderRadius: "10px", textDecoration: "none",
               background: "var(--bg-card-solid)",
               border: "1px solid var(--border-default)",
               color: "var(--text-secondary)",
@@ -9040,8 +9038,8 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
                 el.style.boxShadow = "0 1px 3px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.04)";
               }}
             >
-              <span style={{ fontSize: "13px", lineHeight: 1 }}>{link.icon}</span>
-              <span style={{ fontSize: "7px", fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1 }}>{link.label}</span>
+              <span style={{ fontSize: "16px", lineHeight: 1 }}>{link.icon}</span>
+              <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase" as const, lineHeight: 1 }}>{link.label}</span>
             </a>
           ))}
         </div>
