@@ -160,13 +160,7 @@ const MENU_SECTIONS = [...DROPDOWN_SECTIONS, ...SETTINGS_SECTIONS];
 
 /* ── Shared styles ────────────────────────────────────────────────────────── */
 
-const glassPanel = {
-  background: "rgba(12, 12, 22, 0.97)",
-  border: "1px solid rgba(255,255,255,0.08)",
-  borderRadius: "1rem",
-  boxShadow: "0 24px 80px rgba(0,0,0,0.6), 0 4px 20px rgba(0,0,0,0.35)",
-  backdropFilter: "blur(24px)",
-};
+// glassPanel replaced by className="glass-modal" — see globals.css glass system
 
 const menuItemBase: React.CSSProperties = {
   display: "flex",
@@ -206,6 +200,15 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const closeRef     = useRef<HTMLButtonElement>(null);
   const drawerRef    = useRef<HTMLDivElement>(null);
+
+  // Scroll state for glass-nav-scrolled
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   // Swipe-to-dismiss refs for mobile drawer
   const drawerSwipeStart = useRef(0);
@@ -386,11 +389,9 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
           to { opacity: 1; }
         }
       `}</style>
-      <header style={{
+      <header className={`glass-nav${scrolled ? " glass-nav-scrolled" : ""}`} style={{
         position: "sticky", top: 0, zIndex: 50,
         paddingTop: "env(safe-area-inset-top, 0px)",
-        background: "rgba(10, 10, 18, 0.82)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.07)",
       }}>
       {/* Inner row — fixed 64px height, sits below safe-area padding */}
       <div style={{ height: "64px" }}>
@@ -562,7 +563,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
                   {/* Bell dropdown */}
                   {bellOpen && (
-                    <div style={{ ...glassPanel, position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "min(22rem, 92vw)", maxHeight: "26rem", overflowY: "auto", zIndex: 100 }}>
+                    <div className="glass-modal" style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "min(22rem, 92vw)", maxHeight: "26rem", overflowY: "auto", zIndex: 100 }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.875rem 1rem 0.625rem", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
                         <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "#fff" }}>Notifications</span>
                         {notifications.some((n) => !n.isRead) && (
@@ -649,7 +650,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
                   {/* Desktop dropdown menu */}
                   {dropdownOpen && (
-                    <div style={{ ...glassPanel, position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "16rem", maxHeight: "calc(100vh - 80px)", overflowY: "auto", zIndex: 100 }}>
+                    <div className="glass-modal" style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "16rem", maxHeight: "calc(100vh - 80px)", overflowY: "auto", zIndex: 100 }}>
                       {/* Identity header */}
                       <div style={{ padding: "1rem 1rem 0.75rem", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
@@ -710,7 +711,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
                   {/* Settings Panel — Claude-style admin menu */}
                   {settingsOpen && (
-                    <div style={{ ...glassPanel, position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "16rem", maxHeight: "calc(100vh - 80px)", overflowY: "auto", zIndex: 200 }}>
+                    <div className="glass-modal" style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "16rem", maxHeight: "calc(100vh - 80px)", overflowY: "auto", zIndex: 200 }}>
                       <div style={{ padding: "0.75rem 0.75rem 0.5rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
                         <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.5)" }}>{user.email}</div>
                       </div>

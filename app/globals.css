@@ -889,10 +889,15 @@ html.light .card:hover {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Glassmorphism System (CMD-GLASSMORPHISM-SYSTEM)
+   Glassmorphism System (CMD-GLASSMORPHISM-SYSTEM + CMD-CARD-ELEVATION)
    Single source of truth for glass surfaces across LegacyLoop.
    Tokens defined in :root above. Classes defined here.
-   Components are NOT changed in this command — that's CMD-CARD-ELEVATION.
+
+   NESTED GLASS RULE
+   Never nest glass-card inside glass-card. Stacking blur = visual mud.
+   Cards inside cards must use .glass-surface (no blur, lighter bg).
+   If a card needs depth inside another card, use .glass-surface
+   with a slightly elevated shadow.
 ───────────────────────────────────────────────────────────────────────────── */
 
 /* ── Utility Classes ── */
@@ -1003,10 +1008,97 @@ html.light .card:hover {
 /* ── Accessibility: Reduced Motion ── */
 @media (prefers-reduced-motion: reduce) {
   .glass-card,
+  .glass-card-flat,
   .glass-panel {
     transition: none !important;
   }
-  .glass-card:active {
+  .glass-card:active,
+  .glass-card-flat:active {
     transform: none !important;
+  }
+}
+
+/* ── Performance variant — no blur, same look (for item grids) ── */
+.glass-card-flat {
+  background: var(--glass-bg-solid);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius-card);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--glass-shadow);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+.glass-card-flat:hover {
+  border-color: rgba(0, 188, 212, 0.18);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    0 8px 32px rgba(0, 188, 212, 0.08);
+}
+.glass-card-flat:active {
+  transform: scale(0.995);
+}
+
+/* ── Modal backdrop overlay ── */
+.glass-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-backdrop {
+    background: rgba(0, 0, 0, 0.85);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass-backdrop {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(0, 0, 0, 0.85);
+  }
+}
+
+/* ── Scrolled nav state — higher opacity for legibility ── */
+.glass-nav-scrolled {
+  background: rgba(13, 17, 23, 0.95);
+}
+
+/* ── Mobile radius — drop to 12px ── */
+@media (max-width: 768px) {
+  .glass-card,
+  .glass-card-flat,
+  .glass-modal {
+    border-radius: var(--glass-radius-panel);
+  }
+}
+
+/* ── iOS Safari transformed-element flicker fix ── */
+.glass-card,
+.glass-card-flat,
+.glass-modal,
+.glass-panel {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* ── Forced-colors mode (Windows high-contrast) ── */
+@media (forced-colors: active) {
+  .glass-card,
+  .glass-card-flat,
+  .glass-panel,
+  .glass-modal,
+  .glass-surface,
+  .glass-nav {
+    background: Canvas;
+    border: 1px solid CanvasText;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 }

@@ -134,6 +134,7 @@ export default function BottomNav({ unreadCount = 0 }: { unreadCount?: number })
         }
       `}</style>
       <nav
+        className="glass-nav"
         aria-label="Primary"
         style={{
           position: "fixed",
@@ -144,10 +145,8 @@ export default function BottomNav({ unreadCount = 0 }: { unreadCount?: number })
           paddingBottom: "env(safe-area-inset-bottom, 8px)",
           paddingLeft: "env(safe-area-inset-left, 8px)",
           paddingRight: "env(safe-area-inset-right, 8px)",
-          background: "rgba(13,17,23,0.92)",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
+          borderTop: "1px solid var(--glass-border)",
+          borderBottom: "none",
           zIndex: 1000,
           display: "flex",
           alignItems: "center",
