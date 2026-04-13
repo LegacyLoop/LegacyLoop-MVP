@@ -514,6 +514,7 @@ export default function DashboardClient({ items, stats, events, onboardingUser }
         .dash-item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
         @media (max-width: 1024px) { .dash-item-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 480px) { .dash-item-grid { grid-template-columns: repeat(2, 1fr); gap: 0.625rem; } }
+        .dash-status-pipeline::-webkit-scrollbar { display: none; }
       `}</style>
       <div className="dash-stat-grid">
         {statCards.map((stat) => {
@@ -586,13 +587,15 @@ export default function DashboardClient({ items, stats, events, onboardingUser }
       </div>
 
       {/* ── Status Pipeline ────────────────────────────────────────────────── */}
-      <div style={{
+      <div className="dash-status-pipeline" style={{
         display: "flex",
         alignItems: "center",
         gap: "0.375rem",
         marginBottom: "1.25rem",
         overflowX: "auto",
         paddingBottom: "0.25rem",
+        scrollbarWidth: "none",
+        WebkitOverflowScrolling: "touch",
       }}>
         {STATUS_PIPELINE.map((stage, idx) => {
           const count = statusCounts[stage.status];

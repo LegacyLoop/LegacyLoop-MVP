@@ -163,8 +163,8 @@ export default function ItemCard({ item }: ItemCardProps) {
           </div>
         )}
 
-        {/* Top-left badges */}
-        <div style={{ position: "absolute", top: "0.6rem", left: "0.6rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+        {/* Top-left badges — unified flex column */}
+        <div style={{ position: "absolute", top: "8px", left: "8px", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "4px", zIndex: 10 }}>
           {item.megabotUsed && (
             <div style={{ background: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "#fff", fontSize: "0.68rem", fontWeight: 800, padding: "0.2rem 0.55rem", borderRadius: "9999px" }}>
               ⚡ MegaBot
@@ -175,18 +175,14 @@ export default function ItemCard({ item }: ItemCardProps) {
               AI Analyzed
             </div>
           )}
-        </div>
 
-        {/* Antique badge + tooltip — single hover wrapper */}
+        {/* Antique badge + tooltip — inside flex column */}
         {item.isAntique && item.antiqueTier && (
           <div
             onMouseEnter={handleAntiqueMouseEnter}
             onMouseLeave={handleAntiqueMouseLeave}
             style={{
-              position: 'absolute',
-              top: '2.1rem',
-              left: '0.5rem',
-              zIndex: 10,
+              position: 'relative',
             }}
           >
             {/* BADGE */}
@@ -343,16 +339,13 @@ export default function ItemCard({ item }: ItemCardProps) {
           </div>
         )}
 
-        {/* Collectible badge + tooltip — single hover wrapper */}
+        {/* Collectible badge + tooltip — inside flex column */}
         {item.isCollectible && item.collectiblesTier && (
           <div
             onMouseEnter={handleCollectibleMouseEnter}
             onMouseLeave={handleCollectibleMouseLeave}
             style={{
-              position: 'absolute',
-              top: item.isAntique && item.antiqueTier ? '4.2rem' : '2.1rem',
-              left: '0.5rem',
-              zIndex: 10,
+              position: 'relative',
             }}
           >
             {/* BADGE */}
@@ -477,6 +470,7 @@ export default function ItemCard({ item }: ItemCardProps) {
             )}
           </div>
         )}
+        </div>
 
         {/* Bottom-left: bot run status pills */}
         {item.botStatus && (
@@ -611,8 +605,9 @@ export default function ItemCard({ item }: ItemCardProps) {
 
       {/* Actions row — always identical: View Item + Actions */}
       <div style={{
-        display: 'flex',
-        gap: '10px',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '8px',
         padding: '14px 16px 16px',
         borderTop: '1px solid var(--border-default)',
       }}>
@@ -620,13 +615,12 @@ export default function ItemCard({ item }: ItemCardProps) {
         <button
           onClick={() => router.push(`/items/${item.id}`)}
           style={{
-            flex: 1,
-            padding: '12px 16px',
+            padding: '12px 8px',
             background: 'transparent',
             border: '1px solid var(--border-default)',
             borderRadius: '12px',
             color: 'var(--text-primary)',
-            fontSize: '14px',
+            fontSize: '0.8rem',
             fontWeight: 500,
             cursor: 'pointer',
             display: 'flex',
@@ -646,7 +640,7 @@ export default function ItemCard({ item }: ItemCardProps) {
             (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
           }}
         >
-          View Item →
+          View Item
         </button>
 
         {/* Actions panel trigger — always present */}
@@ -654,12 +648,12 @@ export default function ItemCard({ item }: ItemCardProps) {
           onClick={() => setPanelOpen(true)}
           disabled={loading}
           style={{
-            padding: '12px 20px',
+            padding: '12px 8px',
             background: 'linear-gradient(135deg, rgba(0,188,212,0.15) 0%, rgba(0,188,212,0.08) 100%)',
             border: '1px solid rgba(0,188,212,0.3)',
             borderRadius: '12px',
             color: '#00bcd4',
-            fontSize: '14px',
+            fontSize: '0.8rem',
             fontWeight: 600,
             cursor: 'pointer',
             display: 'flex',
@@ -668,7 +662,6 @@ export default function ItemCard({ item }: ItemCardProps) {
             gap: '6px',
             minHeight: '46px',
             transition: 'all 0.2s ease',
-            whiteSpace: 'nowrap' as const,
             letterSpacing: '0.01em',
           }}
           onMouseEnter={(e) => {
@@ -682,7 +675,7 @@ export default function ItemCard({ item }: ItemCardProps) {
             (e.currentTarget as HTMLElement).style.boxShadow = 'none';
           }}
         >
-          ⚡ Actions
+          Actions
         </button>
       </div>
 
