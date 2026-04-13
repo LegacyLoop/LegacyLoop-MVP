@@ -115,7 +115,7 @@ export default function BottomNav() {
                 height: "52px",
                 borderRadius: "50%",
                 background: "linear-gradient(135deg, #00BCD4, #0097a7)",
-                boxShadow: "0 4px 16px rgba(0,188,212,0.35)",
+                boxShadow: "0 0 20px rgba(0,188,212,0.4), 0 4px 16px rgba(0,188,212,0.35)",
                 marginTop: "-20px",
                 transition: "transform 150ms ease",
                 textDecoration: "none",

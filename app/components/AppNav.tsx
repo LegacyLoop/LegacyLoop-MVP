@@ -61,6 +61,33 @@ const TEAL      = "#00bcd4";
 const TEAL_GLOW = "rgba(0, 188, 212, 0.35)";
 const TEAL_BDR  = "rgba(0, 188, 212, 0.35)";
 
+// Mobile page title map — friendly names for header
+const PAGE_TITLES: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/items": "My Items",
+  "/items/new": "Add Item",
+  "/bots": "AI Bots",
+  "/messages": "Messages",
+  "/subscription": "Membership",
+  "/settings": "Settings",
+  "/credits": "Credits",
+  "/billing": "Billing",
+  "/shipping": "Shipping",
+  "/store": "My Store",
+  "/marketplace": "Marketplace",
+  "/projects": "Sales",
+  "/analytics": "Analytics",
+  "/payments": "Payments",
+  "/help": "Help",
+  "/profile": "Profile",
+  "/referral": "Referrals",
+  "/white-glove": "White Glove",
+  "/pricing": "Pricing",
+  "/search": "Search",
+  "/spending": "AI Spending",
+  "/offers": "Offers",
+};
+
 // Tier labels from pricing SSOT — matches TIER_NAMES in lib/constants/pricing.ts
 const TIER_LABELS: Record<number, string> = {
   1: "Free",
@@ -236,6 +263,18 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
   const isActive = (href: string) => pathname === href || (href !== "/" && pathname.startsWith(href + "/")) || (href === "/items" && pathname.startsWith("/items"));
 
+  // Resolve mobile page title from pathname
+  const mobilePageTitle = (() => {
+    if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
+    // Check prefix matches (e.g. /items/abc → "My Items", /bots/analyzebot → "AI Bots")
+    const segments = pathname.split("/").filter(Boolean);
+    if (segments.length >= 2) {
+      const prefix = "/" + segments[0];
+      if (PAGE_TITLES[prefix]) return PAGE_TITLES[prefix];
+    }
+    return "";
+  })();
+
   /* ── Reusable menu item renderer ── */
   const renderMenuItem = (item: { href: string; label: string; icon: any; badge?: string; desktopOnly?: boolean }, mobile = false) => {
     const Icon = item.icon;
@@ -304,6 +343,27 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
               className="lg:hidden"
             />
           </Link>
+
+          {/* CENTER: Mobile page title */}
+          {mobilePageTitle && (
+            <span
+              className="lg:hidden"
+              style={{
+                flex: 1,
+                textAlign: "center",
+                fontSize: "0.95rem",
+                fontWeight: 600,
+                fontFamily: "var(--font-heading)",
+                color: "var(--text-primary)",
+                letterSpacing: "-0.01em",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {mobilePageTitle}
+            </span>
+          )}
 
           {/* CENTER: Desktop nav (logged-in) */}
           {user && (

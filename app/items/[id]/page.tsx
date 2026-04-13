@@ -195,6 +195,13 @@ export default async function ItemPage({ params }: { params: Params }) {
             align-items: flex-start !important;
           }
         }
+        /* Hide scrollbar on price pills strip */
+        .item-header-row div::-webkit-scrollbar { display: none; }
+        .item-header-row div { scrollbar-width: none; }
+        /* Full-width bot action buttons on mobile */
+        @media (max-width: 640px) {
+          .item-analyze-actions button { width: 100% !important; justify-content: center; }
+        }
       `}</style>
       <Breadcrumbs items={[
         { label: "Dashboard", href: "/dashboard" },
@@ -234,10 +241,11 @@ export default async function ItemPage({ params }: { params: Params }) {
             <h1 style={{
               fontSize: "1.85rem",
               fontWeight: 800,
+              fontFamily: "var(--font-heading)",
               color: "var(--text-primary)",
               margin: 0,
               lineHeight: 1.15,
-              letterSpacing: "-0.01em",
+              letterSpacing: "-0.02em",
             }}>
               {displayTitle}
             </h1>
@@ -376,31 +384,31 @@ export default async function ItemPage({ params }: { params: Params }) {
         <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "flex-end", gap: "0.5rem", flexShrink: 1, minWidth: 0 }}>
           {/* Quick Stats */}
           {v && (
-            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-              <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", minWidth: "60px" }}>
+            <div style={{ display: "flex", gap: "0.5rem", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", paddingBottom: "2px" }}>
+              <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", minWidth: "70px", flexShrink: 0 }}>
                 <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Value</div>
-                <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "var(--accent)" }}>${Math.round(v.low || 0)}–${Math.round(v.high || 0)}</div>
+                <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "var(--accent)", letterSpacing: "-0.01em" }}>${Math.round(v.low || 0)}–${Math.round(v.high || 0)}</div>
               </div>
               {v.confidence != null && (
-                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)" }}>
+                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", flexShrink: 0 }}>
                   <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Confidence</div>
-                  <div style={{ fontSize: "0.92rem", fontWeight: 800, color: (v.confidence > 0.7 || v.confidence > 70) ? "#22c55e" : "#f59e0b" }}>{Math.round(v.confidence > 1 ? v.confidence : v.confidence * 100)}%</div>
+                  <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: (v.confidence > 0.7 || v.confidence > 70) ? "#22c55e" : "#f59e0b" }}>{Math.round(v.confidence > 1 ? v.confidence : v.confidence * 100)}%</div>
                 </div>
               )}
               {gsCalc && !gsCalc.isExempt && (
-                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.2)", minWidth: "70px" }}>
+                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.2)", minWidth: "70px", flexShrink: 0 }}>
                   <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#00bcd4", fontWeight: 700 }}>Garage Sale</div>
-                  <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#00bcd4" }}>${gsCalc.garageSalePrice}–${gsCalc.garageSalePriceHigh}</div>
+                  <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4", letterSpacing: "-0.01em" }}>${gsCalc.garageSalePrice}–${gsCalc.garageSalePriceHigh}</div>
                 </div>
               )}
               {gsCalc && !gsCalc.isExempt && (
-                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(29,158,117,0.06)", border: "1px solid rgba(29,158,117,0.2)", minWidth: "70px" }}>
+                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(29,158,117,0.06)", border: "1px solid rgba(29,158,117,0.2)", minWidth: "70px", flexShrink: 0 }}>
                   <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#1D9E75", fontWeight: 700 }}>Quick Sale</div>
-                  <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "#1D9E75" }}>${gsCalc.quickSalePrice}–${gsCalc.quickSalePriceHigh}</div>
+                  <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#1D9E75", letterSpacing: "-0.01em" }}>${gsCalc.quickSalePrice}–${gsCalc.quickSalePriceHigh}</div>
                 </div>
               )}
               {gsCalc?.isExempt && (
-                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)" }}>
+                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", flexShrink: 0 }}>
                   <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#D4AF37", fontWeight: 700 }}>Value Holds</div>
                   <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#D4AF37" }}>Collectible</div>
                 </div>

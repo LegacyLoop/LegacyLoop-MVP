@@ -133,19 +133,32 @@ export default function ItemCard({ item }: ItemCardProps) {
 
   return (
     <div
-      className="card card-hover overflow-hidden"
-      style={
-        item.megabotUsed
-          ? { borderColor: "#c4b5fd", boxShadow: "0 0 0 2px rgba(196,181,253,0.3)" }
-          : undefined
-      }
+      style={{
+        borderRadius: "0.875rem",
+        overflow: "hidden",
+        background: "var(--bg-card-solid)",
+        border: item.megabotUsed
+          ? "1px solid #c4b5fd"
+          : "1px solid rgba(255,255,255,0.08)",
+        boxShadow: item.megabotUsed
+          ? "0 0 0 2px rgba(196,181,253,0.3), 0 2px 8px rgba(0,0,0,0.15)"
+          : "0 1px 3px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)",
+        transition: "all 0.2s ease",
+        minHeight: "180px",
+        display: "flex",
+        flexDirection: "column" as const,
+      }}
     >
       {/* Photo */}
-      <div className="relative">
+      <div style={{ position: "relative" }}>
         {item.photoUrl ? (
-          <img src={item.photoUrl} alt="" className="h-48 w-full object-cover" />
+          <img
+            src={item.photoUrl}
+            alt=""
+            style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }}
+          />
         ) : (
-          <div className="h-48 w-full flex items-center justify-center" style={{ background: "var(--bg-card-hover)" }}>
+          <div style={{ width: "100%", aspectRatio: "4/3", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg-card-hover)" }}>
             <span style={{ fontSize: "2rem", opacity: 0.4 }}>+</span>
           </div>
         )}
@@ -523,12 +536,12 @@ export default function ItemCard({ item }: ItemCardProps) {
       </div>
 
       {/* Body */}
-      <div className="p-5">
-        <div style={{ fontWeight: 600, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={title}>{title}</div>
-        {item.condition && <div style={{ fontSize: "0.88rem", color: "var(--text-secondary)", marginTop: "0.125rem" }}>{item.condition}</div>}
+      <div style={{ padding: "0.75rem 0.875rem", flex: 1 }}>
+        <div style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.3 }} title={title}>{title}</div>
+        {item.condition && <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>{item.condition}</div>}
 
         {/* Pricing row */}
-        <div className="mt-3">
+        <div style={{ marginTop: "0.5rem" }}>
           {showPriceInput ? (
             <div style={{ display: "flex", gap: "0.4rem", alignItems: "center" }}>
               <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>$</span>
@@ -561,13 +574,13 @@ export default function ItemCard({ item }: ItemCardProps) {
                 <span
                   onClick={() => setShowPriceInput(true)}
                   title="Click to edit your listing price"
-                  style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--accent)", cursor: "pointer" }}
+                  style={{ fontSize: "1.1rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "var(--accent)", cursor: "pointer", letterSpacing: "-0.01em" }}
                 >
-                  Listed: ${listingPrice.toLocaleString()}
+                  ${listingPrice.toLocaleString()}
                 </span>
               ) : item.valuationLow != null ? (
-                <span style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--accent)" }}>
-                  ${Math.round(item.valuationLow)} – ${Math.round(item.valuationHigh!)}
+                <span style={{ fontSize: "1rem", fontWeight: 600, fontFamily: "var(--font-data)", color: "var(--accent)", letterSpacing: "-0.01em" }}>
+                  ${Math.round(item.valuationLow)}–${Math.round(item.valuationHigh!)}
                 </span>
               ) : null}
 

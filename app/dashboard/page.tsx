@@ -289,15 +289,44 @@ export default async function DashboardPage() {
     <div>
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Dashboard" }]} />
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: "1rem", marginBottom: "2rem", flexWrap: "wrap" }}>
-        <div>
-          <div className="section-title">Your Workspace</div>
-          <h1 className="h2 mt-2">Dashboard</h1>
-          <p className="muted mt-1">Welcome back, {user.email.split("@")[0]}. Here&apos;s an overview of your items and activity.</p>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", marginBottom: "1.75rem", flexWrap: "wrap" }}>
+        <div style={{ minWidth: 0 }}>
+          <h1 style={{
+            fontSize: "1.75rem",
+            fontWeight: 700,
+            fontFamily: "var(--font-heading)",
+            color: "var(--text-primary)",
+            margin: 0,
+            letterSpacing: "-0.02em",
+            lineHeight: 1.2,
+          }}>
+            Welcome back, {onboardingData.firstName}
+          </h1>
+          <p style={{
+            fontSize: "0.85rem",
+            color: "var(--text-muted)",
+            marginTop: "0.3rem",
+            margin: "0.3rem 0 0 0",
+          }}>
+            Here&apos;s your selling command center.
+          </p>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap", flexShrink: 0 }}>
           <DemoSeedButton />
-          <Link href="/items/new" className="btn-primary" style={{ padding: "0.625rem 1.5rem", fontSize: "0.88rem" }}>
+          <Link href="/items/new" style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.35rem",
+            padding: "0.6rem 1.25rem",
+            borderRadius: "0.65rem",
+            background: "linear-gradient(135deg, #00bcd4, #0097a7)",
+            color: "#fff",
+            fontSize: "0.85rem",
+            fontWeight: 600,
+            textDecoration: "none",
+            boxShadow: "0 2px 12px rgba(0,188,212,0.25)",
+            transition: "all 0.15s ease",
+          }}>
             + New Item
           </Link>
         </div>

@@ -509,8 +509,11 @@ export default function DashboardClient({ items, stats, events, onboardingUser }
       {/* ── Stat Card Filters ─────────────────────────────────────────────── */}
       <style>{`
         .dash-stat-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.75rem; margin-bottom: 1.75rem; }
-        @media (max-width: 768px) { .dash-stat-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 480px) { .dash-stat-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 1024px) { .dash-stat-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 640px) { .dash-stat-grid { grid-template-columns: repeat(2, 1fr); } }
+        .dash-item-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        @media (max-width: 1024px) { .dash-item-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 480px) { .dash-item-grid { grid-template-columns: repeat(2, 1fr); gap: 0.625rem; } }
       `}</style>
       <div className="dash-stat-grid">
         {statCards.map((stat) => {
@@ -522,15 +525,17 @@ export default function DashboardClient({ items, stats, events, onboardingUser }
               key={stat.key}
               onClick={() => handleStatClick(stat.key)}
               style={{
-                padding: "1.125rem 1.25rem",
-                borderRadius: "0.75rem",
+                padding: "1rem 1.125rem",
+                borderRadius: "0.875rem",
                 background: accent
                   ? `linear-gradient(135deg, ${accent}12, ${accent}04)`
                   : "var(--bg-card-solid)",
-                border: `1px solid ${isActive ? "var(--accent)" : accent ? `${accent}30` : "var(--border-default)"}`,
+                border: `1px solid ${isActive ? "var(--accent)" : accent ? `${accent}30` : "rgba(255,255,255,0.08)"}`,
                 boxShadow: isActive
-                  ? "0 0 0 2px var(--accent-dim), 0 0 12px rgba(0,188,212,0.15)"
-                  : "none",
+                  ? "0 0 0 2px var(--accent-dim), 0 0 16px rgba(0,188,212,0.15)"
+                  : "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
                 cursor: "pointer",
                 textAlign: "left",
                 transition: "all 0.2s ease",
@@ -538,28 +543,31 @@ export default function DashboardClient({ items, stats, events, onboardingUser }
               }}
             >
               <div style={{
-                fontSize: "0.65rem",
+                fontSize: "0.6rem",
                 fontWeight: 600,
                 textTransform: "uppercase",
-                letterSpacing: "0.06em",
+                letterSpacing: "0.08em",
                 color: isActive ? "var(--accent)" : accent ?? "var(--text-muted)",
               }}>
                 {stat.label}
               </div>
               <div style={{
-                fontSize: "1.75rem",
-                fontWeight: 800,
-                marginTop: "0.15rem",
+                fontSize: "1.85rem",
+                fontWeight: 700,
+                fontFamily: "var(--font-data)",
+                marginTop: "0.1rem",
                 letterSpacing: "-0.02em",
                 color: isActive ? "var(--accent)" : accent ?? "var(--text-primary)",
+                lineHeight: 1.1,
               }}>
                 {stat.value}
               </div>
               <div style={{
-                fontSize: "0.7rem",
-                marginTop: "0.1rem",
+                fontSize: "0.68rem",
+                marginTop: "0.2rem",
                 color: stat.subColor ?? "var(--text-muted)",
                 fontWeight: stat.subColor ? 600 : 400,
+                lineHeight: 1.3,
               }}>
                 {stat.sub}
               </div>
@@ -733,7 +741,7 @@ export default function DashboardClient({ items, stats, events, onboardingUser }
           </div>
         ) : (
           <div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="dash-item-grid"
             style={{ transition: "opacity 0.3s ease" }}
           >
             {filteredItems.map((item) => (
