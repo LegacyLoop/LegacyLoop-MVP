@@ -46,7 +46,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
   return (
     <div style={{ display: "flex", flexDirection: "row", width: "100%", height: "100%", background: "var(--bg-primary)", overflow: "hidden" }}>
       {/* LEFT — Agent Sidebar */}
-      <div style={{ width: 220, minWidth: 220, maxWidth: 220, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderRight: "1px solid var(--border-default)", display: "flex", flexDirection: "column" }}>
+      <div style={{ width: "clamp(0px, 22vw, 220px)", minWidth: 0, maxWidth: 220, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderRight: "1px solid var(--border-default)", display: "flex", flexDirection: "column" }}>
         {/* Agent Status */}
         <div style={{ padding: 16, borderBottom: "1px solid var(--border-default)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -111,7 +111,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
       </div>
 
       {/* RIGHT — Intelligence Panel */}
-      <div style={{ width: 260, minWidth: 260, maxWidth: 260, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderLeft: "1px solid var(--border-default)", display: "flex", flexDirection: "column" }}>
+      <div style={{ width: "clamp(0px, 26vw, 260px)", minWidth: 0, maxWidth: 260, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderLeft: "1px solid var(--border-default)", display: "flex", flexDirection: "column" }}>
         {selectedConversationId ? (
           <>
             <BuyerIntelligenceCard conversationId={selectedConversationId} />

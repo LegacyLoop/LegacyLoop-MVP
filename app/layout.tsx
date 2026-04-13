@@ -12,6 +12,7 @@ import ThemeProvider from "@/app/components/ThemeProvider";
 import NoiseOverlay from "@/app/components/effects/NoiseOverlay";
 import GradientOrbs from "@/app/components/effects/GradientOrbs";
 import InstallPrompt from "@/app/components/InstallPrompt";
+import BottomNav from "@/app/components/BottomNav";
 
 export const viewport = {
   width: "device-width",
@@ -160,8 +161,9 @@ export default async function RootLayout({
             creditBalance={creditBalance}
           />
 
-          <main className="container-app py-10">{children}</main>
+          <main className="container-app py-10" style={{ paddingBottom: "80px" }}>{children}</main>
           <Footer />
+          <BottomNav />
           <HelpWidget />
           <InstallPrompt />
           <DataConsentModal show={showConsentModal} />

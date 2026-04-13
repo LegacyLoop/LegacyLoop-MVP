@@ -152,7 +152,7 @@ const menuItemBase: React.CSSProperties = {
   transition: "all 0.15s ease",
   borderRadius: "0.5rem",
   margin: "0 0.375rem",
-  minHeight: "2.75rem",
+  minHeight: "3rem",
   cursor: "pointer",
   border: "none",
   width: "calc(100% - 0.75rem)",
@@ -294,20 +294,20 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
               src="/images/logos/legacyloop-logo.png"
               alt="LegacyLoop"
               style={{ height: "48px", width: "auto", objectFit: "contain", display: "block" }}
-              className="hidden md:block"
+              className="hidden lg:block"
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/logos/logo-icon.png"
               alt="LegacyLoop"
               style={{ height: "44px", width: "44px", objectFit: "contain" }}
-              className="md:hidden"
+              className="lg:hidden"
             />
           </Link>
 
           {/* CENTER: Desktop nav (logged-in) */}
           {user && (
-            <nav style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: "0.125rem" }} className="hidden md:flex">
+            <nav style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: "0.125rem" }} className="hidden lg:flex">
               {CENTER_LINKS.map(({ href, label, icon: Icon }) => {
                 const active = isActive(href);
                 return (
@@ -338,7 +338,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
           {/* CENTER: Logged-out nav */}
           {!user && (
-            <nav style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: "0.125rem" }} className="hidden sm:flex">
+            <nav style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: "0.125rem" }} className="hidden lg:flex">
               {[
                 { href: "/search", label: "Browse", icon: Search },
                 { href: "/heroes", label: "Heroes", icon: Trophy },
@@ -375,7 +375,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                 {/* Credit balance pill — hidden on mobile to prevent nav overflow */}
                 <Link
                   href="/credits"
-                  className="hidden sm:flex"
+                  className="hidden lg:flex"
                   style={{
                     alignItems: "center",
                     gap: "0.3rem",
@@ -546,7 +546,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                 </div>
 
                 {/* Settings panel button — desktop only (hamburger replaces on mobile) */}
-                <div className="hidden md:block" style={{ position: "relative" }}>
+                <div className="hidden lg:block" style={{ position: "relative" }}>
                   <button onClick={() => { setSettingsOpen((v) => !v); setDropdownOpen(false); }} style={{
                     display: "flex", alignItems: "center", justifyContent: "center",
                     width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
@@ -597,11 +597,11 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                 </div>
 
                 {/* CMD-MOBILE-8C: Hamburger menu for logged-in mobile users.
-                    Replaces settings gear on mobile (md:hidden). Triggers the
+                    Replaces settings gear on mobile (lg:hidden). Triggers the
                     existing full-screen mobileOpen overlay at line 634 which
                     already renders ALL nav sections for logged-in users. */}
                 <button
-                  className="md:hidden"
+                  className="lg:hidden"
                   onClick={() => { setMobileOpen((v) => !v); setDropdownOpen(false); setSettingsOpen(false); setBellOpen(false); }}
                   style={{
                     display: "flex", alignItems: "center", justifyContent: "center",
@@ -636,7 +636,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                 <Link href="/auth/signup" className="btn-primary hidden sm:inline-flex" style={{ padding: "0.45rem 0.875rem", fontSize: "0.84rem", borderRadius: "0.6rem" }}>Get Started</Link>
 
                 {/* Mobile hamburger (logged-out) */}
-                <button className="sm:hidden" onClick={() => setMobileOpen((v) => !v)} style={{
+                <button className="lg:hidden" onClick={() => setMobileOpen((v) => !v)} style={{
                   display: "flex", alignItems: "center", justifyContent: "center",
                   width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
                   background: mobileOpen ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.06)",
@@ -657,7 +657,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
       {/* ── Mobile full-screen menu (logged-in) ── */}
       {user && mobileOpen && (
-        <div className="md:hidden" style={{
+        <div className="lg:hidden" style={{
           position: "fixed", inset: 0, top: "64px", zIndex: 9999,
           background: "rgba(10, 10, 18, 0.97)", backdropFilter: "blur(24px)",
           overflowY: "auto", paddingBottom: "6rem",
@@ -713,7 +713,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
       {/* ── Mobile full-screen menu (logged-out) ── */}
       {!user && mobileOpen && (
-        <div className="sm:hidden" style={{
+        <div className="lg:hidden" style={{
           position: "fixed", inset: 0, top: "64px", zIndex: 9999,
           background: "rgba(10, 10, 18, 0.97)", backdropFilter: "blur(24px)",
           overflowY: "auto", paddingBottom: "6rem",
