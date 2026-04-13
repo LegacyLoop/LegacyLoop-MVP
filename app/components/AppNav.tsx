@@ -354,13 +354,13 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
         className={item.desktopOnly && mobile ? "hidden" : ""}
         style={{
           ...menuItemBase,
-          color: active ? "#fff" : "rgba(255,255,255,0.82)",
+          color: active ? "var(--text-primary)" : "var(--text-secondary)",
           background: active ? "rgba(0, 188, 212, 0.1)" : "transparent",
         }}
-        onMouseEnter={(e) => { if (!active) { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLElement).style.color = "#fff"; } }}
-        onMouseLeave={(e) => { if (!active) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.82)"; } }}
+        onMouseEnter={(e) => { if (!active) { (e.currentTarget as HTMLElement).style.background = "var(--ghost-bg)"; (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"; } }}
+        onMouseLeave={(e) => { if (!active) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; } }}
       >
-        <Icon size={18} style={{ flexShrink: 0, color: active ? TEAL : "rgba(255,255,255,0.35)" }} />
+        <Icon size={18} style={{ flexShrink: 0, color: active ? TEAL : "var(--text-muted)" }} />
         <span style={{ flex: 1 }}>{item.label}</span>
         {active && <span style={{ width: 3, height: 18, borderRadius: 2, background: TEAL, flexShrink: 0 }} />}
         {item.badge && badgeValue > 0 && (
@@ -445,14 +445,14 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   <Link key={href} href={href} style={{
                     display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.55rem 0.9rem",
                     borderRadius: "0.55rem", fontSize: "0.875rem", fontWeight: active ? 600 : 450, letterSpacing: "0.01em",
-                    color: active ? "#fff" : "rgba(255,255,255,0.5)",
+                    color: active ? "var(--text-primary)" : "var(--text-muted)",
                     background: active ? "rgba(0, 188, 212, 0.15)" : "transparent",
                     border: `1px solid ${active ? TEAL_BDR : "transparent"}`,
                     boxShadow: active ? `0 2px 0 0 ${TEAL}, 0 4px 12px rgba(0,188,212,0.15)` : "none",
                     transition: "all 0.18s ease", textDecoration: "none", minHeight: "2.75rem",
                   }}
-                  onMouseEnter={(e) => { if (!active) { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.82)"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; } }}
-                  onMouseLeave={(e) => { if (!active) { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
+                  onMouseEnter={(e) => { if (!active) { (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"; (e.currentTarget as HTMLElement).style.background = "var(--ghost-bg)"; } }}
+                  onMouseLeave={(e) => { if (!active) { (e.currentTarget as HTMLElement).style.color = "var(--text-muted)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
                   >
                     <Icon size={15} />
                     {label}
@@ -478,11 +478,11 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                 <Link key={href} href={href} style={{
                   display: "flex", alignItems: "center", gap: "0.35rem", padding: "0.45rem 0.8rem",
                   borderRadius: "0.55rem", fontSize: "0.84rem", fontWeight: 450,
-                  color: "rgba(255,255,255,0.75)", background: "transparent",
+                  color: "var(--text-secondary)", background: "transparent",
                   transition: "all 0.18s ease", textDecoration: "none",
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.82)"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.5)"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-primary)"; (e.currentTarget as HTMLElement).style.background = "var(--ghost-bg)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-secondary)"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                 >
                   {Icon && <Icon size={14} />}
                   {label}
@@ -543,9 +543,9 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                     style={{
                       position: "relative", display: "flex", alignItems: "center", justifyContent: "center",
                       width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
-                      background: bellOpen ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.06)",
-                      border: `1px solid ${bellOpen ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.09)"}`,
-                      color: totalNotifications > 0 ? TEAL : "rgba(255,255,255,0.7)",
+                      background: bellOpen ? "var(--ghost-hover-bg)" : "var(--ghost-bg)",
+                      border: `1px solid ${bellOpen ? "var(--ghost-border)" : "var(--border-default)"}`,
+                      color: totalNotifications > 0 ? TEAL : "var(--text-secondary)",
                       transition: "all 0.15s ease", cursor: "pointer",
                     }}
                     aria-label="Notifications" aria-expanded={bellOpen}>
@@ -564,8 +564,8 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   {/* Bell dropdown */}
                   {bellOpen && (
                     <div className="glass-modal" style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "min(22rem, 92vw)", maxHeight: "26rem", overflowY: "auto", zIndex: 100 }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.875rem 1rem 0.625rem", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                        <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "#fff" }}>Notifications</span>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.875rem 1rem 0.625rem", borderBottom: "1px solid var(--glass-border)" }}>
+                        <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--text-primary)" }}>Notifications</span>
                         {notifications.some((n) => !n.isRead) && (
                           <button onClick={markAllRead} style={{ fontSize: "0.72rem", color: TEAL, background: "transparent", border: "none", cursor: "pointer", fontWeight: 500 }}>
                             Mark all read
@@ -573,23 +573,23 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                         )}
                       </div>
                       {notifications.length === 0 ? (
-                        <div style={{ padding: "2rem 1rem", textAlign: "center", fontSize: "0.85rem", color: "rgba(255,255,255,0.3)" }}>
+                        <div style={{ padding: "2rem 1rem", textAlign: "center", fontSize: "0.85rem", color: "var(--text-muted)" }}>
                           No notifications yet
                         </div>
                       ) : (
                         notifications.map((n) => (
                           <Link key={n.id} href={n.link ?? "/dashboard"} style={{
-                            display: "block", padding: "0.7rem 1rem", borderBottom: "1px solid rgba(255,255,255,0.04)",
+                            display: "block", padding: "0.7rem 1rem", borderBottom: "1px solid var(--glass-border)",
                             background: n.isRead ? "transparent" : "rgba(0,188,212,0.03)", textDecoration: "none", transition: "background 0.12s ease",
                           }}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--ghost-bg)"; }}
                           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = n.isRead ? "transparent" : "rgba(0,188,212,0.03)"; }}>
-                            <div style={{ fontSize: "0.82rem", fontWeight: n.isRead ? 400 : 600, color: "#fff", lineHeight: 1.35 }}>
+                            <div style={{ fontSize: "0.82rem", fontWeight: n.isRead ? 400 : 600, color: "var(--text-primary)", lineHeight: 1.35 }}>
                               {!n.isRead && <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: TEAL, marginRight: "0.5rem", verticalAlign: "middle" }} />}
                               {n.title}
                             </div>
-                            <div style={{ fontSize: "0.72rem", color: "rgba(255,255,255,0.6)", marginTop: "0.2rem" }}>{n.message}</div>
-                            <div style={{ fontSize: "0.65rem", color: "rgba(255,255,255,0.45)", marginTop: "0.15rem" }}>
+                            <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginTop: "0.2rem" }}>{n.message}</div>
+                            <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
                               {new Date(n.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                             </div>
                           </Link>
@@ -621,9 +621,9 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   <button onClick={() => { setDropdownOpen((v) => !v); setSettingsOpen(false); }} style={{
                     display: "flex", alignItems: "center", gap: "0.45rem", padding: "0.35rem 0.55rem",
                     borderRadius: "0.6rem",
-                    background: dropdownOpen ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.06)",
-                    border: `1px solid ${dropdownOpen ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.09)"}`,
-                    color: "#fff", cursor: "pointer", transition: "all 0.15s ease",
+                    background: dropdownOpen ? "var(--ghost-bg)" : "var(--ghost-bg)",
+                    border: `1px solid ${dropdownOpen ? "var(--ghost-border)" : "var(--border-default)"}`,
+                    color: "var(--text-primary)", cursor: "pointer", transition: "all 0.15s ease",
                   }} aria-label="User menu" aria-expanded={dropdownOpen}>
                     <div style={{
                       width: "1.75rem", height: "1.75rem", borderRadius: "50%",
@@ -638,12 +638,12 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                     )}
                     <span className="hidden sm:inline" style={{
                       fontSize: "0.8rem", fontWeight: 500, maxWidth: "6rem", overflow: "hidden",
-                      textOverflow: "ellipsis", whiteSpace: "nowrap", color: "rgba(255,255,255,0.8)",
+                      textOverflow: "ellipsis", whiteSpace: "nowrap", color: "var(--text-secondary)",
                     }}>
                       {displayName}
                     </span>
                     <ChevronDown size={13} style={{
-                      color: "rgba(255,255,255,0.4)", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
+                      color: "var(--text-muted)", transform: dropdownOpen ? "rotate(180deg)" : "rotate(0deg)",
                       transition: "transform 0.2s ease", flexShrink: 0,
                     }} />
                   </button>
@@ -652,7 +652,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   {dropdownOpen && (
                     <div className="glass-modal" style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "16rem", maxHeight: "calc(100vh - 80px)", overflowY: "auto", zIndex: 100 }}>
                       {/* Identity header */}
-                      <div style={{ padding: "1rem 1rem 0.75rem", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                      <div style={{ padding: "1rem 1rem 0.75rem", borderBottom: "1px solid var(--glass-border)" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.625rem" }}>
                           <div style={{
                             width: "2.25rem", height: "2.25rem", borderRadius: "50%",
@@ -661,8 +661,8 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                             flexShrink: 0, boxShadow: `0 0 10px ${TEAL_GLOW}`,
                           }}>{initials}</div>
                           <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "#fff" }}>{displayName}</div>
-                            <div style={{ fontSize: "0.7rem", color: "rgba(255,255,255,0.6)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
+                            <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary)" }}>{displayName}</div>
+                            <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
                           </div>
                         </div>
                         <div style={{ marginTop: "0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -681,10 +681,10 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
                       {/* Selling sections only */}
                       {DROPDOWN_SECTIONS.map((section) => (
-                        <div key={section.id} style={{ padding: "0.375rem 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                        <div key={section.id} style={{ padding: "0.375rem 0", borderBottom: "1px solid var(--glass-border)" }}>
                           <div style={{
                             padding: "0.35rem 1rem 0.25rem", fontSize: "0.6rem", fontWeight: 700,
-                            letterSpacing: "0.14em", color: "rgba(255,255,255,0.45)", textTransform: "uppercase",
+                            letterSpacing: "0.14em", color: "var(--text-muted)", textTransform: "uppercase",
                           }}>{section.heading}</div>
                           {section.items.map((item) => renderMenuItem(item))}
                         </div>
@@ -698,13 +698,13 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   <button onClick={() => { setSettingsOpen((v) => !v); setDropdownOpen(false); }} style={{
                     display: "flex", alignItems: "center", justifyContent: "center",
                     width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
-                    background: settingsOpen ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.06)",
-                    border: `1px solid ${settingsOpen ? "rgba(0,188,212,0.3)" : "rgba(255,255,255,0.09)"}`,
-                    color: settingsOpen ? TEAL : "rgba(255,255,255,0.7)",
+                    background: settingsOpen ? "rgba(0,188,212,0.12)" : "var(--ghost-bg)",
+                    border: `1px solid ${settingsOpen ? "rgba(0,188,212,0.3)" : "var(--border-default)"}`,
+                    color: settingsOpen ? TEAL : "var(--text-secondary)",
                     cursor: "pointer", transition: "all 0.15s ease",
                   }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = settingsOpen ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.06)"; }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--ghost-hover-bg)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = settingsOpen ? "rgba(0,188,212,0.12)" : "var(--ghost-bg)"; }}
                   aria-label="Settings menu">
                     <Settings size={16} />
                   </button>
@@ -712,13 +712,13 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   {/* Settings Panel — Claude-style admin menu */}
                   {settingsOpen && (
                     <div className="glass-modal" style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "16rem", maxHeight: "calc(100vh - 80px)", overflowY: "auto", zIndex: 200 }}>
-                      <div style={{ padding: "0.75rem 0.75rem 0.5rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-                        <div style={{ fontSize: "0.78rem", color: "rgba(255,255,255,0.5)" }}>{user.email}</div>
+                      <div style={{ padding: "0.75rem 0.75rem 0.5rem", borderBottom: "1px solid var(--glass-border)" }}>
+                        <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{user.email}</div>
                       </div>
 
                       {SETTINGS_SECTIONS.map((section) => (
-                        <div key={section.id} style={{ padding: "0.375rem 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                          <div style={{ padding: "0.35rem 1rem 0.25rem", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.14em", color: "rgba(255,255,255,0.45)", textTransform: "uppercase" }}>
+                        <div key={section.id} style={{ padding: "0.375rem 0", borderBottom: "1px solid var(--glass-border)" }}>
+                          <div style={{ padding: "0.35rem 1rem 0.25rem", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.14em", color: "var(--text-muted)", textTransform: "uppercase" }}>
                             {section.heading}
                           </div>
                           {section.items.map((item) => renderMenuItem(item))}
@@ -726,7 +726,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                       ))}
 
                       {/* Session — Theme + Sign Out */}
-                      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "0.375rem 0" }}>
+                      <div style={{ borderTop: "1px solid var(--glass-border)", padding: "0.375rem 0" }}>
                         {/* Theme Picker — Light / Dark / Auto */}
                         <div style={{ display: "flex", gap: "2px", padding: "0.25rem", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", margin: "0.25rem 0.5rem" }}>
                           {([{ m: "light" as const, icon: <Sun size={14} />, label: "Light" }, { m: "dark" as const, icon: <Moon size={14} />, label: "Dark" }, { m: "auto" as const, icon: <Monitor size={14} />, label: "Auto" }]).map((opt) => (

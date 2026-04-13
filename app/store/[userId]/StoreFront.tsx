@@ -345,7 +345,7 @@ export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl
                       fontWeight: 600,
                       textDecoration: "none",
                       background: isSold ? "var(--border-default)" : "var(--accent)",
-                      color: "#fff",
+                      color: isSold ? "var(--text-muted)" : "#fff",
                       cursor: isSold ? "not-allowed" : "pointer",
                       pointerEvents: isSold ? "none" : "auto",
                       transition: "opacity 0.2s ease",

@@ -155,7 +155,7 @@ export default function ItemPhotoStrip({
             aspectRatio: "4 / 3",
             overflow: "hidden",
             borderRadius: "12px",
-            background: "#0D1117",
+            background: "var(--bg-secondary)",
             cursor: "pointer",
           }}
           onClick={() =>
@@ -204,7 +204,7 @@ export default function ItemPhotoStrip({
             aspectRatio: "4 / 3",
             overflow: "hidden",
             borderRadius: "12px",
-            background: "#0D1117",
+            background: "var(--bg-secondary)",
           }}
         >
           {/* Photo counter — top right */}
