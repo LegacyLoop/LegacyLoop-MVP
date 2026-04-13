@@ -48,16 +48,12 @@ export default function WelcomeModal({ user, onClose }: Props) {
 
   return (
     <div
+      className="glass-backdrop"
       style={{
-        position: "fixed",
-        inset: 0,
         zIndex: 9999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "rgba(0,0,0,0.7)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
         opacity: closing ? 0 : 1,
         transition: "opacity 0.3s ease",
         padding: "1rem",
@@ -70,14 +66,12 @@ export default function WelcomeModal({ user, onClose }: Props) {
         }
       `}</style>
       <div
+        className="glass-modal"
         style={{
           width: "100%",
           maxWidth: "440px",
-          background: "rgba(13,17,23,0.97)",
           border: "1px solid rgba(0,188,212,0.25)",
-          borderRadius: "1.5rem",
           padding: "2.5rem 2rem",
-          boxShadow: "0 0 60px rgba(0,188,212,0.08), 0 24px 80px rgba(0,0,0,0.5)",
           animation: "welcomeScaleIn 0.4s ease-out forwards",
           textAlign: "center",
         }}

@@ -159,12 +159,9 @@ export default function CommandPalette() {
     <>
       {/* Backdrop */}
       <div
+        className="glass-backdrop"
         onClick={() => setOpen(false)}
         style={{
-          position: "fixed",
-          inset: 0,
-          background: "rgba(0,0,0,0.6)",
-          backdropFilter: "blur(4px)",
           zIndex: 200,
           animation: "fadeIn 0.15s ease",
         }}
@@ -172,6 +169,7 @@ export default function CommandPalette() {
 
       {/* Palette */}
       <div
+        className="glass-modal"
         style={{
           position: "fixed",
           top: "20%",
@@ -179,10 +177,6 @@ export default function CommandPalette() {
           transform: "translateX(-50%)",
           width: "min(560px, 90vw)",
           zIndex: 201,
-          borderRadius: "1.25rem",
-          background: "var(--bg-card-solid)",
-          border: "1px solid var(--border-default)",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.5)",
           overflow: "hidden",
           animation: "slideDown 0.15s ease",
         }}

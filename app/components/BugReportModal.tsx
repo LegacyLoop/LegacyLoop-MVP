@@ -132,29 +132,24 @@ export default function BugReportModal({ open, onClose }: Props) {
   return (
     <div
       id="bug-report-modal-overlay"
+      className="glass-backdrop"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       style={{
-        position: "fixed",
-        inset: 0,
         zIndex: 9999,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "rgba(0,0,0,0.6)",
-        backdropFilter: "blur(4px)",
         padding: "1rem",
       }}
     >
       <div
+        className="glass-modal"
         style={{
           width: "100%",
           maxWidth: 520,
           maxHeight: "90vh",
           overflowY: "auto",
-          background: "var(--bg-card-solid, #161b22)",
           border: "1.5px solid rgba(0,188,212,0.25)",
-          borderRadius: 16,
-          boxShadow: "0 16px 48px rgba(0,0,0,0.5)",
         }}
       >
         {/* Header */}

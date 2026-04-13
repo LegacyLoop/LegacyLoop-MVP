@@ -122,12 +122,9 @@ export default function DataConsentModal({ show }: Props) {
 
   return (
     <div
+      className="glass-backdrop"
       style={{
-        position: "fixed",
-        inset: 0,
         zIndex: 1000,
-        background: "rgba(0,0,0,0.55)",
-        backdropFilter: "blur(4px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -135,14 +132,11 @@ export default function DataConsentModal({ show }: Props) {
       }}
     >
       <div
+        className="glass-modal"
         style={{
-          background: "var(--bg-card-solid, #fff)",
-          borderRadius: "1.5rem",
           padding: "2rem",
           maxWidth: "440px",
           width: "100%",
-          boxShadow: "0 25px 60px rgba(0,0,0,0.25)",
-          border: "1px solid var(--border-default, rgba(0,0,0,0.08))",
           position: "relative",
           maxHeight: "90vh",
           overflowY: "auto",

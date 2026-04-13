@@ -99,20 +99,16 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
       {/* Auth card — premium glass morphism */}
       <div
+        className="glass-modal"
         style={{
           position: "relative",
           zIndex: 1,
           width: "100%",
           maxWidth: 440,
-          background: "rgba(10,10,10,0.85)",
-          border: "1px solid rgba(255,255,255,0.06)",
           borderTop: "1px solid rgba(0,188,212,0.15)",
-          borderRadius: 24,
-          backdropFilter: "blur(30px)",
-          WebkitBackdropFilter: "blur(30px)",
           padding: "40px",
           boxShadow:
-            "0 0 40px rgba(0,188,212,0.06), 0 8px 32px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.03) inset",
+            "0 0 40px rgba(0,188,212,0.06), 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 var(--glass-highlight)",
         }}
       >
         {children}
