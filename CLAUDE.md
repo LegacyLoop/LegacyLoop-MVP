@@ -3,6 +3,31 @@
 # Read every session. Non-negotiable. This is law.
 # ════════════════════════════════════════════════════════════════
 
+@WORLD_CLASS_STANDARDS.md
+@AGENTS.md
+
+## ═══════════════════════════════════════════
+## STANDARDS IMPORT — READ FIRST
+## ═══════════════════════════════════════════
+
+Before anything else you MUST have internalized `WORLD_CLASS_STANDARDS.md`
+in this directory. That file defines the identity we build to:
+
+- The 7 pillars (motion, type, purpose, depth, micro, story, craft)
+- The 12 Awwwards effects with canonical recipes
+- The 18 reference benchmarks (Agency · SaaS · Meta)
+- The 7-point billion-dollar acceptance test
+- The 5 build laws
+- The CMD vocabulary and active 12-CMD sequence
+
+Every command, commit, and V15 report is evaluated against that doc.
+If a change does not meet that bar, it is not done. This CLAUDE.md
+handles project-specific config. That doc handles the standard.
+
+Reference benchmarks (short list): Stripe Dashboard · Linear · Apple
+Wallet · Manus · Mercari · Airbnb · Notion · Dennis Snellenberg ·
+Olivier Larose · Lenis · Vercel · Arc · Instagram · WhatsApp · Threads.
+
 ## WHO WE ARE
 
 LegacyLoop is an AI-powered resale automation platform.
