@@ -30,15 +30,6 @@ export default function ItemPhotoStrip({
     index: number;
   } | null>(null);
 
-  // ═══ RESPONSIVE STATE ═══
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
   // ═══ CAROUSEL STATE ═══
   const [currentIndex, setCurrentIndex] = useState(0);
   const touchStartX = useRef(0);
@@ -114,7 +105,7 @@ export default function ItemPhotoStrip({
         <div
           style={{
             width: "100%",
-            aspectRatio: "1 / 1",
+            aspectRatio: "4 / 3",
             background: "rgba(255,255,255,0.03)",
             borderRadius: "12px",
             display: "flex",
@@ -161,9 +152,9 @@ export default function ItemPhotoStrip({
           style={{
             position: "relative",
             width: "100%",
-            aspectRatio: isMobile ? "1 / 1" : "4 / 3",
+            aspectRatio: "4 / 3",
             overflow: "hidden",
-            borderRadius: isMobile ? "12px 12px 0 0" : "12px",
+            borderRadius: "12px",
             background: "#0D1117",
             cursor: "pointer",
           }}
@@ -181,7 +172,8 @@ export default function ItemPhotoStrip({
             style={{
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: "contain",
+              objectPosition: "center",
               display: "block",
             }}
           />
@@ -209,9 +201,9 @@ export default function ItemPhotoStrip({
           style={{
             position: "relative",
             width: "100%",
-            aspectRatio: isMobile ? "1 / 1" : "4 / 3",
+            aspectRatio: "4 / 3",
             overflow: "hidden",
-            borderRadius: isMobile ? "12px 12px 0 0" : "12px",
+            borderRadius: "12px",
             background: "#0D1117",
           }}
         >
@@ -274,7 +266,8 @@ export default function ItemPhotoStrip({
                   style={{
                     width: "100%",
                     height: "100%",
-                    objectFit: "cover",
+                    objectFit: "contain",
+                    objectPosition: "center",
                     display: "block",
                     userSelect: "none",
                   }}

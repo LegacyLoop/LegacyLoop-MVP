@@ -387,10 +387,13 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
         }
       `}</style>
       <header style={{
-        position: "sticky", top: 0, zIndex: 50, height: "64px",
+        position: "sticky", top: 0, zIndex: 50,
+        paddingTop: "env(safe-area-inset-top, 0px)",
         background: "rgba(10, 10, 18, 0.82)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
         borderBottom: "1px solid rgba(255, 255, 255, 0.07)",
       }}>
+      {/* Inner row — fixed 64px height, sits below safe-area padding */}
+      <div style={{ height: "64px" }}>
         <div className="container-app" style={{ height: "100%", display: "flex", alignItems: "center", gap: "1.25rem" }}>
 
           {/* LEFT: Logo */}
@@ -798,6 +801,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
             )}
           </div>
         </div>
+      </div>
       </header>
 
       {/* ── Mobile slide-in drawer (logged-in) ── */}
