@@ -2,8 +2,20 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
+/* ── Haptic ── */
+function haptic(ms = 6) {
+  try {
+    if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+      navigator.vibrate(ms);
+    }
+  } catch {
+    // Some iOS Safari versions throw on vibrate() — silent fail
+  }
+}
+
+/* ── Tab definitions ── */
 const TABS = [
   {
     href: "/dashboard",
@@ -65,9 +77,12 @@ const TABS = [
   },
 ];
 
-export default function BottomNav() {
+/* ── Component ── */
+export default function BottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
+  const [tapped, setTapped] = useState<string | null>(null);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 1024);
@@ -76,94 +91,187 @@ export default function BottomNav() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  // Bounce animation on tap — clear after 200ms
+  const handleTap = (href: string, isCenter = false) => {
+    haptic(isCenter ? 12 : 6);
+    setTapped(href);
+    if (tapTimer.current) clearTimeout(tapTimer.current);
+    tapTimer.current = setTimeout(() => setTapped(null), 200);
+  };
+
   if (!isMobile) return null;
 
   return (
-    <nav
-      style={{
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: "64px",
-        paddingBottom: "env(safe-area-inset-bottom, 8px)",
-        background: "rgba(13,17,23,0.95)",
-        borderTop: "1px solid rgba(255,255,255,0.08)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        zIndex: 1000,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-around",
-        paddingLeft: "8px",
-        paddingRight: "8px",
-      }}
-    >
-      {TABS.map((tab) => {
-        const isActive = tab.match.some((m) => pathname === m || pathname.startsWith(m + "/"));
+    <>
+      <style>{`
+        @keyframes softPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.08); }
+        }
+        @keyframes unreadPulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.15); opacity: 0.85; }
+        }
+        @keyframes dotAppear {
+          from { opacity: 0; transform: scale(0); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .bottom-nav-tab:focus-visible,
+        .bottom-nav-center-btn:focus-visible {
+          outline: 2px solid #00BCD4;
+          outline-offset: 2px;
+          border-radius: 8px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .bottom-nav-tab,
+          .bottom-nav-center-btn,
+          .bottom-nav-active-dot,
+          .soft-pulse-ring,
+          .unread-dot {
+            transition: none !important;
+            animation: none !important;
+          }
+        }
+      `}</style>
+      <nav
+        aria-label="Primary"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "64px",
+          paddingBottom: "env(safe-area-inset-bottom, 8px)",
+          paddingLeft: "env(safe-area-inset-left, 8px)",
+          paddingRight: "env(safe-area-inset-right, 8px)",
+          background: "rgba(13,17,23,0.92)",
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          zIndex: 1000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-around",
+        }}
+      >
+        {TABS.map((tab) => {
+          const isActive = tab.match.some((m) => pathname === m || pathname.startsWith(m + "/"));
+          const isBouncing = tapped === tab.href;
 
-        if (tab.isCenter) {
+          /* ── Center + Button ── */
+          if (tab.isCenter) {
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className="bottom-nav-center-btn"
+                aria-label="Add new item"
+                onClick={() => handleTap(tab.href, true)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: "52px",
+                  height: "52px",
+                  borderRadius: "50%",
+                  background: "linear-gradient(135deg, #00BCD4, #0097A7)",
+                  boxShadow:
+                    "0 0 0 4px rgba(0,188,212,0.15), 0 4px 16px rgba(0,188,212,0.4)",
+                  marginTop: "-20px",
+                  transform: isBouncing ? "scale(0.92)" : "scale(1)",
+                  transition: "transform 0.15s ease",
+                  textDecoration: "none",
+                  position: "relative",
+                  WebkitTouchCallout: "none",
+                }}
+              >
+                {/* Pulse ring */}
+                <div
+                  className="soft-pulse-ring"
+                  style={{
+                    position: "absolute",
+                    inset: "-4px",
+                    borderRadius: "50%",
+                    border: "2px solid rgba(0,188,212,0.2)",
+                    animation: "softPulse 3s ease-in-out infinite",
+                    pointerEvents: "none",
+                  }}
+                />
+                {tab.icon(false)}
+              </Link>
+            );
+          }
+
+          /* ── Regular Tab ── */
+          const isMessages = tab.href === "/bots"; // Bots tab — not messages
+          const showUnreadDot = tab.label === "Home" ? false : false; // placeholder
+
+          // Messages tab detection for unread badge
+          // BottomNav doesn't have a Messages tab currently, so badge is not wired.
+          // If a Messages tab is added, wire unreadCount here.
+
           return (
             <Link
               key={tab.href}
               href={tab.href}
+              className="bottom-nav-tab"
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => handleTap(tab.href)}
               style={{
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                width: "52px",
-                height: "52px",
-                borderRadius: "50%",
-                background: "linear-gradient(135deg, #00BCD4, #0097a7)",
-                boxShadow: "0 0 20px rgba(0,188,212,0.4), 0 4px 16px rgba(0,188,212,0.35)",
-                marginTop: "-20px",
-                transition: "transform 150ms ease",
+                gap: "2px",
+                padding: "6px 12px",
                 textDecoration: "none",
+                position: "relative",
+                transform: isBouncing
+                  ? "scale(1.15)"
+                  : isActive
+                  ? "scale(1.1)"
+                  : "scale(1)",
+                transition:
+                  "color 0.2s ease, transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s ease",
+                WebkitTouchCallout: "none",
               }}
             >
-              {tab.icon(false)}
+              {/* Active dot */}
+              {isActive && (
+                <div
+                  className="bottom-nav-active-dot"
+                  style={{
+                    position: "absolute",
+                    top: "0px",
+                    width: "4px",
+                    height: "4px",
+                    borderRadius: "50%",
+                    background: "#00BCD4",
+                    animation: "dotAppear 0.2s cubic-bezier(0.34,1.56,0.64,1) forwards",
+                  }}
+                />
+              )}
+
+              {/* Icon wrapper — for relative badge positioning */}
+              <div style={{ position: "relative", display: "flex" }}>
+                {tab.icon(isActive)}
+              </div>
+
+              <span
+                style={{
+                  fontSize: "0.6rem",
+                  fontWeight: isActive ? 600 : 500,
+                  color: isActive ? "#00BCD4" : "rgba(255,255,255,0.45)",
+                  letterSpacing: "0.02em",
+                  transition: "color 0.2s ease",
+                }}
+              >
+                {tab.label}
+              </span>
             </Link>
           );
-        }
-
-        return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "2px",
-              padding: "6px 12px",
-              textDecoration: "none",
-              transition: "transform 150ms ease",
-              position: "relative",
-            }}
-          >
-            {isActive && (
-              <div style={{
-                position: "absolute",
-                top: "0px",
-                width: "4px",
-                height: "4px",
-                borderRadius: "50%",
-                background: "#00BCD4",
-              }} />
-            )}
-            {tab.icon(isActive)}
-            <span style={{
-              fontSize: "0.6rem",
-              fontWeight: isActive ? 700 : 500,
-              color: isActive ? "#00BCD4" : "rgba(255,255,255,0.45)",
-              letterSpacing: "0.02em",
-            }}>
-              {tab.label}
-            </span>
-          </Link>
-        );
-      })}
-    </nav>
+        })}
+      </nav>
+    </>
   );
 }

@@ -163,7 +163,7 @@ export default async function RootLayout({
 
           <main className="container-app py-10">{children}</main>
           <Footer />
-          <BottomNav />
+          <BottomNav unreadCount={unreadCount} />
           <HelpWidget />
           <InstallPrompt />
           <DataConsentModal show={showConsentModal} />
