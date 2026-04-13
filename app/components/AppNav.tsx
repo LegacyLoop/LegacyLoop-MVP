@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   LayoutDashboard,
   Package,
@@ -30,7 +30,6 @@ import {
   Coins,
   Search,
   Trophy,
-  X,
   DollarSign,
 } from "lucide-react";
 import { useTheme } from "@/app/components/ThemeProvider";
@@ -155,12 +154,7 @@ const SETTINGS_SECTIONS = [
   },
 ];
 
-// Combined for mobile full-screen menu
-const MENU_SECTIONS = [...DROPDOWN_SECTIONS, ...SETTINGS_SECTIONS];
-
 /* ── Shared styles ────────────────────────────────────────────────────────── */
-
-// glassPanel replaced by className="glass-modal" — see globals.css glass system
 
 const menuItemBase: React.CSSProperties = {
   display: "flex",
@@ -168,7 +162,7 @@ const menuItemBase: React.CSSProperties = {
   gap: "0.75rem",
   padding: "0.6rem 1rem",
   fontSize: "0.875rem",
-  color: "rgba(255,255,255,0.82)",
+  color: "var(--text-primary)",
   textDecoration: "none",
   transition: "all 0.15s ease",
   borderRadius: "0.5rem",
@@ -190,16 +184,12 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [bellOpen,     setBellOpen]     = useState(false);
-  const [mobileOpen,   setMobileOpen]   = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotifItem[]>([]);
   const [notifsLoaded,  setNotifsLoaded]  = useState(false);
 
   const dropdownRef  = useRef<HTMLDivElement>(null);
   const bellRef      = useRef<HTMLDivElement>(null);
-  const hamburgerRef = useRef<HTMLButtonElement>(null);
-  const closeRef     = useRef<HTMLButtonElement>(null);
-  const drawerRef    = useRef<HTMLDivElement>(null);
 
   // Scroll state for glass-nav-scrolled
   const [scrolled, setScrolled] = useState(false);
@@ -210,35 +200,11 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Swipe-to-dismiss refs for mobile drawer
-  const drawerSwipeStart = useRef(0);
-  const drawerSwipeEnd = useRef(0);
-  const drawerSwiping = useRef(false);
-
-  const onDrawerTouchStart = useCallback((e: React.TouchEvent) => {
-    drawerSwipeStart.current = e.touches[0].clientX;
-    drawerSwipeEnd.current = e.touches[0].clientX;
-    drawerSwiping.current = true;
-  }, []);
-
-  const onDrawerTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!drawerSwiping.current) return;
-    drawerSwipeEnd.current = e.touches[0].clientX;
-  }, []);
-
-  const onDrawerTouchEnd = useCallback(() => {
-    if (!drawerSwiping.current) return;
-    drawerSwiping.current = false;
-    const delta = drawerSwipeEnd.current - drawerSwipeStart.current;
-    if (delta > 80) setMobileOpen(false);
-  }, []);
-
   // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false);
       if (bellRef.current && !bellRef.current.contains(e.target as Node)) setBellOpen(false);
-      // Close settings panel on outside click (settings button wraps in its own div)
       const settingsEl = document.querySelector('[aria-label="Settings menu"]')?.parentElement;
       if (settingsEl && !settingsEl.contains(e.target as Node)) setSettingsOpen(false);
     };
@@ -248,56 +214,10 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
   // Close on route change
   useEffect(() => {
-    setMobileOpen(false);
     setDropdownOpen(false);
     setSettingsOpen(false);
     setBellOpen(false);
   }, [pathname]);
-
-  // Lock body scroll when mobile menu is open
-  useEffect(() => {
-    document.body.style.overflow = mobileOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [mobileOpen]);
-
-  // ESC key to close drawer
-  useEffect(() => {
-    if (!mobileOpen) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileOpen(false); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [mobileOpen]);
-
-  // Focus trap: focus close button on open, restore to hamburger on close
-  useEffect(() => {
-    if (mobileOpen) {
-      // Small delay for animation to mount the DOM element
-      requestAnimationFrame(() => closeRef.current?.focus());
-    } else {
-      hamburgerRef.current?.focus();
-    }
-  }, [mobileOpen]);
-
-  // Tab trap inside drawer
-  useEffect(() => {
-    if (!mobileOpen || !drawerRef.current) return;
-    const panel = drawerRef.current;
-    const onTab = (e: KeyboardEvent) => {
-      if (e.key !== "Tab") return;
-      const focusable = panel.querySelectorAll<HTMLElement>(
-        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
-    window.addEventListener("keydown", onTab);
-    return () => window.removeEventListener("keydown", onTab);
-  }, [mobileOpen]);
-
-  const cycleTheme = () => { if (mode === "light") setMode("dark"); else if (mode === "dark") setMode("auto"); else setMode("light"); };
 
   const loadNotifications = async () => {
     if (notifsLoaded) return;
@@ -316,7 +236,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
 
   const handleLogout = async () => {
     setDropdownOpen(false);
-    setMobileOpen(false);
+    setSettingsOpen(false);
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/auth/login");
     router.refresh();
@@ -379,16 +299,6 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
   /* ── Render ── */
   return (
     <>
-      <style>{`
-        @keyframes drawerSlideIn {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
-        }
-        @keyframes backdropFadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-      `}</style>
       <header className={`glass-nav${scrolled ? " glass-nav-scrolled" : ""}`} style={{
         position: "sticky", top: 0, zIndex: 50,
         paddingTop: "env(safe-area-inset-top, 0px)",
@@ -599,23 +509,6 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   )}
                 </div>
 
-                {/* Mobile settings gear — visible <1024px only */}
-                <Link
-                  href="/settings"
-                  className="flex lg:hidden"
-                  style={{
-                    alignItems: "center", justifyContent: "center",
-                    width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
-                    background: isActive("/settings") ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.06)",
-                    border: `1px solid ${isActive("/settings") ? "rgba(0,188,212,0.3)" : "rgba(255,255,255,0.09)"}`,
-                    color: isActive("/settings") ? TEAL : "rgba(255,255,255,0.7)",
-                    transition: "all 0.15s ease", flexShrink: 0,
-                  }}
-                  aria-label="Settings"
-                >
-                  <Settings size={16} />
-                </Link>
-
                 {/* User avatar dropdown */}
                 <div ref={dropdownRef} style={{ position: "relative" }}>
                   <button onClick={() => { setDropdownOpen((v) => !v); setSettingsOpen(false); }} style={{
@@ -693,9 +586,9 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   )}
                 </div>
 
-                {/* Settings panel button — desktop only (hamburger replaces on mobile) */}
-                <div className="hidden lg:block" style={{ position: "relative" }}>
-                  <button onClick={() => { setSettingsOpen((v) => !v); setDropdownOpen(false); }} style={{
+                {/* Settings panel button — visible all viewports */}
+                <div style={{ position: "relative" }}>
+                  <button onClick={() => { setSettingsOpen((v) => !v); setDropdownOpen(false); setBellOpen(false); }} style={{
                     display: "flex", alignItems: "center", justifyContent: "center",
                     width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
                     background: settingsOpen ? "rgba(0,188,212,0.12)" : "var(--ghost-bg)",
@@ -705,13 +598,13 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--ghost-hover-bg)"; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = settingsOpen ? "rgba(0,188,212,0.12)" : "var(--ghost-bg)"; }}
-                  aria-label="Settings menu">
+                  aria-label="Settings menu" aria-expanded={settingsOpen}>
                     <Settings size={16} />
                   </button>
 
-                  {/* Settings Panel — Claude-style admin menu */}
+                  {/* Settings Panel — unified for all viewports */}
                   {settingsOpen && (
-                    <div className="glass-modal" style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "16rem", maxHeight: "calc(100vh - 80px)", overflowY: "auto", zIndex: 200 }}>
+                    <div className="glass-modal" style={{ position: "absolute", top: "calc(100% + 0.5rem)", right: 0, width: "min(16rem, 90vw)", maxHeight: "calc(100vh - 80px)", overflowY: "auto", zIndex: 200 }}>
                       <div style={{ padding: "0.75rem 0.75rem 0.5rem", borderBottom: "1px solid var(--glass-border)" }}>
                         <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{user.email}</div>
                       </div>
@@ -728,14 +621,14 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                       {/* Session — Theme + Sign Out */}
                       <div style={{ borderTop: "1px solid var(--glass-border)", padding: "0.375rem 0" }}>
                         {/* Theme Picker — Light / Dark / Auto */}
-                        <div style={{ display: "flex", gap: "2px", padding: "0.25rem", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", margin: "0.25rem 0.5rem" }}>
+                        <div style={{ display: "flex", gap: "2px", padding: "0.25rem", borderRadius: "10px", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", margin: "0.25rem 0.5rem" }}>
                           {([{ m: "light" as const, icon: <Sun size={14} />, label: "Light" }, { m: "dark" as const, icon: <Moon size={14} />, label: "Dark" }, { m: "auto" as const, icon: <Monitor size={14} />, label: "Auto" }]).map((opt) => (
-                            <button key={opt.m} onClick={() => setMode(opt.m)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", padding: "0.4rem 0.5rem", borderRadius: "8px", border: "none", background: mode === opt.m ? "rgba(0,188,212,0.15)" : "transparent", color: mode === opt.m ? "#00bcd4" : "rgba(255,255,255,0.5)", fontSize: "0.72rem", fontWeight: mode === opt.m ? 700 : 500, cursor: "pointer", transition: "all 0.15s ease" }}>{opt.icon}{opt.label}</button>
+                            <button key={opt.m} onClick={() => setMode(opt.m)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", padding: "0.4rem 0.5rem", borderRadius: "8px", border: "none", background: mode === opt.m ? "rgba(0,188,212,0.15)" : "transparent", color: mode === opt.m ? "#00bcd4" : "var(--text-muted)", fontSize: "0.72rem", fontWeight: mode === opt.m ? 700 : 500, cursor: "pointer", transition: "all 0.15s ease" }}>{opt.icon}{opt.label}</button>
                           ))}
                         </div>
-                        <button onClick={handleLogout} style={{ ...menuItemBase, color: "rgba(248, 113, 113, 0.75)", width: "100%" }}
-                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(220, 38, 38, 0.08)"; (e.currentTarget as HTMLElement).style.color = "#fca5a5"; }}
-                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "rgba(248, 113, 113, 0.75)"; }}>
+                        <button onClick={handleLogout} style={{ ...menuItemBase, color: "var(--error-text)", width: "100%" }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--error-bg)"; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
                           <LogOut size={18} style={{ flexShrink: 0 }} />
                           <span>Sign Out</span>
                         </button>
@@ -743,38 +636,13 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                     </div>
                   )}
                 </div>
-
-                {/* CMD-MOBILE-8C: Hamburger menu for logged-in mobile users.
-                    Replaces settings gear on mobile (lg:hidden). Triggers the
-                    existing full-screen mobileOpen overlay at line 634 which
-                    already renders ALL nav sections for logged-in users. */}
-                <button
-                  ref={hamburgerRef}
-                  className="flex lg:hidden"
-                  onClick={() => { setMobileOpen((v) => !v); setDropdownOpen(false); setSettingsOpen(false); setBellOpen(false); }}
-                  style={{
-                    alignItems: "center", justifyContent: "center",
-                    width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
-                    background: mobileOpen ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.06)",
-                    border: `1px solid ${mobileOpen ? "rgba(0,188,212,0.3)" : "rgba(255,255,255,0.09)"}`,
-                    color: mobileOpen ? TEAL : "rgba(255,255,255,0.7)",
-                    cursor: "pointer", transition: "all 0.15s ease", padding: 0,
-                  }}
-                  aria-label={mobileOpen ? "Close menu" : "Open menu"}
-                  aria-expanded={mobileOpen}
-                >
-                  {mobileOpen ? <X size={18} /> : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                  )}
-                </button>
               </>
             ) : (
               <>
-                <Link href="/auth/login" className="hidden sm:inline-flex" style={{
+                <Link href="/auth/login" style={{
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
                   padding: "0.45rem 0.875rem", fontSize: "0.84rem", borderRadius: "0.6rem",
-                  fontWeight: 600, textDecoration: "none",
+                  fontWeight: 600, textDecoration: "none", minHeight: "44px",
                   border: `2px solid ${TEAL}`, color: TEAL,
                   background: "rgba(0, 188, 212, 0.08)",
                   transition: "all 0.15s ease",
@@ -782,330 +650,13 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(0, 188, 212, 0.18)"; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(0, 188, 212, 0.08)"; }}
                 >Log In</Link>
-                <Link href="/auth/signup" className="btn-primary hidden sm:inline-flex" style={{ padding: "0.45rem 0.875rem", fontSize: "0.84rem", borderRadius: "0.6rem" }}>Get Started</Link>
-
-                {/* Mobile hamburger (logged-out) */}
-                <button className="flex lg:hidden" onClick={() => setMobileOpen((v) => !v)} style={{
-                  alignItems: "center", justifyContent: "center",
-                  width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
-                  background: mobileOpen ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.06)",
-                  border: `1px solid ${mobileOpen ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.09)"}`,
-                  color: "rgba(255,255,255,0.85)", cursor: "pointer", transition: "all 0.15s ease",
-                }} aria-label="Toggle mobile menu">
-                  {mobileOpen ? <X size={16} /> : (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
-                    </svg>
-                  )}
-                </button>
+                <Link href="/auth/signup" className="btn-primary" style={{ padding: "0.45rem 0.875rem", fontSize: "0.84rem", borderRadius: "0.6rem", minHeight: "44px" }}>Get Started</Link>
               </>
             )}
           </div>
         </div>
       </div>
       </header>
-
-      {/* ── Mobile slide-in drawer (logged-in) ── */}
-      {user && mobileOpen && (
-        <>
-          {/* Backdrop overlay — tap to close */}
-          <div
-            className="lg:hidden"
-            onClick={() => setMobileOpen(false)}
-            aria-hidden="true"
-            style={{
-              position: "fixed", inset: 0, zIndex: 998,
-              background: "rgba(0,0,0,0.5)",
-              animation: "backdropFadeIn 0.2s ease forwards",
-            }}
-          />
-
-          {/* Drawer panel */}
-          <div
-            ref={drawerRef}
-            className="lg:hidden"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Main navigation"
-            onTouchStart={onDrawerTouchStart}
-            onTouchMove={onDrawerTouchMove}
-            onTouchEnd={onDrawerTouchEnd}
-            style={{
-              position: "fixed", top: 0, right: 0, bottom: 0,
-              width: "min(320px, 88vw)",
-              background: "#0D1117",
-              borderLeft: "1px solid rgba(255,255,255,0.08)",
-              boxShadow: "-8px 0 32px rgba(0,0,0,0.5)",
-              zIndex: 999,
-              overflowY: "auto",
-              paddingBottom: "env(safe-area-inset-bottom)",
-              animation: "drawerSlideIn 0.3s cubic-bezier(0.4,0,0.2,1) forwards",
-            }}
-          >
-            {/* ── Section 1: Header ── */}
-            <div style={{ paddingTop: "env(safe-area-inset-top, 0px)", padding: "1.25rem 1.25rem 1rem", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-              {/* Close button — top right */}
-              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem", paddingTop: "env(safe-area-inset-top, 0px)" }}>
-                <button
-                  ref={closeRef}
-                  onClick={() => setMobileOpen(false)}
-                  style={{
-                    width: "44px", height: "44px", borderRadius: "0.6rem",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    background: "transparent", border: "none",
-                    color: "rgba(255,255,255,0.7)", cursor: "pointer",
-                    transition: "background 0.15s ease",
-                  }}
-                  aria-label="Close menu"
-                >
-                  <X size={22} />
-                </button>
-              </div>
-
-              {/* User identity */}
-              <div style={{ display: "flex", alignItems: "center", gap: "0.875rem" }}>
-                <div style={{
-                  width: "48px", height: "48px", borderRadius: "50%",
-                  background: `linear-gradient(135deg, ${TEAL}, #0097a7)`, color: "#fff",
-                  fontSize: "1rem", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0, boxShadow: `0 0 14px ${TEAL_GLOW}`,
-                }}>
-                  {initials}
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: "1.05rem", fontWeight: 600, color: "#fff" }}>{displayName}</div>
-                  <span style={{
-                    display: "inline-block", marginTop: "4px",
-                    fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-                    padding: "0.2rem 0.55rem", borderRadius: "0.35rem",
-                    background: "rgba(0,188,212,0.12)", color: TEAL, border: "1px solid rgba(0,188,212,0.2)",
-                  }}>
-                    {tierLabel}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* ── Section 2: Main Navigation ── */}
-            <div style={{ padding: "0.5rem 0.625rem" }}>
-              {[
-                { href: "/dashboard",  label: "Dashboard", icon: LayoutDashboard },
-                { href: "/items",      label: "My Items",  icon: Package },
-                { href: "/projects",   label: "My Sales",  icon: FolderOpen },
-                { href: "/store",      label: "My Store",  icon: ShoppingBag },
-                { href: "/messages",   label: "Messages",  icon: MessageSquare, badge: true },
-              ].map(({ href, label, icon: Icon, badge }) => {
-                const active = isActive(href);
-                return (
-                  <Link key={href} href={href} style={{
-                    display: "flex", alignItems: "center", gap: "0.875rem",
-                    padding: "0 1rem", minHeight: "52px",
-                    borderRadius: "0.6rem", textDecoration: "none",
-                    color: active ? "#fff" : "rgba(255,255,255,0.75)",
-                    background: active ? "rgba(0,188,212,0.1)" : "transparent",
-                    transition: "all 0.15s ease",
-                    fontSize: "1rem", fontWeight: active ? 600 : 450,
-                    fontFamily: "var(--font-body)",
-                  }}>
-                    <Icon size={20} style={{ flexShrink: 0, color: active ? TEAL : "rgba(255,255,255,0.35)" }} />
-                    <span style={{ flex: 1 }}>{label}</span>
-                    {active && <span style={{ width: 3, height: 20, borderRadius: 2, background: TEAL, flexShrink: 0 }} />}
-                    {badge && unreadCount > 0 && (
-                      <span style={{
-                        fontSize: "0.65rem", fontWeight: 700, padding: "0.1rem 0.4rem",
-                        borderRadius: "9999px", lineHeight: 1.4,
-                        background: "#dc2626", color: "#fff",
-                      }}>
-                        {unreadCount}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* Divider */}
-            <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "0.25rem 1.25rem" }} />
-
-            {/* ── Section 3: Tools ── */}
-            <div style={{ padding: "0.5rem 0.625rem" }}>
-              {[
-                { href: "/bots",        label: "AI Bots",         icon: Bot },
-                { href: "/shipping",    label: "Shipping Center", icon: Truck },
-                { href: "/analytics",   label: "Analytics",       icon: BarChart3 },
-                { href: "/marketplace", label: "Add-On Store",    icon: Sparkles },
-              ].map(({ href, label, icon: Icon }) => {
-                const active = isActive(href);
-                return (
-                  <Link key={href} href={href} style={{
-                    display: "flex", alignItems: "center", gap: "0.875rem",
-                    padding: "0 1rem", minHeight: "52px",
-                    borderRadius: "0.6rem", textDecoration: "none",
-                    color: active ? "#fff" : "rgba(255,255,255,0.75)",
-                    background: active ? "rgba(0,188,212,0.1)" : "transparent",
-                    transition: "all 0.15s ease",
-                    fontSize: "1rem", fontWeight: active ? 600 : 450,
-                    fontFamily: "var(--font-body)",
-                  }}>
-                    <Icon size={20} style={{ flexShrink: 0, color: active ? TEAL : "rgba(255,255,255,0.35)" }} />
-                    <span style={{ flex: 1 }}>{label}</span>
-                    {active && <span style={{ width: 3, height: 20, borderRadius: 2, background: TEAL, flexShrink: 0 }} />}
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* Divider */}
-            <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "0.25rem 1.25rem" }} />
-
-            {/* ── Section 4: Account ── */}
-            <div style={{ padding: "0.5rem 0.625rem" }}>
-              {[
-                { href: "/settings",     label: "Settings",     icon: Settings },
-                { href: "/subscription", label: "Subscription", icon: CreditCard },
-              ].map(({ href, label, icon: Icon }) => {
-                const active = isActive(href);
-                return (
-                  <Link key={href} href={href} style={{
-                    display: "flex", alignItems: "center", gap: "0.875rem",
-                    padding: "0 1rem", minHeight: "52px",
-                    borderRadius: "0.6rem", textDecoration: "none",
-                    color: active ? "#fff" : "rgba(255,255,255,0.75)",
-                    background: active ? "rgba(0,188,212,0.1)" : "transparent",
-                    transition: "all 0.15s ease",
-                    fontSize: "1rem", fontWeight: active ? 600 : 450,
-                    fontFamily: "var(--font-body)",
-                  }}>
-                    <Icon size={20} style={{ flexShrink: 0, color: active ? TEAL : "rgba(255,255,255,0.35)" }} />
-                    <span style={{ flex: 1 }}>{label}</span>
-                    {active && <span style={{ width: 3, height: 20, borderRadius: 2, background: TEAL, flexShrink: 0 }} />}
-                  </Link>
-                );
-              })}
-
-              {/* Sign Out */}
-              <button
-                onClick={handleLogout}
-                style={{
-                  display: "flex", alignItems: "center", gap: "0.875rem",
-                  padding: "0 1rem", minHeight: "52px", width: "100%",
-                  borderRadius: "0.6rem", border: "none", cursor: "pointer",
-                  color: "#ef4444", background: "transparent",
-                  transition: "all 0.15s ease",
-                  fontSize: "1rem", fontWeight: 450,
-                  fontFamily: "var(--font-body)",
-                  textAlign: "left",
-                }}
-              >
-                <LogOut size={20} style={{ flexShrink: 0 }} />
-                <span>Sign Out</span>
-              </button>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* ── Mobile slide-in drawer (logged-out) ── */}
-      {!user && mobileOpen && (
-        <>
-          {/* Backdrop overlay */}
-          <div
-            className="lg:hidden"
-            onClick={() => setMobileOpen(false)}
-            aria-hidden="true"
-            style={{
-              position: "fixed", inset: 0, zIndex: 998,
-              background: "rgba(0,0,0,0.5)",
-              animation: "backdropFadeIn 0.2s ease forwards",
-            }}
-          />
-
-          {/* Drawer panel */}
-          <div
-            className="lg:hidden"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Navigation"
-            onTouchStart={onDrawerTouchStart}
-            onTouchMove={onDrawerTouchMove}
-            onTouchEnd={onDrawerTouchEnd}
-            style={{
-              position: "fixed", top: 0, right: 0, bottom: 0,
-              width: "min(320px, 88vw)",
-              background: "#0D1117",
-              borderLeft: "1px solid rgba(255,255,255,0.08)",
-              boxShadow: "-8px 0 32px rgba(0,0,0,0.5)",
-              zIndex: 999,
-              overflowY: "auto",
-              paddingTop: "env(safe-area-inset-top, 0px)",
-              paddingBottom: "env(safe-area-inset-bottom)",
-              animation: "drawerSlideIn 0.3s cubic-bezier(0.4,0,0.2,1) forwards",
-            }}
-          >
-            {/* Close button */}
-            <div style={{ padding: "1.25rem 1.25rem 0.75rem", display: "flex", justifyContent: "flex-end" }}>
-              <button
-                onClick={() => setMobileOpen(false)}
-                style={{
-                  width: "44px", height: "44px", borderRadius: "0.6rem",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  background: "transparent", border: "none",
-                  color: "rgba(255,255,255,0.7)", cursor: "pointer",
-                }}
-                aria-label="Close menu"
-              >
-                <X size={22} />
-              </button>
-            </div>
-
-            {/* Nav links */}
-            <div style={{ padding: "0.5rem 0.625rem" }}>
-              {[
-                { href: "/search", label: "Browse", icon: Search },
-                { href: "/heroes", label: "Heroes", icon: Trophy },
-                { href: "/pricing", label: "Pricing", icon: CreditCard },
-              ].map(({ href, label, icon: Icon }) => {
-                const active = isActive(href);
-                return (
-                  <Link key={href} href={href} style={{
-                    display: "flex", alignItems: "center", gap: "0.875rem",
-                    padding: "0 1rem", minHeight: "52px",
-                    borderRadius: "0.6rem", textDecoration: "none",
-                    color: active ? "#fff" : "rgba(255,255,255,0.75)",
-                    background: active ? "rgba(0,188,212,0.1)" : "transparent",
-                    transition: "all 0.15s ease",
-                    fontSize: "1rem", fontWeight: active ? 600 : 450,
-                    fontFamily: "var(--font-body)",
-                  }}>
-                    <Icon size={20} style={{ flexShrink: 0, color: active ? TEAL : "rgba(255,255,255,0.35)" }} />
-                    <span style={{ flex: 1 }}>{label}</span>
-                    {active && <span style={{ width: 3, height: 20, borderRadius: 2, background: TEAL, flexShrink: 0 }} />}
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* Auth CTAs */}
-            <div style={{ padding: "1.25rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              <Link href="/auth/login" style={{
-                width: "100%", justifyContent: "center", borderRadius: "0.75rem",
-                padding: "0.85rem 1rem", fontSize: "0.95rem", textAlign: "center", display: "flex",
-                fontWeight: 600, textDecoration: "none",
-                border: `2px solid ${TEAL}`, color: TEAL,
-                background: "rgba(0, 188, 212, 0.08)",
-              }}>
-                Log In
-              </Link>
-              <Link href="/auth/signup" className="btn-primary" style={{
-                width: "100%", justifyContent: "center", borderRadius: "0.75rem",
-                padding: "0.85rem 1rem", fontSize: "0.95rem", textAlign: "center", display: "flex",
-              }}>
-                Get Started
-              </Link>
-            </div>
-          </div>
-        </>
-      )}
     </>
   );
 }
