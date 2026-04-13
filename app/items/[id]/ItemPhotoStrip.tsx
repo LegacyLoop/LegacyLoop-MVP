@@ -233,7 +233,8 @@ export default function ItemPhotoStrip({
           <div
             style={{
               display: "flex",
-              transform: `translateX(-${currentIndex * 100}%)`,
+              width: `${orderedPhotos.length * 100}%`,
+              transform: `translateX(-${currentIndex * (100 / orderedPhotos.length)}%)`,
               transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
               height: "100%",
             }}
@@ -245,7 +246,7 @@ export default function ItemPhotoStrip({
               <div
                 key={photo.id}
                 style={{
-                  minWidth: "100%",
+                  width: `${100 / orderedPhotos.length}%`,
                   height: "100%",
                   flexShrink: 0,
                   cursor: "pointer",
