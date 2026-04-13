@@ -220,13 +220,9 @@ export default async function ItemPage({ params }: { params: Params }) {
       )}
 
       {/* ═══ Premium Header Card ═══ */}
-      <div style={{
-        background: "var(--bg-card)",
-        border: "1px solid var(--border-default)",
-        borderRadius: "1rem",
+      <div className="glass-card" style={{
         padding: "1.5rem",
         marginBottom: "0.75rem",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
       }}>
       <div className="item-header-row" style={{
         display: "flex",

@@ -57,10 +57,9 @@ export default function HelpWidget() {
   return (
     <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 200 }}>
       {open && (
-        <div style={{
+        <div className="glass-panel" style={{
           position: "absolute", bottom: 64, right: 0, width: 340,
-          background: "var(--bg-card, #161b22)", border: "1px solid var(--border-default, rgba(0,188,212,0.15))",
-          borderRadius: 16, boxShadow: "0 8px 32px rgba(0,0,0,0.3)", overflow: "hidden",
+          overflow: "hidden",
         }}>
           {/* Header */}
           <div style={{ background: "linear-gradient(135deg, #00bcd4, #0097a7)", padding: "14px 16px" }}>
