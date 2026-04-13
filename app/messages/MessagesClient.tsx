@@ -1005,7 +1005,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                     ))}
                   </select>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(200px, 100%), 1fr))", gap: "0.75rem" }}>
                   <div>
                     <label className="label">Buyer name / username</label>
                     <input

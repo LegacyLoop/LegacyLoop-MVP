@@ -373,11 +373,11 @@ export default async function ItemPage({ params }: { params: Params }) {
         </div>
 
         {/* Right: Quick Stats + Actions */}
-        <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "flex-end", gap: "0.75rem", flexShrink: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "flex-end", gap: "0.5rem", flexShrink: 1, minWidth: 0 }}>
           {/* Quick Stats */}
           {v && (
-            <div style={{ display: "flex", gap: "0.5rem" }}>
-              <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", minWidth: "70px" }}>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+              <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", minWidth: "60px" }}>
                 <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Value</div>
                 <div style={{ fontSize: "0.92rem", fontWeight: 800, color: "var(--accent)" }}>${Math.round(v.low || 0)}–${Math.round(v.high || 0)}</div>
               </div>
@@ -409,7 +409,7 @@ export default async function ItemPage({ params }: { params: Params }) {
           )}
 
           {/* Action Bar */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
             <span style={{
               padding: "0.2rem 0.55rem", borderRadius: "9999px",
               fontSize: "0.62rem", fontWeight: 600,

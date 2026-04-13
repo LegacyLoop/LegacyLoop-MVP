@@ -363,7 +363,7 @@ export default async function BotsPage() {
         {"\u{1F9E0}"} Specialist Bots
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: "1.25rem", marginBottom: "2.5rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(360px, 100%), 1fr))", gap: "1.25rem", marginBottom: "2.5rem" }}>
         {specialists.map((bot) => {
           const idx = ++animIdx;
           return (
@@ -467,7 +467,7 @@ export default async function BotsPage() {
         {"\u{1F52C}"} Detection + Intelligence
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: "1.25rem", marginBottom: "2.5rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(360px, 100%), 1fr))", gap: "1.25rem", marginBottom: "2.5rem" }}>
         {intel.map((bot) => {
           const idx = ++animIdx;
           return (
@@ -571,7 +571,7 @@ export default async function BotsPage() {
         {"\u{1F680}"} Coming Soon
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: "1.25rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(360px, 100%), 1fr))", gap: "1.25rem" }}>
         {COMING_SOON_BOTS.map((bot) => {
           const idx = ++animIdx;
           return (

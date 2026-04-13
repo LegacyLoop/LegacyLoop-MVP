@@ -161,7 +161,7 @@ export default async function RootLayout({
             creditBalance={creditBalance}
           />
 
-          <main className="container-app py-10" style={{ paddingBottom: "80px" }}>{children}</main>
+          <main className="container-app py-10">{children}</main>
           <Footer />
           <BottomNav />
           <HelpWidget />

@@ -741,6 +741,17 @@ html.light .card:hover {
     grid-template-columns: 1fr 1fr !important;
     gap: 0.5rem !important;
   }
+
+  /* Form grids — stack on mobile */
+  .grid-cols-2, [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  .grid-cols-3, [style*="repeat(3"] {
+    grid-template-columns: 1fr !important;
+  }
+  .grid-cols-4, [style*="repeat(4"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
 }
 
 @media (max-width: 480px) {

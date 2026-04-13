@@ -549,7 +549,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
             {needsFreshSubscription && (
               <div>
                 <div style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.75rem" }}>Choose a Plan</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.25rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(240px, 100%), 1fr))", gap: "1rem" }}>
                   {TIER_KEYS.map((t, idx) => {
                     const tp = getTierPrice(t);
                     const pl = getPreLaunchPrice(t);

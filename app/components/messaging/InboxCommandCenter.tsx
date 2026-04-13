@@ -6,6 +6,15 @@ import NegotiationCoach from "./NegotiationCoach";
 export default function InboxCommandCenter({ children, selectedConversationId, selectedOffer }: { children: React.ReactNode; selectedConversationId?: string | null; selectedOffer?: any }) {
   const [agentMode, setAgentMode] = useState("monitor");
   const [activeView, setActiveView] = useState("all");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   const [activityFeed, setActivityFeed] = useState<any[]>([]);
   const [counts, setCounts] = useState<{ hot: number; needsReply: number; total: number }>({ hot: 0, needsReply: 0, total: 0 });
@@ -44,9 +53,25 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
   const ms = modeStyles[agentMode] || modeStyles.monitor;
 
   return (
-    <div style={{ display: "flex", flexDirection: "row", width: "100%", height: "100%", background: "var(--bg-primary)", overflow: "hidden" }}>
+    <div style={{ display: "flex", flexDirection: "row", width: "100%", height: "100%", background: "var(--bg-primary)", overflow: "hidden", position: "relative" }}>
+      {/* Mobile sidebar toggle */}
+      {isMobile && (
+        <button
+          onClick={() => setSidebarOpen(o => !o)}
+          style={{
+            position: "absolute", top: 12, left: 12, zIndex: 20,
+            width: 32, height: 32, borderRadius: 8,
+            background: sidebarOpen ? "#00bcd4" : "rgba(0,188,212,0.15)",
+            border: "1px solid rgba(0,188,212,0.3)", color: sidebarOpen ? "#fff" : "#00bcd4",
+            fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", transition: "all 0.15s ease",
+          }}
+        >
+          {sidebarOpen ? "✕" : "☰"}
+        </button>
+      )}
       {/* LEFT — Agent Sidebar */}
-      <div style={{ width: "clamp(0px, 22vw, 220px)", minWidth: 0, maxWidth: 220, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderRight: "1px solid var(--border-default)", display: "flex", flexDirection: "column" }}>
+      <div style={{ width: "clamp(0px, 22vw, 220px)", minWidth: 0, maxWidth: 220, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderRight: "1px solid var(--border-default)", display: isMobile && !sidebarOpen ? "none" : "flex", flexDirection: "column", ...(isMobile && sidebarOpen ? { position: "absolute" as const, zIndex: 15, width: 220, maxWidth: 220, boxShadow: "4px 0 20px rgba(0,0,0,0.4)" } : {}) }}>
         {/* Agent Status */}
         <div style={{ padding: 16, borderBottom: "1px solid var(--border-default)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -111,7 +136,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
       </div>
 
       {/* RIGHT — Intelligence Panel */}
-      <div style={{ width: "clamp(0px, 26vw, 260px)", minWidth: 0, maxWidth: 260, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderLeft: "1px solid var(--border-default)", display: "flex", flexDirection: "column" }}>
+      <div style={{ width: "clamp(0px, 26vw, 260px)", minWidth: 0, maxWidth: 260, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderLeft: "1px solid var(--border-default)", display: isMobile ? "none" : "flex", flexDirection: "column" }}>
         {selectedConversationId ? (
           <>
             <BuyerIntelligenceCard conversationId={selectedConversationId} />

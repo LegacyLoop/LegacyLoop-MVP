@@ -995,7 +995,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
 
           {/* Loading */}
           {addonsLoading ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(260px, 100%), 1fr))", gap: 14 }}>
               {[1,2,3].map(i => <div key={i} style={{ height: 180, background: "var(--ghost-bg)", borderRadius: 14 }} />)}
             </div>
           ) : (
@@ -1011,7 +1011,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
               ).map(([cat, items]) => (
                 <div key={cat} style={{ marginBottom: 28 }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-primary)", letterSpacing: 0.5, marginBottom: 4, textTransform: "capitalize" }}>{cat === "ai" ? "🤖 AI Power Tools" : cat === "legacy" ? "📖 Legacy & Storytelling" : cat === "valuation" ? "💎 Valuation" : cat === "reporting" ? "📊 Reports" : cat === "service" ? "⚡ Services" : cat === "photos" ? "📸 Photos" : cat === "shipping" ? "📦 Shipping" : cat === "support" ? "🎓 Support" : `📁 ${cat}`}</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(260px, 100%), 1fr))", gap: 14 }}>
                     {(items as any[]).map((addon: any) => {
                       const owned = purchasedIds.includes(addon.id);
                       const buying = purchasingId === addon.id;
