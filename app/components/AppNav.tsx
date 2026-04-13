@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   LayoutDashboard,
   Package,
@@ -201,8 +201,34 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
   const [notifications, setNotifications] = useState<NotifItem[]>([]);
   const [notifsLoaded,  setNotifsLoaded]  = useState(false);
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const bellRef     = useRef<HTMLDivElement>(null);
+  const dropdownRef  = useRef<HTMLDivElement>(null);
+  const bellRef      = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const closeRef     = useRef<HTMLButtonElement>(null);
+  const drawerRef    = useRef<HTMLDivElement>(null);
+
+  // Swipe-to-dismiss refs for mobile drawer
+  const drawerSwipeStart = useRef(0);
+  const drawerSwipeEnd = useRef(0);
+  const drawerSwiping = useRef(false);
+
+  const onDrawerTouchStart = useCallback((e: React.TouchEvent) => {
+    drawerSwipeStart.current = e.touches[0].clientX;
+    drawerSwipeEnd.current = e.touches[0].clientX;
+    drawerSwiping.current = true;
+  }, []);
+
+  const onDrawerTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!drawerSwiping.current) return;
+    drawerSwipeEnd.current = e.touches[0].clientX;
+  }, []);
+
+  const onDrawerTouchEnd = useCallback(() => {
+    if (!drawerSwiping.current) return;
+    drawerSwiping.current = false;
+    const delta = drawerSwipeEnd.current - drawerSwipeStart.current;
+    if (delta > 80) setMobileOpen(false);
+  }, []);
 
   // Close on outside click
   useEffect(() => {
@@ -229,6 +255,43 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
+  // ESC key to close drawer
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMobileOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
+
+  // Focus trap: focus close button on open, restore to hamburger on close
+  useEffect(() => {
+    if (mobileOpen) {
+      // Small delay for animation to mount the DOM element
+      requestAnimationFrame(() => closeRef.current?.focus());
+    } else {
+      hamburgerRef.current?.focus();
+    }
+  }, [mobileOpen]);
+
+  // Tab trap inside drawer
+  useEffect(() => {
+    if (!mobileOpen || !drawerRef.current) return;
+    const panel = drawerRef.current;
+    const onTab = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const focusable = panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    window.addEventListener("keydown", onTab);
+    return () => window.removeEventListener("keydown", onTab);
   }, [mobileOpen]);
 
   const cycleTheme = () => { if (mode === "light") setMode("dark"); else if (mode === "dark") setMode("auto"); else setMode("light"); };
@@ -314,9 +377,13 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
   return (
     <>
       <style>{`
-        @keyframes slideInFromRight {
-          from { opacity: 0; transform: translateX(40px); }
-          to { opacity: 1; transform: translateX(0); }
+        @keyframes drawerSlideIn {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+        @keyframes backdropFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
       `}</style>
       <header style={{
@@ -678,6 +745,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                     existing full-screen mobileOpen overlay at line 634 which
                     already renders ALL nav sections for logged-in users. */}
                 <button
+                  ref={hamburgerRef}
                   className="flex lg:hidden"
                   onClick={() => { setMobileOpen((v) => !v); setDropdownOpen(false); setSettingsOpen(false); setBellOpen(false); }}
                   style={{
@@ -732,117 +800,306 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
         </div>
       </header>
 
-      {/* ── Mobile full-screen menu (logged-in) ── */}
+      {/* ── Mobile slide-in drawer (logged-in) ── */}
       {user && mobileOpen && (
-        <div className="lg:hidden" style={{
-          position: "fixed", inset: 0, top: "64px", zIndex: 9999,
-          background: "rgba(10, 10, 18, 0.97)", backdropFilter: "blur(24px)",
-          overflowY: "auto", paddingBottom: "6rem",
-          animation: "slideInFromRight 0.25s ease forwards",
-        }}>
-          {/* Identity */}
-          <div style={{ padding: "1rem 1.25rem 0.75rem", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              <div style={{
-                width: "2.5rem", height: "2.5rem", borderRadius: "50%",
-                background: `linear-gradient(135deg, ${TEAL}, #0097a7)`, color: "#fff",
-                fontSize: "0.85rem", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center",
-                boxShadow: `0 0 12px ${TEAL_GLOW}`,
-              }}>{initials}</div>
-              <div>
-                <div style={{ fontSize: "1rem", fontWeight: 600, color: "#fff" }}>{displayName}</div>
-                <div style={{ fontSize: "0.75rem", color: "rgba(255,255,255,0.4)" }}>{tierLabel} Plan</div>
+        <>
+          {/* Backdrop overlay — tap to close */}
+          <div
+            className="lg:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+            style={{
+              position: "fixed", inset: 0, zIndex: 998,
+              background: "rgba(0,0,0,0.5)",
+              animation: "backdropFadeIn 0.2s ease forwards",
+            }}
+          />
+
+          {/* Drawer panel */}
+          <div
+            ref={drawerRef}
+            className="lg:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Main navigation"
+            onTouchStart={onDrawerTouchStart}
+            onTouchMove={onDrawerTouchMove}
+            onTouchEnd={onDrawerTouchEnd}
+            style={{
+              position: "fixed", top: 0, right: 0, bottom: 0,
+              width: "min(320px, 88vw)",
+              background: "#0D1117",
+              borderLeft: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "-8px 0 32px rgba(0,0,0,0.5)",
+              zIndex: 999,
+              overflowY: "auto",
+              paddingBottom: "env(safe-area-inset-bottom)",
+              animation: "drawerSlideIn 0.3s cubic-bezier(0.4,0,0.2,1) forwards",
+            }}
+          >
+            {/* ── Section 1: Header ── */}
+            <div style={{ paddingTop: "env(safe-area-inset-top, 0px)", padding: "1.25rem 1.25rem 1rem", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+              {/* Close button — top right */}
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem", paddingTop: "env(safe-area-inset-top, 0px)" }}>
+                <button
+                  ref={closeRef}
+                  onClick={() => setMobileOpen(false)}
+                  style={{
+                    width: "44px", height: "44px", borderRadius: "0.6rem",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    background: "transparent", border: "none",
+                    color: "rgba(255,255,255,0.7)", cursor: "pointer",
+                    transition: "background 0.15s ease",
+                  }}
+                  aria-label="Close menu"
+                >
+                  <X size={22} />
+                </button>
+              </div>
+
+              {/* User identity */}
+              <div style={{ display: "flex", alignItems: "center", gap: "0.875rem" }}>
+                <div style={{
+                  width: "48px", height: "48px", borderRadius: "50%",
+                  background: `linear-gradient(135deg, ${TEAL}, #0097a7)`, color: "#fff",
+                  fontSize: "1rem", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0, boxShadow: `0 0 14px ${TEAL_GLOW}`,
+                }}>
+                  {initials}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: "1.05rem", fontWeight: 600, color: "#fff" }}>{displayName}</div>
+                  <span style={{
+                    display: "inline-block", marginTop: "4px",
+                    fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+                    padding: "0.2rem 0.55rem", borderRadius: "0.35rem",
+                    background: "rgba(0,188,212,0.12)", color: TEAL, border: "1px solid rgba(0,188,212,0.2)",
+                  }}>
+                    {tierLabel}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Menu sections */}
-          {MENU_SECTIONS.map((section) => (
-            <div key={section.id} style={{ padding: "0.25rem 0.5rem", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-              <div style={{
-                padding: "0.6rem 0.75rem 0.25rem", fontSize: "0.62rem", fontWeight: 700,
-                letterSpacing: "0.14em", color: "rgba(255,255,255,0.45)", textTransform: "uppercase",
-              }}>{section.heading}</div>
-              {section.items.map((item) => renderMenuItem(item, true))}
+            {/* ── Section 2: Main Navigation ── */}
+            <div style={{ padding: "0.5rem 0.625rem" }}>
+              {[
+                { href: "/dashboard",  label: "Dashboard", icon: LayoutDashboard },
+                { href: "/items",      label: "My Items",  icon: Package },
+                { href: "/projects",   label: "My Sales",  icon: FolderOpen },
+                { href: "/store",      label: "My Store",  icon: ShoppingBag },
+                { href: "/messages",   label: "Messages",  icon: MessageSquare, badge: true },
+              ].map(({ href, label, icon: Icon, badge }) => {
+                const active = isActive(href);
+                return (
+                  <Link key={href} href={href} style={{
+                    display: "flex", alignItems: "center", gap: "0.875rem",
+                    padding: "0 1rem", minHeight: "52px",
+                    borderRadius: "0.6rem", textDecoration: "none",
+                    color: active ? "#fff" : "rgba(255,255,255,0.75)",
+                    background: active ? "rgba(0,188,212,0.1)" : "transparent",
+                    transition: "all 0.15s ease",
+                    fontSize: "1rem", fontWeight: active ? 600 : 450,
+                    fontFamily: "var(--font-body)",
+                  }}>
+                    <Icon size={20} style={{ flexShrink: 0, color: active ? TEAL : "rgba(255,255,255,0.35)" }} />
+                    <span style={{ flex: 1 }}>{label}</span>
+                    {active && <span style={{ width: 3, height: 20, borderRadius: 2, background: TEAL, flexShrink: 0 }} />}
+                    {badge && unreadCount > 0 && (
+                      <span style={{
+                        fontSize: "0.65rem", fontWeight: 700, padding: "0.1rem 0.4rem",
+                        borderRadius: "9999px", lineHeight: 1.4,
+                        background: "#dc2626", color: "#fff",
+                      }}>
+                        {unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
-          ))}
 
-          {/* Session */}
-          <div style={{ padding: "0.25rem 0.5rem" }}>
-            <div style={{ display: "flex", gap: "2px", padding: "0.25rem", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              {([{ m: "light" as const, icon: <Sun size={16} />, label: "Light" }, { m: "dark" as const, icon: <Moon size={16} />, label: "Dark" }, { m: "auto" as const, icon: <Monitor size={16} />, label: "Auto" }]).map((opt) => (
-                <button key={opt.m} onClick={() => setMode(opt.m)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", padding: "0.5rem", borderRadius: "8px", border: "none", background: mode === opt.m ? "rgba(0,188,212,0.15)" : "transparent", color: mode === opt.m ? "#00bcd4" : "rgba(255,255,255,0.5)", fontSize: "0.78rem", fontWeight: mode === opt.m ? 700 : 500, cursor: "pointer", minHeight: "44px" }}>{opt.icon}{opt.label}</button>
-              ))}
+            {/* Divider */}
+            <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "0.25rem 1.25rem" }} />
+
+            {/* ── Section 3: Tools ── */}
+            <div style={{ padding: "0.5rem 0.625rem" }}>
+              {[
+                { href: "/bots",        label: "AI Bots",         icon: Bot },
+                { href: "/shipping",    label: "Shipping Center", icon: Truck },
+                { href: "/analytics",   label: "Analytics",       icon: BarChart3 },
+                { href: "/marketplace", label: "Add-On Store",    icon: Sparkles },
+              ].map(({ href, label, icon: Icon }) => {
+                const active = isActive(href);
+                return (
+                  <Link key={href} href={href} style={{
+                    display: "flex", alignItems: "center", gap: "0.875rem",
+                    padding: "0 1rem", minHeight: "52px",
+                    borderRadius: "0.6rem", textDecoration: "none",
+                    color: active ? "#fff" : "rgba(255,255,255,0.75)",
+                    background: active ? "rgba(0,188,212,0.1)" : "transparent",
+                    transition: "all 0.15s ease",
+                    fontSize: "1rem", fontWeight: active ? 600 : 450,
+                    fontFamily: "var(--font-body)",
+                  }}>
+                    <Icon size={20} style={{ flexShrink: 0, color: active ? TEAL : "rgba(255,255,255,0.35)" }} />
+                    <span style={{ flex: 1 }}>{label}</span>
+                    {active && <span style={{ width: 3, height: 20, borderRadius: 2, background: TEAL, flexShrink: 0 }} />}
+                  </Link>
+                );
+              })}
             </div>
-            <button onClick={handleLogout} style={{ ...menuItemBase, color: "rgba(248,113,113,0.75)", width: "100%" }}>
-              <LogOut size={18} style={{ flexShrink: 0 }} /><span>Sign Out</span>
-            </button>
-          </div>
 
-          {/* Prominent New Item CTA */}
-          <div style={{ padding: "1rem 1.25rem" }}>
-            <Link href="/items/new" className="btn-primary" style={{ width: "100%", justifyContent: "center", borderRadius: "0.75rem", padding: "0.85rem 1rem", fontSize: "0.95rem" }}>
-              <Plus size={18} /> Add New Item
-            </Link>
+            {/* Divider */}
+            <div style={{ height: "1px", background: "rgba(255,255,255,0.06)", margin: "0.25rem 1.25rem" }} />
+
+            {/* ── Section 4: Account ── */}
+            <div style={{ padding: "0.5rem 0.625rem" }}>
+              {[
+                { href: "/settings",     label: "Settings",     icon: Settings },
+                { href: "/subscription", label: "Subscription", icon: CreditCard },
+              ].map(({ href, label, icon: Icon }) => {
+                const active = isActive(href);
+                return (
+                  <Link key={href} href={href} style={{
+                    display: "flex", alignItems: "center", gap: "0.875rem",
+                    padding: "0 1rem", minHeight: "52px",
+                    borderRadius: "0.6rem", textDecoration: "none",
+                    color: active ? "#fff" : "rgba(255,255,255,0.75)",
+                    background: active ? "rgba(0,188,212,0.1)" : "transparent",
+                    transition: "all 0.15s ease",
+                    fontSize: "1rem", fontWeight: active ? 600 : 450,
+                    fontFamily: "var(--font-body)",
+                  }}>
+                    <Icon size={20} style={{ flexShrink: 0, color: active ? TEAL : "rgba(255,255,255,0.35)" }} />
+                    <span style={{ flex: 1 }}>{label}</span>
+                    {active && <span style={{ width: 3, height: 20, borderRadius: 2, background: TEAL, flexShrink: 0 }} />}
+                  </Link>
+                );
+              })}
+
+              {/* Sign Out */}
+              <button
+                onClick={handleLogout}
+                style={{
+                  display: "flex", alignItems: "center", gap: "0.875rem",
+                  padding: "0 1rem", minHeight: "52px", width: "100%",
+                  borderRadius: "0.6rem", border: "none", cursor: "pointer",
+                  color: "#ef4444", background: "transparent",
+                  transition: "all 0.15s ease",
+                  fontSize: "1rem", fontWeight: 450,
+                  fontFamily: "var(--font-body)",
+                  textAlign: "left",
+                }}
+              >
+                <LogOut size={20} style={{ flexShrink: 0 }} />
+                <span>Sign Out</span>
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* ── Mobile full-screen menu (logged-out) ── */}
+      {/* ── Mobile slide-in drawer (logged-out) ── */}
       {!user && mobileOpen && (
-        <div className="lg:hidden" style={{
-          position: "fixed", inset: 0, top: "64px", zIndex: 9999,
-          background: "rgba(10, 10, 18, 0.97)", backdropFilter: "blur(24px)",
-          overflowY: "auto", paddingBottom: "6rem",
-          animation: "slideInFromRight 0.25s ease forwards",
-        }}>
-          {/* Navigation links */}
-          <div style={{ padding: "0.75rem 0.5rem", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-            {[
-              { href: "/search", label: "Browse", icon: Search },
-              { href: "/heroes", label: "Heroes", icon: Trophy },
-              { href: "/pricing", label: "Pricing", icon: CreditCard },
-            ].map(({ href, label, icon: Icon }) => (
-              <Link key={href} href={href} style={{
-                ...menuItemBase,
-                color: isActive(href) ? "#fff" : "rgba(255,255,255,0.82)",
-                background: isActive(href) ? "rgba(0, 188, 212, 0.1)" : "transparent",
-              }}>
-                <Icon size={18} style={{ flexShrink: 0, color: isActive(href) ? TEAL : "rgba(255,255,255,0.35)" }} />
-                <span style={{ flex: 1 }}>{label}</span>
-                {isActive(href) && <span style={{ width: 3, height: 18, borderRadius: 2, background: TEAL, flexShrink: 0 }} />}
-              </Link>
-            ))}
-          </div>
+        <>
+          {/* Backdrop overlay */}
+          <div
+            className="lg:hidden"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+            style={{
+              position: "fixed", inset: 0, zIndex: 998,
+              background: "rgba(0,0,0,0.5)",
+              animation: "backdropFadeIn 0.2s ease forwards",
+            }}
+          />
 
-          {/* Theme toggle */}
-          <div style={{ padding: "0.25rem 0.5rem", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-            <div style={{ display: "flex", gap: "2px", padding: "0.25rem", borderRadius: "10px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}>
-              {([{ m: "light" as const, icon: <Sun size={16} />, label: "Light" }, { m: "dark" as const, icon: <Moon size={16} />, label: "Dark" }, { m: "auto" as const, icon: <Monitor size={16} />, label: "Auto" }]).map((opt) => (
-                <button key={opt.m} onClick={() => setMode(opt.m)} style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", padding: "0.5rem", borderRadius: "8px", border: "none", background: mode === opt.m ? "rgba(0,188,212,0.15)" : "transparent", color: mode === opt.m ? "#00bcd4" : "rgba(255,255,255,0.5)", fontSize: "0.78rem", fontWeight: mode === opt.m ? 700 : 500, cursor: "pointer", minHeight: "44px" }}>{opt.icon}{opt.label}</button>
-              ))}
+          {/* Drawer panel */}
+          <div
+            className="lg:hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation"
+            onTouchStart={onDrawerTouchStart}
+            onTouchMove={onDrawerTouchMove}
+            onTouchEnd={onDrawerTouchEnd}
+            style={{
+              position: "fixed", top: 0, right: 0, bottom: 0,
+              width: "min(320px, 88vw)",
+              background: "#0D1117",
+              borderLeft: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "-8px 0 32px rgba(0,0,0,0.5)",
+              zIndex: 999,
+              overflowY: "auto",
+              paddingTop: "env(safe-area-inset-top, 0px)",
+              paddingBottom: "env(safe-area-inset-bottom)",
+              animation: "drawerSlideIn 0.3s cubic-bezier(0.4,0,0.2,1) forwards",
+            }}
+          >
+            {/* Close button */}
+            <div style={{ padding: "1.25rem 1.25rem 0.75rem", display: "flex", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setMobileOpen(false)}
+                style={{
+                  width: "44px", height: "44px", borderRadius: "0.6rem",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "transparent", border: "none",
+                  color: "rgba(255,255,255,0.7)", cursor: "pointer",
+                }}
+                aria-label="Close menu"
+              >
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* Nav links */}
+            <div style={{ padding: "0.5rem 0.625rem" }}>
+              {[
+                { href: "/search", label: "Browse", icon: Search },
+                { href: "/heroes", label: "Heroes", icon: Trophy },
+                { href: "/pricing", label: "Pricing", icon: CreditCard },
+              ].map(({ href, label, icon: Icon }) => {
+                const active = isActive(href);
+                return (
+                  <Link key={href} href={href} style={{
+                    display: "flex", alignItems: "center", gap: "0.875rem",
+                    padding: "0 1rem", minHeight: "52px",
+                    borderRadius: "0.6rem", textDecoration: "none",
+                    color: active ? "#fff" : "rgba(255,255,255,0.75)",
+                    background: active ? "rgba(0,188,212,0.1)" : "transparent",
+                    transition: "all 0.15s ease",
+                    fontSize: "1rem", fontWeight: active ? 600 : 450,
+                    fontFamily: "var(--font-body)",
+                  }}>
+                    <Icon size={20} style={{ flexShrink: 0, color: active ? TEAL : "rgba(255,255,255,0.35)" }} />
+                    <span style={{ flex: 1 }}>{label}</span>
+                    {active && <span style={{ width: 3, height: 20, borderRadius: 2, background: TEAL, flexShrink: 0 }} />}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Auth CTAs */}
+            <div style={{ padding: "1.25rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              <Link href="/auth/login" style={{
+                width: "100%", justifyContent: "center", borderRadius: "0.75rem",
+                padding: "0.85rem 1rem", fontSize: "0.95rem", textAlign: "center", display: "flex",
+                fontWeight: 600, textDecoration: "none",
+                border: `2px solid ${TEAL}`, color: TEAL,
+                background: "rgba(0, 188, 212, 0.08)",
+              }}>
+                Log In
+              </Link>
+              <Link href="/auth/signup" className="btn-primary" style={{
+                width: "100%", justifyContent: "center", borderRadius: "0.75rem",
+                padding: "0.85rem 1rem", fontSize: "0.95rem", textAlign: "center", display: "flex",
+              }}>
+                Get Started
+              </Link>
             </div>
           </div>
-
-          {/* Auth CTAs */}
-          <div style={{ padding: "1.25rem 1.25rem", display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            <Link href="/auth/login" style={{
-              width: "100%", justifyContent: "center", borderRadius: "0.75rem",
-              padding: "0.85rem 1rem", fontSize: "0.95rem", textAlign: "center", display: "flex",
-              fontWeight: 600, textDecoration: "none",
-              border: `2px solid ${TEAL}`, color: TEAL,
-              background: "rgba(0, 188, 212, 0.08)",
-            }}>
-              Log In
-            </Link>
-            <Link href="/auth/signup" className="btn-primary" style={{
-              width: "100%", justifyContent: "center", borderRadius: "0.75rem",
-              padding: "0.85rem 1rem", fontSize: "0.95rem", textAlign: "center", display: "flex",
-            }}>
-              Get Started
-            </Link>
-          </div>
-        </div>
+        </>
       )}
     </>
   );
