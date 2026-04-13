@@ -332,7 +332,7 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
             <img
               src="/images/logos/legacyloop-logo.png"
               alt="LegacyLoop"
-              style={{ height: "48px", width: "auto", objectFit: "contain", display: "block" }}
+              style={{ height: "48px", width: "auto", objectFit: "contain" }}
               className="hidden lg:block"
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -528,6 +528,23 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                   )}
                 </div>
 
+                {/* Mobile settings gear — visible <1024px only */}
+                <Link
+                  href="/settings"
+                  className="flex lg:hidden"
+                  style={{
+                    alignItems: "center", justifyContent: "center",
+                    width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
+                    background: isActive("/settings") ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.06)",
+                    border: `1px solid ${isActive("/settings") ? "rgba(0,188,212,0.3)" : "rgba(255,255,255,0.09)"}`,
+                    color: isActive("/settings") ? TEAL : "rgba(255,255,255,0.7)",
+                    transition: "all 0.15s ease", flexShrink: 0,
+                  }}
+                  aria-label="Settings"
+                >
+                  <Settings size={16} />
+                </Link>
+
                 {/* User avatar dropdown */}
                 <div ref={dropdownRef} style={{ position: "relative" }}>
                   <button onClick={() => { setDropdownOpen((v) => !v); setSettingsOpen(false); }} style={{
@@ -661,10 +678,10 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                     existing full-screen mobileOpen overlay at line 634 which
                     already renders ALL nav sections for logged-in users. */}
                 <button
-                  className="lg:hidden"
+                  className="flex lg:hidden"
                   onClick={() => { setMobileOpen((v) => !v); setDropdownOpen(false); setSettingsOpen(false); setBellOpen(false); }}
                   style={{
-                    display: "flex", alignItems: "center", justifyContent: "center",
+                    alignItems: "center", justifyContent: "center",
                     width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
                     background: mobileOpen ? "rgba(0,188,212,0.12)" : "rgba(255,255,255,0.06)",
                     border: `1px solid ${mobileOpen ? "rgba(0,188,212,0.3)" : "rgba(255,255,255,0.09)"}`,
@@ -696,8 +713,8 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
                 <Link href="/auth/signup" className="btn-primary hidden sm:inline-flex" style={{ padding: "0.45rem 0.875rem", fontSize: "0.84rem", borderRadius: "0.6rem" }}>Get Started</Link>
 
                 {/* Mobile hamburger (logged-out) */}
-                <button className="lg:hidden" onClick={() => setMobileOpen((v) => !v)} style={{
-                  display: "flex", alignItems: "center", justifyContent: "center",
+                <button className="flex lg:hidden" onClick={() => setMobileOpen((v) => !v)} style={{
+                  alignItems: "center", justifyContent: "center",
                   width: "2.75rem", height: "2.75rem", borderRadius: "0.55rem",
                   background: mobileOpen ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.06)",
                   border: `1px solid ${mobileOpen ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.09)"}`,
