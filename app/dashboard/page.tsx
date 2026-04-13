@@ -368,9 +368,8 @@ export default async function DashboardPage() {
 
       {/* ── Row 2.5: Messages summary ───────────────────────────────────────── */}
       {totalConversations > 0 && (
-        <div style={{
+        <div className="glass-surface" style={{
           display: "flex", alignItems: "center", gap: "1rem", padding: "0.875rem 1.25rem",
-          borderRadius: "0.75rem", background: "var(--bg-card-solid)", border: "1px solid var(--border-default)",
           marginBottom: "1.75rem", flexWrap: "wrap",
         }}>
           <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
@@ -498,9 +497,9 @@ export default async function DashboardPage() {
           <Link
             key={link.label}
             href={link.href}
+            className="glass-surface"
             style={{
-              display: "block", padding: "1rem 1.25rem", borderRadius: "0.75rem",
-              background: "var(--bg-card-solid)", border: "1px solid var(--border-default)",
+              display: "block", padding: "1rem 1.25rem",
               textDecoration: "none", transition: "all 0.15s ease",
             }}
           >
