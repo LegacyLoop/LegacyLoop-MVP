@@ -7,6 +7,7 @@ import MakeOfferForm from "./MakeOfferForm";
 import ShareButtons from "@/app/components/ShareButtons";
 import { safeJson } from "@/lib/utils/json";
 import TradeButton from "./TradeButton";
+import ItemPhotoStrip from "@/app/items/[id]/ItemPhotoStrip";
 
 type Params = Promise<{ userId: string; itemId: string }>;
 
@@ -121,22 +122,16 @@ export default async function PublicItemPage({ params }: { params: Params }) {
       </div>
 
       <div className="item-detail-grid">
-        {/* Photos */}
+        {/* Photos — reusable carousel */}
         <div>
-          {photos[0] ? (
-            <img src={photos[0].filePath} alt={title} loading="lazy" style={{ width: "100%", borderRadius: "1.5rem", border: "1px solid var(--border-default)", objectFit: "cover", maxHeight: 400, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }} />
-          ) : (
-            <div style={{ height: "20rem", background: "var(--bg-card-hover)", borderRadius: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: "3rem", color: "var(--text-muted)" }}>📷</span>
-            </div>
-          )}
-          {photos.length > 1 && (
-            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem", flexWrap: "wrap" }}>
-              {photos.slice(0, 6).map((p) => (
-                <img key={p.id} src={p.filePath} alt="" loading="lazy" style={{ width: "64px", height: "64px", objectFit: "cover", borderRadius: "0.5rem", border: "2px solid var(--border-default)" }} />
-              ))}
-            </div>
-          )}
+          <ItemPhotoStrip
+            photos={photos.map((p) => ({
+              id: p.id,
+              filePath: p.filePath,
+              isPrimary: (p as any).isPrimary ?? false,
+            }))}
+            displayTitle={title}
+          />
         </div>
 
         {/* Details */}

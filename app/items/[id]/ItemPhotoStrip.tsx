@@ -8,6 +8,13 @@ type Photo = {
   isPrimary: boolean;
 };
 
+// ═══ HAPTIC FEEDBACK HELPER ═══
+function haptic() {
+  if (typeof navigator !== "undefined" && navigator.vibrate) {
+    navigator.vibrate(8);
+  }
+}
+
 // LIGHTBOX IS VIEW-ONLY — no cover photo changes, no edits, no deletes
 
 export default function ItemPhotoStrip({
@@ -37,11 +44,6 @@ export default function ItemPhotoStrip({
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const isDragging = useRef(false);
-
-  // ═══ LIGHTBOX TOUCH STATE ═══
-  const lightboxTouchStartX = useRef(0);
-  const lightboxTouchEndX = useRef(0);
-  const lightboxIsDragging = useRef(false);
 
   // Ordered photos: primary first, then the rest
   const primaryPhoto = photos.find((p) => p.isPrimary) || photos[0];
@@ -87,37 +89,11 @@ export default function ItemPhotoStrip({
     isDragging.current = false;
     const delta = touchStartX.current - touchEndX.current;
     if (Math.abs(delta) > 50) {
-      if (delta > 0) {
-        // Swipe left → next
-        goToSlide(currentIndex + 1);
-      } else {
-        // Swipe right → prev
-        goToSlide(currentIndex - 1);
-      }
+      haptic();
+      if (delta > 0) goToSlide(currentIndex + 1);
+      else goToSlide(currentIndex - 1);
     }
   }, [currentIndex, goToSlide]);
-
-  // ═══ TOUCH HANDLERS — LIGHTBOX ═══
-  const onLightboxTouchStart = useCallback((e: React.TouchEvent) => {
-    lightboxTouchStartX.current = e.touches[0].clientX;
-    lightboxTouchEndX.current = e.touches[0].clientX;
-    lightboxIsDragging.current = true;
-  }, []);
-
-  const onLightboxTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!lightboxIsDragging.current) return;
-    lightboxTouchEndX.current = e.touches[0].clientX;
-  }, []);
-
-  const onLightboxTouchEnd = useCallback(() => {
-    if (!lightboxIsDragging.current) return;
-    lightboxIsDragging.current = false;
-    const delta = lightboxTouchStartX.current - lightboxTouchEndX.current;
-    if (Math.abs(delta) > 50) {
-      if (delta > 0) goTo(1);   // Swipe left → next
-      else goTo(-1);            // Swipe right → prev
-    }
-  }, [goTo]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -218,9 +194,6 @@ export default function ItemPhotoStrip({
             viewingPhoto={viewingPhoto}
             setViewingPhoto={setViewingPhoto}
             goTo={goTo}
-            onLightboxTouchStart={onLightboxTouchStart}
-            onLightboxTouchMove={onLightboxTouchMove}
-            onLightboxTouchEnd={onLightboxTouchEnd}
           />
         )}
       </div>
@@ -276,7 +249,7 @@ export default function ItemPhotoStrip({
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
-            {orderedPhotos.map((photo) => (
+            {orderedPhotos.map((photo, i) => (
               <div
                 key={photo.id}
                 style={{
@@ -297,6 +270,7 @@ export default function ItemPhotoStrip({
                   src={photo.filePath}
                   alt={displayTitle}
                   draggable={false}
+                  loading={i === 0 ? "eager" : "lazy"}
                   style={{
                     width: "100%",
                     height: "100%",
@@ -408,34 +382,142 @@ export default function ItemPhotoStrip({
           viewingPhoto={viewingPhoto}
           setViewingPhoto={setViewingPhoto}
           goTo={goTo}
-          onLightboxTouchStart={onLightboxTouchStart}
-          onLightboxTouchMove={onLightboxTouchMove}
-          onLightboxTouchEnd={onLightboxTouchEnd}
         />
       )}
     </>
   );
 }
 
-// ═══ LIGHTBOX MODAL (extracted for reuse) ═══
+// ═══ LIGHTBOX MODAL — pinch-to-zoom + swipe ═══
 // LIGHTBOX IS VIEW-ONLY — no cover photo changes, no edits, no deletes
 function LightboxModal({
   photos,
   viewingPhoto,
   setViewingPhoto,
   goTo,
-  onLightboxTouchStart,
-  onLightboxTouchMove,
-  onLightboxTouchEnd,
 }: {
   photos: Photo[];
   viewingPhoto: { id: string; filePath: string; index: number };
   setViewingPhoto: (v: { id: string; filePath: string; index: number } | null) => void;
   goTo: (delta: number) => void;
-  onLightboxTouchStart: (e: React.TouchEvent) => void;
-  onLightboxTouchMove: (e: React.TouchEvent) => void;
-  onLightboxTouchEnd: () => void;
 }) {
+  // ═══ PINCH-TO-ZOOM STATE ═══
+  const [scale, setScale] = useState(1);
+  const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const initialPinchDistance = useRef(0);
+  const initialScale = useRef(1);
+  const isPinching = useRef(false);
+
+  // Pan state (when zoomed)
+  const panStart = useRef({ x: 0, y: 0 });
+  const translateStart = useRef({ x: 0, y: 0 });
+  const isPanning = useRef(false);
+
+  // Swipe state (single finger, not zoomed)
+  const swipeStartX = useRef(0);
+  const swipeEndX = useRef(0);
+  const isSwiping = useRef(false);
+
+  // Double-tap state
+  const lastTap = useRef(0);
+
+  // Reset zoom when photo changes
+  useEffect(() => {
+    setScale(1);
+    setTranslate({ x: 0, y: 0 });
+  }, [viewingPhoto.id]);
+
+  function getFingerDistance(t1: React.Touch, t2: React.Touch) {
+    return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+  }
+
+  const onImageTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      // Pinch start
+      isPinching.current = true;
+      isSwiping.current = false;
+      isPanning.current = false;
+      initialPinchDistance.current = getFingerDistance(e.touches[0], e.touches[1]);
+      initialScale.current = scale;
+    } else if (e.touches.length === 1) {
+      // Double-tap detection
+      const now = Date.now();
+      if (now - lastTap.current < 300) {
+        // Double tap — toggle zoom
+        if (scale > 1.1) {
+          setScale(1);
+          setTranslate({ x: 0, y: 0 });
+        } else {
+          setScale(2.5);
+          setTranslate({ x: 0, y: 0 });
+        }
+        lastTap.current = 0;
+        return;
+      }
+      lastTap.current = now;
+
+      if (scale > 1.1) {
+        // Panning when zoomed
+        isPanning.current = true;
+        isSwiping.current = false;
+        panStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        translateStart.current = { ...translate };
+      } else {
+        // Swipe for navigation
+        isSwiping.current = true;
+        isPanning.current = false;
+        swipeStartX.current = e.touches[0].clientX;
+        swipeEndX.current = e.touches[0].clientX;
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scale, translate]);
+
+  const onImageTouchMove = useCallback((e: React.TouchEvent) => {
+    if (isPinching.current && e.touches.length === 2) {
+      const dist = getFingerDistance(e.touches[0], e.touches[1]);
+      const newScale = Math.min(
+        Math.max(initialScale.current * (dist / initialPinchDistance.current), 1),
+        5,
+      );
+      setScale(newScale);
+      // Reset translate if returning to 1x
+      if (newScale <= 1.05) setTranslate({ x: 0, y: 0 });
+    } else if (isPanning.current && e.touches.length === 1) {
+      const dx = e.touches[0].clientX - panStart.current.x;
+      const dy = e.touches[0].clientY - panStart.current.y;
+      setTranslate({
+        x: translateStart.current.x + dx,
+        y: translateStart.current.y + dy,
+      });
+    } else if (isSwiping.current && e.touches.length === 1) {
+      swipeEndX.current = e.touches[0].clientX;
+    }
+  }, []);
+
+  const onImageTouchEnd = useCallback(() => {
+    if (isPinching.current) {
+      isPinching.current = false;
+      // Snap to 1x if close
+      if (scale < 1.15) {
+        setScale(1);
+        setTranslate({ x: 0, y: 0 });
+      }
+    }
+    if (isPanning.current) {
+      isPanning.current = false;
+    }
+    if (isSwiping.current) {
+      isSwiping.current = false;
+      const delta = swipeStartX.current - swipeEndX.current;
+      if (Math.abs(delta) > 50) {
+        haptic();
+        if (delta > 0) goTo(1);
+        else goTo(-1);
+      }
+    }
+  }, [scale, goTo]);
+
   return (
     <div
       style={{
@@ -464,25 +546,55 @@ function LightboxModal({
           gap: "1rem",
         }}
         onClick={(e) => e.stopPropagation()}
-        onTouchStart={onLightboxTouchStart}
-        onTouchMove={onLightboxTouchMove}
-        onTouchEnd={onLightboxTouchEnd}
       >
-        {/* Main image */}
-        <img
-          src={viewingPhoto.filePath}
-          alt="Item photo"
-          draggable={false}
+        {/* Main image — pinch-to-zoom + swipe */}
+        <div
           style={{
-            maxWidth: "85vw",
-            maxHeight: "78vh",
-            objectFit: "contain",
+            overflow: "hidden",
             borderRadius: "12px",
-            boxShadow: "0 25px 60px rgba(0,0,0,0.5)",
-            display: "block",
-            userSelect: "none",
+            touchAction: scale > 1.1 ? "none" : "pan-y",
           }}
-        />
+          onTouchStart={onImageTouchStart}
+          onTouchMove={onImageTouchMove}
+          onTouchEnd={onImageTouchEnd}
+        >
+          <img
+            src={viewingPhoto.filePath}
+            alt="Item photo"
+            draggable={false}
+            style={{
+              maxWidth: "85vw",
+              maxHeight: "78vh",
+              objectFit: "contain",
+              display: "block",
+              userSelect: "none",
+              transform: `scale(${scale}) translate(${translate.x / scale}px, ${translate.y / scale}px)`,
+              transition: isPinching.current || isPanning.current ? "none" : "transform 0.2s ease-out",
+              willChange: "transform",
+            }}
+          />
+        </div>
+
+        {/* Zoom indicator — shows when zoomed */}
+        {scale > 1.1 && (
+          <div
+            style={{
+              position: "absolute",
+              top: "12px",
+              left: "12px",
+              background: "rgba(0,0,0,0.55)",
+              color: "#ffffff",
+              fontSize: "0.7rem",
+              padding: "3px 8px",
+              borderRadius: "20px",
+              backdropFilter: "blur(4px)",
+              fontFamily: "var(--font-data)",
+              fontWeight: 600,
+            }}
+          >
+            {scale.toFixed(1)}x
+          </div>
+        )}
 
         {/* Image counter pill */}
         <div
@@ -516,6 +628,7 @@ function LightboxModal({
                 key={p.id}
                 src={p.filePath}
                 alt=""
+                loading="lazy"
                 style={{
                   width: "44px",
                   height: "44px",
