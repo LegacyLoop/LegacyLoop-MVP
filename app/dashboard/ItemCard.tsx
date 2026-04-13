@@ -133,17 +133,15 @@ export default function ItemCard({ item }: ItemCardProps) {
 
   return (
     <div
+      className="glass-card-flat"
       style={{
-        borderRadius: "0.875rem",
         overflow: "hidden",
-        background: "var(--bg-card-solid)",
         border: item.megabotUsed
           ? "1px solid #c4b5fd"
-          : "1px solid rgba(255,255,255,0.08)",
+          : undefined,
         boxShadow: item.megabotUsed
           ? "0 0 0 2px rgba(196,181,253,0.3), 0 2px 8px rgba(0,0,0,0.15)"
-          : "0 1px 3px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08)",
-        transition: "all 0.2s ease",
+          : undefined,
         minHeight: "180px",
         display: "flex",
         flexDirection: "column" as const,

@@ -214,16 +214,13 @@ export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl
             return (
               <div
                 key={item.id}
-                className="storefront-card"
+                className="storefront-card glass-card-flat"
                 style={{
-                  borderRadius: "1.25rem",
                   overflow: "hidden",
-                  background: "var(--bg-card-solid)",
-                  border: item.isAntique ? "1px solid rgba(255,107,53,0.4)" : "1px solid var(--border-card)",
+                  border: item.isAntique ? "1px solid rgba(255,107,53,0.4)" : undefined,
                   boxShadow: item.isAntique
                     ? "0 4px 24px rgba(255,107,53,0.15), 0 0 0 1px rgba(255,182,39,0.1)"
-                    : "0 4px 20px rgba(0,0,0,0.15)",
-                  transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                    : undefined,
                 }}
               >
                 {/* Photo with overlay badges */}
