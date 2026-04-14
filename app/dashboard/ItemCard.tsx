@@ -643,7 +643,7 @@ export default function ItemCard({ item }: ItemCardProps) {
 
         {/* Actions panel trigger — always present */}
         <button
-          onClick={() => setPanelOpen(true)}
+          onClick={() => { try { navigator?.vibrate?.(6); } catch {} setPanelOpen(true); }}
           disabled={loading}
           style={{
             padding: '12px 8px',

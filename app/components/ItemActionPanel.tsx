@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -188,6 +189,8 @@ export default function ItemActionPanel({
   const [show, setShow] = useState(false);
   const [render, setRender] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [priceInput, setPriceInput] = useState("");
@@ -228,7 +231,7 @@ export default function ItemActionPanel({
       return () => cancelAnimationFrame(raf);
     } else {
       setShow(false);
-      const timer = setTimeout(() => setRender(false), 300);
+      const timer = setTimeout(() => setRender(false), 340);
       document.body.style.overflow = "";
       return () => clearTimeout(timer);
     }
@@ -350,7 +353,7 @@ export default function ItemActionPanel({
     router.refresh();
   }, [priceInput, item.id, onClose, router]);
 
-  if (!render) return null;
+  if (!render || !mounted) return null;
 
   const cfg = STATUS_CFG[item.status] || STATUS_CFG.DRAFT;
   const title =
@@ -858,7 +861,7 @@ export default function ItemActionPanel({
     },
   ];
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -866,12 +869,12 @@ export default function ItemActionPanel({
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: 999,
+          zIndex: 1099,
           background: "rgba(0,0,0,0.6)",
           backdropFilter: "blur(4px)",
           WebkitBackdropFilter: "blur(4px)",
           opacity: show ? 1 : 0,
-          transition: "opacity 280ms ease",
+          transition: "opacity 320ms cubic-bezier(0.23, 1, 0.32, 1)",
         }}
       />
 
@@ -879,7 +882,7 @@ export default function ItemActionPanel({
       <div
         style={{
           position: "fixed",
-          zIndex: 1000,
+          zIndex: 1100,
           ...(isMobile
             ? {
                 bottom: 0,
@@ -901,7 +904,7 @@ export default function ItemActionPanel({
           borderTop: isMobile ? "1px solid rgba(255,255,255,0.08)" : "none",
           overflowY: "auto",
           transform: panelTransform,
-          transition: "transform 280ms cubic-bezier(0.32, 0.72, 0, 1)",
+          transition: "transform 320ms cubic-bezier(0.23, 1, 0.32, 1)",
           display: 'flex',
           flexDirection: 'column' as const,
           boxShadow: '-8px 0 40px rgba(0,0,0,0.4)',
@@ -1694,6 +1697,7 @@ export default function ItemActionPanel({
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   );
 }
