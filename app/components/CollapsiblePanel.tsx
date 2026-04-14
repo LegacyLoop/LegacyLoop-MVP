@@ -52,6 +52,8 @@ export default function CollapsiblePanel({
     >
       <button
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-label={`${open ? "Collapse" : "Expand"} ${title}`}
         style={{
           width: "100%",
           display: "flex",

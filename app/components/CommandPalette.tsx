@@ -170,6 +170,9 @@ export default function CommandPalette() {
       {/* Palette */}
       <div
         className="glass-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command palette"
         style={{
           position: "fixed",
           top: "20%",

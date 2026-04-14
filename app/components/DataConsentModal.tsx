@@ -123,6 +123,9 @@ export default function DataConsentModal({ show }: Props) {
   return (
     <div
       className="glass-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Data collection preferences"
       style={{
         zIndex: 1000,
         display: "flex",

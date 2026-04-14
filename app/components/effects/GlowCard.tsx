@@ -26,7 +26,16 @@ export default function GlowCard({
   const isDark = resolved === "dark";
   const [hovered, setHovered] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   const defaultBorder = isDark
     ? "rgba(0,188,212,0.15)"
@@ -63,14 +72,16 @@ export default function GlowCard({
       style={{
         border: `1px solid ${hovered ? activeBorder : defaultBorder}`,
         borderRadius: 16,
-        transition: "all 0.4s cubic-bezier(0.23, 1, 0.32, 1)",
-        transform: visible
-          ? hovered
-            ? "translateY(-4px)"
-            : "translateY(0) scale(1)"
-          : "translateY(28px) scale(0.97)",
-        opacity: visible ? 1 : 0,
-        transitionDelay: visible ? `${delay}ms` : "0ms",
+        transition: reducedMotion ? "none" : "all 0.4s cubic-bezier(0.23, 1, 0.32, 1)",
+        transform: reducedMotion
+          ? "none"
+          : visible
+            ? hovered
+              ? "translateY(-4px)"
+              : "translateY(0) scale(1)"
+            : "translateY(28px) scale(0.97)",
+        opacity: reducedMotion ? 1 : visible ? 1 : 0,
+        transitionDelay: reducedMotion ? "0ms" : visible ? `${delay}ms` : "0ms",
         boxShadow: hovered
           ? isDark
             ? "0 0 30px rgba(0,188,212,0.12), inset 0 1px 0 rgba(255,255,255,0.05)"

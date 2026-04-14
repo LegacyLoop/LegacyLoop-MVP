@@ -171,6 +171,7 @@ export default async function RootLayout({
         `}} />
       </head>
       <body className="min-h-screen">
+        <a href="#main-content" style={{ position: "absolute", left: "-9999px", top: "auto", width: "1px", height: "1px", overflow: "hidden", zIndex: 9999 }} onFocus={(e) => { (e.currentTarget as HTMLElement).style.left = "1rem"; (e.currentTarget as HTMLElement).style.top = "1rem"; (e.currentTarget as HTMLElement).style.width = "auto"; (e.currentTarget as HTMLElement).style.height = "auto"; (e.currentTarget as HTMLElement).style.padding = "0.75rem 1.5rem"; (e.currentTarget as HTMLElement).style.background = "var(--accent)"; (e.currentTarget as HTMLElement).style.color = "#fff"; (e.currentTarget as HTMLElement).style.borderRadius = "0.5rem"; (e.currentTarget as HTMLElement).style.fontWeight = "700"; (e.currentTarget as HTMLElement).style.textDecoration = "none"; }} onBlur={(e) => { (e.currentTarget as HTMLElement).style.left = "-9999px"; (e.currentTarget as HTMLElement).style.width = "1px"; (e.currentTarget as HTMLElement).style.height = "1px"; }}>Skip to content</a>
         <ThemeProvider>
           <GradientOrbs />
           <NoiseOverlay />
@@ -183,7 +184,7 @@ export default async function RootLayout({
             creditBalance={creditBalance}
           />
 
-          <main className="container-app py-10">{children}</main>
+          <main id="main-content" className="container-app py-10">{children}</main>
           <Footer />
           <BottomNav unreadCount={unreadCount} />
           <HelpWidget />

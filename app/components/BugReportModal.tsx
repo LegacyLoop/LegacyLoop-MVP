@@ -133,6 +133,9 @@ export default function BugReportModal({ open, onClose }: Props) {
     <div
       id="bug-report-modal-overlay"
       className="glass-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Report a bug"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       style={{
         zIndex: 9999,

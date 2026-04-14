@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface WelcomeUser {
   firstName: string;
@@ -46,9 +46,19 @@ export default function WelcomeModal({ user, onClose }: Props) {
     setTimeout(() => onClose(), 300);
   };
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") handleDismiss(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div
       className="glass-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Welcome to LegacyLoop"
       style={{
         zIndex: 9999,
         display: "flex",
