@@ -8695,7 +8695,8 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
         ];
         const readyScore = checks.filter(Boolean).length;
         const readyColor = readyScore >= 4 ? "#22c55e" : readyScore >= 2 ? "#f59e0b" : "#ef4444";
-        const readySub = readyScore === 5 ? "Ready to list" : `${5 - readyScore} steps left`;
+        const remaining = 5 - readyScore;
+        const readySub = readyScore === 5 ? "Ready to list" : `${remaining} step${remaining !== 1 ? "s" : ""} left`;
         const priceStr = initialListingPrice ? `$${Math.round(initialListingPrice)}` : valuation?.low != null ? `$${Math.round(valuation.low)}\u2013$${Math.round(valuation.high)}` : "\u2014";
         const priceSub = initialListingPrice ? "asking" : valuation ? "AI range" : "Set a price";
         const views = extra?.totalViews ?? 0;

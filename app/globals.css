@@ -42,8 +42,8 @@ html, body {
 }
 
 /* ── HUD metric grid — responsive 4→2 col ── */
-.hud-metric-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; }
-@media (max-width: 399px) { .hud-metric-grid { grid-template-columns: 1fr 1fr; } }
+.hud-metric-grid { display: grid !important; grid-template-columns: 1fr 1fr 1fr 1fr !important; }
+@media (max-width: 399px) { .hud-metric-grid { grid-template-columns: 1fr 1fr !important; } }
 
 /* ── Premium global polish ─────────────────────────────────────────────────── */
 html {
