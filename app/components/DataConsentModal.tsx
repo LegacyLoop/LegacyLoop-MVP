@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 
 interface Props {
   show: boolean;
@@ -8,6 +9,17 @@ interface Props {
 
 export default function DataConsentModal({ show }: Props) {
   const [visible, setVisible] = useState(show);
+  const modalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(modalRef, visible);
+
+  // Escape to close
+  useEffect(() => {
+    if (!visible) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setVisible(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [visible]);
+
   const [dataCollection, setDataCollection] = useState(false);
   const [aiTraining, setAiTraining] = useState(false);
   const [marketResearch, setMarketResearch] = useState(false);
@@ -122,6 +134,7 @@ export default function DataConsentModal({ show }: Props) {
 
   return (
     <div
+      ref={modalRef}
       className="glass-backdrop"
       role="dialog"
       aria-modal="true"

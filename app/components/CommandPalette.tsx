@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 
 interface Command {
   id: string;
@@ -47,6 +48,8 @@ export default function CommandPalette() {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(modalRef, open);
   const router = useRouter();
 
   const filtered = query.trim()
@@ -169,6 +172,7 @@ export default function CommandPalette() {
 
       {/* Palette */}
       <div
+        ref={modalRef}
         className="glass-modal"
         role="dialog"
         aria-modal="true"

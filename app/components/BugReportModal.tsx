@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 
 const CATEGORIES = [
   { id: "ui", label: "UI / Visual Issue", icon: "🎨" },
@@ -27,6 +28,8 @@ interface Props {
 }
 
 export default function BugReportModal({ open, onClose }: Props) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(modalRef, open);
   const [category, setCategory] = useState("");
   const [severity, setSeverity] = useState("medium");
   const [description, setDescription] = useState("");
@@ -131,6 +134,7 @@ export default function BugReportModal({ open, onClose }: Props) {
 
   return (
     <div
+      ref={modalRef}
       id="bug-report-modal-overlay"
       className="glass-backdrop"
       role="dialog"

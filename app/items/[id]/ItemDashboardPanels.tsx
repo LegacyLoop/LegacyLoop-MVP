@@ -8704,32 +8704,27 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
         const confSub = confPct >= 80 ? "High" : confPct >= 60 ? "Medium" : confPct > 0 ? "Low" : "";
         return (
           <div style={{ padding: "8px 12px 10px", display: "flex", flexDirection: "column", gap: "6px", width: "100%", maxWidth: "100%", overflow: "hidden", boxSizing: "border-box" }}>
-            {/* Row 1 — Lifecycle Bar */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "24px" }}>
+            {/* Row 1 — Pipeline Bar with Labels */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", width: "100%", height: "52px", padding: "4px 0" }}>
               {STAGES.map((s, i) => {
                 const isCurrent = i === stageIdx;
                 const isPast = i < stageIdx;
                 return (
-                  <div key={s.key} style={{ display: "flex", alignItems: "center", flex: 1, position: "relative" }}>
-                    <div style={{
-                      width: isCurrent ? 8 : isPast ? 8 : 6, height: isCurrent ? 8 : isPast ? 8 : 6,
-                      borderRadius: "50%", flexShrink: 0, position: "relative", zIndex: 1,
-                      background: isPast ? "var(--accent, #00bcd4)" : isCurrent ? "var(--accent, #00bcd4)" : "rgba(255,255,255,0.2)",
-                      boxShadow: isCurrent ? "0 0 0 3px rgba(0,188,212,0.2), 0 0 8px rgba(0,188,212,0.4)" : "none",
-                    }} />
-                    {i < STAGES.length - 1 && (
-                      <div style={{ flex: 1, height: 2, marginLeft: 1, marginRight: 1,
-                        background: isPast ? "var(--accent, #00bcd4)" : "rgba(255,255,255,0.12)",
-                        borderStyle: isPast ? "solid" : "none",
-                        backgroundImage: !isPast ? "repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0, rgba(255,255,255,0.12) 3px, transparent 3px, transparent 6px)" : "none",
-                        backgroundSize: "6px 2px",
-                      }} />
-                    )}
+                  <div key={s.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, position: "relative" }}>
+                    <div style={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "center", height: "20px" }}>
+                      {i > 0 && (
+                        <div style={{ flex: 1, height: 2, background: isPast ? "var(--accent, #00bcd4)" : "transparent", backgroundImage: !isPast ? "repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0, rgba(255,255,255,0.15) 4px, transparent 4px, transparent 8px)" : "none", backgroundSize: "8px 2px" }} />
+                      )}
+                      <div style={{ width: isCurrent ? 10 : 8, height: isCurrent ? 10 : 8, borderRadius: "50%", flexShrink: 0, background: isPast || isCurrent ? "var(--accent, #00bcd4)" : "rgba(255,255,255,0.2)", boxShadow: isCurrent ? "0 0 0 4px rgba(0,188,212,0.15), 0 0 12px rgba(0,188,212,0.4)" : "none", transition: "all 0.3s ease" }} />
+                      {i < STAGES.length - 1 && (
+                        <div style={{ flex: 1, height: 2, background: isPast ? "var(--accent, #00bcd4)" : "transparent", backgroundImage: !isPast ? "repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0, rgba(255,255,255,0.15) 4px, transparent 4px, transparent 8px)" : "none", backgroundSize: "8px 2px" }} />
+                      )}
+                    </div>
+                    <div style={{ fontSize: "8px", fontFamily: "var(--font-data)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginTop: "4px", color: isCurrent ? "var(--accent, #00bcd4)" : "var(--text-muted)", fontWeight: isCurrent ? 700 : 400, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", textAlign: "center" as const }}>{s.label}</div>
                   </div>
                 );
               })}
             </div>
-            <div style={{ textAlign: "center", fontSize: "10px", fontFamily: "var(--font-data)", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent, #00bcd4)", fontWeight: 700 }}>{STAGES[stageIdx >= 0 ? stageIdx : 0]?.label}</div>
 
             {/* Row 2 — 4 Metric Cards (single glass surface) */}
             <div className="hud-metric-grid" style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>

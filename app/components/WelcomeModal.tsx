@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useFocusTrap } from "@/lib/hooks/useFocusTrap";
 
 interface WelcomeUser {
   firstName: string;
@@ -20,6 +21,8 @@ interface Props {
  */
 export default function WelcomeModal({ user, onClose }: Props) {
   const [closing, setClosing] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(modalRef, true);
 
   const emoji =
     user.sellerType === "estate" ? "🏛️"
@@ -55,6 +58,7 @@ export default function WelcomeModal({ user, onClose }: Props) {
 
   return (
     <div
+      ref={modalRef}
       className="glass-backdrop"
       role="dialog"
       aria-modal="true"
