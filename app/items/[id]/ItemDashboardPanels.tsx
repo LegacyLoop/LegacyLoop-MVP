@@ -180,10 +180,10 @@ function CollapsedNoDataHUD({ title, accentColor, stats, description, buttons }:
   buttons: React.ReactNode;
 }) {
   const accent = accentColor || "#00bcd4";
-  const accentBg = `${accent}0a`; // ~4% opacity
-  const accentBorder = `${accent}1a`; // ~10% opacity
+  const accentBg = "var(--badge-bg)";
+  const accentBorder = "var(--badge-border)";
   const accentBorderBtn = `${accent}40`; // ~25% opacity
-  const gradientBg = `linear-gradient(135deg, ${accent}08, transparent)`;
+  const gradientBg = "var(--ghost-bg)";
 
   return (
     <div style={{
@@ -192,7 +192,7 @@ function CollapsedNoDataHUD({ title, accentColor, stats, description, buttons }:
     }}>
       <div style={{
         fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase" as const,
-        letterSpacing: "0.08em", color: "rgba(148,163,184,0.8)", textAlign: "center" as const,
+        letterSpacing: "0.08em", color: "var(--text-muted)", textAlign: "center" as const,
       }}>
         {title}
       </div>
@@ -208,7 +208,7 @@ function CollapsedNoDataHUD({ title, accentColor, stats, description, buttons }:
           }}>
             <div style={{
               fontSize: "0.48rem", fontWeight: 700, textTransform: "uppercase" as const,
-              letterSpacing: "0.05em", color: "rgba(148,163,184,0.7)", marginBottom: "1px",
+              letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: "1px",
             }}>
               {s.label}
             </div>
@@ -245,12 +245,12 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
   buttons?: React.ReactNode;
 }) {
   // ═══ HUD Design Tokens ═══
-  const hL: React.CSSProperties = { fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(148,163,184,0.8)", textAlign: "center" };
+  const hL: React.CSSProperties = { fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", textAlign: "center" };
   const hH: React.CSSProperties = { fontSize: "1.15rem", fontWeight: 800, letterSpacing: "-0.02em", textAlign: "center" };
-  const hS: React.CSSProperties = { padding: "0.3rem 0.5rem", borderRadius: "8px", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.1)", textAlign: "center", minWidth: "48px", flex: "1 1 auto", maxWidth: "120px", overflow: "hidden" };
-  const hSL: React.CSSProperties = { fontSize: "0.48rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(148,163,184,0.7)", marginBottom: "1px" };
+  const hS: React.CSSProperties = { padding: "0.3rem 0.5rem", borderRadius: "8px", background: "var(--badge-bg)", border: "1px solid var(--badge-border)", textAlign: "center", minWidth: "48px", flex: "1 1 auto", maxWidth: "120px", overflow: "hidden" };
+  const hSL: React.CSSProperties = { fontSize: "0.48rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", marginBottom: "1px" };
   const hSV: React.CSSProperties = { fontSize: "0.68rem", fontWeight: 700, lineHeight: 1.2, wordBreak: "break-word" as const, overflow: "hidden", textOverflow: "ellipsis" };
-  const hM: React.CSSProperties = { fontSize: "0.58rem", padding: "3px 10px", borderRadius: "9999px", background: "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.06))", border: "1px solid rgba(139,92,246,0.2)", color: "#a78bfa", fontWeight: 700, letterSpacing: "0.02em", display: "inline-block" };
+  const hM: React.CSSProperties = { fontSize: "0.58rem", padding: "3px 10px", borderRadius: "9999px", background: "var(--purple-bg)", border: "1px solid var(--purple-border)", color: "#a78bfa", fontWeight: 700, letterSpacing: "0.02em", display: "inline-block" };
   const hR: React.CSSProperties = { display: "flex", gap: "0.35rem", alignItems: "stretch", justifyContent: "center", flexWrap: "wrap" };
   const hWrap: React.CSSProperties = { width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" };
 
@@ -8713,28 +8713,28 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
                   <div key={s.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, position: "relative" }}>
                     <div style={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "center", height: "20px" }}>
                       {i > 0 && (
-                        <div style={{ flex: 1, height: 2, background: isPast ? "var(--accent, #00bcd4)" : "transparent", backgroundImage: !isPast ? "repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0, rgba(255,255,255,0.15) 4px, transparent 4px, transparent 8px)" : "none", backgroundSize: "8px 2px" }} />
+                        <div style={{ flex: 1, height: 2, background: isPast ? "var(--accent, #00bcd4)" : "var(--border-default)", opacity: isPast ? 1 : 0.5 }} />
                       )}
-                      <div style={{ width: isCurrent ? 10 : 8, height: isCurrent ? 10 : 8, borderRadius: "50%", flexShrink: 0, background: isPast || isCurrent ? "var(--accent, #00bcd4)" : "rgba(255,255,255,0.2)", boxShadow: isCurrent ? "0 0 0 4px rgba(0,188,212,0.15), 0 0 12px rgba(0,188,212,0.4)" : "none", transition: "all 0.3s ease" }} />
+                      <div style={{ width: isCurrent ? 10 : 8, height: isCurrent ? 10 : 8, borderRadius: "50%", flexShrink: 0, background: isPast || isCurrent ? "var(--accent, #00bcd4)" : "var(--text-muted)", opacity: isPast || isCurrent ? 1 : 0.4, boxShadow: isCurrent ? "0 0 0 4px rgba(0,188,212,0.15), 0 0 12px rgba(0,188,212,0.4)" : "none", transition: "all 0.3s ease" }} />
                       {i < STAGES.length - 1 && (
-                        <div style={{ flex: 1, height: 2, background: isPast ? "var(--accent, #00bcd4)" : "transparent", backgroundImage: !isPast ? "repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0, rgba(255,255,255,0.15) 4px, transparent 4px, transparent 8px)" : "none", backgroundSize: "8px 2px" }} />
+                        <div style={{ flex: 1, height: 2, background: isPast ? "var(--accent, #00bcd4)" : "var(--border-default)", opacity: isPast ? 1 : 0.5 }} />
                       )}
                     </div>
-                    <div style={{ fontSize: "8px", fontFamily: "var(--font-data)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginTop: "4px", color: isCurrent ? "var(--accent, #00bcd4)" : isPast ? "var(--text-secondary)" : "rgba(139,148,158,0.6)", fontWeight: isCurrent ? 700 : isPast ? 500 : 400, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", textAlign: "center" as const }}>{s.label}</div>
+                    <div style={{ fontSize: "8px", fontFamily: "var(--font-data)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginTop: "4px", color: isCurrent ? "var(--accent, #00bcd4)" : isPast ? "var(--text-secondary)" : "var(--text-muted)", fontWeight: isCurrent ? 700 : isPast ? 500 : 400, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", textAlign: "center" as const }}>{s.label}</div>
                   </div>
                 );
               })}
             </div>
 
             {/* Row 2 — 4 Metric Cards (single glass surface) */}
-            <div className="hud-metric-grid" style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+            <div className="hud-metric-grid" style={{ background: "var(--ghost-bg)", borderRadius: 8, border: "1px solid var(--border-default)", overflow: "hidden" }}>
               {[
                 { lbl: "ASKING", val: priceStr, color: "var(--accent, #00bcd4)", sub: priceSub },
                 { lbl: "AI CONF", val: confPct > 0 ? `${confPct}%` : "\u2014", color: confColor, sub: confSub },
                 { lbl: "ACTIVITY", val: String(views), color: views > 0 ? "var(--accent, #00bcd4)" : "var(--text-muted)", sub: views > 0 ? `${views} views` : "No activity" },
                 { lbl: "READY", val: `${readyScore}/5`, color: readyColor, sub: readySub },
               ].map((m, i) => (
-                <div key={m.lbl} style={{ padding: "10px 8px", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.06)" : "none", overflow: "hidden", boxSizing: "border-box" }}>
+                <div key={m.lbl} style={{ padding: "10px 8px", borderRight: i < 3 ? "1px solid var(--border-default)" : "none", overflow: "hidden", boxSizing: "border-box" }}>
                   <div style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600 }}>{m.lbl}</div>
                   <div style={{ fontSize: "17px", fontWeight: 700, fontFamily: "var(--font-data)", color: m.color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.val}</div>
                   <div style={{ fontSize: "9px", color: "var(--text-muted)" }}>{m.sub}</div>
