@@ -262,7 +262,7 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
         <div style={hR}>
           <div style={hS}><div style={hSL}>Condition</div><div style={{ ...hSV, color: (data?.conditionScore ?? 5) >= 7 ? "#22c55e" : (data?.conditionScore ?? 5) >= 4 ? "#f59e0b" : "#ef4444" }}>{data?.conditionScore ?? "?"}/10</div></div>
           <div style={hS}><div style={hSL}>Category</div><div style={{ ...hSV, color: "var(--text-secondary)", fontSize: "0.65rem" }}>{data?.category || "—"}</div></div>
-          {data?.confidence && <div style={hS}><div style={hSL}>Confidence</div><div style={{ ...hSV, color: "#00bcd4" }}>{Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%</div></div>}
+          {data?.confidence != null && typeof data.confidence !== "object" && <div style={hS}><div style={hSL}>Confidence</div><div style={{ ...hSV, color: "#00bcd4" }}>{Math.round(Number(data.confidence) > 1 ? Number(data.confidence) : Number(data.confidence) * 100)}%</div></div>}
         </div>
         {megaData && <span style={hM}>⚡ MegaBot: {megaData.agreementScore ?? "?"}% agreement</span>}
       </div>
@@ -272,7 +272,7 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
         <div style={hL}>Estimated Value</div>
         <div style={{ ...hH, color: "#00bcd4", textShadow: "0 0 20px rgba(0,188,212,0.3)" }}>{data?.low != null && data?.high != null ? `$${Math.round(data.low)} — $${Math.round(data.high)}` : "—"}</div>
         <div style={hR}>
-          <div style={hS}><div style={hSL}>Confidence</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data?.confidence != null ? `${Math.round(data.confidence > 1 ? data.confidence : data.confidence * 100)}%` : "?"}</div></div>
+          <div style={hS}><div style={hSL}>Confidence</div><div style={{ ...hSV, color: "var(--text-secondary)" }}>{data?.confidence != null && typeof data.confidence !== "object" ? `${Math.round(Number(data.confidence) > 1 ? Number(data.confidence) : Number(data.confidence) * 100)}%` : "?"}</div></div>
           {data?.demand && <div style={hS}><div style={hSL}>Demand</div><div style={{ ...hSV, color: data.demand === "High" || data.demand === "Strong" || data.demand === "high" ? "#22c55e" : data.demand === "Low" || data.demand === "low" ? "#ef4444" : "#f59e0b" }}>{data.demand}</div></div>}
           {data?.netPayout && <div style={hS}><div style={hSL}>You Keep</div><div style={{ ...hSV, color: "#22c55e" }}>${Math.round(data.netPayout)}</div></div>}
           {data?.garageSale && <div style={hS}><div style={hSL}>Garage Sale</div><div style={{ ...hSV, color: "var(--accent)" }}>{data.garageSale}</div></div>}
@@ -382,7 +382,7 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "4px" }}>
             <span style={{ fontSize: "1rem" }}>{data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "✅" : data.verdict === "Uncertain" ? "⚠️" : "❌"}</span>
             <div style={{ fontSize: "0.82rem", fontWeight: 800, color: data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "#16a34a" : data.verdict === "Uncertain" ? "#d97706" : "#dc2626" }}>{data.verdict}</div>
-            {data?.confidence && <span style={{ fontSize: "0.58rem", color: "var(--text-muted)", fontWeight: 600 }}>{data.confidence}%</span>}
+            {data?.confidence != null && typeof data.confidence !== "object" && <span style={{ fontSize: "0.58rem", color: "var(--text-muted)", fontWeight: 600 }}>{Math.round(Number(data.confidence))}%</span>}
           </div>
         ) : <div style={{ ...hL, marginBottom: "4px" }}>Antique Detected</div>}
         {(data?.fmvLow != null || data?.auctionLow != null) && (
@@ -1436,7 +1436,7 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
     if (ah.verdict) parts.push(String(ah.verdict));
     if (ah.era) parts.push(String(ah.era));
     if (ah.auctionEst != null) parts.push(_fp(ah.auctionEst));
-    if (ah.confidence) parts.push(`${ah.confidence}%`);
+    if (ah.confidence != null && typeof ah.confidence !== "object") parts.push(`${Math.round(Number(ah.confidence))}%`);
     return parts.join(" · ") || "antique assessed";
   }
   function buildAntiqueSummary(): string {
@@ -1506,7 +1506,14 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
       priceLow: pv.revised_low || pk("estimated_value_low", "price_low"),
       priceMid: pv.revised_mid || pk("estimated_value_mid", "price_mid"),
       priceHigh: pv.revised_high || pk("estimated_value_high", "price_high"),
-      confidence: pk("pricing_confidence", "confidence", "overall_confidence") || (obj(d.confidence) ? (d.confidence as any).overall_confidence : null),
+      confidence: (() => {
+        const raw = pk("pricing_confidence", "overall_confidence") || (obj(d.confidence) ? (d.confidence as any).overall_confidence : d.confidence);
+        if (raw == null) return null;
+        if (typeof raw === "number") return raw;
+        if (typeof raw === "object" && raw.overall_confidence != null) return raw.overall_confidence;
+        const parsed = Number(raw);
+        return isFinite(parsed) ? parsed : null;
+      })(),
       rationale: pv.revision_reasoning || pk("pricing_rationale", "rationale"),
       agreesWithEstimate: pv.agrees_with_initial_estimate ?? pv.agrees_with_estimate,
       comparables: getComparables(d),
@@ -2039,7 +2046,7 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
                           <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>Authentication</div>
                           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.15rem 1rem" }}>
                             {ah.verdict && <GridRow label="VERDICT" value={String(ah.verdict)} bold />}
-                            {ah.confidence != null && <GridRow label="CONFIDENCE" value={`${ah.confidence}%`} />}
+                            {ah.confidence != null && typeof ah.confidence !== "object" && <GridRow label="CONFIDENCE" value={`${Math.round(Number(ah.confidence))}%`} />}
                             {ah.era && <GridRow label="ERA" value={String(ah.era)} />}
                             {ah.maker && <GridRow label="MAKER" value={String(ah.maker)} />}
                           </div>
@@ -2445,7 +2452,7 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
                     <div style={{ fontSize: "0.65rem", fontWeight: 700, color: meta2?.color || "var(--text-secondary)", marginBottom: "0.15rem" }}>{meta2?.icon} {meta2?.label}</div>
                     <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.62rem", color: "var(--text-secondary)" }}>
                       {ph.priceLow != null && ph.priceHigh != null ? <span>Range: <strong style={{ color: "var(--accent)" }}>${Math.round(Number(ph.priceLow))}–${Math.round(Number(ph.priceHigh))}</strong></span> : <span>—</span>}
-                      {ph.confidence ? <span>{ph.confidence}% confident</span> : null}
+                      {ph.confidence != null && typeof ph.confidence !== "object" ? <span>{Math.round(Number(ph.confidence))}% confident</span> : null}
                       {ph.bestPlatform ? <span>Best: {ph.bestPlatform}</span> : null}
                       {ph.demandLevel ? <span style={{ color: /high|hot|strong/i.test(ph.demandLevel) ? "#4caf50" : /low|cold|weak/i.test(ph.demandLevel) ? "#ef4444" : "#fbbf24" }}>{ph.demandLevel}</span> : null}
                     </div>
@@ -2579,7 +2586,7 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
                       {ah.verdict && <span style={{ color: /authentic|confirmed|genuine/i.test(ah.verdict) ? "#4caf50" : /not|unlikely|modern/i.test(ah.verdict) ? "#ef4444" : "var(--text-secondary)" }}>{ah.verdict}</span>}
                       {ah.auctionEst != null && <span>Auction: <strong style={{ color: "var(--accent)" }}>{_fp(ah.auctionEst)}</strong></span>}
                       {ah.fairMarket != null && <span>FMV: {_fp(ah.fairMarket)}</span>}
-                      {ah.confidence && <span style={{ color: Number(ah.confidence) >= 80 ? "#4caf50" : Number(ah.confidence) >= 60 ? "#fbbf24" : "#ef4444" }}>{ah.confidence}%</span>}
+                      {ah.confidence != null && typeof ah.confidence !== "object" ? <span style={{ color: Number(ah.confidence) >= 80 ? "#4caf50" : Number(ah.confidence) >= 60 ? "#fbbf24" : "#ef4444" }}>{Math.round(Number(ah.confidence))}%</span> : null}
                     </div>
                   </div>
                 );
