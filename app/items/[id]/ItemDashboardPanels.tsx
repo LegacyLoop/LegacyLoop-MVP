@@ -8720,7 +8720,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
                         <div style={{ flex: 1, height: 2, background: isPast ? "var(--accent, #00bcd4)" : "transparent", backgroundImage: !isPast ? "repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0, rgba(255,255,255,0.15) 4px, transparent 4px, transparent 8px)" : "none", backgroundSize: "8px 2px" }} />
                       )}
                     </div>
-                    <div style={{ fontSize: "8px", fontFamily: "var(--font-data)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginTop: "4px", color: isCurrent ? "var(--accent, #00bcd4)" : "var(--text-muted)", fontWeight: isCurrent ? 700 : 400, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", textAlign: "center" as const }}>{s.label}</div>
+                    <div style={{ fontSize: "8px", fontFamily: "var(--font-data)", textTransform: "uppercase" as const, letterSpacing: "0.06em", marginTop: "4px", color: isCurrent ? "var(--accent, #00bcd4)" : isPast ? "var(--text-secondary)" : "rgba(139,148,158,0.6)", fontWeight: isCurrent ? 700 : isPast ? 500 : 400, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", textAlign: "center" as const }}>{s.label}</div>
                   </div>
                 );
               })}

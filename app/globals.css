@@ -372,6 +372,11 @@ html.light {
   50%      { transform: translateY(-20px); }
 }
 
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
    Components
 ───────────────────────────────────────────────────────────────────────────── */
@@ -564,7 +569,8 @@ html.light {
   }
 
   .btn-primary:active:not(:disabled) {
-    transform: translateY(0);
+    transform: scale(0.97);
+    transition-duration: 0.1s;
   }
 
   /* ── Ghost button ── */
@@ -588,6 +594,23 @@ html.light {
   .btn-ghost:focus {
     box-shadow: 0 0 0 2px var(--accent-dim);
   }
+
+  /* ── Universal press effect — use on non-primary interactive elements ── */
+  .btn-press {
+    transition: transform 0.15s ease;
+  }
+  .btn-press:active {
+    transform: scale(0.97);
+    transition-duration: 0.1s;
+  }
+
+  /* ── Page entrance — subtle fade-up for content areas ── */
+  .page-enter {
+    animation: fadeUp 0.4s cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+  .page-enter-stagger-1 { animation-delay: 0.05s; }
+  .page-enter-stagger-2 { animation-delay: 0.1s; }
+  .page-enter-stagger-3 { animation-delay: 0.15s; }
 
   /* ── Skeleton loader (shimmer gradient — Stripe-quality) ── */
   .skeleton {
@@ -986,11 +1009,14 @@ html.light .card:hover {
     transform 0.15s ease;
 }
 
-.glass-card:hover {
-  border-color: rgba(0, 188, 212, 0.18);
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    0 8px 32px rgba(0, 188, 212, 0.08);
+@media (hover: hover) {
+  .glass-card:hover {
+    border-color: rgba(0, 188, 212, 0.18);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      0 8px 32px rgba(0, 188, 212, 0.08);
+    transform: translateY(-2px);
+  }
 }
 
 .glass-card:active {
@@ -1123,11 +1149,14 @@ html.light .glass-modal {
     box-shadow 0.2s ease,
     transform 0.15s ease;
 }
-.glass-card-flat:hover {
-  border-color: rgba(0, 188, 212, 0.18);
-  box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
-    0 8px 32px rgba(0, 188, 212, 0.08);
+@media (hover: hover) {
+  .glass-card-flat:hover {
+    border-color: rgba(0, 188, 212, 0.18);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      0 8px 32px rgba(0, 188, 212, 0.08);
+    transform: translateY(-2px);
+  }
 }
 .glass-card-flat:active {
   transform: scale(0.995);
@@ -1195,5 +1224,20 @@ html.light .glass-nav-scrolled {
     border: 1px solid CanvasText;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
+  }
+}
+
+/* ── Reduced motion — new animation utilities ── */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary:active:not(:disabled),
+  .btn-press:active {
+    transform: none !important;
+  }
+  .page-enter,
+  .page-enter-stagger-1,
+  .page-enter-stagger-2,
+  .page-enter-stagger-3 {
+    animation: none !important;
+    opacity: 1 !important;
   }
 }
