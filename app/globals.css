@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
 /* ── Global overflow lock — prevents horizontal scroll on ALL devices ────── */
+/* !important prevents any inline style or class from overriding this rule. */
+/* This is the nuclear option — the app must feel native on mobile.         */
 html, body {
-  overflow-x: hidden;
+  overflow-x: hidden !important;
   max-width: 100vw;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 /* ── Premium global polish ─────────────────────────────────────────────────── */

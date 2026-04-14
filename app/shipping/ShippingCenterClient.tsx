@@ -2560,6 +2560,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                     <button onClick={() => { setSelectedCarrierMap((prev) => ({ ...prev, [item.id]: null })); }} style={{ fontSize: "0.58rem", color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Change carrier</button>
                   </div>
                 )}
+                <div className="ship-table-scroll-wrapper">
                 <div className="ship-table-5col" style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 1fr 1fr", gap: "0.3rem", padding: "0.3rem 0.6rem", marginBottom: "0.2rem" }}>
                   {["Carrier", "Service", "Transit", "Cost", "Net Profit"].map((h) => (
                     <div key={h} style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)" }}>{h}</div>
@@ -2621,6 +2622,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                     );
                   })}
                 </div>
+                </div>{/* close ship-table-scroll-wrapper */}
                 {/* Best profit summary */}
                 {carriers.length > 0 && (() => {
                   const val = item.listingPrice || item.soldPrice || item.valuationMid || 0;
@@ -3239,7 +3241,7 @@ function ReadyToShipTab({
                         </div>
                         {/* Carrier selection */}
                         {carriers.length > 0 ? (
-                          <div style={{ marginBottom: "0.75rem" }}>
+                          <div style={{ marginBottom: "0.75rem" }} className="ship-table-scroll-wrapper">
                             <div className="ship-table-4col" style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 1fr", gap: "0.3rem", padding: "0.3rem 0.65rem", marginBottom: "0.2rem" }}>
                               {["Carrier", "Service", "Transit", "Cost"].map((h) => (
                                 <div key={h} style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)" }}>{h}</div>
@@ -6620,8 +6622,9 @@ export default function ShippingCenterClient() {
           .ship-5col-grid { grid-template-columns: 1fr 1fr !important; gap: 0.5rem !important; }
           .ship-4col-grid { grid-template-columns: 1fr 1fr !important; gap: 0.5rem !important; }
           .ship-3col-grid { grid-template-columns: 1fr 1fr !important; gap: 0.5rem !important; }
-          .ship-table-5col { overflow-x: auto !important; min-width: 500px !important; }
-          .ship-table-4col { overflow-x: auto !important; min-width: 400px !important; }
+          .ship-table-5col { min-width: 500px; }
+          .ship-table-4col { min-width: 400px; }
+          .ship-table-scroll-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
         }
 
         @media (max-width: 480px) {
