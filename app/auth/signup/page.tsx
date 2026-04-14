@@ -210,7 +210,7 @@ export default function SignupPage() {
           style={{
             fontSize: "1.5rem",
             fontWeight: 800,
-            backgroundImage: "linear-gradient(135deg, #f1f5f9, #00bcd4)",
+            backgroundImage: "linear-gradient(135deg, #ffffff, #22D3EE)",
             backgroundClip: "text",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
@@ -221,7 +221,7 @@ export default function SignupPage() {
         >
           Create your account
         </h1>
-        <p style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: "0.4rem" }}>
+        <p style={{ fontSize: "0.85rem", color: "#a8b5c3", marginTop: "0.4rem" }}>
           Start your first item in minutes.
         </p>
       </div>
@@ -247,11 +247,11 @@ export default function SignupPage() {
               width: "100%", boxSizing: "border-box",
               padding: "14px 16px", fontSize: "0.95rem",
               background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
-              border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+              border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12,
               outline: "none", transition: "all 0.2s ease", fontFamily: "inherit",
             }}
             onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.boxShadow = "none"; }}
           />
         </div>
 
@@ -274,11 +274,11 @@ export default function SignupPage() {
                 width: "100%", boxSizing: "border-box",
                 padding: "14px 16px", paddingRight: "2.75rem", fontSize: "0.95rem",
                 background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
-                border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12,
                 outline: "none", transition: "all 0.2s ease", fontFamily: "inherit",
               }}
               onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.boxShadow = "none"; }}
             />
             <button
               type="button"
@@ -368,11 +368,11 @@ export default function SignupPage() {
                 width: "100%", boxSizing: "border-box",
                 padding: "14px 16px", paddingRight: "2.75rem", fontSize: "0.95rem",
                 background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
-                border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12,
                 outline: "none", transition: "all 0.2s ease", fontFamily: "inherit",
               }}
               onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.boxShadow = "none"; }}
             />
             <button
               type="button"
@@ -407,7 +407,7 @@ export default function SignupPage() {
               borderRadius: "0.625rem",
               padding: "0.625rem 0.875rem",
               fontSize: "0.82rem",
-              color: "#fca5a5",
+              color: "#fecaca",
             }}
           >
             {error}

@@ -284,7 +284,7 @@ function LoginForm() {
           style={{
             fontSize: "1.5rem",
             fontWeight: 800,
-            backgroundImage: "linear-gradient(135deg, #f1f5f9, #00bcd4)",
+            backgroundImage: "linear-gradient(135deg, #ffffff, #22D3EE)",
             backgroundClip: "text",
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
@@ -298,7 +298,7 @@ function LoginForm() {
         <p
           style={{
             fontSize: "0.85rem",
-            color: "#94a3b8",
+            color: "#a8b5c3",
             marginTop: "0.4rem",
             margin: "0.4rem 0 0 0",
           }}
@@ -312,13 +312,13 @@ function LoginForm() {
         <div
           role="alert"
           style={{
-            background: "rgba(239,68,68,0.08)",
+            background: "rgba(239,68,68,0.12)",
             border: "1px solid rgba(239,68,68,0.15)",
             borderLeft: "3px solid #ef4444",
             borderRadius: 12,
             padding: "12px 16px",
             fontSize: "0.82rem",
-            color: "#fca5a5",
+            color: "#fecaca",
             lineHeight: 1.5,
             display: "flex",
             alignItems: "center",
@@ -350,12 +350,12 @@ function LoginForm() {
               width: "100%", boxSizing: "border-box",
               padding: "14px 16px", fontSize: "0.95rem",
               background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
-              border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+              border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12,
               outline: "none", transition: "all 0.2s ease",
               fontFamily: "inherit",
             }}
             onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
-            onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
+            onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.boxShadow = "none"; }}
           />
         </div>
 
@@ -377,12 +377,12 @@ function LoginForm() {
                 width: "100%", boxSizing: "border-box",
                 padding: "14px 16px", paddingRight: "3.5rem", fontSize: "0.95rem",
                 background: "rgba(255,255,255,0.04)", color: "#e2e8f0",
-                border: "1px solid rgba(255,255,255,0.08)", borderRadius: 12,
+                border: "1px solid rgba(255,255,255,0.15)", borderRadius: 12,
                 outline: "none", transition: "all 0.2s ease",
                 fontFamily: "inherit",
               }}
               onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,188,212,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(0,188,212,0.1)"; }}
-              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; e.currentTarget.style.boxShadow = "none"; }}
+              onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; e.currentTarget.style.boxShadow = "none"; }}
             />
             <button
               type="button"
@@ -446,13 +446,13 @@ function LoginForm() {
           <div
             role="alert"
             style={{
-              background: "rgba(239,68,68,0.08)",
+              background: "rgba(239,68,68,0.12)",
               border: "1px solid rgba(239,68,68,0.15)",
               borderLeft: "3px solid #ef4444",
               borderRadius: 12,
               padding: "12px 16px",
               fontSize: "0.82rem",
-              color: "#fca5a5",
+              color: "#fecaca",
               lineHeight: 1.5,
               display: "flex",
               alignItems: "center",
@@ -537,11 +537,11 @@ function LoginForm() {
           margin: "1.5rem 0 1.25rem",
         }}
       >
-        <div style={{ flex: 1, height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)" }} />
+        <div style={{ flex: 1, height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)" }} />
         <span
           style={{
             fontSize: "0.65rem",
-            color: "#475569",
+            color: "#64748b",
             letterSpacing: "0.12em",
             textTransform: "uppercase",
             whiteSpace: "nowrap",
@@ -550,7 +550,7 @@ function LoginForm() {
         >
           or continue with
         </span>
-        <div style={{ flex: 1, height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)" }} />
+        <div style={{ flex: 1, height: "1px", background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)" }} />
       </div>
 
       {/* ────── Alternate sign-in buttons ────── */}
@@ -567,23 +567,23 @@ function LoginForm() {
             width: "100%",
             borderRadius: 12,
             border: "1px solid rgba(255,255,255,0.1)",
-            background: "rgba(255,255,255,0.95)",
-            color: "#1f2937",
+            background: "rgba(255,255,255,0.08)",
+            color: "#e2e8f0",
             fontSize: "0.85rem",
             fontWeight: 600,
             textDecoration: "none",
             cursor: "pointer",
             transition: "all 0.2s ease",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+            boxShadow: "none",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "#fff";
-            (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
             (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.95)";
-            (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "none";
             (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
           }}
         >
@@ -603,9 +603,9 @@ function LoginForm() {
             height: 48,
             width: "100%",
             borderRadius: 12,
-            border: activePanel === "phone" ? "1px solid rgba(0,188,212,0.4)" : "1px solid rgba(255,255,255,0.08)",
+            border: activePanel === "phone" ? "1px solid rgba(0,188,212,0.4)" : "1px solid rgba(255,255,255,0.15)",
             background: activePanel === "phone" ? "rgba(0,188,212,0.06)" : "rgba(255,255,255,0.04)",
-            color: activePanel === "phone" ? "#00bcd4" : "#94a3b8",
+            color: activePanel === "phone" ? "#00bcd4" : "#a8b5c3",
             fontSize: "0.85rem",
             fontWeight: 500,
             cursor: "pointer",
@@ -620,9 +620,9 @@ function LoginForm() {
           }}
           onMouseLeave={(e) => {
             if (activePanel !== "phone") {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.15)";
               (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
-              (e.currentTarget as HTMLElement).style.color = "#94a3b8";
+              (e.currentTarget as HTMLElement).style.color = "#a8b5c3";
             }
           }}
         >
@@ -642,9 +642,9 @@ function LoginForm() {
             height: 48,
             width: "100%",
             borderRadius: 12,
-            border: activePanel === "magic" ? "1px solid rgba(0,188,212,0.4)" : "1px solid rgba(255,255,255,0.08)",
+            border: activePanel === "magic" ? "1px solid rgba(0,188,212,0.4)" : "1px solid rgba(255,255,255,0.15)",
             background: activePanel === "magic" ? "rgba(0,188,212,0.06)" : "rgba(255,255,255,0.04)",
-            color: activePanel === "magic" ? "#00bcd4" : "#94a3b8",
+            color: activePanel === "magic" ? "#00bcd4" : "#a8b5c3",
             fontSize: "0.85rem",
             fontWeight: 500,
             cursor: "pointer",
@@ -659,9 +659,9 @@ function LoginForm() {
           }}
           onMouseLeave={(e) => {
             if (activePanel !== "magic") {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.15)";
               (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
-              (e.currentTarget as HTMLElement).style.color = "#94a3b8";
+              (e.currentTarget as HTMLElement).style.color = "#a8b5c3";
             }
           }}
         >
@@ -722,7 +722,7 @@ function LoginForm() {
                     borderRadius: 10,
                     padding: "10px 14px",
                     fontSize: "0.78rem",
-                    color: "#fca5a5",
+                    color: "#fecaca",
                     marginBottom: "0.75rem",
                     lineHeight: 1.5,
                   }}
@@ -857,7 +857,7 @@ function LoginForm() {
                     borderRadius: 10,
                     padding: "10px 14px",
                     fontSize: "0.78rem",
-                    color: "#fca5a5",
+                    color: "#fecaca",
                     marginBottom: "0.75rem",
                     lineHeight: 1.5,
                   }}
@@ -989,7 +989,7 @@ function LoginForm() {
                     borderRadius: 10,
                     padding: "10px 14px",
                     fontSize: "0.78rem",
-                    color: "#fca5a5",
+                    color: "#fecaca",
                     marginBottom: "0.75rem",
                     lineHeight: 1.5,
                   }}
@@ -1101,7 +1101,7 @@ function LoginForm() {
                       borderRadius: 10,
                       padding: "10px 14px",
                       fontSize: "0.78rem",
-                      color: "#fca5a5",
+                      color: "#fecaca",
                       marginBottom: "0.75rem",
                       lineHeight: 1.5,
                       textAlign: "left",

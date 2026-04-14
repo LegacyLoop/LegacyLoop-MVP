@@ -105,7 +105,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           zIndex: 1,
           width: "100%",
           maxWidth: 440,
-          borderTop: "1px solid rgba(0,188,212,0.15)",
+          background: "rgba(13, 17, 23, 0.88)",
+          borderTop: "1px solid rgba(0,188,212,0.25)",
           padding: "40px",
           boxShadow:
             "0 0 40px rgba(0,188,212,0.06), 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 var(--glass-highlight)",
