@@ -204,7 +204,7 @@ function CollapsedNoDataHUD({ title, accentColor, stats, description, buttons }:
           <div key={i} style={{
             padding: "0.3rem 0.5rem", borderRadius: "8px",
             background: accentBg, border: `1px solid ${accentBorder}`,
-            textAlign: "center" as const, minWidth: "60px", flex: "1 1 auto", maxWidth: "110px",
+            textAlign: "center" as const, minWidth: "48px", flex: "1 1 auto", maxWidth: "110px", overflow: "hidden",
           }}>
             <div style={{
               fontSize: "0.48rem", fontWeight: 700, textTransform: "uppercase" as const,
@@ -247,9 +247,9 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
   // ═══ HUD Design Tokens ═══
   const hL: React.CSSProperties = { fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(148,163,184,0.8)", textAlign: "center" };
   const hH: React.CSSProperties = { fontSize: "1.15rem", fontWeight: 800, letterSpacing: "-0.02em", textAlign: "center" };
-  const hS: React.CSSProperties = { padding: "0.3rem 0.5rem", borderRadius: "8px", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.1)", textAlign: "center", minWidth: "55px", flex: "1 1 auto", maxWidth: "120px" };
+  const hS: React.CSSProperties = { padding: "0.3rem 0.5rem", borderRadius: "8px", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.1)", textAlign: "center", minWidth: "48px", flex: "1 1 auto", maxWidth: "120px", overflow: "hidden" };
   const hSL: React.CSSProperties = { fontSize: "0.48rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(148,163,184,0.7)", marginBottom: "1px" };
-  const hSV: React.CSSProperties = { fontSize: "0.68rem", fontWeight: 700, lineHeight: 1.2, wordBreak: "break-word" as const };
+  const hSV: React.CSSProperties = { fontSize: "0.68rem", fontWeight: 700, lineHeight: 1.2, wordBreak: "break-word" as const, overflow: "hidden", textOverflow: "ellipsis" };
   const hM: React.CSSProperties = { fontSize: "0.58rem", padding: "3px 10px", borderRadius: "9999px", background: "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.06))", border: "1px solid rgba(139,92,246,0.2)", color: "#a78bfa", fontWeight: 700, letterSpacing: "0.02em", display: "inline-block" };
   const hR: React.CSSProperties = { display: "flex", gap: "0.35rem", alignItems: "stretch", justifyContent: "center", flexWrap: "wrap" };
   const hWrap: React.CSSProperties = { width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" };
@@ -377,11 +377,11 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
       </div>
     ),
     antique: () => (
-      <div style={{ width: "100%" }}>
+      <div style={{ width: "100%", overflow: "hidden", maxWidth: "100%" }}>
         {data?.verdict ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "4px" }}>
-            <span style={{ fontSize: "1rem" }}>{data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "✅" : data.verdict === "Uncertain" ? "⚠️" : "❌"}</span>
-            <div style={{ fontSize: "0.82rem", fontWeight: 800, color: data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "#16a34a" : data.verdict === "Uncertain" ? "#d97706" : "#dc2626" }}>{data.verdict}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "4px", minWidth: 0, overflow: "hidden" }}>
+            <span style={{ fontSize: "1rem", flexShrink: 0 }}>{data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "✅" : data.verdict === "Uncertain" ? "⚠️" : "❌"}</span>
+            <div style={{ fontSize: "0.82rem", fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, color: data.verdict === "Authentic" || data.verdict === "Likely Authentic" ? "#16a34a" : data.verdict === "Uncertain" ? "#d97706" : "#dc2626" }}>{data.verdict}</div>
             {data?.confidence != null && typeof data.confidence !== "object" && <span style={{ fontSize: "0.58rem", color: "var(--text-muted)", fontWeight: 600 }}>{Math.round(Number(data.confidence))}%</span>}
           </div>
         ) : <div style={{ ...hL, marginBottom: "4px" }}>Antique Detected</div>}
@@ -400,9 +400,9 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
       </div>
     ),
     collectibles: () => (
-      <div style={{ width: "100%" }}>
+      <div style={{ width: "100%", overflow: "hidden", maxWidth: "100%" }}>
         <div style={{ ...hL, marginBottom: "2px" }}>Collectible</div>
-        <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#8b5cf6", marginBottom: "6px" }}>⭐ {data?.name || "Evaluation available"}</div>
+        <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#8b5cf6", marginBottom: "6px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>⭐ {data?.name || "Evaluation available"}</div>
         <div style={hR}>
           {data?.rarity && <div style={hS}><div style={hSL}>Rarity</div><div style={{ ...hSV, color: "#8b5cf6" }}>{data.rarity}</div></div>}
           {data?.value && <div style={hS}><div style={hSL}>Value</div><div style={{ ...hSV, color: "#00bcd4" }}>{data.value}</div></div>}
@@ -412,7 +412,7 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
       </div>
     ),
     video: () => (
-      <div style={{ width: "100%" }}>
+      <div style={{ width: "100%", overflow: "hidden", maxWidth: "100%" }}>
         <div style={{ ...hL, marginBottom: "2px" }}>Video Ad</div>
         <div style={{ ...hH, color: "#ef4444", textShadow: "0 0 20px rgba(239,68,68,0.2)" }}>🎬 {data?.status === "ready" ? "Video Ready" : data?.status === "generating" ? "Generating..." : "Generate Video"}</div>
         <div style={hR}>
@@ -8731,7 +8731,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
             <div style={{ textAlign: "center", fontSize: "10px", fontFamily: "var(--font-data)", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent, #00bcd4)", fontWeight: 700 }}>{STAGES[stageIdx >= 0 ? stageIdx : 0]?.label}</div>
 
             {/* Row 2 — 4 Metric Cards (single glass surface) */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+            <div className="hud-metric-grid" style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
               {[
                 { lbl: "ASKING", val: priceStr, color: "var(--accent, #00bcd4)", sub: priceSub },
                 { lbl: "AI CONF", val: confPct > 0 ? `${confPct}%` : "\u2014", color: confColor, sub: confSub },

@@ -595,8 +595,8 @@ export default function ItemIntelligenceSummary(props: Props) {
         .intel-error-retry:hover { background: rgba(239,68,68,0.18); }
         /* ═══ CHAT ═══ */
         .intel-chat-toggle {
-          display: flex; align-items: center; justify-content: center; gap: 6px;
-          width: 100%; padding: 8px 16px;
+          display: flex; align-items: center; justify-content: flex-start; gap: 6px;
+          width: 100%; padding: 8px 16px; min-height: 44px;
           background: transparent; border: none; border-top: 1px solid var(--border-default);
           cursor: pointer; transition: all 0.15s ease;
           font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
@@ -1214,13 +1214,13 @@ export default function ItemIntelligenceSummary(props: Props) {
         {/* ═══ ASK CLAUDE CHAT ═══ */}
         <button className="intel-chat-toggle" onClick={() => setChatOpen(!chatOpen)}>
           <span className="chat-icon">💬</span>
-          <span>{chatOpen ? "Close Chat" : "Ask Claude"}</span>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{chatOpen ? "Close Chat" : "Ask Claude"}</span>
           {chatMessages.length > 0 && !chatOpen && (
-            <span style={{ fontSize: "8px", padding: "1px 5px", borderRadius: "8px", background: "rgba(0,188,212,0.12)", color: "var(--accent, #00bcd4)", fontWeight: 700 }}>
+            <span style={{ fontSize: "8px", padding: "1px 5px", borderRadius: "8px", background: "rgba(0,188,212,0.12)", color: "var(--accent, #00bcd4)", fontWeight: 700, flexShrink: 0 }}>
               {chatMessages.length}
             </span>
           )}
-          <span style={{ fontSize: "8px", opacity: 0.4, marginLeft: "auto" }}>0.25 cr / question</span>
+          <span style={{ fontSize: "8px", opacity: 0.4, marginLeft: "auto", flexShrink: 0, whiteSpace: "nowrap" }}>0.25 cr / question</span>
         </button>
 
         {chatOpen && (

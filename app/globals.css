@@ -41,6 +41,10 @@ html, body {
   outline-offset: 2px;
 }
 
+/* ── HUD metric grid — responsive 4→2 col ── */
+.hud-metric-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; }
+@media (max-width: 399px) { .hud-metric-grid { grid-template-columns: 1fr 1fr; } }
+
 /* ── Premium global polish ─────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
