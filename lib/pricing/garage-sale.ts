@@ -1,14 +1,18 @@
 /**
- * Garage Sale Pricing Engine — LegacyLoop
+ * Garage Sale Pricing Engine V2 — LegacyLoop
  *
  * Post-processing calculation layer. Reads the market price from bots,
  * applies category-specific Garage Sale Discount Factors (GDF),
  * and returns three price tiers: Online / Garage Sale / Quick Sale.
  *
+ * V2 additions: auction-anchored antique pricing, demand-adjusted
+ * quick sale ratios, confidence-based range narrowing, brand premiums,
+ * market comps boost.
+ *
  * Real-world validated: $135 Ninja Air Fryer = $35-50 garage sale.
  * Antiques and collectibles are GDF-exempt — their value holds.
  *
- * CMD-GARAGE-SALE-PRICING-ENGINE
+ * CMD-GARAGE-SALE-PRICING-ENGINE + CMD-GARAGE-SALE-ENGINE-V2
  */
 
 // ── Garage Sale Discount Factors by category ────────────────────────────
@@ -60,7 +64,6 @@ const CONDITION_MODIFIER: Record<string, number> = {
   good:       0.55,
   fair:       0.35,
   poor:       0.15,
-  // Handle AI condition formats
   "like new": 0.90,
   mint:       0.90,
   great:      0.70,
@@ -69,15 +72,24 @@ const CONDITION_MODIFIER: Record<string, number> = {
   broken:     0.05,
 };
 
+// ── Premium brands — 12% uplift at garage sales ─────────────────────────
+const PREMIUM_BRANDS = new Set([
+  "apple", "dyson", "kitchenaid", "vitamix", "le creuset", "breville",
+  "patagonia", "north face", "yeti", "weber", "traeger", "snap-on",
+  "dewalt", "milwaukee", "makita", "bose", "sonos", "sony",
+  "canon", "nikon", "leica", "herman miller", "steelcase",
+  "tiffany", "cartier", "rolex", "omega", "tag heuer",
+  "fender", "gibson", "martin", "taylor", "yamaha",
+  "lego", "hot wheels", "pokemon", "nintendo",
+]);
+
 // ── Category normalization ──────────────────────────────────────────────
 export function getCategoryKey(raw: string | null | undefined): string {
   if (!raw) return "default";
   const lower = raw.toLowerCase().trim();
 
-  // Direct match
   if (GARAGE_SALE_FACTORS[lower]) return lower;
 
-  // Fuzzy match common patterns
   if (lower.includes("electron")) return "electronics";
   if (lower.includes("applian")) return "appliances";
   if (lower.includes("kitchen")) return "kitchenware";
@@ -102,12 +114,45 @@ export function getCategoryKey(raw: string | null | undefined): string {
 }
 
 function getConditionPosition(condition: string | null | undefined): number {
-  if (!condition) return 0.55; // default: good
+  if (!condition) return 0.55;
   const lower = condition.toLowerCase().trim();
   return CONDITION_MODIFIER[lower] ?? 0.55;
 }
 
-// ── Main calculation ────────────────────────────────────────────────────
+// ── Demand-adjusted quick sale ratio ────────────────────────────────────
+function getQuickSaleRatio(demandScore?: number): number {
+  if (!demandScore || demandScore <= 0) return 0.65;
+  if (demandScore >= 80) return 0.78;
+  if (demandScore >= 60) return 0.70;
+  if (demandScore >= 40) return 0.65;
+  if (demandScore >= 20) return 0.55;
+  return 0.45;
+}
+
+function getDemandLabel(demandScore?: number): string {
+  if (!demandScore || demandScore <= 0) return "Unknown";
+  if (demandScore >= 80) return "Hot";
+  if (demandScore >= 60) return "Strong";
+  if (demandScore >= 40) return "Moderate";
+  if (demandScore >= 20) return "Weak";
+  return "Cold";
+}
+
+// ── Types ───────────────────────────────────────────────────────────────
+
+export interface GarageSaleOptions {
+  isAntique?: boolean;
+  authenticityScore?: number;
+  auctionLow?: number;
+  auctionHigh?: number;
+  demandScore?: number;
+  confidenceScore?: number;
+  conditionScore?: number;
+  numOwners?: string;
+  ageYears?: number;
+  brand?: string;
+  marketCompsCount?: number;
+}
 
 export interface GarageSalePrices {
   onlinePrice: number;
@@ -122,24 +167,28 @@ export interface GarageSalePrices {
   locationTier: string;
   locationLabel: string;
   locationMultiplier: number;
+  demandLabel: string;
+  quickSaleRatio: number;
+  auctionAnchored: boolean;
+  brandPremium: boolean;
+  confidenceNarrowed: boolean;
 }
+
+// ── Main calculation ────────────────────────────────────────────────────
 
 export function calculateGarageSalePrices(
   marketPrice: number,
   category: string | null | undefined,
   condition: string | null | undefined,
   zip?: string | null,
+  options?: GarageSaleOptions,
 ): GarageSalePrices {
-  // Import location data (same system PriceBot uses)
+  // ── Location multiplier (unchanged from V1) ──
   let locationMultiplier = 1.0;
   let locationTier = "MEDIUM";
   let locationLabel = "National average";
   if (zip && zip.length >= 3) {
-    // Inline getMarketInfo logic to avoid circular import at module level
     const prefix3 = zip.slice(0, 3);
-    // We can't dynamically import here (sync function), so we use a lightweight lookup
-    // The full getMarketInfo is in market-data.ts — for garage sales we apply a
-    // dampened version of the location multiplier (garage sales are more local-price-driven)
     const HIGH: Record<string, number> = {
       "100": 1.35, "101": 1.35, "102": 1.35, "103": 1.35, "104": 1.35,
       "070": 1.35, "071": 1.35, "072": 1.35, "073": 1.35, "074": 1.35,
@@ -162,12 +211,10 @@ export function calculateGarageSalePrices(
     };
 
     if (HIGH[prefix3]) {
-      // Dampen for garage sales — high market = 10-20% more, not full 25-35%
       locationMultiplier = 1.0 + (HIGH[prefix3] - 1.0) * 0.6;
       locationTier = "HIGH";
       locationLabel = "Strong local market";
     } else if (LOW[prefix3]) {
-      // Dampen for garage sales — low market has moderate effect
       locationMultiplier = 1.0 + (LOW[prefix3] - 1.0) * 0.7;
       locationTier = "LOW";
       locationLabel = "Rural/lower-density market";
@@ -178,31 +225,96 @@ export function calculateGarageSalePrices(
   const factor = GARAGE_SALE_FACTORS[categoryKey] ?? GARAGE_SALE_FACTORS.default;
   const conditionPos = getConditionPosition(condition);
 
+  // ── V2: Auction-anchored pricing for verified antiques ──
+  let auctionAnchored = false;
+  let effectiveMarketPrice = marketPrice;
+  if (
+    options?.isAntique &&
+    (options.authenticityScore ?? 0) >= 70 &&
+    options.auctionLow != null &&
+    options.auctionHigh != null
+  ) {
+    const auctionMid = Math.round((options.auctionLow + options.auctionHigh) / 2);
+    if (auctionMid > 0) {
+      effectiveMarketPrice = auctionMid;
+      auctionAnchored = true;
+    }
+  }
+
   let gsLow: number;
   let gsHigh: number;
 
   if (factor.flat) {
-    // Flat pricing (clothing, books, media) — location has minimal effect
     gsLow = Math.round(factor.flat.min * locationMultiplier);
     gsHigh = Math.round(factor.flat.max * locationMultiplier);
-    gsLow = Math.max(gsLow, factor.flat.min); // Never go below absolute minimum
+    gsLow = Math.max(gsLow, factor.flat.min);
+  } else if (auctionAnchored) {
+    // Auction-anchored: 15-25% street discount off auction value
+    const streetDiscountLow = 0.75;
+    const streetDiscountHigh = 0.85;
+    gsLow = Math.round(effectiveMarketPrice * streetDiscountLow * locationMultiplier);
+    gsHigh = Math.round(effectiveMarketPrice * streetDiscountHigh * locationMultiplier);
   } else {
-    // Percentage-based — location multiplier adjusts the final price
     const range = factor.max - factor.min;
     const appliedFactor = factor.min + (range * conditionPos);
-    gsLow = Math.round(marketPrice * Math.max(0.05, appliedFactor - 0.05) * locationMultiplier);
-    gsHigh = Math.round(marketPrice * Math.min(1, appliedFactor + 0.05) * locationMultiplier);
+    gsLow = Math.round(effectiveMarketPrice * Math.max(0.05, appliedFactor - 0.05) * locationMultiplier);
+    gsHigh = Math.round(effectiveMarketPrice * Math.min(1, appliedFactor + 0.05) * locationMultiplier);
   }
 
-  // Apply caps
-  gsLow = Math.max(1, Math.min(gsLow, 200));
-  gsHigh = Math.max(gsLow, Math.min(gsHigh, 200));
+  // ── V2: Brand premium ──
+  let brandPremium = false;
+  if (options?.brand) {
+    const brandLower = options.brand.toLowerCase().trim();
+    if (PREMIUM_BRANDS.has(brandLower) || [...PREMIUM_BRANDS].some(b => brandLower.includes(b))) {
+      gsLow = Math.round(gsLow * 1.12);
+      gsHigh = Math.round(gsHigh * 1.12);
+      brandPremium = true;
+    }
+  }
 
-  // Quick sale = 65% of garage sale price (gone-today pricing)
-  let qsLow = Math.round(gsLow * 0.65);
-  let qsHigh = Math.round(gsHigh * 0.65);
-  qsLow = Math.max(1, Math.min(qsLow, 150));
-  qsHigh = Math.max(qsLow, Math.min(qsHigh, 150));
+  // ── V2: Market comps confidence boost ──
+  if (options?.marketCompsCount != null) {
+    if (options.marketCompsCount >= 5) {
+      // More data = tighter range
+      const mid = Math.round((gsLow + gsHigh) / 2);
+      gsLow = Math.max(1, Math.round(mid * 0.93));
+      gsHigh = Math.round(mid * 1.07);
+    } else if (options.marketCompsCount === 0) {
+      // No comps = widen range 10%
+      gsLow = Math.round(gsLow * 0.90);
+      gsHigh = Math.round(gsHigh * 1.10);
+    }
+  }
+
+  // ── V2: Confidence-based range narrowing ──
+  let confidenceNarrowed = false;
+  if (options?.confidenceScore != null) {
+    const conf = options.confidenceScore;
+    if (conf >= 0.85) {
+      const mid = Math.round((gsLow + gsHigh) / 2);
+      gsLow = Math.max(1, Math.round(mid * 0.92));
+      gsHigh = Math.round(mid * 1.08);
+      confidenceNarrowed = true;
+    } else if (conf >= 0.70) {
+      const mid = Math.round((gsLow + gsHigh) / 2);
+      gsLow = Math.max(1, Math.round(mid * 0.88));
+      gsHigh = Math.round(mid * 1.12);
+      confidenceNarrowed = true;
+    }
+  }
+
+  // ── Apply caps (V2: exempt categories get higher caps) ──
+  const gsCap = factor.exempt ? 5000 : 200;
+  gsLow = Math.max(1, Math.min(gsLow, gsCap));
+  gsHigh = Math.max(gsLow, Math.min(gsHigh, gsCap));
+
+  // ── V2: Demand-adjusted quick sale ratio ──
+  const quickSaleRatio = getQuickSaleRatio(options?.demandScore);
+  let qsLow = Math.round(gsLow * quickSaleRatio);
+  let qsHigh = Math.round(gsHigh * quickSaleRatio);
+  const qsCap = factor.exempt ? 4000 : 150;
+  qsLow = Math.max(1, Math.min(qsLow, qsCap));
+  qsHigh = Math.max(qsLow, Math.min(qsHigh, qsCap));
 
   return {
     onlinePrice: marketPrice,
@@ -217,5 +329,10 @@ export function calculateGarageSalePrices(
     locationTier,
     locationLabel,
     locationMultiplier,
+    demandLabel: getDemandLabel(options?.demandScore),
+    quickSaleRatio,
+    auctionAnchored,
+    brandPremium,
+    confidenceNarrowed,
   };
 }

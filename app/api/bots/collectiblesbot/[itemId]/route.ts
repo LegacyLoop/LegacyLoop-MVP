@@ -720,6 +720,9 @@ Be specific to the actual collectible category. All prices USD. Return ONLY JSON
       data: { itemId, eventType: "COLLECTIBLESBOT_RESULT", payload: JSON.stringify(result) },
     });
 
+    // V2: Auto-recalc garage sale prices with enriched data
+    import("@/lib/pricing/garage-sale-recalc").then(m => m.recalcGarageSalePrices(itemId)).catch(() => {});
+
     // CMD-COLLECTIBLESBOT-CORE-A: extended COLLECTIBLESBOT_RUN telemetry.
     // Parity with ANTIQUEBOT_RUN / LISTBOT_RUN / BUYERBOT_RUN /
     // RECONBOT_RUN. Logs skill pack stats + spec summary + hybrid

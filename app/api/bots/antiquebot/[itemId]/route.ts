@@ -542,6 +542,9 @@ IMPORTANT:
       },
     });
 
+    // V2: Auto-recalc garage sale prices with enriched data
+    import("@/lib/pricing/garage-sale-recalc").then(m => m.recalcGarageSalePrices(itemId)).catch(() => {});
+
     // CMD-ANTIQUEBOT-CORE-A: extended ANTIQUEBOT_RUN telemetry.
     // Adds skill pack version/count/chars (parity with LISTBOT_RUN /
     // BUYERBOT_RUN / RECONBOT_RUN), spec context summary, hybrid

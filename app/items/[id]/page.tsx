@@ -67,13 +67,28 @@ export default async function ItemPage({ params }: { params: Params }) {
     );
   }
 
-  // Calculate garage sale prices server-side for header pills
+  // Calculate garage sale prices server-side for header pills (V2: enriched options)
   const valForGs = item.valuation;
   const marketMid = (valForGs as any)?.mid ?? (valForGs ? Math.round((valForGs.low + valForGs.high) / 2) : 0);
   let aiDataForGs: any = {};
   try { aiDataForGs = item.aiResult?.rawJson ? JSON.parse(item.aiResult.rawJson) : {}; } catch { /* */ }
+  const antiqueForGs = item.antiqueCheck;
   const gsCalc = marketMid > 0
-    ? calculateGarageSalePrices(marketMid, aiDataForGs.category || (item as any).category || "", aiDataForGs.condition_guess || (item as any).condition || "good", (item as any).saleZip)
+    ? calculateGarageSalePrices(
+        marketMid,
+        aiDataForGs.category || (item as any).category || "",
+        aiDataForGs.condition_guess || (item as any).condition || "good",
+        (item as any).saleZip,
+        {
+          isAntique: antiqueForGs?.isAntique ?? false,
+          authenticityScore: antiqueForGs?.authenticityScore ?? undefined,
+          auctionLow: antiqueForGs?.auctionLow ?? undefined,
+          auctionHigh: antiqueForGs?.auctionHigh ?? undefined,
+          confidenceScore: aiDataForGs.pricing_confidence ?? (valForGs?.confidence ?? undefined),
+          brand: aiDataForGs.brand ?? undefined,
+          marketCompsCount: item.marketComps?.length ?? 0,
+        },
+      )
     : null;
 
   // Auto-save garage prices to DB if calculated but not yet persisted (fire-and-forget)

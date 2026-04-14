@@ -632,6 +632,9 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
       },
     });
 
+    // V2: Auto-recalc garage sale prices with enriched data
+    import("@/lib/pricing/garage-sale-recalc").then(m => m.recalcGarageSalePrices(itemId)).catch(() => {});
+
     // CMD-PRICEBOT-CORE-A: extended PRICEBOT_RUN telemetry. Parity
     // with ANTIQUEBOT_RUN / COLLECTIBLESBOT_RUN / CARBOT_RUN.
     try {
