@@ -2436,14 +2436,20 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
         const allPH = successfulProviders.map(p => ({ ...extractPH(p), provider: p.provider }));
         return (
           <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
-            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Pricing Comparison</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem 1rem", fontSize: "0.72rem" }}>
+            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.4rem" }}>Pricing Expert Comparison</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {allPH.map(ph => {
                 const meta2 = PROVIDER_META[ph.provider];
                 return (
-                  <span key={ph.provider} style={{ color: meta2?.color || "var(--text-secondary)" }}>
-                    {meta2?.icon} {meta2?.label}: {ph.priceLow != null && ph.priceHigh != null ? `$${Math.round(Number(ph.priceLow))}-$${Math.round(Number(ph.priceHigh))}` : "—"}
-                  </span>
+                  <div key={ph.provider} style={{ padding: "0.3rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.4rem", border: "1px solid var(--border-default)", borderLeft: `3px solid ${meta2?.color || "var(--text-muted)"}` }}>
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: meta2?.color || "var(--text-secondary)", marginBottom: "0.15rem" }}>{meta2?.icon} {meta2?.label}</div>
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.62rem", color: "var(--text-secondary)" }}>
+                      {ph.priceLow != null && ph.priceHigh != null ? <span>Range: <strong style={{ color: "var(--accent)" }}>${Math.round(Number(ph.priceLow))}–${Math.round(Number(ph.priceHigh))}</strong></span> : <span>—</span>}
+                      {ph.confidence ? <span>{ph.confidence}% confident</span> : null}
+                      {ph.bestPlatform ? <span>Best: {ph.bestPlatform}</span> : null}
+                      {ph.demandLevel ? <span style={{ color: /high|hot|strong/i.test(ph.demandLevel) ? "#4caf50" : /low|cold|weak/i.test(ph.demandLevel) ? "#ef4444" : "#fbbf24" }}>{ph.demandLevel}</span> : null}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -2457,19 +2463,25 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
         const totalUnique = new Set(allBH.flatMap(b => b.profiles.map((p: any) => (p.buyer_type || p.profile_name || "").toLowerCase()))).size;
         return (
           <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
-            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Buyer Intelligence Comparison</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
+            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.4rem" }}>Buyer Intelligence Comparison</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {allBH.map(bh => {
                 const meta2 = PROVIDER_META[bh.provider];
                 return (
-                  <span key={bh.provider} style={{ color: meta2?.color || "var(--text-secondary)" }}>
-                    {meta2?.icon} {meta2?.label}: {bh.profileCount} profiles · {bh.platformCount} platforms · {bh.hotLeadCount} hot leads
-                  </span>
+                  <div key={bh.provider} style={{ padding: "0.3rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.4rem", border: "1px solid var(--border-default)", borderLeft: `3px solid ${meta2?.color || "var(--text-muted)"}` }}>
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: meta2?.color || "var(--text-secondary)", marginBottom: "0.15rem" }}>{meta2?.icon} {meta2?.label}</div>
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.62rem", color: "var(--text-secondary)" }}>
+                      <span><strong>{bh.profileCount}</strong> profiles</span>
+                      <span>{bh.platformCount} platforms</span>
+                      {bh.hotLeadCount > 0 && <span style={{ color: "var(--accent)" }}>{bh.hotLeadCount} hot leads</span>}
+                      {bh.demandLevel && <span style={{ color: /high|hot|strong/i.test(bh.demandLevel) ? "#4caf50" : "#fbbf24" }}>{bh.demandLevel}</span>}
+                    </div>
+                  </div>
                 );
               })}
-              <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4caf50", marginTop: "0.15rem" }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "#4caf50", padding: "0.2rem 0.5rem" }}>
                 ✅ Combined: ~{totalUnique} unique profiles · {new Set(allBH.flatMap(b => b.platforms.map((p: any) => (p.platform || "").toLowerCase()))).size} platforms · {allBH.reduce((s, b) => s + b.hotLeadCount, 0)} hot leads
-              </span>
+              </div>
             </div>
           </div>
         );
@@ -2480,14 +2492,19 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
         const allLH = successfulProviders.map(p => ({ ...extractLH(p), provider: p.provider }));
         return (
           <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
-            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Listing Comparison</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
+            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.4rem" }}>Listing Expert Comparison</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {allLH.map(lh => {
                 const meta2 = PROVIDER_META[lh.provider];
                 return (
-                  <span key={lh.provider} style={{ color: meta2?.color || "var(--text-secondary)" }}>
-                    {meta2?.icon} {meta2?.label}: {lh.platformCount} listings · {lh.allKwCount} keywords{lh.bestTitle ? ` · "${(lh.bestTitle as string).slice(0, 30)}..."` : ""}
-                  </span>
+                  <div key={lh.provider} style={{ padding: "0.3rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.4rem", border: "1px solid var(--border-default)", borderLeft: `3px solid ${meta2?.color || "var(--text-muted)"}` }}>
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: meta2?.color || "var(--text-secondary)", marginBottom: "0.15rem" }}>{meta2?.icon} {meta2?.label}</div>
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.62rem", color: "var(--text-secondary)" }}>
+                      <span><strong>{lh.platformCount}</strong> platforms</span>
+                      <span>{lh.allKwCount} keywords</span>
+                      {lh.bestTitle && <span style={{ maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>"{lh.bestTitle}"</span>}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -2500,14 +2517,19 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
         const allRH = successfulProviders.map(p => ({ ...extractRH(p), provider: p.provider }));
         return (
           <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
-            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Competitive Intel Comparison</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
+            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.4rem" }}>Competitive Intel Comparison</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {allRH.map(rh => {
                 const meta2 = PROVIDER_META[rh.provider];
                 return (
-                  <span key={rh.provider} style={{ color: meta2?.color || "var(--text-secondary)" }}>
-                    {meta2?.icon} {meta2?.label}: {rh.competitorCount} competitors{rh.demandLevel ? ` · ${rh.demandLevel} demand` : ""}{rh.alerts.length ? ` · ${rh.alerts.length} alerts` : ""}
-                  </span>
+                  <div key={rh.provider} style={{ padding: "0.3rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.4rem", border: "1px solid var(--border-default)", borderLeft: `3px solid ${meta2?.color || "var(--text-muted)"}` }}>
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: meta2?.color || "var(--text-secondary)", marginBottom: "0.15rem" }}>{meta2?.icon} {meta2?.label}</div>
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.62rem", color: "var(--text-secondary)" }}>
+                      <span><strong>{rh.competitorCount}</strong> competitors</span>
+                      {rh.demandLevel && <span style={{ color: /high|hot|strong/i.test(rh.demandLevel) ? "#4caf50" : /low|cold|weak/i.test(rh.demandLevel) ? "#ef4444" : "#fbbf24" }}>{rh.demandLevel} demand</span>}
+                      {rh.alerts.length > 0 && <span style={{ color: "#ef4444" }}>{rh.alerts.length} alerts</span>}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -2520,14 +2542,20 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
         const allVH = successfulProviders.map(p => ({ ...extractVH(p), provider: p.provider }));
         return (
           <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
-            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Vehicle Valuation Comparison</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
+            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.4rem" }}>Vehicle Valuation Comparison</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {allVH.map(vh => {
                 const meta2 = PROVIDER_META[vh.provider];
                 return (
-                  <span key={vh.provider} style={{ color: meta2?.color || "var(--text-secondary)" }}>
-                    {meta2?.icon} {meta2?.label}: {vh.retailValue != null ? `Retail ${_fp(vh.retailValue)}` : "—"}{vh.condGrade ? ` · Grade ${vh.condGrade}` : ""}
-                  </span>
+                  <div key={vh.provider} style={{ padding: "0.3rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.4rem", border: "1px solid var(--border-default)", borderLeft: `3px solid ${meta2?.color || "var(--text-muted)"}` }}>
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: meta2?.color || "var(--text-secondary)", marginBottom: "0.15rem" }}>{meta2?.icon} {meta2?.label}</div>
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.62rem", color: "var(--text-secondary)" }}>
+                      {vh.retailValue != null && <span>Retail: <strong style={{ color: "var(--accent)" }}>{_fp(vh.retailValue)}</strong></span>}
+                      {vh.condGrade && <span>Grade: <strong>{vh.condGrade}</strong></span>}
+                      {vh.privateParty != null && <span>Private: {_fp(vh.privateParty)}</span>}
+                      {vh.tradeIn != null && <span>Trade-in: {_fp(vh.tradeIn)}</span>}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -2540,14 +2568,20 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
         const allAH = successfulProviders.map(p => ({ ...extractAH(p), provider: p.provider }));
         return (
           <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
-            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Antique Assessment Comparison</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
+            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.4rem" }}>Antique Expert Comparison</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {allAH.map(ah => {
                 const meta2 = PROVIDER_META[ah.provider];
                 return (
-                  <span key={ah.provider} style={{ color: meta2?.color || "var(--text-secondary)" }}>
-                    {meta2?.icon} {meta2?.label}: {ah.verdict || "—"}{ah.auctionEst != null ? ` · Auction ${_fp(ah.auctionEst)}` : ""}{ah.confidence ? ` · ${ah.confidence}%` : ""}
-                  </span>
+                  <div key={ah.provider} style={{ padding: "0.3rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.4rem", border: "1px solid var(--border-default)", borderLeft: `3px solid ${meta2?.color || "var(--text-muted)"}` }}>
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: meta2?.color || "var(--text-secondary)", marginBottom: "0.15rem" }}>{meta2?.icon} {meta2?.label}</div>
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.62rem", color: "var(--text-secondary)" }}>
+                      {ah.verdict && <span style={{ color: /authentic|confirmed|genuine/i.test(ah.verdict) ? "#4caf50" : /not|unlikely|modern/i.test(ah.verdict) ? "#ef4444" : "var(--text-secondary)" }}>{ah.verdict}</span>}
+                      {ah.auctionEst != null && <span>Auction: <strong style={{ color: "var(--accent)" }}>{_fp(ah.auctionEst)}</strong></span>}
+                      {ah.fairMarket != null && <span>FMV: {_fp(ah.fairMarket)}</span>}
+                      {ah.confidence && <span style={{ color: Number(ah.confidence) >= 80 ? "#4caf50" : Number(ah.confidence) >= 60 ? "#fbbf24" : "#ef4444" }}>{ah.confidence}%</span>}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -2560,14 +2594,19 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
         const allPhH = successfulProviders.map(p => ({ ...extractPhH(p), provider: p.provider }));
         return (
           <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
-            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.3rem" }}>Photo Analysis Comparison</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
+            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.4rem" }}>Photo Analysis Comparison</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {allPhH.map(ph => {
                 const meta2 = PROVIDER_META[ph.provider];
                 return (
-                  <span key={ph.provider} style={{ color: meta2?.color || "var(--text-secondary)" }}>
-                    {meta2?.icon} {meta2?.label}: {ph.qualityScore != null ? `${ph.qualityScore}/10` : "—"} · {ph.tipCount} tips · {ph.missingCount} missing
-                  </span>
+                  <div key={ph.provider} style={{ padding: "0.3rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.4rem", border: "1px solid var(--border-default)", borderLeft: `3px solid ${meta2?.color || "var(--text-muted)"}` }}>
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: meta2?.color || "var(--text-secondary)", marginBottom: "0.15rem" }}>{meta2?.icon} {meta2?.label}</div>
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.62rem", color: "var(--text-secondary)" }}>
+                      {ph.qualityScore != null && <span style={{ color: Number(ph.qualityScore) >= 7 ? "#4caf50" : Number(ph.qualityScore) >= 5 ? "#fbbf24" : "#ef4444" }}><strong>{ph.qualityScore}/10</strong></span>}
+                      <span>{ph.tipCount} tips</span>
+                      {ph.missingCount > 0 && <span style={{ color: "#ef4444" }}>{ph.missingCount} missing</span>}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -2596,6 +2635,34 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
                       {ch.bestPlatform && <span>Sell: {ch.bestPlatform}</span>}
                       {ch.demandLevel && <span style={{ color: ch.demandLevel === "Rising" ? "#4caf50" : ch.demandLevel === "Declining" ? "#ef4444" : "var(--text-muted)" }}>{ch.demandLevel}</span>}
                       {ch.investmentVerdict && <span style={{ fontWeight: 600 }}>{ch.investmentVerdict}</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Analysis comparison (default analysis mode — no specialized bot type) */}
+      {!isPricing && !isBuyers && !isListing && !isRecon && !isCarbot && !isAntique && !isPhotos && !isCollectibles && successfulProviders.length > 1 && (() => {
+        const allH = successfulProviders.map(p => ({ ...extractHighlights(p), provider: p.provider }));
+        return (
+          <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.75rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
+            <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#a855f7", fontWeight: 700, marginBottom: "0.4rem" }}>Analysis Comparison</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+              {allH.map(h => {
+                const meta2 = PROVIDER_META[h.provider];
+                return (
+                  <div key={h.provider} style={{ padding: "0.3rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.4rem", border: "1px solid var(--border-default)", borderLeft: `3px solid ${meta2?.color || "var(--text-muted)"}` }}>
+                    <div style={{ fontSize: "0.65rem", fontWeight: 700, color: meta2?.color || "var(--text-secondary)", marginBottom: "0.15rem" }}>{meta2?.icon} {meta2?.label}</div>
+                    <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.62rem", color: "var(--text-secondary)" }}>
+                      {h.itemName && <span><strong>{h.itemName}</strong></span>}
+                      {h.category && <span>{h.category}</span>}
+                      {h.condOverall != null && <span style={{ color: Number(h.condOverall) >= 7 ? "#4caf50" : Number(h.condOverall) >= 5 ? "#fbbf24" : "#ef4444" }}>{h.condOverall}/10</span>}
+                      {h.brand && <span>{h.brand}</span>}
+                      {h.era && <span>{h.era}</span>}
+                      {h.priceLow != null && h.priceHigh != null && <span style={{ color: "var(--accent)" }}>{_fp(h.priceLow)}–{_fp(h.priceHigh)}</span>}
                     </div>
                   </div>
                 );
@@ -3199,21 +3266,6 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
             {/* ── SECTION H: MEGABOT RESULTS ── */}
             {boosted && boostResult && (
               <>
-                <div style={{
-                  marginTop: "0.75rem", marginBottom: "0.5rem", paddingTop: "0.5rem",
-                  borderTop: "2px solid rgba(139,92,246,0.15)",
-                  display: "flex", alignItems: "center", gap: "0.4rem",
-                }}>
-                  <span style={{ fontSize: "0.9rem" }}>⚡</span>
-                  <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "#8b5cf6", letterSpacing: "0.05em", textTransform: "uppercase" as const }}>MEGABOT MULTI-AI ANALYSIS</span>
-                  {boostResult?.agreementScore != null && (
-                    <span style={{
-                      fontSize: "0.5rem", fontWeight: 700, padding: "2px 8px", borderRadius: "6px",
-                      background: boostResult.agreementScore >= 70 ? "rgba(34,197,94,0.1)" : boostResult.agreementScore >= 40 ? "rgba(245,158,11,0.1)" : "rgba(239,68,68,0.1)",
-                      color: boostResult.agreementScore >= 70 ? "#22c55e" : boostResult.agreementScore >= 40 ? "#f59e0b" : "#ef4444",
-                    }}>{boostResult.agreementScore}% Agreement</span>
-                  )}
-                </div>
                 <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={aiOpenSections.has("megabot-results")} onToggle={toggleAiSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
                 {aiOpenSections.has("megabot-results") && <MegaBotBoostResults botType="analysis" result={boostResult} aiData={aiData} />}
               </>
