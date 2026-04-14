@@ -709,43 +709,47 @@ export default function ItemIntelligenceSummary(props: Props) {
             <div className="intel-collapsed">
               {aiIntel ? (
                 <>
-                  <div style={{ fontSize: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(148,163,184,0.8)" }}>
+                  <div style={{ fontSize: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "rgba(148,163,184,0.8)", marginBottom: "0.35rem" }}>
                     Claude Intelligence
                   </div>
-                  <div className="intel-collapsed-row">
-                    <div className="intel-collapsed-stat">
-                      <div className="intel-collapsed-stat-lbl">Sweet Spot</div>
-                      <div className="intel-collapsed-stat-val" style={{ color: "var(--accent, #00bcd4)", textShadow: "0 0 10px rgba(0,188,212,0.2)" }}>
-                        ${Math.round(aiIntel.pricingIntel.sweetSpot)}
-                      </div>
+                  {/* HUD Metrics Grid */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.35rem", marginBottom: "0.35rem" }}>
+                    <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "5px 8px" }}>
+                      <div style={{ fontSize: "0.48rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Sweet Spot</div>
+                      <div style={{ fontSize: "0.85rem", fontWeight: 800, fontFamily: "var(--font-data)", color: "var(--accent, #00bcd4)" }}>${Math.round(aiIntel.pricingIntel.sweetSpot)}</div>
                     </div>
-                    <div className="intel-collapsed-stat">
-                      <div className="intel-collapsed-stat-lbl">Range</div>
-                      <div className="intel-collapsed-stat-val" style={{ color: "var(--text-secondary)" }}>
-                        ${Math.round(aiIntel.pricingIntel.recommendedLow)}–${Math.round(aiIntel.pricingIntel.recommendedHigh)}
-                      </div>
+                    <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "5px 8px" }}>
+                      <div style={{ fontSize: "0.48rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Range</div>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "var(--text-primary)" }}>${Math.round(aiIntel.pricingIntel.recommendedLow)}–${Math.round(aiIntel.pricingIntel.recommendedHigh)}</div>
                     </div>
                     {aiIntel.marketPosition?.demand && (
-                      <div className="intel-collapsed-stat">
-                        <div className="intel-collapsed-stat-lbl">Demand</div>
-                        <div className="intel-collapsed-stat-val" style={{ color: aiIntel.marketPosition.demand === "high" ? "#22c55e" : aiIntel.marketPosition.demand === "low" ? "#ef4444" : "#f59e0b" }}>
-                          {aiIntel.marketPosition.demand}
-                        </div>
+                      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "5px 8px" }}>
+                        <div style={{ fontSize: "0.48rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Demand</div>
+                        <div style={{ fontSize: "0.72rem", fontWeight: 700, fontFamily: "var(--font-data)", color: aiIntel.marketPosition.demand === "high" ? "#22c55e" : aiIntel.marketPosition.demand === "low" ? "#ef4444" : "#f59e0b", textTransform: "uppercase" }}>{aiIntel.marketPosition.demand}</div>
                       </div>
                     )}
-                    <div className="intel-collapsed-stat">
-                      <div className="intel-collapsed-stat-lbl">Readiness</div>
-                      <div className="intel-collapsed-stat-val" style={{ color: readinessColor }}>
-                        {readinessScore}/10
+                    <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "5px 8px" }}>
+                      <div style={{ fontSize: "0.48rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Ready</div>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, fontFamily: "var(--font-data)", color: readinessColor }}>{readinessScore}/10</div>
+                    </div>
+                    {aiIntel.sellingStrategy?.bestPlatform && (
+                      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "5px 8px" }}>
+                        <div style={{ fontSize: "0.48rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Best Platform</div>
+                        <div style={{ fontSize: "0.68rem", fontWeight: 600, color: "var(--text-primary)" }}>{aiIntel.sellingStrategy.bestPlatform}</div>
                       </div>
-                    </div>
+                    )}
+                    {enriched?.compCount != null && (
+                      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "5px 8px" }}>
+                        <div style={{ fontSize: "0.48rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Comps</div>
+                        <div style={{ fontSize: "0.68rem", fontWeight: 600, fontFamily: "var(--font-data)", color: "var(--text-secondary)" }}>{enriched.compCount}{enriched.avgCompPrice ? ` · $${Math.round(enriched.avgCompPrice)}` : ""}</div>
+                      </div>
+                    )}
                   </div>
-                  {aiIntel.sellingStrategy?.bestPlatform && (
-                    <div className="intel-collapsed-insight">
-                      🏆 Best platform: {aiIntel.sellingStrategy.bestPlatform} · {aiIntel.sellingStrategy.timing}
-                    </div>
-                  )}
-                  {aiStale && <div style={{ fontSize: "8px", color: "#f59e0b", fontWeight: 600 }}>⚡ New data available — expand to refresh</div>}
+                  {/* Insight + Freshness */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
+                    {aiIntel.sellingStrategy?.timing && <div style={{ fontSize: "0.58rem", color: "var(--text-secondary)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>🏆 {aiIntel.sellingStrategy.bestPlatform || "Sell now"} · {aiIntel.sellingStrategy.timing}</div>}
+                    {aiStale && <div style={{ fontSize: "0.5rem", color: "#f59e0b", fontWeight: 600, flexShrink: 0 }}>⚡ New data available</div>}
+                  </div>
                 </>
               ) : valuation ? (
                 <>

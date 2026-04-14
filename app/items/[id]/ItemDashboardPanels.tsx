@@ -8683,38 +8683,72 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   return (
     <GlassCard fullWidth>
       <PanelHeader icon={"\u{1F39B}\u{FE0F}"} title="Item Control Center" hasData={true} badge="COMMAND" collapsed={collapsed} onToggle={onToggle} />
-      {collapsed && (
-        <div style={{
-          padding: "0.4rem 1rem",
-          display: "flex", alignItems: "center", gap: "0.5rem",
-          flexWrap: "wrap", justifyContent: "center",
-        }}>
-          <span style={{
-            fontSize: "0.58rem", fontWeight: 700, padding: "2px 8px",
-            borderRadius: "9999px",
-            background: status === "SOLD" || status === "COMPLETED" ? "rgba(34,197,94,0.1)"
-              : status === "SHIPPED" ? "rgba(59,130,246,0.1)"
-              : status === "LISTED" || status === "INTERESTED" ? "rgba(0,188,212,0.1)"
-              : status === "ANALYZED" || status === "READY" ? "rgba(245,158,11,0.1)"
-              : "var(--ghost-bg)",
-            color: status === "SOLD" || status === "COMPLETED" ? "#22c55e"
-              : status === "SHIPPED" ? "#3b82f6"
-              : status === "LISTED" || status === "INTERESTED" ? "#00bcd4"
-              : status === "ANALYZED" || status === "READY" ? "#f59e0b"
-              : "var(--text-muted)",
-          }}>
-            {status}
-          </span>
-          {(initialListingPrice || valuation) && (
-            <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#00bcd4" }}>
-              {initialListingPrice ? `$${Math.round(initialListingPrice)}` :
-               valuation?.low != null && valuation?.high != null ? `$${Math.round(valuation.low)}\u2013$${Math.round(valuation.high)}` : ""}
-            </span>
-          )}
-          {confPct > 0 && <span style={{ fontSize: "0.56rem", color: confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#eab308" : "#ef4444" }}>{confPct}% AI</span>}
-          {(extra?.totalViews ?? 0) > 0 && <span style={{ fontSize: "0.56rem", color: "var(--text-muted)" }}>{extra!.totalViews} views</span>}
-        </div>
-      )}
+      {collapsed && (() => {
+        const STAGES: { key: string; label: string }[] = [
+          { key: "DRAFT", label: "Draft" }, { key: "ANALYZED", label: "Analyzed" }, { key: "READY", label: "Ready" },
+          { key: "LISTED", label: "Listed" }, { key: "INTERESTED", label: "Interest" }, { key: "SOLD", label: "Sold" },
+          { key: "SHIPPED", label: "Shipped" }, { key: "COMPLETED", label: "Done" },
+        ];
+        const stageIdx = STAGES.findIndex(s => s.key === status);
+        const checks = [
+          (photos?.length ?? 0) > 0, !!aiData, !!valuation, !!initialListingPrice, shippingData?.weight != null,
+        ];
+        const readyScore = checks.filter(Boolean).length;
+        const readyColor = readyScore >= 4 ? "#22c55e" : readyScore >= 2 ? "#f59e0b" : "#ef4444";
+        const priceStr = initialListingPrice ? `$${Math.round(initialListingPrice)}` : valuation?.low != null ? `$${Math.round(valuation.low)}\u2013$${Math.round(valuation.high)}` : "\u2014";
+        const views = extra?.totalViews ?? 0;
+        const inquiries = extra?.inquiries ?? 0;
+        return (
+          <div style={{ padding: "0.5rem 1rem 0.6rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            {/* Row 1 — Lifecycle Progress */}
+            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+              {STAGES.map((s, i) => {
+                const isCurrent = i === stageIdx;
+                const isPast = i < stageIdx;
+                return (
+                  <div key={s.key} style={{ display: "flex", alignItems: "center", flex: 1, gap: "2px" }}>
+                    <div style={{
+                      width: isCurrent ? 10 : 7, height: isCurrent ? 10 : 7, borderRadius: "50%", flexShrink: 0,
+                      background: isPast ? "#0097a7" : isCurrent ? "#00bcd4" : "var(--text-muted)",
+                      opacity: isPast || isCurrent ? 1 : 0.3,
+                      boxShadow: isCurrent ? "0 0 8px rgba(0,188,212,0.4)" : "none",
+                      transition: "all 0.3s ease",
+                    }} />
+                    {i < STAGES.length - 1 && <div style={{ flex: 1, height: 2, background: isPast ? "#0097a7" : "var(--text-muted)", opacity: isPast ? 0.6 : 0.15 }} />}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ textAlign: "center", fontSize: "0.52rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", fontWeight: 700 }}>{STAGES[stageIdx >= 0 ? stageIdx : 0]?.label}</div>
+            {/* Row 2 — Metrics Grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.4rem" }}>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "6px 8px" }}>
+                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Price</div>
+                <div style={{ fontSize: "0.75rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4" }}>{priceStr}</div>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "6px 8px" }}>
+                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Conf</div>
+                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                  <span style={{ fontSize: "0.75rem", fontWeight: 700, fontFamily: "var(--font-data)", color: confPct >= 75 ? "#22c55e" : confPct >= 50 ? "#f59e0b" : confPct > 0 ? "#ef4444" : "var(--text-muted)" }}>{confPct > 0 ? `${confPct}%` : "\u2014"}</span>
+                </div>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "6px 8px" }}>
+                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Activity</div>
+                <div style={{ fontSize: "0.68rem", fontWeight: 600, fontFamily: "var(--font-data)", color: "var(--text-primary)" }}>{views > 0 || inquiries > 0 ? `${views}\u{1F441} ${inquiries}\u{1F4AC}` : "\u2014"}</div>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "6px 8px" }}>
+                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Ready</div>
+                <div style={{ fontSize: "0.75rem", fontWeight: 700, fontFamily: "var(--font-data)", color: readyColor }}>{readyScore}/5</div>
+              </div>
+            </div>
+            {/* Row 3 — Context */}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+              {(category || aiData?.category) && <span style={{ fontSize: "0.55rem", padding: "2px 8px", borderRadius: "9999px", border: "1px solid rgba(0,188,212,0.2)", color: "var(--text-secondary)", fontWeight: 500 }}>{category || aiData.category}</span>}
+              <span style={{ fontSize: "0.55rem", color: extra?.shippingReady ? "#22c55e" : "var(--text-muted)" }}>{extra?.shippingReady ? "\u{1F4E6} Ship ready" : "\u{1F4E6} Needs setup"}</span>
+            </div>
+          </div>
+        );
+      })()}
       <div style={{ display: collapsed ? "none" : "flex", flexDirection: "column" as const, flex: 1 }}>
       <div style={{ padding: "0.5rem 0.75rem" }}>
 
