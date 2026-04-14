@@ -185,18 +185,18 @@ export default function BotLoadingState({ botName }: { botName: string }) {
       {/* ── Header: Bot name + elapsed ── */}
       <div style={{ position: "relative", zIndex: 1, textAlign: "center", marginBottom: "0.5rem" }}>
         <div style={{
-          fontFamily: "'Exo 2', sans-serif",
+          fontFamily: "var(--font-heading)",
           fontSize: "1.125rem",
           fontWeight: 600,
-          color: "#f1f5f9",
+          color: "var(--text-primary)",
           letterSpacing: "0.02em",
         }}>
           {botName} is running…
         </div>
         <div style={{
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontFamily: "var(--font-body)",
           fontSize: "0.75rem",
-          color: "#64748b",
+          color: "var(--text-muted)",
           marginTop: "0.25rem",
         }}>
           Usually 60–120 seconds
@@ -209,7 +209,7 @@ export default function BotLoadingState({ botName }: { botName: string }) {
         zIndex: 1,
         fontSize: "1.35rem",
         fontWeight: 600,
-        color: "#f1f5f9",
+        color: "var(--text-primary)",
         textAlign: "center",
         maxWidth: "32rem",
         lineHeight: 1.4,
@@ -270,7 +270,7 @@ export default function BotLoadingState({ botName }: { botName: string }) {
                   animation: "botStagePulse 1.6s ease-in-out infinite",
                 } : {
                   background: "transparent",
-                  border: "1.5px solid #334155",
+                  border: "1.5px solid var(--border-default)",
                 }),
               }}>
                 {isCompleted && (
@@ -291,10 +291,10 @@ export default function BotLoadingState({ botName }: { botName: string }) {
               {/* Label + elapsed */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                   fontSize: "0.8125rem",
                   fontWeight: isActive ? 500 : 400,
-                  color: isCompleted ? "#00BCD4" : isActive ? "#f1f5f9" : "#64748b",
+                  color: isCompleted ? "#00BCD4" : isActive ? "var(--text-primary)" : "var(--text-muted)",
                   lineHeight: 1.3,
                   transition: "color 400ms ease",
                 }}>
@@ -302,9 +302,9 @@ export default function BotLoadingState({ botName }: { botName: string }) {
                 </div>
                 {isActive && (
                   <div style={{
-                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontFamily: "var(--font-data)",
                     fontSize: "0.6875rem",
-                    color: "#64748b",
+                    color: "var(--text-muted)",
                     marginTop: "1px",
                     fontVariantNumeric: "tabular-nums",
                   }}>
@@ -324,7 +324,7 @@ export default function BotLoadingState({ botName }: { botName: string }) {
         width: "100%",
         maxWidth: "340px",
         height: "3px",
-        background: "rgba(255,255,255,0.08)",
+        background: "var(--border-default)",
         overflow: "hidden",
       }}>
         <div style={{
