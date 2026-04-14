@@ -198,7 +198,7 @@ export default async function ItemPage({ params }: { params: Params }) {
   const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://legacyloop.com"}/store/${user.id}/item/${item.id}`;
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-4xl px-4">
       {/* CMD-MOBILE-QA-FIX: Item header stacks vertically on mobile */}
       <style>{`
         @media (max-width: 768px) {

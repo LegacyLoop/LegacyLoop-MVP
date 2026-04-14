@@ -465,6 +465,9 @@ function GlassCard({ children, premium, fullWidth }: {
           : "1px solid rgba(0,188,212,0.15)",
         borderRadius: 16,
         overflow: "hidden",
+        width: "100%",
+        maxWidth: "100%",
+        boxSizing: "border-box" as const,
         transition: "border-color 0.2s, box-shadow 0.2s",
         gridColumn: fullWidth ? "1 / -1" : undefined,
         display: "flex",
@@ -9859,10 +9862,15 @@ export default function ItemDashboardPanels({
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 1rem;
+          width: 100%;
+          max-width: 100%;
+          overflow: hidden;
+          box-sizing: border-box;
         }
         @media (max-width: 768px) {
           .bot-dashboard-grid {
             grid-template-columns: 1fr;
+            gap: 0.75rem;
           }
 
           /* CMD-MOBILE-8B: 4-column grids → 2 columns on tablet/phone */
