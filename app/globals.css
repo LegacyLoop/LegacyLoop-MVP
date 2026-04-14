@@ -48,6 +48,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
 
 /* Brand accent — always the same */
 :root {
+  /* Brand typography — loaded via next/font/google in layout.tsx */
+  --font-heading: 'Exo 2', sans-serif;
+  --font-body:    'Plus Jakarta Sans', sans-serif;
+  --font-data:    'Barlow Condensed', sans-serif;
+
   --accent:          #00bcd4;
   --accent-bright:   #22d3ee;
   --accent-deep:     #0097a7;
@@ -241,7 +246,7 @@ html.light {
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
-    font-family: -apple-system, BlinkMacSystemFont, "Inter", "SF Pro Display",
+    font-family: var(--font-body), -apple-system, BlinkMacSystemFont, "SF Pro Display",
                  "Segoe UI", system-ui, Helvetica, Arial, sans-serif;
   }
 

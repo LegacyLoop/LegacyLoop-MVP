@@ -10,6 +10,13 @@ export default function HelpWidget() {
   const [open, setOpen] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showBugReport, setShowBugReport] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -55,7 +62,7 @@ export default function HelpWidget() {
   }, [open]);
 
   return (
-    <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 200 }}>
+    <div style={{ position: "fixed", bottom: isMobile ? 88 : 24, right: 24, zIndex: 1001, transition: "bottom 0.2s ease" }}>
       {open && (
         <div className="glass-panel" style={{
           position: "absolute", bottom: 64, right: 0, width: 340,
@@ -147,7 +154,7 @@ export default function HelpWidget() {
       )}
 
       {/* Toggle button */}
-      <button onClick={() => setOpen(!open)} style={{
+      <button onClick={() => setOpen(!open)} aria-label="Help and feedback" style={{
         width: 52, height: 52, borderRadius: "50%", border: "none", cursor: "pointer",
         background: open ? "var(--accent, #00bcd4)" : "linear-gradient(135deg, #00bcd4, #0097a7)",
         color: "#fff", fontSize: "1.25rem", fontWeight: 700,

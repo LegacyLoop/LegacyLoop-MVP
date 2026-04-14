@@ -1,5 +1,27 @@
 import "./globals.css";
+import { Exo_2, Plus_Jakarta_Sans, Barlow_Condensed } from "next/font/google";
 import { authAdapter } from "@/lib/adapters/auth";
+
+const exo2 = Exo_2({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800", "900"],
+  variable: "--font-heading",
+  display: "swap",
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
+  display: "swap",
+});
+
+const barlowCondensed = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-data",
+  display: "swap",
+});
 import { prisma } from "@/lib/db";
 import AppNav from "@/app/components/AppNav";
 import Footer from "@/app/components/Footer";
@@ -114,7 +136,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className={`dark ${exo2.variable} ${plusJakarta.variable} ${barlowCondensed.variable}`} suppressHydrationWarning>
       <head>
         {/* Prevent flash of wrong theme */}
         <script dangerouslySetInnerHTML={{ __html: `

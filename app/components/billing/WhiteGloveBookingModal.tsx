@@ -26,7 +26,7 @@ const CARD_OPTIONS = {
   style: {
     base: {
       color: "#e2e8f0",
-      fontFamily: "'Plus Jakarta Sans', sans-serif",
+      fontFamily: "var(--font-body)",
       fontSize: "15px",
       "::placeholder": { color: "#64748b" },
     },
@@ -138,7 +138,7 @@ function BookingFormInner({ tier, tierLabel, totalAmount, depositAmount, balance
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
           <div>
-            <div style={{ fontFamily: "'Exo 2', sans-serif", fontWeight: 700, fontSize: "1.05rem", color: "#f1f5f9" }}>
+            <div style={{ fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "1.05rem", color: "#f1f5f9" }}>
               {step === 3 ? "Booking Confirmed" : step === 2 ? "Secure Your Booking" : "Book White Glove Service"}
             </div>
             <div style={{ fontSize: "0.72rem", color: GOLD, fontWeight: 600, marginTop: "2px" }}>{tierLabel}</div>
@@ -164,7 +164,7 @@ function BookingFormInner({ tier, tierLabel, totalAmount, depositAmount, balance
                   <path d="M6 13.5L11 18.5L20 8" stroke={GOLD} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <div style={{ fontFamily: "'Exo 2', sans-serif", fontSize: "1.2rem", fontWeight: 700, color: "#f1f5f9", marginBottom: "0.5rem" }}>
+              <div style={{ fontFamily: "var(--font-heading)", fontSize: "1.2rem", fontWeight: 700, color: "#f1f5f9", marginBottom: "0.5rem" }}>
                 Your Estate Service Is Booked
               </div>
               <div style={{ fontSize: "0.82rem", color: "rgba(207,216,220,0.6)", lineHeight: 1.6, marginBottom: "1.5rem" }}>
@@ -259,7 +259,7 @@ function BookingFormInner({ tier, tierLabel, totalAmount, depositAmount, balance
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
                   <span style={{ fontSize: "0.82rem", color: "rgba(207,216,220,0.6)" }}>Service total</span>
                   <div>
-                    <span style={{ fontSize: "1.1rem", fontWeight: 800, color: GOLD, fontFamily: "'Barlow Condensed', sans-serif" }}>${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    <span style={{ fontSize: "1.1rem", fontWeight: 800, color: GOLD, fontFamily: "var(--font-data)" }}>${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                     {regularPrice && regularPrice > totalAmount && (
                       <span style={{ fontSize: "0.78rem", color: "rgba(207,216,220,0.4)", textDecoration: "line-through", marginLeft: "0.5rem" }}>${regularPrice.toLocaleString()}</span>
                     )}
@@ -267,11 +267,11 @@ function BookingFormInner({ tier, tierLabel, totalAmount, depositAmount, balance
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.35rem" }}>
                   <span style={{ fontSize: "0.82rem", color: "rgba(207,216,220,0.6)" }}>Deposit today (60%)</span>
-                  <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "#f1f5f9", fontFamily: "'Barlow Condensed', sans-serif" }}>${depositAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span style={{ fontSize: "0.95rem", fontWeight: 700, color: "#f1f5f9", fontFamily: "var(--font-data)" }}>${depositAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span style={{ fontSize: "0.82rem", color: "rgba(207,216,220,0.6)" }}>Balance at completion (40%)</span>
-                  <span style={{ fontSize: "0.82rem", color: "rgba(207,216,220,0.5)", fontFamily: "'Barlow Condensed', sans-serif" }}>${balanceAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                  <span style={{ fontSize: "0.82rem", color: "rgba(207,216,220,0.5)", fontFamily: "var(--font-data)" }}>${balanceAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                 </div>
               </div>
 

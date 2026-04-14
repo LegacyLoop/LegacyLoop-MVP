@@ -31,7 +31,7 @@ const CARD_ELEMENT_OPTIONS = {
   style: {
     base: {
       color: "#f1f5f9",
-      fontFamily: "'Plus Jakarta Sans', sans-serif",
+      fontFamily: "var(--font-body)",
       fontSize: "16px",
       "::placeholder": { color: "#64748b" },
     },
@@ -159,7 +159,7 @@ function UpgradeFormInner({
                 <path d="M5 11.5L9 15.5L17 7" stroke="#00bcd4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 8, fontFamily: "'Exo 2', sans-serif" }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 8, fontFamily: "var(--font-heading)" }}>
               Upgraded to {newPlanName}!
             </div>
             <div style={{ fontSize: 12, color: "rgba(207,216,220,0.6)", marginBottom: 20, lineHeight: 1.6 }}>
@@ -178,7 +178,7 @@ function UpgradeFormInner({
         ) : (
           /* ── Upgrade form ── */
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 4, fontFamily: "'Exo 2', sans-serif" }}>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 4, fontFamily: "var(--font-heading)" }}>
               {hasCredit ? "Upgrade" : "Subscribe"} to {newPlanName}
             </div>
             <div style={{ fontSize: 12, color: "rgba(207,216,220,0.6)", marginBottom: 24 }}>
@@ -198,7 +198,7 @@ function UpgradeFormInner({
                 <div style={{
                   fontSize: 11, fontWeight: 600, color: "rgba(207,216,220,0.5)",
                   textTransform: "uppercase", letterSpacing: 1, marginBottom: 12,
-                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontFamily: "var(--font-data)",
                 }}>
                   {hasCredit ? "Upgrade Summary" : "Subscription Summary"}
                 </div>
@@ -246,7 +246,7 @@ function UpgradeFormInner({
               }}>
                 <div style={{
                   fontSize: 11, color: "#94a3b8", marginBottom: 6, fontWeight: 500,
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                 }}>
                   Card Details
                 </div>

@@ -45,13 +45,13 @@ export default function ReceiptPage() {
   }, [id, type]);
 
   if (loading) return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif" }}>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", fontFamily: "var(--font-body), -apple-system, BlinkMacSystemFont, sans-serif" }}>
       <div style={{ fontSize: "14px", color: "#94a3b8" }}>Loading receipt...</div>
     </div>
   );
 
   if (error || !data) return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif" }}>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", fontFamily: "var(--font-body), -apple-system, BlinkMacSystemFont, sans-serif" }}>
       <div style={{ textAlign: "center" }}>
         <div style={{ fontSize: "48px", marginBottom: "16px" }}>📄</div>
         <div style={{ fontSize: "18px", fontWeight: 700, color: "#1e293b", marginBottom: "8px" }}>Receipt Not Found</div>
@@ -77,7 +77,7 @@ export default function ReceiptPage() {
       <div style={{
         minHeight: "100vh", padding: "32px 16px",
         background: "#f8fafc",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif",
+        fontFamily: "var(--font-body), -apple-system, BlinkMacSystemFont, sans-serif",
       }}>
         {/* ── Action Buttons ── */}
         <div className="receipt-actions" style={{

@@ -20,7 +20,7 @@ const CARD_ELEMENT_OPTIONS = {
   style: {
     base: {
       color: "#f1f5f9",
-      fontFamily: "'Plus Jakarta Sans', sans-serif",
+      fontFamily: "var(--font-body)",
       fontSize: "16px",
       "::placeholder": { color: "#64748b" },
     },

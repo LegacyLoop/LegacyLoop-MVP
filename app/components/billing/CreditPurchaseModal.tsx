@@ -22,7 +22,7 @@ const CARD_ELEMENT_OPTIONS = {
   style: {
     base: {
       color: "#f1f5f9",
-      fontFamily: "'Plus Jakarta Sans', sans-serif",
+      fontFamily: "var(--font-body)",
       fontSize: "16px",
       "::placeholder": { color: "#64748b" },
     },
@@ -96,7 +96,7 @@ function CreditConfirmInner({ clientSecret, packageName, credits, charged, onSuc
           borderBottom: "1px solid rgba(255,255,255,0.08)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
         }}>
-          <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "#f1f5f9", fontFamily: "'Exo 2', sans-serif" }}>
+          <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "#f1f5f9", fontFamily: "var(--font-heading)" }}>
             Complete Purchase
           </div>
           <button onClick={onClose} style={{
@@ -119,7 +119,7 @@ function CreditConfirmInner({ clientSecret, packageName, credits, charged, onSuc
                   <path d="M5 11.5L9 15.5L17 7" stroke="#00bcd4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 6, fontFamily: "'Exo 2', sans-serif" }}>
+              <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", marginBottom: 6, fontFamily: "var(--font-heading)" }}>
                 {credits} Credits Added!
               </div>
               <div style={{ fontSize: 12, color: "rgba(207,216,220,0.6)" }}>
@@ -137,7 +137,7 @@ function CreditConfirmInner({ clientSecret, packageName, credits, charged, onSuc
                 <div style={{
                   fontSize: 11, fontWeight: 600, color: "rgba(207,216,220,0.5)",
                   textTransform: "uppercase", letterSpacing: 1, marginBottom: 12,
-                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontFamily: "var(--font-data)",
                 }}>
                   Purchase Summary
                 </div>
@@ -164,7 +164,7 @@ function CreditConfirmInner({ clientSecret, packageName, credits, charged, onSuc
               }}>
                 <div style={{
                   fontSize: 11, color: "#94a3b8", marginBottom: 6, fontWeight: 500,
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: "var(--font-body)",
                 }}>
                   Card Details
                 </div>

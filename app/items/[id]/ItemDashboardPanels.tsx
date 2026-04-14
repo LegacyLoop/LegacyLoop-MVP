@@ -3355,7 +3355,7 @@ function _removedGarageSaleStrip({ itemId, marketPrice, category, condition }: {
         {/* Online Marketplace */}
         <div style={priceCardStyle("#8b949e")}>
           <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.35rem" }}>SELL ONLINE</div>
-          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: "'Barlow Condensed', sans-serif" }}>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.02em", fontFamily: "var(--font-data)" }}>
             ${marketPrice.toLocaleString()}
           </div>
           <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>eBay · Facebook · Our Network</div>
@@ -3366,7 +3366,7 @@ function _removedGarageSaleStrip({ itemId, marketPrice, category, condition }: {
         <div style={priceCardStyle("#00bcd4", true)}>
           <div style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", fontSize: "0.5rem", fontWeight: 700, padding: "1px 8px", borderRadius: 6, background: "var(--accent)", color: "#fff", whiteSpace: "nowrap" }}>THIS WEEKEND</div>
           <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.35rem" }}>GARAGE SALE</div>
-          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.02em", fontFamily: "'Barlow Condensed', sans-serif" }}>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.02em", fontFamily: "var(--font-data)" }}>
             ${prices.garageSalePrice} – ${prices.garageSalePriceHigh}
           </div>
           <div style={{ fontSize: "0.6rem", color: "var(--text-secondary)", marginTop: "0.2rem" }}>What buyers will pay in person</div>
@@ -3376,7 +3376,7 @@ function _removedGarageSaleStrip({ itemId, marketPrice, category, condition }: {
         {/* Quick Sale */}
         <div style={priceCardStyle("#1D9E75")}>
           <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "#1D9E75", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.35rem" }}>QUICK SALE</div>
-          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1D9E75", letterSpacing: "-0.02em", fontFamily: "'Barlow Condensed', sans-serif" }}>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1D9E75", letterSpacing: "-0.02em", fontFamily: "var(--font-data)" }}>
             ${prices.quickSalePrice} – ${prices.quickSalePriceHigh}
           </div>
           <div style={{ fontSize: "0.6rem", color: "var(--text-secondary)", marginTop: "0.2rem" }}>Price it to move. No waiting.</div>
