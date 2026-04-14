@@ -2,11 +2,14 @@
 // CMD-PWA-INSTALL — minimal but effective
 // Network-first for navigation, cache fallback for offline
 
-const CACHE_NAME = 'legacyloop-v1';
+const CACHE_NAME = 'legacyloop-v2';
 const OFFLINE_URL = '/offline.html';
 
 const STATIC_ASSETS = [
   '/offline.html',
+  '/images/logos/icon-192.png',
+  '/images/logos/icon-512.png',
+  '/manifest.json',
 ];
 
 // Install — cache offline page

@@ -53,7 +53,7 @@ export const metadata = {
       { url: "/images/logos/favicon-white.png", media: "(prefers-color-scheme: dark)" },
       { url: "/images/logos/favicon-teal.png" },
     ],
-    apple: "/images/logos/favicon-teal.png",
+    apple: "/images/logos/icon-192.png",
   },
   title: "LegacyLoop — AI-Powered Estate Sales",
   description:
@@ -157,8 +157,7 @@ export default async function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" type="image/png" href="/images/logos/favicon-teal.png" media="(prefers-color-scheme: light)" sizes="454x451" />
         <link rel="icon" type="image/png" href="/images/logos/favicon-white.png" media="(prefers-color-scheme: dark)" sizes="454x451" />
-        <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
-        <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
+        <link rel="apple-touch-icon" href="/images/logos/icon-192.png" />
         {/* CMD-PWA-INSTALL: Register service worker for PWA install + offline */}
         <script dangerouslySetInnerHTML={{ __html: `
           if ('serviceWorker' in navigator) {

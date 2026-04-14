@@ -88,6 +88,7 @@ export default function InstallPrompt() {
         right: 0,
         zIndex: 9998,
         padding: "0.75rem 1rem",
+        paddingBottom: "env(safe-area-inset-bottom, 0.75rem)",
         background: "rgba(10, 10, 18, 0.97)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
