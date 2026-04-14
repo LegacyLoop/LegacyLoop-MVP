@@ -8695,56 +8695,61 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
         ];
         const readyScore = checks.filter(Boolean).length;
         const readyColor = readyScore >= 4 ? "#22c55e" : readyScore >= 2 ? "#f59e0b" : "#ef4444";
+        const readySub = readyScore === 5 ? "Ready to list" : `${5 - readyScore} steps left`;
         const priceStr = initialListingPrice ? `$${Math.round(initialListingPrice)}` : valuation?.low != null ? `$${Math.round(valuation.low)}\u2013$${Math.round(valuation.high)}` : "\u2014";
+        const priceSub = initialListingPrice ? "asking" : valuation ? "AI range" : "Set a price";
         const views = extra?.totalViews ?? 0;
-        const inquiries = extra?.inquiries ?? 0;
+        const confColor = confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#f59e0b" : confPct > 0 ? "#ef4444" : "var(--text-muted)";
+        const confSub = confPct >= 80 ? "High" : confPct >= 60 ? "Medium" : confPct > 0 ? "Low" : "";
         return (
-          <div style={{ padding: "0.5rem 1rem 0.6rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            {/* Row 1 — Lifecycle Progress */}
-            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+          <div style={{ padding: "8px 12px 10px", display: "flex", flexDirection: "column", gap: "6px", width: "100%", maxWidth: "100%", overflow: "hidden", boxSizing: "border-box" }}>
+            {/* Row 1 — Lifecycle Bar */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "24px" }}>
               {STAGES.map((s, i) => {
                 const isCurrent = i === stageIdx;
                 const isPast = i < stageIdx;
                 return (
-                  <div key={s.key} style={{ display: "flex", alignItems: "center", flex: 1, gap: "2px" }}>
+                  <div key={s.key} style={{ display: "flex", alignItems: "center", flex: 1, position: "relative" }}>
                     <div style={{
-                      width: isCurrent ? 10 : 7, height: isCurrent ? 10 : 7, borderRadius: "50%", flexShrink: 0,
-                      background: isPast ? "#0097a7" : isCurrent ? "#00bcd4" : "var(--text-muted)",
-                      opacity: isPast || isCurrent ? 1 : 0.3,
-                      boxShadow: isCurrent ? "0 0 8px rgba(0,188,212,0.4)" : "none",
-                      transition: "all 0.3s ease",
+                      width: isCurrent ? 8 : isPast ? 8 : 6, height: isCurrent ? 8 : isPast ? 8 : 6,
+                      borderRadius: "50%", flexShrink: 0, position: "relative", zIndex: 1,
+                      background: isPast ? "var(--accent, #00bcd4)" : isCurrent ? "var(--accent, #00bcd4)" : "rgba(255,255,255,0.2)",
+                      boxShadow: isCurrent ? "0 0 0 3px rgba(0,188,212,0.2), 0 0 8px rgba(0,188,212,0.4)" : "none",
                     }} />
-                    {i < STAGES.length - 1 && <div style={{ flex: 1, height: 2, background: isPast ? "#0097a7" : "var(--text-muted)", opacity: isPast ? 0.6 : 0.15 }} />}
+                    {i < STAGES.length - 1 && (
+                      <div style={{ flex: 1, height: 2, marginLeft: 1, marginRight: 1,
+                        background: isPast ? "var(--accent, #00bcd4)" : "rgba(255,255,255,0.12)",
+                        borderStyle: isPast ? "solid" : "none",
+                        backgroundImage: !isPast ? "repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0, rgba(255,255,255,0.12) 3px, transparent 3px, transparent 6px)" : "none",
+                        backgroundSize: "6px 2px",
+                      }} />
+                    )}
                   </div>
                 );
               })}
             </div>
-            <div style={{ textAlign: "center", fontSize: "0.52rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", fontWeight: 700 }}>{STAGES[stageIdx >= 0 ? stageIdx : 0]?.label}</div>
-            {/* Row 2 — Metrics Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.4rem" }}>
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "6px 8px" }}>
-                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Price</div>
-                <div style={{ fontSize: "0.75rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4" }}>{priceStr}</div>
-              </div>
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "6px 8px" }}>
-                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Conf</div>
-                <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                  <span style={{ fontSize: "0.75rem", fontWeight: 700, fontFamily: "var(--font-data)", color: confPct >= 75 ? "#22c55e" : confPct >= 50 ? "#f59e0b" : confPct > 0 ? "#ef4444" : "var(--text-muted)" }}>{confPct > 0 ? `${confPct}%` : "\u2014"}</span>
+            <div style={{ textAlign: "center", fontSize: "10px", fontFamily: "var(--font-data)", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--accent, #00bcd4)", fontWeight: 700 }}>{STAGES[stageIdx >= 0 ? stageIdx : 0]?.label}</div>
+
+            {/* Row 2 — 4 Metric Cards (single glass surface) */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden" }}>
+              {[
+                { lbl: "ASKING", val: priceStr, color: "var(--accent, #00bcd4)", sub: priceSub },
+                { lbl: "AI CONF", val: confPct > 0 ? `${confPct}%` : "\u2014", color: confColor, sub: confSub },
+                { lbl: "ACTIVITY", val: String(views), color: views > 0 ? "var(--accent, #00bcd4)" : "var(--text-muted)", sub: views > 0 ? `${views} views` : "No activity" },
+                { lbl: "READY", val: `${readyScore}/5`, color: readyColor, sub: readySub },
+              ].map((m, i) => (
+                <div key={m.lbl} style={{ padding: "10px 8px", borderRight: i < 3 ? "1px solid rgba(255,255,255,0.06)" : "none", overflow: "hidden", boxSizing: "border-box" }}>
+                  <div style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600 }}>{m.lbl}</div>
+                  <div style={{ fontSize: "17px", fontWeight: 700, fontFamily: "var(--font-data)", color: m.color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.val}</div>
+                  <div style={{ fontSize: "9px", color: "var(--text-muted)" }}>{m.sub}</div>
                 </div>
-              </div>
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "6px 8px" }}>
-                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Activity</div>
-                <div style={{ fontSize: "0.68rem", fontWeight: 600, fontFamily: "var(--font-data)", color: "var(--text-primary)" }}>{views > 0 || inquiries > 0 ? `${views}\u{1F441} ${inquiries}\u{1F4AC}` : "\u2014"}</div>
-              </div>
-              <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "6px 8px" }}>
-                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", fontWeight: 600 }}>Ready</div>
-                <div style={{ fontSize: "0.75rem", fontWeight: 700, fontFamily: "var(--font-data)", color: readyColor }}>{readyScore}/5</div>
-              </div>
+              ))}
             </div>
-            {/* Row 3 — Context */}
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-              {(category || aiData?.category) && <span style={{ fontSize: "0.55rem", padding: "2px 8px", borderRadius: "9999px", border: "1px solid rgba(0,188,212,0.2)", color: "var(--text-secondary)", fontWeight: 500 }}>{category || aiData.category}</span>}
-              <span style={{ fontSize: "0.55rem", color: extra?.shippingReady ? "#22c55e" : "var(--text-muted)" }}>{extra?.shippingReady ? "\u{1F4E6} Ship ready" : "\u{1F4E6} Needs setup"}</span>
+
+            {/* Row 3 — Context Line */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "28px" }}>
+              {(category || aiData?.category) && <span style={{ fontSize: "0.55rem", padding: "2px 8px", borderRadius: "9999px", border: "1px solid rgba(0,188,212,0.2)", color: "var(--text-secondary)", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "45%" }}>{category || aiData.category}</span>}
+              <span style={{ fontSize: "0.55rem", color: extra?.shippingReady ? "#22c55e" : "var(--text-muted)", flexShrink: 0 }}>{extra?.shippingReady ? "\u{1F4E6} Ship ready" : "\u{1F4E6} Needs setup"}</span>
             </div>
           </div>
         );
