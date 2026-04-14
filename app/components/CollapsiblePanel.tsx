@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePersistedState } from "@/lib/hooks/usePersistedState";
 
 type Props = {
   title: string;
@@ -9,6 +10,7 @@ type Props = {
   preview?: string;
   defaultOpen?: boolean;
   accentColor?: string;
+  storageKey?: string;
   children: React.ReactNode;
 };
 
@@ -19,9 +21,10 @@ export default function CollapsiblePanel({
   preview,
   defaultOpen = false,
   accentColor = "var(--accent, #00bcd4)",
+  storageKey,
   children,
 }: Props) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = usePersistedState(storageKey ?? "", defaultOpen);
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number | undefined>(defaultOpen ? undefined : 0);
 

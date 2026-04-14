@@ -10138,6 +10138,7 @@ export default function ItemDashboardPanels({
           icon="🤖"
           preview={`${[aiData, valuation].filter(Boolean).length + (antique?.isAntique ? 1 : 0)} active`}
           defaultOpen={false}
+          storageKey="panel-module-summary"
         >
           <BotSummaryContent
             aiData={aiData} valuation={valuation} antique={antique}

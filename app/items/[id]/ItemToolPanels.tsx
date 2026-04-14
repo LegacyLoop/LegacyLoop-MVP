@@ -981,6 +981,7 @@ export default function ItemToolPanels({ itemId, aiData, valuation, antique, com
         icon="🧠"
         preview={aiData ? `${aiData.item_name || "Identified"} · ${confPct}% confident` : "Not analyzed"}
         defaultOpen={!aiData}
+        storageKey="panel-ai-analysis"
       >
         <AiPanel aiData={aiData} itemId={itemId} status={status} />
       </CollapsiblePanel>
@@ -991,6 +992,7 @@ export default function ItemToolPanels({ itemId, aiData, valuation, antique, com
         icon="💰"
         preview={valuation ? `$${Math.round(valuation.low)} – $${Math.round(valuation.high)} · ${Math.round(valuation.confidence * 100)}%` : "No pricing"}
         defaultOpen={false}
+        storageKey="panel-price-estimate"
       >
         <PricingPanel valuation={valuation} antique={antique} userTier={userTier} aiData={aiData} />
       </CollapsiblePanel>
@@ -1001,6 +1003,7 @@ export default function ItemToolPanels({ itemId, aiData, valuation, antique, com
         icon="📦"
         preview="Get carrier rates and box recommendations"
         defaultOpen={false}
+        storageKey="panel-shipping"
       >
         <ShippingPanel itemId={itemId} hasAnalysis={!!aiData} />
       </CollapsiblePanel>
@@ -1011,6 +1014,7 @@ export default function ItemToolPanels({ itemId, aiData, valuation, antique, com
         icon="🎯"
         preview={aiData ? "3 matches found" : "Needs analysis"}
         defaultOpen={false}
+        storageKey="panel-buyers"
       >
         <PotentialBuyersPanel aiData={aiData} itemId={itemId} />
       </CollapsiblePanel>
@@ -1021,6 +1025,7 @@ export default function ItemToolPanels({ itemId, aiData, valuation, antique, com
         icon="📝"
         preview={aiData ? "Ready to generate" : "Needs analysis first"}
         defaultOpen={false}
+        storageKey="panel-listing"
       >
         <ListingPanel itemId={itemId} hasAnalysis={!!aiData} />
       </CollapsiblePanel>
@@ -1031,6 +1036,7 @@ export default function ItemToolPanels({ itemId, aiData, valuation, antique, com
         icon="📸"
         preview={`${photos.length} photo${photos.length !== 1 ? "s" : ""}`}
         defaultOpen={false}
+        storageKey="panel-photos"
       >
         <PhotoPanel photos={photos} itemId={itemId} />
       </CollapsiblePanel>
@@ -1041,6 +1047,7 @@ export default function ItemToolPanels({ itemId, aiData, valuation, antique, com
         icon="🤖"
         preview={`${[aiData, valuation].filter(Boolean).length + (antique?.isAntique ? 1 : 0)} bots active`}
         defaultOpen={false}
+        storageKey="panel-bot-summary"
       >
         <BotSummaryPanel aiData={aiData} valuation={valuation} antique={antique} photos={photos} megabotUsed={megabotUsed} itemId={itemId} category={category} />
       </CollapsiblePanel>
