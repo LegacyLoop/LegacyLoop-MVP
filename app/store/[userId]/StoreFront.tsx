@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import ShareButtons from "@/app/components/ShareButtons";
+import EmptyState from "@/app/components/EmptyState";
 
 type Item = {
   id: string;
@@ -106,8 +107,27 @@ export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl
         </div>
       </div>
 
+      {/* Zero items — empty state */}
+      {items.length === 0 && (
+        isOwner ? (
+          <EmptyState
+            icon="🏪"
+            title="Your store is empty"
+            description="List items from your dashboard to start selling."
+            ctaLabel="Go to Dashboard"
+            ctaHref="/dashboard"
+          />
+        ) : (
+          <EmptyState
+            icon="🏪"
+            title="No items listed yet"
+            description="This store doesn't have any items for sale right now."
+          />
+        )
+      )}
+
       {/* Filters */}
-      <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
+      {items.length > 0 && (<><div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
         <input
           type="text"
           placeholder="Search items..."
@@ -359,6 +379,7 @@ export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl
           })}
         </div>
       )}
+      </>)}
 
       {/* Footer hint */}
       <div style={{ marginTop: "3rem", textAlign: "center", color: "var(--text-muted)", fontSize: "0.8rem" }}>

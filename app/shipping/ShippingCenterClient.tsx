@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import EmptyState from "@/app/components/EmptyState";
 import { searchCities } from "@/lib/shipping/city-lookup";
 import type { CityEntry } from "@/lib/shipping/city-lookup";
 import { getFreightEstimates } from "@/lib/shipping/freight-estimates";
@@ -1430,14 +1431,13 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
 
   if (items.length === 0)
     return (
-      <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-muted)" }}>
-        <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem", opacity: 0.4 }}>{"\u{1F4E6}"}</div>
-        <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.35rem" }}>No Items to Estimate</div>
-        <div style={{ fontSize: "0.82rem", lineHeight: 1.5, maxWidth: 360, margin: "0 auto" }}>Upload and analyze items to start getting real carrier rates. AI will recommend the perfect box and packing strategy.</div>
-        <Link href="/items/new" style={{ display: "inline-block", marginTop: "0.75rem", padding: "0.4rem 1rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.5rem", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", textDecoration: "none" }}>
-          {"\u2795"} Add Item
-        </Link>
-      </div>
+      <EmptyState
+        icon="📦"
+        title="No items to ship"
+        description="Upload and analyze items to get real carrier rates. AI will recommend the perfect box and packing strategy."
+        ctaLabel="+ Add Item"
+        ctaHref="/items/new"
+      />
     );
 
   return (

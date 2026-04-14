@@ -5,6 +5,7 @@ import MessagesClient from "./MessagesClient";
 import MessagesAgentWrapper from "./MessagesAgentWrapper";
 import { safeJson } from "@/lib/utils/json";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
+import EmptyState from "@/app/components/EmptyState";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Messages · LegacyLoop", description: "Your inbox — buyer inquiries, offers, and conversations" };
@@ -76,11 +77,14 @@ export default async function MessagesPage() {
       <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Messages" }]} />
       <div style={{ width: "100%", height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
         {itemsForForm.length === 0 ? (
-          <div style={{ padding: 40, textAlign: "center" }}>
-            <div style={{ fontSize: "3rem", marginBottom: 12 }}>📦</div>
-            <div style={{ fontSize: 18, fontWeight: 600, color: "var(--text-primary)" }}>No items yet</div>
-            <p style={{ color: "var(--text-muted)", marginTop: 8 }}>Add an item before logging buyer messages.</p>
-            <Link href="/items/new" style={{ display: "inline-flex", alignItems: "center", padding: "10px 20px", marginTop: 16, background: "#00bcd4", color: "#000", fontWeight: 700, borderRadius: 8, textDecoration: "none" }}>Add Item</Link>
+          <div style={{ padding: "2rem 1rem" }}>
+            <EmptyState
+              icon="💬"
+              title="No conversations yet"
+              description="Messages from buyers and bot alerts will appear here."
+              ctaLabel="+ Add Your First Item"
+              ctaHref="/items/new"
+            />
           </div>
         ) : (
           <MessagesClient initialConversations={serialized as any} itemsForForm={itemsForForm} />
