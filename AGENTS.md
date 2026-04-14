@@ -117,7 +117,7 @@ try {
 - Mark temporary workarounds with `// TODO(ryan):` or `// HACK:`.
 - JSDoc on exported functions used by multiple files.
 
-### V15 Report (required on EVERY command — see CLAUDE.md for format)
+### V16 Report (required on EVERY command — see CLAUDE.md for format)
 - Serves as the engineering log for the entire company.
 - Ryan reviews these to understand what changed and why.
 - FLAGS section is where you surface risks, gaps, and ideas.
@@ -170,7 +170,7 @@ Build for today. Architect for tomorrow.
 
 - Write clean, modular code that a team can maintain.
 - Use consistent patterns so new devs onboard fast.
-- Document decisions in V15 reports (they are the engineering log).
+- Document decisions in V16 reports (they are the engineering log).
 - Prefer composition over inheritance.
 - Keep components small and focused.
 - Extract shared logic into hooks or utilities.
@@ -184,7 +184,7 @@ Build for today. Architect for tomorrow.
 
 > "LegacyLoop is not a side project. It is a company being built
 > to a billion-dollar standard by a founder who cares about every
-> detail. Treat every line of code, every commit, every V15 report
+> detail. Treat every line of code, every commit, every V16 report
 > as if it will be reviewed by the best engineers in the world.
 > Because eventually, it will be."
 

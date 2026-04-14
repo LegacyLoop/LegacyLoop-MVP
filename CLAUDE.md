@@ -20,7 +20,7 @@ in this directory. That file defines the identity we build to:
 - The 5 build laws
 - The CMD vocabulary and active 12-CMD sequence
 
-Every command, commit, and V15 report is evaluated against that doc.
+Every command, commit, and V16 report is evaluated against that doc.
 If a change does not meet that bar, it is not done. This CLAUDE.md
 handles project-specific config. That doc handles the standard.
 
@@ -56,7 +56,7 @@ These rules apply to EVERY command. No exceptions. No shortcuts.
 3. **npm run build must PASS before any commit.**
    Build = `prisma generate && next build`. Both must succeed.
 
-4. **V15 REPORT at the end of EVERY command.**
+4. **V16 REPORT at the end of EVERY command.**
    Even if not asked. Even for small changes. Always.
 
 5. **PRESERVE what works.** Fix only what is broken.
@@ -209,7 +209,7 @@ SaleMethod: LOCAL_PICKUP | ONLINE_SHIPPING | BOTH
 - Run ALL pending field additions at once — never partial migrations.
 - After ANY schema change: `npx prisma db push` to sync Turso.
 - After push: `npx prisma generate` to regenerate client.
-- Report ALL schema changes in V15 FLAGS section.
+- Report ALL schema changes in V16 FLAGS section.
 - Never delete a model or field without explicit approval.
 - Prisma singleton lives at `lib/prisma.ts` — NEVER modify.
 
@@ -656,7 +656,7 @@ Examples:
 ### Rules
 - Push immediately after commit.
 - Never leave uncommitted changes.
-- Report commit hash in every V15 report.
+- Report commit hash in every V16 report.
 - One commit per logical change. Not one giant commit.
 - Never force-push to main.
 - Never commit .env, .env.local, or any secrets.
@@ -731,42 +731,45 @@ It is a full resale automation engine that connects generations.
 ---
 
 ## ═══════════════════════════════════════════
-## SECTION 18: V15 REPORT FORMAT — REQUIRED
+## SECTION 18: V16 REPORT FORMAT — REQUIRED
 ## ═══════════════════════════════════════════
 
 Every command ends with this. No exceptions.
 
 ```
-┌──────────────────────────────────────────────────┐
-│  [CMD-NAME] V15 REPORT                           │
-│  [Date] | V15                                    │
-├──────────────────────────────────────────────────┤
-│  CHECKPOINT BEFORE: tsc=0, build=PASS ([N])      │
-│  CHECKPOINT AFTER:  tsc=0, build=PASS ([N])      │
-├──────────────────────────────────────────────────┤
-│  PART A — DIAGNOSTIC                             │
-│  [What was read, what was found]                 │
-├──────────────────────────────────────────────────┤
-│  FIXES / CHANGES                                 │
-│  [File | Line | What changed | Why]              │
-├──────────────────────────────────────────────────┤
-│  LOCKED FILES: UNTOUCHED / [list if touched]     │
-│  SCHEMA CHANGES: NONE / [what changed]           │
-├──────────────────────────────────────────────────┤
-│  FILES MODIFIED: [list]                          │
-│  FILES CREATED: [list]                           │
-├──────────────────────────────────────────────────┤
-│  FLAGS                                           │
-│  Gaps: [incomplete items found during work]      │
-│  Risks: [what could break]                       │
-│  Carry-forward: [banked commands for next]       │
-│  Suggestions: [ideas for Ryan to decide]         │
-│  Opportunities: [business/product value]         │
-├──────────────────────────────────────────────────┤
-│  tsc: 0 errors                                   │
-│  build: PASS ([N] routes)                        │
-│  Commit: [hash] on main                          │
-└──────────────────────────────────────────────────┘
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[CMD-NAME] V16 REPORT
+[Date] | V16
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CHECKPOINT BEFORE: tsc=0, build=PASS ([N] routes)
+CHECKPOINT AFTER:  tsc=0, build=PASS ([N] routes)
+[N] files changed | [N] insertions / [N] deletions
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DIAGNOSTIC:
+[What was read, what was found]
+
+FIXES / CHANGES:
+[File | Line | What changed | Why]
+
+LOCKED FILES: UNTOUCHED / [list if touched]
+SCHEMA CHANGES: NONE / [what changed]
+FILES MODIFIED: [list]
+FILES CREATED: [list]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FLAGS:
+Gaps: [incomplete items found during work]
+Risks: [what could break]
+Carry-forward: [banked commands for next]
+Suggestions: [ideas for Ryan to decide]
+Opportunities: [business/product value]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+tsc: 0 errors
+build: PASS ([N] routes)
+Commit: [hash] on main
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NEXT: [queued command]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Mission Control | LegacyLoop | [Date]
 ```
 
 ---

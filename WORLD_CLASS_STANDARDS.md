@@ -184,7 +184,7 @@ Before marking ANY feature complete, it must pass all seven:
 6. **Accessibility test** — WCAG 2.1 AA. Keyboard-only. Reduced-motion. Forced-colors. Screen reader.
 7. **Performance test** — LCP < 2.5s. CLS < 0.1. FID < 100ms. Lighthouse 90+.
 
-If ANY of the seven fails, feature is not done. Open a gap in V15 FLAGS.
+If ANY of the seven fails, feature is not done. Open a gap in V16 FLAGS.
 
 ---
 
@@ -231,11 +231,11 @@ Never overwrite. New models: extend schema. Never drop fields without
 explicit approval.
 
 ### Law 4 — One scope per command
-Stay focused. Log discoveries for later in V15 FLAGS. If you find a
+Stay focused. Log discoveries for later in V16 FLAGS. If you find a
 bug outside scope, BANK it as a future CMD. Do not fix uninvited.
 
-### Law 5 — The V15 report is law
-Every command ends with a V15 report. No exceptions. Even for small
+### Law 5 — The V16 report is law
+Every command ends with a V16 report. No exceptions. Even for small
 changes. It is the engineering log. Ryan reviews every one.
 
 ---
