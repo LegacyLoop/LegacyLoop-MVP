@@ -407,8 +407,15 @@ export default async function ItemPage({ params }: { params: Params }) {
                 </div>
               )}
               {gsCalc && !gsCalc.isExempt && (
-                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.2)", minWidth: "70px", flexShrink: 0 }}>
-                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#00bcd4", fontWeight: 700 }}>Garage Sale</div>
+                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.06)", border: gsCalc.auctionAnchored ? "1px solid rgba(212,175,55,0.4)" : "1px solid rgba(0,188,212,0.2)", minWidth: "70px", flexShrink: 0 }}>
+                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#00bcd4", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "3px" }}>
+                    Garage Sale
+                    {gsCalc.demandLabel && gsCalc.demandLabel !== "Unknown" && (
+                      <span style={{ width: "5px", height: "5px", borderRadius: "50%", display: "inline-block",
+                        background: gsCalc.demandLabel === "Hot" ? "#22c55e" : gsCalc.demandLabel === "Strong" ? "#00bcd4" : gsCalc.demandLabel === "Moderate" ? "#f59e0b" : "var(--text-muted)",
+                      }} title={`${gsCalc.demandLabel} demand`} />
+                    )}
+                  </div>
                   <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4", letterSpacing: "-0.01em" }}>${gsCalc.garageSalePrice}–${gsCalc.garageSalePriceHigh}</div>
                 </div>
               )}
@@ -419,9 +426,9 @@ export default async function ItemPage({ params }: { params: Params }) {
                 </div>
               )}
               {gsCalc?.isExempt && (
-                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", flexShrink: 0 }}>
-                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#D4AF37", fontWeight: 700 }}>Value Holds</div>
-                  <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#D4AF37" }}>Collectible</div>
+                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(212,175,55,0.08)", border: gsCalc.auctionAnchored ? "1px solid rgba(212,175,55,0.4)" : "1px solid rgba(212,175,55,0.2)", flexShrink: 0 }}>
+                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#D4AF37", fontWeight: 700 }}>Collectible</div>
+                  <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", letterSpacing: "-0.01em" }}>${gsCalc.garageSalePrice}–${gsCalc.garageSalePriceHigh}</div>
                 </div>
               )}
             </div>
