@@ -128,6 +128,7 @@ html.dark {
   --badge-color:     #22d3ee;
   --badge-border:    rgba(0, 188, 212, 0.35);
   --skeleton-bg:     rgba(255, 255, 255, 0.1);
+  --skeleton-highlight: rgba(255, 255, 255, 0.15);
   --scrollbar-track: rgba(255, 255, 255, 0.03);
   --scrollbar-thumb: rgba(255, 255, 255, 0.15);
   --star-field:      rgba(255,255,255,0.012);
@@ -200,6 +201,7 @@ html.light {
   --badge-color:     #0097a7;
   --badge-border:    rgba(0, 151, 167, 0.3);
   --skeleton-bg:     rgba(0, 0, 0, 0.06);
+  --skeleton-highlight: rgba(0, 0, 0, 0.09);
   --scrollbar-track: rgba(0, 0, 0, 0.02);
   --scrollbar-thumb: rgba(0, 0, 0, 0.12);
   --star-field:      transparent;
@@ -296,6 +298,15 @@ html.light {
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 0.6; }
   50%       { opacity: 0.25; }
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none !important; }
 }
 
 @keyframes accentPulse {
@@ -545,11 +556,12 @@ html.light {
     box-shadow: 0 0 0 2px var(--accent-dim);
   }
 
-  /* ── Skeleton loader ── */
+  /* ── Skeleton loader (shimmer gradient — Stripe-quality) ── */
   .skeleton {
-    background: var(--skeleton-bg);
+    background: linear-gradient(90deg, var(--skeleton-bg) 25%, var(--skeleton-highlight) 50%, var(--skeleton-bg) 75%);
+    background-size: 200% 100%;
     border-radius: 0.75rem;
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    animation: skeleton-shimmer 1.8s ease-in-out infinite;
   }
 
   /* ── Card-context overrides ── */
