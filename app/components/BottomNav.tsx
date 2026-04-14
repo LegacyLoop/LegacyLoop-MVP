@@ -29,16 +29,14 @@ const TABS = [
     ),
   },
   {
-    href: "/items",
-    label: "Items",
-    match: ["/items"],
-    // Exclude /items/new so center button gets its own active state
-    excludeMatch: ["/items/new"],
+    href: "/messages",
+    label: "Inbox",
+    match: ["/messages"],
+    showBadge: true,
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#00BCD4" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-        <line x1="12" y1="22.08" x2="12" y2="12" />
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
       </svg>
     ),
   },
@@ -55,14 +53,15 @@ const TABS = [
     ),
   },
   {
-    href: "/bots",
-    label: "Bots",
-    match: ["/bots"],
+    href: "/shipping",
+    label: "Shipping",
+    match: ["/shipping"],
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#00BCD4" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2L2 7l10 5 10-5-10-5z" />
-        <path d="M2 17l10 5 10-5" />
-        <path d="M2 12l10 5 10-5" />
+        <rect x="1" y="3" width="15" height="13" />
+        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+        <circle cx="5.5" cy="18.5" r="2.5" />
+        <circle cx="18.5" cy="18.5" r="2.5" />
       </svg>
     ),
   },
@@ -200,6 +199,7 @@ export default function BottomNav({ unreadCount = 0 }: { unreadCount?: number })
               href={tab.href}
               className="bottom-nav-tab"
               aria-current={isActive ? "page" : undefined}
+              aria-label={(tab as any).showBadge && unreadCount > 0 ? `${tab.label} — ${unreadCount} unread` : undefined}
               onClick={() => handleTap(tab.href)}
               style={{
                 display: "flex",
@@ -241,6 +241,15 @@ export default function BottomNav({ unreadCount = 0 }: { unreadCount?: number })
               {/* Icon wrapper */}
               <div style={{ position: "relative", display: "flex" }}>
                 {tab.icon(isActive)}
+                {(tab as any).showBadge && unreadCount > 0 && (
+                  <div style={{
+                    position: "absolute", top: "-2px", right: "-4px",
+                    width: "8px", height: "8px", borderRadius: "50%",
+                    background: "#EF4444",
+                    border: "2px solid var(--bg-primary, #0D1117)",
+                    animation: "dotAppear 0.2s cubic-bezier(0.34,1.56,0.64,1) forwards",
+                  }} />
+                )}
               </div>
 
               <span
