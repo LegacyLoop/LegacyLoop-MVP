@@ -38,13 +38,21 @@ export async function recalcGarageSalePrices(itemId: string): Promise<GarageSale
   const condition = ai?.condition_guess || (item as any).condition || "good";
   const zip = (item as any).saleZip || null;
 
-  // Fetch latest demand score
-  const demandLog = await prisma.eventLog.findFirst({
-    where: { itemId, eventType: "DEMAND_SCORE" },
-    orderBy: { createdAt: "desc" },
-    select: { payload: true },
-  }).catch(() => null);
+  // Fetch latest demand score + collectibles data
+  const [demandLog, collectiblesLog] = await Promise.all([
+    prisma.eventLog.findFirst({
+      where: { itemId, eventType: "DEMAND_SCORE" },
+      orderBy: { createdAt: "desc" },
+      select: { payload: true },
+    }).catch(() => null),
+    prisma.eventLog.findFirst({
+      where: { itemId, eventType: "COLLECTIBLESBOT_RESULT" },
+      orderBy: { createdAt: "desc" },
+      select: { payload: true },
+    }).catch(() => null),
+  ]);
   const demandData = safeJson(demandLog?.payload ?? null);
+  const collectData = safeJson(collectiblesLog?.payload ?? null);
 
   // Build enriched options
   const antique = item.antiqueCheck;
@@ -58,6 +66,9 @@ export async function recalcGarageSalePrices(itemId: string): Promise<GarageSale
     conditionScore: ai?.condition_score ?? undefined,
     brand: ai?.brand ?? undefined,
     marketCompsCount: item.marketComps.length,
+    isCollectible: collectData?.isCollectible ?? (ai?.is_collectible ?? false),
+    collectiblesScore: collectData?.overall_score ?? collectData?.collectiblesScore ?? undefined,
+    collectiblesGrade: collectData?.grade ?? collectData?.psaGrade ?? undefined,
   };
 
   const prices = calculateGarageSalePrices(marketMid, category, condition, zip, options);

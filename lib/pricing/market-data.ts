@@ -301,40 +301,36 @@ export function getMarketInfo(zip: string | null | undefined): MarketInfo {
  * Get the best market to ship to (highest multiplier).
  * Returns the NYC market as default best since it has highest demand.
  */
-export function getBestMarket(category?: string | null): MarketInfo {
+export function getBestMarket(category?: string | null, zip?: string | null): MarketInfo {
   const cat = (category || "").toLowerCase();
 
-  if (cat.includes("outdoor") || cat.includes("vehicle") || cat.includes("furniture")) {
-    return {
-      tier: "MEDIUM",
-      multiplier: 1.05,
-      label: "Nearest metro area",
-      demandNote: "Large/heavy items sell best locally or at nearest metro. Shipping is impractical.",
-    };
+  // Derive local label from zip if available
+  const localInfo = zip ? getMarketInfo(zip) : null;
+  const localLabel = localInfo && localInfo.label !== "National average" ? `Local market — ${localInfo.label}` : "Local market";
+
+  if (/lawn|mower|tractor|outdoor|garden|power|equipment/i.test(cat) || /vehicle|furniture/i.test(cat)) {
+    return { tier: "MEDIUM", multiplier: 1.05, label: localLabel, demandNote: "Large/heavy items sell best locally. Shipping is impractical." };
   }
-  if (cat.includes("musical") || cat.includes("instrument") || cat.includes("guitar")) {
-    return {
-      tier: "HIGH",
-      multiplier: 1.20,
-      label: "Nashville, TN / Austin, TX",
-      demandNote: "Music hubs with active gear markets.",
-    };
+  if (/musical|instrument|guitar|piano|drum|bass|violin|saxophone/i.test(cat)) {
+    return { tier: "HIGH", multiplier: 1.20, label: "Nashville, TN / Austin, TX", demandNote: "Music hubs with active gear markets." };
   }
-  if (cat.includes("art") || cat.includes("painting") || cat.includes("sculpture")) {
-    return {
-      tier: "HIGH",
-      multiplier: 1.30,
-      label: "New York City / Los Angeles",
-      demandNote: "Strongest art resale markets.",
-    };
+  if (/art|painting|sculpture|print|canvas|lithograph/i.test(cat)) {
+    return { tier: "HIGH", multiplier: 1.30, label: "New York City / Los Angeles", demandNote: "Strongest art resale markets." };
+  }
+  if (/electronics|computer|phone|laptop|tech|gaming|tablet|camera/i.test(cat)) {
+    return { tier: "HIGH", multiplier: 1.15, label: "Major metro buyers", demandNote: "Tech sells well in metro areas with strong resale demand." };
+  }
+  if (/furniture|vintage|mid-century|farmhouse|antique|decor/i.test(cat)) {
+    return { tier: "HIGH", multiplier: 1.10, label: "Regional antique buyers", demandNote: "Vintage/antique furniture sells regionally." };
+  }
+  if (/collectible|card|comic|toy|figure|memorabilia|pokemon|lego/i.test(cat)) {
+    return { tier: "HIGH", multiplier: 1.25, label: "Online collector market", demandNote: "Collectibles sell nationally via eBay, COMC, Mercari." };
+  }
+  if (/jewelry|watch|luxury|designer|gold|silver|diamond|gemstone/i.test(cat)) {
+    return { tier: "HIGH", multiplier: 1.30, label: "NYC / LA / Chicago", demandNote: "Luxury items command premiums in major metros." };
   }
 
-  return {
-    tier: "HIGH",
-    multiplier: 1.35,
-    label: "New York City / Boston",
-    demandNote: "Highest-demand market for vintage and antique items.",
-  };
+  return { tier: "MEDIUM", multiplier: 1.10, label: "Online marketplace", demandNote: "General items sell well on online platforms." };
 }
 
 /**

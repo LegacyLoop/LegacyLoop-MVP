@@ -339,7 +339,7 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
 
   // ── Step 5: Location multipliers (prefer AI regional data when available) ──
   const sellerMarket = getMarketInfo(saleZip);
-  const bestMarketInfo = getBestMarket(category || ai.category || null);
+  const bestMarketInfo = getBestMarket(category || ai.category || null, saleZip);
 
   // Check if AI provided item-specific regional pricing intelligence
   const hasAiRegional = !!(ai.regional_best_city && ai.regional_best_price_low && ai.regional_best_price_high);

@@ -151,7 +151,7 @@ export async function POST(
     const completeness = ai.completeness || "";
 
     // ── CROSS-BOT ENRICHMENT ──
-    const enrichment = await getItemEnrichmentContext(itemId, "pricebot").catch(() => null);
+    const enrichment = await getItemEnrichmentContext(itemId, "pricebot").catch((e: any) => { console.error("[PriceBot] enrichment failed:", e?.message || e); return null; });
     const enrichmentPrefix = enrichment?.hasEnrichment ? enrichment.contextBlock + "\n\n" : "";
 
     // ── AMAZON ENRICHMENT FROM RAINFOREST ──
@@ -632,8 +632,7 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
       },
     });
 
-    // V2: Auto-recalc garage sale prices with enriched data
-    import("@/lib/pricing/garage-sale-recalc").then(m => m.recalcGarageSalePrices(itemId)).catch(() => {});
+    // V2: recalcGarageSalePrices removed from here — now chained after demand score below
 
     // CMD-PRICEBOT-CORE-A: extended PRICEBOT_RUN telemetry. Parity
     // with ANTIQUEBOT_RUN / COLLECTIBLESBOT_RUN / CARBOT_RUN.
@@ -692,7 +691,9 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
 
     // Fire-and-forget: intelligence systems
     import("@/lib/bots/disagreement").then(m => m.checkBotDisagreement(itemId)).catch(() => null);
-    import("@/lib/bots/demand-score").then(m => m.calculateDemandScore(itemId)).catch(() => null);
+    import("@/lib/bots/demand-score").then(m => m.calculateDemandScore(itemId))
+      .then(() => import("@/lib/pricing/garage-sale-recalc").then(m => m.recalcGarageSalePrices(itemId)))
+      .catch(e => console.error("[PriceBot] demand+recalc chain error:", e));
     const cookieHeader = _req.headers.get("cookie") || "";
     import("@/lib/bots/sequencer").then(m => m.triggerNextBots({
       itemId, completedBot: "pricebot", category, isAntique,

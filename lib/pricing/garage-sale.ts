@@ -81,6 +81,11 @@ const PREMIUM_BRANDS = new Set([
   "tiffany", "cartier", "rolex", "omega", "tag heuer",
   "fender", "gibson", "martin", "taylor", "yamaha",
   "lego", "hot wheels", "pokemon", "nintendo",
+  // Power equipment (common in Maine estate sales, $500-$5000)
+  "john deere", "husqvarna", "cub cadet", "stihl", "echo",
+  "craftsman", "ego", "greenworks", "toro", "ariens",
+  "briggs & stratton", "kohler engines", "honda power",
+  "kubota", "bobcat", "simplicity",
 ]);
 
 // ── Category normalization ──────────────────────────────────────────────
@@ -152,6 +157,9 @@ export interface GarageSaleOptions {
   ageYears?: number;
   brand?: string;
   marketCompsCount?: number;
+  isCollectible?: boolean;
+  collectiblesScore?: number;
+  collectiblesGrade?: string;
 }
 
 export interface GarageSalePrices {
@@ -303,8 +311,21 @@ export function calculateGarageSalePrices(
     }
   }
 
-  // ── Apply caps (V2: exempt categories get higher caps) ──
-  const gsCap = factor.exempt ? 5000 : 200;
+  // ── V2: Collectibles uplift ──
+  let collectiblesUplift = false;
+  const isHighGradeCollectible = options?.isCollectible && (options.collectiblesScore ?? 0) >= 80;
+  const isMidGradeCollectible = options?.isCollectible && (options.collectiblesScore ?? 0) >= 50 && !isHighGradeCollectible;
+  if (isHighGradeCollectible) {
+    collectiblesUplift = true;
+  } else if (isMidGradeCollectible) {
+    gsLow = Math.round(gsLow * 1.15);
+    gsHigh = Math.round(gsHigh * 1.15);
+    collectiblesUplift = true;
+  }
+
+  // ── Apply caps (V2: exempt categories get higher caps; high-grade collectibles treated as exempt) ──
+  const effectiveExempt = factor.exempt || isHighGradeCollectible;
+  const gsCap = effectiveExempt ? 5000 : (isMidGradeCollectible ? 800 : 500);
   gsLow = Math.max(1, Math.min(gsLow, gsCap));
   gsHigh = Math.max(gsLow, Math.min(gsHigh, gsCap));
 
@@ -312,7 +333,7 @@ export function calculateGarageSalePrices(
   const quickSaleRatio = getQuickSaleRatio(options?.demandScore);
   let qsLow = Math.round(gsLow * quickSaleRatio);
   let qsHigh = Math.round(gsHigh * quickSaleRatio);
-  const qsCap = factor.exempt ? 4000 : 150;
+  const qsCap = effectiveExempt ? 4000 : (isMidGradeCollectible ? 550 : 350);
   qsLow = Math.max(1, Math.min(qsLow, qsCap));
   qsHigh = Math.max(qsLow, Math.min(qsHigh, qsCap));
 
@@ -324,7 +345,7 @@ export function calculateGarageSalePrices(
     quickSalePriceHigh: qsHigh,
     savingsVsOnline: Math.max(0, marketPrice - gsHigh),
     categoryKey,
-    isExempt: !!factor.exempt,
+    isExempt: !!effectiveExempt,
     conditionUsed: condition || "good",
     locationTier,
     locationLabel,

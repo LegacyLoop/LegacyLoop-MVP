@@ -371,6 +371,10 @@ function extractAnalyzeBot(item: any): string | null {
     parts.push(`AI Value: $${d.estimated_value_low}–$${d.estimated_value_high}`);
   }
   if (d.is_antique !== undefined) parts.push(`Antique: ${d.is_antique ? "Yes" : "No"}`);
+  const isCollectible = d.is_collectible ?? /collectible|trading.card|comic|memorabilia|pokemon|lego/i.test(d.category || "");
+  if (isCollectible) parts.push("Collectible item: Yes");
+  const isVehicle = d.is_vehicle ?? /vehicle|car|truck|motorcycle|atv|boat|trailer/i.test(d.category || "");
+  if (isVehicle) parts.push("Vehicle item: Yes");
   if (d.keywords?.length) parts.push(`Keywords: ${d.keywords.slice(0, 8).join(", ")}`);
   if (d.summary) parts.push(`Summary: ${String(d.summary).slice(0, 150)}`);
   return parts.length ? parts.join(" · ") : null;
