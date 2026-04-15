@@ -138,7 +138,199 @@ match the source recipe. Do not reinvent.
 ---
 
 ## ═══════════════════════════════════════════
-## SECTION 3 — THE 18 REFERENCE BENCHMARKS
+## SECTION 3 — DESIGN TOKENS (LOCKED)
+## ═══════════════════════════════════════════
+
+These are the canonical color and surface values. Every agent, every
+command, every commit uses these. If a value is not listed here, it
+does not exist in the system. Do not invent tokens. Do not substitute.
+
+### Background
+```
+--bg-primary:     #0D1117  (dark) / #f8fafc  (light)
+--bg-secondary:   #1A1F2E  (dark) / #ffffff  (light)
+--bg-card-solid:  #16161e  (dark) / #ffffff  (light)
+```
+
+### Accent / Brand Teal
+```
+--accent:         #00BCD4  — primary brand teal. Used everywhere.
+--accent-dim:     rgba(0,188,212,0.12)
+--accent-border:  rgba(0,188,212,0.3)
+--accent-glow:    rgba(0,188,212,0.35)
+--accent-deep:    #009688  — deep accent for gradients and hover states
+```
+
+### Semantic Colors (CORRECT values — enforce these)
+```
+--success:        #22c55e  — NOT #4caf50. Every instance of #4caf50 is wrong.
+--warning:        #f59e0b  — NOT #ff9800. Every instance of #ff9800 is wrong.
+--error:          #ef4444  — NOT #f44336. Every instance of #f44336 is wrong.
+```
+
+### Special / Premium
+```
+--antique:        #D4AF37  — antique/premium gold. Antique Alert, rare items.
+--estate-warm:    #D4A017  — estate sections ONLY. Warmer gold for estate flows.
+--megabot:        #8B5CF6  — MegaBot purple.
+```
+
+### MegaBot Provider Colors
+```
+OpenAI:   #22c55e
+Claude:   #a78bfa
+Gemini:   #3b82f6
+Grok:     #f97316
+```
+
+### Text
+```
+--text-primary:   #f1f5f9  (dark) / #0f172a  (light)
+--text-secondary: #cbd5e1  (dark) / #475569  (light)
+--text-muted:     #94a3b8  (both modes)
+```
+
+### Surfaces / Cards
+```
+Card background:  rgba(255,255,255,0.03) (dark) / #ffffff (light)
+Card border:      1px solid rgba(0,188,212,0.15)
+Card radius:      16px (primary cards) / 0.6rem (sub-cards/nested)
+Button radius:    0.75rem
+Pill radius:      9999px
+```
+
+### Ghost / Glass
+```
+--ghost-bg:       rgba(255,255,255,0.07) (dark) / rgba(0,0,0,0.04) (light)
+--border-default: rgba(255,255,255,0.12) (dark) / rgba(0,0,0,0.08) (light)
+```
+
+### Badge System
+```
+--badge-bg:       rgba(0,188,212,0.14)
+--badge-border:   rgba(0,188,212,0.35)
+--purple-bg:      rgba(139,92,246,0.1)
+--purple-border:  rgba(139,92,246,0.25)
+```
+
+### Always-Dark Panels (hardcode, do NOT use CSS vars)
+Modal overlays, bot consoles, print documents, shipping labels:
+- Text: #e2e8f0
+- Background: rgba(255,255,255,0.05)
+- These are CORRECT to hardcode. Do not convert to variables.
+
+### Carrier Brand Colors (hardcode, do NOT use CSS vars)
+```
+USPS:   #333366
+UPS:    #351c15
+FedEx:  #4d148c
+```
+
+---
+
+## ═══════════════════════════════════════════
+## SECTION 4 — TYPOGRAPHY STANDARDS (LOCKED)
+## ═══════════════════════════════════════════
+
+### Font Families (Google Fonts — loaded in layout.tsx)
+```
+Headings:           Exo 2 (weights: 400, 500, 600, 700, 800)
+Body:               Plus Jakarta Sans (weights: 400, 500, 600, 700)
+Numbers/prices/     Barlow Condensed (weights: 300–800)
+stats/credits:
+```
+
+### CSS Variables
+```
+--font-heading: var(--exo2)
+--font-body:    var(--plusJakarta)
+--font-data:    var(--barlowCondensed)
+```
+
+### Rules
+- Barlow Condensed on EVERY number: prices, stats, credits, counts,
+  percentages, dates, weights, dimensions. No exceptions.
+- Headings: Exo 2. Always. letterSpacing: "-0.02em" on H1–H3.
+- Body: Plus Jakarta Sans. lineHeight: 1.6 for paragraphs.
+- Data labels: Plus Jakarta Sans 500. letterSpacing: "0.04em" uppercase.
+- Never mix fonts within a single data point (e.g., "$" and "49.99"
+  must both be Barlow Condensed).
+
+---
+
+## ═══════════════════════════════════════════
+## SECTION 5 — SENIOR-FRIENDLY RULES (NON-NEGOTIABLE)
+## ═══════════════════════════════════════════
+
+Our primary users include seniors. These rules are not optional.
+They override aesthetic preferences. Accessibility > style.
+
+### Touch Targets
+- Minimum 44px × 44px on ALL tappable elements (Apple HIG).
+- Includes: buttons, tabs, toggles, pills, links, icons, checkboxes.
+- If an element is tappable, it must be 44px. No exceptions.
+
+### Font Size Floors
+```
+Body text:         never below 13px (0.8125rem)
+Buttons/CTAs:      never below 14px (0.875rem)
+Important data:    never below 15px (0.9375rem) — prices, status, counts
+Badge text:        minimum 10px (0.625rem) with fontWeight 700
+Label text:        minimum 11px (0.6875rem)
+Progress labels:   minimum 10px (0.625rem) with bold
+```
+
+### Contrast Ratios
+```
+Body text:         7:1 minimum against background
+Numbers/data:      9:1 minimum against background
+Interactive:       4.5:1 minimum (WCAG AA)
+Large text (18px+): 3:1 minimum (WCAG AA)
+```
+
+### Additional
+- Focus indicators: visible on ALL interactive elements.
+- Error states: NEVER color-only — always include text or icon.
+- Keyboard navigation: all features accessible without mouse.
+- Screen reader: semantic HTML, ARIA labels on icons/buttons.
+- Reduced motion: prefers-reduced-motion respected everywhere.
+- Zoom: test at 200% browser zoom. Nothing should break.
+
+---
+
+## ═══════════════════════════════════════════
+## SECTION 6 — PER-SURFACE STANDARDS
+## ═══════════════════════════════════════════
+
+Every major surface in LegacyLoop has a reference benchmark. When
+building or polishing a surface, it must feel like the reference.
+"Feel like" = interaction density, layout rhythm, information
+hierarchy, micro-interactions, and confidence level.
+
+| Surface               | Must Feel Like                     |
+|-----------------------|------------------------------------|
+| Photo Upload          | Dropbox + Shopify                  |
+| Bot Results           | Perplexity + Grok                  |
+| Valuation Panel       | StockX + Robinhood                 |
+| Antique Alert         | Sotheby's                          |
+| Messaging             | Superhuman                         |
+| Shipping Center       | ShipStation                        |
+| Dashboard             | Stripe Dashboard                   |
+| Listing Generator     | Jasper AI                          |
+| Pricing Page          | Linear                             |
+| Onboarding            | Duolingo                           |
+| Item Detail           | Instagram Shop + Facebook Marketplace |
+| Bot Hub               | Linear command center              |
+| Marketplace           | Mercari + Facebook Marketplace     |
+| Estate Flows          | Warm, dignified, slower pace       |
+
+When in doubt about a surface: find the reference, screenshot it,
+match the density and rhythm. Do not guess.
+
+---
+
+## ═══════════════════════════════════════════
+## SECTION 7 — THE 18 REFERENCE BENCHMARKS
 ## ═══════════════════════════════════════════
 
 We measure against three tiers. Every UI decision routes into one of
@@ -171,10 +363,10 @@ these tiers. When unsure, ask: "Would [reference] ship this?"
 ---
 
 ## ═══════════════════════════════════════════
-## SECTION 4 — ACCEPTANCE CRITERIA (billion-dollar test)
+## SECTION 8 — ACCEPTANCE CRITERIA (8-point World Class Check)
 ## ═══════════════════════════════════════════
 
-Before marking ANY feature complete, it must pass all seven:
+Before marking ANY feature complete, it must pass all eight:
 
 1. **Investor test** — Would an investor immediately understand this?
 2. **Senior test** — Would a 70-year-old estate seller use this without instruction?
@@ -182,14 +374,15 @@ Before marking ANY feature complete, it must pass all seven:
 4. **Stripe test** — Would this ship in the Stripe Dashboard?
 5. **Apple test** — Does every tap have haptic feedback? Every curve feel physical?
 6. **Accessibility test** — WCAG 2.1 AA. Keyboard-only. Reduced-motion. Forced-colors. Screen reader.
-7. **Performance test** — LCP < 2.5s. CLS < 0.1. FID < 100ms. Lighthouse 90+.
+7. **Mobile test** — Zero clipping at 375px? Touch targets ≥ 44px?
+8. **Theme test** — Correct in both light and dark mode? CSS variables used?
 
-If ANY of the seven fails, feature is not done. Open a gap in V16 FLAGS.
+If ANY of the eight fails, feature is not done. Open a gap in FLAGS.
 
 ---
 
 ## ═══════════════════════════════════════════
-## SECTION 5 — COPY STANDARDS
+## SECTION 9 — COPY STANDARDS
 ## ═══════════════════════════════════════════
 
 ### The voice
@@ -213,7 +406,7 @@ If ANY of the seven fails, feature is not done. Open a gap in V16 FLAGS.
 ---
 
 ## ═══════════════════════════════════════════
-## SECTION 6 — THE 5 BUILD LAWS
+## SECTION 10 — THE 5 BUILD LAWS
 ## ═══════════════════════════════════════════
 
 ### Law 1 — Structural before cosmetic
@@ -241,7 +434,7 @@ changes. It is the engineering log. Ryan reviews every one.
 ---
 
 ## ═══════════════════════════════════════════
-## SECTION 7 — THE COMMAND VOCABULARY
+## SECTION 11 — THE COMMAND VOCABULARY
 ## ═══════════════════════════════════════════
 
 Standard CMD prefixes (use when proposing new commands):
@@ -281,7 +474,7 @@ Standard CMD prefixes (use when proposing new commands):
 ---
 
 ## ═══════════════════════════════════════════
-## SECTION 8 — THE GAP (Landing vs App)
+## SECTION 12 — THE GAP (Landing vs App)
 ## ═══════════════════════════════════════════
 
 Landing is at ~9/10 on 11 of 12 effects. App is at ~0–5/10 on 10 of 12.
@@ -294,7 +487,7 @@ to close this gap. When a decision is unclear, ask:
 ---
 
 ## ═══════════════════════════════════════════
-## SECTION 9 — THE CANON REFERENCES
+## SECTION 13 — THE CANON REFERENCES
 ## ═══════════════════════════════════════════
 
 These files are the canonical reference material. Read before design
@@ -320,7 +513,7 @@ decisions. Re-read during major command work.
 ---
 
 ## ═══════════════════════════════════════════
-## SECTION 10 — THE IDENTITY STATEMENT
+## SECTION 14 — THE IDENTITY STATEMENT
 ## ═══════════════════════════════════════════
 
 We are building LegacyLoop to a billion-dollar standard from day one.

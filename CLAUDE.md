@@ -154,14 +154,15 @@ tsc --noEmit         # Type check (no output)
 ## SECTION 3: DESIGN SYSTEM — V17.1 (verified against globals.css)
 ## ═══════════════════════════════════════════
 
-### CSS Variables (V17.1 §3 — verified against globals.css)
+### CSS Variables (V17.1 §3 — LOCKED. See WORLD_CLASS_STANDARDS.md §3 for full token reference)
 ```
 --accent:         #00BCD4
 --accent-dim:     rgba(0,188,212,0.12)
 --accent-border:  rgba(0,188,212,0.3)
 --accent-glow:    rgba(0,188,212,0.35)
---bg-primary:     #0a0a0f (dark) / #f8fafc (light)
---bg-secondary:   #111118 (dark) / #ffffff (light)
+--accent-deep:    #009688
+--bg-primary:     #0D1117 (dark) / #f8fafc (light)
+--bg-secondary:   #1A1F2E (dark) / #ffffff (light)
 --bg-card-solid:  #16161e (dark) / #ffffff (light)
 --ghost-bg:       rgba(255,255,255,0.07) (dark) / rgba(0,0,0,0.04) (light)
 --border-default: rgba(255,255,255,0.12) (dark) / rgba(0,0,0,0.08) (light)
@@ -175,15 +176,19 @@ tsc --noEmit         # Type check (no output)
 --purple-border:  rgba(139,92,246,0.25)
 --font-data:      "Barlow Condensed", sans-serif
 
+Semantic (CORRECT — enforce these):
+  success=#22c55e (NOT #4caf50) | warning=#f59e0b (NOT #ff9800) | error=#ef4444 (NOT #f44336)
+  antique=#D4AF37 | estate-warm=#D4A017 (estate sections only)
+
 MegaBot providers: OpenAI=#22c55e | Claude=#a78bfa | Gemini=#3b82f6 | Grok=#f97316
-Semantic: success=#22c55e | warning=#f59e0b | error=#ef4444 | antique=#D4AF37
 ```
 
 ### Typography (Google Fonts loaded in layout.tsx)
 ```
-Headings:        Exo 2 (weights: 400, 500, 600, 700, 800)
-Body:            Plus Jakarta Sans (weights: 400, 500, 600, 700)
-Numbers/metrics: Barlow Condensed (weights: 300-800)
+Headings:           Exo 2 (weights: 400, 500, 600, 700, 800) — letterSpacing: "-0.02em" on H1–H3
+Body:               Plus Jakarta Sans (weights: 400, 500, 600, 700) — lineHeight: 1.6
+Numbers/prices/     Barlow Condensed (weights: 300-800) — on EVERY number, price, stat, credit, count
+stats/credits:
 
 CSS Variables:
   --font-heading: var(--exo2)
@@ -197,7 +202,8 @@ CSS Variables:
 - Theme-aware surfaces: CSS variables only.
 - Always-dark panels (modals/overlays/bot consoles): #e2e8f0 text, rgba(255,255,255,0.05) bg.
 - Brand teal: var(--accent) = #00BCD4. NEVER #0f766e.
-- Border radius: cards 1.25rem, buttons 0.75rem, pills 9999px.
+- Border radius: cards 16px, buttons 0.75rem, pills 9999px, sub-cards 0.6rem.
+- Card surface: bg rgba(255,255,255,0.03), border 1px solid rgba(0,188,212,0.15).
 - Animations: CSS transitions + rAF only. No framer-motion in app.
 - Existing keyframes: orbFloat1/2/3, fadeSlideUp, floatDot, skeleton-pulse, accentPulse, pulse, spin, fadeUp, softPulse.
 - GRID RULE (enforced): ALL gridTemplateColumns must use minmax(0,1fr) — NOT plain 1fr.
@@ -207,6 +213,8 @@ CSS Variables:
 - Light AND dark mode supported via CSS variables.
 - 7 breakpoints defined: xxl, xl, large, main, medium, small, tiny.
 - globals.css is 840+ lines — read it before modifying any styles.
+- Senior-friendly: body never below 13px, buttons 14px+, touch targets 44px min.
+  See WORLD_CLASS_STANDARDS.md §5 for full senior-friendly rules.
 
 ### Logo Rules
 - **UNTOUCHABLE.** Never alter, approximate, or regenerate any logo.
