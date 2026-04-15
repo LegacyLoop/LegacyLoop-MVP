@@ -385,7 +385,7 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
       low: Math.round(ai.regional_best_price_low!),
       mid: Math.round((ai.regional_best_price_low! + ai.regional_best_price_high!) / 2),
       high: Math.round(ai.regional_best_price_high!),
-      label: `${ai.regional_best_city}, ${ai.regional_best_state}`,
+      label: ai.regional_best_city?.includes(",") ? ai.regional_best_city : `${ai.regional_best_city}, ${ai.regional_best_state}`,
     };
   } else {
     bestMarketRaw = {

@@ -1689,7 +1689,7 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
 
                 {/* Expanded content */}
                 {isExpanded && (
-                  <div style={{ padding: "0 0.75rem 0.75rem", borderTop: `1px solid ${meta.color}15` }}>
+                  <div style={{ padding: "0 0.75rem 0.75rem", borderTop: `1px solid ${meta.color}15`, maxWidth: "100%", overflow: "hidden", wordBreak: "break-word" as const, overflowWrap: "anywhere" as const }}>
 
                     {isPricing ? (() => {
                       const ph = extractPH(p);
