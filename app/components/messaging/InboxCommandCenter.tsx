@@ -10,7 +10,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 1024);
+    const check = () => setIsMobile(window.innerWidth <= 768);
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
@@ -47,8 +47,8 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
 
   const modeStyles: Record<string, { border: string; color: string; label: string }> = {
     monitor: { border: "var(--border-default)", color: "var(--text-muted)", label: "Monitoring" },
-    copilot: { border: "#00bcd4", color: "#00bcd4", label: "Co-Pilot" },
-    autopilot: { border: "#4caf50", color: "#4caf50", label: "Auto-Pilot" },
+    copilot: { border: "var(--accent)", color: "var(--accent)", label: "Co-Pilot" },
+    autopilot: { border: "var(--success-text)", color: "var(--success-text)", label: "Auto-Pilot" },
   };
   const ms = modeStyles[agentMode] || modeStyles.monitor;
 
@@ -60,9 +60,9 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
           onClick={() => setSidebarOpen(o => !o)}
           style={{
             position: "absolute", top: 12, left: 12, zIndex: 20,
-            width: 32, height: 32, borderRadius: 8,
-            background: sidebarOpen ? "#00bcd4" : "rgba(0,188,212,0.15)",
-            border: "1px solid rgba(0,188,212,0.3)", color: sidebarOpen ? "#fff" : "#00bcd4",
+            width: 44, height: 44, borderRadius: "0.75rem",
+            background: sidebarOpen ? "var(--accent)" : "var(--accent-dim)",
+            border: "1px solid var(--accent-border)", color: sidebarOpen ? "#fff" : "var(--accent)",
             fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center",
             cursor: "pointer", transition: "all 0.15s ease",
           }}
@@ -94,24 +94,23 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
               key={tab.key}
               onClick={() => {
                 setActiveView(tab.key);
-                console.log(`[Inbox] Filter: ${tab.key}`);
                 window.dispatchEvent(new CustomEvent("inbox-filter-change", { detail: { filter: tab.key } }));
               }}
               style={{
                 display: "flex", alignItems: "center", gap: 10, padding: "8px 12px",
-                borderRadius: 8, cursor: "pointer", marginBottom: 2,
-                background: activeView === tab.key ? "rgba(0,188,212,0.08)" : "transparent",
-                borderLeft: activeView === tab.key ? "3px solid #00bcd4" : "3px solid transparent",
+                borderRadius: 8, cursor: "pointer", marginBottom: 2, minHeight: 44,
+                background: activeView === tab.key ? "var(--accent-dim)" : "transparent",
+                borderLeft: activeView === tab.key ? "3px solid var(--accent)" : "3px solid transparent",
                 transition: "all 0.15s ease",
               }}
             >
               <span style={{ fontSize: 14 }}>{tab.icon}</span>
-              <span style={{ flex: 1, fontSize: 11, fontWeight: activeView === tab.key ? 700 : 400, color: activeView === tab.key ? "#00bcd4" : "var(--text-secondary)" }}>{tab.label}</span>
+              <span style={{ flex: 1, fontSize: 11, fontWeight: activeView === tab.key ? 700 : 400, color: activeView === tab.key ? "var(--accent)" : "var(--text-secondary)" }}>{tab.label}</span>
               {tab.count > 0 && (
                 <span style={{
                   fontSize: 9, minWidth: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, fontWeight: 700,
-                  background: activeView === tab.key ? "#00bcd4" : (tab.key === "hot" || tab.key === "needs_reply") ? "rgba(0,188,212,0.2)" : "var(--ghost-bg)",
-                  color: activeView === tab.key ? "#fff" : (tab.key === "hot" || tab.key === "needs_reply") ? "#00bcd4" : "var(--text-muted)",
+                  background: activeView === tab.key ? "var(--accent)" : (tab.key === "hot" || tab.key === "needs_reply") ? "var(--accent-dim)" : "var(--ghost-bg)",
+                  color: activeView === tab.key ? "#fff" : (tab.key === "hot" || tab.key === "needs_reply") ? "var(--accent)" : "var(--text-muted)",
                 }}>
                   {tab.count}
                 </span>
@@ -126,7 +125,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
 
         {/* Settings gear */}
         <div style={{ padding: 12, borderTop: "1px solid var(--border-default)" }}>
-          <button onClick={() => window.dispatchEvent(new CustomEvent("agent-settings-toggle"))} style={{ width: "100%", padding: "8px", fontSize: 11, fontWeight: 600, borderRadius: 6, border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>⚙️ Agent Settings</button>
+          <button onClick={() => window.dispatchEvent(new CustomEvent("agent-settings-toggle"))} style={{ width: "100%", padding: "8px", fontSize: 11, fontWeight: 600, borderRadius: 6, border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer", minHeight: 44 }}>⚙️ Agent Settings</button>
         </div>
       </div>
 
@@ -135,7 +134,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
         {children}
       </div>
 
-      {/* RIGHT — Intelligence Panel */}
+      {/* RIGHT — Intelligence Panel (hide on mobile ≤1024px) */}
       <div style={{ width: "clamp(0px, 26vw, 260px)", minWidth: 0, maxWidth: 260, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderLeft: "1px solid var(--border-default)", display: isMobile ? "none" : "flex", flexDirection: "column" }}>
         {selectedConversationId ? (
           <>

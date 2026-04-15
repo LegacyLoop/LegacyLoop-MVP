@@ -32,7 +32,7 @@ export default function AiSuggestionsPanel({ data, onUseMessage, onDismiss }: { 
           {data.negotiation.counterPrice && <div style={{ fontSize: 20, fontWeight: 700, color: "#00bcd4", marginBottom: 4 }}>Counter: ${data.negotiation.counterPrice}</div>}
           <div style={{ fontSize: 11, fontStyle: "italic" as const, color: "var(--text-muted)", marginBottom: 8 }}>{data.negotiation.reasoning}</div>
           {data.negotiation.suggestedMessage && (
-            <button onClick={() => onUseMessage(data.negotiation.suggestedMessage)} style={{ width: "100%", height: 36, background: "rgba(0,188,212,0.15)", border: "1px solid #00bcd4", color: "#00bcd4", fontSize: 11, fontWeight: 700, borderRadius: 6, cursor: "pointer" }}>Use This Message →</button>
+            <button onClick={() => onUseMessage(data.negotiation.suggestedMessage)} style={{ width: "100%", minHeight: 44, background: "rgba(0,188,212,0.15)", border: "1px solid #00bcd4", color: "#00bcd4", fontSize: 11, fontWeight: 700, borderRadius: "0.75rem", cursor: "pointer" }}>Use This Message →</button>
           )}
         </div>
       )}
@@ -51,7 +51,7 @@ export default function AiSuggestionsPanel({ data, onUseMessage, onDismiss }: { 
               <div style={{ fontSize: 11, color: "var(--text-primary)", lineHeight: 1.5 }}>{data.result.polished || data.result.adjusted || ""}</div>
             </div>
           </div>
-          <button onClick={() => onUseMessage(data.result.polished || data.result.adjusted || "")} style={{ width: "100%", height: 36, marginTop: 10, background: "rgba(0,188,212,0.15)", border: "1px solid #00bcd4", color: "#00bcd4", fontSize: 11, fontWeight: 700, borderRadius: 6, cursor: "pointer" }}>Use Polished Version →</button>
+          <button onClick={() => onUseMessage(data.result.polished || data.result.adjusted || "")} style={{ width: "100%", minHeight: 44, marginTop: 10, background: "rgba(0,188,212,0.15)", border: "1px solid #00bcd4", color: "#00bcd4", fontSize: 11, fontWeight: 700, borderRadius: "0.75rem", cursor: "pointer" }}>Use Polished Version →</button>
         </div>
       )}
 

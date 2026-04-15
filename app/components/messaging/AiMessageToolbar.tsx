@@ -36,18 +36,18 @@ export default function AiMessageToolbar({ conversationId, onResult, userDraft }
 
   return (
     <div>
-      <div style={{ background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: 10, padding: "8px 12px", marginBottom: 6, display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 6 }}>
+      <div style={{ background: "var(--accent-dim)", border: "1px solid var(--accent-border)", borderRadius: "0.75rem", padding: "8px 12px", marginBottom: 6, display: "flex", alignItems: "center", flexWrap: "wrap" as const, gap: 6 }}>
         {MODES.map(m => (
-          <button key={m.key} onClick={() => m.key === "tone_adjust" ? setShowTones(!showTones) : callAgent(m.key)} disabled={loading} style={{ padding: "4px 12px", fontSize: 10, borderRadius: 20, border: activeMode === m.key ? "1px solid #00bcd4" : "1px solid var(--border-default)", background: activeMode === m.key ? "rgba(0,188,212,0.15)" : "transparent", color: activeMode === m.key ? "#00bcd4" : "var(--text-muted)", cursor: loading ? "wait" : "pointer", transition: "all 0.15s" }}>
+          <button key={m.key} onClick={() => m.key === "tone_adjust" ? setShowTones(!showTones) : callAgent(m.key)} disabled={loading} style={{ padding: "6px 12px", fontSize: 12, borderRadius: "0.5rem", minHeight: 36, border: activeMode === m.key ? "1px solid var(--accent)" : "1px solid var(--border-default)", background: activeMode === m.key ? "var(--accent)" : "transparent", color: activeMode === m.key ? "#ffffff" : "var(--text-secondary)", cursor: loading ? "wait" : "pointer", transition: "all 0.15s", fontWeight: activeMode === m.key ? 600 : 400 }}>
             {loading && activeMode === m.key ? "Thinking..." : m.label}
           </button>
         ))}
-        <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, color: "rgba(0,188,212,0.5)", letterSpacing: 1.5 }}>AI ASSIST</span>
+        <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, color: "var(--accent)", opacity: 0.5, letterSpacing: 1.5 }}>AI ASSIST</span>
       </div>
       {showTones && (
         <div style={{ display: "flex", gap: 6, padding: "4px 0", marginBottom: 4 }}>
           {TONES.map(t => (
-            <button key={t} onClick={() => { setShowTones(false); callAgent("tone_adjust", { toneTarget: t }); }} style={{ padding: "4px 12px", fontSize: 10, borderRadius: 20, border: "1px solid rgba(0,188,212,0.3)", background: "transparent", color: "#00bcd4", cursor: "pointer", textTransform: "capitalize" as const }}>{t}</button>
+            <button key={t} onClick={() => { setShowTones(false); callAgent("tone_adjust", { toneTarget: t }); }} style={{ padding: "6px 12px", fontSize: 12, borderRadius: "0.5rem", minHeight: 36, border: "1px solid var(--accent-border)", background: "transparent", color: "var(--accent)", cursor: "pointer", textTransform: "capitalize" as const }}>{t}</button>
           ))}
         </div>
       )}

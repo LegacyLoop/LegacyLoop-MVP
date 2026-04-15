@@ -48,16 +48,16 @@ type Props = {
 type FilterMode = "all" | "unread" | "bot" | "byItem" | "hot" | "needs_reply" | "agent" | "closed";
 
 function getBotStyle(score: number) {
-  if (score >= 80) return { label: "Likely Human", color: "#15803d", bg: "#dcfce7", border: "#86efac" };
-  if (score >= 50) return { label: "Unverified", color: "#92400e", bg: "#fef3c7", border: "#fcd34d" };
-  return { label: "Possible Bot", color: "#991b1b", bg: "#fee2e2", border: "#fca5a5" };
+  if (score >= 80) return { label: "Likely Human", color: "var(--success-text)", bg: "var(--success-bg)", border: "var(--success-border)" };
+  if (score >= 50) return { label: "Unverified", color: "var(--warning-text)", bg: "var(--warning-bg)", border: "var(--warning-border)" };
+  return { label: "Possible Bot", color: "var(--error-text)", bg: "var(--error-bg)", border: "var(--error-border)" };
 }
 
 /** Returns a small colored dot for bot score indication */
 function BotDot({ score }: { score: number }) {
-  let dotColor = "#22c55e"; // green = human
-  if (score < 80 && score >= 50) dotColor = "#eab308"; // yellow = suspicious
-  if (score < 50) dotColor = "#ef4444"; // red = likely bot
+  let dotColor = "var(--success-text)"; // green = human
+  if (score < 80 && score >= 50) dotColor = "var(--warning-text)"; // yellow = suspicious
+  if (score < 50) dotColor = "var(--error-text)"; // red = likely bot
   return (
     <span
       style={{
@@ -429,7 +429,6 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
             />
           </svg>
           <input
-            className="input"
             type="text"
             placeholder="Search messages..."
             value={searchQuery}
@@ -437,6 +436,14 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
             style={{
               paddingLeft: "2.25rem",
               width: "100%",
+              height: "40px",
+              borderRadius: "0.75rem",
+              background: "var(--ghost-bg)",
+              border: "1px solid var(--border-default)",
+              color: "var(--text-primary)",
+              fontSize: "0.88rem",
+              padding: "0 0.75rem 0 2.25rem",
+              outline: "none",
             }}
           />
           {searchQuery && (
@@ -556,7 +563,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                   fontSize: "0.65rem",
                   fontWeight: 700,
                   padding: "0 0.3rem",
-                  background: filterMode === "bot" ? "var(--bg-card-hover)" : "#ef4444",
+                  background: filterMode === "bot" ? "var(--bg-card-hover)" : "var(--error-text)",
                   color: "#fff",
                 }}
               >
@@ -762,11 +769,12 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                     onClick={() => handleSelectConv(conv)}
                     style={{
                       textAlign: "left",
-                      padding: "0.65rem 0.75rem",
+                      padding: "0.75rem",
+                      minHeight: "56px",
                       borderRadius: "0.875rem",
                       border: `1.5px solid ${isSelected ? "var(--accent)" : "var(--border-default)"}`,
-                      borderLeft: isSelected ? "3px solid #00bcd4" : "1.5px solid var(--border-default)",
-                      background: isSelected ? "rgba(0,188,212,0.08)" : "var(--bg-card-solid)",
+                      borderLeft: isSelected ? "3px solid var(--accent)" : "1.5px solid var(--border-default)",
+                      background: isSelected ? "var(--accent-dim)" : "var(--bg-card-solid)",
                       cursor: "pointer",
                       display: "flex",
                       gap: "0.65rem",
@@ -778,9 +786,9 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                     {/* Item thumbnail */}
                     <div
                       style={{
-                        width: "32px",
-                        height: "32px",
-                        borderRadius: "0.5rem",
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
                         overflow: "hidden",
                         flexShrink: 0,
                         background: "var(--bg-card-hover)",
@@ -891,8 +899,8 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                             fontWeight: 700,
                             padding: "1px 6px",
                             borderRadius: "4px",
-                            background: "rgba(0,188,212,0.12)",
-                            color: "#00bcd4",
+                            background: "var(--accent-dim)",
+                            color: "var(--accent)",
                           }}>
                             Offer
                           </span>
@@ -959,8 +967,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
           {/* New conversation button */}
           <button
             onClick={() => setComposing(true)}
-            className="btn-primary"
-            style={{ padding: "0.6rem", fontSize: "0.85rem" }}
+            style={{ padding: "0.75rem", fontSize: "0.85rem", minHeight: "44px", width: "100%", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", fontWeight: 700, border: "none", borderRadius: "0.75rem", cursor: "pointer", boxShadow: "0 4px 12px var(--accent-glow)" }}
           >
             + New Conversation
           </button>
@@ -970,7 +977,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
         {/* CMD-MOBILE-8D: Hidden when no thread selected on mobile */}
         <div style={{ flex: 1, display: isMobile && selectedId === null && !composing ? "none" : "flex", flexDirection: "column" as const, minWidth: 0, minHeight: 0, overflow: "hidden" }}>
           {composing ? (
-            <div className="card p-6">
+            <div style={{ background: "var(--bg-card-solid)", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
               {/* CMD-MOBILE-8D: Back button in compose mode on mobile */}
               {isMobile && (
                 <button
@@ -994,9 +1001,9 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
               </div>
               <form onSubmit={handleNewConv} style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
                 <div>
-                  <label className="label">Item</label>
+                  <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: "0.25rem" }}>Item</label>
                   <select
-                    className="input"
+                    style={{ width: "100%", padding: "0.6rem 0.75rem", borderRadius: "0.75rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", color: "var(--text-primary)", fontSize: "0.88rem", outline: "none" }}
                     value={newConv.itemId}
                     onChange={(e) => setNewConv({ ...newConv, itemId: e.target.value })}
                   >
@@ -1007,9 +1014,9 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(200px, 100%), 1fr))", gap: "0.75rem" }}>
                   <div>
-                    <label className="label">Buyer name / username</label>
+                    <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: "0.25rem" }}>Buyer name / username</label>
                     <input
-                      className="input"
+                      style={{ width: "100%", padding: "0.6rem 0.75rem", borderRadius: "0.75rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", color: "var(--text-primary)", fontSize: "0.88rem", outline: "none" }}
                       value={newConv.buyerName}
                       onChange={(e) => setNewConv({ ...newConv, buyerName: e.target.value })}
                       placeholder="@john_smith or John S."
@@ -1017,9 +1024,9 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                     />
                   </div>
                   <div>
-                    <label className="label">Buyer email (optional)</label>
+                    <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: "0.25rem" }}>Buyer email (optional)</label>
                     <input
-                      className="input"
+                      style={{ width: "100%", padding: "0.6rem 0.75rem", borderRadius: "0.75rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", color: "var(--text-primary)", fontSize: "0.88rem", outline: "none" }}
                       type="email"
                       value={newConv.buyerEmail}
                       onChange={(e) => setNewConv({ ...newConv, buyerEmail: e.target.value })}
@@ -1028,9 +1035,9 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                   </div>
                 </div>
                 <div>
-                  <label className="label">Paste buyer&apos;s message</label>
+                  <label style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", marginBottom: "0.25rem" }}>Paste buyer&apos;s message</label>
                   <textarea
-                    className="textarea"
+                    style={{ width: "100%", padding: "0.6rem 0.75rem", borderRadius: "0.75rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", color: "var(--text-primary)", fontSize: "0.88rem", outline: "none", minHeight: "100px", resize: "vertical" as const }}
                     rows={4}
                     value={newConv.firstMessage}
                     onChange={(e) => setNewConv({ ...newConv, firstMessage: e.target.value })}
@@ -1044,10 +1051,10 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                   </div>
                 )}
                 <div style={{ display: "flex", gap: "0.75rem" }}>
-                  <button type="submit" disabled={newConvBusy} className="btn-primary">
+                  <button type="submit" disabled={newConvBusy} style={{ padding: "0.625rem 1.25rem", minHeight: "44px", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", fontWeight: 700, fontSize: "0.85rem", border: "none", borderRadius: "0.75rem", cursor: newConvBusy ? "wait" : "pointer", opacity: newConvBusy ? 0.6 : 1 }}>
                     {newConvBusy ? "Analyzing..." : "Analyze & Save"}
                   </button>
-                  <button type="button" onClick={() => setComposing(false)} className="btn-ghost">
+                  <button type="button" onClick={() => setComposing(false)} style={{ padding: "0.625rem 1.25rem", minHeight: "44px", background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)", fontSize: "0.85rem", borderRadius: "0.75rem", cursor: "pointer" }}>
                     Cancel
                   </button>
                 </div>
@@ -1151,24 +1158,24 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                         /* Chat bubble */
                         <div style={{ display: "flex", flexDirection: "column", alignItems: isSeller ? "flex-end" : "flex-start", marginBottom: 12 }}>
                           <div style={{
-                            maxWidth: "72%",
+                            maxWidth: isMobile ? "85%" : "72%",
                             padding: "10px 14px",
                             fontSize: 14,
                             lineHeight: 1.5,
                             wordBreak: "break-word" as const,
-                            borderRadius: isSeller ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                            background: isSeller ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "var(--ghost-bg)",
+                            borderRadius: isSeller ? "1.25rem 1.25rem 0.25rem 1.25rem" : "1.25rem 1.25rem 1.25rem 0.25rem",
+                            background: isSeller ? "linear-gradient(135deg, var(--accent), var(--accent-deep))" : "var(--ghost-bg)",
                             color: isSeller ? "#fff" : "var(--text-primary)",
                             fontWeight: isSeller ? 500 : 400,
                             border: isSeller ? "none" : "1px solid var(--border-default)",
-                            boxShadow: isSeller ? "0 2px 8px rgba(0,188,212,0.3)" : "none",
+                            boxShadow: isSeller ? "0 2px 8px var(--accent-glow)" : "none",
                           }}>
                             {msg.content}
                           </div>
                           <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4, display: "flex", alignItems: "center", gap: 4, ...(isSeller ? { paddingRight: 4 } : { paddingLeft: 4 }) }}>
                             {new Date(msg.createdAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                             {msg.sender === "buyer" && !msg.isRead && (
-                              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00bcd4", display: "inline-block" }} />
+                              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)", display: "inline-block" }} />
                             )}
                           </div>
                         </div>
@@ -1180,14 +1187,14 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
               </div>
 
               {/* ═══ ZONE 2: AI Tools + Templates (sticky, always visible above reply) ═══ */}
-              <div style={{ flexShrink: 0, maxHeight: 240, overflowY: "auto", borderTop: "1px solid var(--border-default)", padding: "6px 12px", position: "sticky", bottom: 0, background: "var(--bg-secondary, #1a1f2e)", zIndex: 5 }}>
+              <div style={{ flexShrink: 0, maxHeight: 240, overflowY: "auto", borderTop: "1px solid var(--border-default)", padding: "8px 16px", position: "sticky", bottom: 0, background: "var(--bg-secondary)", zIndex: 5 }}>
                 {/* Reply templates */}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 6 }}>
+                <div style={{ display: "flex", flexWrap: "nowrap", gap: 8, marginBottom: 6, overflowX: "auto", WebkitOverflowScrolling: "touch", paddingBottom: 4, scrollbarWidth: "none" as any }}>
                   {TEMPLATES.map((t) => (
                     <button
                       key={t.label}
                       onClick={() => useTemplate(t.text)}
-                      style={{ padding: "3px 10px", borderRadius: 20, fontSize: 10, fontWeight: 500, border: "1px solid var(--border-default)", background: copiedTemplate === t.text.slice(0, 15) ? "rgba(0,188,212,0.15)" : "transparent", color: copiedTemplate === t.text.slice(0, 15) ? "#00bcd4" : "var(--text-muted)", cursor: "pointer" }}
+                      style={{ padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 500, minHeight: 32, whiteSpace: "nowrap", flexShrink: 0, border: "1px solid var(--border-default)", background: copiedTemplate === t.text.slice(0, 15) ? "var(--accent-dim)" : "transparent", color: copiedTemplate === t.text.slice(0, 15) ? "var(--accent)" : "var(--text-muted)", cursor: "pointer", transition: "all 0.15s ease" }}
                     >
                       {copiedTemplate === t.text.slice(0, 15) ? "✓" : t.label}
                     </button>
@@ -1205,7 +1212,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
               </div>
 
               {/* ═══ ZONE 3: Reply Input (always visible) ═══ */}
-              <div style={{ flexShrink: 0, borderTop: "1px solid var(--border-default)", padding: "10px 16px", background: "var(--ghost-bg)" }}>
+              <div style={{ flexShrink: 0, borderTop: "1px solid var(--border-default)", padding: "10px 16px", paddingBottom: "calc(10px + env(safe-area-inset-bottom, 0px))", background: "var(--ghost-bg)" }}>
                 <form onSubmit={handleReply} style={{ display: "flex", gap: 8 }}>
                   <textarea
                     style={{ flex: 1, resize: "none", padding: "10px 12px", fontSize: 14, background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: 10, color: "var(--text-primary)", outline: "none", minHeight: 44, maxHeight: 100 }}
@@ -1214,30 +1221,28 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                     onChange={(e) => setReply(e.target.value)}
                     placeholder="Type your reply..."
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleReply(e as any); } }}
-                    onFocus={(e) => { e.currentTarget.style.borderColor = "#00bcd4"; }}
-                    onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-default)"; }}
+                    onFocus={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; e.currentTarget.style.boxShadow = "0 0 0 3px var(--accent-dim)"; }}
+                    onBlur={(e) => { e.currentTarget.style.borderColor = "var(--border-default)"; e.currentTarget.style.boxShadow = "none"; }}
                   />
-                  <button type="submit" disabled={busyReply || !reply.trim()} style={{ alignSelf: "flex-end", padding: "10px 20px", background: (!reply.trim() || busyReply) ? "rgba(0,188,212,0.3)" : "linear-gradient(135deg, #00bcd4, #0097a7)", color: "#fff", fontWeight: 700, fontSize: 13, borderRadius: 10, border: "none", cursor: (!reply.trim() || busyReply) ? "not-allowed" : "pointer", minHeight: 44 }}>
+                  <button type="submit" disabled={busyReply || !reply.trim()} style={{ alignSelf: "flex-end", padding: "10px 20px", background: (!reply.trim() || busyReply) ? "var(--accent-glow)" : "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", fontWeight: 700, fontSize: 13, borderRadius: "0.75rem", border: "none", cursor: (!reply.trim() || busyReply) ? "not-allowed" : "pointer", minHeight: 44 }}>
                     {busyReply ? "..." : "Send"}
                   </button>
                 </form>
               </div>
             </>
           ) : (
-            <div className="card p-10 text-center" style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ fontSize: "3rem", marginBottom: "0.75rem" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ width: "48px", height: "48px", color: "var(--text-muted)" }}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25z" />
-                </svg>
-              </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "var(--bg-card-solid)", borderRadius: "1.25rem", padding: "2.5rem 1.5rem", textAlign: "center" }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ width: "48px", height: "48px", color: "var(--text-muted)", marginBottom: "0.75rem" }}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25z" />
+              </svg>
               <div style={{ fontWeight: 600, fontSize: "1.1rem", color: "var(--text-primary)" }}>
                 Select a conversation
               </div>
-              <p className="muted mt-2" style={{ marginBottom: 16 }}>Your AI agent will analyze it and provide real-time intelligence.</p>
+              <p style={{ color: "var(--text-muted)", marginTop: "0.5rem", marginBottom: "1rem", fontSize: "0.88rem" }}>Your AI agent will analyze it and provide real-time intelligence.</p>
               <button
                 onClick={() => setComposing(true)}
-                style={{ padding: "10px 24px", borderRadius: 10, background: "linear-gradient(135deg, #00bcd4, #0097a7)", color: "#fff", fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 12px rgba(0,188,212,0.3)" }}
+                style={{ padding: "0.75rem 1.5rem", borderRadius: "0.75rem", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 12px var(--accent-glow)", minHeight: 44 }}
               >
                 + New Conversation
               </button>
