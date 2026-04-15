@@ -198,7 +198,7 @@ export default async function ItemPage({ params }: { params: Params }) {
   const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://legacyloop.com"}/store/${user.id}/item/${item.id}`;
 
   return (
-    <div className="mx-auto max-w-4xl px-4">
+    <div className="mx-auto max-w-4xl px-4" style={{ overflowX: "hidden", maxWidth: "100%", boxSizing: "border-box" }}>
       {/* CMD-MOBILE-QA-FIX: Item header stacks vertically on mobile */}
       <style>{`
         @media (max-width: 768px) {
@@ -552,7 +552,7 @@ export default async function ItemPage({ params }: { params: Params }) {
       </div>
 
       {/* ═══ Bot Dashboard Panels (Item Intelligence rendered inside, after Control Center) ═══ */}
-      <div style={{ marginTop: "1.75rem" }}>
+      <div style={{ marginTop: "1.75rem", overflowX: "hidden", maxWidth: "100%", boxSizing: "border-box" }}>
         <ItemDashboardPanels
           itemId={item.id}
           aiData={aiObj}

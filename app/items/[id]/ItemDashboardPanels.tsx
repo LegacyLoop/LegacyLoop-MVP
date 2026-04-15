@@ -440,6 +440,7 @@ function CollapsedSummary({ botType, data, megaData, buttons }: {
           display: "flex", gap: "0.4rem", justifyContent: "center",
           flexWrap: "wrap" as const, marginTop: "auto", paddingTop: "0.5rem",
           borderTop: "1px solid rgba(0,188,212,0.1)", width: "100%",
+          overflow: "hidden", maxWidth: "100%", boxSizing: "border-box" as const,
         }}>
           {buttons}
         </div>
@@ -3336,7 +3337,7 @@ function _removedGarageSaleStrip({ itemId, marketPrice, category, condition }: {
 
   const priceCardStyle = (accent: string, featured?: boolean): React.CSSProperties => ({
     flex: 1,
-    minWidth: "160px",
+    minWidth: "0",
     padding: featured ? "1.25rem 1rem" : "1rem",
     borderRadius: 14,
     background: featured ? `rgba(0,188,212,0.06)` : "rgba(255,255,255,0.02)",
@@ -3967,7 +3968,9 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               salePrice = useListingPrice ? listPrice : bm;
               shipCost = sc;
               const _modeLabel = _shipMode === "freight" ? "Freight to" : "Parcel to";
-              scenario = `${_modeLabel} ${pr.bestMarket?.label ?? "best market"}`;
+              const _rawLabel = pr.bestMarket?.label ?? "best market";
+              const _cleanLabel = _rawLabel.replace(/,\s*([A-Z]{2}),\s*\1$/, ", $1");
+              scenario = `${_modeLabel} ${_cleanLabel}`;
             } else {
               // Best market doesn't beat local after real shipping cost — go local
               salePrice = useListingPrice ? listPrice : lm;
