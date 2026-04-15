@@ -39,10 +39,10 @@ function AccordionHeader({
       onClick={() => onToggle(id)}
       style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        width: "100%", background: isOpen ? "rgba(0,188,212,0.02)" : "transparent",
+        width: "100%", background: isOpen ? "var(--accent-dim)" : "transparent",
         border: "none", borderBottom: isOpen ? "1px solid var(--border-default)" : "1px solid transparent",
         padding: "0.6rem 0.4rem", cursor: "pointer", transition: "all 0.2s ease",
-        borderRadius: isOpen ? "0.4rem 0.4rem 0 0" : "0.4rem", minHeight: "38px",
+        borderRadius: isOpen ? "0.4rem 0.4rem 0 0" : "0.4rem", minHeight: "44px",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
@@ -54,24 +54,24 @@ function AccordionHeader({
         }}>{title}</span>
         {badge && (
           <span style={{
-            fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px",
-            background: `${accentColor || "#00bcd4"}18`, color: accentColor || "#00bcd4",
+            fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px",
+            background: `${accentColor || "var(--accent)"}18`, color: accentColor || "var(--accent)",
           }}>{badge}</span>
         )}
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
         {subtitle && !isOpen && (
           <span style={{
-            fontSize: "0.52rem", color: "var(--text-muted)", maxWidth: "220px",
+            fontSize: "0.62rem", color: "var(--text-muted)", maxWidth: "100%",
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" as const, fontWeight: 500,
           }}>{subtitle}</span>
         )}
         <span style={{
-          fontSize: "0.5rem", color: "var(--text-muted)", transition: "transform 0.25s ease",
+          fontSize: "0.62rem", color: "var(--text-muted)", transition: "transform 0.25s ease",
           transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
           display: "inline-flex", alignItems: "center", justifyContent: "center",
           width: "20px", height: "20px", borderRadius: "50%",
-          background: isOpen ? "rgba(0,188,212,0.08)" : "transparent",
+          background: isOpen ? "var(--accent-dim)" : "transparent",
         }}>▼</span>
       </div>
     </button>
@@ -115,9 +115,9 @@ function getRateBadges(rates: any[], rate: any): { badge: string; color: string;
   const mostExpensive = sorted[sorted.length - 1];
   const savings = mostExpensive && rate.price ? (mostExpensive.price - rate.price) : 0;
   if (isCheapest && isFastest) {
-    badges.push({ badge: "🏆 Best Overall", color: "#00bcd4", savings: null });
+    badges.push({ badge: "🏆 Best Overall", color: "var(--accent)", savings: null });
   } else {
-    if (isCheapest) badges.push({ badge: "💚 Best Value", color: "#22c55e", savings: null });
+    if (isCheapest) badges.push({ badge: "💚 Best Value", color: "var(--success-text)", savings: null });
     if (isFastest) badges.push({ badge: "⚡ Fastest", color: "#3b82f6", savings: null });
   }
   if (savings > 0.5 && !isCheapest) {
@@ -263,18 +263,18 @@ function ShippingRecommendation({ item }: { item: any }) {
   const method = getShippingMethod(item);
   const methodConfig: Record<string, { icon: string; label: string; color: string; bg: string; border: string; desc: string }> = {
     local_only: {
-      icon: "🤝", label: "LOCAL PICKUP RECOMMENDED", color: "#ff9800",
+      icon: "🤝", label: "LOCAL PICKUP RECOMMENDED", color: "var(--warning-text)",
       bg: "rgba(255,152,0,0.08)", border: "rgba(255,152,0,0.2)",
       desc: "This item is too large or specialized for carriers. Best handled through local pickup or buyer-arranged freight.",
     },
     freight: {
-      icon: "🚛", label: "FREIGHT / LTL SHIPPING", color: "#9c27b0",
+      icon: "🚛", label: "FREIGHT / LTL SHIPPING", color: "var(--freight-accent)",
       bg: "rgba(156,39,176,0.08)", border: "rgba(156,39,176,0.2)",
       desc: "This item needs freight shipping. Too large for parcel, but shippable via LTL carriers. Also consider offering local pickup.",
     },
     parcel: {
-      icon: "📦", label: "STANDARD PARCEL", color: "#00bcd4",
-      bg: "rgba(0,188,212,0.08)", border: "rgba(0,188,212,0.2)",
+      icon: "📦", label: "STANDARD PARCEL", color: "var(--accent)",
+      bg: "var(--accent-dim)", border: "var(--accent-border)",
       desc: "Ships via standard carriers (USPS, UPS, FedEx). Compare rates to find the best deal for your customer.",
     },
   };
@@ -287,58 +287,58 @@ function ShippingRecommendation({ item }: { item: any }) {
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.35rem" }}>
         <span style={{ fontSize: "1rem" }}>{cfg.icon}</span>
-        <span style={{ fontSize: "0.6rem", fontWeight: 700, color: cfg.color, letterSpacing: "0.03em" }}>
+        <span style={{ fontSize: "0.65rem", fontWeight: 700, color: cfg.color, letterSpacing: "0.03em" }}>
           {cfg.label}
         </span>
       </div>
-      <div style={{ fontSize: "0.55rem", color: "#94a3b8", lineHeight: 1.45 }}>
+      <div style={{ fontSize: "0.62rem", color: "#94a3b8", lineHeight: 1.45 }}>
         {cfg.desc}
       </div>
 
       {/* AI Intelligence Row */}
       <div style={{
-        display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.4rem",
+        display: "flex", gap: "0.62rem", flexWrap: "wrap", marginTop: "0.4rem",
       }}>
         {item.aiShippingDifficulty && (
           <span style={{
-            fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
+            fontSize: "0.62rem", padding: "2px 6px", borderRadius: "6px",
             background: item.aiShippingDifficulty === "Easy" ? "rgba(76,175,80,0.1)"
                        : item.aiShippingDifficulty === "Moderate" ? "rgba(255,152,0,0.1)"
                        : "rgba(244,67,54,0.1)",
-            color: item.aiShippingDifficulty === "Easy" ? "#4caf50"
-                  : item.aiShippingDifficulty === "Moderate" ? "#ff9800" : "#f44336",
+            color: item.aiShippingDifficulty === "Easy" ? "var(--success-text)"
+                  : item.aiShippingDifficulty === "Moderate" ? "var(--warning-text)" : "var(--error-text)",
           }}>
             {item.aiShippingDifficulty === "Easy" ? "✅" : item.aiShippingDifficulty === "Moderate" ? "⚠️" : "🔴"} {item.aiShippingDifficulty}
           </span>
         )}
         {(item.aiWeightLbs || item.userWeight || item.weight) && (
           <span style={{
-            fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
-            background: "rgba(0,188,212,0.08)", color: "#94a3b8",
+            fontSize: "0.62rem", padding: "2px 6px", borderRadius: "6px",
+            background: "var(--accent-dim)", color: "#94a3b8",
           }}>
             ⚖️ {item.weight ? `${item.weight} lbs (confirmed)` : item.aiWeightLbs ? `~${item.aiWeightLbs} lbs (AI est.)` : `~${item.aiEstWeight} lbs`}
           </span>
         )}
         {item.aiShippingConfidence != null && (
           <span style={{
-            fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
-            background: "rgba(0,188,212,0.08)", color: "#94a3b8",
+            fontSize: "0.62rem", padding: "2px 6px", borderRadius: "6px",
+            background: "var(--accent-dim)", color: "#94a3b8",
           }}>
             🎯 {Math.round(item.aiShippingConfidence * 100)}%
           </span>
         )}
         {item.isFragile && (
           <span style={{
-            fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
-            background: "rgba(244,67,54,0.08)", color: "#f44336",
+            fontSize: "0.62rem", padding: "2px 6px", borderRadius: "6px",
+            background: "var(--error-bg)", color: "var(--error-text)",
           }}>
             ⚠️ FRAGILE
           </span>
         )}
         {item.shippingPreference && item.shippingPreference !== "BUYER_PAYS" && (
           <span style={{
-            fontSize: "0.48rem", padding: "2px 6px", borderRadius: "6px",
-            background: "rgba(76,175,80,0.08)", color: "#4caf50",
+            fontSize: "0.62rem", padding: "2px 6px", borderRadius: "6px",
+            background: "var(--success-bg)", color: "var(--success-text)",
           }}>
             {item.shippingPreference === "FREE_SHIPPING" ? "🆓 Free Shipping" : item.shippingPreference === "LOCAL_ONLY" ? "📍 Local Only" : item.shippingPreference === "SPLIT_SHIPPING" ? "🤝 Split Shipping" : item.shippingPreference}
           </span>
@@ -350,7 +350,7 @@ function ShippingRecommendation({ item }: { item: any }) {
         <div style={{
           marginTop: "0.4rem", padding: "0.35rem 0.5rem",
           background: "rgba(0,0,0,0.12)", borderRadius: "6px",
-          fontSize: "0.5rem", color: "#94a3b8", fontStyle: "italic",
+          fontSize: "0.62rem", color: "#94a3b8", fontStyle: "italic",
         }}>
           💡 {item.aiShippingNotes}
         </div>
@@ -457,22 +457,22 @@ function ShippingAIPanel({ item }: { item: any }) {
   const conf = aiInsight.confidence;
 
   return (
-    <div style={{ marginTop: "0.5rem", borderLeft: "3px solid #00bcd4", borderRadius: "0 0.5rem 0.5rem 0", background: "rgba(0,188,212,0.03)", border: "1px solid rgba(0,188,212,0.12)", padding: "0.6rem 0.75rem" }}>
-      <button onClick={() => setExpanded(!expanded)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "none", border: "none", cursor: "pointer", padding: 0, gap: "0.5rem" }}>
+    <div style={{ marginTop: "0.62rem", borderLeft: "3px solid var(--accent)", borderRadius: "0 0.5rem 0.5rem 0", background: "var(--accent-dim)", border: "1px solid var(--accent-dim)", padding: "0.6rem 0.75rem" }}>
+      <button onClick={() => setExpanded(!expanded)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", background: "none", border: "none", cursor: "pointer", padding: 0, gap: "0.62rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
           <span style={{ fontSize: "0.85rem" }}>{"\u{1F916}"}</span>
           <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--accent)" }}>AI Shipping Advisor</span>
-          <span style={{ fontSize: "0.6rem", fontWeight: 600, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>{conf}%</span>
+          <span style={{ fontSize: "0.65rem", fontWeight: 600, padding: "1px 5px", borderRadius: "9999px", background: "var(--accent-dim)", color: "var(--accent)" }}>{conf}%</span>
         </div>
-        <span style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{expanded ? "\u25B2" : "\u25BC"}</span>
+        <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>{expanded ? "\u25B2" : "\u25BC"}</span>
       </button>
       <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>{aiInsight.keyInsight}</div>
       {expanded && (
-        <div style={{ marginTop: "0.5rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+        <div style={{ marginTop: "0.62rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
           {/* Confidence bar */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
             <div style={{ flex: 1, height: 4, borderRadius: 2, background: "var(--ghost-bg)", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${conf}%`, borderRadius: 2, background: "linear-gradient(90deg, #00bcd4, #009688)" }} />
+              <div style={{ height: "100%", width: `${conf}%`, borderRadius: 2, background: "linear-gradient(90deg, var(--accent), var(--accent-deep))" }} />
             </div>
             <span style={{ fontSize: "0.58rem", color: "var(--text-muted)" }}>{conf}% confident</span>
           </div>
@@ -491,7 +491,7 @@ function ShippingAIPanel({ item }: { item: any }) {
           {/* Enrichment-based shipping intelligence */}
           {(item.isAntique || item.isHighValue || item.isPremium || (item.conditionScore != null && item.conditionScore <= 4)) && (
             <div>
-              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "#ff9800", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.2rem" }}>Smart Recommendations</div>
+              <div style={{ fontSize: "0.58rem", fontWeight: 700, color: "var(--warning-text)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.2rem" }}>Smart Recommendations</div>
               {item.isAntique && <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>{"\u2022"} {"\u{1F3DB}\uFE0F"} Antique item {"\u2014"} double-box with acid-free tissue, avoid ground services</div>}
               {item.isPremium && <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>{"\u2022"} {"\u2B50"} Premium item ($2K+) {"\u2014"} consider white glove shipping, require signature</div>}
               {item.isHighValue && !item.isPremium && <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>{"\u2022"} {"\u{1F4B0}"} High-value item {"\u2014"} add insurance, request signature confirmation</div>}
@@ -578,6 +578,19 @@ const CARRIER_COLORS: Record<string, string> = {
   FedEx: "#4d148c",
 };
 
+const SHIP_INPUT_STYLE: React.CSSProperties = {
+  width: "100%",
+  padding: "0.45rem 0.65rem",
+  fontSize: "0.82rem",
+  borderRadius: "0.4rem",
+  border: "1px solid var(--border-default)",
+  background: "var(--input-bg, var(--ghost-bg))",
+  color: "var(--text-primary)",
+  outline: "none",
+  boxSizing: "border-box" as const,
+  fontFamily: "inherit",
+};
+
 function ShippingLabel({
   item,
   carrier,
@@ -624,8 +637,8 @@ function ShippingLabel({
     >
       {/* Title bar + DEMO badge */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.4rem 0.75rem", background: "#f5f5f5", borderBottom: "1px solid #ddd" }}>
-        <span style={{ fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", color: "#555" }}>LEGACYLOOP SHIPPING LABEL</span>
-        <span style={{ fontSize: "0.5rem", fontWeight: 800, padding: "1px 6px", borderRadius: "3px", background: "#fff3cd", color: "#856404", border: "1px solid #ffc107" }}>DEMO</span>
+        <span style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", color: "#555" }}>LEGACYLOOP SHIPPING LABEL</span>
+        <span style={{ fontSize: "0.62rem", fontWeight: 800, padding: "1px 6px", borderRadius: "3px", background: "#fff3cd", color: "#856404", border: "1px solid #ffc107" }}>DEMO</span>
       </div>
 
       {/* Carrier header */}
@@ -649,7 +662,7 @@ function ShippingLabel({
         {/* From / To */}
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "1rem", marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: "1px dashed #ccc" }}>
           <div>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#888", marginBottom: "0.2rem" }}>
+            <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#888", marginBottom: "0.2rem" }}>
               FROM
             </div>
             <div style={{ fontSize: "0.82rem", fontWeight: 600, lineHeight: 1.5 }}>
@@ -658,7 +671,7 @@ function ShippingLabel({
             </div>
           </div>
           <div>
-            <div style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#888", marginBottom: "0.2rem" }}>
+            <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#888", marginBottom: "0.2rem" }}>
               TO
             </div>
             <div style={{ fontSize: "0.82rem", fontWeight: 600, lineHeight: 1.5 }}>
@@ -669,15 +682,15 @@ function ShippingLabel({
         </div>
 
       {/* Shipment details */}
-      <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.5rem", marginBottom: "0.75rem", padding: "0.5rem 0", borderBottom: "1px dashed #ccc" }}>
-        <div><span style={{ fontSize: "0.55rem", color: "#888", textTransform: "uppercase" }}>Weight</span><div style={{ fontSize: "0.82rem", fontWeight: 600 }}>{weight} lbs</div></div>
-        <div><span style={{ fontSize: "0.55rem", color: "#888", textTransform: "uppercase" }}>Ship Date</span><div style={{ fontSize: "0.82rem", fontWeight: 600 }}>{today}</div></div>
-        <div><span style={{ fontSize: "0.55rem", color: "#888", textTransform: "uppercase" }}>Rate</span><div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#2e7d32" }}>${typeof rate === "number" ? rate.toFixed(2) : rate}</div></div>
+      <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.62rem", marginBottom: "0.75rem", padding: "0.5rem 0", borderBottom: "1px dashed #ccc" }}>
+        <div><span style={{ fontSize: "0.62rem", color: "#888", textTransform: "uppercase" }}>Weight</span><div style={{ fontSize: "0.82rem", fontWeight: 600 }}>{weight} lbs</div></div>
+        <div><span style={{ fontSize: "0.62rem", color: "#888", textTransform: "uppercase" }}>Ship Date</span><div style={{ fontSize: "0.82rem", fontWeight: 600 }}>{today}</div></div>
+        <div><span style={{ fontSize: "0.62rem", color: "#888", textTransform: "uppercase" }}>Rate</span><div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#2e7d32" }}>${typeof rate === "number" ? rate.toFixed(2) : rate}</div></div>
       </div>
 
       {/* Tracking + Barcode */}
       <div style={{ textAlign: "center", marginBottom: "0.75rem" }}>
-        <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#888", marginBottom: "0.3rem" }}>TRACKING NUMBER</div>
+        <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#888", marginBottom: "0.3rem" }}>TRACKING NUMBER</div>
         <div style={{ fontSize: "1.1rem", fontFamily: "monospace", fontWeight: 800, letterSpacing: "0.1em", color: "#00838f", marginBottom: "0.4rem" }}>
           {trackingNumber}
         </div>
@@ -685,7 +698,7 @@ function ShippingLabel({
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+      <div style={{ display: "flex", gap: "0.62rem", justifyContent: "center" }}>
         <button
           onClick={onPrint || (() => window.print())}
           style={{
@@ -694,7 +707,7 @@ function ShippingLabel({
             fontWeight: 700,
             borderRadius: 6,
             border: "none",
-            background: "linear-gradient(135deg, #00bcd4, #009688)",
+            background: "linear-gradient(135deg, var(--accent), var(--accent-deep))",
             color: "#fff",
             cursor: "pointer",
           }}
@@ -741,23 +754,23 @@ function TMSDashboard({ data, onTabSwitch }: { data: ShipData; onTabSwitch?: (ta
   const [hoveredFinancial, setHoveredFinancial] = useState<string | null>(null);
 
   const pipeline = [
-    { label: "Needs Quote", value: data.preSale.length, color: "#ff9800", icon: "\u{1F4CA}", tab: "preSale" },
-    { label: "Ready to Ship", value: data.readyToShip.length, color: data.readyToShip.length > 0 ? "#00bcd4" : "var(--text-muted)", icon: "\u{1F4E6}", tab: "readyToShip" },
+    { label: "Needs Quote", value: data.preSale.length, color: "var(--warning-text)", icon: "\u{1F4CA}", tab: "preSale" },
+    { label: "Ready to Ship", value: data.readyToShip.length, color: data.readyToShip.length > 0 ? "var(--accent)" : "var(--text-muted)", icon: "\u{1F4E6}", tab: "readyToShip" },
     { label: "In Transit", value: inTransit, color: "#3b82f6", icon: "\u{1F69A}", tab: "shipped" },
-    { label: "Delivered", value: delivered, color: "#4caf50", icon: "\u2705", tab: "shipped" },
-    { label: "Pickups", value: pickupCount, color: pickupCount > 0 ? "#a855f7" : "var(--text-muted)", icon: "\u{1F91D}", tab: "pickup" },
+    { label: "Delivered", value: delivered, color: "var(--success-text)", icon: "\u2705", tab: "shipped" },
+    { label: "Pickups", value: pickupCount, color: pickupCount > 0 ? "var(--pickup-accent)" : "var(--text-muted)", icon: "\u{1F91D}", tab: "pickup" },
   ];
   const financials = [
     { label: "Total Ship Cost", value: `$${Math.round(totalShipCost)}`, color: "var(--text-primary)", icon: "\u{1F4B0}", tab: null },
     { label: "Avg Cost/Item", value: avgCost > 0 ? `$${avgCost.toFixed(2)}` : "\u2014", color: "var(--text-secondary)", icon: "\u{1F4CA}", tab: null },
-    { label: "Awaiting Ship", value: data.readyToShip.length, color: data.readyToShip.length > 0 ? "#ff9800" : "var(--text-muted)", icon: "\u{1F4E6}", tab: "readyToShip" },
-    { label: "Oldest Unsent", value: oldestUnsent > 0 ? `${oldestUnsent}d` : "\u2014", color: oldestUnsent > 5 ? "#ef4444" : oldestUnsent > 2 ? "#ff9800" : "var(--text-muted)", icon: "\u23F3", tab: null },
+    { label: "Awaiting Ship", value: data.readyToShip.length, color: data.readyToShip.length > 0 ? "var(--warning-text)" : "var(--text-muted)", icon: "\u{1F4E6}", tab: "readyToShip" },
+    { label: "Oldest Unsent", value: oldestUnsent > 0 ? `${oldestUnsent}d` : "\u2014", color: oldestUnsent > 5 ? "var(--error-text)" : oldestUnsent > 2 ? "var(--warning-text)" : "var(--text-muted)", icon: "\u23F3", tab: null },
   ];
 
   return (
     <div style={{ marginBottom: "1.5rem" }}>
       {/* Pipeline */}
-      <div className="ship-5col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: "0.5rem", marginBottom: "0" }}>
+      <div className="ship-5col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: "0.62rem", marginBottom: "0" }}>
         {pipeline.map((s) => {
           const isHov = hoveredPipeline === s.label;
           return (
@@ -767,20 +780,20 @@ function TMSDashboard({ data, onTabSwitch }: { data: ShipData; onTabSwitch?: (ta
               onMouseEnter={() => setHoveredPipeline(s.label)}
               onMouseLeave={() => setHoveredPipeline(null)}
               style={{
-                background: isHov ? "rgba(0,188,212,0.06)" : "rgba(0,188,212,0.02)",
-                border: isHov ? "1px solid rgba(0,188,212,0.3)" : "1px solid var(--border-default)",
+                background: isHov ? "var(--accent-dim)" : "var(--accent-dim)",
+                border: isHov ? "1px solid var(--accent-glow)" : "1px solid var(--border-default)",
                 borderRadius: "0.75rem",
                 padding: "0.85rem 0.5rem",
                 textAlign: "center",
                 transition: "all 0.15s ease",
                 transform: isHov ? "scale(1.03)" : "scale(1)",
-                boxShadow: isHov ? "0 4px 16px rgba(0,188,212,0.12)" : "none",
+                boxShadow: isHov ? "0 4px 16px var(--accent-dim)" : "none",
                 cursor: "pointer",
               }}
             >
               <div style={{ fontSize: "1.1rem", marginBottom: "0.2rem" }}>{s.icon}</div>
               <div style={{ fontSize: "1.5rem", fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.value}</div>
-              <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+              <div style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginTop: "0.2rem" }}>
                 {s.label}
               </div>
             </div>
@@ -790,7 +803,7 @@ function TMSDashboard({ data, onTabSwitch }: { data: ShipData; onTabSwitch?: (ta
       {/* Divider */}
       <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, var(--border-default), transparent)", margin: "0.6rem 0" }} />
       {/* Financials */}
-      <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem" }}>
+      <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.62rem" }}>
         {financials.map((s) => {
           const isHov = hoveredFinancial === s.label;
           const isClickable = !!s.tab;
@@ -802,9 +815,9 @@ function TMSDashboard({ data, onTabSwitch }: { data: ShipData; onTabSwitch?: (ta
               onMouseLeave={() => setHoveredFinancial(null)}
               style={{
                 background: "var(--ghost-bg)",
-                border: isHov && isClickable ? "1px solid rgba(0,188,212,0.2)" : "1px solid var(--border-default)",
-                borderRadius: "0.5rem",
-                padding: "0.55rem",
+                border: isHov && isClickable ? "1px solid var(--accent-border)" : "1px solid var(--border-default)",
+                borderRadius: "0.62rem",
+                padding: "0.62rem",
                 textAlign: "center",
                 transition: "all 0.15s ease",
                 transform: isHov ? "scale(1.02)" : "scale(1)",
@@ -814,7 +827,7 @@ function TMSDashboard({ data, onTabSwitch }: { data: ShipData; onTabSwitch?: (ta
             >
               <div style={{ fontSize: "0.8rem", marginBottom: "0.1rem", opacity: 0.7 }}>{s.icon}</div>
               <div style={{ fontSize: "1rem", fontWeight: 700, color: s.color }}>{s.value}</div>
-              <div style={{ fontSize: "0.52rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>{s.label}</div>
+              <div style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>{s.label}</div>
             </div>
           );
         })}
@@ -827,12 +840,12 @@ function TMSDashboard({ data, onTabSwitch }: { data: ShipData; onTabSwitch?: (ta
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, { bg: string; color: string }> = {
-    CREATED: { bg: "rgba(0,188,212,0.15)", color: "#00bcd4" },
-    PICKED_UP: { bg: "rgba(0,188,212,0.15)", color: "#00bcd4" },
-    IN_TRANSIT: { bg: "rgba(0,188,212,0.2)", color: "#00bcd4" },
-    OUT_FOR_DELIVERY: { bg: "rgba(255,152,0,0.15)", color: "#ff9800" },
-    DELIVERED: { bg: "rgba(76,175,80,0.15)", color: "#4caf50" },
-    EXCEPTION: { bg: "rgba(255,152,0,0.2)", color: "#ff9800" },
+    CREATED: { bg: "var(--accent-dim)", color: "var(--accent)" },
+    PICKED_UP: { bg: "var(--accent-dim)", color: "var(--accent)" },
+    IN_TRANSIT: { bg: "var(--accent-border)", color: "var(--accent)" },
+    OUT_FOR_DELIVERY: { bg: "rgba(255,152,0,0.15)", color: "var(--warning-text)" },
+    DELIVERED: { bg: "rgba(76,175,80,0.15)", color: "var(--success-text)" },
+    EXCEPTION: { bg: "rgba(255,152,0,0.2)", color: "var(--warning-text)" },
   };
   const c = colors[status] || colors.CREATED;
   return (
@@ -876,7 +889,7 @@ function ShipProfile({ item }: { item: any }) {
 
   if (!d && !w && !item.aiBox) {
     return (
-      <div style={{ fontSize: "0.68rem", color: "#ff9800", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+      <div style={{ fontSize: "0.68rem", color: "var(--warning-text)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
         {"\u26A0\uFE0F"} No profile {"\u2014"}{" "}
         <Link href={`/items/${item.id}`} style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 600 }}>
           run AI analysis
@@ -889,10 +902,10 @@ function ShipProfile({ item }: { item: any }) {
     <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
       {/* AI Recommendation sub-section */}
       {item.aiBox && (
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", padding: "2px 7px", borderRadius: "0.35rem", background: "rgba(0,188,212,0.07)", border: "1px solid rgba(0,188,212,0.15)", marginBottom: "0.2rem" }}>
-          <span style={{ fontSize: "0.6rem" }}>{"\u{1F916}"}</span>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", padding: "2px 7px", borderRadius: "0.35rem", background: "var(--accent-dim)", border: "1px solid var(--accent-dim)", marginBottom: "0.2rem" }}>
+          <span style={{ fontSize: "0.65rem" }}>{"\u{1F916}"}</span>
           <span style={{ fontWeight: 700, color: "var(--accent)", fontSize: "0.62rem" }}>AI: {item.aiBox}</span>
-          {item.aiBoxLabel && <span style={{ color: "var(--text-muted)", fontSize: "0.6rem" }}>{"\u2014"} {item.aiBoxLabel}</span>}
+          {item.aiBoxLabel && <span style={{ color: "var(--text-muted)", fontSize: "0.65rem" }}>{"\u2014"} {item.aiBoxLabel}</span>}
         </div>
       )}
       <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
@@ -908,58 +921,58 @@ function ShipProfile({ item }: { item: any }) {
           </span>
         )}
         {item.isFragile && (
-          <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(245,158,11,0.12)", color: "#f59e0b" }}>
+          <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(245,158,11,0.12)", color: "var(--arta-accent)" }}>
             {"\u26A0\uFE0F"} FRAGILE
           </span>
         )}
-        {item.hasSavedDims && <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(34,197,94,0.12)", color: "#22c55e" }}>{"\u2705"} Saved</span>}
-        {!item.hasSavedDims && item.hasAiProfile && <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(245,158,11,0.12)", color: "#f59e0b" }}>{"\u26A1"} AI est.</span>}
+        {item.hasSavedDims && <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(34,197,94,0.12)", color: "var(--success-text)" }}>{"\u2705"} Saved</span>}
+        {!item.hasSavedDims && item.hasAiProfile && <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 4px", borderRadius: "9999px", background: "rgba(245,158,11,0.12)", color: "var(--arta-accent)" }}>{"\u26A1"} AI est.</span>}
         {item.isAntique && (
-          <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800" }}>{"\u{1F3DB}\uFE0F"} ANTIQUE</span>
+          <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "var(--warning-text)" }}>{"\u{1F3DB}\uFE0F"} ANTIQUE</span>
         )}
         {item.isHighValue && !item.isPremium && (
-          <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>{"\u{1F4B0}"} HIGH VALUE</span>
+          <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "var(--accent-dim)", color: "var(--accent)" }}>{"\u{1F4B0}"} HIGH VALUE</span>
         )}
         {item.isPremium && (
-          <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "linear-gradient(90deg, rgba(255,215,0,0.15), rgba(255,152,0,0.12))", color: "#f59e0b" }}>{"\u2B50"} PREMIUM</span>
+          <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "linear-gradient(90deg, rgba(255,215,0,0.15), rgba(255,152,0,0.12))", color: "var(--arta-accent)" }}>{"\u2B50"} PREMIUM</span>
         )}
         {(item.isPremium || (item.isHighValue && item.isAntique) || (item.isHighValue && item.isFragile)) && (
-          <span style={{ fontSize: "0.45rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "linear-gradient(90deg, rgba(255,215,0,0.1), rgba(255,152,0,0.08))", color: "#f59e0b", border: "1px solid rgba(255,215,0,0.12)" }}>{"\u{1F3DB}\uFE0F"} ARTA</span>
+          <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "linear-gradient(90deg, rgba(255,215,0,0.1), rgba(255,152,0,0.08))", color: "var(--arta-accent)", border: "1px solid rgba(255,215,0,0.12)" }}>{"\u{1F3DB}\uFE0F"} ARTA</span>
         )}
         {item.conditionScore != null && item.conditionScore <= 4 && (
-          <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(239,68,68,0.12)", color: "#ef4444" }}>{"\u26A0\uFE0F"} FRAGILE COND.</span>
+          <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(239,68,68,0.12)", color: "var(--error-text)" }}>{"\u26A0\uFE0F"} FRAGILE COND.</span>
         )}
         {item.category && <span style={{ fontSize: "0.62rem" }}>{"\u00B7"} {item.category}</span>}
         {/* Saved quote status badge */}
         {savedQuoteStatus === "fresh" && (
-          <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(34,197,94,0.12)", color: "#22c55e" }}>{"\u2705"} Quote Fresh</span>
+          <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(34,197,94,0.12)", color: "var(--success-text)" }}>{"\u2705"} Quote Fresh</span>
         )}
         {savedQuoteStatus === "expiring" && (
-          <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(245,158,11,0.12)", color: "#f59e0b" }}>{"\u26A0\uFE0F"} Expiring Soon</span>
+          <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(245,158,11,0.12)", color: "var(--arta-accent)" }}>{"\u26A0\uFE0F"} Expiring Soon</span>
         )}
         {savedQuoteStatus === "expired" && (
-          <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(239,68,68,0.12)", color: "#ef4444" }}>{"\u274C"} Quote Expired</span>
+          <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(239,68,68,0.12)", color: "var(--error-text)" }}>{"\u274C"} Quote Expired</span>
         )}
       </div>
       {(() => {
         const method = getShippingMethod(item);
         if (method === "local_only") {
           return (
-            <div style={{ fontSize: "0.6rem", color: "#ff9800", marginTop: "0.15rem", fontWeight: 600 }}>
+            <div style={{ fontSize: "0.65rem", color: "var(--warning-text)", marginTop: "0.15rem", fontWeight: 600 }}>
               📍 Local Pickup Recommended
             </div>
           );
         }
         if (method === "freight") {
           return (
-            <div style={{ fontSize: "0.6rem", color: "#9c27b0", marginTop: "0.15rem", fontWeight: 600 }}>
+            <div style={{ fontSize: "0.65rem", color: "var(--freight-accent)", marginTop: "0.15rem", fontWeight: 600 }}>
               🚛 Freight Shipping
             </div>
           );
         }
         if (item.lastQuote) {
           return (
-            <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
+            <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
               {"\u{1F4CB}"} Quoted: {item.lastQuote.cheapest?.carrier ?? "?"} {"\u2014"} ${item.lastQuote.cheapest?.price?.toFixed(2) ?? "?"}
             </div>
           );
@@ -1030,14 +1043,14 @@ function ItemRow({ item, children }: { item: any; children?: React.ReactNode }) 
           {item.aiShippingDifficulty && (() => {
             const d = item.aiShippingDifficulty;
             const colors: Record<string, { bg: string; text: string }> = {
-              "Easy": { bg: "rgba(76,175,80,0.12)", text: "#4caf50" },
-              "Moderate": { bg: "rgba(255,152,0,0.12)", text: "#ff9800" },
-              "Difficult": { bg: "rgba(244,67,54,0.12)", text: "#f44336" },
-              "Freight only": { bg: "rgba(156,39,176,0.12)", text: "#9c27b0" },
+              "Easy": { bg: "rgba(76,175,80,0.12)", text: "var(--success-text)" },
+              "Moderate": { bg: "rgba(255,152,0,0.12)", text: "var(--warning-text)" },
+              "Difficult": { bg: "rgba(244,67,54,0.12)", text: "var(--error-text)" },
+              "Freight only": { bg: "rgba(156,39,176,0.12)", text: "var(--freight-accent)" },
             };
             const c = colors[d] || colors["Moderate"];
             return (
-              <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: c.bg, color: c.text }}>
+              <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: c.bg, color: c.text }}>
                 {d === "Freight only" ? "FREIGHT" : d.toUpperCase()}
               </span>
             );
@@ -1062,7 +1075,7 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
     return (
       <div style={{
         borderTop: "1px solid var(--border-default)", padding: "0.75rem 0.85rem",
-        background: "rgba(0,188,212,0.015)", fontSize: "0.75rem", color: "var(--text-secondary)", textAlign: "center" as const,
+        background: "var(--accent-dim)", fontSize: "0.75rem", color: "var(--text-secondary)", textAlign: "center" as const,
       }}>
         No quotes available yet. Enter a destination and get estimate.
       </div>
@@ -1079,20 +1092,20 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
 
   // Freshness indicator
   const freshness = ageHrs < 1
-    ? { dot: "\u{1F7E2}", label: `Fresh (${ageMins}m)`, color: "#22c55e" }
+    ? { dot: "\u{1F7E2}", label: `Fresh (${ageMins}m)`, color: "var(--success-text)" }
     : ageHrs < 6
-      ? { dot: "\u{1F7E1}", label: `${ageHrs}h old`, color: "#f59e0b" }
-      : { dot: "\u{1F534}", label: "Stale (> 6h)", color: "#ef4444" };
+      ? { dot: "\u{1F7E1}", label: `${ageHrs}h old`, color: "var(--arta-accent)" }
+      : { dot: "\u{1F534}", label: "Stale (> 6h)", color: "var(--error-text)" };
 
   const remainMs = quotedDate ? 86400000 - ageMs : 0;
 
   return (
-    <div style={{ borderTop: "1px solid var(--border-default)", padding: "0.75rem 0.85rem", background: "rgba(0,188,212,0.015)", display: "flex", flexDirection: "column" as const, gap: "0.5rem" }}>
+    <div style={{ borderTop: "1px solid var(--border-default)", padding: "0.75rem 0.85rem", background: "var(--accent-dim)", display: "flex", flexDirection: "column" as const, gap: "0.62rem" }}>
       {/* Best Rate Card */}
       <div style={{
         padding: "0.6rem 0.75rem",
         borderRadius: "0.6rem",
-        background: "rgba(76,175,80,0.08)",
+        background: "var(--success-bg)",
         border: "1.5px solid rgba(76,175,80,0.25)",
       }}>
         <div style={{
@@ -1103,7 +1116,7 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
             <span style={{ fontSize: "0.7rem" }}>{"\u{1F49A}"}</span>
-            <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#4caf50", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
+            <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--success-text)", textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>
               Best Rate
             </span>
           </div>
@@ -1112,12 +1125,12 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
               <button
                 onClick={onRefresh}
                 style={{
-                  fontSize: "0.55rem",
+                  fontSize: "0.62rem",
                   padding: "2px 5px",
                   borderRadius: "0.3rem",
-                  background: "rgba(0,188,212,0.1)",
-                  color: "#00bcd4",
-                  border: "1px solid rgba(0,188,212,0.2)",
+                  background: "var(--accent-dim)",
+                  color: "var(--accent)",
+                  border: "1px solid var(--accent-border)",
                   cursor: "pointer",
                 }}
               >
@@ -1130,7 +1143,7 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
         <div style={{
           display: "flex",
           alignItems: "center",
-          gap: "0.5rem",
+          gap: "0.62rem",
           marginBottom: "0.3rem",
         }}>
           <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)" }}>
@@ -1139,7 +1152,7 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
           {best.service && (
             <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>{best.service}</span>
           )}
-          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#4caf50" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--success-text)" }}>
             ${best.price.toFixed(2)}
           </span>
           <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>
@@ -1151,7 +1164,7 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
           display: "flex",
           alignItems: "center",
           gap: "0.3rem",
-          fontSize: "0.6rem",
+          fontSize: "0.65rem",
           color: "var(--text-secondary)",
         }}>
           <span>{freshness.dot}</span>
@@ -1162,7 +1175,7 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
             </span>
           )}
           {quotedDate && remainMs <= 0 && (
-            <span style={{ marginLeft: "0.3rem", color: "#ef4444" }}>
+            <span style={{ marginLeft: "0.3rem", color: "var(--error-text)" }}>
               Expired {Math.abs(Math.round(remainMs / 3600000))}h ago
             </span>
           )}
@@ -1176,9 +1189,9 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
         )}
         {quote.weight && <span>{"\u{1F4E6}"} {quote.weight} lbs</span>}
         {quote.box?.label && <span>{"\u{1F4D0}"} {quote.box.label}</span>}
-        {quote.isFragile && <span style={{ color: "#f59e0b" }}>{"\u26A0\uFE0F"} Fragile</span>}
+        {quote.isFragile && <span style={{ color: "var(--arta-accent)" }}>{"\u26A0\uFE0F"} Fragile</span>}
         {quote.isLTL && <span style={{ color: "#ce93d8" }}>{"\u{1F69B}"} LTL Freight</span>}
-        {quote.isLiveRates && <span style={{ color: "#22c55e" }}>{"\u{1F7E2}"} Live rates</span>}
+        {quote.isLiveRates && <span style={{ color: "var(--success-text)" }}>{"\u{1F7E2}"} Live rates</span>}
       </div>
 
       {/* Alternative Rates */}
@@ -1192,8 +1205,8 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
               padding: "0.3rem 0.5rem",
               borderRadius: "0.3rem",
               background: "transparent",
-              color: "#00bcd4",
-              border: "1px solid rgba(0,188,212,0.3)",
+              color: "var(--accent)",
+              border: "1px solid var(--accent-glow)",
               cursor: "pointer",
               width: "100%",
               textAlign: "left" as const,
@@ -1221,7 +1234,7 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
                       {alt.carrier}
                     </span>
                     {alt.service && (
-                      <span style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>{alt.service}</span>
+                      <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>{alt.service}</span>
                     )}
                     <span style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-secondary)" }}>
                       ${alt.price.toFixed(2)}
@@ -1240,7 +1253,7 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
       {/* Quote History (collapsible) */}
       {history.length > 1 && (
         <div style={{ marginTop: "0.1rem" }}>
-          <button onClick={() => setHistoryOpen(!historyOpen)} style={{ fontSize: "0.55rem", fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+          <button onClick={() => setHistoryOpen(!historyOpen)} style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
             {historyOpen ? "\u25BC" : "\u25B6"} Quote History ({history.length})
           </button>
           {historyOpen && (
@@ -1249,8 +1262,8 @@ function QuoteDetailPanel({ item, quote, onRefresh }: { item: any; quote: any; o
                 const hDate = h.quotedAt ? new Date(h.quotedAt) : null;
                 const cheapest = (h.carriers || []).filter((c: any) => c.price > 0).sort((a: any, b: any) => a.price - b.price)[0];
                 return (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.2rem 0.5rem", fontSize: "0.55rem", color: i === 0 ? "var(--text-secondary)" : "var(--text-muted)", borderLeft: i === 0 ? "2px solid var(--accent)" : "2px solid var(--border-default)", opacity: i === 0 ? 1 : 0.7 }}>
-                    <span style={{ fontFamily: "monospace", fontSize: "0.5rem", minWidth: 80 }}>{hDate?.toLocaleDateString("en-US", { month: "short", day: "numeric" })} {hDate?.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.2rem 0.5rem", fontSize: "0.62rem", color: i === 0 ? "var(--text-secondary)" : "var(--text-muted)", borderLeft: i === 0 ? "2px solid var(--accent)" : "2px solid var(--border-default)", opacity: i === 0 ? 1 : 0.7 }}>
+                    <span style={{ fontFamily: "monospace", fontSize: "0.62rem", minWidth: 80 }}>{hDate?.toLocaleDateString("en-US", { month: "short", day: "numeric" })} {hDate?.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
                     <span>{cheapest ? `${cheapest.carrier} ${cheapest.service}` : "\u2014"}</span>
                     <span style={{ fontWeight: 700 }}>{cheapest ? `$${cheapest.price.toFixed(2)}` : ""}</span>
                     {h.fromZip && h.toZip && <span>{h.fromZip}{"\u2192"}{h.toZip}</span>}
@@ -1271,7 +1284,7 @@ function AddressDisplay({ label, address }: { label: string; address: any }) {
   if (!address) return null;
   return (
     <div style={{ flex: 1 }}>
-      <div style={{ fontSize: "0.48rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.15rem" }}>{label}</div>
+      <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.15rem" }}>{label}</div>
       <div style={{ fontSize: "0.62rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>
         {address.name && <div style={{ fontWeight: 600 }}>{address.name}</div>}
         {address.street1 && <div>{address.street1}</div>}
@@ -1471,14 +1484,14 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                 {/* Shipping method badge */}
                 {(() => {
                   const methods: Record<string, { label: string; color: string; bg: string; icon: string }> = {
-                    "local_only": { label: "LOCAL PICKUP", color: "#ff9800", bg: "rgba(255,152,0,0.12)", icon: "🤝" },
-                    "freight": { label: "FREIGHT/LTL", color: "#9c27b0", bg: "rgba(156,39,176,0.12)", icon: "🚛" },
-                    "parcel": { label: "PARCEL", color: "#00bcd4", bg: "rgba(0,188,212,0.12)", icon: "📦" },
+                    "local_only": { label: "LOCAL PICKUP", color: "var(--warning-text)", bg: "rgba(255,152,0,0.12)", icon: "🤝" },
+                    "freight": { label: "FREIGHT/LTL", color: "var(--freight-accent)", bg: "rgba(156,39,176,0.12)", icon: "🚛" },
+                    "parcel": { label: "PARCEL", color: "var(--accent)", bg: "var(--accent-dim)", icon: "📦" },
                   };
                   const m = methods[itemShipMethod] || methods.parcel;
                   return (
                     <span style={{
-                      fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px",
+                      fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px",
                       background: m.bg, color: m.color, display: "inline-flex", alignItems: "center", gap: "0.2rem",
                       marginTop: "0.2rem",
                     }}>
@@ -1503,17 +1516,17 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                         <div key={s.label} style={{ display: "flex", alignItems: "center", gap: "0.15rem" }}>
                           <div style={{
                             display: "flex", alignItems: "center", gap: "0.15rem",
-                            padding: "1px 5px", borderRadius: "9999px", fontSize: "0.45rem", fontWeight: 700,
-                            background: s.done ? "rgba(34,197,94,0.1)" : i === currentStep ? "rgba(0,188,212,0.08)" : "transparent",
-                            color: s.done ? "#22c55e" : i === currentStep ? "#00bcd4" : "var(--text-muted)",
-                            border: `1px solid ${s.done ? "rgba(34,197,94,0.15)" : i === currentStep ? "rgba(0,188,212,0.15)" : "transparent"}`,
+                            padding: "1px 5px", borderRadius: "9999px", fontSize: "0.62rem", fontWeight: 700,
+                            background: s.done ? "rgba(34,197,94,0.1)" : i === currentStep ? "var(--accent-dim)" : "transparent",
+                            color: s.done ? "var(--success-text)" : i === currentStep ? "var(--accent)" : "var(--text-muted)",
+                            border: `1px solid ${s.done ? "rgba(34,197,94,0.15)" : i === currentStep ? "var(--accent-dim)" : "transparent"}`,
                           }}>
                             {s.done ? "\u2713" : s.icon} {s.label}
                           </div>
-                          {i < steps.length - 1 && <span style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{"\u203A"}</span>}
+                          {i < steps.length - 1 && <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{"\u203A"}</span>}
                         </div>
                       ))}
-                      {hasSaved && <span style={{ fontSize: "0.45rem", fontWeight: 700, color: "#22c55e", marginLeft: "0.2rem" }}>{"\u2705"} Ready</span>}
+                      {hasSaved && <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--success-text)", marginLeft: "0.2rem" }}>{"\u2705"} Ready</span>}
                     </div>
                   );
                 })()}
@@ -1524,9 +1537,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   <div style={{
                     display: "grid",
                     gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
-                    gap: "0.5rem",
-                    marginTop: "0.5rem",
-                    marginBottom: "0.5rem",
+                    gap: "0.62rem",
+                    marginTop: "0.62rem",
+                    marginBottom: "0.62rem",
                   }}>
                     {/* Freight / LTL Card */}
                     <div style={{
@@ -1534,10 +1547,10 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                       background: "rgba(156,39,176,0.05)",
                       border: isFreight ? "2px solid rgba(156,39,176,0.3)" : "1px solid rgba(156,39,176,0.15)",
                     }}>
-                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#9c27b0", marginBottom: "0.3rem" }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--freight-accent)", marginBottom: "0.3rem" }}>
                         🚛 Freight / LTL
                       </div>
-                      <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginBottom: "0.4rem", lineHeight: 1.4 }}>
+                      <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginBottom: "0.4rem", lineHeight: 1.4 }}>
                         {isVehicle
                           ? "Available if buyer arranges freight"
                           : "Recommended for this item size/weight"}
@@ -1546,7 +1559,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                         onClick={() => onSwitchTab?.("freight")}
                         style={{
                           marginTop: "0.15rem", padding: "0.3rem 0.65rem", fontSize: "0.62rem",
-                          fontWeight: 700, background: "rgba(156,39,176,0.12)", color: "#9c27b0",
+                          fontWeight: 700, background: "rgba(156,39,176,0.12)", color: "var(--freight-accent)",
                           border: "1px solid rgba(156,39,176,0.25)", borderRadius: "6px",
                           cursor: "pointer",
                         }}
@@ -1560,24 +1573,24 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                       background: isVehicle ? "rgba(255,152,0,0.08)" : "rgba(255,152,0,0.04)",
                       border: isVehicle ? "2px solid rgba(255,152,0,0.3)" : "1px solid rgba(255,152,0,0.12)",
                     }}>
-                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#ff9800", marginBottom: "0.3rem" }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--warning-text)", marginBottom: "0.3rem" }}>
                         🤝 Local Pickup
                         {isVehicle && (
                           <span style={{
-                            marginLeft: "0.3rem", fontSize: "0.5rem", padding: "1px 5px",
+                            marginLeft: "0.3rem", fontSize: "0.62rem", padding: "1px 5px",
                             borderRadius: "4px", background: "rgba(255,152,0,0.15)",
-                            color: "#ff9800", fontWeight: 700,
+                            color: "var(--warning-text)", fontWeight: 700,
                           }}>RECOMMENDED</span>
                         )}
                       </div>
-                      <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginBottom: "0.4rem", lineHeight: 1.4 }}>
+                      <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginBottom: "0.4rem", lineHeight: 1.4 }}>
                         Buyer picks up — no shipping cost
                       </div>
                       <button
                         onClick={() => onSwitchTab?.("pickup")}
                         style={{
                           marginTop: "0.15rem", padding: "0.3rem 0.65rem", fontSize: "0.62rem",
-                          fontWeight: 700, background: "rgba(255,152,0,0.12)", color: "#ff9800",
+                          fontWeight: 700, background: "rgba(255,152,0,0.12)", color: "var(--warning-text)",
                           border: "1px solid rgba(255,152,0,0.25)", borderRadius: "6px",
                           cursor: "pointer",
                         }}
@@ -1592,20 +1605,20 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   <div className="ship-3col-grid" style={{
                     display: "grid",
                     gridTemplateColumns: "repeat(3, minmax(0,1fr))",
-                    gap: "0.5rem",
-                    marginTop: "0.5rem",
-                    marginBottom: "0.5rem",
+                    gap: "0.62rem",
+                    marginTop: "0.62rem",
+                    marginBottom: "0.62rem",
                   }}>
                     {/* Parcel Card */}
                     <div style={{
                       padding: "0.6rem", borderRadius: "10px",
-                      background: "rgba(0,188,212,0.05)",
-                      border: "1px solid rgba(0,188,212,0.15)",
+                      background: "var(--accent-dim)",
+                      border: "1px solid var(--accent-dim)",
                     }}>
-                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#00bcd4", marginBottom: "0.3rem" }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--accent)", marginBottom: "0.3rem" }}>
                         📦 Parcel
                       </div>
-                      <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>
+                      <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>
                         USPS, UPS, FedEx
                       </div>
                       {carriers[0] && (
@@ -1616,9 +1629,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                       <button
                         onClick={() => window.open(`/items/${item.id}#shipping-carrier-rates`, "_blank")}
                         style={{
-                          marginTop: "0.3rem", padding: "0.25rem 0.5rem", fontSize: "0.55rem",
-                          fontWeight: 600, background: "rgba(0,188,212,0.12)", color: "#00bcd4",
-                          border: "1px solid rgba(0,188,212,0.25)", borderRadius: "6px",
+                          marginTop: "0.3rem", padding: "0.25rem 0.5rem", fontSize: "0.62rem",
+                          fontWeight: 600, background: "var(--accent-dim)", color: "var(--accent)",
+                          border: "1px solid var(--accent-border)", borderRadius: "6px",
                           cursor: "pointer",
                         }}
                       >
@@ -1631,17 +1644,17 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                       background: "rgba(156,39,176,0.05)",
                       border: "1px solid rgba(156,39,176,0.15)",
                     }}>
-                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#9c27b0", marginBottom: "0.3rem" }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--freight-accent)", marginBottom: "0.3rem" }}>
                         🚛 Freight
                       </div>
-                      <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>
+                      <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>
                         LTL for large items
                       </div>
                       <button
                         onClick={() => onSwitchTab?.("freight")}
                         style={{
-                          marginTop: "0.3rem", padding: "0.25rem 0.5rem", fontSize: "0.55rem",
-                          fontWeight: 600, background: "rgba(156,39,176,0.12)", color: "#9c27b0",
+                          marginTop: "0.3rem", padding: "0.25rem 0.5rem", fontSize: "0.62rem",
+                          fontWeight: 600, background: "rgba(156,39,176,0.12)", color: "var(--freight-accent)",
                           border: "1px solid rgba(156,39,176,0.25)", borderRadius: "6px",
                           cursor: "pointer",
                         }}
@@ -1655,17 +1668,17 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                       background: "rgba(255,152,0,0.04)",
                       border: "1px solid rgba(255,152,0,0.12)",
                     }}>
-                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#ff9800", marginBottom: "0.3rem" }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--warning-text)", marginBottom: "0.3rem" }}>
                         🤝 Pickup
                       </div>
-                      <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>
+                      <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>
                         No shipping cost
                       </div>
                       <button
                         onClick={() => onSwitchTab?.("pickup")}
                         style={{
-                          marginTop: "0.3rem", padding: "0.25rem 0.5rem", fontSize: "0.55rem",
-                          fontWeight: 600, background: "rgba(255,152,0,0.12)", color: "#ff9800",
+                          marginTop: "0.3rem", padding: "0.25rem 0.5rem", fontSize: "0.62rem",
+                          fontWeight: 600, background: "rgba(255,152,0,0.12)", color: "var(--warning-text)",
                           border: "1px solid rgba(255,152,0,0.25)", borderRadius: "6px",
                           cursor: "pointer",
                         }}
@@ -1677,7 +1690,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                 )}
                 {/* Item Details Row */}
                 <div style={{
-                  display: "flex", gap: "0.5rem", flexWrap: "wrap",
+                  display: "flex", gap: "0.62rem", flexWrap: "wrap",
                   padding: "0.4rem 0.6rem",
                   background: "var(--ghost-bg)",
                   borderRadius: "8px",
@@ -1692,8 +1705,8 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   )}
                   {item.aiShippingDifficulty && (
                     <span style={{
-                      color: item.aiShippingDifficulty === "Easy" ? "#4caf50"
-                            : item.aiShippingDifficulty === "Moderate" ? "#ff9800" : "#f44336",
+                      color: item.aiShippingDifficulty === "Easy" ? "var(--success-text)"
+                            : item.aiShippingDifficulty === "Moderate" ? "var(--warning-text)" : "var(--error-text)",
                     }}>
                       {item.aiShippingDifficulty === "Easy" ? "✅" : "⚠️"} {item.aiShippingDifficulty}
                     </span>
@@ -1702,7 +1715,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                     href={`/items/${item.id}`}
                     target="_blank"
                     rel="noopener"
-                    style={{ color: "#00bcd4", fontWeight: 600, textDecoration: "none" }}
+                    style={{ color: "var(--accent)", fontWeight: 600, textDecoration: "none" }}
                   >
                     Open Item Dashboard ↗
                   </a>
@@ -1720,12 +1733,12 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                         subtitle="Dims · Weight · Policy · Services"
                         isOpen={showCC}
                         onToggle={() => setControlCenterOpen(showCC ? null : item.id)}
-                        accentColor="#00bcd4"
+                        accentColor="var(--accent)"
                       />
 
                       {showCC && (
                         <div style={{
-                          padding: "0.5rem",
+                          padding: "0.62rem",
                           background: "var(--bg-card)",
                           border: "1px solid var(--border-default)",
                           borderRadius: "10px",
@@ -1736,7 +1749,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                             display: "grid",
                             gridTemplateColumns: "repeat(4, minmax(0,1fr))",
                             gap: "0.35rem",
-                            marginBottom: "0.5rem",
+                            marginBottom: "0.62rem",
                           }}>
                             {/* Dimensions chip */}
                             <div style={{
@@ -1745,13 +1758,13 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                               borderRadius: "8px",
                               textAlign: "center",
                             }}>
-                              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+                              <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
                                 📦 DIMENSIONS
                               </div>
                               <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-primary)" }}>
                                 {dimStr(item) || item.aiDimsEstimate || "—"}
                               </div>
-                              <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>
+                              <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>
                                 {item.aiDimsSource === "user" ? "Confirmed"
                                   : item.aiDimsSource === "ai_analysis" ? "AI Analysis"
                                   : item.aiDimsSource === "category_default" ? "Category Est."
@@ -1766,7 +1779,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                               borderRadius: "8px",
                               textAlign: "center",
                             }}>
-                              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+                              <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
                                 ⚖️ WEIGHT
                               </div>
                               <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-primary)" }}>
@@ -1775,7 +1788,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                                   return w ? `${Math.round(w)} lbs` : "—";
                                 })()}
                               </div>
-                              <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>
+                              <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>
                                 {item.aiWeightSource === "user" ? "Confirmed"
                                   : item.aiWeightSource === "ai_analysis" || item.aiWeightSource === "ai_saved" ? "AI Analysis"
                                   : item.aiWeightSource === "category_default" ? "Category Est."
@@ -1790,13 +1803,13 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                               borderRadius: "8px",
                               textAlign: "center",
                             }}>
-                              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+                              <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
                                 📍 ORIGIN
                               </div>
                               <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-primary)" }}>
                                 {item.saleZip || "—"}
                               </div>
-                              <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>
+                              <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>
                                 Ship-from ZIP
                               </div>
                             </div>
@@ -1808,7 +1821,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                               borderRadius: "8px",
                               textAlign: "center",
                             }}>
-                              <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
+                              <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", fontWeight: 600, marginBottom: "2px" }}>
                                 🏷️ POLICY
                               </div>
                               <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-primary)" }}>
@@ -1817,7 +1830,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                                   : item.shippingPreference === "SPLIT_SHIPPING" ? "Split Ship"
                                   : "Buyer Pays"}
                               </div>
-                              <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>
+                              <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>
                                 Shipping policy
                               </div>
                             </div>
@@ -1826,9 +1839,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                           {/* Inline Ship Profile Editor */}
                           {editingShipProfile === item.id && (
                             <div style={{
-                              padding: "0.5rem", marginBottom: "0.5rem",
-                              background: "rgba(0,188,212,0.03)",
-                              border: "1px solid rgba(0,188,212,0.12)",
+                              padding: "0.62rem", marginBottom: "0.62rem",
+                              background: "var(--accent-dim)",
+                              border: "1px solid var(--accent-dim)",
                               borderRadius: "8px",
                             }}>
                               <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.4rem", marginBottom: "0.4rem" }}>
@@ -1839,13 +1852,13 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                                   { label: "Weight (lbs)", val: editWeight, set: setEditWeight },
                                 ].map(f => (
                                   <div key={f.label}>
-                                    <div style={{ fontSize: "0.45rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "2px" }}>{f.label}</div>
+                                    <div style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--text-muted)", marginBottom: "2px" }}>{f.label}</div>
                                     <input
                                       type="number"
                                       value={f.val || ""}
                                       onChange={e => f.set(Number(e.target.value) || 0)}
                                       style={{
-                                        width: "100%", padding: "0.3rem 0.4rem", fontSize: "0.6rem",
+                                        width: "100%", padding: "0.3rem 0.4rem", fontSize: "0.65rem",
                                         border: "1px solid var(--border-default)", borderRadius: "6px",
                                         textAlign: "center", background: "var(--bg-card)",
                                         color: "var(--text-primary)", outline: "none",
@@ -1854,9 +1867,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                                   </div>
                                 ))}
                               </div>
-                              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                                <label style={{ display: "flex", alignItems: "center", gap: "0.2rem", fontSize: "0.5rem", color: "var(--text-muted)", cursor: "pointer" }}>
-                                  <input type="checkbox" checked={editFragile} onChange={e => setEditFragile(e.target.checked)} style={{ accentColor: "#00bcd4" }} />
+                              <div style={{ display: "flex", alignItems: "center", gap: "0.62rem", flexWrap: "wrap" }}>
+                                <label style={{ display: "flex", alignItems: "center", gap: "0.2rem", fontSize: "0.62rem", color: "var(--text-muted)", cursor: "pointer" }}>
+                                  <input type="checkbox" checked={editFragile} onChange={e => setEditFragile(e.target.checked)} style={{ accentColor: "var(--accent)" }} />
                                   Fragile
                                 </label>
                                 <button
@@ -1882,9 +1895,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                                   }}
                                   disabled={editSaving}
                                   style={{
-                                    padding: "0.35rem 0.75rem", fontSize: "0.55rem", fontWeight: 700,
+                                    padding: "0.35rem 0.75rem", fontSize: "0.62rem", fontWeight: 700,
                                     borderRadius: "0.35rem", border: "none", cursor: "pointer",
-                                    background: editSaved ? "linear-gradient(135deg, #4caf50, #2e7d32)" : "linear-gradient(135deg, #00bcd4, #00acc1)",
+                                    background: editSaved ? "linear-gradient(135deg, var(--success-text), #2e7d32)" : "linear-gradient(135deg, var(--accent), var(--accent-deep))",
                                     color: "#fff", transition: "all 0.2s", minHeight: "30px",
                                     display: "inline-flex", alignItems: "center", gap: "0.2rem",
                                     opacity: editSaving ? 0.6 : 1,
@@ -1896,7 +1909,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                                   href={`/items/${item.id}#shipping-panel`}
                                   target="_blank"
                                   rel="noopener"
-                                  style={{ fontSize: "0.48rem", color: "var(--text-muted)", textDecoration: "none" }}
+                                  style={{ fontSize: "0.62rem", color: "var(--text-muted)", textDecoration: "none" }}
                                 >
                                   Open Full Editor ↗
                                 </a>
@@ -1905,9 +1918,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                           )}
 
                           {/* B) Quick Actions Bar */}
-                          <div style={{ marginBottom: "0.5rem" }}>
+                          <div style={{ marginBottom: "0.62rem" }}>
                             <div style={{
-                              fontSize: "0.5rem", fontWeight: 700, color: "var(--text-muted)",
+                              fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)",
                               marginBottom: "0.3rem", letterSpacing: "0.05em",
                               borderBottom: "1px solid var(--border-default)",
                               paddingBottom: "0.2rem",
@@ -1932,11 +1945,11 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                                 }}
                                 style={{
                                   display: "inline-flex", alignItems: "center", gap: "0.25rem",
-                                  padding: "0.35rem 0.65rem", fontSize: "0.55rem", fontWeight: 600,
+                                  padding: "0.35rem 0.65rem", fontSize: "0.62rem", fontWeight: 600,
                                   borderRadius: "0.4rem",
-                                  background: editingShipProfile === item.id ? "rgba(0,188,212,0.12)" : "rgba(0,188,212,0.04)",
-                                  color: "#00bcd4",
-                                  border: "1.5px solid rgba(0,188,212,0.25)",
+                                  background: editingShipProfile === item.id ? "var(--accent-dim)" : "var(--accent-dim)",
+                                  color: "var(--accent)",
+                                  border: "1.5px solid var(--accent-border)",
                                   cursor: "pointer", transition: "all 0.15s ease",
                                   minHeight: "32px",
                                 }}
@@ -1949,9 +1962,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                                 rel="noopener"
                                 style={{
                                   display: "inline-flex", alignItems: "center", gap: "0.25rem",
-                                  padding: "0.35rem 0.65rem", fontSize: "0.55rem", fontWeight: 600,
+                                  padding: "0.35rem 0.65rem", fontSize: "0.62rem", fontWeight: 600,
                                   borderRadius: "0.4rem", textDecoration: "none",
-                                  background: "rgba(0,188,212,0.04)",
+                                  background: "var(--accent-dim)",
                                   color: "var(--text-secondary)",
                                   border: "1.5px solid var(--border-default)",
                                   cursor: "pointer", transition: "all 0.15s ease",
@@ -1966,9 +1979,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                                 rel="noopener"
                                 style={{
                                   display: "inline-flex", alignItems: "center", gap: "0.25rem",
-                                  padding: "0.35rem 0.65rem", fontSize: "0.55rem", fontWeight: 600,
+                                  padding: "0.35rem 0.65rem", fontSize: "0.62rem", fontWeight: 600,
                                   borderRadius: "0.4rem", textDecoration: "none",
-                                  background: "rgba(0,188,212,0.04)",
+                                  background: "var(--accent-dim)",
                                   color: "var(--text-secondary)",
                                   border: "1.5px solid var(--border-default)",
                                   cursor: "pointer", transition: "all 0.15s ease",
@@ -1981,9 +1994,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                                 href={`/messages?item=${item.id}`}
                                 style={{
                                   display: "inline-flex", alignItems: "center", gap: "0.25rem",
-                                  padding: "0.35rem 0.65rem", fontSize: "0.55rem", fontWeight: 600,
+                                  padding: "0.35rem 0.65rem", fontSize: "0.62rem", fontWeight: 600,
                                   borderRadius: "0.4rem", textDecoration: "none",
-                                  background: "rgba(0,188,212,0.04)",
+                                  background: "var(--accent-dim)",
                                   color: "var(--text-secondary)",
                                   border: "1.5px solid var(--border-default)",
                                   cursor: "pointer", transition: "all 0.15s ease",
@@ -1999,10 +2012,10 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                                   rel="noopener"
                                   style={{
                                     display: "inline-flex", alignItems: "center", gap: "0.2rem",
-                                    padding: "0.25rem 0.5rem", fontSize: "0.5rem", fontWeight: 600,
+                                    padding: "0.25rem 0.5rem", fontSize: "0.62rem", fontWeight: 600,
                                     borderRadius: "6px", textDecoration: "none",
-                                    background: "rgba(76,175,80,0.08)",
-                                    color: "#4caf50",
+                                    background: "var(--success-bg)",
+                                    color: "var(--success-text)",
                                     border: "1px solid rgba(76,175,80,0.15)",
                                     cursor: "pointer",
                                   }}
@@ -2026,33 +2039,33 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                             gap: "0.3rem",
                           }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-                              <span style={{ fontSize: "0.48rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.04em" }}>
+                              <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.04em" }}>
                                 STATUS:
                               </span>
                               <span style={{
-                                fontSize: "0.5rem", fontWeight: 700,
+                                fontSize: "0.62rem", fontWeight: 700,
                                 padding: "2px 6px", borderRadius: "4px",
-                                background: item.status === "ANALYZED" ? "rgba(0,188,212,0.1)"
+                                background: item.status === "ANALYZED" ? "var(--accent-dim)"
                                           : item.status === "LISTED" ? "rgba(76,175,80,0.1)"
                                           : item.status === "INTERESTED" ? "rgba(59,130,246,0.1)"
                                           : "rgba(120,113,108,0.1)",
-                                color: item.status === "ANALYZED" ? "#00bcd4"
-                                      : item.status === "LISTED" ? "#4caf50"
+                                color: item.status === "ANALYZED" ? "var(--accent)"
+                                      : item.status === "LISTED" ? "var(--success-text)"
                                       : item.status === "INTERESTED" ? "#3b82f6"
                                       : "#a8a29e",
                               }}>
                                 {item.status}
                               </span>
                               <span style={{ fontSize: "0.3rem", color: "var(--text-muted)" }}>·</span>
-                              <span style={{ fontSize: "0.48rem", color: "var(--text-muted)" }}>
+                              <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>
                                 {est ? `${carriers.length} carrier quote${carriers.length !== 1 ? "s" : ""}` : "No quotes yet"}
                               </span>
                               <span style={{ fontSize: "0.3rem", color: "var(--text-muted)" }}>·</span>
-                              <span style={{ fontSize: "0.48rem", color: "var(--text-muted)" }}>
+                              <span style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>
                                 No label · No tracking
                               </span>
                             </div>
-                            <div style={{ fontSize: "0.48rem", fontWeight: 600, color: "#00bcd4", fontStyle: "italic" }}>
+                            <div style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--accent)", fontStyle: "italic" }}>
                               {isVehicle
                                 ? "Next: Set up local pickup or explore freight"
                                 : isFreight
@@ -2065,17 +2078,17 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
 
                           {/* D) Connected Services Strip */}
                           <div style={{
-                            display: "flex", alignItems: "center", gap: "0.5rem",
+                            display: "flex", alignItems: "center", gap: "0.62rem",
                             padding: "0.2rem 0.6rem",
-                            fontSize: "0.45rem", color: "var(--text-muted)",
+                            fontSize: "0.62rem", color: "var(--text-muted)",
                           }}>
                             <span style={{ fontWeight: 700, letterSpacing: "0.04em" }}>SERVICES:</span>
-                            <span style={{ color: "#4caf50" }}>Shippo ✓</span>
-                            <span style={{ color: "#4caf50" }}>ShipEngine ✓</span>
-                            <span style={{ color: "#4caf50" }}>EasyPost ✓</span>
-                            <span style={{ color: "#4caf50" }}>FedEx ✓</span>
+                            <span style={{ color: "var(--success-text)" }}>Shippo ✓</span>
+                            <span style={{ color: "var(--success-text)" }}>ShipEngine ✓</span>
+                            <span style={{ color: "var(--success-text)" }}>EasyPost ✓</span>
+                            <span style={{ color: "var(--success-text)" }}>FedEx ✓</span>
                             {(item.isPremium || item.isArtaEligible) ? (
-                              <span style={{ color: "#4caf50" }}>Arta ✓</span>
+                              <span style={{ color: "var(--success-text)" }}>Arta ✓</span>
                             ) : (
                               <span style={{ opacity: 0.5 }}>Arta ○</span>
                             )}
@@ -2086,13 +2099,13 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   );
                 })()}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.62rem", flexShrink: 0 }}>
                 {item.valuationLow != null && (
                   <div style={{ textAlign: "right" }}>
                     <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--accent)" }}>
                       ${item.valuationLow}{"\u2013"}${item.valuationHigh}
                     </div>
-                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>Est. value</div>
+                    <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>Est. value</div>
                   </div>
                 )}
                 {!isVehicle && !isFreight && !est && (
@@ -2101,9 +2114,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                     disabled={estimating === item.id}
                     style={{
                       padding: "0.5rem 1rem", fontSize: "0.75rem", fontWeight: 700,
-                      borderRadius: "0.5rem", border: "none", cursor: "pointer",
-                      background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
-                      boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+                      borderRadius: "0.62rem", border: "none", cursor: "pointer",
+                      background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff",
+                      boxShadow: "0 2px 8px var(--accent-border)",
                       transition: "all 0.2s ease", minHeight: "38px",
                       display: "inline-flex", alignItems: "center", gap: "0.3rem",
                       opacity: estimating === item.id ? 0.5 : 1,
@@ -2148,12 +2161,12 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                     disabled={markingSold === item.id}
                     style={{
                       padding: "0.25rem 0.55rem",
-                      fontSize: "0.6rem",
+                      fontSize: "0.65rem",
                       fontWeight: 600,
                       borderRadius: "0.35rem",
                       border: "1px solid rgba(76,175,80,0.3)",
                       background: "rgba(76,175,80,0.06)",
-                      color: "#4caf50",
+                      color: "var(--success-text)",
                       cursor: "pointer",
                     }}
                   >
@@ -2161,7 +2174,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   </button>
                 )}
                 {markedSold.has(item.id) && (
-                  <span style={{ fontSize: "0.55rem", fontWeight: 700, color: "#4caf50" }}>{"\u2705"} Sold!</span>
+                  <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--success-text)" }}>{"\u2705"} Sold!</span>
                 )}
               </div>
             </div>
@@ -2174,13 +2187,13 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
               const remainHrs = Math.max(0, Math.floor(remainMs / 3600000));
               const remainMins = Math.max(0, Math.floor((remainMs % 3600000) / 60000));
               return (
-                <div style={{ margin: "0 0.85rem", padding: "0.55rem 0.75rem", borderRadius: "0.5rem", background: sq.isFresh ? "rgba(34,197,94,0.04)" : sq.isExpiring ? "rgba(245,158,11,0.04)" : "rgba(239,68,68,0.04)", border: `1px solid ${sq.isFresh ? "rgba(34,197,94,0.15)" : sq.isExpiring ? "rgba(245,158,11,0.15)" : "rgba(239,68,68,0.15)"}` }}>
+                <div style={{ margin: "0 0.85rem", padding: "0.55rem 0.75rem", borderRadius: "0.62rem", background: sq.isFresh ? "rgba(34,197,94,0.04)" : sq.isExpiring ? "rgba(245,158,11,0.04)" : "rgba(239,68,68,0.04)", border: `1px solid ${sq.isFresh ? "rgba(34,197,94,0.15)" : sq.isExpiring ? "rgba(245,158,11,0.15)" : "rgba(239,68,68,0.15)"}` }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.3rem" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexWrap: "wrap" }}>
                       <span style={{ fontSize: "0.75rem" }}>{"\u{1F4CB}"}</span>
                       <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)" }}>Saved Quote: {c.carrier || "?"} {c.service || ""}</span>
-                      <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "#4caf50" }}>${c.price?.toFixed(2) ?? "?"}</span>
-                      <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: sq.isFresh ? "rgba(34,197,94,0.12)" : sq.isExpiring ? "rgba(245,158,11,0.12)" : "rgba(239,68,68,0.12)", color: sq.isFresh ? "#22c55e" : sq.isExpiring ? "#f59e0b" : "#ef4444" }}>
+                      <span style={{ fontSize: "0.78rem", fontWeight: 800, color: "var(--success-text)" }}>${c.price?.toFixed(2) ?? "?"}</span>
+                      <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: sq.isFresh ? "rgba(34,197,94,0.12)" : sq.isExpiring ? "rgba(245,158,11,0.12)" : "rgba(239,68,68,0.12)", color: sq.isFresh ? "var(--success-text)" : sq.isExpiring ? "var(--arta-accent)" : "var(--error-text)" }}>
                         {sq.isFresh ? "\u2705 Fresh" : sq.isExpiring ? `\u26A0\uFE0F Expiring (${sq.ageHrs}h)` : `\u274C Expired (${sq.ageHrs}h)`}
                       </span>
                     </div>
@@ -2189,9 +2202,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                         onClick={() => { setSelectedCarrierMap((prev) => ({ ...prev, [item.id]: c })); saveQuote(item.id, c); }}
                         style={{
                           padding: "0.5rem 1rem", fontSize: "0.72rem", fontWeight: 700,
-                          borderRadius: "0.5rem", border: "none", cursor: "pointer",
-                          background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
-                          boxShadow: "0 2px 8px rgba(0,188,212,0.25)",
+                          borderRadius: "0.62rem", border: "none", cursor: "pointer",
+                          background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff",
+                          boxShadow: "0 2px 8px var(--accent-border)",
                           transition: "all 0.2s ease", minHeight: "38px",
                           display: "inline-flex", alignItems: "center", gap: "0.3rem",
                         }}
@@ -2204,8 +2217,8 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                         style={{
                           padding: "0.4rem 0.75rem", fontSize: "0.62rem", fontWeight: 600,
                           borderRadius: "0.4rem", cursor: "pointer",
-                          border: "1.5px solid var(--accent, #00bcd4)",
-                          background: "rgba(0,188,212,0.06)", color: "var(--accent, #00bcd4)",
+                          border: "1.5px solid var(--accent)",
+                          background: "var(--accent-dim)", color: "var(--accent)",
                           transition: "all 0.2s ease", minHeight: "34px",
                           display: "inline-flex", alignItems: "center", gap: "0.2rem",
                           opacity: estimating === item.id ? 0.5 : 1,
@@ -2215,7 +2228,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                       </button>
                     </div>
                   </div>
-                  <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
                     {c.days ? `${c.days}d transit` : ""}{c.days && sq.savedAt ? " \u00B7 " : ""}{sq.savedAt ? `saved ${new Date(sq.savedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : ""}
                     {remainMs > 0 ? ` \u00B7 valid ~${remainHrs}h ${remainMins}m` : sq.savedAt ? ` \u00B7 expired ${sq.ageHrs - 24}h ago` : ""}
                   </div>
@@ -2232,7 +2245,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   subtitle={`${item.lastQuote?.carriers?.length || 0} carriers · Best: $${((item.lastQuote?.carriers || []).filter((c:any) => c.price > 0).sort((a:any,b:any) => a.price - b.price)[0])?.price?.toFixed(2) || "—"}`}
                   isOpen={!!detailOpen[item.id]}
                   onToggle={() => setDetailOpen(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
-                  accentColor="#00bcd4"
+                  accentColor="var(--accent)"
                   badge={`${item.lastQuote?.carriers?.length || 0}`}
                 />
               </div>
@@ -2246,11 +2259,11 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
               <div style={{ borderTop: "1px solid var(--border-default)", padding: "0.85rem" }}>
                 {/* Dest ZIP with CitySearch */}
                 <div style={{ marginBottom: "0.6rem" }}>
-                  <div style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Buyer ZIP (for estimates)</div>
+                  <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Buyer ZIP (for estimates)</div>
                   <CitySearch value={editDims.destZip || ""} onChange={(zip) => setEditDims((d: any) => ({ ...d, destZip: zip }))} placeholder="City or ZIP..." />
                 </div>
                 {/* Box Size Grid */}
-                <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.4rem" }}>Box Size</div>
+                <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.4rem" }}>Box Size</div>
                 {(() => {
                   // Validate AI pick against actual item dimensions
                   const dimL = Number(editDims.length) || item.aiBoxDims?.length || 0;
@@ -2327,31 +2340,31 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                           const excessiveVoid = fits && !tooSmall && p.h > (iH + 4) * 3;
                           // Small-category items use rigid mailers — Tiny is perfect, not "too small"
                           if (key === "tiny" && isSmallCategory) {
-                            fitLabel = "\u2705 Perfect"; fitColor = "#22c55e"; fitBg = "rgba(34,197,94,0.08)";
+                            fitLabel = "\u2705 Perfect"; fitColor = "var(--success-text)"; fitBg = "var(--success-bg)";
                           } else if (key === "tiny" && minItemDim < 0.5) {
-                            fitLabel = "\u2705 Mailer"; fitColor = "#22c55e"; fitBg = "rgba(34,197,94,0.08)";
-                          } else if (tooSmall) { fitLabel = "\u274C Too small"; fitColor = "#ef4444"; fitBg = "rgba(239,68,68,0.08)"; }
-                          else if (excessiveVoid && !loose) { fitLabel = "\u26A0\uFE0F Void space"; fitColor = "#f59e0b"; fitBg = "rgba(245,158,11,0.08)"; }
-                          else if (loose) { fitLabel = "\u26A0\uFE0F Loose"; fitColor = "#f59e0b"; fitBg = "rgba(245,158,11,0.08)"; }
-                          else if (fits) { fitLabel = "\u2705 Fits"; fitColor = "#22c55e"; fitBg = "rgba(34,197,94,0.08)"; }
+                            fitLabel = "\u2705 Mailer"; fitColor = "var(--success-text)"; fitBg = "var(--success-bg)";
+                          } else if (tooSmall) { fitLabel = "\u274C Too small"; fitColor = "var(--error-text)"; fitBg = "var(--error-bg)"; }
+                          else if (excessiveVoid && !loose) { fitLabel = "\u26A0\uFE0F Void space"; fitColor = "var(--arta-accent)"; fitBg = "var(--warning-bg)"; }
+                          else if (loose) { fitLabel = "\u26A0\uFE0F Loose"; fitColor = "var(--arta-accent)"; fitBg = "var(--warning-bg)"; }
+                          else if (fits) { fitLabel = "\u2705 Fits"; fitColor = "var(--success-text)"; fitBg = "var(--success-bg)"; }
                         }
                         return (
                           <button key={key} onClick={() => selectPreset(key, item)} style={{
                             padding: "0.4rem 0.3rem", borderRadius: "0.4rem", textAlign: "center", cursor: "pointer",
-                            border: isSel ? "1.5px solid var(--accent)" : isAi && !isSel ? "1.5px solid rgba(0,188,212,0.4)" : "1px solid var(--border-default)",
-                            background: isSel ? "rgba(0,188,212,0.06)" : isAi && !isSel ? "rgba(0,188,212,0.03)" : "transparent",
+                            border: isSel ? "1.5px solid var(--accent)" : isAi && !isSel ? "1.5px solid var(--accent-glow)" : "1px solid var(--border-default)",
+                            background: isSel ? "var(--accent-dim)" : isAi && !isSel ? "var(--accent-dim)" : "transparent",
                             transition: "all 0.15s ease",
                           }}>
                             <div style={{ fontSize: "0.68rem", fontWeight: 600, color: isSel ? "var(--accent)" : "var(--text-primary)" }}>{key}</div>
-                            <div style={{ fontSize: "0.52rem", color: "var(--text-muted)" }}>{p.desc.split(",")[0]}</div>
-                            {isAi && !pickUpgraded && <div style={{ fontSize: "0.48rem", fontWeight: 700, color: "var(--accent)", marginTop: 1 }}>AI PICK {"\u00B7"} +2" pad</div>}
-                            {isAi && pickUpgraded && <div style={{ fontSize: "0.48rem", fontWeight: 700, color: "#00bcd4", marginTop: 1 }}>AI PICK (upgraded)</div>}
+                            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{p.desc.split(",")[0]}</div>
+                            {isAi && !pickUpgraded && <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--accent)", marginTop: 1 }}>AI PICK {"\u00B7"} +2" pad</div>}
+                            {isAi && pickUpgraded && <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--accent)", marginTop: 1 }}>AI PICK (upgraded)</div>}
                             {isAi && pickUpgraded && <div style={{ fontSize: "0.42rem", color: "var(--text-muted)", marginTop: 1 }}>{pickReason}</div>}
                             {isAi && !pickUpgraded && iL > 0 && <div style={{ fontSize: "0.44rem", color: "var(--text-muted)", marginTop: 1 }}>Based on {iL}{"\u00D7"}{iW}{"\u00D7"}{iH} + 2" pad</div>}
                             {key === "custom" && !isAi && <div style={{ fontSize: "0.44rem", color: "var(--text-muted)", marginTop: 1 }}>Auto L+4/W+4/H+4</div>}
                             {key === "custom" && isAi && <div style={{ fontSize: "0.44rem", color: "var(--accent)", marginTop: 1 }}>{"\u{1F4E6}"} {Math.ceil(dimL + 4)}{"\u00D7"}{Math.ceil(dimW + 4)}{"\u00D7"}{Math.ceil(dimH + 4)}" sized for item</div>}
                             {fitLabel && (
-                              <div style={{ fontSize: "0.48rem", fontWeight: 700, color: fitColor, background: fitBg, borderRadius: "3px", padding: "0 3px", marginTop: 2 }}>{fitLabel}</div>
+                              <div style={{ fontSize: "0.62rem", fontWeight: 700, color: fitColor, background: fitBg, borderRadius: "3px", padding: "0 3px", marginTop: 2 }}>{fitLabel}</div>
                             )}
                           </button>
                         );
@@ -2371,12 +2384,12 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                     });
                     if (!bestFit && editDims.selectedBox !== "custom") {
                       return (
-                        <div style={{ padding: "0.45rem 0.65rem", borderRadius: "0.4rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.15)", marginBottom: "0.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div style={{ padding: "0.45rem 0.65rem", borderRadius: "0.4rem", background: "var(--accent-dim)", border: "1px solid var(--accent-dim)", marginBottom: "0.62rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <div>
                             <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--accent)" }}>{"\u{1F916}"} Custom Recommended: {iL + 4}{"\u00D7"}{iW + 4}{"\u00D7"}{iH + 4} in</div>
-                            <div style={{ fontSize: "0.52rem", color: "var(--text-muted)" }}>Perfectly sized for this item {"\u2014"} no wasted space</div>
+                            <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>Perfectly sized for this item {"\u2014"} no wasted space</div>
                           </div>
-                          <button onClick={() => { setEditDims((d: any) => ({ ...d, selectedBox: "custom", length: String(iL + 4), width: String(iW + 4), height: String(iH + 4) })); }} style={{ padding: "0.25rem 0.55rem", fontSize: "0.6rem", fontWeight: 700, borderRadius: "0.35rem", border: "none", background: "var(--accent)", color: "#000", cursor: "pointer" }}>
+                          <button onClick={() => { setEditDims((d: any) => ({ ...d, selectedBox: "custom", length: String(iL + 4), width: String(iW + 4), height: String(iH + 4) })); }} style={{ padding: "0.25rem 0.55rem", fontSize: "0.65rem", fontWeight: 700, borderRadius: "0.35rem", border: "none", background: "var(--accent)", color: "#000", cursor: "pointer" }}>
                             Use Custom
                           </button>
                         </div>
@@ -2386,27 +2399,27 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   return null;
                 })()}
                 {/* Editable Dims */}
-                <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.4rem", marginBottom: "0.5rem" }}>
+                <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.4rem", marginBottom: "0.62rem" }}>
                   {[{ k: "weight", l: "Weight (lbs)" }, { k: "length", l: "L (in)" }, { k: "width", l: "W (in)" }, { k: "height", l: "H (in)" }].map(f => (
                     <div key={f.k}>
-                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
+                      <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
                       <input value={editDims[f.k] || ""} onChange={e => setEditDims((d: any) => ({ ...d, [f.k]: e.target.value }))} style={{ width: "100%", padding: "0.35rem 0.5rem", fontSize: "0.78rem", borderRadius: "0.35rem", border: "1px solid var(--border-default)", background: "var(--input-bg, var(--ghost-bg))", color: "var(--text-primary)", outline: "none", boxSizing: "border-box" }} />
                     </div>
                   ))}
                 </div>
                 {/* Packaging Type + Fragile */}
-                <div style={{ display: "flex", gap: "0.3rem", marginBottom: "0.5rem", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "0.3rem", marginBottom: "0.62rem", flexWrap: "wrap" }}>
                   {PACKAGING_TYPES.map(pt => (
                     <button key={pt.value} onClick={() => setEditDims((d: any) => ({ ...d, packaging: pt.value }))} style={{
                       padding: "0.3rem 0.55rem", borderRadius: "0.35rem", fontSize: "0.68rem", fontWeight: 600, cursor: "pointer",
                       border: editDims.packaging === pt.value ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
-                      background: editDims.packaging === pt.value ? "rgba(0,188,212,0.06)" : "transparent",
+                      background: editDims.packaging === pt.value ? "var(--accent-dim)" : "transparent",
                       color: editDims.packaging === pt.value ? "var(--accent)" : "var(--text-muted)",
                     }}>
                       {pt.icon} {pt.label}
                     </button>
                   ))}
-                  <label style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.68rem", color: "var(--text-muted)", cursor: "pointer", marginLeft: "0.5rem" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.68rem", color: "var(--text-muted)", cursor: "pointer", marginLeft: "0.62rem" }}>
                     <input type="checkbox" checked={editDims.isFragile} onChange={e => setEditDims((d: any) => ({ ...d, isFragile: e.target.checked }))} /> Fragile
                   </label>
                 </div>
@@ -2414,8 +2427,8 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <button onClick={() => saveShippingDetails(item.id)} disabled={saving === item.id} style={{
                     padding: "0.35rem 0.85rem", fontSize: "0.75rem", fontWeight: 700, borderRadius: "0.4rem",
-                    border: "none", background: savedMsg === item.id ? "rgba(34,197,94,0.15)" : "linear-gradient(135deg, #00bcd4, #009688)",
-                    color: savedMsg === item.id ? "#22c55e" : "#fff", cursor: "pointer",
+                    border: "none", background: savedMsg === item.id ? "rgba(34,197,94,0.15)" : "linear-gradient(135deg, var(--accent), var(--accent-deep))",
+                    color: savedMsg === item.id ? "var(--success-text)" : "#fff", cursor: "pointer",
                   }}>
                     {saving === item.id ? "Saving..." : savedMsg === item.id ? "\u2705 Saved!" : "Save Shipping Details"}
                   </button>
@@ -2424,7 +2437,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                 {item.metroEstimates && item.metroEstimates.length > 0 && (
                   <div style={{ marginTop: "0.65rem" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.3rem" }}>
-                      <div style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Shipping to Major Cities</div>
+                      <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>Shipping to Major Cities</div>
                       {!liveMetros[item.id] && (
                         <button
                           onClick={async () => {
@@ -2458,24 +2471,24 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                             setFetchingMetros(null);
                           }}
                           disabled={fetchingMetros === item.id}
-                          style={{ fontSize: "0.52rem", fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                          style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--accent)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
                         >
                           {fetchingMetros === item.id ? "Loading..." : "\u{1F4E1} Get Live Rates"}
                         </button>
                       )}
                       {liveMetros[item.id] && (
-                        <span style={{ fontSize: "0.45rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>SHIPPO RATES</span>
+                        <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "var(--accent-dim)", color: "var(--accent)" }}>SHIPPO RATES</span>
                       )}
                     </div>
                     <div className="ship-5col-grid" style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min((liveMetros[item.id] || item.metroEstimates).length, 5)}, minmax(0,1fr))`, gap: "0.3rem" }}>
                       {(liveMetros[item.id] || item.metroEstimates).map((mc: any) => (
                         <div key={mc.city} style={{ padding: "0.35rem", borderRadius: "0.35rem", background: "var(--ghost-bg)", textAlign: "center", border: mc.isCheapest ? "1px solid rgba(76,175,80,0.2)" : mc.isFastest ? "1px solid rgba(59,130,246,0.2)" : "1px solid transparent" }}>
-                          <div style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-primary)" }}>{mc.city.split(",")[0]}</div>
-                          <div style={{ fontSize: "0.78rem", fontWeight: 700, color: mc.isCheapest ? "#4caf50" : "var(--text-primary)" }}>${mc.estimatedCost.toFixed(2)}</div>
-                          <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{mc.estimatedDays}d</div>
+                          <div style={{ fontSize: "0.65rem", fontWeight: 600, color: "var(--text-primary)" }}>{mc.city.split(",")[0]}</div>
+                          <div style={{ fontSize: "0.78rem", fontWeight: 700, color: mc.isCheapest ? "var(--success-text)" : "var(--text-primary)" }}>${mc.estimatedCost.toFixed(2)}</div>
+                          <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{mc.estimatedDays}d</div>
                           {mc.carrier && <div style={{ fontSize: "0.42rem", color: "var(--text-muted)" }}>{mc.carrier}</div>}
-                          {mc.isCheapest && <div style={{ fontSize: "0.45rem", fontWeight: 700, color: "#4caf50" }}>CHEAPEST</div>}
-                          {mc.isFastest && !mc.isCheapest && <div style={{ fontSize: "0.45rem", fontWeight: 700, color: "#3b82f6" }}>FASTEST</div>}
+                          {mc.isCheapest && <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--success-text)" }}>CHEAPEST</div>}
+                          {mc.isFastest && !mc.isCheapest && <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "#3b82f6" }}>FASTEST</div>}
                         </div>
                       ))}
                     </div>
@@ -2483,8 +2496,8 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                 )}
                 {/* Packing Tips */}
                 {(item.aiPackingTips?.length ?? 0) > 0 && (
-                  <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.65rem", borderRadius: "0.4rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)" }}>
-                    <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "var(--accent)", marginBottom: "0.25rem" }}>{"\u{1F4E6}"} PACKING TIPS</div>
+                  <div style={{ marginTop: "0.62rem", padding: "0.5rem 0.65rem", borderRadius: "0.4rem", background: "var(--accent-dim)", border: "1px solid var(--accent-dim)" }}>
+                    <div style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--accent)", marginBottom: "0.25rem" }}>{"\u{1F4E6}"} PACKING TIPS</div>
                     {item.aiPackingTips.map((tip: string, i: number) => (
                       <div key={i} style={{ fontSize: "0.62rem", color: "var(--text-muted)", lineHeight: 1.5 }}>{"\u2022"} {tip}</div>
                     ))}
@@ -2498,7 +2511,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
               <div style={{ borderTop: "1px solid var(--border-default)", padding: "0.65rem 0.85rem" }}>
                 <div
                   style={{
-                    fontSize: "0.6rem",
+                    fontSize: "0.65rem",
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: "0.08em",
@@ -2508,8 +2521,8 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                 >
                   {"\u{1F4E6}"} {est.weight} lbs {"\u00B7"} {est.box?.label || "Standard Box"}
                   {est.isLTL ? " \u00B7 FREIGHT" : ""}
-                  {est.isLive && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.15)", color: "#00bcd4", marginLeft: "0.3rem" }}>SHIPPO RATES</span>}
-                  {est.isLive === false && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800", marginLeft: "0.3rem" }}>ESTIMATED</span>}
+                  {est.isLive && <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "var(--accent-dim)", color: "var(--accent)", marginLeft: "0.3rem" }}>SHIPPO RATES</span>}
+                  {est.isLive === false && <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "var(--warning-text)", marginLeft: "0.3rem" }}>ESTIMATED</span>}
                 </div>
                 {item.aiBox && (
                   <div style={{ fontSize: "0.62rem", color: "var(--accent)", marginBottom: "0.35rem" }}>
@@ -2520,13 +2533,13 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                 {(item.isAntique || item.isHighValue || item.isPremium) && (
                   <div style={{ display: "flex", gap: "0.3rem", flexWrap: "wrap", marginBottom: "0.35rem" }}>
                     {item.isAntique && (
-                      <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,152,0,0.1)", color: "#ff9800", border: "1px solid rgba(255,152,0,0.15)" }}>{"\u{1F3DB}\uFE0F"} Insure + signature recommended</span>
+                      <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,152,0,0.1)", color: "var(--warning-text)", border: "1px solid rgba(255,152,0,0.15)" }}>{"\u{1F3DB}\uFE0F"} Insure + signature recommended</span>
                     )}
                     {item.isPremium && (
-                      <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "linear-gradient(90deg, rgba(255,215,0,0.1), rgba(255,152,0,0.08))", color: "#f59e0b", border: "1px solid rgba(255,215,0,0.15)" }}>{"\u2B50"} Premium {"\u2014"} white glove or air service</span>
+                      <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "linear-gradient(90deg, rgba(255,215,0,0.1), rgba(255,152,0,0.08))", color: "var(--arta-accent)", border: "1px solid rgba(255,215,0,0.15)" }}>{"\u2B50"} Premium {"\u2014"} white glove or air service</span>
                     )}
                     {item.isHighValue && !item.isPremium && !item.isAntique && (
-                      <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(0,188,212,0.08)", color: "#00bcd4", border: "1px solid rgba(0,188,212,0.12)" }}>{"\u{1F4B0}"} Add insurance ($500+ value)</span>
+                      <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "var(--accent-dim)", color: "var(--accent)", border: "1px solid var(--accent-dim)" }}>{"\u{1F4B0}"} Add insurance ($500+ value)</span>
                     )}
                   </div>
                 )}
@@ -2539,12 +2552,12 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                     subtitle={`${dimStr(item) || "No dims"} · ${weightStr(item) || "No weight"}`}
                     isOpen={editingItem === item.id}
                     onToggle={() => openEditor(item)}
-                    accentColor="#00bcd4"
+                    accentColor="var(--accent)"
                   />
                 </div>
                 {/* Hint + Table Header */}
                 {!selectedCarrierMap[item.id] && (
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: "0.3rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: "0.3rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
                     <span>{"\u{1F446}"}</span> Click a carrier to select and save your quote
                   </div>
                 )}
@@ -2553,8 +2566,8 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                     <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
                       <span style={{ fontSize: "0.8rem" }}>{savedQuotes[item.id] === "fresh" ? "\u2705" : "\u26A0\uFE0F"}</span>
                       <div>
-                        <div style={{ fontSize: "0.72rem", fontWeight: 700, color: savedQuotes[item.id] === "fresh" ? "#22c55e" : "#f59e0b" }}>Quote Saved {"\u2014"} {selectedCarrierMap[item.id].carrier} {selectedCarrierMap[item.id].service} ${selectedCarrierMap[item.id].price?.toFixed(2)}</div>
-                        <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{savedQuotes[item.id] === "expiring" ? "Quote expiring soon \u2014 refresh before shipping" : "This quote will carry over when the item is sold"}</div>
+                        <div style={{ fontSize: "0.72rem", fontWeight: 700, color: savedQuotes[item.id] === "fresh" ? "var(--success-text)" : "var(--arta-accent)" }}>Quote Saved {"\u2014"} {selectedCarrierMap[item.id].carrier} {selectedCarrierMap[item.id].service} ${selectedCarrierMap[item.id].price?.toFixed(2)}</div>
+                        <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{savedQuotes[item.id] === "expiring" ? "Quote expiring soon \u2014 refresh before shipping" : "This quote will carry over when the item is sold"}</div>
                       </div>
                     </div>
                     <button onClick={() => { setSelectedCarrierMap((prev) => ({ ...prev, [item.id]: null })); }} style={{ fontSize: "0.58rem", color: "var(--text-muted)", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>Change carrier</button>
@@ -2563,7 +2576,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                 <div className="ship-table-scroll-wrapper">
                 <div className="ship-table-5col" style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)", gap: "0.3rem", padding: "0.3rem 0.6rem", marginBottom: "0.2rem" }}>
                   {["Carrier", "Service", "Transit", "Cost", "Net Profit"].map((h) => (
-                    <div key={h} style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)" }}>{h}</div>
+                    <div key={h} style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)" }}>{h}</div>
                   ))}
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
@@ -2585,7 +2598,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                       <div
                         key={`${c.carrier}-${c.service}-${i}`}
                         onClick={() => setSelectedCarrierMap((prev) => ({ ...prev, [item.id]: isSelectedRow ? null : c }))}
-                        onMouseEnter={(e) => { if (!isSelectedRow) (e.currentTarget as HTMLDivElement).style.background = "rgba(0,188,212,0.06)"; }}
+                        onMouseEnter={(e) => { if (!isSelectedRow) (e.currentTarget as HTMLDivElement).style.background = "var(--accent-dim)"; }}
                         onMouseLeave={(e) => { if (!isSelectedRow) (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? "var(--ghost-bg)" : "transparent"; }} className="ship-table-5col"
                         style={{
                           display: "grid",
@@ -2594,8 +2607,8 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                           alignItems: "center",
                           padding: "0.45rem 0.6rem",
                           borderRadius: "0.4rem",
-                          background: isSelectedRow ? "rgba(0,188,212,0.08)" : i % 2 === 0 ? "var(--ghost-bg)" : "transparent",
-                          border: isSelectedRow ? "1.5px solid var(--accent)" : isBest ? "1px solid rgba(0,188,212,0.2)" : "1px solid transparent",
+                          background: isSelectedRow ? "var(--accent-dim)" : i % 2 === 0 ? "var(--ghost-bg)" : "transparent",
+                          border: isSelectedRow ? "1.5px solid var(--accent)" : isBest ? "1px solid var(--accent-border)" : "1px solid transparent",
                           cursor: "pointer",
                           transition: "background 0.1s ease, border 0.1s ease",
                         }}
@@ -2607,15 +2620,15 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                         <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexWrap: "wrap" }}>
                           <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>{c.service}</span>
                           {isBest && (
-                            <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>BEST</span>
+                            <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "var(--success-text)" }}>BEST</span>
                           )}
                           {isFastest && (
                             <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(59,130,246,0.15)", color: "#3b82f6" }}>FASTEST</span>
                           )}
                         </div>
                         <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{c.days}d</span>
-                        <span style={{ fontSize: "0.88rem", fontWeight: 700, color: isBest ? "#4caf50" : "var(--text-primary)" }}>${c.price.toFixed(2)}</span>
-                        <span style={{ fontSize: "0.65rem", fontWeight: 600, color: net !== null ? (pct > 30 ? "#ef4444" : "#4caf50") : "var(--text-muted)" }}>
+                        <span style={{ fontSize: "0.88rem", fontWeight: 700, color: isBest ? "var(--success-text)" : "var(--text-primary)" }}>${c.price.toFixed(2)}</span>
+                        <span style={{ fontSize: "0.65rem", fontWeight: 600, color: net !== null ? (pct > 30 ? "var(--error-text)" : "var(--success-text)") : "var(--text-muted)" }}>
                           {net !== null ? `$${net > 0 ? net.toFixed(0) : "0"}` : "\u2014"}
                         </span>
                       </div>
@@ -2636,27 +2649,27 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   if (!bestCarrier) return null;
                   const feeLabel = pref === "BUYER_PAYS" ? "after 9.75% fees" : "after shipping + 9.75% fees";
                   return (
-                    <div style={{ marginTop: "0.35rem", padding: "0.35rem 0.6rem", borderRadius: "0.35rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.12)", fontSize: "0.62rem", color: "#4caf50", fontWeight: 600 }}>
+                    <div style={{ marginTop: "0.35rem", padding: "0.35rem 0.6rem", borderRadius: "0.35rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.12)", fontSize: "0.62rem", color: "var(--success-text)", fontWeight: 600 }}>
                       {"\u{1F4B0}"} Best profit: {bestCarrier.carrier} {"\u2014"} ${bestCarrier.net.toFixed(0)} net {feeLabel}
                     </div>
                   );
                 })()}
                 {/* Save Quote bar */}
                 {selectedCarrierMap[item.id] && savedQuotes[item.id] !== "fresh" && savedQuotes[item.id] !== "expiring" && (
-                  <div style={{ marginTop: "0.5rem" }}>
+                  <div style={{ marginTop: "0.62rem" }}>
                     <button
                       onClick={() => saveQuote(item.id, selectedCarrierMap[item.id])}
                       style={{
                         width: "100%", padding: "0.55rem 0.85rem", fontSize: "0.78rem", fontWeight: 700,
-                        borderRadius: "0.5rem", border: "none", cursor: "pointer",
-                        background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff",
+                        borderRadius: "0.62rem", border: "none", cursor: "pointer",
+                        background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff",
                         display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem",
                       }}
                     >
                       <span>{"\u{1F4CB}"}</span>
                       Save Quote {"\u2014"} {selectedCarrierMap[item.id].carrier} {selectedCarrierMap[item.id].service} ${selectedCarrierMap[item.id].price?.toFixed(2)}
                     </button>
-                    <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", textAlign: "center", marginTop: "0.2rem" }}>Lock in this rate for your shipment</div>
+                    <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", textAlign: "center", marginTop: "0.2rem" }}>Lock in this rate for your shipment</div>
                   </div>
                 )}
                 {/* Open in Item Dashboard link */}
@@ -2664,7 +2677,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   <Link
                     href={`/items/${item.id}`}
                     style={{
-                      fontSize: "0.55rem", fontWeight: 600, color: "var(--accent)",
+                      fontSize: "0.62rem", fontWeight: 600, color: "var(--accent)",
                       textDecoration: "none", display: "flex", alignItems: "center", gap: "0.2rem",
                     }}
                   >
@@ -2894,25 +2907,14 @@ function ReadyToShipTab({
   if (items.length === 0)
     return (
       <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-muted)" }}>
-        <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem", opacity: 0.4 }}>{"\u{1F4E6}"}</div>
+        <div style={{ fontSize: "2.5rem", marginBottom: "0.62rem", opacity: 0.4 }}>{"\u{1F4E6}"}</div>
         <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.35rem" }}>Nothing to Ship Yet</div>
         <div style={{ fontSize: "0.82rem", lineHeight: 1.5, maxWidth: 360, margin: "0 auto" }}>When you sell an item, it will appear here ready for label generation and shipping. Save quotes in the Estimates tab to speed up the process.</div>
       </div>
     );
 
   const WIZARD_STEPS = ["Package", "Address", "Carrier", "Confirm"];
-  const inputStyle: React.CSSProperties = {
-    padding: "0.45rem 0.65rem",
-    fontSize: "0.82rem",
-    borderRadius: "0.4rem",
-    border: "1px solid var(--border-default)",
-    background: "var(--input-bg, var(--ghost-bg))",
-    color: "var(--text-primary)",
-    outline: "none",
-    width: "100%",
-    boxSizing: "border-box" as const,
-    fontFamily: "inherit",
-  };
+  const inputStyle = SHIP_INPUT_STYLE;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -2928,9 +2930,9 @@ function ReadyToShipTab({
               border: isHighlight
                 ? "2px solid var(--accent)"
                 : isWizard
-                  ? "1px solid rgba(0,188,212,0.3)"
+                  ? "1px solid var(--accent-glow)"
                   : "1px solid var(--border-default)",
-              background: isHighlight ? "rgba(0,188,212,0.04)" : "var(--bg-card)",
+              background: isHighlight ? "var(--accent-dim)" : "var(--bg-card)",
               overflow: "hidden",
             }}
           >
@@ -2949,12 +2951,12 @@ function ReadyToShipTab({
                   {soldDays != null && soldDays > 2 && (
                     <span
                       style={{
-                        fontSize: "0.55rem",
+                        fontSize: "0.62rem",
                         fontWeight: 700,
                         padding: "1px 5px",
                         borderRadius: "9999px",
                         background: soldDays > 5 ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)",
-                        color: soldDays > 5 ? "#ef4444" : "#f59e0b",
+                        color: soldDays > 5 ? "var(--error-text)" : "var(--arta-accent)",
                       }}
                     >
                       {soldDays}d ago
@@ -2973,12 +2975,12 @@ function ReadyToShipTab({
                         <span>{"\u{1F4CB}"}</span>
                         <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{c?.carrier || "?"} {c?.service || ""}</span>
                         <span style={{ color: "var(--text-muted)" }}>{"\u2014"}</span>
-                        <span style={{ fontWeight: 700, color: "#4caf50" }}>${c?.price?.toFixed(2) ?? "?"}</span>
-                        <span style={{ fontSize: "0.52rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: sq.isFresh ? "rgba(34,197,94,0.12)" : sq.isExpiring ? "rgba(245,158,11,0.12)" : "rgba(239,68,68,0.12)", color: sq.isFresh ? "#22c55e" : sq.isExpiring ? "#f59e0b" : "#ef4444" }}>
+                        <span style={{ fontWeight: 700, color: "var(--success-text)" }}>${c?.price?.toFixed(2) ?? "?"}</span>
+                        <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: sq.isFresh ? "rgba(34,197,94,0.12)" : sq.isExpiring ? "rgba(245,158,11,0.12)" : "rgba(239,68,68,0.12)", color: sq.isFresh ? "var(--success-text)" : sq.isExpiring ? "var(--arta-accent)" : "var(--error-text)" }}>
                           {sq.isFresh ? "\u2705 Fresh" : sq.isExpiring ? `\u26A0\uFE0F Expiring (${sq.ageHrs}h)` : `\u274C Expired (${sq.ageHrs}h)`}
                         </span>
                       </div>
-                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+                      <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
                         {c?.days ? `${c.days}d transit` : ""}{c?.days && sq.savedAt ? " \u00B7 " : ""}{sq.savedAt ? `saved ${new Date(sq.savedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : ""}
                         {sq.savedAt && (() => {
                           const remainMs = 86400000 - (Date.now() - sq.savedAt);
@@ -2995,7 +2997,7 @@ function ReadyToShipTab({
                 })()}
                 {/* Pre-loaded quote from API */}
                 {!savedQuotes[item.id] && item.lastQuote && !isWizard && (
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
                     {"\u{1F4CB}"} {item.lastQuote.carriers?.length || 0} quotes {"\u00B7"} from ${item.lastQuote.cheapest?.price?.toFixed(2) ?? "?"} {"\u00B7"} {item.lastQuote.fromZip}{"\u2192"}{item.lastQuote.toZip || "?"}
                   </div>
                 )}
@@ -3013,9 +3015,9 @@ function ReadyToShipTab({
                       padding: "0.45rem 1rem",
                       fontSize: "0.78rem",
                       fontWeight: 700,
-                      borderRadius: "0.5rem",
+                      borderRadius: "0.62rem",
                       border: "none",
-                      background: "linear-gradient(135deg, #4caf50, #2e7d32)",
+                      background: "linear-gradient(135deg, var(--success-text), #2e7d32)",
                       color: "#fff",
                       cursor: "pointer",
                       opacity: generating === item.id ? 0.6 : 1,
@@ -3034,9 +3036,9 @@ function ReadyToShipTab({
                       padding: "0.4rem 0.85rem",
                       fontSize: "0.78rem",
                       fontWeight: 700,
-                      borderRadius: "0.5rem",
+                      borderRadius: "0.62rem",
                       border: "none",
-                      background: "linear-gradient(135deg, #00bcd4, #009688)",
+                      background: "linear-gradient(135deg, var(--accent), var(--accent-deep))",
                       color: "#fff",
                       cursor: "pointer",
                       opacity: generating === item.id ? 0.6 : 1,
@@ -3077,7 +3079,7 @@ function ReadyToShipTab({
                               right: "50%",
                               top: 8,
                               height: 2,
-                              background: done || active ? "linear-gradient(90deg, #009688, #00bcd4)" : "var(--ghost-bg)",
+                              background: done || active ? "linear-gradient(90deg, var(--accent-deep), var(--accent))" : "var(--ghost-bg)",
                               zIndex: 0,
                             }} />
                           )}
@@ -3090,10 +3092,10 @@ function ReadyToShipTab({
                             justifyContent: "center",
                             fontSize: "0.58rem",
                             fontWeight: 800,
-                            background: active ? "linear-gradient(135deg, #00bcd4, #009688)" : done ? "#009688" : "var(--ghost-bg)",
+                            background: active ? "linear-gradient(135deg, var(--accent), var(--accent-deep))" : done ? "#009688" : "var(--ghost-bg)",
                             color: active || done ? "#fff" : "var(--text-muted)",
-                            border: active ? "2px solid #00bcd4" : "2px solid transparent",
-                            boxShadow: active ? "0 0 6px rgba(0,188,212,0.4)" : "none",
+                            border: active ? "2px solid var(--accent)" : "2px solid transparent",
+                            boxShadow: active ? "0 0 6px var(--accent-glow)" : "none",
                             transition: "all 0.2s ease",
                             zIndex: 1,
                             position: "relative",
@@ -3113,8 +3115,8 @@ function ReadyToShipTab({
                 {/* Step 1: Package */}
                 {wizardStep === 1 && (
                   <div>
-                    <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>Confirm Package Details</div>
-                    <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                    <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.62rem" }}>Confirm Package Details</div>
+                    <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.62rem", marginBottom: "0.62rem" }}>
                       {[
                         { label: "Length", key: "length" },
                         { label: "Width", key: "width" },
@@ -3135,7 +3137,7 @@ function ReadyToShipTab({
                     <label style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.72rem", color: "var(--text-muted)", cursor: "pointer", marginBottom: "0.75rem" }}>
                       <input type="checkbox" checked={wizardData.isFragile} onChange={(e) => setWizardData((d) => ({ ...d, isFragile: e.target.checked }))} /> Fragile item {"\u2014"} requires extra packaging
                     </label>
-                    <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+                    <div style={{ display: "flex", gap: "0.62rem", justifyContent: "flex-end" }}>
                       <button
                         onClick={() => setWizardItem(null)}
                         style={{ padding: "0.4rem 0.75rem", fontSize: "0.75rem", borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}
@@ -3144,7 +3146,7 @@ function ReadyToShipTab({
                       </button>
                       <button
                         onClick={() => setWizardStep(2)}
-                        style={{ padding: "0.4rem 0.85rem", fontSize: "0.75rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "#00bcd4", color: "#fff", cursor: "pointer" }}
+                        style={{ padding: "0.4rem 0.85rem", fontSize: "0.75rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "var(--accent)", color: "#fff", cursor: "pointer" }}
                       >
                         {"Next \u2192"}
                       </button>
@@ -3155,8 +3157,8 @@ function ReadyToShipTab({
                 {/* Step 2: Address */}
                 {wizardStep === 2 && (
                   <div>
-                    <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>Shipping Address</div>
-                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                    <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.62rem" }}>Shipping Address</div>
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.62rem", marginBottom: "0.75rem" }}>
                       <div>
                         <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: "0.2rem" }}>From ZIP</div>
                         <input value={wizardData.fromZip} onChange={(e) => setWizardData((d) => ({ ...d, fromZip: e.target.value }))} style={inputStyle} />
@@ -3166,7 +3168,7 @@ function ReadyToShipTab({
                         <CitySearch value={wizardData.toZip} onChange={(zip) => setWizardData((d) => ({ ...d, toZip: zip }))} placeholder="Search city or ZIP..." />
                       </div>
                     </div>
-                    <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+                    <div style={{ display: "flex", gap: "0.62rem", justifyContent: "flex-end" }}>
                       <button
                         onClick={() => setWizardStep(1)}
                         style={{ padding: "0.4rem 0.75rem", fontSize: "0.75rem", borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}
@@ -3185,7 +3187,7 @@ function ReadyToShipTab({
                           fontWeight: 700,
                           borderRadius: "0.4rem",
                           border: "none",
-                          background: "#00bcd4",
+                          background: "var(--accent)",
                           color: "#fff",
                           cursor: "pointer",
                           opacity: wizardData.toZip ? 1 : 0.5,
@@ -3210,9 +3212,9 @@ function ReadyToShipTab({
                     const sc = selectedCarrier || carriers[0];
                     return (
                       <div>
-                        <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>Select Carrier</div>
+                        <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.62rem" }}>Select Carrier</div>
                         {refreshingQuote === item.id && (
-                          <div style={{ padding: "0.45rem 0.65rem", borderRadius: "0.4rem", background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.15)", marginBottom: "0.5rem", fontSize: "0.68rem", color: "#f59e0b", fontWeight: 600 }}>
+                          <div style={{ padding: "0.45rem 0.65rem", borderRadius: "0.4rem", background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.15)", marginBottom: "0.62rem", fontSize: "0.68rem", color: "var(--arta-accent)", fontWeight: 600 }}>
                             {"\u26A0\uFE0F"} Quote expired. Refreshing rates...
                           </div>
                         )}
@@ -3244,7 +3246,7 @@ function ReadyToShipTab({
                           <div style={{ marginBottom: "0.75rem" }} className="ship-table-scroll-wrapper">
                             <div className="ship-table-4col" style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,2fr) minmax(0,1fr) minmax(0,1fr)", gap: "0.3rem", padding: "0.3rem 0.65rem", marginBottom: "0.2rem" }}>
                               {["Carrier", "Service", "Transit", "Cost"].map((h) => (
-                                <div key={h} style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)" }}>{h}</div>
+                                <div key={h} style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)" }}>{h}</div>
                               ))}
                             </div>
                             <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
@@ -3264,7 +3266,7 @@ function ReadyToShipTab({
                                       padding: "0.5rem 0.65rem",
                                       borderRadius: "0.4rem",
                                       border: isSelected ? "1.5px solid var(--accent)" : "1px solid transparent",
-                                      background: isSelected ? "rgba(0,188,212,0.08)" : i % 2 === 0 ? "var(--ghost-bg)" : "transparent",
+                                      background: isSelected ? "var(--accent-dim)" : i % 2 === 0 ? "var(--ghost-bg)" : "transparent",
                                       cursor: "pointer",
                                       textAlign: "left" as const,
                                     }}
@@ -3276,14 +3278,14 @@ function ReadyToShipTab({
                                     <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", flexWrap: "wrap" }}>
                                       <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>{c.service}</span>
                                       {isBest && (
-                                        <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>BEST</span>
+                                        <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "var(--success-text)" }}>BEST</span>
                                       )}
                                       {isFastest && (
                                         <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(59,130,246,0.15)", color: "#3b82f6" }}>FASTEST</span>
                                       )}
                                     </div>
                                     <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{c.days}d</span>
-                                    <span style={{ fontSize: "0.88rem", fontWeight: 700, color: isSelected ? "#4caf50" : "var(--text-primary)" }}>
+                                    <span style={{ fontSize: "0.88rem", fontWeight: 700, color: isSelected ? "var(--success-text)" : "var(--text-primary)" }}>
                                       ${c.price.toFixed(2)}
                                     </span>
                                   </button>
@@ -3296,7 +3298,7 @@ function ReadyToShipTab({
                             Fetching carrier rates...
                           </div>
                         )}
-                        <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+                        <div style={{ display: "flex", gap: "0.62rem", justifyContent: "flex-end" }}>
                           <button
                             onClick={() => setWizardStep(2)}
                             style={{ padding: "0.4rem 0.75rem", fontSize: "0.75rem", borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}
@@ -3312,7 +3314,7 @@ function ReadyToShipTab({
                               fontWeight: 700,
                               borderRadius: "0.4rem",
                               border: "none",
-                              background: "linear-gradient(135deg, #00bcd4, #009688)",
+                              background: "linear-gradient(135deg, var(--accent), var(--accent-deep))",
                               color: "#fff",
                               cursor: "pointer",
                               opacity: !sc ? 0.5 : 1,
@@ -3348,33 +3350,33 @@ function ReadyToShipTab({
                             <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{item.title}</span>
                           </div>
                           {/* Package */}
-                          <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.6rem", fontSize: "0.72rem" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.62rem", marginBottom: "0.6rem", fontSize: "0.72rem" }}>
                             <div>
-                              <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.15rem" }}>Package</div>
+                              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.15rem" }}>Package</div>
                               <div style={{ color: "var(--text-primary)" }}>{dims ? `${dims} in` : "Standard"} {"\u00B7"} {w} lbs</div>
-                              {wizardData.isFragile && <div style={{ fontSize: "0.6rem", color: "#f59e0b", fontWeight: 600, marginTop: "0.1rem" }}>{"\u26A0\uFE0F"} Fragile</div>}
+                              {wizardData.isFragile && <div style={{ fontSize: "0.65rem", color: "var(--arta-accent)", fontWeight: 600, marginTop: "0.1rem" }}>{"\u26A0\uFE0F"} Fragile</div>}
                             </div>
                             <div>
-                              <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.15rem" }}>Route</div>
+                              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.15rem" }}>Route</div>
                               <div style={{ color: "var(--text-primary)" }}>{wizardData.fromZip} {"\u2192"} {wizardData.toZip || "?"}</div>
                             </div>
                           </div>
                           {/* Carrier */}
-                          <div style={{ padding: "0.6rem", borderRadius: "0.4rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)", marginBottom: "0.6rem" }}>
+                          <div style={{ padding: "0.6rem", borderRadius: "0.4rem", background: "var(--accent-dim)", border: "1px solid var(--accent-dim)", marginBottom: "0.6rem" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                               <div>
-                                <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.1rem" }}>Carrier</div>
+                                <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.1rem" }}>Carrier</div>
                                 <div style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)" }}>{sc.carrier} {sc.service}</div>
                               </div>
                               <div style={{ textAlign: "right" }}>
-                                <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#4caf50" }}>${sc.price.toFixed(2)}</div>
+                                <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--success-text)" }}>${sc.price.toFixed(2)}</div>
                                 <div style={{ fontSize: "0.58rem", color: "var(--text-muted)" }}>{sc.days} business days</div>
                               </div>
                             </div>
                           </div>
                           {/* Insurance */}
                           <div style={{ marginBottom: "0.3rem" }}>
-                            <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Insurance</div>
+                            <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Insurance</div>
                             <div style={{ display: "flex", gap: "0.3rem" }}>
                               {[
                                 { value: "basic", label: "Basic $2.50", desc: "Up to $100 coverage" },
@@ -3389,20 +3391,20 @@ function ReadyToShipTab({
                                     padding: "0.4rem",
                                     borderRadius: "0.35rem",
                                     border: wizardData.insurance === ins.value ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
-                                    background: wizardData.insurance === ins.value ? "rgba(0,188,212,0.06)" : "transparent",
+                                    background: wizardData.insurance === ins.value ? "var(--accent-dim)" : "transparent",
                                     cursor: "pointer",
                                     textAlign: "center",
                                   }}
                                 >
                                   <div style={{ fontSize: "0.68rem", fontWeight: 600, color: wizardData.insurance === ins.value ? "var(--accent)" : "var(--text-primary)" }}>{ins.label}</div>
-                                  <div style={{ fontSize: "0.5rem", color: "var(--text-muted)" }}>{ins.desc}</div>
+                                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{ins.desc}</div>
                                 </button>
                               ))}
                             </div>
                           </div>
                           {/* Delivery Method */}
                           <div style={{ marginTop: "0.4rem" }}>
-                            <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Label Delivery</div>
+                            <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Label Delivery</div>
                             <div style={{ display: "flex", gap: "0.3rem" }}>
                               {[
                                 { value: "qr", label: "QR Code", desc: "Scan to view label", icon: "\u{1F4F1}" },
@@ -3415,19 +3417,19 @@ function ReadyToShipTab({
                                   style={{
                                     flex: 1, padding: "0.4rem", borderRadius: "0.35rem", cursor: "pointer", textAlign: "center",
                                     border: (wizardData.deliveryMethod || "qr") === dm.value ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
-                                    background: (wizardData.deliveryMethod || "qr") === dm.value ? "rgba(0,188,212,0.06)" : "transparent",
+                                    background: (wizardData.deliveryMethod || "qr") === dm.value ? "var(--accent-dim)" : "transparent",
                                   }}
                                 >
                                   <div style={{ fontSize: "0.75rem", marginBottom: "0.1rem" }}>{dm.icon}</div>
                                   <div style={{ fontSize: "0.62rem", fontWeight: 600, color: (wizardData.deliveryMethod || "qr") === dm.value ? "var(--accent)" : "var(--text-primary)" }}>{dm.label}</div>
-                                  <div style={{ fontSize: "0.45rem", color: "var(--text-muted)" }}>{dm.desc}</div>
+                                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{dm.desc}</div>
                                 </button>
                               ))}
                             </div>
                           </div>
                         </div>
                         {/* Actions */}
-                        <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+                        <div style={{ display: "flex", gap: "0.62rem", justifyContent: "flex-end" }}>
                           <button
                             onClick={() => setWizardStep(3)}
                             style={{ padding: "0.4rem 0.75rem", fontSize: "0.75rem", borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}
@@ -3441,9 +3443,9 @@ function ReadyToShipTab({
                               padding: "0.5rem 1.25rem",
                               fontSize: "0.82rem",
                               fontWeight: 700,
-                              borderRadius: "0.5rem",
+                              borderRadius: "0.62rem",
                               border: "none",
-                              background: "linear-gradient(135deg, #4caf50, #2e7d32)",
+                              background: "linear-gradient(135deg, var(--success-text), #2e7d32)",
                               color: "#fff",
                               cursor: generating === item.id ? "wait" : "pointer",
                               opacity: generating === item.id ? 0.6 : 1,
@@ -3459,13 +3461,13 @@ function ReadyToShipTab({
                 {/* Step 5: Label Generated — Celebration */}
                 {wizardStep >= 4 && generatedLabel && generatedLabel.itemId === item.id && (
                   <div>
-                    <div style={{ padding: "0.75rem", borderRadius: "0.5rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.15)", marginBottom: "0.75rem", textAlign: "center" }}>
+                    <div style={{ padding: "0.75rem", borderRadius: "0.62rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.15)", marginBottom: "0.75rem", textAlign: "center" }}>
                       <div style={{ fontSize: "1.5rem", marginBottom: "0.2rem" }}>{"\u{1F389}"}</div>
-                      <div style={{ fontWeight: 800, fontSize: "1rem", color: "#4caf50" }}>Label Created!</div>
+                      <div style={{ fontWeight: 800, fontSize: "1rem", color: "var(--success-text)" }}>Label Created!</div>
                       <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginTop: "0.4rem", fontSize: "0.68rem" }}>
                         <div><span style={{ color: "var(--text-muted)" }}>Carrier:</span> <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{generatedLabel.data.carrier}</span></div>
-                        <div><span style={{ color: "var(--text-muted)" }}>Rate:</span> <span style={{ fontWeight: 700, color: "#4caf50" }}>${typeof generatedLabel.data.rate === "number" ? generatedLabel.data.rate.toFixed(2) : generatedLabel.data.rate}</span></div>
-                        <div><span style={{ color: "var(--text-muted)" }}>Tracking:</span> <span style={{ fontFamily: "monospace", fontSize: "0.6rem", color: "var(--text-primary)" }}>{generatedLabel.data.trackingNumber.slice(0, 12)}...</span></div>
+                        <div><span style={{ color: "var(--text-muted)" }}>Rate:</span> <span style={{ fontWeight: 700, color: "var(--success-text)" }}>${typeof generatedLabel.data.rate === "number" ? generatedLabel.data.rate.toFixed(2) : generatedLabel.data.rate}</span></div>
+                        <div><span style={{ color: "var(--text-muted)" }}>Tracking:</span> <span style={{ fontFamily: "monospace", fontSize: "0.65rem", color: "var(--text-primary)" }}>{generatedLabel.data.trackingNumber.slice(0, 12)}...</span></div>
                       </div>
                     </div>
                     <ShippingLabel
@@ -3479,8 +3481,8 @@ function ReadyToShipTab({
                       weight={generatedLabel.data.weight}
                     />
                     {/* Enhanced post-label actions */}
-                    <div style={{ marginTop: "0.75rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                    <div style={{ marginTop: "0.75rem", display: "flex", flexDirection: "column", gap: "0.62rem" }}>
+                      <div style={{ display: "flex", gap: "0.62rem", flexWrap: "wrap" }}>
                         <button
                           onClick={async () => {
                             try {
@@ -3500,7 +3502,7 @@ function ReadyToShipTab({
                             fontWeight: 700,
                             borderRadius: "0.4rem",
                             border: "none",
-                            background: "linear-gradient(135deg, #4caf50, #2e7d32)",
+                            background: "linear-gradient(135deg, var(--success-text), #2e7d32)",
                             color: "#fff",
                             cursor: "pointer",
                           }}
@@ -3602,9 +3604,9 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
   // Carrier branding colors
   const carrierBorderColor = (carrier: string) => {
     const c = (carrier || "").toUpperCase();
-    if (c.includes("USPS")) return "#333366";
-    if (c.includes("UPS")) return "#351c15";
-    if (c.includes("FEDEX")) return "#4d148c";
+    if (c.includes("USPS")) return CARRIER_COLORS.USPS;
+    if (c.includes("UPS")) return CARRIER_COLORS.UPS;
+    if (c.includes("FEDEX")) return CARRIER_COLORS.FedEx;
     if (c.includes("DHL")) return "#FFCC00";
     return "var(--accent)";
   };
@@ -3717,7 +3719,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
       if (s === "IN_TRANSIT") return "IN_TRANSIT";
       return "CREATED";
     })(),
-    accentColor: "#9c27b0",
+    accentColor: "var(--freight-accent)",
     eta: null,
     shipDate: null,
     weight: freightBOL.weight ? `${freightBOL.weight} lbs` : "",
@@ -3748,7 +3750,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
         if (s === "CONFIRMED") return "OUT_FOR_DELIVERY";
         return "CREATED";
       })(),
-      accentColor: "#ff9800",
+      accentColor: "var(--warning-text)",
       eta: ps?.scheduledAt ? new Date(ps.scheduledAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : null,
       shipDate: null,
       weight: "",
@@ -3799,7 +3801,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
   if (allRows.length === 0) {
     return (
       <div style={{ textAlign: "center" as const, padding: "3rem", color: "var(--text-muted)" }}>
-        <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem", opacity: 0.4 }}>{"\u{1F4E1}"}</div>
+        <div style={{ fontSize: "2.5rem", marginBottom: "0.62rem", opacity: 0.4 }}>{"\u{1F4E1}"}</div>
         <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-secondary)", marginBottom: "0.35rem" }}>No Shipments Yet</div>
         <div style={{ fontSize: "0.82rem", lineHeight: 1.5, maxWidth: 360, margin: "0 auto" }}>Your shipped and delivered items will be tracked here with real-time status updates, carrier tracking, and delivery confirmation.</div>
       </div>
@@ -3813,7 +3815,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
       <div style={{
         height: 4,
         borderRadius: 2,
-        background: "rgba(0,188,212,0.1)",
+        background: "var(--accent-dim)",
         marginTop: "0.35rem",
         overflow: "hidden",
         position: "relative" as const,
@@ -3822,8 +3824,8 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
           height: "100%",
           width: `${progress}%`,
           background: isDone
-            ? "linear-gradient(90deg, #00bcd4, #4caf50)"
-            : "linear-gradient(90deg, #00bcd4, #00838f)",
+            ? "linear-gradient(90deg, var(--accent), var(--success-text))"
+            : "linear-gradient(90deg, var(--accent), var(--accent-deep))",
           borderRadius: 2,
           transition: "width 0.4s ease",
         }} />
@@ -3836,8 +3838,8 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
             width: 6,
             height: 6,
             borderRadius: "50%",
-            background: "#00bcd4",
-            boxShadow: "0 0 4px rgba(0,188,212,0.5)",
+            background: "var(--accent)",
+            boxShadow: "0 0 4px var(--accent-glow)",
           }} />
         )}
       </div>
@@ -3872,20 +3874,20 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
         <div
           onClick={() => { setExpandedRow(isExpanded ? null : row.id); console.log(`[tracking-dashboard] ${isExpanded ? "Collapsed" : "Expanded"} row: ${row.id}`); }}
           style={{
-            borderRadius: "0.5rem",
+            borderRadius: "0.62rem",
             overflow: "hidden",
             cursor: "pointer",
-            borderLeft: `3px solid ${row.isDelivered ? "#4caf50" : isException ? "#f44336" : row.accentColor}`,
-            background: idx % 2 === 0 ? "transparent" : "rgba(0,188,212,0.02)",
+            borderLeft: `3px solid ${row.isDelivered ? "var(--success-text)" : isException ? "var(--error-text)" : row.accentColor}`,
+            background: idx % 2 === 0 ? "transparent" : "var(--accent-dim)",
             transition: "all 0.2s ease",
             marginBottom: "0.35rem",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLDivElement).style.background = "rgba(0,188,212,0.04)";
+            (e.currentTarget as HTMLDivElement).style.background = "var(--accent-dim)";
             (e.currentTarget as HTMLDivElement).style.transform = "scale(1.005)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLDivElement).style.background = idx % 2 === 0 ? "transparent" : "rgba(0,188,212,0.02)";
+            (e.currentTarget as HTMLDivElement).style.background = idx % 2 === 0 ? "transparent" : "var(--accent-dim)";
             (e.currentTarget as HTMLDivElement).style.transform = "scale(1)";
           }}
         >
@@ -3903,7 +3905,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
             ) : (
               <div style={{
                 width: 40, height: 40, borderRadius: 4,
-                background: row.type === "freight" ? "rgba(156,39,176,0.08)" : row.type === "pickup" ? "rgba(255,152,0,0.08)" : "rgba(0,188,212,0.06)",
+                background: row.type === "freight" ? "rgba(156,39,176,0.08)" : row.type === "pickup" ? "rgba(255,152,0,0.08)" : "var(--accent-dim)",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: "0.85rem", flexShrink: 0,
               }}>
@@ -3928,7 +3930,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
                 </span>
               </div>
               {renderProgressBar(row.steps, row.stepIndex, row.isDelivered)}
-              <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
+              <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
                 {row.fromAddress?.city && row.toAddress?.city
                   ? `${row.fromAddress.city}, ${row.fromAddress.state || ""} \u2192 ${row.toAddress.city}, ${row.toAddress.state || ""}`
                   : row.type === "pickup" ? "Local pickup" : row.type === "freight" ? "LTL Freight" : ""}
@@ -3963,7 +3965,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
               ) : (
                 <span style={{
                   fontSize: "0.65rem", fontFamily: "monospace",
-                  color: row.type === "freight" ? "#9c27b0" : row.type === "pickup" ? "#ff9800" : "var(--text-muted)",
+                  color: row.type === "freight" ? "var(--freight-accent)" : row.type === "pickup" ? "var(--warning-text)" : "var(--text-muted)",
                 }}>
                   {row.trackingId}
                 </span>
@@ -3971,10 +3973,10 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
               <button
                 onClick={(e) => { e.stopPropagation(); copyTracking(row.trackingId); }}
                 style={{
-                  padding: "1px 3px", fontSize: "0.55rem",
-                  border: "1px solid rgba(0,188,212,0.2)", borderRadius: 2,
+                  padding: "1px 3px", fontSize: "0.62rem",
+                  border: "1px solid var(--accent-border)", borderRadius: 2,
                   background: "transparent",
-                  color: copied === row.trackingId ? "#4caf50" : "var(--text-muted)",
+                  color: copied === row.trackingId ? "var(--success-text)" : "var(--text-muted)",
                   cursor: "pointer", flexShrink: 0,
                 }}
               >
@@ -4015,9 +4017,9 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
                     }
                   }}
                   style={{
-                    padding: "3px 8px", fontSize: "0.45rem", fontWeight: 600,
-                    background: "rgba(0,188,212,0.1)", color: "#00bcd4",
-                    border: "1px solid rgba(0,188,212,0.2)", borderRadius: "6px",
+                    padding: "3px 8px", fontSize: "0.62rem", fontWeight: 600,
+                    background: "var(--accent-dim)", color: "var(--accent)",
+                    border: "1px solid var(--accent-border)", borderRadius: "6px",
                     cursor: "pointer", flexShrink: 0,
                   }}
                   title={`Advance to ${next} (demo)`}
@@ -4030,7 +4032,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
             {/* ETA */}
             <div style={{
               fontSize: "0.75rem", fontWeight: 600,
-              color: row.isDelivered ? "#4caf50" : "var(--text-muted)",
+              color: row.isDelivered ? "var(--success-text)" : "var(--text-muted)",
               whiteSpace: "nowrap" as const, minWidth: "50px", textAlign: "right" as const,
               flexShrink: 0,
             }}>
@@ -4038,7 +4040,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
             </div>
 
             {/* Expand chevron */}
-            <span style={{ fontSize: "0.55rem", color: "var(--text-muted)", flexShrink: 0 }}>
+            <span style={{ fontSize: "0.62rem", color: "var(--text-muted)", flexShrink: 0 }}>
               {isExpanded ? "\u25B2" : "\u25BC"}
             </span>
           </div>
@@ -4047,20 +4049,20 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
           {isExpanded && (
             <div style={{
               padding: "0.65rem 0.9rem 0.75rem",
-              background: "rgba(0,188,212,0.02)",
-              borderTop: "1px solid rgba(0,188,212,0.08)",
+              background: "var(--accent-dim)",
+              borderTop: "1px solid var(--accent-dim)",
               fontSize: "0.72rem",
             }}>
               {/* Address row */}
               {(row.fromAddress || row.toAddress) && (
-                <div style={{ display: "flex", gap: "1.5rem", marginBottom: "0.5rem" }}>
+                <div style={{ display: "flex", gap: "1.5rem", marginBottom: "0.62rem" }}>
                   <AddressDisplay label="FROM" address={row.fromAddress} />
                   <AddressDisplay label="TO" address={row.toAddress} />
                 </div>
               )}
 
               {/* Details row */}
-              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" as const, fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" as const, fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "0.62rem" }}>
                 {row.weight && <span>Weight: {row.weight}</span>}
                 {row.rate && <span>Rate: {row.rate}</span>}
                 {row.shipDate && <span>Shipped: {row.shipDate}</span>}
@@ -4073,7 +4075,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
               </div>
 
               {/* Action buttons */}
-              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" as const }}>
+              <div style={{ display: "flex", gap: "0.62rem", flexWrap: "wrap" as const }}>
                 {row.type === "parcel" && (() => {
                   const url = getTrackingUrl(row.carrier, row.trackingId);
                   if (!url) return null;
@@ -4099,7 +4101,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
                     style={{
                       padding: "4px 8px", fontSize: "0.62rem", fontWeight: 600,
                       border: "1px solid #4caf50", borderRadius: 3,
-                      background: "rgba(76,175,80,0.1)", color: "#4caf50",
+                      background: "rgba(76,175,80,0.1)", color: "var(--success-text)",
                       cursor: closingSale === row.id ? "wait" : "pointer",
                       opacity: closingSale === row.id ? 0.6 : 1,
                     }}
@@ -4108,7 +4110,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
                   </button>
                 )}
                 {isClosed && (
-                  <span style={{ fontSize: "0.62rem", fontWeight: 600, color: "#4caf50" }}>{"\u2705"} Sale completed</span>
+                  <span style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--success-text)" }}>{"\u2705"} Sale completed</span>
                 )}
                 {row.type === "parcel" && (
                   <button
@@ -4157,8 +4159,8 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
       <div style={{
         padding: "0.85rem 1rem",
         borderRadius: "0.75rem",
-        background: "linear-gradient(135deg, rgba(0,188,212,0.04), rgba(0,150,136,0.03))",
-        border: "1px solid rgba(0,188,212,0.12)",
+        background: "linear-gradient(135deg, var(--accent-dim), rgba(0,150,136,0.03))",
+        border: "1px solid var(--accent-dim)",
         position: "relative" as const,
         overflow: "hidden",
       }}>
@@ -4167,7 +4169,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
           position: "absolute" as const,
           left: 0, right: 0,
           height: 1,
-          background: "linear-gradient(90deg, transparent, rgba(0,188,212,0.3), transparent)",
+          background: "linear-gradient(90deg, transparent, var(--accent-glow), transparent)",
           animation: "ll-scan 3s ease-in-out infinite",
           top: 0,
         }} />
@@ -4193,12 +4195,12 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
               onClick={() => { setBoardRefreshTs(new Date()); console.log("[tracking-dashboard] Manual refresh"); }}
               style={{
                 padding: "4px 8px", fontSize: "0.62rem", fontWeight: 600,
-                border: "1px solid rgba(0,188,212,0.2)", borderRadius: 3,
-                background: "rgba(0,188,212,0.08)", color: "var(--accent)",
+                border: "1px solid var(--accent-border)", borderRadius: 3,
+                background: "var(--accent-dim)", color: "var(--accent)",
                 cursor: "pointer", transition: "all 0.2s",
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,188,212,0.15)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,188,212,0.08)"; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "var(--accent-dim)"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "var(--accent-dim)"; }}
             >
               {"\u{1F504}"} Refresh
             </button>
@@ -4206,10 +4208,10 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
         </div>
 
         {/* Divider */}
-        <div style={{ height: 1, background: "rgba(0,188,212,0.08)", marginBottom: "0.6rem" }} />
+        <div style={{ height: 1, background: "var(--accent-dim)", marginBottom: "0.6rem" }} />
 
         {/* Status counts row */}
-        <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem" }}>
+        <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.62rem" }}>
           {[
             { key: "inTransit", icon: "\u{1F7E2}", label: "In Transit", count: counts.inTransit },
             { key: "outForDelivery", icon: "\u{1F7E0}", label: "Out for Delivery", count: counts.outForDelivery },
@@ -4227,16 +4229,16 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
                 textAlign: "center" as const,
                 fontSize: "0.7rem",
                 fontWeight: 600,
-                border: filterStatus === status.key ? "1px solid var(--accent)" : "1px solid rgba(0,188,212,0.15)",
+                border: filterStatus === status.key ? "1px solid var(--accent)" : "1px solid var(--accent-dim)",
                 borderRadius: 4,
-                background: filterStatus === status.key ? "rgba(0,188,212,0.15)" : "transparent",
+                background: filterStatus === status.key ? "var(--accent-dim)" : "transparent",
                 color: "var(--text-primary)",
                 cursor: "pointer",
                 transition: "all 0.2s",
                 fontFamily: "monospace",
               }}
               onMouseEnter={(e) => {
-                if (filterStatus !== status.key) (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,188,212,0.06)";
+                if (filterStatus !== status.key) (e.currentTarget as HTMLButtonElement).style.background = "var(--accent-dim)";
               }}
               onMouseLeave={(e) => {
                 if (filterStatus !== status.key) (e.currentTarget as HTMLButtonElement).style.background = "transparent";
@@ -4244,7 +4246,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
             >
               <div>{status.icon}</div>
               <div style={{ fontWeight: 700, fontSize: "0.85rem" }}>{status.count}</div>
-              <div style={{ fontSize: "0.48rem", marginTop: 2, opacity: 0.8, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>{status.label}</div>
+              <div style={{ fontSize: "0.62rem", marginTop: 2, opacity: 0.8, textTransform: "uppercase" as const, letterSpacing: "0.04em" }}>{status.label}</div>
             </button>
           ))}
         </div>
@@ -4260,14 +4262,14 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
           <button
             onClick={() => setFilterStatus(null)}
             style={{
-              fontSize: "0.55rem", padding: "1px 4px", borderRadius: 3,
+              fontSize: "0.62rem", padding: "1px 4px", borderRadius: 3,
               border: "1px solid var(--border-default)", background: "transparent",
               color: "var(--text-muted)", cursor: "pointer",
             }}
           >
             {"\u2715"} Clear
           </button>
-          <span style={{ marginLeft: "auto", fontSize: "0.6rem", color: "var(--text-muted)" }}>
+          <span style={{ marginLeft: "auto", fontSize: "0.65rem", color: "var(--text-muted)" }}>
             {filteredRows.length} of {allRows.length} shipments
           </span>
         </div>
@@ -4279,7 +4281,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
         <div style={{
           display: "flex", alignItems: "center", gap: "0.6rem",
           padding: "0.35rem 0.9rem 0.35rem calc(0.9rem + 3px)",
-          fontSize: "0.48rem", fontWeight: 700,
+          fontSize: "0.62rem", fontWeight: 700,
           textTransform: "uppercase" as const, letterSpacing: "0.08em",
           color: "var(--text-muted)", borderBottom: "1px solid var(--border-default)",
           marginBottom: "0.3rem",
@@ -4515,18 +4517,7 @@ function FreightTab({ items }: { items: any[] }) {
     (accessorials.blanketWrap ? 75 : 0) +
     (accessorials.insideDelivery ? 150 : 0);
 
-  const inputStyle: React.CSSProperties = {
-    padding: "0.5rem 0.75rem",
-    borderRadius: "0.5rem",
-    border: "1px solid var(--border-default)",
-    background: "var(--input-bg, var(--ghost-bg))",
-    color: "var(--text-primary)",
-    fontSize: "0.85rem",
-    width: "100%",
-    outline: "none",
-    boxSizing: "border-box" as const,
-    fontFamily: "inherit",
-  };
+  const inputStyle = SHIP_INPUT_STYLE;
 
   // Unified quote function — calls /api/shipping/ltl-quote (ShipEngine + FedEx + fallback)
   async function getQuote() {
@@ -4615,7 +4606,7 @@ function FreightTab({ items }: { items: any[] }) {
             <div style={{
               display: "flex", alignItems: "center",
               justifyContent: "space-between",
-              marginBottom: "0.5rem",
+              marginBottom: "0.62rem",
             }}>
               <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" as const, letterSpacing: "0.05em" }}>
                 {"\u{1F4BE}"} Saved Quotes ({ltlQuotes.length})
@@ -4630,11 +4621,11 @@ function FreightTab({ items }: { items: any[] }) {
                     }
                   }}
                   style={{
-                    fontSize: "0.55rem",
+                    fontSize: "0.62rem",
                     padding: "2px 6px",
                     borderRadius: "0.3rem",
                     background: "rgba(244,67,54,0.1)",
-                    color: "#f44336",
+                    color: "var(--error-text)",
                     border: "1px solid rgba(244,67,54,0.2)",
                     cursor: "pointer",
                   }}
@@ -4646,7 +4637,7 @@ function FreightTab({ items }: { items: any[] }) {
 
             <div style={{
               display: "flex",
-              gap: "0.5rem",
+              gap: "0.62rem",
               flexWrap: "wrap" as const,
             }}>
               {ltlQuotes.slice(0, 3).map((q: any) => (
@@ -4656,7 +4647,7 @@ function FreightTab({ items }: { items: any[] }) {
                     flex: "0 1 calc(33.333% - 0.35rem)",
                     minWidth: "140px",
                     padding: "0.5rem 0.6rem",
-                    borderRadius: "0.5rem",
+                    borderRadius: "0.62rem",
                     background: "rgba(255,193,7,0.06)",
                     border: "1.5px solid rgba(255,193,7,0.25)",
                     display: "flex",
@@ -4669,7 +4660,7 @@ function FreightTab({ items }: { items: any[] }) {
                       <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--text-primary)" }}>
                         {q.carrier}
                       </span>
-                      {q.isLive && <span style={{ fontSize: "0.42rem", fontWeight: 700, padding: "1px 3px", borderRadius: "9999px", background: "rgba(76,175,80,0.12)", color: "#4caf50" }}>LIVE</span>}
+                      {q.isLive && <span style={{ fontSize: "0.42rem", fontWeight: 700, padding: "1px 3px", borderRadius: "9999px", background: "rgba(76,175,80,0.12)", color: "var(--success-text)" }}>LIVE</span>}
                     </div>
                     <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#ffc107", marginBottom: "0.15rem" }}>
                       ${Number(q.amount).toFixed(0)}
@@ -4677,14 +4668,14 @@ function FreightTab({ items }: { items: any[] }) {
                     <div style={{ fontSize: "0.58rem", color: "var(--text-muted)" }}>
                       {q.transit || "?"} {"\u00B7"} {q.service || ""}
                     </div>
-                    <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
+                    <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>
                       {q.itemTitle || q.itemId.slice(0, 8)}
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", marginTop: "0.35rem" }}>
                     <a
                       href={`/items/${q.itemId}`}
-                      style={{ fontSize: "0.55rem", fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}
+                      style={{ fontSize: "0.62rem", fontWeight: 600, color: "var(--accent)", textDecoration: "none" }}
                     >
                       Use {"\u2192"}
                     </a>
@@ -4696,11 +4687,11 @@ function FreightTab({ items }: { items: any[] }) {
                         console.log("[SavedQuotes] Removed quote", q.quoteKey);
                       }}
                       style={{
-                        fontSize: "0.5rem",
+                        fontSize: "0.62rem",
                         padding: "2px 4px",
                         borderRadius: "0.2rem",
                         background: "rgba(244,67,54,0.1)",
-                        color: "#f44336",
+                        color: "var(--error-text)",
                         border: "none",
                         cursor: "pointer",
                         marginLeft: "auto",
@@ -4717,9 +4708,9 @@ function FreightTab({ items }: { items: any[] }) {
                     flex: "0 1 calc(33.333% - 0.35rem)",
                     minWidth: "140px",
                     padding: "0.5rem 0.6rem",
-                    borderRadius: "0.5rem",
-                    background: "rgba(0,188,212,0.04)",
-                    border: "1px solid rgba(0,188,212,0.12)",
+                    borderRadius: "0.62rem",
+                    background: "var(--accent-dim)",
+                    border: "1px solid var(--accent-dim)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -4754,7 +4745,7 @@ function FreightTab({ items }: { items: any[] }) {
           }}>
             <div style={{
               fontSize: "0.72rem", fontWeight: 700,
-              color: "#9c27b0", marginBottom: "0.5rem",
+              color: "var(--freight-accent)", marginBottom: "0.62rem",
               display: "flex", alignItems: "center", gap: "0.4rem",
             }}>
               🚛 Items That May Need Freight ({freightItems.length})
@@ -4784,7 +4775,7 @@ function FreightTab({ items }: { items: any[] }) {
                     console.log("[freight-tab] Selected item for freight:", fi.id, fi.title);
                   }}
                   style={{
-                    display: "flex", alignItems: "center", gap: "0.5rem",
+                    display: "flex", alignItems: "center", gap: "0.62rem",
                     padding: "0.4rem 0.6rem", marginBottom: "0.25rem",
                     borderRadius: "8px", cursor: "pointer",
                     border: "1px solid var(--border-default)",
@@ -4806,15 +4797,15 @@ function FreightTab({ items }: { items: any[] }) {
                       {fi.title || "Untitled Item"}
                     </div>
                     <div style={{
-                      fontSize: "0.6rem",
+                      fontSize: "0.65rem",
                       color: "var(--text-muted)",
                     }}>
                       {w > 0 ? `~${Math.round(w)} lbs` : "Weight TBD"}
                       {dims ? ` · ${dims}` : ""}
                       {" · "}
                       <span style={{
-                        color: method === "local_only" ? "#ff9800"
-                              : method === "freight" ? "#9c27b0" : "#00bcd4",
+                        color: method === "local_only" ? "var(--warning-text)"
+                              : method === "freight" ? "var(--freight-accent)" : "var(--accent)",
                         fontWeight: 600,
                       }}>
                         {method === "local_only" ? "Local Pickup (freight possible)"
@@ -4824,7 +4815,7 @@ function FreightTab({ items }: { items: any[] }) {
                     </div>
                   </div>
                   <span style={{
-                    fontSize: "0.6rem", color: "#00bcd4", fontWeight: 600,
+                    fontSize: "0.65rem", color: "var(--accent)", fontWeight: 600,
                   }}>
                     Select →
                   </span>
@@ -4914,17 +4905,17 @@ function FreightTab({ items }: { items: any[] }) {
                   display: "flex", alignItems: "center", gap: "0.25rem",
                   padding: "0.25rem 0.55rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 600, cursor: "pointer",
                   border: on ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
-                  background: on ? "rgba(0,188,212,0.08)" : "transparent",
+                  background: on ? "var(--accent-dim)" : "transparent",
                   color: on ? "var(--accent)" : "var(--text-muted)",
                   transition: "all 0.15s ease",
                 }}
               >
-                {ac.label} <span style={{ fontSize: "0.52rem", opacity: 0.7 }}>{ac.range}</span>
+                {ac.label} <span style={{ fontSize: "0.62rem", opacity: 0.7 }}>{ac.range}</span>
               </button>
             );
           })}
           {accessorialTotal > 0 && (
-            <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "#f59e0b", alignSelf: "center" }}>+${accessorialTotal} accessorials</span>
+            <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--arta-accent)", alignSelf: "center" }}>+${accessorialTotal} accessorials</span>
           )}
         </div>
         <button
@@ -4935,13 +4926,13 @@ function FreightTab({ items }: { items: any[] }) {
             padding: "0.6rem 1.25rem",
             fontSize: "0.88rem",
             fontWeight: 700,
-            borderRadius: "0.5rem",
+            borderRadius: "0.62rem",
             border: "none",
-            background: "linear-gradient(135deg, #00bcd4, #009688)",
+            background: "linear-gradient(135deg, var(--accent), var(--accent-deep))",
             color: "#fff",
             cursor: loading ? "wait" : "pointer",
             opacity: loading || !form.weight || !form.toZip ? 0.5 : 1,
-            boxShadow: "0 4px 16px rgba(0,188,212,0.15)",
+            boxShadow: "0 4px 16px var(--accent-dim)",
             transition: "all 0.2s ease",
           }}
         >
@@ -4959,13 +4950,13 @@ function FreightTab({ items }: { items: any[] }) {
               { l: "Volume", v: `${quote.cubicFeet} ft\u00B3`, c: "var(--text-primary)" },
             ].map((s) => (
               <div key={s.l}>
-                <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>{s.l}</div>
+                <div style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)" }}>{s.l}</div>
                 <div style={{ fontSize: "1.2rem", fontWeight: 800, color: s.c }}>{s.v}</div>
               </div>
             ))}
-            <span style={{ alignSelf: "center", fontSize: "0.5rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(0,188,212,0.08)", color: "var(--text-muted)" }}>AI Class: {quote.freightClass} ({quote.density} lbs/ft{"\u00B3"})</span>
-            {quote.isLive && <span style={{ alignSelf: "center", fontSize: "0.5rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>LIVE RATES</span>}
-            {!quote.isLive && <span style={{ alignSelf: "center", fontSize: "0.5rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800" }}>ESTIMATED</span>}
+            <span style={{ alignSelf: "center", fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "var(--accent-dim)", color: "var(--text-muted)" }}>AI Class: {quote.freightClass} ({quote.density} lbs/ft{"\u00B3"})</span>
+            {quote.isLive && <span style={{ alignSelf: "center", fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "var(--accent-dim)", color: "var(--accent)" }}>LIVE RATES</span>}
+            {!quote.isLive && <span style={{ alignSelf: "center", fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "var(--warning-text)" }}>ESTIMATED</span>}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
             {sortedCarriers.map((c: any, i: number) => {
@@ -4999,12 +4990,12 @@ function FreightTab({ items }: { items: any[] }) {
                     alignItems: "center",
                     justifyContent: "space-between",
                     padding: "0.75rem",
-                    borderRadius: "0.5rem",
+                    borderRadius: "0.62rem",
                     border: isSelected
                       ? isFedEx ? "1.5px solid #4D148C" : "1.5px solid var(--accent)"
                       : isFedEx ? "1px solid rgba(77,20,140,0.3)" : "1px solid var(--border-default)",
                     background: isSelected
-                      ? isFedEx ? "rgba(77,20,140,0.08)" : "rgba(0,188,212,0.06)"
+                      ? isFedEx ? "rgba(77,20,140,0.08)" : "var(--accent-dim)"
                       : isFedEx ? "rgba(77,20,140,0.03)" : "var(--bg-card)",
                     cursor: "pointer",
                     textAlign: "left" as const,
@@ -5014,26 +5005,26 @@ function FreightTab({ items }: { items: any[] }) {
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
                       <span style={{ fontWeight: 600, fontSize: "0.85rem", color: isFedEx ? "#4D148C" : "var(--text-primary)" }}>{c.carrier}</span>
-                      {isBest && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>BEST RATE</span>}
-                      {isFastest && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(59,130,246,0.15)", color: "#3b82f6" }}>FASTEST</span>}
-                      {isFedEx && c.isLive && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(77,20,140,0.15)", color: "#4D148C" }}>FEDEX LIVE</span>}
-                      {isFedEx && !c.isLive && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800" }}>FEDEX ESTIMATED</span>}
-                      {isShipEngine && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>SHIPENGINE</span>}
-                      {isDemo && !isFedEx && <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800" }}>ESTIMATED</span>}
-                      {(() => { const fId = (heavyItem || items[0])?.id; return fId && isQuoteSaved(fId, c.carrier, c.service || "LTL", "ltl") ? <span style={{ fontSize: "0.5rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>SAVED</span> : null; })()}
+                      {isBest && <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "var(--success-text)" }}>BEST RATE</span>}
+                      {isFastest && <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(59,130,246,0.15)", color: "#3b82f6" }}>FASTEST</span>}
+                      {isFedEx && c.isLive && <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(77,20,140,0.15)", color: "#4D148C" }}>FEDEX LIVE</span>}
+                      {isFedEx && !c.isLive && <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "var(--warning-text)" }}>FEDEX ESTIMATED</span>}
+                      {isShipEngine && <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "var(--accent-dim)", color: "var(--accent)" }}>SHIPENGINE</span>}
+                      {isDemo && !isFedEx && <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "var(--warning-text)" }}>ESTIMATED</span>}
+                      {(() => { const fId = (heavyItem || items[0])?.id; return fId && isQuoteSaved(fId, c.carrier, c.service || "LTL", "ltl") ? <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "var(--success-text)" }}>SAVED</span> : null; })()}
                     </div>
                     <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
                       {c.service} {"\u00B7"} {c.transit}
                       {c.guaranteed ? " \u00B7 Guaranteed" : ""}
                     </div>
                   </div>
-                  <span style={{ fontSize: "1rem", fontWeight: 700, color: isSelected ? "#4caf50" : isFedEx ? "#4D148C" : "var(--accent)" }}>${c.price.toFixed(2)}</span>
+                  <span style={{ fontSize: "1rem", fontWeight: 700, color: isSelected ? "var(--success-text)" : isFedEx ? "#4D148C" : "var(--accent)" }}>${c.price.toFixed(2)}</span>
                 </button>
               );
             })}
           </div>
-          <div style={{ marginTop: "0.5rem", padding: "0.5rem 0.75rem", borderRadius: "0.5rem", background: "rgba(77,20,140,0.06)", border: "1px solid rgba(77,20,140,0.15)", fontSize: "0.72rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-            <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(77,20,140,0.12)", color: "#4D148C" }}>FEDEX</span>
+          <div style={{ marginTop: "0.62rem", padding: "0.5rem 0.75rem", borderRadius: "0.62rem", background: "rgba(77,20,140,0.06)", border: "1px solid rgba(77,20,140,0.15)", fontSize: "0.72rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <span style={{ fontSize: "0.65rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(77,20,140,0.12)", color: "#4D148C" }}>FEDEX</span>
             <span>FedEx Freight Economy rates available with production credentials. Currently showing estimate.</span>
           </div>
           {selectedFreight && (
@@ -5042,7 +5033,7 @@ function FreightTab({ items }: { items: any[] }) {
               <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap", marginBottom: "0.75rem" }}>
                 <button
                   onClick={() => { setOfficialQuoteForm(prev => ({ ...prev, carrier: selectedFreight.carrier, rate: String(selectedFreight.price) })); setShowQuoteUpload(true); }}
-                  style={{ padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", background: "rgba(0,188,212,0.06)", color: "#00bcd4", cursor: "pointer" }}
+                  style={{ padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "1px solid var(--accent-glow)", background: "var(--accent-dim)", color: "var(--accent)", cursor: "pointer" }}
                 >
                   {"\u{1F4CB}"} Upload Official Quote
                 </button>
@@ -5058,7 +5049,7 @@ function FreightTab({ items }: { items: any[] }) {
                 </button>
               </div>
               {/* Schedule Pickup */}
-              <div style={{ display: "flex", alignItems: "flex-end", gap: "0.5rem" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: "0.62rem" }}>
                 <div>
                   <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Pickup Date</div>
                   <input type="date" value={pickupDate} onChange={(e) => setPickupDate(e.target.value)} style={{ ...inputStyle, maxWidth: 180 }} />
@@ -5070,9 +5061,9 @@ function FreightTab({ items }: { items: any[] }) {
                   padding: "0.5rem 1rem",
                   fontSize: "0.82rem",
                   fontWeight: 700,
-                  borderRadius: "0.5rem",
+                  borderRadius: "0.62rem",
                   border: "none",
-                  background: "linear-gradient(135deg, #00bcd4, #009688)",
+                  background: "linear-gradient(135deg, var(--accent), var(--accent-deep))",
                   color: "#fff",
                   cursor: scheduling ? "wait" : "pointer",
                   opacity: scheduling || !pickupDate ? 0.5 : 1,
@@ -5083,7 +5074,7 @@ function FreightTab({ items }: { items: any[] }) {
               </button>
               </div>
               {/* Link to dashboard for full freight booking flow */}
-              <div style={{ marginTop: "0.5rem", textAlign: "center" }}>
+              <div style={{ marginTop: "0.62rem", textAlign: "center" }}>
                 <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>
                   Complete freight booking with BOL generation on the item dashboard
                 </div>
@@ -5116,33 +5107,33 @@ function FreightTab({ items }: { items: any[] }) {
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem" }}>
               <span style={{ fontSize: "1rem" }}>{"\u{1F3DB}\uFE0F"}</span>
-              <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#f59e0b" }}>Arta White-Glove Shipping</span>
-              <span style={{ fontSize: "0.48rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,215,0,0.1)", color: "#f59e0b", border: "1px solid rgba(255,215,0,0.2)" }}>PREMIUM</span>
+              <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--arta-accent)" }}>Arta White-Glove Shipping</span>
+              <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(255,215,0,0.1)", color: "var(--arta-accent)", border: "1px solid rgba(255,215,0,0.2)" }}>PREMIUM</span>
             </div>
-            <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "0.5rem", lineHeight: 1.5 }}>
+            <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginBottom: "0.62rem", lineHeight: 1.5 }}>
               This item qualifies for museum-grade shipping by Arta {"\u2014"} custom crating, climate control, white-glove delivery, and full insurance.
             </div>
 
             {!artaQuoteData && !loadingArtaQuote && (
               <button
                 onClick={() => getArtaQuote(artaItem)}
-                style={{ fontSize: "0.65rem", fontWeight: 700, padding: "5px 12px", borderRadius: "0.4rem", background: "rgba(255,215,0,0.12)", border: "1px solid rgba(255,215,0,0.2)", color: "#f59e0b", cursor: "pointer", textTransform: "uppercase" as const, letterSpacing: "0.04em", transition: "all 0.2s" }}
+                style={{ fontSize: "0.65rem", fontWeight: 700, padding: "5px 12px", borderRadius: "0.4rem", background: "rgba(255,215,0,0.12)", border: "1px solid rgba(255,215,0,0.2)", color: "var(--arta-accent)", cursor: "pointer", textTransform: "uppercase" as const, letterSpacing: "0.04em", transition: "all 0.2s" }}
               >
                 Get Arta Quote
               </button>
             )}
             {loadingArtaQuote && (
-              <div style={{ fontSize: "0.65rem", color: "#f59e0b", fontWeight: 600 }}>Fetching Arta quotes...</div>
+              <div style={{ fontSize: "0.65rem", color: "var(--arta-accent)", fontWeight: 600 }}>Fetching Arta quotes...</div>
             )}
 
             {artaQuoteError && (
-              <div style={{ marginTop: "0.4rem", fontSize: "0.62rem", color: "#f44336", padding: "0.3rem 0.4rem", borderRadius: "0.3rem", background: "rgba(244,67,54,0.08)" }}>
+              <div style={{ marginTop: "0.4rem", fontSize: "0.62rem", color: "var(--error-text)", padding: "0.3rem 0.4rem", borderRadius: "0.3rem", background: "var(--error-bg)" }}>
                 {artaQuoteError}
               </div>
             )}
 
             {artaQuoteData && (
-              <div style={{ marginTop: "0.5rem" }}>
+              <div style={{ marginTop: "0.62rem" }}>
                 {(artaQuoteData.quotes && artaQuoteData.quotes.length > 0) ? (
                   artaQuoteData.quotes.map((q: any, idx: number) => (
                     <div
@@ -5156,12 +5147,12 @@ function FreightTab({ items }: { items: any[] }) {
                       <div>
                         <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{q.quote_type || "Quote"}</div>
                         {q.services && q.services.length > 0 && (
-                          <div style={{ color: "var(--text-muted)", fontSize: "0.52rem", marginTop: "0.1rem" }}>
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.62rem", marginTop: "0.1rem" }}>
                             {q.services.slice(0, 3).join(", ")}
                           </div>
                         )}
                       </div>
-                      <div style={{ fontWeight: 700, color: "#f59e0b" }}>
+                      <div style={{ fontWeight: 700, color: "var(--arta-accent)" }}>
                         ${Number(q.total || 0).toFixed(2)}
                       </div>
                     </div>
@@ -5181,16 +5172,16 @@ function FreightTab({ items }: { items: any[] }) {
                       >
                         <div>
                           <div style={{ fontWeight: 700, color: "var(--text-primary)" }}>{t.tier}</div>
-                          <div style={{ color: "var(--text-muted)", fontSize: "0.52rem", marginTop: "0.1rem" }}>{t.description}</div>
+                          <div style={{ color: "var(--text-muted)", fontSize: "0.62rem", marginTop: "0.1rem" }}>{t.description}</div>
                         </div>
-                        <div style={{ fontWeight: 700, color: "#f59e0b" }}>${t.basePrice}</div>
+                        <div style={{ fontWeight: 700, color: "var(--arta-accent)" }}>${t.basePrice}</div>
                       </div>
                     );
                   })
                 ) : (
                   <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>No Arta quotes available for this route.</div>
                 )}
-                <div style={{ marginTop: "0.3rem", fontSize: "0.48rem", color: "var(--text-muted)", fontStyle: "italic", textAlign: "center" as const }}>
+                <div style={{ marginTop: "0.3rem", fontSize: "0.62rem", color: "var(--text-muted)", fontStyle: "italic", textAlign: "center" as const }}>
                   Powered by Arta {artaQuoteData.isLive ? "" : "\u00B7 Estimated"}
                 </div>
               </div>
@@ -5200,7 +5191,7 @@ function FreightTab({ items }: { items: any[] }) {
               <div style={{ marginTop: "0.4rem" }}>
                 <a
                   href={`/items/${artaItem.id}`}
-                  style={{ fontSize: "0.6rem", color: "var(--text-muted)", textDecoration: "none" }}
+                  style={{ fontSize: "0.65rem", color: "var(--text-muted)", textDecoration: "none" }}
                 >
                   Or get quote on Item Dashboard {"\u2192"}
                 </a>
@@ -5212,7 +5203,7 @@ function FreightTab({ items }: { items: any[] }) {
 
       {confirmation && !showQuoteUpload && !showBOL && !bolGenerated && (
         <div style={{ background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.2)", borderRadius: "1rem", padding: "1.25rem" }}>
-          <div style={{ fontWeight: 800, fontSize: "1rem", color: "#4caf50", marginBottom: "0.75rem" }}>{"\u2705"} Freight Pickup Confirmed</div>
+          <div style={{ fontWeight: 800, fontSize: "1rem", color: "var(--success-text)", marginBottom: "0.75rem" }}>{"\u2705"} Freight Pickup Confirmed</div>
           <div
             style={{
               background: "#fff",
@@ -5225,10 +5216,10 @@ function FreightTab({ items }: { items: any[] }) {
               lineHeight: 1.7,
             }}
           >
-            <div style={{ textAlign: "center", fontWeight: 800, fontSize: "1rem", borderBottom: "2px solid #333", paddingBottom: "0.4rem", marginBottom: "0.5rem" }}>
+            <div style={{ textAlign: "center", fontWeight: 800, fontSize: "1rem", borderBottom: "2px solid #333", paddingBottom: "0.4rem", marginBottom: "0.62rem" }}>
               BILL OF LADING
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.62rem", marginBottom: "0.62rem" }}>
               <div>
                 <strong>BOL #:</strong> {confirmation.confirmationNumber}
               </div>
@@ -5236,7 +5227,7 @@ function FreightTab({ items }: { items: any[] }) {
                 <strong>Date:</strong> {confirmation.pickupDate}
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.62rem", marginBottom: "0.62rem" }}>
               <div>
                 <strong>Shipper:</strong>
                 <br />
@@ -5273,17 +5264,17 @@ function FreightTab({ items }: { items: any[] }) {
               </div>
             </div>
             {confirmation.instructions && (
-              <div style={{ marginTop: "0.5rem", padding: "0.4rem", background: "#fff3cd", borderRadius: 4, fontSize: "0.72rem" }}>
+              <div style={{ marginTop: "0.62rem", padding: "0.4rem", background: "#fff3cd", borderRadius: 4, fontSize: "0.72rem" }}>
                 {"\u26A0\uFE0F"} {confirmation.instructions}
               </div>
             )}
           </div>
           {/* Next step: Upload Official Quote */}
-          <div style={{ marginTop: "0.75rem", padding: "0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)" }}>
+          <div style={{ marginTop: "0.75rem", padding: "0.65rem", borderRadius: "0.62rem", background: "var(--accent-dim)", border: "1px solid var(--accent-dim)" }}>
             <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.4rem" }}>
               {"\u{1F4CB}"} Waiting for official quote from our freight team. We{"\u2019"}ll email your request to support@legacy-loop.com and quote through our carrier network.
             </div>
-            <button onClick={() => { setShowQuoteUpload(true); setOfficialQuoteForm(prev => ({ ...prev, carrier: confirmation.selectedCarrier || selectedFreight?.carrier || "", rate: selectedFreight?.price ? String(selectedFreight.price) : "" })); }} style={{ padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer" }}>
+            <button onClick={() => { setShowQuoteUpload(true); setOfficialQuoteForm(prev => ({ ...prev, carrier: confirmation.selectedCarrier || selectedFreight?.carrier || "", rate: selectedFreight?.price ? String(selectedFreight.price) : "" })); }} style={{ padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", cursor: "pointer" }}>
               {"\u{1F4CB}"} Upload Official Quote
             </button>
           </div>
@@ -5296,11 +5287,11 @@ function FreightTab({ items }: { items: any[] }) {
           <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text-primary)", marginBottom: "0.75rem" }}>{"\u{1F4CB}"} Upload Official Quote</div>
           <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.6rem", marginBottom: "0.6rem" }}>
             <div>
-              <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Quote Number</div>
+              <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Quote Number</div>
               <input value={officialQuoteForm.quoteNumber} onChange={(e) => setOfficialQuoteForm(prev => ({ ...prev, quoteNumber: e.target.value }))} placeholder="e.g. FQ-2026-45821" style={inputStyle} />
             </div>
             <div>
-              <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Carrier</div>
+              <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Carrier</div>
               <select value={officialQuoteForm.carrier} onChange={(e) => setOfficialQuoteForm(prev => ({ ...prev, carrier: e.target.value }))} style={inputStyle}>
                 <option value="">Select Carrier</option>
                 {["XPO Logistics", "Old Dominion", "R+L Carriers", "ABF Freight", "Estes Express", "SAIA", "YRC Freight", "FreightQuote", "Other"].map(c => (
@@ -5309,23 +5300,23 @@ function FreightTab({ items }: { items: any[] }) {
               </select>
             </div>
             <div>
-              <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Official Rate ($)</div>
+              <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Official Rate ($)</div>
               <input type="number" value={officialQuoteForm.rate} onChange={(e) => setOfficialQuoteForm(prev => ({ ...prev, rate: e.target.value }))} placeholder="0.00" style={inputStyle} />
             </div>
             <div>
-              <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Transit Time</div>
+              <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Transit Time</div>
               <input value={officialQuoteForm.transit} onChange={(e) => setOfficialQuoteForm(prev => ({ ...prev, transit: e.target.value }))} placeholder="e.g. 3-5 business days" style={inputStyle} />
             </div>
             <div>
-              <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Pickup Date</div>
+              <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Pickup Date</div>
               <input type="date" value={officialQuoteForm.pickupDate} onChange={(e) => setOfficialQuoteForm(prev => ({ ...prev, pickupDate: e.target.value }))} style={inputStyle} />
             </div>
             <div>
-              <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Special Instructions</div>
+              <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Special Instructions</div>
               <textarea value={officialQuoteForm.instructions} onChange={(e) => setOfficialQuoteForm(prev => ({ ...prev, instructions: e.target.value }))} placeholder="Any special notes..." rows={2} style={{ ...inputStyle, resize: "vertical" as const }} />
             </div>
           </div>
-          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+          <div style={{ display: "flex", gap: "0.62rem", justifyContent: "flex-end" }}>
             <button onClick={() => setShowQuoteUpload(false)} style={{ padding: "0.4rem 0.75rem", fontSize: "0.72rem", borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>Cancel</button>
             <button
               onClick={() => {
@@ -5342,7 +5333,7 @@ function FreightTab({ items }: { items: any[] }) {
                 }));
               }}
               disabled={!officialQuoteForm.quoteNumber || !officialQuoteForm.carrier || !officialQuoteForm.rate}
-              style={{ padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", opacity: (!officialQuoteForm.quoteNumber || !officialQuoteForm.carrier || !officialQuoteForm.rate) ? 0.5 : 1 }}
+              style={{ padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", cursor: "pointer", opacity: (!officialQuoteForm.quoteNumber || !officialQuoteForm.carrier || !officialQuoteForm.rate) ? 0.5 : 1 }}
             >
               {"\u{1F4CB}"} Upload Quote
             </button>
@@ -5353,26 +5344,26 @@ function FreightTab({ items }: { items: any[] }) {
       {/* Official Quote Uploaded — proceed to BOL */}
       {officialQuote && !showBOL && !bolGenerated && (
         <div style={{ background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.2)", borderRadius: "1rem", padding: "1.25rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.62rem" }}>
             <span style={{ fontSize: "1rem" }}>{"\u2705"}</span>
-            <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "#4caf50" }}>Official quote uploaded!</span>
+            <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--success-text)" }}>Official quote uploaded!</span>
           </div>
-          <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.5rem", marginBottom: "0.75rem" }}>
+          <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.62rem", marginBottom: "0.75rem" }}>
             <div style={{ padding: "0.4rem", borderRadius: "0.4rem", background: "var(--ghost-bg)" }}>
-              <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Quote #</div>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Quote #</div>
               <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{officialQuote.quoteNumber}</div>
             </div>
             <div style={{ padding: "0.4rem", borderRadius: "0.4rem", background: "var(--ghost-bg)" }}>
-              <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Carrier</div>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Carrier</div>
               <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{officialQuote.carrier}</div>
             </div>
             <div style={{ padding: "0.4rem", borderRadius: "0.4rem", background: "var(--ghost-bg)" }}>
-              <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Rate</div>
-              <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#4caf50" }}>${Number(officialQuote.rate).toFixed(2)}</div>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Rate</div>
+              <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--success-text)" }}>${Number(officialQuote.rate).toFixed(2)}</div>
             </div>
           </div>
-          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>Complete the Bill of Lading to finalize the shipment.</div>
-          <button onClick={() => setShowBOL(true)} style={{ padding: "0.45rem 1rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer" }}>
+          <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.62rem" }}>Complete the Bill of Lading to finalize the shipment.</div>
+          <button onClick={() => setShowBOL(true)} style={{ padding: "0.45rem 1rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.62rem", border: "none", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", cursor: "pointer" }}>
             {"\u{1F4CB}"} Complete BOL {"\u2192"}
           </button>
         </div>
@@ -5426,8 +5417,8 @@ function FreightTab({ items }: { items: any[] }) {
 
             {/* Section A — Shipper */}
             <div style={{ marginBottom: "1rem" }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>A {"\u2014"} Shipper Information</div>
-              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent)", marginBottom: "0.62rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>A {"\u2014"} Shipper Information</div>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.62rem" }}>
                 {[
                   { k: "shipperName", l: "Company/Name" }, { k: "shipperStreet", l: "Street Address" },
                   { k: "shipperCity", l: "City" }, { k: "shipperState", l: "State" },
@@ -5435,7 +5426,7 @@ function FreightTab({ items }: { items: any[] }) {
                   { k: "shipperPhone", l: "Phone" }, { k: "shipperEmail", l: "Email" },
                 ].map(f => (
                   <div key={f.k}>
-                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
+                    <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
                     <input value={(bolForm as any)[f.k]} onChange={(e) => setBolForm(prev => ({ ...prev, [f.k]: e.target.value }))} style={{ ...inputStyle, fontSize: "0.78rem", padding: "0.35rem 0.5rem" }} />
                   </div>
                 ))}
@@ -5444,8 +5435,8 @@ function FreightTab({ items }: { items: any[] }) {
 
             {/* Section B — Consignee */}
             <div style={{ marginBottom: "1rem" }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>B {"\u2014"} Consignee Information</div>
-              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent)", marginBottom: "0.62rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>B {"\u2014"} Consignee Information</div>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.62rem" }}>
                 {[
                   { k: "consigneeName", l: "Company/Name" }, { k: "consigneeStreet", l: "Street Address" },
                   { k: "consigneeCity", l: "City" }, { k: "consigneeState", l: "State" },
@@ -5453,7 +5444,7 @@ function FreightTab({ items }: { items: any[] }) {
                   { k: "consigneePhone", l: "Phone" }, { k: "consigneeEmail", l: "Email" },
                 ].map(f => (
                   <div key={f.k}>
-                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
+                    <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
                     <input value={(bolForm as any)[f.k]} onChange={(e) => setBolForm(prev => ({ ...prev, [f.k]: e.target.value }))} style={{ ...inputStyle, fontSize: "0.78rem", padding: "0.35rem 0.5rem" }} />
                   </div>
                 ))}
@@ -5462,13 +5453,13 @@ function FreightTab({ items }: { items: any[] }) {
 
             {/* Section C — Third Party Billing */}
             <div style={{ marginBottom: "1rem" }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>C {"\u2014"} Billing</div>
-              <div style={{ display: "flex", gap: "0.4rem", marginBottom: "0.5rem" }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent)", marginBottom: "0.62rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>C {"\u2014"} Billing</div>
+              <div style={{ display: "flex", gap: "0.4rem", marginBottom: "0.62rem" }}>
                 {["SHIPPER", "CONSIGNEE", "THIRD_PARTY"].map(bt => (
                   <button key={bt} onClick={() => setBolForm(prev => ({ ...prev, billTo: bt }))} style={{
                     padding: "0.3rem 0.65rem", borderRadius: "0.35rem", fontSize: "0.68rem", fontWeight: 600, cursor: "pointer",
                     border: bolForm.billTo === bt ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
-                    background: bolForm.billTo === bt ? "rgba(0,188,212,0.06)" : "transparent",
+                    background: bolForm.billTo === bt ? "var(--accent-dim)" : "transparent",
                     color: bolForm.billTo === bt ? "var(--accent)" : "var(--text-muted)",
                   }}>
                     {bt.replace("_", " ")}
@@ -5476,10 +5467,10 @@ function FreightTab({ items }: { items: any[] }) {
                 ))}
               </div>
               {bolForm.billTo === "THIRD_PARTY" && (
-                <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.5rem" }}>
+                <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.62rem" }}>
                   {[{ k: "thirdPartyCompany", l: "Company" }, { k: "thirdPartyAddress", l: "Address" }, { k: "thirdPartyPhone", l: "Phone" }].map(f => (
                     <div key={f.k}>
-                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
+                      <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
                       <input value={(bolForm as any)[f.k]} onChange={(e) => setBolForm(prev => ({ ...prev, [f.k]: e.target.value }))} style={{ ...inputStyle, fontSize: "0.78rem", padding: "0.35rem 0.5rem" }} />
                     </div>
                   ))}
@@ -5489,44 +5480,44 @@ function FreightTab({ items }: { items: any[] }) {
 
             {/* Section D — Shipment Details */}
             <div style={{ marginBottom: "1rem" }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>D {"\u2014"} Shipment Details</div>
-              <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem", marginBottom: "0.5rem" }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent)", marginBottom: "0.62rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>D {"\u2014"} Shipment Details</div>
+              <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.62rem", marginBottom: "0.62rem" }}>
                 {[
                   { k: "pieces", l: "# Pieces" }, { k: "totalWeight", l: "Weight (lbs)" },
                   { k: "dimensions", l: "Dimensions" }, { k: "nmfc", l: "NMFC # (opt)" },
                 ].map(f => (
                   <div key={f.k}>
-                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
+                    <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
                     <input value={(bolForm as any)[f.k]} onChange={(e) => setBolForm(prev => ({ ...prev, [f.k]: e.target.value }))} style={{ ...inputStyle, fontSize: "0.78rem", padding: "0.35rem 0.5rem" }} />
                   </div>
                 ))}
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.5rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.62rem", marginBottom: "0.62rem" }}>
                 <div>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>Package Type</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>Package Type</div>
                   <select value={bolForm.packageType} onChange={(e) => setBolForm(prev => ({ ...prev, packageType: e.target.value }))} style={{ ...inputStyle, fontSize: "0.78rem", padding: "0.35rem 0.5rem" }}>
                     {["Pallet", "Crate", "Box", "Drum", "Bundle"].map(pt => <option key={pt} value={pt}>{pt}</option>)}
                   </select>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>Commodity Description</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>Commodity Description</div>
                   <input value={bolForm.commodityDesc} onChange={(e) => setBolForm(prev => ({ ...prev, commodityDesc: e.target.value }))} style={{ ...inputStyle, fontSize: "0.78rem", padding: "0.35rem 0.5rem" }} />
                 </div>
               </div>
               {/* AI Freight Class Calculator */}
-              <div style={{ padding: "0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.12)", marginBottom: "0.5rem" }}>
+              <div style={{ padding: "0.65rem", borderRadius: "0.62rem", background: "var(--accent-dim)", border: "1px solid var(--accent-dim)", marginBottom: "0.62rem" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.3rem" }}>
                   <span style={{ fontSize: "0.85rem" }}>{"\u{1F916}"}</span>
                   <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--accent)" }}>AI Freight Class: {aiFreightClass}</span>
                 </div>
                 <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Density: {density.toFixed(1)} lbs/ft{"\u00B3"} {"\u00B7"} {aiClassNote}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>Override:</div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.62rem" }}>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>Override:</div>
                   <select value={bolForm.freightClassOverride || ""} onChange={(e) => setBolForm(prev => ({ ...prev, freightClassOverride: e.target.value, freightClass: e.target.value || aiFreightClass }))} style={{ ...inputStyle, fontSize: "0.72rem", padding: "0.25rem 0.4rem", maxWidth: 120 }}>
                     <option value="">Use AI ({aiFreightClass})</option>
                     {["50","55","60","65","70","77.5","85","92.5","100","110","125","150","175","200","250","300","400","500"].map(c => <option key={c} value={c}>Class {c}</option>)}
                   </select>
-                  {bolForm.freightClassOverride && <span style={{ fontSize: "0.55rem", color: "#f59e0b", fontWeight: 600 }}>Manual override {"\u2014"} carrier may adjust</span>}
+                  {bolForm.freightClassOverride && <span style={{ fontSize: "0.62rem", color: "var(--arta-accent)", fontWeight: 600 }}>Manual override {"\u2014"} carrier may adjust</span>}
                 </div>
               </div>
               <label style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.72rem", color: "var(--text-muted)", cursor: "pointer" }}>
@@ -5536,7 +5527,7 @@ function FreightTab({ items }: { items: any[] }) {
 
             {/* Section E — Special Services */}
             <div style={{ marginBottom: "1rem" }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>E {"\u2014"} Special Services</div>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent)", marginBottom: "0.62rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>E {"\u2014"} Special Services</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
                 {([
                   { k: "svcResidential", l: "\u{1F3E0} Residential Delivery", cost: "+$75\u201395" },
@@ -5555,35 +5546,35 @@ function FreightTab({ items }: { items: any[] }) {
                       display: "flex", alignItems: "center", gap: "0.25rem",
                       padding: "0.3rem 0.6rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 600, cursor: "pointer",
                       border: on ? "1.5px solid var(--accent)" : "1px solid var(--border-default)",
-                      background: on ? "rgba(0,188,212,0.08)" : "transparent",
+                      background: on ? "var(--accent-dim)" : "transparent",
                       color: on ? "var(--accent)" : "var(--text-muted)",
                     }}>
-                      {svc.l} <span style={{ fontSize: "0.52rem", opacity: 0.7 }}>{svc.cost}</span>
+                      {svc.l} <span style={{ fontSize: "0.62rem", opacity: 0.7 }}>{svc.cost}</span>
                     </button>
                   );
                 })}
               </div>
-              {svcTotal > 0 && <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "#f59e0b", marginTop: "0.4rem" }}>Estimated accessorial total: +${svcTotal}</div>}
+              {svcTotal > 0 && <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--arta-accent)", marginTop: "0.4rem" }}>Estimated accessorial total: +${svcTotal}</div>}
             </div>
 
             {/* Section F — Carrier + Pricing */}
             <div style={{ marginBottom: "1rem" }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>F {"\u2014"} Carrier & Pricing</div>
-              <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem" }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent)", marginBottom: "0.62rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>F {"\u2014"} Carrier & Pricing</div>
+              <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.62rem" }}>
                 <div>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>Carrier</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>Carrier</div>
                   <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)", padding: "0.35rem 0" }}>{officialQuote?.carrier || "\u2014"}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>Quote #</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>Quote #</div>
                   <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)", padding: "0.35rem 0" }}>{officialQuote?.quoteNumber || "\u2014"}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>Rate</div>
-                  <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#4caf50", padding: "0.35rem 0" }}>${Number(officialQuote?.rate || 0).toFixed(2)}</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>Rate</div>
+                  <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--success-text)", padding: "0.35rem 0" }}>${Number(officialQuote?.rate || 0).toFixed(2)}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>Transit</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>Transit</div>
                   <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)", padding: "0.35rem 0" }}>{officialQuote?.transit || "\u2014"}</div>
                 </div>
               </div>
@@ -5591,29 +5582,29 @@ function FreightTab({ items }: { items: any[] }) {
 
             {/* Section G — References */}
             <div style={{ marginBottom: "1rem" }}>
-              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>G {"\u2014"} References</div>
-              <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.5rem" }}>
+              <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent)", marginBottom: "0.62rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>G {"\u2014"} References</div>
+              <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.62rem" }}>
                 <div>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>BOL #</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>BOL #</div>
                   <div style={{ fontSize: "0.78rem", fontWeight: 700, fontFamily: "monospace", color: "var(--accent)", padding: "0.35rem 0" }}>{bolNumber}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>PO # (optional)</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>PO # (optional)</div>
                   <input value={bolForm.poNumber} onChange={(e) => setBolForm(prev => ({ ...prev, poNumber: e.target.value }))} style={{ ...inputStyle, fontSize: "0.78rem", padding: "0.35rem 0.5rem" }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>PRO # (carrier assigns)</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>PRO # (carrier assigns)</div>
                   <input value={bolForm.proNumber} onChange={(e) => setBolForm(prev => ({ ...prev, proNumber: e.target.value }))} placeholder="Assigned by carrier" style={{ ...inputStyle, fontSize: "0.78rem", padding: "0.35rem 0.5rem" }} />
                 </div>
               </div>
-              <div style={{ marginTop: "0.5rem" }}>
-                <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>Reference Notes</div>
+              <div style={{ marginTop: "0.62rem" }}>
+                <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: 2 }}>Reference Notes</div>
                 <textarea value={bolForm.refNotes} onChange={(e) => setBolForm(prev => ({ ...prev, refNotes: e.target.value }))} rows={2} style={{ ...inputStyle, fontSize: "0.78rem", padding: "0.35rem 0.5rem", resize: "vertical" as const }} />
               </div>
             </div>
 
             {/* Generate BOL */}
-            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: "0.62rem", justifyContent: "flex-end" }}>
               <button onClick={() => setShowBOL(false)} style={{ padding: "0.4rem 0.75rem", fontSize: "0.72rem", borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>Cancel</button>
               <button
                 onClick={() => {
@@ -5631,7 +5622,7 @@ function FreightTab({ items }: { items: any[] }) {
                   setShowBOL(false);
                   setBolTracking({ status: "BOL_CREATED", proNumber: bolForm.proNumber, events: [{ status: "BOL_CREATED", date: new Date().toISOString() }] });
                 }}
-                style={{ padding: "0.45rem 1.25rem", fontSize: "0.82rem", fontWeight: 700, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer" }}
+                style={{ padding: "0.45rem 1.25rem", fontSize: "0.82rem", fontWeight: 700, borderRadius: "0.62rem", border: "none", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", cursor: "pointer" }}
               >
                 {"\u{1F4CB}"} Generate BOL
               </button>
@@ -5645,16 +5636,16 @@ function FreightTab({ items }: { items: any[] }) {
         <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "1rem", overflow: "hidden" }}>
           {/* BOL Document */}
           <div style={{ background: "#fff", color: "#000", padding: "1.5rem", fontFamily: "'Courier New', Courier, monospace", fontSize: "0.75rem", lineHeight: 1.6 }}>
-            <div style={{ textAlign: "center", fontWeight: 800, fontSize: "1.2rem", borderBottom: "3px solid #000", paddingBottom: "0.5rem", marginBottom: "0.75rem" }}>
+            <div style={{ textAlign: "center", fontWeight: 800, fontSize: "1.2rem", borderBottom: "3px solid #000", paddingBottom: "0.62rem", marginBottom: "0.75rem" }}>
               STRAIGHT BILL OF LADING {"\u2014"} SHORT FORM
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.75rem", borderBottom: "1px solid #ccc", paddingBottom: "0.5rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.75rem", borderBottom: "1px solid #ccc", paddingBottom: "0.62rem" }}>
               <div><strong>BOL #:</strong> <span style={{ fontSize: "0.9rem", fontWeight: 800 }}>{bolGenerated.bolNumber}</span></div>
               <div><strong>Date:</strong> {new Date(bolGenerated.generatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</div>
               <div><strong>Carrier:</strong> {bolGenerated.carrier}</div>
             </div>
             {/* Shipper / Consignee side by side */}
-            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "1rem", marginBottom: "0.75rem", borderBottom: "1px solid #ccc", paddingBottom: "0.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "1rem", marginBottom: "0.75rem", borderBottom: "1px solid #ccc", paddingBottom: "0.62rem" }}>
               <div>
                 <div style={{ fontWeight: 800, textTransform: "uppercase", borderBottom: "1px solid #999", marginBottom: "0.3rem", paddingBottom: "0.15rem" }}>SHIPPER</div>
                 <div>{bolGenerated.shipperName}</div>
@@ -5671,8 +5662,8 @@ function FreightTab({ items }: { items: any[] }) {
               </div>
             </div>
             {/* Shipment details */}
-            <div style={{ marginBottom: "0.75rem", borderBottom: "1px solid #ccc", paddingBottom: "0.5rem" }}>
-              <div className="ship-5col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: "0.5rem" }}>
+            <div style={{ marginBottom: "0.75rem", borderBottom: "1px solid #ccc", paddingBottom: "0.62rem" }}>
+              <div className="ship-5col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: "0.62rem" }}>
                 <div><strong># Pcs:</strong><br />{bolGenerated.pieces}</div>
                 <div><strong>Type:</strong><br />{bolGenerated.packageType}</div>
                 <div><strong>Weight:</strong><br />{bolGenerated.totalWeight} lbs</div>
@@ -5683,7 +5674,7 @@ function FreightTab({ items }: { items: any[] }) {
             </div>
             {/* Special services */}
             {bolGenerated.svcTotal > 0 && (
-              <div style={{ marginBottom: "0.75rem", borderBottom: "1px solid #ccc", paddingBottom: "0.5rem" }}>
+              <div style={{ marginBottom: "0.75rem", borderBottom: "1px solid #ccc", paddingBottom: "0.62rem" }}>
                 <strong>Special Services:</strong>{" "}
                 {[
                   bolGenerated.svcResidential && "Residential",
@@ -5706,18 +5697,18 @@ function FreightTab({ items }: { items: any[] }) {
             <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "1.5rem", marginTop: "1rem" }}>
               <div>
                 <div style={{ borderBottom: "1px solid #000", height: 30 }} />
-                <div style={{ fontSize: "0.6rem", marginTop: "0.15rem" }}>Shipper Signature / Date</div>
+                <div style={{ fontSize: "0.65rem", marginTop: "0.15rem" }}>Shipper Signature / Date</div>
               </div>
               <div>
                 <div style={{ borderBottom: "1px solid #000", height: 30 }} />
-                <div style={{ fontSize: "0.6rem", marginTop: "0.15rem" }}>Carrier Signature / Date</div>
+                <div style={{ fontSize: "0.65rem", marginTop: "0.15rem" }}>Carrier Signature / Date</div>
               </div>
             </div>
           </div>
 
           {/* BOL Actions */}
-          <div style={{ padding: "0.75rem 1.25rem", borderTop: "1px solid var(--border-default)", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-            <button onClick={() => window.print()} style={{ padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer" }}>
+          <div style={{ padding: "0.75rem 1.25rem", borderTop: "1px solid var(--border-default)", display: "flex", gap: "0.62rem", flexWrap: "wrap" }}>
+            <button onClick={() => window.print()} style={{ padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", cursor: "pointer" }}>
               {"\u{1F5A8}\uFE0F"} Print BOL
             </button>
             <button onClick={() => { navigator.clipboard.writeText(bolGenerated.bolNumber).catch(() => {}); }} style={{ padding: "0.4rem 0.75rem", fontSize: "0.72rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>
@@ -5728,11 +5719,11 @@ function FreightTab({ items }: { items: any[] }) {
           {/* BOL Tracking */}
           {bolTracking && (
             <div style={{ padding: "1rem 1.25rem", borderTop: "1px solid var(--border-default)" }}>
-              <div style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-primary)", marginBottom: "0.5rem" }}>{"\u{1F69B}"} Freight Tracking</div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)" }}>BOL:</div>
+              <div style={{ fontWeight: 700, fontSize: "0.82rem", color: "var(--text-primary)", marginBottom: "0.62rem" }}>{"\u{1F69B}"} Freight Tracking</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.62rem", marginBottom: "0.62rem" }}>
+                <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)" }}>BOL:</div>
                 <div style={{ fontSize: "0.78rem", fontWeight: 700, fontFamily: "monospace", color: "var(--accent)" }}>{bolGenerated.bolNumber}</div>
-                <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", marginLeft: "0.5rem" }}>PRO #:</div>
+                <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", marginLeft: "0.62rem" }}>PRO #:</div>
                 <input
                   value={bolTracking.proNumber}
                   onChange={(e) => setBolTracking(prev => prev ? { ...prev, proNumber: e.target.value } : prev)}
@@ -5761,7 +5752,7 @@ function FreightTab({ items }: { items: any[] }) {
                               boxShadow: isCurrent ? "0 0 6px rgba(156,39,176,0.4)" : "none",
                               marginBottom: 3, zIndex: 1, position: "relative",
                             }} />
-                            <span style={{ fontSize: "0.45rem", fontWeight: done ? 700 : 400, color: done ? "#9c27b0" : "var(--text-muted)", textAlign: "center" }}>{FREIGHT_LABELS[i]}</span>
+                            <span style={{ fontSize: "0.62rem", fontWeight: done ? 700 : 400, color: done ? "var(--freight-accent)" : "var(--text-muted)", textAlign: "center" }}>{FREIGHT_LABELS[i]}</span>
                           </div>
                         );
                       })}
@@ -5783,7 +5774,7 @@ function FreightTab({ items }: { items: any[] }) {
                       </button>
                     )}
                     {stepIdx === FREIGHT_STEPS.length - 1 && (
-                      <div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.5rem", background: "rgba(76,175,80,0.08)", border: "1px solid rgba(76,175,80,0.15)", fontSize: "0.78rem", fontWeight: 700, color: "#4caf50" }}>
+                      <div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.62rem", background: "var(--success-bg)", border: "1px solid rgba(76,175,80,0.15)", fontSize: "0.78rem", fontWeight: 700, color: "var(--success-text)" }}>
                         {"\u2705"} Freight delivered! Sale complete.
                       </div>
                     )}
@@ -5792,10 +5783,10 @@ function FreightTab({ items }: { items: any[] }) {
               })()}
               {/* Event log */}
               {bolTracking.events.length > 0 && (
-                <div style={{ marginTop: "0.5rem" }}>
+                <div style={{ marginTop: "0.62rem" }}>
                   {bolTracking.events.map((ev, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.6rem", color: "var(--text-muted)", borderLeft: "2px solid rgba(156,39,176,0.3)", paddingLeft: "0.5rem", marginBottom: "0.2rem" }}>
-                      <span style={{ fontFamily: "monospace", fontSize: "0.52rem", minWidth: 90 }}>{new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })} {new Date(ev.date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.65rem", color: "var(--text-muted)", borderLeft: "2px solid rgba(156,39,176,0.3)", paddingLeft: "0.62rem", marginBottom: "0.2rem" }}>
+                      <span style={{ fontFamily: "monospace", fontSize: "0.62rem", minWidth: 90 }}>{new Date(ev.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })} {new Date(ev.date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}</span>
                       <span style={{ fontWeight: 600 }}>{ev.status.replace(/_/g, " ")}</span>
                     </div>
                   ))}
@@ -5828,7 +5819,7 @@ function PickupProgress({ status }: { status: string | null }) {
             )}
             <div style={{
               width: 20, height: 20, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "0.55rem", fontWeight: 800,
+              fontSize: "0.62rem", fontWeight: 800,
               background: done ? "linear-gradient(135deg, #a855f7, #7c3aed)" : "var(--ghost-bg)",
               color: done ? "#fff" : "var(--text-muted)",
               border: isCurrent ? "2px solid #a855f7" : "2px solid transparent",
@@ -5837,7 +5828,7 @@ function PickupProgress({ status }: { status: string | null }) {
             }}>
               {done ? ICONS[i] : i + 1}
             </div>
-            <span style={{ fontSize: "0.5rem", fontWeight: done ? 700 : 400, color: done ? "#a855f7" : "var(--text-muted)" }}>{LABELS[i]}</span>
+            <span style={{ fontSize: "0.62rem", fontWeight: done ? 700 : 400, color: done ? "var(--pickup-accent)" : "var(--text-muted)" }}>{LABELS[i]}</span>
           </div>
         );
       })}
@@ -5934,11 +5925,7 @@ function LocalPickupTab({ data }: { data: ShipData }) {
     setAdvancing(null);
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%", padding: "0.45rem 0.65rem", fontSize: "0.82rem", borderRadius: "0.4rem",
-    border: "1px solid var(--border-default)", background: "var(--input-bg, var(--ghost-bg))",
-    color: "var(--text-primary)", outline: "none", boxSizing: "border-box" as const, fontFamily: "inherit",
-  };
+  const inputStyle = SHIP_INPUT_STYLE;
 
   function renderPickupCard(item: any) {
     const ps = pickupStatuses[item.id];
@@ -5960,8 +5947,8 @@ function LocalPickupTab({ data }: { data: ShipData }) {
               <Link href={`/items/${item.id}`} style={{ fontWeight: 700, fontSize: "0.88rem", color: "var(--text-primary)", textDecoration: "none" }}>
                 {item.title}
               </Link>
-              <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(168,85,247,0.12)", color: "#a855f7" }}>PICKUP</span>
-              {isVehicle && <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(168,85,247,0.08)", color: "#a855f7" }}>{"\u{1F697}"} Vehicle</span>}
+              <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(168,85,247,0.12)", color: "var(--pickup-accent)" }}>PICKUP</span>
+              {isVehicle && <span style={{ fontSize: "0.62rem", fontWeight: 700, padding: "2px 6px", borderRadius: "9999px", background: "rgba(168,85,247,0.08)", color: "var(--pickup-accent)" }}>{"\u{1F697}"} Vehicle</span>}
             </div>
             {(item.soldPrice || item.listingPrice) && (
               <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--accent)", marginTop: "0.1rem" }}>${item.soldPrice || item.listingPrice}</div>
@@ -5979,10 +5966,10 @@ function LocalPickupTab({ data }: { data: ShipData }) {
           {/* Invite confirmation banner */}
           {inviteConfirm === item.id && (
             <div style={{
-              padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginBottom: "0.5rem",
-              background: "rgba(76,175,80,0.08)", border: "1px solid rgba(76,175,80,0.2)",
+              padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginBottom: "0.62rem",
+              background: "var(--success-bg)", border: "1px solid rgba(76,175,80,0.2)",
               display: "flex", alignItems: "center", gap: "0.3rem",
-              fontSize: "0.75rem", fontWeight: 600, color: "#4caf50",
+              fontSize: "0.75rem", fontWeight: 600, color: "var(--success-text)",
             }}>
               {"\u2705"} Invite sent to buyer
             </div>
@@ -5991,7 +5978,7 @@ function LocalPickupTab({ data }: { data: ShipData }) {
           {!status && inviteForm !== item.id && (
             <button
               onClick={() => { setInviteForm(item.id); setInviteData({ location: pickupAddress, timeSlots: pickupAvailability, contactMethod: "IN_APP", paymentMethod: "SQUARE", notes: pickupInstructions }); }}
-              style={{ width: "100%", padding: "0.5rem 0.85rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #a855f7, #7c3aed)", color: "#fff", cursor: "pointer" }}
+              style={{ width: "100%", padding: "0.5rem 0.85rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.62rem", border: "none", background: "linear-gradient(135deg, #a855f7, #7c3aed)", color: "#fff", cursor: "pointer" }}
             >
               {"\u{1F4E9}"} Send Pickup Invite
             </button>
@@ -5999,8 +5986,8 @@ function LocalPickupTab({ data }: { data: ShipData }) {
 
           {/* Invite form */}
           {!status && inviteForm === item.id && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", padding: "0.75rem", borderRadius: "0.5rem", background: "rgba(168,85,247,0.04)", border: "1px solid rgba(168,85,247,0.12)" }}>
-              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#a855f7", marginBottom: "0.1rem" }}>{"\u{1F4E9}"} Send Pickup Invite</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", padding: "0.75rem", borderRadius: "0.62rem", background: "rgba(168,85,247,0.04)", border: "1px solid rgba(168,85,247,0.12)" }}>
+              <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--pickup-accent)", marginBottom: "0.1rem" }}>{"\u{1F4E9}"} Send Pickup Invite</div>
               <div>
                 <div style={{ fontSize: "0.58rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Pickup Location</div>
                 <input value={inviteData.location || ""} onChange={(e) => setInviteData((d: any) => ({ ...d, location: e.target.value }))} style={inputStyle} />
@@ -6017,7 +6004,7 @@ function LocalPickupTab({ data }: { data: ShipData }) {
                       padding: "0.25rem 0.55rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 600, cursor: "pointer",
                       border: inviteData.contactMethod === m ? "1.5px solid #a855f7" : "1px solid var(--border-default)",
                       background: inviteData.contactMethod === m ? "rgba(168,85,247,0.1)" : "transparent",
-                      color: inviteData.contactMethod === m ? "#a855f7" : "var(--text-muted)",
+                      color: inviteData.contactMethod === m ? "var(--pickup-accent)" : "var(--text-muted)",
                     }}>
                       {m === "PHONE" ? "\u{1F4DE}" : m === "TEXT" ? "\u{1F4F1}" : m === "EMAIL" ? "\u{1F4E7}" : "\u{1F4AC}"} {m.replace("_", " ")}
                     </button>
@@ -6032,7 +6019,7 @@ function LocalPickupTab({ data }: { data: ShipData }) {
                       padding: "0.25rem 0.55rem", borderRadius: "9999px", fontSize: "0.65rem", fontWeight: 600, cursor: "pointer",
                       border: inviteData.paymentMethod === m ? "1.5px solid #a855f7" : "1px solid var(--border-default)",
                       background: inviteData.paymentMethod === m ? "rgba(168,85,247,0.1)" : "transparent",
-                      color: inviteData.paymentMethod === m ? "#a855f7" : "var(--text-muted)",
+                      color: inviteData.paymentMethod === m ? "var(--pickup-accent)" : "var(--text-muted)",
                     }}>
                       {m === "CASH" ? "\u{1F4B5}" : m === "VENMO" ? "\u{1F4B3}" : m === "SQUARE" ? "\u{1F7E6}" : "\u{1F4B0}"} {m.replace("_", " ")}
                     </button>
@@ -6043,7 +6030,7 @@ function LocalPickupTab({ data }: { data: ShipData }) {
                 <div style={{ fontSize: "0.58rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Notes for Buyer</div>
                 <textarea value={inviteData.notes || ""} onChange={(e) => setInviteData((d: any) => ({ ...d, notes: e.target.value }))} placeholder="Any special notes..." rows={2} style={{ ...inputStyle, resize: "vertical" as const }} />
               </div>
-              <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+              <div style={{ display: "flex", gap: "0.62rem", justifyContent: "flex-end" }}>
                 <button onClick={() => setInviteForm(null)} style={{ padding: "0.35rem 0.75rem", fontSize: "0.72rem", borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "transparent", color: "var(--text-muted)", cursor: "pointer" }}>
                   Cancel
                 </button>
@@ -6071,13 +6058,13 @@ function LocalPickupTab({ data }: { data: ShipData }) {
 
           {/* INVITE_SENT */}
           {status === "INVITE_SENT" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <div style={{ padding: "0.6rem", borderRadius: "0.5rem", background: "rgba(168,85,247,0.04)", border: "1px solid rgba(168,85,247,0.1)" }}>
-                <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "#a855f7", marginBottom: "0.3rem" }}>{"\u{1F4E9}"} Invite Sent — Waiting for buyer confirmation</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.62rem" }}>
+              <div style={{ padding: "0.6rem", borderRadius: "0.62rem", background: "rgba(168,85,247,0.04)", border: "1px solid rgba(168,85,247,0.1)" }}>
+                <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--pickup-accent)", marginBottom: "0.3rem" }}>{"\u{1F4E9}"} Invite Sent — Waiting for buyer confirmation</div>
                 {ps?.location && <div style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>{"\u{1F4CD}"} {ps.location}</div>}
                 {ps?.timeSlots && <div style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>{"\u{1F552}"} {ps.timeSlots}</div>}
                 {ps?.contactMethod && <div style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>{"\u{1F4AC}"} Contact: {ps.contactMethod}</div>}
-                {ps?.inviteSentAt && <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Sent {new Date(ps.inviteSentAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</div>}
+                {ps?.inviteSentAt && <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Sent {new Date(ps.inviteSentAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</div>}
               </div>
               <button
                 onClick={() => advancePickup(item.id)}
@@ -6091,24 +6078,24 @@ function LocalPickupTab({ data }: { data: ShipData }) {
 
           {/* CONFIRMED */}
           {status === "CONFIRMED" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <div style={{ padding: "0.6rem", borderRadius: "0.5rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.15)" }}>
-                <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "#4caf50", marginBottom: "0.4rem" }}>{"\u2705"} Buyer Confirmed!</div>
-                {ps?.confirmedAt && <div style={{ fontSize: "0.6rem", color: "var(--text-muted)" }}>Confirmed {new Date(ps.confirmedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</div>}
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.62rem" }}>
+              <div style={{ padding: "0.6rem", borderRadius: "0.62rem", background: "rgba(76,175,80,0.06)", border: "1px solid rgba(76,175,80,0.15)" }}>
+                <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--success-text)", marginBottom: "0.4rem" }}>{"\u2705"} Buyer Confirmed!</div>
+                {ps?.confirmedAt && <div style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>Confirmed {new Date(ps.confirmedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</div>}
                 {ps?.buyerTimeSlot && <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginTop: "0.2rem" }}>{"\u{1F552}"} Buyer selected: {ps.buyerTimeSlot}</div>}
                 {ps?.buyerMessage && <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginTop: "0.15rem", fontStyle: "italic" }}>"{ps.buyerMessage}"</div>}
               </div>
               {ps?.handoffCode && (
-                <div style={{ textAlign: "center", padding: "0.75rem", borderRadius: "0.5rem", background: "rgba(168,85,247,0.06)", border: "1px solid rgba(168,85,247,0.15)" }}>
-                  <div style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Handoff Code</div>
-                  <div style={{ fontSize: "1.8rem", fontWeight: 800, letterSpacing: "0.15em", color: "#a855f7", fontFamily: "monospace" }}>{ps.handoffCode}</div>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Share with buyer to verify handoff</div>
+                <div style={{ textAlign: "center", padding: "0.75rem", borderRadius: "0.62rem", background: "rgba(168,85,247,0.06)", border: "1px solid rgba(168,85,247,0.15)" }}>
+                  <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.3rem" }}>Handoff Code</div>
+                  <div style={{ fontSize: "1.8rem", fontWeight: 800, letterSpacing: "0.15em", color: "var(--pickup-accent)", fontFamily: "monospace" }}>{ps.handoffCode}</div>
+                  <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Share with buyer to verify handoff</div>
                 </div>
               )}
               <button
                 onClick={() => advancePickup(item.id)}
                 disabled={advancing === item.id}
-                style={{ width: "100%", padding: "0.5rem 0.85rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #a855f7, #7c3aed)", color: "#fff", cursor: "pointer", opacity: advancing === item.id ? 0.6 : 1 }}
+                style={{ width: "100%", padding: "0.5rem 0.85rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.62rem", border: "none", background: "linear-gradient(135deg, #a855f7, #7c3aed)", color: "#fff", cursor: "pointer", opacity: advancing === item.id ? 0.6 : 1 }}
               >
                 {advancing === item.id ? "Updating..." : "\u{1F697} Mark En Route"}
               </button>
@@ -6117,21 +6104,21 @@ function LocalPickupTab({ data }: { data: ShipData }) {
 
           {/* EN_ROUTE */}
           {status === "EN_ROUTE" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <div style={{ padding: "0.6rem", borderRadius: "0.5rem", background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.15)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.62rem" }}>
+              <div style={{ padding: "0.6rem", borderRadius: "0.62rem", background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.15)" }}>
                 <div style={{ fontSize: "0.78rem", fontWeight: 700, color: "#3b82f6" }}>{"\u{1F697}"} Buyer is on their way!</div>
                 <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Prepare the item for handoff.</div>
               </div>
               {ps?.handoffCode && (
-                <div style={{ textAlign: "center", padding: "0.6rem", borderRadius: "0.5rem", background: "rgba(168,85,247,0.06)", border: "1px solid rgba(168,85,247,0.15)" }}>
-                  <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Verify Handoff Code</div>
-                  <div style={{ fontSize: "1.5rem", fontWeight: 800, letterSpacing: "0.15em", color: "#a855f7", fontFamily: "monospace" }}>{ps.handoffCode}</div>
+                <div style={{ textAlign: "center", padding: "0.6rem", borderRadius: "0.62rem", background: "rgba(168,85,247,0.06)", border: "1px solid rgba(168,85,247,0.15)" }}>
+                  <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Verify Handoff Code</div>
+                  <div style={{ fontSize: "1.5rem", fontWeight: 800, letterSpacing: "0.15em", color: "var(--pickup-accent)", fontFamily: "monospace" }}>{ps.handoffCode}</div>
                 </div>
               )}
               <button
                 onClick={() => advancePickup(item.id)}
                 disabled={advancing === item.id}
-                style={{ width: "100%", padding: "0.5rem 0.85rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #a855f7, #7c3aed)", color: "#fff", cursor: "pointer", opacity: advancing === item.id ? 0.6 : 1 }}
+                style={{ width: "100%", padding: "0.5rem 0.85rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.62rem", border: "none", background: "linear-gradient(135deg, #a855f7, #7c3aed)", color: "#fff", cursor: "pointer", opacity: advancing === item.id ? 0.6 : 1 }}
               >
                 {advancing === item.id ? "Confirming..." : "\u{1F4E6} Confirm Handoff"}
               </button>
@@ -6140,15 +6127,15 @@ function LocalPickupTab({ data }: { data: ShipData }) {
 
           {/* HANDED_OFF */}
           {status === "HANDED_OFF" && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              <div style={{ padding: "0.6rem", borderRadius: "0.5rem", background: "rgba(255,152,0,0.06)", border: "1px solid rgba(255,152,0,0.15)" }}>
-                <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "#ff9800" }}>{"\u{1F4E6}"} Item handed off — awaiting buyer confirmation</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.62rem" }}>
+              <div style={{ padding: "0.6rem", borderRadius: "0.62rem", background: "rgba(255,152,0,0.06)", border: "1px solid rgba(255,152,0,0.15)" }}>
+                <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--warning-text)" }}>{"\u{1F4E6}"} Item handed off — awaiting buyer confirmation</div>
                 <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>Buyer needs to confirm they received the item.</div>
               </div>
               <button
                 onClick={() => advancePickup(item.id)}
                 disabled={advancing === item.id}
-                style={{ width: "100%", padding: "0.5rem 0.85rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #4caf50, #2e7d32)", color: "#fff", cursor: "pointer", opacity: advancing === item.id ? 0.6 : 1 }}
+                style={{ width: "100%", padding: "0.5rem 0.85rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.62rem", border: "none", background: "linear-gradient(135deg, var(--success-text), #2e7d32)", color: "#fff", cursor: "pointer", opacity: advancing === item.id ? 0.6 : 1 }}
               >
                 {advancing === item.id ? "Completing..." : "\u{1F389} Complete Pickup"}
               </button>
@@ -6157,12 +6144,12 @@ function LocalPickupTab({ data }: { data: ShipData }) {
 
           {/* COMPLETED */}
           {status === "COMPLETED" && (
-            <div style={{ padding: "0.75rem", borderRadius: "0.5rem", background: "rgba(76,175,80,0.08)", border: "1px solid rgba(76,175,80,0.2)" }}>
+            <div style={{ padding: "0.75rem", borderRadius: "0.62rem", background: "var(--success-bg)", border: "1px solid rgba(76,175,80,0.2)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                 <span style={{ fontSize: "1rem" }}>{"\u{1F389}"}</span>
-                <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "#4caf50" }}>Pickup complete! Sale closed.</span>
+                <span style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--success-text)" }}>Pickup complete! Sale closed.</span>
               </div>
-              {ps?.completedAt && <div style={{ fontSize: "0.6rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Completed {new Date(ps.completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</div>}
+              {ps?.completedAt && <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Completed {new Date(ps.completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</div>}
             </div>
           )}
         </div>
@@ -6174,25 +6161,25 @@ function LocalPickupTab({ data }: { data: ShipData }) {
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
       {/* SECTION 1: Pickup Preferences */}
       <div style={{ background: "rgba(168,85,247,0.02)", border: "1px solid var(--border-default)", borderRadius: "0.75rem", padding: "1.25rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.62rem", marginBottom: "1rem" }}>
           <span style={{ fontSize: "1.1rem" }}>{"\u{1F91D}"}</span>
-          <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#a855f7" }}>Pickup Preferences</div>
+          <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--pickup-accent)" }}>Pickup Preferences</div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.75rem", marginBottom: "0.75rem" }}>
           <div>
-            <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Pickup Address</div>
+            <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Pickup Address</div>
             <input value={pickupAddress} onChange={(e) => setPickupAddress(e.target.value)} style={inputStyle} />
           </div>
           <div>
-            <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Availability</div>
+            <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Availability</div>
             <input value={pickupAvailability} onChange={(e) => setPickupAvailability(e.target.value)} style={inputStyle} />
           </div>
         </div>
         <div style={{ marginBottom: "0.75rem" }}>
-          <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Special Instructions</div>
+          <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Special Instructions</div>
           <textarea value={pickupInstructions} onChange={(e) => setPickupInstructions(e.target.value)} placeholder="Ring doorbell, items on porch, etc." rows={2} style={{ ...inputStyle, resize: "vertical" as const }} />
         </div>
-        <button onClick={savePickupPrefs} style={{ padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: pickupSaved ? "rgba(34,197,94,0.15)" : "linear-gradient(135deg, #a855f7, #7c3aed)", color: pickupSaved ? "#22c55e" : "#fff", cursor: "pointer" }}>
+        <button onClick={savePickupPrefs} style={{ padding: "0.4rem 0.85rem", fontSize: "0.72rem", fontWeight: 700, borderRadius: "0.4rem", border: "none", background: pickupSaved ? "rgba(34,197,94,0.15)" : "linear-gradient(135deg, #a855f7, #7c3aed)", color: pickupSaved ? "var(--success-text)" : "#fff", cursor: "pointer" }}>
           {pickupSaved ? "\u2705 Saved!" : "Save Pickup Preferences"}
         </button>
       </div>
@@ -6200,7 +6187,7 @@ function LocalPickupTab({ data }: { data: ShipData }) {
       {/* SECTION 2: Active & Pending Pickups */}
       {(pendingPickups.length > 0 || activePickups.length > 0) && (
         <div>
-          <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+          <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.62rem" }}>
             {"\u{1F4E6}"} Active Pickups ({pendingPickups.length + activePickups.length})
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -6212,13 +6199,13 @@ function LocalPickupTab({ data }: { data: ShipData }) {
       {/* SECTION 3: Completed Pickups */}
       {completedPickups.length > 0 && (
         <div>
-          <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+          <div style={{ fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", marginBottom: "0.62rem" }}>
             {"\u2705"} Completed Pickups ({completedPickups.length})
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {completedPickups.slice(0, 5).map(renderPickupCard)}
             {completedPickups.length > 5 && (
-              <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", textAlign: "center", padding: "0.5rem" }}>
+              <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", textAlign: "center", padding: "0.62rem" }}>
                 + {completedPickups.length - 5} more completed pickups
               </div>
             )}
@@ -6229,19 +6216,19 @@ function LocalPickupTab({ data }: { data: ShipData }) {
       {/* Empty state */}
       {pickupItems.length === 0 && (
         <div style={{ textAlign: "center", padding: "2.5rem 1.5rem" }}>
-          <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>{"\u{1F91D}"}</div>
-          <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>Local Pickup & Meetup</div>
+          <div style={{ fontSize: "2rem", marginBottom: "0.62rem" }}>{"\u{1F91D}"}</div>
+          <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.62rem" }}>Local Pickup & Meetup</div>
           <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: 1.5, maxWidth: 400, margin: "0 auto 1rem" }}>
             No items currently in local pickup. When a buyer chooses local pickup, you{"\u2019"}ll manage the handoff here.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "0.5rem", maxWidth: 450, margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "0.62rem", maxWidth: 450, margin: "0 auto" }}>
             {[
               { icon: "\u{1F4E9}", label: "Send Invite" },
               { icon: "\u{1F91D}", label: "Safe Meetup" },
               { icon: "\u{1F510}", label: "Handoff Code" },
               { icon: "\u{1F389}", label: "Sale Complete" },
             ].map((s) => (
-              <div key={s.label} style={{ padding: "0.6rem", borderRadius: "0.5rem", border: "1px solid var(--border-default)", background: "var(--bg-card)", textAlign: "center" }}>
+              <div key={s.label} style={{ padding: "0.6rem", borderRadius: "0.62rem", border: "1px solid var(--border-default)", background: "var(--bg-card)", textAlign: "center" }}>
                 <div style={{ fontSize: "1rem" }}>{s.icon}</div>
                 <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-primary)", marginTop: "0.15rem" }}>{s.label}</div>
               </div>
@@ -6266,7 +6253,7 @@ function LocalPickupTab({ data }: { data: ShipData }) {
           <div style={{ padding: "0 1rem 0.85rem", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
             {SAFETY_TIPS.map((tip, i) => (
               <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.4rem", fontSize: "0.72rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
-                <span style={{ fontSize: "0.6rem", color: "#a855f7", fontWeight: 700, marginTop: "0.15rem" }}>{i + 1}.</span>
+                <span style={{ fontSize: "0.65rem", color: "var(--pickup-accent)", fontWeight: 700, marginTop: "0.15rem" }}>{i + 1}.</span>
                 <span>{tip}</span>
               </div>
             ))}
@@ -6452,7 +6439,7 @@ export default function ShippingCenterClient() {
   const hasUrgent = (data?.readyToShip.length ?? 0) > 0;
 
   return (
-    <div>
+    <div style={{ paddingBottom: "calc(var(--bottom-nav-height, 72px) + env(safe-area-inset-bottom, 0px) + 1rem)" }}>
       {/* Header bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
         <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
@@ -6558,7 +6545,7 @@ export default function ShippingCenterClient() {
             <span style={{
               fontSize: "0.62rem",
               fontWeight: 700,
-              color: "#ff9800",
+              color: "var(--warning-text)",
               textTransform: "uppercase" as const,
               letterSpacing: "0.05em",
               whiteSpace: "nowrap" as const,
@@ -6570,12 +6557,12 @@ export default function ShippingCenterClient() {
                 key={idx}
                 onClick={() => { ai.action(); console.log("[PriorityBanner] Clicked:", ai.label); }}
                 style={{
-                  fontSize: "0.6rem",
+                  fontSize: "0.65rem",
                   fontWeight: 600,
                   padding: "2px 8px",
                   borderRadius: "9999px",
                   background: ai.urgent ? "rgba(244,67,54,0.1)" : "rgba(255,152,0,0.08)",
-                  color: ai.urgent ? "#f44336" : "#ff9800",
+                  color: ai.urgent ? "var(--error-text)" : "var(--warning-text)",
                   border: `1px solid ${ai.urgent ? "rgba(244,67,54,0.2)" : "rgba(255,152,0,0.15)"}`,
                   cursor: "pointer",
                   transition: "all 0.2s ease",
@@ -6591,7 +6578,7 @@ export default function ShippingCenterClient() {
               onClick={() => { setDismissedBanner(true); console.log("[PriorityBanner] Dismissed"); }}
               style={{
                 marginLeft: "auto",
-                fontSize: "0.55rem",
+                fontSize: "0.62rem",
                 color: "var(--text-muted)",
                 background: "none",
                 border: "none",
@@ -6608,7 +6595,7 @@ export default function ShippingCenterClient() {
 
       {/* Redirect breadcrumb */}
       {itemIdParam && (
-        <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+        <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginBottom: "0.62rem" }}>
           <Link href={`/items/${itemIdParam}`} style={{ color: "var(--accent)", textDecoration: "none", fontWeight: 500 }}>{"\u2190"} Back to Item Dashboard</Link>
           <span> {"\u00B7"} Redirected from item page</span>
         </div>
@@ -6618,6 +6605,10 @@ export default function ShippingCenterClient() {
       <style>{`
         @keyframes ll-badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         .ship-tabs-scroll::-webkit-scrollbar { display: none; }
+
+        @media (max-width: 1024px) {
+          .ship-5col-grid { grid-template-columns: repeat(3, minmax(0,1fr)) !important; }
+        }
 
         @media (max-width: 768px) {
           .ship-5col-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; gap: 0.5rem !important; }
@@ -6629,6 +6620,12 @@ export default function ShippingCenterClient() {
         }
 
         @media (max-width: 480px) {
+          .ship-5col-grid { grid-template-columns: minmax(0,1fr) !important; }
+          .ship-4col-grid { grid-template-columns: minmax(0,1fr) !important; }
+          .ship-3col-grid { grid-template-columns: minmax(0,1fr) !important; }
+        }
+
+        @media (max-width: 375px) {
           .ship-5col-grid { grid-template-columns: minmax(0,1fr) !important; }
           .ship-4col-grid { grid-template-columns: minmax(0,1fr) !important; }
           .ship-3col-grid { grid-template-columns: minmax(0,1fr) !important; }
@@ -6653,7 +6650,7 @@ export default function ShippingCenterClient() {
         };
 
         return (
-          <div className="ship-tabs-scroll" style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem", overflowX: "auto", paddingBottom: "0.25rem", scrollbarWidth: "none" as any }}>
+          <div className="ship-tabs-scroll" style={{ display: "flex", gap: "0.62rem", marginBottom: "1.25rem", overflowX: "auto", paddingBottom: "0.25rem", scrollbarWidth: "none" as any }}>
             {TABS.map((t) => {
               const count = tabBadges[t.key] ?? 0;
               const isActive = tab === t.key;
@@ -6664,11 +6661,12 @@ export default function ShippingCenterClient() {
                   key={t.key}
                   onClick={() => setTab(t.key)}
                   style={{
-                    padding: "0.5rem 0.75rem",
-                    borderRadius: "0.4rem",
-                    background: isActive ? "rgba(0,188,212,0.15)" : "transparent",
-                    color: isActive ? "#00bcd4" : "var(--text-muted)",
-                    border: isActive ? "1px solid rgba(0,188,212,0.3)" : "1px solid transparent",
+                    padding: "0.55rem 0.85rem",
+                    minHeight: "44px",
+                    borderRadius: "0.75rem",
+                    background: isActive ? "var(--accent-dim)" : "transparent",
+                    color: isActive ? "var(--accent)" : "var(--text-muted)",
+                    border: isActive ? "1px solid var(--accent-glow)" : "1px solid transparent",
                     cursor: "pointer",
                     fontSize: "0.75rem",
                     fontWeight: isActive ? 700 : 600,
@@ -6683,12 +6681,12 @@ export default function ShippingCenterClient() {
                   <span>{t.label}</span>
                   {count > 0 && (
                     <span style={{
-                      fontSize: "0.5rem",
+                      fontSize: "0.62rem",
                       fontWeight: 700,
                       padding: "1px 4px",
                       borderRadius: "9999px",
-                      background: isUrgent ? "rgba(244,67,54,0.2)" : "rgba(0,188,212,0.15)",
-                      color: isUrgent ? "#f44336" : "#00bcd4",
+                      background: isUrgent ? "rgba(244,67,54,0.2)" : "var(--accent-dim)",
+                      color: isUrgent ? "var(--error-text)" : "var(--accent)",
                       animation: isUrgent ? "ll-badge-pulse 2s infinite" : "none",
                     }}>
                       {count}
@@ -6730,10 +6728,10 @@ export default function ShippingCenterClient() {
         </div>
       ) : !data ? (
         <div style={{ textAlign: "center", padding: "3rem", color: "var(--text-muted)" }}>
-          <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem", opacity: 0.4 }}>{"\u26A0\uFE0F"}</div>
+          <div style={{ fontSize: "2.5rem", marginBottom: "0.62rem", opacity: 0.4 }}>{"\u26A0\uFE0F"}</div>
           <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-secondary)" }}>Could Not Load Shipping Data</div>
           <div style={{ fontSize: "0.82rem", marginTop: "0.25rem", lineHeight: 1.5, maxWidth: 320, margin: "0.25rem auto 0" }}>There was a problem loading your shipping data. This is usually temporary.</div>
-          <button onClick={fetchData} style={{ marginTop: "0.75rem", padding: "0.4rem 1rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.5rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer" }}>
+          <button onClick={fetchData} style={{ marginTop: "0.75rem", padding: "0.4rem 1rem", fontSize: "0.78rem", fontWeight: 700, borderRadius: "0.62rem", border: "none", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", cursor: "pointer" }}>
             {"\u{1F504}"} Retry
           </button>
         </div>
@@ -6753,7 +6751,7 @@ export default function ShippingCenterClient() {
         <Link href="/dashboard" style={{
           display: "inline-flex", alignItems: "center", gap: "0.35rem",
           fontSize: "0.875rem", fontWeight: 500, color: "var(--accent)",
-          textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.5rem",
+          textDecoration: "none", padding: "0.5rem 1rem", borderRadius: "0.62rem",
           border: "1px solid var(--border-default)", transition: "border-color 0.15s ease",
         }}>
           ← Back to Dashboard

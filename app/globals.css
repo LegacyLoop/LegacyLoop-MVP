@@ -102,6 +102,18 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   --accent-dim:      rgba(0, 188, 212, 0.12);
   --accent-border:   rgba(0, 188, 212, 0.3);
 
+  /* Shipping semantic colors */
+  --shipping-accent:     var(--accent);
+  --pickup-accent:       #a855f7;
+  --pickup-accent-dim:   rgba(168, 85, 247, 0.12);
+  --freight-accent:      #9c27b0;
+  --freight-accent-dim:  rgba(156, 39, 176, 0.12);
+  --arta-accent:         #f59e0b;
+  --arta-accent-dim:     rgba(255, 215, 0, 0.1);
+
+  /* Bottom nav clearance */
+  --bottom-nav-height:   72px;
+
   /* Glass tokens — single source of truth */
   --glass-bg:            rgba(22, 27, 34, 0.6);
   --glass-bg-modal:      rgba(13, 17, 23, 0.75);
