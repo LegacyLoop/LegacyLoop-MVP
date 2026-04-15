@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { stripePromise } from "@/lib/stripe-client";
+import { getStripePromise } from "@/lib/stripe-client";
 import ProcessingFeeTooltip from "@/app/components/ProcessingFeeTooltip";
 import { PROCESSING_FEE } from "@/lib/constants/pricing";
 
@@ -318,8 +318,22 @@ export default function BuyNowModal({ itemId, itemTitle, price, shippingEstimate
     );
   }
 
+  const stripe = getStripePromise();
+  if (!stripe) {
+    return (
+      <>
+        <div onClick={() => setOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", zIndex: 100 }} />
+        <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(400px, 90vw)", zIndex: 101, borderRadius: "1.25rem", background: "var(--bg-card-solid)", border: "1px solid var(--border-default)", padding: "2rem", textAlign: "center" }}>
+          <p style={{ fontSize: "1rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.5rem" }}>Payment system loading...</p>
+          <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>If this persists, please refresh the page.</p>
+          <button onClick={() => setOpen(false)} className="btn-ghost" style={{ marginTop: "1rem", minHeight: "44px" }}>Close</button>
+        </div>
+      </>
+    );
+  }
+
   return (
-    <Elements stripe={stripePromise}>
+    <Elements stripe={stripe}>
       <CheckoutForm
         itemId={itemId}
         itemTitle={itemTitle}

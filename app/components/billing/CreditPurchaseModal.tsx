@@ -7,7 +7,7 @@
 
 import { useState } from "react";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { stripePromise } from "@/lib/stripe-client";
+import { getStripePromise } from "@/lib/stripe-client";
 
 interface Props {
   clientSecret: string;
@@ -222,8 +222,22 @@ function CreditConfirmInner({ clientSecret, packageName, credits, charged, onSuc
 }
 
 export default function CreditPurchaseModal(props: Props) {
+  const stripe = getStripePromise();
+  if (!stripe) {
+    return (
+      <>
+        <div onClick={props.onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)", zIndex: 1000 }} />
+        <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "min(400px, 92vw)", zIndex: 1001, borderRadius: 16, background: "rgba(13,31,45,0.98)", border: "1px solid rgba(255,255,255,0.1)", padding: "2rem", textAlign: "center" }}>
+          <p style={{ fontSize: "1rem", fontWeight: 600, color: "#f1f5f9", marginBottom: "0.5rem" }}>Payment system loading...</p>
+          <p style={{ fontSize: "0.85rem", color: "rgba(207,216,220,0.6)" }}>If this persists, please refresh the page.</p>
+          <button onClick={props.onClose} style={{ marginTop: "1rem", padding: "0.6rem 1.5rem", background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: "0.85rem" }}>Close</button>
+        </div>
+      </>
+    );
+  }
+
   return (
-    <Elements stripe={stripePromise}>
+    <Elements stripe={stripe}>
       <CreditConfirmInner {...props} />
     </Elements>
   );

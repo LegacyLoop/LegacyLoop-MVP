@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { stripePromise } from "@/lib/stripe-client";
+import { getStripePromise } from "@/lib/stripe-client";
 
 interface Props {
   currentTier: number;
@@ -317,8 +317,24 @@ function UpgradeFormInner({
 
 /* ── Main export (wraps with Elements provider) ──────────────── */
 export default function UpgradeFlowModal(props: Props) {
+  const stripe = getStripePromise();
+  if (!stripe) {
+    return (
+      <div
+        style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)" }}
+        onClick={(e) => { if (e.target === e.currentTarget) props.onClose(); }}
+      >
+        <div style={{ background: "rgba(13,31,45,0.98)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16, maxWidth: 400, width: "95%", padding: 28, textAlign: "center" }}>
+          <p style={{ fontSize: "1rem", fontWeight: 600, color: "#f1f5f9", marginBottom: "0.5rem" }}>Payment system loading...</p>
+          <p style={{ fontSize: "0.85rem", color: "rgba(207,216,220,0.6)" }}>If this persists, please refresh the page.</p>
+          <button onClick={props.onClose} style={{ marginTop: "1rem", padding: "0.6rem 1.5rem", background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: "0.85rem" }}>Close</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Elements stripe={stripePromise}>
+    <Elements stripe={stripe}>
       <UpgradeFormInner {...props} />
     </Elements>
   );
