@@ -1755,7 +1755,7 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
                         {(ph.demandLevel || ph.demandTrend || ph.seasonal) && (
                           <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.3rem" }}>Market Intelligence</div>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.2rem 0.75rem" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.2rem 0.75rem" }}>
                               {ph.demandLevel && <GridRow label="DEMAND" value={`${ph.demandLevel}`} />}
                               {ph.demandTrend && <GridRow label="TREND" value={`${ph.demandTrend}`} />}
                               {ph.supplyLevel && <GridRow label="SUPPLY" value={`${ph.supplyLevel}`} />}
@@ -1951,7 +1951,7 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
                         {(rh.demandLevel || rh.pricePosition) && (
                           <div style={{ marginBottom: "0.5rem", padding: "0.5rem 0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                             <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.3rem" }}>Market Position</div>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.15rem 1rem" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.15rem 1rem" }}>
                               {rh.demandLevel && <GridRow label="DEMAND" value={String(rh.demandLevel)} />}
                               {rh.pricePosition && <GridRow label="POSITION" value={String(rh.pricePosition)} />}
                             </div>
@@ -1988,7 +1988,7 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
                         {/* VEHICLE IDENTIFICATION */}
                         <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.5rem", border: "1px solid var(--border-default)" }}>
                           <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>Vehicle Identification</div>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.15rem 1rem" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.15rem 1rem" }}>
                             {vName && <GridRow label="VEHICLE" value={vName} bold />}
                             {vh.trim && <GridRow label="TRIM" value={String(vh.trim)} />}
                             {vh.condGrade && <GridRow label="GRADE" value={String(vh.condGrade)} bold />}
@@ -2048,7 +2048,7 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
                         {/* AUTHENTICATION */}
                         <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem", padding: "0.6rem", background: ah.verdict && String(ah.verdict).toLowerCase().includes("authentic") ? "rgba(76,175,80,0.04)" : "var(--bg-card)", borderRadius: "0.5rem", border: `1px solid ${ah.verdict && String(ah.verdict).toLowerCase().includes("authentic") ? "rgba(76,175,80,0.15)" : "var(--border-default)"}` }}>
                           <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>Authentication</div>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.15rem 1rem" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.15rem 1rem" }}>
                             {ah.verdict && <GridRow label="VERDICT" value={String(ah.verdict)} bold />}
                             {ah.confidence != null && typeof ah.confidence !== "object" && <GridRow label="CONFIDENCE" value={`${Math.round(Number(ah.confidence))}%`} />}
                             {ah.era && <GridRow label="ERA" value={String(ah.era)} />}
@@ -2167,7 +2167,7 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
                               {ch.bgsGrade && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" }}>BGS Est.</div><div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#00bcd4" }}>{ch.bgsGrade}</div></div>}
                               {ch.gradeConfidence != null && <div style={{ textAlign: "center" }}><div style={{ fontSize: "0.5rem", color: "var(--text-muted)", textTransform: "uppercase" }}>Confidence</div><div style={{ fontSize: "1.1rem", fontWeight: 800, color: "var(--text-primary)" }}>{Math.round(Number(ch.gradeConfidence) * (Number(ch.gradeConfidence) <= 1 ? 100 : 1))}%</div></div>}
                             </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.15rem 0.75rem" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.15rem 0.75rem" }}>
                               {ch.corners && <GridRow label="CORNERS" value={ch.corners} />}
                               {ch.edges && <GridRow label="EDGES" value={ch.edges} />}
                               {ch.surface && <GridRow label="SURFACE" value={ch.surface} />}
@@ -2286,7 +2286,7 @@ function MegaBotBoostResultsInner({ botType, result, aiData }: { botType: string
                       <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: meta.color, fontWeight: 700, marginBottom: "0.35rem" }}>
                         Identification
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.15rem 1rem" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.15rem 1rem" }}>
                         {h.itemName && <GridRow label="ITEM" value={h.itemName} bold />}
                         {h.category && <GridRow label="CATEGORY" value={h.subcategory ? `${h.category} > ${h.subcategory}` : h.category} />}
                         {(h.brand || h.maker) && <GridRow label="BRAND/MAKER" value={[h.brand, h.maker].filter(Boolean).join(" — ")} />}
@@ -2936,7 +2936,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
             {/* ── SECTION A: IDENTIFICATION ── */}
             <AccordionHeader id="ai-summary" icon="🔍" title="ITEM IDENTIFICATION" subtitle={aiData?.item_name || ""} isOpen={aiOpenSections.has("ai-summary")} onToggle={toggleAiSection} accentColor="#00bcd4" badge={aiData?.category || ""} />
             {aiOpenSections.has("ai-summary") && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.6rem" }}>
               {[
                 { label: "Item", value: aiData.item_name },
                 { label: "Category", value: [aiData.category, aiData.subcategory].filter(Boolean).join(" › ") },
@@ -3225,7 +3225,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
             {/* ── SECTION: SHIPPING PROFILE ── */}
             <AccordionHeader id="ai-shipping" icon="📦" title="SHIPPING PROFILE" subtitle={`${aiData?.weight_estimate_lbs ?? "?"} lbs · ${aiData?.shipping_difficulty ?? ""}`} isOpen={aiOpenSections.has("ai-shipping")} onToggle={toggleAiSection} />
             {aiOpenSections.has("ai-shipping") && (
-              <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem", marginBottom: "0.25rem" }}>
+              <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.4rem", marginBottom: "0.25rem" }}>
                 <div style={{ textAlign: "center", padding: "0.4rem", background: "var(--ghost-bg)", borderRadius: "0.35rem" }}>
                   <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 600 }}>⚖️ WEIGHT</div>
                   <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)" }}>{aiData?.weight_estimate_lbs ?? "—"} lbs</div>
@@ -3653,7 +3653,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 in the onlineRationale JSON (lib/adapters/pricing.ts) with
                 { low, mid, high, label } for a 100-300 mile radius estimate.
                 Until then, the column gracefully degrades. */}
-            <div className="pricing-tier-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.5rem" }}>
+            <div className="pricing-tier-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem" }}>
               <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                 <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>Local</div>
                 <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--accent)", marginTop: "0.15rem" }}>${Math.round((pr.localPrice.low + pr.localPrice.high) / 2)}</div>
@@ -3726,7 +3726,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   {gsPrices.auctionAnchored && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(212,175,55,0.1)", color: "#D4AF37" }}>Auction anchored</span>}
                   {gsPrices.brandPremium && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(0,188,212,0.1)", color: "#00bcd4" }}>Brand premium</span>}
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
                   <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                     <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#00bcd4", fontWeight: 600 }}>GARAGE SALE</div>
                     <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4", marginTop: "0.15rem" }}>${gsPrices.garageSalePrice}–${gsPrices.garageSalePriceHigh}</div>
@@ -3760,7 +3760,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   {gsPrices.auctionAnchored && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(212,175,55,0.1)", color: "#D4AF37" }}>Auction anchored</span>}
                   {gsPrices.brandPremium && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(0,188,212,0.1)", color: "#00bcd4" }}>Brand premium</span>}
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
                   <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,175,55,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                     <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#D4AF37", fontWeight: 600 }}>GARAGE SALE</div>
                     <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", marginTop: "0.15rem" }}>${gsPrices.garageSalePrice}–${gsPrices.garageSalePriceHigh}</div>
@@ -4087,7 +4087,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               <AccordionHeader id="price-confidence" icon="📊" title="CONFIDENCE & DEMAND" subtitle={`${conf ?? "?"}% · ${demand || "—"}`} isOpen={priceOpenSections.has("price-confidence")} onToggle={togglePriceSection} />
               {priceOpenSections.has("price-confidence") && (
               <div style={{ padding: "0.35rem 0" }}>
-              <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.4rem" }}>
+              <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.4rem" }}>
                 {conf != null && (
                   <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.45rem 0.5rem", textAlign: "center" }}>
                     <div style={{ fontSize: "0.5rem", color: "var(--text-muted)", marginBottom: "0.15rem" }}>📊 Confidence</div>
@@ -4233,7 +4233,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
 
                 {/* Per-agent price comparison — compact grid */}
                 {agentPrices.length > 0 && (
-                  <div style={{ display: "grid", gridTemplateColumns: agentPrices.length <= 2 ? "1fr" : "1fr 1fr", gap: "0.35rem", marginBottom: "0.65rem" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: agentPrices.length <= 2 ? "minmax(0,1fr)" : "minmax(0,1fr) minmax(0,1fr)", gap: "0.35rem", marginBottom: "0.65rem" }}>
                     {agentPrices.map((ap) => (
                       <div key={ap.provider} style={{ display: "flex", alignItems: "center", gap: "0.35rem", padding: "0.4rem 0.5rem", background: "var(--bg-card)", borderRadius: "0.45rem", border: "1px solid var(--border-default)", borderLeft: `3px solid ${ap.color}` }}>
                         <span style={{ fontSize: "0.7rem", flexShrink: 0 }}>{ap.icon}</span>
@@ -5029,7 +5029,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
 
                       {/* Two photo outputs */}
                       {(enhanceResult.editedPhotoUrl || enhanceResult.generatedPhotoUrl) && (
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem", marginBottom: "0.65rem" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.6rem", marginBottom: "0.65rem" }}>
                           {enhanceResult.editedPhotoUrl && (
                             <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.12)", borderRadius: "8px", overflow: "hidden" }}>
                               <img src={enhanceResult.editedPhotoUrl} alt="Edited" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
@@ -5126,7 +5126,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
                         <div style={{ color: "#10b981", fontWeight: 700, fontSize: "0.72rem", marginBottom: "0.2rem" }}>✓ Item protected · Cleaned:</div>
                         <div style={{ color: "var(--text-muted)", fontSize: "0.72rem" }}>{editResult.cleaningDescription}</div>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.65rem" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.65rem" }}>
                         <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "8px", overflow: "hidden" }}>
                           <img src={editResult.originalPhotoPath} alt="Original" style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
                           <div style={{ padding: "0.35rem 0.45rem", color: "var(--text-muted)", fontSize: "0.65rem", fontWeight: 600 }}>Original</div>
@@ -6376,7 +6376,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
               {vinData && (
                 <div style={{ marginBottom: "0.65rem", padding: "0.6rem", borderRadius: "0.4rem", background: "rgba(74,222,128,0.04)", border: "1px solid rgba(74,222,128,0.15)" }}>
                   <div style={{ fontSize: "0.55rem", fontWeight: 700, color: "#4ade80", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.3rem" }}>VIN Decoded</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.12rem 1rem", fontSize: "0.68rem" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.12rem 1rem", fontSize: "0.68rem" }}>
                     {[
                       { l: "Make", v: vinData.Make }, { l: "Model", v: vinData.Model },
                       { l: "Year", v: vinData["Model Year"] }, { l: "Trim", v: vinData.Trim || vinData.Series },
@@ -6442,7 +6442,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
               </div>
 
               {/* Seller quick details */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem", marginBottom: "0.65rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.4rem", marginBottom: "0.65rem" }}>
                 {[
                   { key: "titleStatus", label: "Title", opts: ["Clean", "Salvage", "Rebuilt"] },
                   { key: "owners", label: "Owners", opts: ["1", "2", "3+", "Unknown"] },
@@ -6614,7 +6614,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
                   </div>
                   {/* Condition detail notes */}
                   {cond && (
-                    <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.3rem", marginTop: "0.25rem" }}>
+                    <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.3rem", marginTop: "0.25rem" }}>
                       {[
                         { label: "Exterior", notes: cond.exterior?.overall_exterior_notes || cond.exterior?.notes, items: [cond.exterior?.paint_condition, cond.exterior?.body_damage, cond.exterior?.glass_condition, cond.exterior?.tire_condition].flat().filter(Boolean) },
                         { label: "Interior", notes: cond.interior?.overall_interior_notes || cond.interior?.notes, items: [cond.interior?.seats, cond.interior?.dashboard, cond.interior?.electronics, cond.interior?.odors_likely].filter(Boolean) },
@@ -6639,7 +6639,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
               <AccordionHeader id="car-valuation" icon="💰" title="MARKET VALUATION" subtitle={val?.private_party_value?.mid ? `Private: $${Math.round(val.private_party_value.mid).toLocaleString()}` : ""} isOpen={carSections.has("car-valuation")} onToggle={toggleCarSection} accentColor="#4ade80" />
               {carSections.has("car-valuation") && (
                 <div style={{ padding: "0.35rem 0" }}>
-                  <div className="car-valuation-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.35rem" }}>
+                  <div className="car-valuation-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.35rem" }}>
                     {[
                       { label: "Retail", data: val.retail_value, color: CB },
                       { label: "Private", data: val.private_party_value, color: "#4ade80" },
@@ -6739,7 +6739,7 @@ function CarBotPanel({ aiData, itemId, category, collapsed, onToggle, carBotResu
             <AccordionHeader id="car-market" icon="📈" title="MARKET & STRATEGY" subtitle={market?.demand_level ? `${market.demand_level} demand` : ""} isOpen={carSections.has("car-market")} onToggle={toggleCarSection} />
             {carSections.has("car-market") && (
               <div style={{ padding: "0.35rem 0" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.35rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.35rem" }}>
                   {[
                     { label: "Market Demand", value: market?.demand_level, icon: "📊", sub: market?.demand_trend },
                     { label: "Best Venue", value: strat?.best_selling_venue ? (typeof strat.best_selling_venue === "string" ? strat.best_selling_venue.split(".")[0].split(",")[0] : strat.recommended_platforms?.[0]?.platform) : null, icon: "🏪" },
@@ -7120,7 +7120,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
 
             {/* Identification Grid */}
             {ident && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
                 {[
                   { label: "Name", value: ident.item_name },
                   { label: "Year", value: ident.year },
@@ -7173,7 +7173,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
             {gradedValues && Array.isArray(gradedValues) && gradedValues.length > 0 && (
               <div style={{ background: PURPLE_BG, border: `1px solid ${PURPLE_BORDER}`, borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.35rem" }}>Graded Value Tiers</div>
-                <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(gradedValues.length, 5)}, 1fr)`, gap: "0.35rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(gradedValues.length, 5)}, minmax(0,1fr))`, gap: "0.35rem" }}>
                   {gradedValues.slice(0, 5).map((gv: any, i: number) => (
                     <div key={i} style={{ textAlign: "center", padding: "0.3rem 0.15rem", background: "var(--bg-card)", borderRadius: "0.35rem" }}>
                       <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", fontWeight: 600 }}>{gv.grade}</div>
@@ -7190,7 +7190,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
             {visualGrade && (
               <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.5rem", padding: "0.55rem 0.7rem" }}>
                 <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: PURPLE, fontWeight: 700, marginBottom: "0.35rem" }}>Visual Grade Assessment</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.35rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.35rem" }}>
                   {[
                     { label: "Corners", value: visualGrade.corners },
                     { label: "Edges", value: visualGrade.edges },
@@ -7662,7 +7662,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
               </div>
             )}
             {/* Era/maker grid from AI analysis — 3x2 */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
               {[
                 { label: "Era", value: aiData?.era || "Unknown" },
                 { label: "Maker", value: aiData?.maker || aiData?.brand || "Unknown" },
@@ -7784,7 +7784,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
             <AccordionHeader id="ant-identification" icon="🏺" title="IDENTIFICATION" subtitle={ident?.period ? `${ident.period} · ${ident.origin || ""}` : ""} isOpen={antiqueSections.has("ant-identification")} onToggle={toggleAntiqueSection} />
             {antiqueSections.has("ant-identification") && (
               <div style={{ padding: "0.35rem 0" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
                   {[
                     { label: "Type", value: ident?.item_type },
                     { label: "Period", value: ident?.period },
@@ -7808,7 +7808,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
             <AccordionHeader id="ant-valuation" icon="💰" title="EXPERT VALUATION" subtitle={val?.fair_market_value ? formatPriceRange(val.fair_market_value) : ""} isOpen={antiqueSections.has("ant-valuation")} onToggle={toggleAntiqueSection} accentColor="#fbbf24" />
             {antiqueSections.has("ant-valuation") && (
               <div style={{ padding: "0.35rem 0" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.5rem" }}>
                   {[
                     { label: "Fair Market Value", value: val?.fair_market_value ? formatPriceRange(val.fair_market_value) : null, color: "#fbbf24", primary: true },
                     { label: "Insurance Value", value: val?.insurance_value ? formatPrice(val.insurance_value) : null, color: "#00bcd4" },
@@ -8178,7 +8178,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
 
           {/* ═══ STAT CARDS ═══ */}
           <div style={{
-            display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.65rem",
+            display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.65rem",
           }} className="megabot-stat-grid">
             {[
               { label: "Bots Enhanced", value: `${boostedCount}/${allBots.length}`, color: "var(--accent)", icon: "🤖" },
@@ -8236,7 +8236,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
           )}
 
           {/* ═══ BOT STATUS GRID ═══ */}
-          <div className="megabot-bot-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "0.4rem" }}>
+          <div className="megabot-bot-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: "0.4rem" }}>
             {allBots.map((b) => {
               const isBoosted = boostedBots.has(b.key);
               const result = boostResults[b.key];
@@ -8289,7 +8289,7 @@ function MegaBotPowerCenter({ itemId, boostedBots, boostResults, aiData, onBoost
           {boostedCount > 0 && (
             <div>
               <div style={{ fontSize: "0.55rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "0.5rem", fontWeight: 700 }}>AI ENGINE PERFORMANCE</div>
-              <div className="megabot-engine-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
+              <div className="megabot-engine-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem" }}>
                 {agentStats.map((a) => {
                   const rate = a.total > 0 ? Math.round((a.successes / a.total) * 100) : 0;
                   return (
@@ -9287,7 +9287,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
           <div style={{ padding: "0.75rem 1rem" }}>
             {/* Overview stats */}
             {scan && (
-              <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.4rem", marginBottom: "0.75rem" }}>
+              <div className="three-col-stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.4rem", marginBottom: "0.75rem" }}>
                 <div style={{ textAlign: "center", padding: "0.5rem", borderRadius: "0.4rem", background: "var(--bg-card)" }}>
                   <div style={{ fontSize: "1rem", fontWeight: 800, color: "#00bcd4" }}>{scan.total_competitors_found}</div>
                   <div style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>Competitors</div>
@@ -9898,7 +9898,7 @@ export default function ItemDashboardPanels({
       <style>{`
         .bot-dashboard-grid {
           display: grid;
-          grid-template-columns: repeat(2, 1fr);
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 1rem;
           width: 100%;
           max-width: 100%;
@@ -9907,60 +9907,60 @@ export default function ItemDashboardPanels({
         }
         @media (max-width: 768px) {
           .bot-dashboard-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
             gap: 0.75rem;
           }
 
-          /* CMD-MOBILE-8B: 4-column grids → 2 columns on tablet/phone */
+          /* CMD-OVERFLOW-GRID-FIX: 4-column grids → 2 columns on tablet/phone */
           .pricing-tier-grid {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
             gap: 0.5rem !important;
           }
           .car-valuation-grid {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
             gap: 0.5rem !important;
           }
           .megabot-stat-grid {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
             gap: 0.5rem !important;
           }
           .megabot-engine-grid {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
             gap: 0.5rem !important;
           }
 
           /* 5-column grid → 3 columns */
           .megabot-bot-grid {
-            grid-template-columns: repeat(3, 1fr) !important;
+            grid-template-columns: repeat(3, minmax(0,1fr)) !important;
             gap: 0.4rem !important;
           }
 
           /* 3-column grids → 2 columns */
           .three-col-stat-grid {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
             gap: 0.5rem !important;
           }
         }
 
         @media (max-width: 480px) {
-          /* CMD-MOBILE-8B: Extra small — further collapse */
+          /* CMD-OVERFLOW-GRID-FIX: Extra small — further collapse */
           .pricing-tier-grid {
-            grid-template-columns: 1fr !important;
+            grid-template-columns: minmax(0, 1fr) !important;
           }
           .car-valuation-grid {
-            grid-template-columns: 1fr !important;
+            grid-template-columns: minmax(0, 1fr) !important;
           }
           .megabot-stat-grid {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
           }
           .megabot-engine-grid {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
           }
           .megabot-bot-grid {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
           }
           .three-col-stat-grid {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
           }
         }
       `}</style>
