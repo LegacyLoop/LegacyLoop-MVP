@@ -495,7 +495,7 @@ export const pricingAdapter = {
       const onlineHigh = Math.round(blendHigh);
 
       // Location-aware local pricing
-      const locPrices = getLocationPrices(blendLow, blendHigh, saleZip);
+      const locPrices = getLocationPrices(blendLow, blendHigh, saleZip, ai?.category);
       const localLow = locPrices.local.low;
       const localHigh = locPrices.local.high;
 
@@ -557,7 +557,7 @@ export const pricingAdapter = {
       const onlineHigh = amazonAnchor.amazonSource ? amazonAnchor.high : baseOnlineHigh;
 
       // Location-aware local pricing
-      const locPrices = getLocationPrices(aiLow, aiHigh, saleZip);
+      const locPrices = getLocationPrices(aiLow, aiHigh, saleZip, ai?.category);
       const localLow = locPrices.local.low;
       const localHigh = locPrices.local.high;
 
@@ -608,7 +608,7 @@ export const pricingAdapter = {
       const onlineHigh = Math.round(ebayHigh);
 
       // Location-aware local pricing
-      const locPrices = getLocationPrices(ebayLow, ebayHigh, saleZip);
+      const locPrices = getLocationPrices(ebayLow, ebayHigh, saleZip, ai?.category);
       const localLow = locPrices.local.low;
       const localHigh = locPrices.local.high;
 
@@ -661,7 +661,7 @@ export const pricingAdapter = {
     const onlineHigh = Math.round(base * 0.90 * mult);
 
     // Location-aware local pricing
-    const locPrices = getLocationPrices(onlineLow, onlineHigh, saleZip);
+    const locPrices = getLocationPrices(onlineLow, onlineHigh, saleZip, ai?.category);
     const localLow = locPrices.local.low;
     const localHigh = locPrices.local.high;
 

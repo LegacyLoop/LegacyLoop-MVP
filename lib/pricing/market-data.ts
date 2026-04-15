@@ -308,7 +308,7 @@ export function getBestMarket(category?: string | null, zip?: string | null): Ma
   const localInfo = zip ? getMarketInfo(zip) : null;
   const localLabel = localInfo && localInfo.label !== "National average" ? `Local market — ${localInfo.label}` : "Local market";
 
-  if (/lawn|mower|tractor|outdoor|garden|power|equipment/i.test(cat) || /vehicle|furniture/i.test(cat)) {
+  if (/lawn|mower|tractor|outdoor|garden|power|equipment|farm|riding|zero.?turn|john.?deere|kubota|husqvarna|cub.?cadet|chainsaw|snowblower|generator|atv|utv|side.?by.?side/i.test(cat) || /vehicle|furniture/i.test(cat)) {
     return { tier: "MEDIUM", multiplier: 1.05, label: localLabel, demandNote: "Large/heavy items sell best locally. Shipping is impractical." };
   }
   if (/musical|instrument|guitar|piano|drum|bass|violin|saxophone/i.test(cat)) {
@@ -369,13 +369,14 @@ export function getLocationPrices(
   baseLow: number,
   baseHigh: number,
   sellerZip: string | null | undefined,
+  category?: string | null,
 ): {
   local: { low: number; high: number; label: string; note: string };
   national: { low: number; high: number };
   bestMarket: { low: number; high: number; label: string; shippingCost: number; netLow: number; netHigh: number };
 } {
   const sellerMarket = getMarketInfo(sellerZip);
-  const bestMarket = getBestMarket();
+  const bestMarket = getBestMarket(category, sellerZip);
   const shippingCost = estimateShippingCost(sellerZip ?? null, "100", 12);
 
   return {

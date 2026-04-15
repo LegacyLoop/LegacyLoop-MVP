@@ -699,6 +699,7 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
       itemId, completedBot: "pricebot", category, isAntique,
       isCollectible: !!(ai as any).is_collectible,
       isVehicle: category.toLowerCase().includes("vehicle"),
+      isHighValue: (pricebotResult?.localPrice?.mid ?? 0) >= 500,
       cookie: cookieHeader,
     })).catch(() => null);
 
