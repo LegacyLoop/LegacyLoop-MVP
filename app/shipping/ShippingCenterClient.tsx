@@ -1469,7 +1469,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
         const isFreight = itemShipMethod === "freight";
         return (
           <div key={item.id} style={{ borderRadius: "0.75rem", border: "1px solid var(--border-default)", background: "var(--bg-card)", overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.85rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.85rem 0.85rem 0.5rem 0.85rem" }}>
               {item.photo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={item.photo} alt="" style={{ width: 56, height: 56, borderRadius: "0.4rem", objectFit: "cover", flexShrink: 0 }} />
@@ -1499,6 +1499,9 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                     </span>
                   );
                 })()}
+              </div>
+            </div>
+            <div style={{ padding: "0 0.85rem 0.85rem 0.85rem" }}>
                 {/* Shipping Readiness Stepper */}
                 {!isVehicle && (() => {
                   const hasProfile = !!(item.aiBox || item.weight || item.aiWeightLbs || item.aiEstWeight);
@@ -2098,8 +2101,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                     </div>
                   );
                 })()}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.62rem", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.62rem", flexShrink: 0, marginTop: "0.5rem" }}>
                 {item.valuationLow != null && (
                   <div style={{ textAlign: "right" }}>
                     <div style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--accent)" }}>
@@ -2936,7 +2938,7 @@ function ReadyToShipTab({
               overflow: "hidden",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.85rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.85rem 0.85rem 0.5rem 0.85rem" }}>
               {item.photo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={item.photo} alt="" style={{ width: 56, height: 56, borderRadius: "0.4rem", objectFit: "cover", flexShrink: 0 }} />
@@ -2964,6 +2966,9 @@ function ReadyToShipTab({
                   )}
                 </div>
                 <ShipProfile item={item} />
+              </div>
+            </div>
+            <div style={{ padding: "0 0.85rem 0.85rem 0.85rem" }}>
                 {!isWizard && <ShippingAIPanel item={item} />}
                 {/* Saved quote from localStorage */}
                 {savedQuotes[item.id] && !isWizard && (() => {
@@ -3001,8 +3006,7 @@ function ReadyToShipTab({
                     {"\u{1F4CB}"} {item.lastQuote.carriers?.length || 0} quotes {"\u00B7"} from ${item.lastQuote.cheapest?.price?.toFixed(2) ?? "?"} {"\u00B7"} {item.lastQuote.fromZip}{"\u2192"}{item.lastQuote.toZip || "?"}
                   </div>
                 )}
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.3rem", flexShrink: 0 }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.3rem", flexShrink: 0, marginTop: "0.5rem" }}>
                 {(item.soldPrice || item.listingPrice) && (
                   <span style={{ fontWeight: 700, color: "var(--accent)", fontSize: "0.88rem" }}>${item.soldPrice || item.listingPrice}</span>
                 )}
