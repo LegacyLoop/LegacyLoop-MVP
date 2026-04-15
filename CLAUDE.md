@@ -20,13 +20,14 @@ in this directory. That file defines the identity we build to:
 - The 5 build laws
 - The CMD vocabulary and active 12-CMD sequence
 
-Every command, commit, and V16 report is evaluated against that doc.
+Every command, commit, and V17.1 report is evaluated against that doc.
 If a change does not meet that bar, it is not done. This CLAUDE.md
 handles project-specific config. That doc handles the standard.
 
-Reference benchmarks (short list): Stripe Dashboard · Linear · Apple
-Wallet · Manus · Mercari · Airbnb · Notion · Dennis Snellenberg ·
-Olivier Larose · Lenis · Vercel · Arc · Instagram · WhatsApp · Threads.
+Reference benchmarks (short list): Linear · Stripe · Perplexity ·
+Tesla · SpaceX · Superhuman · StockX · Apple Wallet · Manus ·
+Mercari · Airbnb · Notion · Dennis Snellenberg · Olivier Larose ·
+Lenis · Vercel · Arc · Instagram · WhatsApp · Threads.
 
 ## WHO WE ARE
 
@@ -35,8 +36,18 @@ Mission: "Connecting Generations" — never misspell, never alter.
 App: app.legacy-loop.com | Landing: legacy-loop.com
 Company: Legacy-Loop Tech LLC | EIN: 42-1834363
 Founder: Ryan Hallee — sole decision-maker and final QA authority.
-Standard: Awwwards.com + Stripe Dashboard + Linear.app aesthetic. Non-negotiable.
-Reference benchmarks: Stripe, Linear, eBay, Mercari, Shopify Admin.
+Standard: "Elon Musk / $1B product standard. Awwwards-level." Non-negotiable.
+Reference benchmarks: Linear, Stripe, Perplexity, Tesla, SpaceX, Superhuman, StockX.
+
+## TEAM ROLES — WHO DOES WHAT (V17.1 §1)
+
+Ryan (Boss): Vision, final QA, fires commands to IT, all decisions.
+Mission Control (Strategy): Writes V17.1 commands, logs to Slack, tracks flags. No code.
+Sylvia (Cowork): Deep dives, command drafts, docs, brand, CLAUDE.md, investor ops.
+Claude Code (IT): Reads command, builds, returns V17.1 report. tsc=0 + build PASS before every commit.
+Jarvis: Business ops, marketing, investor support, n8n.
+
+Rule: All agents post every step to #all-legacyloop. Slack is source of truth.
 
 ---
 
@@ -56,8 +67,8 @@ These rules apply to EVERY command. No exceptions. No shortcuts.
 3. **npm run build must PASS before any commit.**
    Build = `prisma generate && next build`. Both must succeed.
 
-4. **V16 REPORT at the end of EVERY command.**
-   Even if not asked. Even for small changes. Always.
+4. **V17.1 REPORT at the end of EVERY command.**
+   Even if not asked. Even for small changes. Always. Use §12 format.
 
 5. **PRESERVE what works.** Fix only what is broken.
    Never rewrite working code. Never replace — upgrade.
@@ -70,6 +81,26 @@ These rules apply to EVERY command. No exceptions. No shortcuts.
 7. **Read AGENTS.md for cross-project standards.**
    This file handles project-specific config.
    AGENTS.md handles engineering patterns shared across all repos.
+
+8. **BUILD PATTERN (V17.1 §6):**
+   a. READ all files in scope before editing anything — no exceptions.
+   b. Database → API → AI → Enrichment → UI → Dashboard → DB update.
+   c. tsc --noEmit after EACH file save. Fix errors immediately.
+   d. npm run build after ALL parts complete.
+   e. One commit per command. Descriptive commit message.
+   f. Diagnostic rule: If fixing a bug that has failed before — READ
+      and diagnose root cause first. State why previous fix failed
+      before writing any new code.
+
+9. **DATA COLLECTION (V17.1 §7):**
+   Every feature must answer: Does it collect signal? Make AI better?
+   Create unique compounding data? Flag missed opportunities.
+
+10. **CREATIVE LATITUDE (V17.1 §8):**
+    MAY: improve beyond spec, flag gaps, add error handling, Elon-standard polish.
+    MAY NOT: touch locked files, change AI/prompts, use Tailwind/className,
+    add packages without approval, change schema without approval.
+    "Never assume. Never guess. Read first. Build second."
 
 ---
 
@@ -120,25 +151,32 @@ tsc --noEmit         # Type check (no output)
 ---
 
 ## ═══════════════════════════════════════════
-## SECTION 3: DESIGN SYSTEM — LOCKED
+## SECTION 3: DESIGN SYSTEM — V17.1 (verified against globals.css)
 ## ═══════════════════════════════════════════
 
-### Colors (source of truth: app/globals.css)
+### CSS Variables (V17.1 §3 — verified against globals.css)
 ```
-Background:     #0D1117 (--bg-primary)
-Surface:        #161B22 (--bg-secondary)
-Card:           #1C2128 (--bg-tertiary)
-Teal accent:    #00BCD4 (--accent)
-Teal bright:    #22D3EE (--accent-bright)
-Teal deep:      #0097A7 (--accent-deep)
-Gold (estate):  #D4AF37 (--estate-warm)
-Error:          #EF4444 (--error)
-Success:        #22C55E (--success)
-Warning:        #F59E0B (--warning)
-Antique:        #D4AF37 (--antique-text)
-Text primary:   #F0F6FC (--text-primary)
-Text secondary: #8B949E (--text-secondary)
-Text muted:     #484F58 (--text-muted)
+--accent:         #00BCD4
+--accent-dim:     rgba(0,188,212,0.12)
+--accent-border:  rgba(0,188,212,0.3)
+--accent-glow:    rgba(0,188,212,0.35)
+--bg-primary:     #0a0a0f (dark) / #f8fafc (light)
+--bg-secondary:   #111118 (dark) / #ffffff (light)
+--bg-card-solid:  #16161e (dark) / #ffffff (light)
+--ghost-bg:       rgba(255,255,255,0.07) (dark) / rgba(0,0,0,0.04) (light)
+--border-default: rgba(255,255,255,0.12) (dark) / rgba(0,0,0,0.08) (light)
+--border-card:    rgba(255,255,255,0.12) (dark) / rgba(0,0,0,0.08) (light)
+--text-primary:   #f1f5f9 (dark) / #0f172a (light)
+--text-secondary: #cbd5e1 (dark) / #475569 (light)
+--text-muted:     #94a3b8 (both)
+--badge-bg:       rgba(0,188,212,0.14)
+--badge-border:   rgba(0,188,212,0.35)
+--purple-bg:      rgba(139,92,246,0.1)
+--purple-border:  rgba(139,92,246,0.25)
+--font-data:      "Barlow Condensed", sans-serif
+
+MegaBot providers: OpenAI=#22c55e | Claude=#a78bfa | Gemini=#3b82f6 | Grok=#f97316
+Semantic: success=#22c55e | warning=#f59e0b | error=#ef4444 | antique=#D4AF37
 ```
 
 ### Typography (Google Fonts loaded in layout.tsx)
@@ -153,12 +191,22 @@ CSS Variables:
   --font-data:    var(--barlowCondensed)
 ```
 
-### Styling Rules
-- Tailwind CSS 4 via className for utility classes.
-- CSS custom properties (globals.css) for theme tokens.
+### Styling Rules (V17.1 §2)
+- ALL styles: inline style={{}} ONLY. Zero Tailwind. Zero className for styling.
+- Exception: CSS @keyframes and media query classes in globals.css only.
+- Theme-aware surfaces: CSS variables only.
+- Always-dark panels (modals/overlays/bot consoles): #e2e8f0 text, rgba(255,255,255,0.05) bg.
+- Brand teal: var(--accent) = #00BCD4. NEVER #0f766e.
+- Border radius: cards 1.25rem, buttons 0.75rem, pills 9999px.
+- Animations: CSS transitions + rAF only. No framer-motion in app.
+- Existing keyframes: orbFloat1/2/3, fadeSlideUp, floatDot, skeleton-pulse, accentPulse, pulse, spin, fadeUp, softPulse.
+- GRID RULE (enforced): ALL gridTemplateColumns must use minmax(0,1fr) — NOT plain 1fr.
+  Plain 1fr = minmax(auto,1fr) = cells cannot shrink on mobile = right-side clipping.
+  This caused 7 failed fix attempts. Never use plain 1fr again.
+- CollectiblesBot = gold standard for bot panel design. PriceBot is NOT the standard.
 - Light AND dark mode supported via CSS variables.
 - 7 breakpoints defined: xxl, xl, large, main, medium, small, tiny.
-- globals.css is 840 lines — read it before modifying any styles.
+- globals.css is 840+ lines — read it before modifying any styles.
 
 ### Logo Rules
 - **UNTOUCHABLE.** Never alter, approximate, or regenerate any logo.
@@ -209,7 +257,7 @@ SaleMethod: LOCAL_PICKUP | ONLINE_SHIPPING | BOTH
 - Run ALL pending field additions at once — never partial migrations.
 - After ANY schema change: `npx prisma db push` to sync Turso.
 - After push: `npx prisma generate` to regenerate client.
-- Report ALL schema changes in V16 FLAGS section.
+- Report ALL schema changes in V17.1 FLAGS section.
 - Never delete a model or field without explicit approval.
 - Prisma singleton lives at `lib/prisma.ts` — NEVER modify.
 
@@ -243,13 +291,13 @@ logout()                        — delete auth-token cookie
 ### Test Accounts (Tier 4 Estate Manager)
 ```
 annalyse07@gmail.com / LegacyLoop123!
-ryanroger11@gmail.com / Freedom26$
+Note: ryanroger11@gmail.com may not be seeded in local dev DB. Use annalyse07 only.
 ```
 
 ---
 
 ## ═══════════════════════════════════════════
-## SECTION 6: API ARCHITECTURE — 181 ROUTES
+## SECTION 6: API ARCHITECTURE (200 build routes total)
 ## ═══════════════════════════════════════════
 
 ### 57 Top-Level API Directories
@@ -470,19 +518,36 @@ PROCESSING_FEE: 3.5% (Stripe transaction fee)
 ```
 DEMO_MODE=true          — bypasses payment gates in dev. NEVER remove.
 SYSTEM_USER_ID:         cmmqpoljs0000pkwpl1uygvkz
-Messages layout:        position:fixed, top:108px — NEVER change.
+Messages layout:        position:fixed, top:108px — LOCKED FOREVER.
+Fee model:              1.75% buyer + 1.75% seller = 3.5% total
+layout.tsx:             Server Component — NEVER add event handlers
+Cloudinary:             ONLY valid photo storage on Vercel. NEVER local disk.
+shouldBypassGates:      isDemoMode() || isAdminUser()
+Go live:                DEMO_MODE=false + Stripe sk_live_ + pk_live_ in Vercel env
 ```
 
-### Locked Files — NEVER MODIFY WITHOUT EXPLICIT COMMAND
+### Locked Files — V17.1 §5 (surgical unlock required per command)
 ```
-lib/constants/pricing.ts   — Pricing SSOT
-lib/prisma.ts              — Prisma singleton
-lib/bots/skills/           — Skill packs (additive only)
-lib/adapters/auth.ts       — Auth adapter (critical path)
-public/images/logos/       — Logo assets
-public/manifest.json       — PWA manifest
-prisma/schema.prisma       — Schema (modify only with approval)
-app/globals.css            — Theme tokens (modify only with approval)
+lib/adapters/ai.ts | lib/adapters/auth.ts | lib/adapters/storage.ts
+lib/adapters/multi-ai.ts | lib/adapters/pricing.ts | lib/adapters/rainforest.ts
+lib/antique-detect.ts | lib/collectible-detect.ts
+lib/megabot/run-specialized.ts | lib/megabot/prompts.ts (ADD-ONLY)
+lib/shipping/* | All /app/api/shipping/* routes
+lib/credits.ts | lib/billing.ts | lib/billing/pro-rate.ts | lib/billing/commission.ts
+lib/constants/pricing.ts | lib/pricing/constants.ts | lib/pricing/market-data.ts
+lib/offers/negotiate.ts | lib/offers/expiry.ts | lib/offers/magic-link.ts
+lib/market-intelligence/aggregator.ts | All scraper adapter files
+lib/bots/sequencer.ts | lib/bots/accuracy.ts | lib/bots/demand-score.ts
+lib/bots/disagreement.ts | lib/bot-mode.ts
+app/components/AppNav.tsx | app/components/UploadModal.tsx
+app/components/ThemeProvider.tsx | app/components/Footer.tsx
+app/globals.css | app/layout.tsx
+lib/enrichment/index.ts | lib/enrichment/item-context.ts
+All /app/api/auth/* routes
+prisma/schema.prisma (unless migration explicitly approved)
+lib/db.ts | lib/prisma.ts
+ItemDashboardPanels.tsx (9,000+ lines — surgical unlock required per command)
+public/images/logos/* — NEVER modify logo files
 ```
 
 ---
@@ -656,7 +721,7 @@ Examples:
 ### Rules
 - Push immediately after commit.
 - Never leave uncommitted changes.
-- Report commit hash in every V16 report.
+- Report commit hash in every V17.1 report.
 - One commit per logical change. Not one giant commit.
 - Never force-push to main.
 - Never commit .env, .env.local, or any secrets.
@@ -730,46 +795,108 @@ It is a full resale automation engine that connects generations.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 18: V16 REPORT FORMAT — REQUIRED
+## SECTION 18: V17.1 COMMAND + REPORT FORMAT — REQUIRED
 ## ═══════════════════════════════════════════
 
-Every command ends with this. No exceptions.
+All commands use V17.1 format. No exceptions.
 
+### §10 COMMAND BLOCK (fill per command)
 ```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-[CMD-NAME] V16 REPORT
-[Date] | V16
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CHECKPOINT BEFORE: tsc=0, build=PASS ([N] routes)
-CHECKPOINT AFTER:  tsc=0, build=PASS ([N] routes)
-[N] files changed | [N] insertions / [N] deletions
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-DIAGNOSTIC:
-[What was read, what was found]
+CMD-[NAME]
+LegacyLoop | [Date] | V17.1
 
-FIXES / CHANGES:
-[File | Line | What changed | Why]
+OBJECTIVE:
+[1-3 sentences. What problem is solved. Why now.]
 
-LOCKED FILES: UNTOUCHED / [list if touched]
-SCHEMA CHANGES: NONE / [what changed]
-FILES MODIFIED: [list]
-FILES CREATED: [list]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FLAGS:
-Gaps: [incomplete items found during work]
-Risks: [what could break]
-Carry-forward: [banked commands for next]
-Suggestions: [ideas for Ryan to decide]
-Opportunities: [business/product value]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-tsc: 0 errors
-build: PASS ([N] routes)
-Commit: [hash] on main
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-NEXT: [queued command]
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Mission Control | LegacyLoop | [Date]
+SURGICAL UNLOCKS:
+[Exact file paths this command may touch]
+
+DIAGNOSTIC (required for bug fixes — skip for new features):
+[What to read first. Questions to answer before writing code.
+Root cause. Why previous attempts failed if applicable.]
+
+FIX 1 — [NAME] (P0/P1/P2):
+File: [exact path:line range]
+[Precise instructions. Find/replace. Expected result.]
+
+FIX 2 — [NAME] (P0/P1/P2):
+[Same format. Add FIX 3-N as needed.]
+
+SCOPE — EXACTLY THESE FILES:
+[List only files IT may touch]
+DO NOT TOUCH: [anything that must stay untouched]
+```
+
+### §11 ACCEPTANCE TEST (customize per command)
+```
+□ tsc --noEmit = 0 errors
+□ npm run build = PASS
+□ All files read before editing
+□ Locked files untouched
+□ inline style={{}} throughout — zero Tailwind/className
+□ gridTemplateColumns uses minmax(0,1fr) — never plain 1fr
+□ Always-dark panels = hardcoded | Theme-aware = CSS vars
+□ Light mode: PASS | Dark mode: PASS
+□ Mobile 375px: no scroll, no right-side clipping
+□ Desktop: layout unchanged
+□ [Command-specific checks here]
+
+8-Point World Class Check:
+1. Investor: Would Dr. Clark be impressed?
+2. Senior: Readable for a 70-year-old?
+3. Awwwards: Looks like a $1B product?
+4. Stripe: Data-dense without clutter?
+5. Apple: All touch targets ≥44px?
+6. A11y: Color values have text labels?
+7. Mobile: Zero clipping at 375px?
+8. Theme: Correct in both light and dark?
+```
+
+### §12 V17.1 REPORT FORMAT (every command returns this)
+```
+┌──────────────────────────────────────────────────┐
+│  CMD-[NAME] §12 REPORT                          │
+│  [DATE] | V17.1                                 │
+├──────────────────────────────────────────────────┤
+│  CHECKPOINT BEFORE: tsc=0, build=PASS ([N])      │
+│  CHECKPOINT AFTER:  tsc=0, build=PASS ([N])      │
+├──────────────────────────────────────────────────┤
+│  PART A — READ CONFIRMATION                      │
+│  [Each file read + line range confirmed]         │
+├──────────────────────────────────────────────────┤
+│  DIAGNOSTIC (bug fixes only):                    │
+│  Root cause: [exact cause]                       │
+│  Why previous fixes failed: [specific reason]   │
+├──────────────────────────────────────────────────┤
+│  FIX 1 — [NAME]: DONE/SKIPPED                   │
+│    [What changed | line numbers | why]           │
+│  FIX 2 — [NAME]: DONE/SKIPPED                   │
+│  [Continue for all fixes]                        │
+├──────────────────────────────────────────────────┤
+│  THEME: Light PASS/FAIL | Dark PASS/FAIL        │
+│  Always-dark panels: PASS/FAIL/N/A              │
+├──────────────────────────────────────────────────┤
+│  FILES MODIFIED: [file | +N/-N]                 │
+│  FILES CREATED: NONE / [list]                   │
+│  FILES DELETED: NONE / [list]                   │
+│  LOCKED FILES: UNTOUCHED                        │
+│  SCHEMA CHANGES: NONE / [describe]              │
+├──────────────────────────────────────────────────┤
+│  FLAGS                                           │
+│  Gaps: [incomplete items]                        │
+│  Risks: [potential issues]                       │
+│  Missed data: [collection opportunities]        │
+│  Carry-forward: [banked commands]               │
+│  Suggestions: [improvements]                    │
+│  Opportunity: [higher-tech upgrades]            │
+├──────────────────────────────────────────────────┤
+│  tsc: 0 errors                                  │
+│  build: PASS ([N] routes)                       │
+│  Commit: [hash] on main                         │
+└──────────────────────────────────────────────────┘
+
+CRITICAL: IF POST-CHECKPOINT FAILS → REVERT IMMEDIATELY.
+Report exactly what broke and what was touched.
 ```
 
 ---
@@ -833,6 +960,7 @@ export async function POST(req: Request) {
 ---
 
 # ════════════════════════════════════════════════════════════════
-# END OF CLAUDE.md — LEGACY-LOOP MVP SKILL PACK
+# END OF CLAUDE.md — LEGACY-LOOP MVP SKILL PACK | V17.1
+# All commands use V17.1 format. No exceptions.
 # If you read this far, you're ready to build. Let's ship.
 # ════════════════════════════════════════════════════════════════
