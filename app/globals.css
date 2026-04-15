@@ -5,6 +5,7 @@
 /* This is the nuclear option — the app must feel native on mobile.         */
 html, body {
   overflow-x: hidden !important;
+  overscroll-behavior-x: none !important;
   max-width: 100%;
 }
 
