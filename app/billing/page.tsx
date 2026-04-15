@@ -43,9 +43,9 @@ export default async function BillingPage() {
   function getTypeBadgeStyle(type: string) {
     const isEstate = type.includes("white_glove");
     return {
-      fontSize: "0.55rem",
+      fontSize: "0.65rem",
       fontWeight: 700,
-      padding: "0.1rem 0.35rem",
+      padding: "0.15rem 0.4rem",
       borderRadius: "0.25rem",
       marginRight: "0.4rem",
       background: isEstate ? "var(--estate-bg)" : "var(--accent-dim)",
@@ -81,12 +81,12 @@ export default async function BillingPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div style={{ maxWidth: "56rem", marginLeft: "auto", marginRight: "auto" }}>
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Billing" }]} />
       <div style={{ marginBottom: "2rem" }}>
         <div className="section-title">Account</div>
-        <h1 className="h2 mt-2">Billing & Subscription</h1>
-        <p className="muted mt-1">Manage your plan, view invoices, and update payment methods.</p>
+        <h1 className="h2" style={{ marginTop: "0.5rem" }}>Billing & Subscription</h1>
+        <p className="muted" style={{ marginTop: "0.25rem" }}>Manage your plan, view invoices, and update payment methods.</p>
       </div>
 
       {/* Current plan card */}
@@ -127,9 +127,12 @@ export default async function BillingPage() {
 
         {subscription && (
           <div style={{
-            display: "flex", gap: "2rem", marginTop: "1.25rem",
-            paddingTop: "1rem", borderTop: "1px solid var(--accent-border)",
-            flexWrap: "wrap",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+            gap: "0.75rem 1.5rem",
+            marginTop: "1.25rem",
+            paddingTop: "1rem",
+            borderTop: "1px solid var(--accent-border)",
           }}>
             <div>
               <div style={{ fontSize: "0.65rem", fontWeight: 600, textTransform: "uppercase", color: "var(--text-muted)" }}>Status</div>
@@ -163,7 +166,7 @@ export default async function BillingPage() {
           <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-primary)", marginBottom: "1rem" }}>
             Upgrade Your Plan
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(upgradeTiers.length, 3)}, minmax(0, 1fr))`, gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem" }}>
             {upgradeTiers.map(({ key, tier, price, processingFee, total }) => (
               <div key={key} style={{
                 borderRadius: "1.25rem",
@@ -261,7 +264,7 @@ export default async function BillingPage() {
                       </td>
                       <td style={{ padding: "0.6rem" }}>
                         <a
-                          href={(tx as any).receiptUrl || `/receipts/${tx.id}?type=payment`}
+                          href={tx.receiptUrl || `/receipts/${tx.id}?type=payment`}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{
@@ -269,13 +272,13 @@ export default async function BillingPage() {
                             minHeight: "44px", minWidth: "44px",
                             padding: "0.35rem 0.75rem", borderRadius: "0.5rem",
                             fontSize: "0.7rem", fontWeight: 600,
-                            color: (tx as any).receiptUrl ? "var(--accent)" : "var(--text-muted)",
-                            background: (tx as any).receiptUrl ? "var(--accent-dim)" : "var(--ghost-bg)",
-                            border: `1px solid ${(tx as any).receiptUrl ? "var(--accent-border)" : "var(--border-default)"}`,
+                            color: tx.receiptUrl ? "var(--accent)" : "var(--text-muted)",
+                            background: tx.receiptUrl ? "var(--accent-dim)" : "var(--ghost-bg)",
+                            border: `1px solid ${tx.receiptUrl ? "var(--accent-border)" : "var(--border-default)"}`,
                             textDecoration: "none", whiteSpace: "nowrap",
                           }}
                         >
-                          {(tx as any).receiptUrl ? "Receipt" : "Details"}
+                          {tx.receiptUrl ? "Receipt" : "Details"}
                         </a>
                       </td>
                     </tr>
@@ -312,22 +315,25 @@ export default async function BillingPage() {
                       <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary)", fontFamily: "var(--font-data)", marginTop: "0.15rem" }}>
                         ${tx.totalCharged.toFixed(2)}
                       </div>
+                      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontFamily: "var(--font-data)", marginTop: "0.1rem" }}>
+                        ${tx.subtotal.toFixed(2)} + ${tx.processingFee.toFixed(2)} fee
+                      </div>
                     </div>
                     <a
-                      href={(tx as any).receiptUrl || `/receipts/${tx.id}?type=payment`}
+                      href={tx.receiptUrl || `/receipts/${tx.id}?type=payment`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
                         display: "inline-flex", alignItems: "center", justifyContent: "center",
-                        minHeight: "44px", padding: "0.5rem 1rem", borderRadius: "0.75rem",
+                        minHeight: "44px", minWidth: "44px", padding: "0.5rem 1rem", borderRadius: "0.75rem",
                         fontSize: "0.8rem", fontWeight: 600,
-                        color: (tx as any).receiptUrl ? "var(--accent)" : "var(--text-muted)",
-                        background: (tx as any).receiptUrl ? "var(--accent-dim)" : "var(--ghost-bg)",
-                        border: `1px solid ${(tx as any).receiptUrl ? "var(--accent-border)" : "var(--border-default)"}`,
+                        color: tx.receiptUrl ? "var(--accent)" : "var(--text-muted)",
+                        background: tx.receiptUrl ? "var(--accent-dim)" : "var(--ghost-bg)",
+                        border: `1px solid ${tx.receiptUrl ? "var(--accent-border)" : "var(--border-default)"}`,
                         textDecoration: "none",
                       }}
                     >
-                      {(tx as any).receiptUrl ? "Receipt" : "Details"}
+                      {tx.receiptUrl ? "Receipt" : "Details"}
                     </a>
                   </div>
                 </div>
