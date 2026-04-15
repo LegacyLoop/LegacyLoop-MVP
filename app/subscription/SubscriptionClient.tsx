@@ -111,11 +111,11 @@ function FeatureTable({ headers, rows }: { headers: string[]; rows: { label: str
   return (
     <div style={{ background: "var(--bg-card)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--accent-dim)", borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 420 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 320 }}>
           <thead>
             <tr style={{ background: "linear-gradient(135deg, var(--accent-dim), var(--accent-dim))" }}>
               {headers.map((h, i) => (
-                <th key={h} style={{ textAlign: i === 0 ? "left" : "center", padding: "0.75rem 1rem", color: "var(--accent)", fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
+                <th key={h} style={{ textAlign: i === 0 ? "left" : "center", padding: "0.75rem 0.75rem", color: "var(--accent)", fontWeight: 700, fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -142,8 +142,8 @@ function FeatureTable({ headers, rows }: { headers: string[]; rows: { label: str
 const WG_CARDS: { key: string; accent: string; borderColor: string; bg: string; cta: string; features: string[] }[] = [
   {
     key: "essentials",
-    accent: "#10b981",
-    borderColor: "rgba(16,185,129,0.25)",
+    accent: "var(--success-text)",
+    borderColor: "var(--success-border)",
     bg: "var(--bg-card)",
     cta: "Get Started",
     features: [
@@ -170,8 +170,8 @@ const WG_CARDS: { key: string; accent: string; borderColor: string; bg: string; 
   },
   {
     key: "legacy",
-    accent: "#f59e0b",
-    borderColor: "rgba(245,158,11,0.25)",
+    accent: "var(--estate-text)",
+    borderColor: "var(--estate-border)",
     bg: "var(--bg-card)",
     cta: "Get Started",
     features: [
@@ -303,10 +303,11 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
               key={t}
               onClick={() => setTab(t)}
               style={{
-                padding: "0.65rem 1.75rem",
+                padding: "0.75rem 1.75rem",
+                minHeight: "44px",
                 borderRadius: 12,
-                border: tab === t ? "1px solid var(--accent-border)" : "1px solid transparent",
-                background: tab === t ? "linear-gradient(135deg, var(--accent-dim), var(--accent-dim))" : "transparent",
+                border: tab === t ? "1px solid var(--accent-border)" : "1px solid var(--border-default)",
+                background: tab === t ? "linear-gradient(135deg, var(--accent-dim), var(--ghost-bg))" : "transparent",
                 color: tab === t ? "var(--accent)" : "var(--text-muted)",
                 fontWeight: tab === t ? 700 : 500,
                 cursor: "pointer",
@@ -374,7 +375,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                         </span>
                         <span style={{
                           fontSize: "0.65rem", fontWeight: 700, padding: "2px 8px", borderRadius: 9999,
-                          background: "rgba(34,197,94,0.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)",
+                          background: "var(--success-bg)", color: "var(--success-text)", border: "1px solid var(--success-border)",
                         }}>
                           {Math.round((1 - preLaunchPrice / normalPrice) * 100)}% OFF
                         </span>
@@ -386,7 +387,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                       </div>
                     )}
                     {isAnnualSub && displayPrice > 0 && (
-                      <div style={{ fontSize: "0.78rem", color: "#16a34a", fontWeight: 600, marginTop: "-0.25rem" }}>
+                      <div style={{ fontSize: "0.78rem", color: "var(--success-text)", fontWeight: 600, marginTop: "-0.25rem" }}>
                         ${Math.round(displayPrice / 12)}/mo effective
                       </div>
                     )}
@@ -415,9 +416,9 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                     <span style={{
                       display: "inline-flex", alignItems: "center",
                       padding: "0.25rem 0.75rem", borderRadius: 8,
-                      background: subscription?.status === "ACTIVE" ? "rgba(16,185,129,0.1)" : subscription ? "rgba(239,68,68,0.1)" : "var(--ghost-bg)",
-                      color: subscription?.status === "ACTIVE" ? "#10b981" : subscription ? "#ef4444" : "var(--text-muted)",
-                      border: subscription?.status === "ACTIVE" ? "1px solid rgba(16,185,129,0.2)" : subscription ? "1px solid rgba(239,68,68,0.2)" : "1px solid var(--border-default)",
+                      background: subscription?.status === "ACTIVE" ? "var(--success-bg)" : subscription ? "var(--error-bg)" : "var(--ghost-bg)",
+                      color: subscription?.status === "ACTIVE" ? "var(--success-text)" : subscription ? "var(--error-text)" : "var(--text-muted)",
+                      border: subscription?.status === "ACTIVE" ? "1px solid var(--success-border)" : subscription ? "1px solid var(--error-border)" : "1px solid var(--border-default)",
                       fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.04em",
                     }}>
                       {subscription?.status === "ACTIVE" ? "● ACTIVE" : subscription?.status || "No subscription"}
@@ -449,12 +450,12 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                     <button
                       onClick={() => setShowCancelModal(true)}
                       style={{
-                        background: "transparent", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 14,
-                        padding: "0.75rem 1.75rem", color: "rgba(239,68,68,0.6)", fontWeight: 500, fontSize: "0.82rem",
-                        cursor: "pointer", transition: "all 0.2s ease",
+                        background: "transparent", border: "1px solid var(--error-border)", borderRadius: 14,
+                        padding: "0.75rem 1.75rem", color: "var(--error-text)", fontWeight: 500, fontSize: "0.82rem",
+                        cursor: "pointer", transition: "all 0.2s ease", minHeight: "44px", opacity: 0.7,
                       }}
-                      onMouseEnter={(e) => { (e.target as HTMLElement).style.borderColor = "rgba(239,68,68,0.4)"; (e.target as HTMLElement).style.color = "#ef4444"; }}
-                      onMouseLeave={(e) => { (e.target as HTMLElement).style.borderColor = "rgba(239,68,68,0.2)"; (e.target as HTMLElement).style.color = "rgba(239,68,68,0.6)"; }}
+                      onMouseEnter={(e) => { (e.target as HTMLElement).style.opacity = "1"; }}
+                      onMouseLeave={(e) => { (e.target as HTMLElement).style.opacity = "0.7"; }}
                     >
                       Cancel subscription
                     </button>
@@ -462,8 +463,8 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   {isCancelled && (
                     <div style={{
                       fontSize: "0.82rem", color: "var(--text-muted)", maxWidth: 220,
-                      padding: "0.75rem 1rem", background: "rgba(239,68,68,0.04)",
-                      border: "1px solid rgba(239,68,68,0.1)", borderRadius: 12,
+                      padding: "0.75rem 1rem", background: "var(--error-bg)",
+                      border: "1px solid var(--error-border)", borderRadius: 12,
                     }}>
                       Your plan has been cancelled. Choose a new plan below to reactivate.
                     </div>
@@ -537,7 +538,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                 <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#fff", position: "absolute", top: 3, left: billingPeriod === "annual" ? 27 : 3, transition: "left 0.2s ease", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
               </button>
               <span onClick={() => setBillingPeriod("annual")} style={{ fontSize: "0.88rem", fontWeight: billingPeriod === "annual" ? 700 : 400, color: billingPeriod === "annual" ? "var(--accent)" : "var(--text-muted)", cursor: "pointer", transition: "all 0.2s" }}>Annual</span>
-              {billingPeriod === "annual" && <span style={{ fontSize: "0.68rem", fontWeight: 700, padding: "3px 10px", borderRadius: 9999, background: "rgba(34,197,94,0.12)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>Save 17%</span>}
+              {billingPeriod === "annual" && <span style={{ fontSize: "0.68rem", fontWeight: 700, padding: "3px 10px", borderRadius: 9999, background: "var(--success-bg)", color: "var(--success-text)", border: "1px solid var(--success-border)" }}>Save 17%</span>}
             </div>
 
             {/* ── Founders banner ── */}
@@ -625,7 +626,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                           )}
                         </div>
                         {billingPeriod === "annual" && !isFree && (
-                          <div style={{ fontSize: "0.72rem", color: "#16a34a", fontWeight: 600 }}>
+                          <div style={{ fontSize: "0.72rem", color: "var(--success-text)", fontWeight: 600 }}>
                             Billed ${plAnnualTotal ?? annualTotal}/yr{plAnnualTotal ? ` — save $${annualTotal - plAnnualTotal}/yr` : ""}
                           </div>
                         )}
@@ -730,7 +731,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                           )}
                         </div>
                         {billingPeriod === "annual" && upAnnual > 0 && (
-                          <div style={{ fontSize: "0.72rem", color: "#16a34a", fontWeight: 600 }}>
+                          <div style={{ fontSize: "0.72rem", color: "var(--success-text)", fontWeight: 600 }}>
                             Billed ${upPlAnnual ?? upAnnual}/yr
                           </div>
                         )}
@@ -790,7 +791,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                           )}
                         </div>
                         {billingPeriod === "annual" && (preLaunch ?? tierPrice) > 0 && (
-                          <div style={{ fontSize: "0.72rem", color: "#16a34a", fontWeight: 600 }}>
+                          <div style={{ fontSize: "0.72rem", color: "var(--success-text)", fontWeight: 600 }}>
                             ${Math.round((preLaunch ?? tierPrice) / 12)}/mo effective
                           </div>
                         )}
@@ -835,8 +836,8 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                 {downgradeError && (
                   <div style={{
                     marginTop: "0.75rem", padding: "0.6rem 1rem", borderRadius: 10,
-                    background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
-                    color: "#ef4444", fontSize: "0.82rem", lineHeight: 1.4,
+                    background: "var(--error-bg)", border: "1px solid var(--error-border)",
+                    color: "var(--error-text)", fontSize: "0.82rem", lineHeight: 1.4,
                   }}>
                     {downgradeError}
                   </div>
@@ -864,38 +865,72 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
             {changes.length === 0 ? (
               <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No subscription changes yet.</p>
             ) : (
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", fontSize: "0.82rem", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ borderBottom: "2px solid var(--accent-dim)" }}>
-                      {["Date", "Type", "From \u2192 To", "Refund", "Credits", "Method"].map((h) => (
-                        <th key={h} style={{ textAlign: "left", padding: "0.5rem 0.75rem", color: "var(--accent)", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase" }}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {changes.map((c, ci) => (
-                      <tr key={c.id} style={{ borderBottom: "1px solid var(--border-default)", background: ci % 2 === 0 ? "var(--bg-card)" : "transparent" }}>
-                        <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-primary)" }}>{new Date(c.changeDate).toLocaleDateString()}</td>
-                        <td style={{ padding: "0.5rem 0.75rem" }}>
-                          <span style={{
-                            padding: "0.15rem 0.5rem", borderRadius: 20,
-                            background: c.changeType === "cancel" ? "rgba(239,68,68,0.12)" : "rgba(16,185,129,0.12)",
-                            color: c.changeType === "cancel" ? "#ef4444" : "#10b981",
-                            fontSize: "0.75rem", fontWeight: 700,
-                          }}>
-                            {c.changeType}
-                          </span>
-                        </td>
-                        <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-secondary)" }}>{c.fromTier || "\u2014"} {"\u2192"} {c.toTier || "\u2014"}</td>
-                        <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-primary)" }}>${c.proratedRefund.toFixed(2)}</td>
-                        <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-primary)" }}>{c.creditIssued > 0 ? `${Math.round(c.creditIssued)} credits` : "\u2014"}</td>
-                        <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-secondary)" }}>{c.refundMethod || "\u2014"}</td>
+              <>
+                {/* Desktop table */}
+                <div className="table-desktop" style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", fontSize: "0.82rem", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "2px solid var(--accent-dim)" }}>
+                        {["Date", "Type", "From \u2192 To", "Refund", "Credits", "Method"].map((h) => (
+                          <th key={h} style={{ textAlign: "left", padding: "0.5rem 0.75rem", color: "var(--accent)", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase" }}>{h}</th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {changes.map((c, ci) => (
+                        <tr key={c.id} style={{ borderBottom: "1px solid var(--border-default)", background: ci % 2 === 0 ? "var(--bg-card)" : "transparent" }}>
+                          <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-primary)" }}>{new Date(c.changeDate).toLocaleDateString()}</td>
+                          <td style={{ padding: "0.5rem 0.75rem" }}>
+                            <span style={{
+                              padding: "0.15rem 0.5rem", borderRadius: 20,
+                              background: c.changeType === "cancel" ? "var(--error-bg)" : "var(--success-bg)",
+                              color: c.changeType === "cancel" ? "var(--error-text)" : "var(--success-text)",
+                              fontSize: "0.75rem", fontWeight: 700,
+                            }}>
+                              {c.changeType}
+                            </span>
+                          </td>
+                          <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-secondary)" }}>{c.fromTier || "\u2014"} {"\u2192"} {c.toTier || "\u2014"}</td>
+                          <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-primary)", fontFamily: "var(--font-data)" }}>${c.proratedRefund.toFixed(2)}</td>
+                          <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-primary)", fontFamily: "var(--font-data)" }}>{c.creditIssued > 0 ? `${Math.round(c.creditIssued)} credits` : "\u2014"}</td>
+                          <td style={{ padding: "0.5rem 0.75rem", color: "var(--text-secondary)" }}>{c.refundMethod || "\u2014"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile cards */}
+                <div className="table-mobile-cards">
+                  {changes.map((c) => (
+                    <div key={c.id} style={{
+                      background: "var(--ghost-bg)",
+                      border: "1px solid var(--border-default)",
+                      borderRadius: "1rem",
+                      padding: "1rem",
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                        <span style={{
+                          padding: "4px 12px", borderRadius: 9999,
+                          background: c.changeType === "cancel" ? "var(--error-bg)" : "var(--success-bg)",
+                          color: c.changeType === "cancel" ? "var(--error-text)" : "var(--success-text)",
+                          fontSize: "0.75rem", fontWeight: 700,
+                        }}>
+                          {c.changeType}
+                        </span>
+                        <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{new Date(c.changeDate).toLocaleDateString()}</span>
+                      </div>
+                      <div style={{ fontSize: "0.85rem", color: "var(--text-primary)", fontWeight: 600 }}>
+                        {c.fromTier || "\u2014"} {"\u2192"} {c.toTier || "\u2014"}
+                      </div>
+                      <div style={{ display: "flex", gap: "1rem", marginTop: "0.5rem", fontSize: "0.8rem" }}>
+                        <span style={{ color: "var(--text-muted)" }}>Refund: <span style={{ color: "var(--text-primary)", fontFamily: "var(--font-data)" }}>${c.proratedRefund.toFixed(2)}</span></span>
+                        {c.creditIssued > 0 && <span style={{ color: "var(--text-muted)" }}>Credits: <span style={{ color: "var(--text-primary)", fontFamily: "var(--font-data)" }}>{Math.round(c.creditIssued)}</span></span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}
@@ -908,7 +943,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
         <SectionHeader title="White-Glove Estate Services" subtitle="Full-service estate liquidation. We handle photography, listing, selling, shipping, and donation management." />
 
         {/* Pre-launch banner */}
-        <div style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 12, padding: "0.75rem 1.5rem", textAlign: "center", marginBottom: "2rem", color: "#f59e0b", fontWeight: 600, fontSize: "0.9rem" }}>
+        <div style={{ background: "var(--estate-bg)", border: "1px solid var(--estate-border)", borderRadius: 12, padding: "0.75rem 1.5rem", textAlign: "center", marginBottom: "2rem", color: "var(--estate-text)", fontWeight: 600, fontSize: "0.9rem" }}>
           Pre-Launch Estate Pricing Active — Founding clients receive discounted rates locked in at launch price.
         </div>
 
@@ -920,7 +955,8 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                 key={label}
                 onClick={() => setActiveSlide(i)}
                 style={{
-                  padding: "0.5rem 1.5rem",
+                  padding: "0.625rem 1.5rem",
+                  minHeight: "44px",
                   borderRadius: 24,
                   border: "none",
                   background: activeSlide === i ? "var(--accent-dim)" : "transparent",
@@ -999,7 +1035,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
             {/* Contact CTA */}
             <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
               <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>Not sure which service is right for you?</div>
-              <a href="mailto:support@legacy-loop.com?subject=Estate%20Services%20Question" style={{ color: "#D4AF37", fontSize: "0.88rem", fontWeight: 600, textDecoration: "none" }}>
+              <a href="mailto:support@legacy-loop.com?subject=Estate%20Services%20Question" style={{ color: "var(--estate-text)", fontSize: "0.88rem", fontWeight: 600, textDecoration: "none" }}>
                 Email Our Estate Team →
               </a>
             </div>
@@ -1077,18 +1113,18 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                 onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px var(--accent-dim)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.06)"; }}
               >
-                <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "rgba(212,175,55,0.9)", color: "#fff", borderRadius: 20, padding: "0.3rem 1.25rem", fontSize: "0.72rem", fontWeight: 700, whiteSpace: "nowrap", letterSpacing: "0.06em", boxShadow: "0 2px 12px rgba(212,175,55,0.3)", zIndex: 10 }}>MOST COMPREHENSIVE</div>
-                <div style={{ borderLeft: "3px solid #D4AF37", paddingLeft: "1rem", marginBottom: "1rem" }}>
+                <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "var(--estate-text)", color: "#fff", borderRadius: 20, padding: "0.3rem 1.25rem", fontSize: "0.72rem", fontWeight: 700, whiteSpace: "nowrap", letterSpacing: "0.06em", boxShadow: "0 2px 12px var(--estate-border)", zIndex: 10 }}>MOST COMPREHENSIVE</div>
+                <div style={{ borderLeft: "3px solid var(--estate-text)", paddingLeft: "1rem", marginBottom: "1rem" }}>
                   <div style={{ color: "var(--text-primary)", fontWeight: 700, fontSize: "1.05rem" }}>Full Resolution — 6 Months</div>
                   <div style={{ display: "flex", alignItems: "baseline", gap: "0.25rem", marginTop: "0.25rem" }}>
-                    <span style={{ color: "#D4AF37", fontWeight: 800, fontSize: "2rem" }}>$999</span>
+                    <span style={{ color: "var(--estate-text)", fontWeight: 800, fontSize: "2rem" }}>$999</span>
                     <span style={{ color: "var(--text-muted)", fontSize: "0.9rem", textDecoration: "line-through", marginLeft: "0.5rem" }}>$1,999</span>
                   </div>
                 </div>
                 <div style={{ color: "var(--text-secondary)", fontSize: "0.82rem", marginBottom: "1rem", lineHeight: 1.5 }}>
                   Six full months. We don{"'"}t stop until everything is resolved and sold.
                 </div>
-                <a href="mailto:support@legacy-loop.com?subject=Full%20Estate%20Resolution%20Inquiry" style={{ display: "block", textAlign: "center", background: "transparent", border: "1px solid #D4AF37", borderRadius: 12, padding: "0.75rem 1.5rem", color: "#D4AF37", fontWeight: 700, fontSize: "0.88rem", textDecoration: "none", transition: "all 0.2s ease" }}>
+                <a href="mailto:support@legacy-loop.com?subject=Full%20Estate%20Resolution%20Inquiry" style={{ display: "block", textAlign: "center", background: "transparent", border: "1px solid var(--estate-text)", borderRadius: 12, padding: "0.75rem 1.5rem", color: "var(--estate-text)", fontWeight: 700, fontSize: "0.88rem", textDecoration: "none", transition: "all 0.2s ease", minHeight: "44px" }}>
                   Get Started
                 </a>
               </div>

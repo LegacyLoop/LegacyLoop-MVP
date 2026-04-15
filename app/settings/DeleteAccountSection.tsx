@@ -38,19 +38,28 @@ export default function DeleteAccountSection({ userEmail }: { userEmail: string 
         <button
           onClick={() => setShowConfirm(true)}
           style={{
-            padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 600,
-            background: "transparent", border: "1px solid rgba(239,68,68,0.3)",
-            borderRadius: "0.5rem", color: "#ef4444", cursor: "pointer",
+            padding: "0.625rem 1.25rem",
+            fontSize: "0.85rem",
+            fontWeight: 600,
+            background: "transparent",
+            border: "1px solid var(--error-border)",
+            borderRadius: "0.75rem",
+            color: "var(--error-text)",
+            cursor: "pointer",
+            minHeight: "44px",
+            transition: "background 0.15s ease",
           }}
         >
           Delete My Account
         </button>
       ) : (
         <div style={{
-          padding: "1.25rem", borderRadius: "0.75rem",
-          background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)",
+          padding: "1.5rem",
+          borderRadius: "1rem",
+          background: "var(--error-bg)",
+          border: "1px solid var(--error-border)",
         }}>
-          <div style={{ fontWeight: 700, color: "#ef4444", marginBottom: "0.5rem", fontSize: "0.9rem" }}>
+          <div style={{ fontWeight: 700, color: "var(--error-text)", marginBottom: "0.5rem", fontSize: "0.9rem" }}>
             Permanently Delete Account
           </div>
           <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginBottom: "1rem", lineHeight: 1.5 }}>
@@ -68,17 +77,23 @@ export default function DeleteAccountSection({ userEmail }: { userEmail: string 
             style={{ width: "100%", marginBottom: "0.75rem" }}
           />
           {error && (
-            <div style={{ fontSize: "0.78rem", color: "#ef4444", marginBottom: "0.75rem" }}>{error}</div>
+            <div style={{ fontSize: "0.78rem", color: "var(--error-text)", marginBottom: "0.75rem" }}>{error}</div>
           )}
           <div style={{ display: "flex", gap: "0.5rem" }}>
             <button
               onClick={handleDelete}
               disabled={!emailMatches || deleting}
               style={{
-                padding: "0.5rem 1rem", fontSize: "0.82rem", fontWeight: 700,
-                background: emailMatches && !deleting ? "#ef4444" : "rgba(239,68,68,0.3)",
-                color: "#fff", border: "none", borderRadius: "0.5rem",
+                padding: "0.625rem 1.25rem",
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                background: emailMatches && !deleting ? "var(--error-text)" : "var(--error-border)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "0.75rem",
                 cursor: emailMatches && !deleting ? "pointer" : "not-allowed",
+                minHeight: "44px",
+                transition: "background 0.15s ease",
               }}
             >
               {deleting ? "Deleting..." : "Delete My Account Permanently"}
@@ -86,9 +101,15 @@ export default function DeleteAccountSection({ userEmail }: { userEmail: string 
             <button
               onClick={() => { setShowConfirm(false); setConfirmEmail(""); setError(""); }}
               style={{
-                padding: "0.5rem 1rem", fontSize: "0.82rem",
-                background: "transparent", border: "1px solid var(--border-default)",
-                borderRadius: "0.5rem", color: "var(--text-muted)", cursor: "pointer",
+                padding: "0.625rem 1.25rem",
+                fontSize: "0.85rem",
+                background: "var(--ghost-bg)",
+                border: "1px solid var(--border-default)",
+                borderRadius: "0.75rem",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+                minHeight: "44px",
+                transition: "background 0.15s ease",
               }}
             >
               Cancel

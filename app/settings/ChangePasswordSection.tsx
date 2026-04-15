@@ -17,7 +17,7 @@ function getStrength(pw: string): { level: number; label: string } {
   return { level: 4, label: "Strong" };
 }
 
-const STRENGTH_COLORS = ["var(--ghost-bg)", "#ef4444", "#f97316", "#eab308", "var(--accent)"];
+const STRENGTH_COLORS = ["var(--ghost-bg)", "var(--error-text)", "var(--warning-text)", "var(--warning-text)", "var(--accent)"];
 
 export default function ChangePasswordSection() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -70,13 +70,44 @@ export default function ChangePasswordSection() {
     }
   }
 
+  function ShowHideButton({ show, onToggle }: { show: boolean; onToggle: () => void }) {
+    return (
+      <button
+        type="button"
+        onClick={onToggle}
+        style={{
+          position: "absolute",
+          right: "0.5rem",
+          top: "50%",
+          transform: "translateY(-50%)",
+          background: "var(--ghost-bg)",
+          border: "1px solid var(--border-default)",
+          cursor: "pointer",
+          fontSize: "0.85rem",
+          color: "var(--text-muted)",
+          padding: "8px 12px",
+          borderRadius: "0.5rem",
+          minHeight: "36px",
+          minWidth: "44px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          transition: "background 0.15s ease",
+        }}
+        tabIndex={-1}
+      >
+        {show ? "Hide" : "Show"}
+      </button>
+    );
+  }
+
   return (
     <div className="card p-6 mt-4">
       <div
         style={{
           fontWeight: 700,
           fontSize: "1rem",
-          color: "var(--text-primary, #1c1917)",
+          color: "var(--text-primary)",
           marginBottom: "0.25rem",
         }}
       >
@@ -84,7 +115,7 @@ export default function ChangePasswordSection() {
       </div>
       <div
         style={{
-          color: "var(--text-muted, #78716c)",
+          color: "var(--text-muted)",
           fontSize: "0.85rem",
           marginBottom: "1.25rem",
         }}
@@ -107,27 +138,9 @@ export default function ChangePasswordSection() {
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="Enter current password"
               autoComplete="current-password"
-              style={{ width: "100%", paddingRight: "3rem" }}
+              style={{ width: "100%", paddingRight: "5rem" }}
             />
-            <button
-              type="button"
-              onClick={() => setShowCurrent(!showCurrent)}
-              style={{
-                position: "absolute",
-                right: "0.75rem",
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "0.8rem",
-                color: "var(--text-muted, #78716c)",
-                padding: "2px 4px",
-              }}
-              tabIndex={-1}
-            >
-              {showCurrent ? "Hide" : "Show"}
-            </button>
+            <ShowHideButton show={showCurrent} onToggle={() => setShowCurrent(!showCurrent)} />
           </div>
         </div>
 
@@ -145,27 +158,9 @@ export default function ChangePasswordSection() {
               onChange={(e) => setNewPassword(e.target.value)}
               placeholder="At least 8 characters"
               autoComplete="new-password"
-              style={{ width: "100%", paddingRight: "3rem" }}
+              style={{ width: "100%", paddingRight: "5rem" }}
             />
-            <button
-              type="button"
-              onClick={() => setShowNew(!showNew)}
-              style={{
-                position: "absolute",
-                right: "0.75rem",
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "0.8rem",
-                color: "var(--text-muted, #78716c)",
-                padding: "2px 4px",
-              }}
-              tabIndex={-1}
-            >
-              {showNew ? "Hide" : "Show"}
-            </button>
+            <ShowHideButton show={showNew} onToggle={() => setShowNew(!showNew)} />
           </div>
 
           {/* Strength indicator */}
@@ -215,30 +210,12 @@ export default function ChangePasswordSection() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Re-enter new password"
               autoComplete="new-password"
-              style={{ width: "100%", paddingRight: "3rem" }}
+              style={{ width: "100%", paddingRight: "5rem" }}
             />
-            <button
-              type="button"
-              onClick={() => setShowConfirm(!showConfirm)}
-              style={{
-                position: "absolute",
-                right: "0.75rem",
-                top: "50%",
-                transform: "translateY(-50%)",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "0.8rem",
-                color: "var(--text-muted, #78716c)",
-                padding: "2px 4px",
-              }}
-              tabIndex={-1}
-            >
-              {showConfirm ? "Hide" : "Show"}
-            </button>
+            <ShowHideButton show={showConfirm} onToggle={() => setShowConfirm(!showConfirm)} />
           </div>
           {confirmPassword.length > 0 && !passwordsMatch && (
-            <div style={{ fontSize: "0.75rem", color: "#ef4444", marginTop: "0.35rem" }}>
+            <div style={{ fontSize: "0.75rem", color: "var(--error-text)", marginTop: "0.35rem" }}>
               Passwords do not match.
             </div>
           )}
@@ -249,10 +226,11 @@ export default function ChangePasswordSection() {
           <div
             style={{
               fontSize: "0.85rem",
-              color: "#ef4444",
-              background: "rgba(239,68,68,0.08)",
+              color: "var(--error-text)",
+              background: "var(--error-bg)",
+              border: "1px solid var(--error-border)",
               padding: "0.6rem 0.75rem",
-              borderRadius: "6px",
+              borderRadius: "0.5rem",
             }}
           >
             {error}
@@ -262,10 +240,11 @@ export default function ChangePasswordSection() {
           <div
             style={{
               fontSize: "0.85rem",
-              color: "#16a34a",
-              background: "rgba(22,163,74,0.08)",
+              color: "var(--success-text)",
+              background: "var(--success-bg)",
+              border: "1px solid var(--success-border)",
               padding: "0.6rem 0.75rem",
-              borderRadius: "6px",
+              borderRadius: "0.5rem",
             }}
           >
             {success}
@@ -278,7 +257,7 @@ export default function ChangePasswordSection() {
             type="submit"
             className="btn-primary"
             disabled={!isValid || loading}
-            style={{ fontSize: "0.85rem", opacity: !isValid || loading ? 0.5 : 1 }}
+            style={{ fontSize: "0.85rem", opacity: !isValid || loading ? 0.5 : 1, minHeight: "44px", padding: "0.625rem 1.25rem" }}
           >
             {loading ? "Updating..." : "Update Password"}
           </button>

@@ -35,12 +35,13 @@ export default function ThemeSettings() {
                 flexDirection: "column",
                 alignItems: "center",
                 gap: "0.5rem",
-                padding: "1.25rem 0.75rem",
+                padding: "1rem 0.5rem",
                 borderRadius: "0.875rem",
-                border: `2px solid ${active ? "var(--accent)" : "var(--border-default)"}`,
+                border: `2px solid ${active ? "var(--accent-border)" : "var(--border-default)"}`,
                 background: active ? "var(--accent-dim)" : "transparent",
                 cursor: "pointer",
                 transition: "all 0.15s ease",
+                minHeight: "44px",
               }}
             >
               <Icon

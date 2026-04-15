@@ -18,6 +18,45 @@ type Props = {
   consent: ConsentData;
 };
 
+function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
+  return (
+    <div
+      role="switch"
+      aria-checked={checked}
+      tabIndex={0}
+      onClick={onChange}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onChange(); } }}
+      style={{
+        width: "2.75rem",
+        height: "1.5rem",
+        borderRadius: "9999px",
+        background: checked ? "linear-gradient(135deg, var(--accent), var(--accent-deep))" : "var(--toggle-off-bg)",
+        cursor: "pointer",
+        position: "relative",
+        transition: "background 0.2s ease",
+        flexShrink: 0,
+        boxShadow: checked ? "0 0 8px var(--accent-glow)" : "none",
+        minHeight: "44px",
+        display: "flex",
+        alignItems: "center",
+        padding: "0 3px",
+      }}
+    >
+      <div
+        style={{
+          width: "18px",
+          height: "18px",
+          borderRadius: "50%",
+          background: "#fff",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+          transition: "transform 0.2s ease",
+          transform: checked ? "translateX(calc(2.75rem - 24px))" : "translateX(0)",
+        }}
+      />
+    </div>
+  );
+}
+
 export default function SettingsClient({ userId, email, consent }: Props) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -60,7 +99,7 @@ export default function SettingsClient({ userId, email, consent }: Props) {
         </div>
         <div style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "1.25rem" }}>
           Control how your data is used. Enabling data sharing earns you{" "}
-          <strong style={{ color: "var(--accent, #00bcd4)" }}>100 bonus credits</strong>.
+          <strong style={{ color: "var(--accent)" }}>100 bonus credits</strong>.
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -91,55 +130,31 @@ export default function SettingsClient({ userId, email, consent }: Props) {
               style={{
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "flex-start",
+                alignItems: "center",
                 gap: "1rem",
                 cursor: "pointer",
                 padding: "0.75rem",
                 borderRadius: "0.625rem",
-                background: prefs[key] ? "rgba(0, 188, 212, 0.06)" : "transparent",
-                border: `1px solid ${prefs[key] ? "rgba(0,188,212,0.2)" : "transparent"}`,
+                background: prefs[key] ? "var(--accent-dim)" : "transparent",
+                border: `1px solid ${prefs[key] ? "var(--accent-border)" : "transparent"}`,
                 transition: "all 0.15s ease",
+                minHeight: "44px",
               }}
             >
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: "0.9rem" }}>{label}</div>
                 <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", marginTop: "0.2rem" }}>{desc}</div>
               </div>
-              <div style={{ position: "relative", flexShrink: 0, marginTop: "0.125rem" }}>
-                <input
-                  type="checkbox"
-                  checked={prefs[key]}
-                  onChange={(e) => setPrefs((p) => ({ ...p, [key]: e.target.checked }))}
-                  style={{ display: "none" }}
-                />
-                <div
-                  onClick={() => setPrefs((p) => ({ ...p, [key]: !p[key] }))}
-                  style={{
-                    width: "2.75rem",
-                    height: "1.5rem",
-                    borderRadius: "9999px",
-                    background: prefs[key] ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "#e7e5e4",
-                    cursor: "pointer",
-                    position: "relative",
-                    transition: "background 0.2s ease",
-                    boxShadow: prefs[key] ? "0 0 8px rgba(0,188,212,0.35)" : "none",
-                  }}
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "3px",
-                      left: prefs[key] ? "calc(100% - 21px)" : "3px",
-                      width: "18px",
-                      height: "18px",
-                      borderRadius: "50%",
-                      background: "#fff",
-                      boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                      transition: "left 0.2s ease",
-                    }}
-                  />
-                </div>
-              </div>
+              <input
+                type="checkbox"
+                checked={prefs[key]}
+                onChange={(e) => setPrefs((p) => ({ ...p, [key]: e.target.checked }))}
+                style={{ display: "none" }}
+              />
+              <Toggle
+                checked={prefs[key]}
+                onChange={() => setPrefs((p) => ({ ...p, [key]: !p[key] }))}
+              />
             </label>
           ))}
         </div>
@@ -150,10 +165,10 @@ export default function SettingsClient({ userId, email, consent }: Props) {
               marginTop: "1rem",
               padding: "0.5rem 0.75rem",
               borderRadius: "0.5rem",
-              background: "rgba(0, 188, 212, 0.08)",
-              border: "1px solid rgba(0, 188, 212, 0.2)",
+              background: "var(--accent-dim)",
+              border: "1px solid var(--accent-border)",
               fontSize: "0.8rem",
-              color: "var(--accent, #00bcd4)",
+              color: "var(--accent)",
               fontWeight: 600,
             }}
           >
@@ -164,14 +179,14 @@ export default function SettingsClient({ userId, email, consent }: Props) {
         <div style={{ marginTop: "1.25rem", display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <button
             className="btn-primary"
-            style={{ fontSize: "0.85rem", padding: "0.5rem 1.25rem" }}
+            style={{ fontSize: "0.85rem", padding: "0.625rem 1.25rem", minHeight: "44px" }}
             onClick={handleSavePrivacy}
             disabled={saving}
           >
             {saving ? "Saving…" : "Save Preferences"}
           </button>
           {saved && (
-            <span style={{ color: "#15803d", fontSize: "0.82rem", fontWeight: 600 }}>
+            <span style={{ color: "var(--success-text)", fontSize: "0.82rem", fontWeight: 600 }}>
               ✓ Saved!
             </span>
           )}
@@ -202,40 +217,18 @@ export default function SettingsClient({ userId, email, consent }: Props) {
                 alignItems: "center",
                 gap: "1rem",
                 cursor: "pointer",
+                padding: "0.5rem 0",
+                minHeight: "44px",
               }}
             >
               <div>
                 <div style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: "0.87rem" }}>{label}</div>
                 <div style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>{desc}</div>
               </div>
-              <div
-                onClick={() => setNotifs((n) => ({ ...n, [key]: !n[key] }))}
-                style={{
-                  width: "2.75rem",
-                  height: "1.5rem",
-                  borderRadius: "9999px",
-                  background: notifs[key] ? "linear-gradient(135deg, #00bcd4, #0097a7)" : "#e7e5e4",
-                  cursor: "pointer",
-                  position: "relative",
-                  transition: "background 0.2s ease",
-                  flexShrink: 0,
-                  boxShadow: notifs[key] ? "0 0 8px rgba(0,188,212,0.35)" : "none",
-                }}
-              >
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "3px",
-                    left: notifs[key] ? "calc(100% - 21px)" : "3px",
-                    width: "18px",
-                    height: "18px",
-                    borderRadius: "50%",
-                    background: "#fff",
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-                    transition: "left 0.2s ease",
-                  }}
-                />
-              </div>
+              <Toggle
+                checked={notifs[key]}
+                onChange={() => setNotifs((n) => ({ ...n, [key]: !n[key] }))}
+              />
             </label>
           ))}
         </div>

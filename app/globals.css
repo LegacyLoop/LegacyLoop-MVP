@@ -46,6 +46,14 @@ html, body {
 .hud-metric-grid { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 @media (max-width: 399px) { .hud-metric-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; } }
 
+/* ── Responsive table → card toggle (billing/subscription history) ── */
+.table-desktop { display: block; }
+.table-mobile-cards { display: none; }
+@media (max-width: 768px) {
+  .table-desktop { display: none !important; }
+  .table-mobile-cards { display: flex !important; flex-direction: column; gap: 0.75rem; }
+}
+
 /* ── Premium global polish ─────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
@@ -184,6 +192,10 @@ html.dark {
   --overlay-dark:    rgba(0, 0, 0, 0.6);
   --overlay-light:   rgba(255, 255, 255, 0.1);
   --stripe-bg:       rgba(255, 255, 255, 0.03);
+  --estate-bg:       rgba(212, 175, 55, 0.08);
+  --estate-border:   rgba(212, 175, 55, 0.2);
+  --estate-text:     #D4AF37;
+  --toggle-off-bg:   rgba(255, 255, 255, 0.12);
   color-scheme: dark;
 }
 
@@ -257,6 +269,10 @@ html.light {
   --overlay-dark:    rgba(0, 0, 0, 0.5);
   --overlay-light:   rgba(255, 255, 255, 0.85);
   --stripe-bg:       rgba(0, 0, 0, 0.02);
+  --estate-bg:       rgba(212, 175, 55, 0.06);
+  --estate-border:   rgba(212, 175, 55, 0.2);
+  --estate-text:     #b8960c;
+  --toggle-off-bg:   rgba(0, 0, 0, 0.08);
   color-scheme: light;
 }
 
