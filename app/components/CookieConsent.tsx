@@ -27,9 +27,9 @@ export default function CookieConsent() {
   if (!show) return null;
 
   return (
-    <div style={{
+    <div className="cookie-banner" style={{
       position: "fixed", bottom: "1rem", left: "50%", transform: "translateX(-50%)",
-      width: "min(500px, calc(100vw - 2rem))", zIndex: 90,
+      width: "min(500px, calc(100vw - 2rem))", zIndex: 9999,
       padding: "1rem 1.25rem",
       borderRadius: "1rem",
       background: "var(--bg-card-solid)",
@@ -59,6 +59,11 @@ export default function CookieConsent() {
         Accept All
       </button>
       <style>{`
+        @media (max-width: 1024px) {
+          .cookie-banner {
+            bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 0.75rem) !important;
+          }
+        }
         @keyframes slideUp {
           from { opacity: 0; transform: translateX(-50%) translateY(20px); }
           to { opacity: 1; transform: translateX(-50%) translateY(0); }

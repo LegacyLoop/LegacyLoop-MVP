@@ -121,7 +121,7 @@ export default async function BillingPage() {
           <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-primary)", marginBottom: "1rem" }}>
             Upgrade Your Plan
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(upgradeTiers.length, 3)}, 1fr)`, gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(upgradeTiers.length, 3)}, minmax(0, 1fr))`, gap: "1rem" }}>
             {upgradeTiers.map(({ key, tier, price, processingFee, total }) => (
               <div key={key} style={{
                 borderRadius: "1rem",
@@ -182,7 +182,8 @@ export default async function BillingPage() {
             No billing history yet.
           </div>
         ) : (
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem" }}>
+          <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem", minWidth: "600px" }}>
             <thead>
               <tr>
                 {["Date", "Description", "Subtotal", "Fee", "Total", "Status", ""].map((h) => (
@@ -263,6 +264,7 @@ export default async function BillingPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 
@@ -288,7 +290,7 @@ export default async function BillingPage() {
       </div>
 
       {/* Links */}
-      <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center" }}>
+      <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
         <Link href="/pricing" className="btn-ghost" style={{ padding: "0.5rem 1.25rem", fontSize: "0.82rem" }}>Compare Plans</Link>
         <Link href="/payments" className="btn-ghost" style={{ padding: "0.5rem 1.25rem", fontSize: "0.82rem" }}>All Transactions</Link>
         <Link href="/dashboard" className="btn-ghost" style={{ padding: "0.5rem 1.25rem", fontSize: "0.82rem" }}>Dashboard</Link>

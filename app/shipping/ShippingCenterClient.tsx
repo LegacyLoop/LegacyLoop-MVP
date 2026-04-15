@@ -647,7 +647,7 @@ function ShippingLabel({
 
       <div style={{ padding: "1rem 1.25rem" }}>
         {/* From / To */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: "1px dashed #ccc" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "1rem", marginBottom: "0.75rem", paddingBottom: "0.75rem", borderBottom: "1px dashed #ccc" }}>
           <div>
             <div style={{ fontSize: "0.55rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#888", marginBottom: "0.2rem" }}>
               FROM
@@ -669,7 +669,7 @@ function ShippingLabel({
         </div>
 
       {/* Shipment details */}
-      <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.75rem", padding: "0.5rem 0", borderBottom: "1px dashed #ccc" }}>
+      <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.5rem", marginBottom: "0.75rem", padding: "0.5rem 0", borderBottom: "1px dashed #ccc" }}>
         <div><span style={{ fontSize: "0.55rem", color: "#888", textTransform: "uppercase" }}>Weight</span><div style={{ fontSize: "0.82rem", fontWeight: 600 }}>{weight} lbs</div></div>
         <div><span style={{ fontSize: "0.55rem", color: "#888", textTransform: "uppercase" }}>Ship Date</span><div style={{ fontSize: "0.82rem", fontWeight: 600 }}>{today}</div></div>
         <div><span style={{ fontSize: "0.55rem", color: "#888", textTransform: "uppercase" }}>Rate</span><div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#2e7d32" }}>${typeof rate === "number" ? rate.toFixed(2) : rate}</div></div>
@@ -757,7 +757,7 @@ function TMSDashboard({ data, onTabSwitch }: { data: ShipData; onTabSwitch?: (ta
   return (
     <div style={{ marginBottom: "1.5rem" }}>
       {/* Pipeline */}
-      <div className="ship-5col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "0.5rem", marginBottom: "0" }}>
+      <div className="ship-5col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: "0.5rem", marginBottom: "0" }}>
         {pipeline.map((s) => {
           const isHov = hoveredPipeline === s.label;
           return (
@@ -790,7 +790,7 @@ function TMSDashboard({ data, onTabSwitch }: { data: ShipData; onTabSwitch?: (ta
       {/* Divider */}
       <div style={{ height: "1px", background: "linear-gradient(90deg, transparent, var(--border-default), transparent)", margin: "0.6rem 0" }} />
       {/* Financials */}
-      <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
+      <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem" }}>
         {financials.map((s) => {
           const isHov = hoveredFinancial === s.label;
           const isClickable = !!s.tab;
@@ -1523,7 +1523,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                 {(isVehicle || isFreight) && (
                   <div style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
                     gap: "0.5rem",
                     marginTop: "0.5rem",
                     marginBottom: "0.5rem",
@@ -1591,7 +1591,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                 {!isVehicle && !isFreight && est && carriers.length > 0 && (
                   <div className="ship-3col-grid" style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gridTemplateColumns: "repeat(3, minmax(0,1fr))",
                     gap: "0.5rem",
                     marginTop: "0.5rem",
                     marginBottom: "0.5rem",
@@ -1734,7 +1734,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                           {/* A) Info Chips Row */}
                           <div className="ship-4col-grid" style={{
                             display: "grid",
-                            gridTemplateColumns: "1fr 1fr 1fr 1fr",
+                            gridTemplateColumns: "repeat(4, minmax(0,1fr))",
                             gap: "0.35rem",
                             marginBottom: "0.5rem",
                           }}>
@@ -1831,7 +1831,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                               border: "1px solid rgba(0,188,212,0.12)",
                               borderRadius: "8px",
                             }}>
-                              <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.4rem", marginBottom: "0.4rem" }}>
+                              <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.4rem", marginBottom: "0.4rem" }}>
                                 {[
                                   { label: "Length (in)", val: editLength, set: setEditLength },
                                   { label: "Width (in)", val: editWidth, set: setEditWidth },
@@ -2311,7 +2311,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   }
 
                   return (
-                    <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.3rem", marginBottom: "0.65rem" }}>
+                    <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.3rem", marginBottom: "0.65rem" }}>
                       {Object.entries(BOX_PRESETS).map(([key, p]) => {
                         const isAi = validatedPick === key;
                         const isSel = editDims.selectedBox === key;
@@ -2386,7 +2386,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   return null;
                 })()}
                 {/* Editable Dims */}
-                <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.4rem", marginBottom: "0.5rem" }}>
+                <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.4rem", marginBottom: "0.5rem" }}>
                   {[{ k: "weight", l: "Weight (lbs)" }, { k: "length", l: "L (in)" }, { k: "width", l: "W (in)" }, { k: "height", l: "H (in)" }].map(f => (
                     <div key={f.k}>
                       <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
@@ -2467,7 +2467,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                         <span style={{ fontSize: "0.45rem", fontWeight: 700, padding: "1px 5px", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>SHIPPO RATES</span>
                       )}
                     </div>
-                    <div className="ship-5col-grid" style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min((liveMetros[item.id] || item.metroEstimates).length, 5)}, 1fr)`, gap: "0.3rem" }}>
+                    <div className="ship-5col-grid" style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min((liveMetros[item.id] || item.metroEstimates).length, 5)}, minmax(0,1fr))`, gap: "0.3rem" }}>
                       {(liveMetros[item.id] || item.metroEstimates).map((mc: any) => (
                         <div key={mc.city} style={{ padding: "0.35rem", borderRadius: "0.35rem", background: "var(--ghost-bg)", textAlign: "center", border: mc.isCheapest ? "1px solid rgba(76,175,80,0.2)" : mc.isFastest ? "1px solid rgba(59,130,246,0.2)" : "1px solid transparent" }}>
                           <div style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-primary)" }}>{mc.city.split(",")[0]}</div>
@@ -2561,7 +2561,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                   </div>
                 )}
                 <div className="ship-table-scroll-wrapper">
-                <div className="ship-table-5col" style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 1fr 1fr", gap: "0.3rem", padding: "0.3rem 0.6rem", marginBottom: "0.2rem" }}>
+                <div className="ship-table-5col" style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)", gap: "0.3rem", padding: "0.3rem 0.6rem", marginBottom: "0.2rem" }}>
                   {["Carrier", "Service", "Transit", "Cost", "Net Profit"].map((h) => (
                     <div key={h} style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)" }}>{h}</div>
                   ))}
@@ -2589,7 +2589,7 @@ function PreSaleTab({ items, estimates, onEstimate, onSwitchTab, onRefresh }: { 
                         onMouseLeave={(e) => { if (!isSelectedRow) (e.currentTarget as HTMLDivElement).style.background = i % 2 === 0 ? "var(--ghost-bg)" : "transparent"; }} className="ship-table-5col"
                         style={{
                           display: "grid",
-                          gridTemplateColumns: "2fr 2fr 1fr 1fr 1fr",
+                          gridTemplateColumns: "minmax(0,2fr) minmax(0,2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
                           gap: "0.3rem",
                           alignItems: "center",
                           padding: "0.45rem 0.6rem",
@@ -3114,7 +3114,7 @@ function ReadyToShipTab({
                 {wizardStep === 1 && (
                   <div>
                     <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>Confirm Package Details</div>
-                    <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                    <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem", marginBottom: "0.5rem" }}>
                       {[
                         { label: "Length", key: "length" },
                         { label: "Width", key: "width" },
@@ -3156,7 +3156,7 @@ function ReadyToShipTab({
                 {wizardStep === 2 && (
                   <div>
                     <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>Shipping Address</div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.75rem" }}>
                       <div>
                         <div style={{ fontSize: "0.62rem", color: "var(--text-muted)", marginBottom: "0.2rem" }}>From ZIP</div>
                         <input value={wizardData.fromZip} onChange={(e) => setWizardData((d) => ({ ...d, fromZip: e.target.value }))} style={inputStyle} />
@@ -3242,7 +3242,7 @@ function ReadyToShipTab({
                         {/* Carrier selection */}
                         {carriers.length > 0 ? (
                           <div style={{ marginBottom: "0.75rem" }} className="ship-table-scroll-wrapper">
-                            <div className="ship-table-4col" style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 1fr", gap: "0.3rem", padding: "0.3rem 0.65rem", marginBottom: "0.2rem" }}>
+                            <div className="ship-table-4col" style={{ display: "grid", gridTemplateColumns: "minmax(0,2fr) minmax(0,2fr) minmax(0,1fr) minmax(0,1fr)", gap: "0.3rem", padding: "0.3rem 0.65rem", marginBottom: "0.2rem" }}>
                               {["Carrier", "Service", "Transit", "Cost"].map((h) => (
                                 <div key={h} style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "var(--text-muted)" }}>{h}</div>
                               ))}
@@ -3258,7 +3258,7 @@ function ReadyToShipTab({
                                     onClick={() => setSelectedCarrier(c)} className="ship-table-4col"
                                     style={{
                                       display: "grid",
-                                      gridTemplateColumns: "2fr 2fr 1fr 1fr",
+                                      gridTemplateColumns: "minmax(0,2fr) minmax(0,2fr) minmax(0,1fr) minmax(0,1fr)",
                                       gap: "0.3rem",
                                       alignItems: "center",
                                       padding: "0.5rem 0.65rem",
@@ -3348,7 +3348,7 @@ function ReadyToShipTab({
                             <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{item.title}</span>
                           </div>
                           {/* Package */}
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.6rem", fontSize: "0.72rem" }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.6rem", fontSize: "0.72rem" }}>
                             <div>
                               <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.15rem" }}>Package</div>
                               <div style={{ color: "var(--text-primary)" }}>{dims ? `${dims} in` : "Standard"} {"\u00B7"} {w} lbs</div>
@@ -4209,7 +4209,7 @@ function ShippedTab({ items, allData, freightBOL, pickupStatuses }: { items: any
         <div style={{ height: 1, background: "rgba(0,188,212,0.08)", marginBottom: "0.6rem" }} />
 
         {/* Status counts row */}
-        <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem" }}>
+        <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem" }}>
           {[
             { key: "inTransit", icon: "\u{1F7E2}", label: "In Transit", count: counts.inTransit },
             { key: "outForDelivery", icon: "\u{1F7E0}", label: "Out for Delivery", count: counts.outForDelivery },
@@ -4855,7 +4855,7 @@ function FreightTab({ items }: { items: any[] }) {
         </div>
       </div>
       <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "1rem", padding: "1.25rem" }}>
-        <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.6rem", marginBottom: "0.6rem" }}>
+        <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.6rem", marginBottom: "0.6rem" }}>
           {[
             { l: "Length", k: "length" },
             { l: "Width", k: "width" },
@@ -4873,7 +4873,7 @@ function FreightTab({ items }: { items: any[] }) {
             {"\u{1F916}"} Dimensions auto-filled from AI analysis. Verify before quoting.
           </div>
         )}
-        <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.6rem", marginBottom: "0.6rem" }}>
+        <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.6rem", marginBottom: "0.6rem" }}>
           <div>
             <div style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginBottom: "0.2rem" }}>From ZIP</div>
             <input value={form.fromZip} onChange={(e) => setForm({ ...form, fromZip: e.target.value })} style={inputStyle} />
@@ -5228,7 +5228,7 @@ function FreightTab({ items }: { items: any[] }) {
             <div style={{ textAlign: "center", fontWeight: 800, fontSize: "1rem", borderBottom: "2px solid #333", paddingBottom: "0.4rem", marginBottom: "0.5rem" }}>
               BILL OF LADING
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.5rem" }}>
               <div>
                 <strong>BOL #:</strong> {confirmation.confirmationNumber}
               </div>
@@ -5236,7 +5236,7 @@ function FreightTab({ items }: { items: any[] }) {
                 <strong>Date:</strong> {confirmation.pickupDate}
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.5rem" }}>
               <div>
                 <strong>Shipper:</strong>
                 <br />
@@ -5294,7 +5294,7 @@ function FreightTab({ items }: { items: any[] }) {
       {showQuoteUpload && !officialQuote && (
         <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "1rem", padding: "1.25rem" }}>
           <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text-primary)", marginBottom: "0.75rem" }}>{"\u{1F4CB}"} Upload Official Quote</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.6rem", marginBottom: "0.6rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.6rem", marginBottom: "0.6rem" }}>
             <div>
               <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.2rem" }}>Quote Number</div>
               <input value={officialQuoteForm.quoteNumber} onChange={(e) => setOfficialQuoteForm(prev => ({ ...prev, quoteNumber: e.target.value }))} placeholder="e.g. FQ-2026-45821" style={inputStyle} />
@@ -5357,7 +5357,7 @@ function FreightTab({ items }: { items: any[] }) {
             <span style={{ fontSize: "1rem" }}>{"\u2705"}</span>
             <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "#4caf50" }}>Official quote uploaded!</span>
           </div>
-          <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.75rem" }}>
+          <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.5rem", marginBottom: "0.75rem" }}>
             <div style={{ padding: "0.4rem", borderRadius: "0.4rem", background: "var(--ghost-bg)" }}>
               <div style={{ fontSize: "0.5rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)" }}>Quote #</div>
               <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)" }}>{officialQuote.quoteNumber}</div>
@@ -5427,7 +5427,7 @@ function FreightTab({ items }: { items: any[] }) {
             {/* Section A — Shipper */}
             <div style={{ marginBottom: "1rem" }}>
               <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>A {"\u2014"} Shipper Information</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
                 {[
                   { k: "shipperName", l: "Company/Name" }, { k: "shipperStreet", l: "Street Address" },
                   { k: "shipperCity", l: "City" }, { k: "shipperState", l: "State" },
@@ -5445,7 +5445,7 @@ function FreightTab({ items }: { items: any[] }) {
             {/* Section B — Consignee */}
             <div style={{ marginBottom: "1rem" }}>
               <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>B {"\u2014"} Consignee Information</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
                 {[
                   { k: "consigneeName", l: "Company/Name" }, { k: "consigneeStreet", l: "Street Address" },
                   { k: "consigneeCity", l: "City" }, { k: "consigneeState", l: "State" },
@@ -5476,7 +5476,7 @@ function FreightTab({ items }: { items: any[] }) {
                 ))}
               </div>
               {bolForm.billTo === "THIRD_PARTY" && (
-                <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
+                <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.5rem" }}>
                   {[{ k: "thirdPartyCompany", l: "Company" }, { k: "thirdPartyAddress", l: "Address" }, { k: "thirdPartyPhone", l: "Phone" }].map(f => (
                     <div key={f.k}>
                       <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>{f.l}</div>
@@ -5490,7 +5490,7 @@ function FreightTab({ items }: { items: any[] }) {
             {/* Section D — Shipment Details */}
             <div style={{ marginBottom: "1rem" }}>
               <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>D {"\u2014"} Shipment Details</div>
-              <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+              <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem", marginBottom: "0.5rem" }}>
                 {[
                   { k: "pieces", l: "# Pieces" }, { k: "totalWeight", l: "Weight (lbs)" },
                   { k: "dimensions", l: "Dimensions" }, { k: "nmfc", l: "NMFC # (opt)" },
@@ -5501,7 +5501,7 @@ function FreightTab({ items }: { items: any[] }) {
                   </div>
                 ))}
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginBottom: "0.5rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem", marginBottom: "0.5rem" }}>
                 <div>
                   <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>Package Type</div>
                   <select value={bolForm.packageType} onChange={(e) => setBolForm(prev => ({ ...prev, packageType: e.target.value }))} style={{ ...inputStyle, fontSize: "0.78rem", padding: "0.35rem 0.5rem" }}>
@@ -5569,7 +5569,7 @@ function FreightTab({ items }: { items: any[] }) {
             {/* Section F — Carrier + Pricing */}
             <div style={{ marginBottom: "1rem" }}>
               <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>F {"\u2014"} Carrier & Pricing</div>
-              <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "0.5rem" }}>
+              <div className="ship-4col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "0.5rem" }}>
                 <div>
                   <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>Carrier</div>
                   <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)", padding: "0.35rem 0" }}>{officialQuote?.carrier || "\u2014"}</div>
@@ -5592,7 +5592,7 @@ function FreightTab({ items }: { items: any[] }) {
             {/* Section G — References */}
             <div style={{ marginBottom: "1rem" }}>
               <div style={{ fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#00bcd4", marginBottom: "0.5rem", borderBottom: "1px solid var(--border-default)", paddingBottom: "0.3rem" }}>G {"\u2014"} References</div>
-              <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
+              <div className="ship-3col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "0.5rem" }}>
                 <div>
                   <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginBottom: 2 }}>BOL #</div>
                   <div style={{ fontSize: "0.78rem", fontWeight: 700, fontFamily: "monospace", color: "var(--accent)", padding: "0.35rem 0" }}>{bolNumber}</div>
@@ -5654,7 +5654,7 @@ function FreightTab({ items }: { items: any[] }) {
               <div><strong>Carrier:</strong> {bolGenerated.carrier}</div>
             </div>
             {/* Shipper / Consignee side by side */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "0.75rem", borderBottom: "1px solid #ccc", paddingBottom: "0.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "1rem", marginBottom: "0.75rem", borderBottom: "1px solid #ccc", paddingBottom: "0.5rem" }}>
               <div>
                 <div style={{ fontWeight: 800, textTransform: "uppercase", borderBottom: "1px solid #999", marginBottom: "0.3rem", paddingBottom: "0.15rem" }}>SHIPPER</div>
                 <div>{bolGenerated.shipperName}</div>
@@ -5672,7 +5672,7 @@ function FreightTab({ items }: { items: any[] }) {
             </div>
             {/* Shipment details */}
             <div style={{ marginBottom: "0.75rem", borderBottom: "1px solid #ccc", paddingBottom: "0.5rem" }}>
-              <div className="ship-5col-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", gap: "0.5rem" }}>
+              <div className="ship-5col-grid" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: "0.5rem" }}>
                 <div><strong># Pcs:</strong><br />{bolGenerated.pieces}</div>
                 <div><strong>Type:</strong><br />{bolGenerated.packageType}</div>
                 <div><strong>Weight:</strong><br />{bolGenerated.totalWeight} lbs</div>
@@ -5703,7 +5703,7 @@ function FreightTab({ items }: { items: any[] }) {
               <div><strong>Transit:</strong> {bolGenerated.transit}</div>
             </div>
             {/* Signature lines */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginTop: "1rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "1.5rem", marginTop: "1rem" }}>
               <div>
                 <div style={{ borderBottom: "1px solid #000", height: 30 }} />
                 <div style={{ fontSize: "0.6rem", marginTop: "0.15rem" }}>Shipper Signature / Date</div>
@@ -6178,7 +6178,7 @@ function LocalPickupTab({ data }: { data: ShipData }) {
           <span style={{ fontSize: "1.1rem" }}>{"\u{1F91D}"}</span>
           <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#a855f7" }}>Pickup Preferences</div>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "0.75rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.75rem", marginBottom: "0.75rem" }}>
           <div>
             <div style={{ fontSize: "0.6rem", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.06em", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Pickup Address</div>
             <input value={pickupAddress} onChange={(e) => setPickupAddress(e.target.value)} style={inputStyle} />
@@ -6617,20 +6617,21 @@ export default function ShippingCenterClient() {
       {/* Pulse animation for overdue badge */}
       <style>{`
         @keyframes ll-badge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .ship-tabs-scroll::-webkit-scrollbar { display: none; }
 
         @media (max-width: 768px) {
-          .ship-5col-grid { grid-template-columns: 1fr 1fr !important; gap: 0.5rem !important; }
-          .ship-4col-grid { grid-template-columns: 1fr 1fr !important; gap: 0.5rem !important; }
-          .ship-3col-grid { grid-template-columns: 1fr 1fr !important; gap: 0.5rem !important; }
-          .ship-table-5col { min-width: 500px; }
-          .ship-table-4col { min-width: 400px; }
+          .ship-5col-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; gap: 0.5rem !important; }
+          .ship-4col-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; gap: 0.5rem !important; }
+          .ship-3col-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; gap: 0.5rem !important; }
+          .ship-table-5col { min-width: 0 !important; }
+          .ship-table-4col { min-width: 0 !important; }
           .ship-table-scroll-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
         }
 
         @media (max-width: 480px) {
-          .ship-5col-grid { grid-template-columns: 1fr !important; }
-          .ship-4col-grid { grid-template-columns: 1fr 1fr !important; }
-          .ship-3col-grid { grid-template-columns: 1fr 1fr !important; }
+          .ship-5col-grid { grid-template-columns: minmax(0,1fr) !important; }
+          .ship-4col-grid { grid-template-columns: minmax(0,1fr) !important; }
+          .ship-3col-grid { grid-template-columns: minmax(0,1fr) !important; }
         }
       `}</style>
       {/* Tabs */}
@@ -6652,7 +6653,7 @@ export default function ShippingCenterClient() {
         };
 
         return (
-          <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem", overflowX: "auto", paddingBottom: "0.25rem" }}>
+          <div className="ship-tabs-scroll" style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem", overflowX: "auto", paddingBottom: "0.25rem", scrollbarWidth: "none" as any }}>
             {TABS.map((t) => {
               const count = tabBadges[t.key] ?? 0;
               const isActive = tab === t.key;

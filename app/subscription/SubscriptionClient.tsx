@@ -83,7 +83,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle: string })
   return (
     <div style={{ textAlign: "center", marginBottom: "3rem", position: "relative", padding: "2rem 0 0" }}>
       {/* Atmospheric glow — wider, more prominent */}
-      <div style={{ position: "absolute", top: "-40px", left: "50%", transform: "translateX(-50%)", width: "500px", height: "250px", background: "radial-gradient(ellipse 70% 55% at 50% 50%, var(--accent-dim), transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", top: "-40px", left: "50%", transform: "translateX(-50%)", width: "min(500px, 100vw)", height: "250px", background: "radial-gradient(ellipse 70% 55% at 50% 50%, var(--accent-dim), transparent 70%)", pointerEvents: "none" }} />
 
       {/* Accent bar — wider with glow */}
       <div style={{ width: 64, height: 4, background: "linear-gradient(90deg, var(--accent), var(--accent-deep))", borderRadius: 2, margin: "0 auto 1.25rem auto", boxShadow: "0 2px 12px var(--accent-border)" }} />
@@ -111,7 +111,7 @@ function FeatureTable({ headers, rows }: { headers: string[]; rows: { label: str
   return (
     <div style={{ background: "var(--bg-card)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid var(--accent-dim)", borderRadius: 20, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 500 }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 420 }}>
           <thead>
             <tr style={{ background: "linear-gradient(135deg, var(--accent-dim), var(--accent-dim))" }}>
               {headers.map((h, i) => (
@@ -480,7 +480,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   color: "var(--text-secondary)", fontWeight: 700, fontSize: "0.75rem",
                   textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem",
                 }}>{"What's included"}</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem 1.5rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(200px, 100%), 1fr))", gap: "0.5rem 1.5rem" }}>
                   {getTierFeatures(tier).map((f) => (
                     <div key={f} style={{
                       display: "flex", alignItems: "center", gap: "0.5rem",
@@ -1147,7 +1147,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   </div>
 
                   {/* Features 2-column grid */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem 1.5rem", marginBottom: "1.5rem" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(200px, 100%), 1fr))", gap: "0.5rem 1.5rem", marginBottom: "1.5rem" }}>
                     {NEIGHBORHOOD_BUNDLE.includes.map((feature: string) => (
                       <div key={feature} style={{ display: "flex", gap: "0.4rem", alignItems: "flex-start", color: "var(--text-secondary)", fontSize: "0.82rem" }}>
                         <span style={{ color: "var(--accent)", fontWeight: 700, flexShrink: 0, marginTop: "0.05rem" }}>{"\u2713"}</span>

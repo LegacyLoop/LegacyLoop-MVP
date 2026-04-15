@@ -6,7 +6,7 @@ export default function MessagesLayout({
   children: ReactNode
 }) {
   return (
-    <div style={{
+    <div className="messages-layout-root" style={{
       position: 'fixed',
       top: 0,
       left: 0,
@@ -30,6 +30,13 @@ export default function MessagesLayout({
       }}>
         {children}
       </div>
+      <style>{`
+        @media (max-width: 1024px) {
+          .messages-layout-root {
+            bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

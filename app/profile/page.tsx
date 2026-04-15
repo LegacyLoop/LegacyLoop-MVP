@@ -126,8 +126,8 @@ export default async function ProfilePage() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "1rem",
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gap: "0.75rem",
           marginBottom: "1.5rem",
         }}
       >
