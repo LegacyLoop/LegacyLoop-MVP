@@ -7,6 +7,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
   const [agentMode, setAgentMode] = useState("monitor");
   const [activeView, setActiveView] = useState("all");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [intelOpen, setIntelOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -134,8 +135,47 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
         {children}
       </div>
 
-      {/* RIGHT — Intelligence Panel (hide on mobile ≤1024px) */}
-      <div style={{ width: "clamp(0px, 26vw, 260px)", minWidth: 0, maxWidth: 260, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderLeft: "1px solid var(--border-default)", display: isMobile ? "none" : "flex", flexDirection: "column" }}>
+      {/* Mobile Intel toggle button — bottom-right floating */}
+      {isMobile && (
+        <button
+          onClick={() => setIntelOpen(o => !o)}
+          style={{
+            position: "absolute", bottom: 80, right: 12, zIndex: 20,
+            width: 44, height: 44, borderRadius: "50%",
+            background: intelOpen ? "var(--accent)" : "var(--accent-dim)",
+            border: "1px solid var(--accent-border)",
+            color: intelOpen ? "#fff" : "var(--accent)",
+            fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer", transition: "all 0.15s ease",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+          }}
+          aria-label={intelOpen ? "Close intelligence panel" : "Open intelligence panel"}
+        >
+          {intelOpen ? "✕" : "\uD83E\uDDE0"}
+        </button>
+      )}
+
+      {/* RIGHT — Intelligence Panel (desktop: inline, mobile: overlay via toggle) */}
+      <div style={{
+        width: isMobile ? 280 : "clamp(0px, 26vw, 260px)",
+        minWidth: 0,
+        maxWidth: isMobile ? 280 : 260,
+        flexShrink: 0,
+        height: "100%",
+        overflowY: "auto",
+        overflowX: "hidden",
+        background: "var(--bg-card)",
+        borderLeft: "1px solid var(--border-default)",
+        display: isMobile && !intelOpen ? "none" : "flex",
+        flexDirection: "column",
+        ...(isMobile && intelOpen ? {
+          position: "absolute" as const,
+          right: 0,
+          top: 0,
+          zIndex: 15,
+          boxShadow: "-4px 0 20px rgba(0,0,0,0.4)",
+        } : {}),
+      }}>
         {selectedConversationId ? (
           <>
             <BuyerIntelligenceCard conversationId={selectedConversationId} />

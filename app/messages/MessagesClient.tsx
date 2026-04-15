@@ -137,6 +137,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
   }, []);
   const [reply, setReply] = useState("");
   const [busyReply, setBusyReply] = useState(false);
+  const [zone2Open, setZone2Open] = useState(true);
   const [newConvBusy, setNewConvBusy] = useState(false);
   const [newConvErr, setNewConvErr] = useState("");
   const [copiedTemplate, setCopiedTemplate] = useState<string | null>(null);
@@ -1186,26 +1187,47 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                 <div ref={bottomRef} />
               </div>
 
-              {/* ═══ ZONE 2: AI Tools + Templates (sticky, always visible above reply) ═══ */}
-              <div style={{ flexShrink: 0, maxHeight: 240, overflowY: "auto", borderTop: "1px solid var(--border-default)", padding: "8px 16px", position: "sticky", bottom: 0, background: "var(--bg-secondary)", zIndex: 5 }}>
-                {/* Reply templates */}
-                <div style={{ display: "flex", flexWrap: "nowrap", gap: 8, marginBottom: 6, overflowX: "auto", WebkitOverflowScrolling: "touch", paddingBottom: 4, scrollbarWidth: "none" as any }}>
-                  {TEMPLATES.map((t) => (
-                    <button
-                      key={t.label}
-                      onClick={() => useTemplate(t.text)}
-                      style={{ padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 500, minHeight: 32, whiteSpace: "nowrap", flexShrink: 0, border: "1px solid var(--border-default)", background: copiedTemplate === t.text.slice(0, 15) ? "var(--accent-dim)" : "transparent", color: copiedTemplate === t.text.slice(0, 15) ? "var(--accent)" : "var(--text-muted)", cursor: "pointer", transition: "all 0.15s ease" }}
-                    >
-                      {copiedTemplate === t.text.slice(0, 15) ? "✓" : t.label}
-                    </button>
-                  ))}
-                </div>
-                {/* AI Agent Toolbar + Suggestions */}
-                {selectedId && (
-                  <div>
-                    <AiMessageToolbar conversationId={selectedId} onResult={setAgentSuggestion} userDraft={reply} />
-                    {agentSuggestion && (
-                      <AiSuggestionsPanel data={agentSuggestion} onUseMessage={(msg) => { setReply(msg); setAgentSuggestion(null); }} onDismiss={() => setAgentSuggestion(null)} />
+              {/* ═══ ZONE 2: AI Tools + Templates (collapsible on mobile) ═══ */}
+              <div style={{ flexShrink: 0, borderTop: "1px solid var(--border-default)", background: "var(--bg-secondary)", zIndex: 5 }}>
+                {/* Toggle pill — visible on mobile only */}
+                {isMobile && (
+                  <button
+                    onClick={() => setZone2Open(o => !o)}
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      padding: "8px 16px", background: "transparent", border: "none",
+                      color: "var(--accent)", fontSize: 12, fontWeight: 600,
+                      cursor: "pointer", minHeight: 36,
+                    }}
+                    aria-label={zone2Open ? "Collapse AI tools" : "Expand AI tools"}
+                  >
+                    <span>{"\u26A1"} AI Tools</span>
+                    <span style={{ fontSize: 10, transition: "transform 0.2s ease", transform: zone2Open ? "rotate(180deg)" : "rotate(0deg)" }}>{"\u25BC"}</span>
+                  </button>
+                )}
+                {/* Expandable content — always visible on desktop, toggled on mobile */}
+                {(!isMobile || zone2Open) && (
+                  <div style={{ maxHeight: 240, overflowY: "auto", padding: "8px 16px" }}>
+                    {/* Reply templates */}
+                    <div style={{ display: "flex", flexWrap: "nowrap", gap: 8, marginBottom: 6, overflowX: "auto", WebkitOverflowScrolling: "touch", paddingBottom: 4, scrollbarWidth: "none" as any }}>
+                      {TEMPLATES.map((t) => (
+                        <button
+                          key={t.label}
+                          onClick={() => useTemplate(t.text)}
+                          style={{ padding: "6px 14px", borderRadius: 9999, fontSize: 12, fontWeight: 500, minHeight: 32, whiteSpace: "nowrap", flexShrink: 0, border: "1px solid var(--border-default)", background: copiedTemplate === t.text.slice(0, 15) ? "var(--accent-dim)" : "transparent", color: copiedTemplate === t.text.slice(0, 15) ? "var(--accent)" : "var(--text-muted)", cursor: "pointer", transition: "all 0.15s ease" }}
+                        >
+                          {copiedTemplate === t.text.slice(0, 15) ? "✓" : t.label}
+                        </button>
+                      ))}
+                    </div>
+                    {/* AI Agent Toolbar + Suggestions */}
+                    {selectedId && (
+                      <div>
+                        <AiMessageToolbar conversationId={selectedId} onResult={setAgentSuggestion} userDraft={reply} />
+                        {agentSuggestion && (
+                          <AiSuggestionsPanel data={agentSuggestion} onUseMessage={(msg) => { setReply(msg); setAgentSuggestion(null); }} onDismiss={() => setAgentSuggestion(null)} />
+                        )}
+                      </div>
                     )}
                   </div>
                 )}
