@@ -2,13 +2,14 @@
 // CMD-PWA-INSTALL — minimal but effective
 // Network-first for navigation, cache fallback for offline
 
-const CACHE_NAME = 'legacyloop-v2';
+const CACHE_NAME = 'legacyloop-v3';
 const OFFLINE_URL = '/offline.html';
 
 const STATIC_ASSETS = [
   '/offline.html',
   '/images/logos/icon-192.png',
   '/images/logos/icon-512.png',
+  '/images/logos/apple-touch-icon-180.png',
   '/manifest.json',
 ];
 
