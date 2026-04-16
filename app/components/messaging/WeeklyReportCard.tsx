@@ -5,6 +5,14 @@ export default function WeeklyReportCard() {
   const [dismissed, setDismissed] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [counts, setCounts] = useState({ hot: 0, needsReply: 0, total: 0 });
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -15,7 +23,7 @@ export default function WeeklyReportCard() {
     return () => window.removeEventListener("conversation-counts-updated", handler);
   }, []);
 
-  if (dismissed) return null;
+  if (dismissed || isMobile) return null;
 
   const metrics = [
     { label: "Messages", value: counts.total || "—" },

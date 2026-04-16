@@ -74,7 +74,14 @@ export default async function MessagesPage() {
 
   return (
     <MessagesAgentWrapper>
-      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Messages" }]} />
+      <style>{`
+        @media (max-width: 768px) {
+          .messages-breadcrumb-wrap { display: none !important; }
+        }
+      `}</style>
+      <div className="messages-breadcrumb-wrap">
+        <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Messages" }]} />
+      </div>
       <div style={{ width: "100%", height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
         {itemsForForm.length === 0 ? (
           <div style={{ padding: "2rem 1rem" }}>

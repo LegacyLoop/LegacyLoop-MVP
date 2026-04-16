@@ -137,7 +137,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
   }, []);
   const [reply, setReply] = useState("");
   const [busyReply, setBusyReply] = useState(false);
-  const [zone2Open, setZone2Open] = useState(true);
+  const [zone2Open, setZone2Open] = useState(false);
   const [newConvBusy, setNewConvBusy] = useState(false);
   const [newConvErr, setNewConvErr] = useState("");
   const [copiedTemplate, setCopiedTemplate] = useState<string | null>(null);
@@ -392,11 +392,11 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem", height: "100%", overflow: "hidden" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? "0.5rem" : "1rem", height: "100%", overflow: "hidden" }}>
       {/* ─── SEARCH & FILTER BAR ──────────────────────────── */}
       <div
         style={{
-          display: "flex",
+          display: isMobile && (selectedId !== null || composing) ? "none" : "flex",
           flexDirection: "column",
           gap: "0.75rem",
           padding: "1rem 1.25rem",
@@ -1197,7 +1197,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                       width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                       padding: "8px 16px", background: "transparent", border: "none",
                       color: "var(--accent)", fontSize: 12, fontWeight: 600,
-                      cursor: "pointer", minHeight: 36,
+                      cursor: "pointer", minHeight: 44,
                     }}
                     aria-label={zone2Open ? "Collapse AI tools" : "Expand AI tools"}
                   >
@@ -1207,7 +1207,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                 )}
                 {/* Expandable content — always visible on desktop, toggled on mobile */}
                 {(!isMobile || zone2Open) && (
-                  <div style={{ maxHeight: 240, overflowY: "auto", padding: "8px 16px" }}>
+                  <div style={{ maxHeight: isMobile ? 120 : 240, overflowY: "auto", padding: isMobile ? "6px 12px" : "8px 16px" }}>
                     {/* Reply templates */}
                     <div style={{ display: "flex", flexWrap: "nowrap", gap: 8, marginBottom: 6, overflowX: "auto", WebkitOverflowScrolling: "touch", paddingBottom: 4, scrollbarWidth: "none" as any }}>
                       {TEMPLATES.map((t) => (
