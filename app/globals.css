@@ -1270,3 +1270,14 @@ html.light .glass-nav-scrolled {
     opacity: 1 !important;
   }
 }
+
+/* CMD-SUBSCRIPTION-MOBILE-FIX — force column stack on mobile */
+@media (max-width: 600px) {
+  .sub-plan-header-left {
+    flex-basis: 100% !important;
+  }
+  .sub-plan-header-actions {
+    flex-basis: 100% !important;
+    width: 100% !important;
+  }
+}

@@ -330,15 +330,15 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
               background: "linear-gradient(135deg, var(--bg-card), var(--accent-dim))",
               backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)",
               border: "1px solid var(--accent-border)", borderRadius: 24,
-              padding: "2.25rem", position: "relative", overflow: "hidden",
+              padding: "clamp(1.25rem, 4vw, 2.25rem)", position: "relative", overflow: "hidden",
               boxShadow: "0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}>
               {/* Decorative glows */}
               <div style={{ position: "absolute", top: -50, right: -50, width: 220, height: 220, background: "radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)", pointerEvents: "none" }} />
               <div style={{ position: "absolute", bottom: -30, left: -30, width: 140, height: 140, background: "radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1.5rem", flexWrap: "wrap", position: "relative" }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="sub-plan-header-row" style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "1.5rem", flexWrap: "wrap", position: "relative" }}>
+                <div className="sub-plan-header-left" style={{ flex: 1, minWidth: 0 }}>
                   {/* Tier icon + label row */}
                   <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.75rem" }}>
                     <div style={{
@@ -365,23 +365,27 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   {/* Price display */}
                   <div style={{ marginBottom: "0.75rem" }}>
                     {preLaunchPrice != null && preLaunchPrice !== normalPrice ? (
-                      <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", flexWrap: "wrap" }}>
-                        <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.03em" }}>
-                          ${preLaunchPrice}
-                        </span>
-                        <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>{isAnnualSub ? "/yr" : "/mo"}</span>
-                        <span style={{ fontSize: "1rem", color: "var(--text-muted)", textDecoration: "line-through", marginLeft: "0.25rem" }}>
-                          ${normalPrice}{isAnnualSub ? "/yr" : "/mo"}
-                        </span>
-                        <span style={{
-                          fontSize: "0.65rem", fontWeight: 700, padding: "2px 8px", borderRadius: 9999,
-                          background: "var(--success-bg)", color: "var(--success-text)", border: "1px solid var(--success-border)",
-                        }}>
-                          {Math.round((1 - preLaunchPrice / normalPrice) * 100)}% OFF
-                        </span>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                        <div style={{ display: "inline-flex", alignItems: "baseline", gap: "0.25rem", whiteSpace: "nowrap" }}>
+                          <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.03em" }}>
+                            ${preLaunchPrice}
+                          </span>
+                          <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>{isAnnualSub ? "/yr" : "/mo"}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                          <span style={{ fontSize: "1rem", color: "var(--text-muted)", textDecoration: "line-through" }}>
+                            ${normalPrice}{isAnnualSub ? "/yr" : "/mo"}
+                          </span>
+                          <span style={{
+                            fontSize: "0.65rem", fontWeight: 700, padding: "2px 8px", borderRadius: 9999,
+                            background: "var(--success-bg)", color: "var(--success-text)", border: "1px solid var(--success-border)",
+                          }}>
+                            {Math.round((1 - preLaunchPrice / normalPrice) * 100)}% OFF
+                          </span>
+                        </div>
                       </div>
                     ) : (
-                      <div style={{ display: "flex", alignItems: "baseline", gap: "0.35rem" }}>
+                      <div style={{ display: "inline-flex", alignItems: "baseline", gap: "0.35rem", whiteSpace: "nowrap" }}>
                         <span style={{ fontSize: "2.5rem", fontWeight: 800, color: "var(--accent)", letterSpacing: "-0.03em" }}>${normalPrice}</span>
                         <span style={{ fontSize: "1rem", fontWeight: 400, color: "var(--text-muted)" }}>{isAnnualSub ? "/yr" : "/mo"}</span>
                       </div>
@@ -427,7 +431,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                 </div>
 
                 {/* Action buttons */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flexShrink: 0 }}>
+                <div className="sub-plan-header-actions" style={{ display: "flex", flexDirection: "column", gap: "0.5rem", flexShrink: 0 }}>
                   {isActive && tier !== "PRO" && (
                     <button
                       onClick={() => {
@@ -460,16 +464,17 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                       Cancel subscription
                     </button>
                   )}
-                  {isCancelled && (
-                    <div style={{
-                      fontSize: "0.82rem", color: "var(--text-muted)", maxWidth: 220,
-                      padding: "0.75rem 1rem", background: "var(--error-bg)",
-                      border: "1px solid var(--error-border)", borderRadius: 12,
-                    }}>
-                      Your plan has been cancelled. Choose a new plan below to reactivate.
-                    </div>
-                  )}
                 </div>
+                {isCancelled && (
+                  <div style={{
+                    width: "100%", marginTop: "0.5rem",
+                    fontSize: "0.82rem", color: "var(--text-muted)",
+                    padding: "0.75rem 1rem", background: "var(--error-bg)",
+                    border: "1px solid var(--error-border)", borderRadius: 12,
+                  }}>
+                    Your plan has been cancelled. Choose a new plan below to reactivate.
+                  </div>
+                )}
               </div>
 
               {/* Features — 2 column grid */}
