@@ -407,6 +407,10 @@ html.light {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Components
@@ -1192,6 +1196,13 @@ html.light .glass-modal {
 .glass-card-flat:active {
   transform: scale(0.995);
 }
+/* CMD-UX-POLISH-BATCH: dashboard card hover brightening */
+@media (hover: hover) {
+  .glass-card-flat:hover {
+    box-shadow: inset 0 1px 0 var(--glass-highlight), 0 8px 25px rgba(0, 188, 212, 0.15);
+    transform: translateY(-3px);
+  }
+}
 
 /* ── Modal backdrop overlay ── */
 .glass-backdrop {
@@ -1296,5 +1307,15 @@ html.light .glass-nav-scrolled {
 @media (max-width: 768px) {
   .messages-layout-root {
     padding-top: calc(64px + env(safe-area-inset-top, 0px)) !important;
+  }
+}
+
+/* CMD-UX-POLISH-BATCH: reduced-motion for pill entrance + fade-in */
+@media (prefers-reduced-motion: reduce) {
+  [style*="fadeSlideUp"],
+  [style*="fadeIn"] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { canAccessIntelTab } from "@/lib/constants/pricing";
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -82,6 +82,36 @@ type Tab = "market" | "ready" | "sell" | "alerts" | "action";
 /* ═══════════════════════════════════════════════════════════════════════
    Score Ring
    ═══════════════════════════════════════════════════════════════════════ */
+
+function CountUp({ value, format }: { value: number; format?: (n: number) => string }) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const [display, setDisplay] = useState(format ? format(0) : "0");
+  const fired = useRef(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) { setDisplay(format ? format(value) : String(value)); return; }
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting || fired.current) return;
+        fired.current = true;
+        const start = performance.now();
+        const tick = (now: number) => {
+          const t = Math.min(1, (now - start) / 2200);
+          const eased = 1 - Math.pow(1 - t, 4);
+          setDisplay(format ? format(value * eased) : String(Math.round(value * eased)));
+          if (t < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+        io.disconnect();
+      });
+    }, { threshold: 0.5 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [value, format]);
+  return <span ref={ref}>{display}</span>;
+}
 
 function ScoreRing({ score, color }: { score: number; color: string }) {
   const r = 18;
@@ -712,12 +742,12 @@ export default function ItemIntelligenceSummary(props: Props) {
                   {/* Bloomberg-style 3×2 data tile */}
                   <div className="intel-hud-grid" style={{ width: "100%", background: "var(--ghost-bg)", borderRadius: 8, border: "1px solid var(--border-default)", overflow: "hidden", marginBottom: "6px" }}>
                     {[
-                      { lbl: "SWEET SPOT", val: `$${Math.round(aiIntel.pricingIntel.sweetSpot)}`, color: "var(--accent, #00bcd4)", unit: "best price" },
+                      { lbl: "SWEET SPOT", val: <CountUp value={aiIntel.pricingIntel.sweetSpot} format={(n) => `$${Math.round(n)}`} /> as React.ReactNode, color: "var(--accent, #00bcd4)", unit: "best price" },
                       { lbl: "FULL RANGE", val: `$${Math.round(aiIntel.pricingIntel.recommendedLow)}–$${Math.round(aiIntel.pricingIntel.recommendedHigh)}`, color: "var(--text-primary)", unit: "estimated" },
                       { lbl: "DEMAND", val: aiIntel.marketPosition?.demand || "\u2014", color: /high|hot|strong/i.test(aiIntel.marketPosition?.demand || "") ? "#22c55e" : /low|cold|weak/i.test(aiIntel.marketPosition?.demand || "") ? "#ef4444" : "#f59e0b", unit: "local signal" },
-                      { lbl: "READINESS", val: `${readinessScore}/10`, color: readinessScore >= 8 ? "#22c55e" : readinessScore >= 5 ? "#f59e0b" : "#ef4444", unit: "to sell" },
+                      { lbl: "READINESS", val: <><CountUp value={readinessScore} />/10</> as React.ReactNode, color: readinessScore >= 8 ? "#22c55e" : readinessScore >= 5 ? "#f59e0b" : "#ef4444", unit: "to sell" },
                       { lbl: "BEST SELL", val: aiIntel.sellingStrategy?.bestPlatform || "\u2014", color: "var(--accent, #00bcd4)", unit: "recommended" },
-                      { lbl: "COMPS", val: String(enriched?.compCount ?? 0), color: (enriched?.compCount ?? 0) >= 5 ? "#22c55e" : (enriched?.compCount ?? 0) >= 1 ? "#f59e0b" : "var(--text-muted)", unit: "market comps" },
+                      { lbl: "COMPS", val: <CountUp value={enriched?.compCount ?? 0} /> as React.ReactNode, color: (enriched?.compCount ?? 0) >= 5 ? "#22c55e" : (enriched?.compCount ?? 0) >= 1 ? "#f59e0b" : "var(--text-muted)", unit: "market comps" },
                     ].map((c, i) => (
                       <div key={c.lbl} style={{
                         padding: "8px 6px", boxSizing: "border-box", overflow: "hidden",
@@ -1049,6 +1079,22 @@ export default function ItemIntelligenceSummary(props: Props) {
                       {aiIntel.sellingStrategy.bestApproach}
                     </span>
                   </div>
+
+                  {/* "What should I do?" CTA */}
+                  {nextAction && (
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px", marginTop: "2px" }}>
+                      <div className="intel-sect-lbl">What should I do?</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", width: "100%" }}>
+                        <span style={{ fontSize: "18px", lineHeight: 1 }}>{nextAction.icon}</span>
+                        <span style={{ fontSize: "12px", color: "var(--text-primary)", fontWeight: 600, flex: 1, minWidth: 0, lineHeight: 1.35 }}>{nextAction.msg}</span>
+                        {nextAction.href && (
+                          <a href={nextAction.href} className="intel-cta" style={{ minHeight: 44, padding: "10px 16px" }} onClick={() => { try { navigator?.vibrate?.(6); } catch {} }}>
+                            Take me there →
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   <div style={{ fontSize: "11.5px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
                     {aiIntel.sellingStrategy.reasoning}

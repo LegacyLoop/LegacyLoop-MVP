@@ -3764,19 +3764,19 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 </div>
                 {v8Prices ? (<>
                   <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
-                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center", animation: "fadeIn 0.3s ease-out 0ms both" }}>
                       <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#00bcd4", fontWeight: 600 }}>LIST</div>
                       <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4", marginTop: "0.15rem" }}>${v8Prices.listPrice}</div>
                       <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Sign price</div>
                       <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(v8Prices.listPrice * (1 - commRate))}</div>
                     </div>
-                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center", animation: "fadeIn 0.3s ease-out 60ms both" }}>
                       <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#22c55e", fontWeight: 600 }}>ACCEPT</div>
                       <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.15rem" }}>${v8Prices.acceptPrice}</div>
                       <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Deal target</div>
                       <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(v8Prices.acceptPrice * (1 - commRate))}</div>
                     </div>
-                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center", animation: "fadeIn 0.3s ease-out 120ms both" }}>
                       <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#f59e0b", fontWeight: 600 }}>FLOOR</div>
                       <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#f59e0b", marginTop: "0.15rem" }}>${v8Prices.floorPrice}</div>
                       <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Walk-away min</div>
@@ -3837,19 +3837,19 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 </div>
                 {v8Prices ? (<>
                   <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
-                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,175,55,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,175,55,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center", animation: "fadeIn 0.3s ease-out 0ms both" }}>
                       <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#D4AF37", fontWeight: 600 }}>HOLD</div>
                       <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", marginTop: "0.15rem" }}>${v8Prices.listPrice}</div>
                       <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Sticker price</div>
                       <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(v8Prices.listPrice * (1 - commRate))}</div>
                     </div>
-                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,175,55,0.20)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,175,55,0.20)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center", animation: "fadeIn 0.3s ease-out 60ms both" }}>
                       <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#D4AF37", fontWeight: 600 }}>NEGOTIATE</div>
                       <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", marginTop: "0.15rem" }}>${v8Prices.acceptPrice}</div>
                       <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Fair deal</div>
                       <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(v8Prices.acceptPrice * (1 - commRate))}</div>
                     </div>
-                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center", animation: "fadeIn 0.3s ease-out 120ms both" }}>
                       <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#f59e0b", fontWeight: 600 }}>MINIMUM</div>
                       <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#f59e0b", marginTop: "0.15rem" }}>${v8Prices.floorPrice}</div>
                       <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Walk-away min</div>

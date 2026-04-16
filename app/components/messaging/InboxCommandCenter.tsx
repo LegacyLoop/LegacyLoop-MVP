@@ -57,6 +57,34 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
     return () => window.removeEventListener("conversation-selected", handler);
   }, []);
 
+  // ── Edge-swipe gestures (mobile only) ─────────────────
+  useEffect(() => {
+    if (!isMobile || threadActive) return;
+    let startX = 0, startY = 0, startTime = 0;
+    let edge: "left" | "right" | null = null;
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      const t = e.touches[0];
+      startX = t.clientX; startY = t.clientY; startTime = Date.now();
+      const vw = window.innerWidth;
+      if (startX <= 24) edge = "left";
+      else if (startX >= vw - 24) edge = "right";
+      else edge = null;
+    };
+    const onEnd = (e: TouchEvent) => {
+      if (!edge) return;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - startX, dy = t.clientY - startY, dt = Date.now() - startTime;
+      if (Math.abs(dy) >= 30 || dt >= 500) { edge = null; return; }
+      if (edge === "left" && dx >= 50) { setSidebarOpen(true); try { navigator?.vibrate?.(6); } catch {} }
+      else if (edge === "right" && dx <= -50) { setIntelOpen(true); try { navigator?.vibrate?.(6); } catch {} }
+      edge = null;
+    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    return () => { window.removeEventListener("touchstart", onStart); window.removeEventListener("touchend", onEnd); };
+  }, [isMobile, threadActive]);
+
   const modeStyles: Record<string, { border: string; color: string; label: string }> = {
     monitor: { border: "var(--border-default)", color: "var(--text-muted)", label: "Monitoring" },
     copilot: { border: "var(--accent)", color: "var(--accent)", label: "Co-Pilot" },
@@ -69,7 +97,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
       {/* Mobile sidebar toggle */}
       {isMobile && !threadActive && (
         <button
-          onClick={() => setSidebarOpen(o => !o)}
+          onClick={() => { try { navigator?.vibrate?.(6); } catch {} setSidebarOpen(o => !o); }}
           style={{
             position: "absolute", top: 12, left: 12, zIndex: 20,
             width: 44, height: 44, borderRadius: "0.75rem",
@@ -173,7 +201,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
       {/* Mobile Intel toggle button — bottom-right floating */}
       {isMobile && !threadActive && (
         <button
-          onClick={() => setIntelOpen(o => !o)}
+          onClick={() => { try { navigator?.vibrate?.(6); } catch {} setIntelOpen(o => !o); }}
           style={{
             position: "absolute", bottom: 80, right: 12, zIndex: 20,
             width: 44, height: 44, borderRadius: "50%",

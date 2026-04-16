@@ -131,6 +131,15 @@ export default function ItemCard({ item }: ItemCardProps) {
     ? Math.round((item.valuationLow! + item.valuationHigh!) / 2)
     : null;
 
+  // CMD-UX-POLISH-BATCH: badge entrance stagger counter
+  let badgeIdx = 0;
+  const entranceFor = (isInterested: boolean) => {
+    const delay = badgeIdx * 40;
+    badgeIdx += 1;
+    const base = `fadeSlideUp 0.4s cubic-bezier(0.23, 1, 0.32, 1) ${delay}ms both`;
+    return isInterested ? `${base}, pulse 2s ${400 + delay}ms infinite` : base;
+  };
+
   return (
     <div
       className="glass-card-flat"
@@ -168,29 +177,29 @@ export default function ItemCard({ item }: ItemCardProps) {
       {/* Status row — all badges moved from photo overlay */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", padding: "0.4rem 0.75rem 0", minHeight: "22px", alignItems: "center" }}>
         {item.megabotUsed && (
-          <span style={{ background: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "#fff", fontSize: "0.6rem", fontWeight: 800, padding: "0.15rem 0.45rem", borderRadius: "9999px" }}>⚡ MegaBot</span>
+          <span style={{ background: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "#fff", fontSize: "0.6rem", fontWeight: 800, padding: "0.15rem 0.45rem", borderRadius: "9999px", opacity: 0, animation: entranceFor(false) }}>⚡ MegaBot</span>
         )}
         {item.aiItemName && !item.megabotUsed && (
-          <span style={{ background: "rgba(0,188,212,0.15)", color: "var(--accent, #00bcd4)", fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: "1px solid rgba(0,188,212,0.25)" }}>AI Analyzed</span>
+          <span style={{ background: "rgba(0,188,212,0.15)", color: "var(--accent, #00bcd4)", fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: "1px solid rgba(0,188,212,0.25)", opacity: 0, animation: entranceFor(false) }}>AI Analyzed</span>
         )}
         {item.isAntique && item.antiqueTier && (
-          <span title={`Antique ${item.antiqueTier} · Score: ${item.authenticityScore}`} style={{ background: "rgba(212,175,55,0.15)", color: "#D4AF37", fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: "1px solid rgba(212,175,55,0.3)" }}>🏛 {item.antiqueTier.toUpperCase()} · {item.authenticityScore}</span>
+          <span title={`Antique ${item.antiqueTier} · Score: ${item.authenticityScore}`} style={{ background: "rgba(212,175,55,0.15)", color: "#D4AF37", fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: "1px solid rgba(212,175,55,0.3)", opacity: 0, animation: entranceFor(false) }}>🏛 {item.antiqueTier.toUpperCase()} · {item.authenticityScore}</span>
         )}
         {item.isCollectible && item.collectiblesTier && (
-          <span title={`Collectible ${item.collectiblesTier} · Score: ${item.collectiblesScore}`} style={{ background: "var(--purple-bg)", color: "#a78bfa", fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: "1px solid var(--purple-border)" }}>✨ {item.collectiblesTier.toUpperCase()} · {item.collectiblesScore}</span>
+          <span title={`Collectible ${item.collectiblesTier} · Score: ${item.collectiblesScore}`} style={{ background: "var(--purple-bg)", color: "#a78bfa", fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: "1px solid var(--purple-border)", opacity: 0, animation: entranceFor(false) }}>✨ {item.collectiblesTier.toUpperCase()} · {item.collectiblesScore}</span>
         )}
-        <span style={{ background: cfg.bg, color: cfg.color, fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: `1px solid ${cfg.border}`, letterSpacing: "0.03em", ...(status === "INTERESTED" ? { animation: "pulse 2s infinite" } : {}) }}>{cfg.label}</span>
+        <span style={{ background: cfg.bg, color: cfg.color, fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: `1px solid ${cfg.border}`, letterSpacing: "0.03em", opacity: 0, animation: entranceFor(status === "INTERESTED") }}>{cfg.label}</span>
         {item.botStatus?.buyerBotRun && (
-          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "rgba(59,130,246,0.12)", color: "#3b82f6", border: "1px solid rgba(59,130,246,0.25)" }}>👥 Buyers</span>
+          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "rgba(59,130,246,0.12)", color: "#3b82f6", border: "1px solid rgba(59,130,246,0.25)", opacity: 0, animation: entranceFor(false) }}>👥 Buyers</span>
         )}
         {item.botStatus?.reconBotRun && (
-          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "var(--purple-bg)", color: "#a78bfa", border: "1px solid var(--purple-border)" }}>🔭 Market</span>
+          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "var(--purple-bg)", color: "#a78bfa", border: "1px solid var(--purple-border)", opacity: 0, animation: entranceFor(false) }}>🔭 Market</span>
         )}
         {item.botStatus?.listBotRun && (
-          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "var(--accent, #00bcd4)", border: "1px solid rgba(0,188,212,0.25)" }}>📋 Listed</span>
+          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "var(--accent, #00bcd4)", border: "1px solid rgba(0,188,212,0.25)", opacity: 0, animation: entranceFor(false) }}>📋 Listed</span>
         )}
         {item.convCount > 0 && (
-          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: item.hasBotConv ? "rgba(239,68,68,0.12)" : item.unreadMsgs > 0 ? "rgba(220,38,38,0.12)" : "var(--ghost-bg)", color: item.hasBotConv ? "#f87171" : item.unreadMsgs > 0 ? "#dc2626" : "var(--text-secondary)", border: item.hasBotConv ? "1px solid rgba(239,68,68,0.25)" : item.unreadMsgs > 0 ? "1px solid rgba(220,38,38,0.25)" : "1px solid var(--border-default)" }}>
+          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: item.hasBotConv ? "rgba(239,68,68,0.12)" : item.unreadMsgs > 0 ? "rgba(220,38,38,0.12)" : "var(--ghost-bg)", color: item.hasBotConv ? "#f87171" : item.unreadMsgs > 0 ? "#dc2626" : "var(--text-secondary)", border: item.hasBotConv ? "1px solid rgba(239,68,68,0.25)" : item.unreadMsgs > 0 ? "1px solid rgba(220,38,38,0.25)" : "1px solid var(--border-default)", opacity: 0, animation: entranceFor(false) }}>
             {item.hasBotConv ? "⚠️ bot?" : `💬 ${item.convCount}`}
           </span>
         )}

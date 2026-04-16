@@ -329,7 +329,37 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
     return Array.from(seen.entries()).map(([id, title]) => ({ id, title }));
   }, [convs]);
 
+  // ── Keyboard shortcuts (N, Esc, ↑/↓) ────────────────
+  useEffect(() => {
+    const isEditable = () => {
+      const el = document.activeElement as HTMLElement | null;
+      if (!el) return false;
+      const tag = el.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || !!el.isContentEditable;
+    };
+    const handler = (e: KeyboardEvent) => {
+      if (isEditable()) return;
+      if ((e.key === "n" || e.key === "N") && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault(); setComposing(true); try { navigator?.vibrate?.(6); } catch {} return;
+      }
+      if (e.key === "Escape") {
+        if (composing) { setComposing(false); return; }
+        if (selectedId !== null) { setSelectedId(null); try { navigator?.vibrate?.(6); } catch {} } return;
+      }
+      if (!isMobile && !composing && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+        if (filteredConvs.length === 0) return;
+        e.preventDefault();
+        const curIdx = selectedId ? filteredConvs.findIndex(c => c.id === selectedId) : -1;
+        const nextIdx = e.key === "ArrowDown" ? (curIdx < filteredConvs.length - 1 ? curIdx + 1 : 0) : (curIdx > 0 ? curIdx - 1 : filteredConvs.length - 1);
+        handleSelectConv(filteredConvs[nextIdx]);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [composing, selectedId, isMobile, filteredConvs]);
+
   const handleSelectConv = async (conv: Conversation) => {
+    try { navigator?.vibrate?.(6); } catch {}
     setSelectedId(conv.id);
     if (unreadCount(conv) > 0) {
       await fetch(`/api/conversations/${conv.id}/messages`, { method: "PATCH" });
@@ -1101,7 +1131,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                 {/* CMD-MOBILE-8D: Back button on mobile */}
                 {isMobile && (
                   <button
-                    onClick={() => setSelectedId(null)}
+                    onClick={() => { try { navigator?.vibrate?.(6); } catch {} setSelectedId(null); }}
                     style={{
                       background: "none",
                       border: "none",
