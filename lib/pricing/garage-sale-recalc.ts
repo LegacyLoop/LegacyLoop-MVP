@@ -8,14 +8,14 @@
  */
 
 import { prisma } from "@/lib/db";
-import { calculateGarageSalePrices, type GarageSalePrices, type GarageSaleOptions } from "./garage-sale";
+import { calculateGarageSaleV8Prices, type GarageSaleV8Prices, type GarageSaleV8Options, calculateGarageSalePrices, type GarageSalePrices, type GarageSaleOptions } from "./garage-sale";
 
 function safeJson(raw: string | null | undefined): any {
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }
 
-export async function recalcGarageSalePrices(itemId: string): Promise<GarageSalePrices | null> {
+export async function recalcGarageSalePrices(itemId: string): Promise<GarageSaleV8Prices | null> {
   const item = await prisma.item.findUnique({
     where: { id: itemId },
     include: {
@@ -71,15 +71,22 @@ export async function recalcGarageSalePrices(itemId: string): Promise<GarageSale
     collectiblesGrade: collectData?.grade ?? collectData?.psaGrade ?? undefined,
   };
 
-  const prices = calculateGarageSalePrices(marketMid, category, condition, zip, options);
+  const v8Options: GarageSaleV8Options = {
+    ...options,
+    saleMethod: (item as any).saleMethod || "BOTH",
+    shippingDifficulty: (item as any).aiShippingDifficulty || undefined,
+    itemTitle: item.title || undefined,
+  };
 
-  // Save to item record
+  const prices = calculateGarageSaleV8Prices(marketMid, category, condition, zip, v8Options);
+
+  // Save to item record (V8 mapping: LIST→High, ACCEPT→Price, FLOOR→Quick)
   await prisma.item.update({
     where: { id: itemId },
     data: {
-      garageSalePrice: prices.garageSalePrice,
-      garageSalePriceHigh: prices.garageSalePriceHigh,
-      quickSalePrice: prices.quickSalePrice,
+      garageSalePrice: prices.acceptPrice,
+      garageSalePriceHigh: prices.listPrice,
+      quickSalePrice: prices.floorPrice,
       quickSalePriceHigh: prices.quickSalePriceHigh,
       garageSaleCalcAt: new Date(),
     },
@@ -89,11 +96,12 @@ export async function recalcGarageSalePrices(itemId: string): Promise<GarageSale
   await prisma.eventLog.create({
     data: {
       itemId,
-      eventType: "GARAGE_SALE_RECALC",
+      eventType: "GARAGE_SALE_V8_CALC",
       payload: JSON.stringify({
         ...prices,
-        optionsUsed: options,
+        optionsUsed: v8Options,
         marketMid,
+        v8: true,
       }),
     },
   }).catch(() => {});

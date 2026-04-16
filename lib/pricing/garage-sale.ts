@@ -357,3 +357,112 @@ export function calculateGarageSalePrices(
     confidenceNarrowed,
   };
 }
+
+// ── V8 Three-Number Pricing Engine ─────────────────────────────────────
+
+export interface GarageSaleV8Prices extends GarageSalePrices {
+  listPrice: number;
+  acceptPrice: number;
+  floorPrice: number;
+  channelRecommendation: string;
+  channelReason: string;
+  locationNote: string;
+  saleTypeUsed: string;
+  v8: true;
+}
+
+export interface GarageSaleV8Options extends GarageSaleOptions {
+  saleMethod?: string;
+  shippingDifficulty?: string;
+  itemTitle?: string;
+}
+
+export function calculateGarageSaleV8Prices(
+  marketPrice: number,
+  category: string | null | undefined,
+  condition: string | null | undefined,
+  zip?: string | null,
+  options?: GarageSaleV8Options,
+): GarageSaleV8Prices {
+  const base = calculateGarageSalePrices(marketPrice, category, condition, zip, options);
+
+  const acceptPrice = v8Round(base.garageSalePrice, marketPrice);
+  const listPrice = v8Round(
+    Math.round(acceptPrice * v8AnchorMultiplier(category)),
+    marketPrice,
+  );
+  const floorPrice = v8Round(base.quickSalePrice, marketPrice);
+
+  const { recommendation, reason } = v8Channel(
+    acceptPrice, category, base.isExempt, options?.saleMethod, options?.shippingDifficulty,
+  );
+  const locationNote = v8LocationNote(zip, base.locationTier, base.locationMultiplier);
+
+  return {
+    ...base,
+    listPrice,
+    acceptPrice,
+    floorPrice,
+    channelRecommendation: recommendation,
+    channelReason: reason,
+    locationNote,
+    saleTypeUsed: options?.saleMethod || "BOTH",
+    v8: true as const,
+  };
+}
+
+// ── V8 helpers ─────────────────────────────────────────────────────────
+
+function v8AnchorMultiplier(category: string | null | undefined): number {
+  const key = getCategoryKey(category);
+  const factor = GARAGE_SALE_FACTORS[key];
+  return factor?.exempt ? 1.10 : 1.20;
+}
+
+function v8Round(price: number, marketPrice: number): number {
+  if (price <= 0) return 1;
+  if (marketPrice < 20) return Math.round(price);
+  if (marketPrice < 100) return Math.round(price / 5) * 5;
+  if (marketPrice < 500) return Math.round(price / 10) * 10;
+  return Math.round(price / 25) * 25;
+}
+
+function v8Channel(
+  acceptPrice: number,
+  category: string | null | undefined,
+  isExempt: boolean,
+  saleMethod?: string,
+  shippingDifficulty?: string,
+): { recommendation: string; reason: string } {
+  if (saleMethod === "LOCAL_PICKUP" || shippingDifficulty === "FREIGHT_ONLY") {
+    return {
+      recommendation: acceptPrice >= 200 ? "Estate sale or local consignment" : "Garage sale or local pickup",
+      reason: saleMethod === "LOCAL_PICKUP" ? "Seller prefers local sale" : "Item too large to ship",
+    };
+  }
+  if (isExempt) {
+    return { recommendation: "Specialist dealer or auction", reason: "Value-holding item benefits from expert audience" };
+  }
+  if (acceptPrice < 15) return { recommendation: "Garage sale or bundle lot", reason: "Low value — not worth shipping costs" };
+  if (acceptPrice < 50) return { recommendation: "Garage sale with online backup", reason: "List locally first, then try marketplace" };
+  if (acceptPrice < 200) return { recommendation: "Online marketplace (eBay, Mercari, FB)", reason: "Best price-to-effort ratio for this range" };
+  if (acceptPrice < 500) return { recommendation: "Specialty platform", reason: "Higher-value item deserves targeted audience" };
+  return { recommendation: "Auction or consignment", reason: "Maximize return on high-value item" };
+}
+
+function v8LocationNote(
+  zip: string | null | undefined,
+  tier: string,
+  multiplier: number,
+): string {
+  if (!zip) return "No ZIP provided — using national average pricing.";
+  const prefix = zip.slice(0, 3);
+  const pctDiff = Math.round((multiplier - 1.0) * 100);
+  if (tier === "HIGH") {
+    return `Strong market (ZIP ${prefix}xx): local demand runs ${pctDiff}% above national average.`;
+  }
+  if (tier === "LOW") {
+    return `Rural/lower-density market (ZIP ${prefix}xx): prices typically ${Math.abs(pctDiff)}% below national average. FLOOR adjusted accordingly.`;
+  }
+  return `Average market (ZIP ${prefix}xx): pricing at national baseline.`;
+}

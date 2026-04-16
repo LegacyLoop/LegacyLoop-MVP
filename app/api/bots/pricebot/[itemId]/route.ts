@@ -670,18 +670,44 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
     // Fire-and-forget: create structured PriceSnapshot via populate function
     populateFromPriceBot(itemId, pricebotResult as Record<string, unknown>).catch(() => null);
 
-    // Fire-and-forget: calculate garage sale prices from the market price
-    import("@/lib/pricing/garage-sale").then(({ calculateGarageSalePrices }) => {
+    // Fire-and-forget: calculate V8 garage sale prices from the market price
+    import("@/lib/pricing/garage-sale").then(({ calculateGarageSaleV8Prices }) => {
       const revisedMid = (pricebotResult as any)?.price_validation?.revised_mid;
       const marketPrice = revisedMid || (item as any).valuation?.mid || Math.round(((item as any).valuation?.low + (item as any).valuation?.high) / 2) || 0;
       if (marketPrice > 0) {
-        const gsPrices = calculateGarageSalePrices(marketPrice, category, (item as any).conditionGrade || (item as any).condition || "good", sellerZip);
+        const gsPrices = calculateGarageSaleV8Prices(
+          marketPrice,
+          category,
+          (item as any).conditionGrade || (item as any).condition || "good",
+          sellerZip,
+          {
+            isAntique,
+            brand: (ai as any)?.brand ?? undefined,
+            saleMethod,
+            shippingDifficulty: specCtx?.shippingDifficulty ?? undefined,
+            itemTitle: (item as any).title ?? undefined,
+          },
+        );
         prisma.item.update({ where: { id: itemId }, data: {
-          garageSalePrice: gsPrices.garageSalePrice,
-          garageSalePriceHigh: gsPrices.garageSalePriceHigh,
-          quickSalePrice: gsPrices.quickSalePrice,
+          garageSalePrice: gsPrices.acceptPrice,
+          garageSalePriceHigh: gsPrices.listPrice,
+          quickSalePrice: gsPrices.floorPrice,
           quickSalePriceHigh: gsPrices.quickSalePriceHigh,
           garageSaleCalcAt: new Date(),
+        }}).catch(() => null);
+        prisma.eventLog.create({ data: {
+          itemId,
+          eventType: "GARAGE_SALE_V8_CALC",
+          payload: JSON.stringify({
+            listPrice: gsPrices.listPrice,
+            acceptPrice: gsPrices.acceptPrice,
+            floorPrice: gsPrices.floorPrice,
+            channel: gsPrices.channelRecommendation,
+            locationNote: gsPrices.locationNote,
+            saleType: gsPrices.saleTypeUsed,
+            marketPrice,
+            v8: true,
+          }),
         }}).catch(() => null);
       }
     }).catch(() => null);
