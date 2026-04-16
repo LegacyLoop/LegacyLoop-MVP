@@ -192,6 +192,63 @@ export async function POST(
     console.error("[analyze] Amazon pre-fetch failed (non-fatal):", amazonErr?.message);
   }
 
+  // ══ CMD-ANALYZEBOT-ENGINE-TUNE: Pre-AI market comparables fetch ══
+  // Fetch marketplace comps BEFORE the AI call with a 6s hard timeout.
+  // If scrapers return in time, inject MARKET COMPARABLES into sellerContext.
+  // If timeout, proceed with Amazon-only context — zero regression.
+  const PRE_AI_MARKET_TIMEOUT_MS = 6000;
+  let preAiMarketIntel: any = null;
+  try {
+    const preAiItemName = item.title || "item";
+    const preAiCategory = (item as any).category || "General";
+    preAiMarketIntel = await Promise.race([
+      getMarketIntelligence(
+        preAiItemName,
+        preAiCategory,
+        item.saleZip || undefined,
+        true,
+        undefined,
+        "analyzebot",
+      ),
+      new Promise((resolve) => setTimeout(() => resolve(null), PRE_AI_MARKET_TIMEOUT_MS)),
+    ]) as any;
+  } catch (miErr: any) {
+    console.warn("[analyze] Pre-AI market intel failed (non-fatal):", miErr?.message);
+    preAiMarketIntel = null;
+  }
+
+  if (preAiMarketIntel && Array.isArray(preAiMarketIntel.comps) && preAiMarketIntel.comps.length > 0) {
+    const mi = preAiMarketIntel;
+    const compLines: string[] = [
+      "",
+      "MARKET COMPARABLES (live marketplace data — USE for pricing accuracy):",
+      `- ${mi.compCount ?? mi.comps.length} marketplace comparables found`,
+    ];
+    if (mi.median != null) compLines.push(`- Median price: $${Math.round(mi.median)}`);
+    if (mi.low != null && mi.high != null) compLines.push(`- Price range: $${Math.round(mi.low)} – $${Math.round(mi.high)}`);
+    if (mi.trend) compLines.push(`- Market trend: ${mi.trend}`);
+    if (Array.isArray(mi.sources) && mi.sources.length > 0) compLines.push(`- Sources: ${mi.sources.join(", ")}`);
+    const topComps = mi.comps.slice(0, 5);
+    if (topComps.length > 0) {
+      compLines.push("- Top comparables:");
+      topComps.forEach((c: any, i: number) => {
+        const parts = [`  ${i + 1}. "${c.title ?? "unknown"}"`];
+        if (c.price != null) parts.push(`$${Math.round(Number(c.price))}`);
+        if (c.platform) parts.push(String(c.platform));
+        if (c.condition) parts.push(`[${c.condition}]`);
+        compLines.push(parts.join(" — "));
+      });
+    }
+    compLines.push(
+      "- NOTE: These are USED/SECONDHAND marketplace comps. Use them as",
+      "  your PRIMARY pricing anchor. Cross-reference with Amazon retail",
+      "  above for ceiling context. Prefer real 2025 sold prices over",
+      "  training-data intuition."
+    );
+    sellerContext = (sellerContext || "") + "\n" + compLines.join("\n");
+    console.log(`[analyze] Pre-AI market comps injected: ${mi.compCount ?? mi.comps.length} comps from ${mi.sources?.join(", ") ?? "unknown"}`);
+  }
+
   // CMD-ANALYZEBOT-CORE-A: skill pack loading. Content empty until Skills-B —
   // skillPackBlock will be empty string. Wiring here for telemetry + future packs.
   const skillPack = loadSkillPack("analyzebot");
@@ -227,16 +284,24 @@ export async function POST(
   const miCategory = analysis.category || "General";
   const numOwners = (item as any).numberOfOwners || extractTag(item.description, "Owners");
 
+  // CMD-ANALYZEBOT-ENGINE-TUNE: Reuse pre-AI result when usable (>=3 comps),
+  // otherwise refresh with AI-derived terms.
+  const preAiIsUsable =
+    preAiMarketIntel &&
+    Array.isArray(preAiMarketIntel.comps) &&
+    preAiMarketIntel.comps.length >= 3;
+
   const [marketIntelResult, pricingSettled] = await Promise.allSettled([
-    // Market Intelligence prefetch — Phase 1 only (free scrapers + cheap Apify)
-    getMarketIntelligence(
-      miItemName,
-      miCategory,
-      item.saleZip || undefined,
-      true, // phase1Only
-      undefined, // isMegaBot
-      "analyzebot", // CMD-SCRAPER-WIRING-C2
-    ),
+    preAiIsUsable
+      ? Promise.resolve(preAiMarketIntel)
+      : getMarketIntelligence(
+          miItemName,
+          miCategory,
+          item.saleZip || undefined,
+          true,
+          undefined,
+          "analyzebot",
+        ),
     // New pricing pipeline (calculate.ts)
     Promise.resolve(calculatePricing({
       ai: analysis,
