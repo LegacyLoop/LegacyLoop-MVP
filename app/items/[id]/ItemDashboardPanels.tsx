@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, Component, type ErrorInfo, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import CollapsiblePanel from "@/app/components/CollapsiblePanel";
 import RealShippingPanel from "./ShippingPanel";
@@ -2786,33 +2786,58 @@ function CreditLaunchButton({ label, credits, onClick, loading, variant = "prima
   );
 }
 
-// Error boundary wrapper — catches React render crashes and shows fallback instead of blank panel
-function MegaBotBoostResults(props: { botType: string; result: any; aiData: any }) {
-  try {
-    return <MegaBotBoostResultsInner {...props} />;
-  } catch (err: any) {
-    console.error("[MegaBotBoostResults] Render crash:", err);
-    return (
-      <div style={{ padding: "0.75rem 1rem", borderRadius: "0.5rem", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
-        <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#ef4444", marginBottom: "0.3rem" }}>⚡ MegaBot Render Error</div>
-        <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{err?.message || "Unknown error"}</div>
-        <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Data received: {props.result?.providers?.length ?? 0} providers, {props.result?.agreementScore ?? "?"}% agreement</div>
-      </div>
-    );
+// CMD-MEGABOT-GS-SYNTHESIS: Real React ErrorBoundary for MegaBot render crashes.
+class MegaBotErrorBoundary extends Component<
+  { result: any; children: ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { result: any; children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
   }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("[MegaBotErrorBoundary] Render crash:", error, info?.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      const err = this.state.error;
+      const result = this.props.result;
+      return (
+        <div style={{ padding: "0.75rem 1rem", borderRadius: "0.5rem", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.15)" }}>
+          <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#ef4444", marginBottom: "0.3rem" }}>⚡ MegaBot Render Error</div>
+          <div style={{ fontSize: "0.62rem", color: "var(--text-muted)" }}>{err?.message || "Unknown error"}</div>
+          <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Data received: {result?.providers?.length ?? 0} providers, {result?.agreementScore ?? "?"}% agreement</div>
+          <div style={{ fontSize: "0.58rem", color: "var(--text-muted)", marginTop: "0.2rem", fontStyle: "italic" }}>This is a UI render error, not a data error. Try refreshing — if it persists, your MegaBot data is preserved in the database.</div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function MegaBotBoostResults(props: { botType: string; result: any; aiData: any }) {
+  return (
+    <MegaBotErrorBoundary result={props.result}>
+      <MegaBotBoostResultsInner {...props} />
+    </MegaBotErrorBoundary>
+  );
 }
 
 /* ═══════════════════════════════════════════
    PANEL 1: AI Analysis (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boosted, boostResult, collapsed, onToggle, demandScore, botDisagreement, photoCount, valuation }: {
+function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boosted, boostResult, boostError, collapsed, onToggle, demandScore, botDisagreement, photoCount, valuation }: {
   aiData: any;
   itemId: string;
   status: string;
   onSuperBoost: () => void;
   boosting: boolean;
   boosted: boolean;
+  boostError?: string | null;
   boostResult: any;
   collapsed?: boolean;
   onToggle?: () => void;
@@ -3276,7 +3301,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
             )}
 
             {/* ── SECTION H: MEGABOT RESULTS ── */}
-            {boosted && boostResult && (
+            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4 }}>{boostError}</div>)}            {boosted && boostResult && (
               <>
                 <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={aiOpenSections.has("megabot-results")} onToggle={toggleAiSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
                 {aiOpenSections.has("megabot-results") && <MegaBotBoostResults botType="analysis" result={boostResult} aiData={aiData} />}
@@ -3407,7 +3432,7 @@ function _removedGarageSaleStrip({ itemId, marketPrice, category, condition }: {
    PANEL 2: Pricing (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt, shippingPreference, sellerListingPrice, saleZip, v8CalcData }: {
+function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, boostError, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt, shippingPreference, sellerListingPrice, saleZip, v8CalcData }: {
   valuation: any;
   antique: any;
   aiData: any;
@@ -3418,6 +3443,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   boosting: boolean;
   boosted: boolean;
   boostResult: any;
+  boostError?: string | null;
   priceBotResult?: any;
   priceBotLoading?: boolean;
   collapsed?: boolean;
@@ -4285,7 +4311,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
       </div>
 
       {/* ═══ MEGABOT DEEP PRICING — premium positioned after enrichment ═══ */}
-      {boosted && boostResult && (() => {
+            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4 }}>{boostError}</div>)}      {boosted && boostResult && (() => {
         const mbProviders = (boostResult.providers || []).filter((p: any) => (p.data || p.result) && !p.error);
         const mbAgreement = Math.round((boostResult.agreementScore ?? 0) > 1 ? boostResult.agreementScore : (boostResult.agreementScore ?? 0) * 100);
         const mbTimestamp = boostResult.timestamp ? new Date(boostResult.timestamp) : null;
@@ -4405,7 +4431,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
    PANEL 3: Shipping (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, category, onSuperBoost, boosting, boosted, boostResult, collapsed, onToggle, shippingData, onQuotedRate }: {
+function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, category, onSuperBoost, boosting, boosted, boostResult, boostError, collapsed, onToggle, shippingData, onQuotedRate }: {
   itemId: string;
   aiData: any;
   saleZip: string | null;
@@ -4416,6 +4442,7 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
   boosting: boolean;
   boosted: boolean;
   boostResult: any;
+  boostError?: string | null;
   collapsed?: boolean;
   onToggle?: () => void;
   shippingData?: Props["shippingData"];
@@ -4657,7 +4684,7 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
           </>
         )}
 
-        {boosted && boostResult && (<>
+            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4 }}>{boostError}</div>)}        {boosted && boostResult && (<>
           <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={shipSections.has("megabot-results")} onToggle={toggleShipSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
           {shipSections.has("megabot-results") && <MegaBotBoostResults botType="shipping" result={boostResult} aiData={aiData} />}
         </>)}
@@ -4673,7 +4700,7 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
    PANEL 4: Photo Quality (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boosted, boostResult, collapsed, onToggle }: {
+function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boosted, boostResult, boostError, collapsed, onToggle }: {
   photos: Props["photos"];
   aiData: any;
   itemId: string;
@@ -4681,6 +4708,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
   boosting: boolean;
   boosted: boolean;
   boostResult: any;
+  boostError?: string | null;
   collapsed?: boolean;
   onToggle?: () => void;
 }) {
@@ -5272,7 +5300,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
             </>)}
 
             {/* ═══ ACCORDION: MegaBot Results ═══ */}
-            {boosted && boostResult && (<>
+            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4 }}>{boostError}</div>)}            {boosted && boostResult && (<>
               <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={photoSections.has("megabot-results")} onToggle={togglePhotoSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
               {photoSections.has("megabot-results") && (
                 <div style={{ padding: "0.75rem 0.4rem" }}>
@@ -5412,7 +5440,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
    PANEL 5: Buyer Finder (PAID — requires credits)
    ═══════════════════════════════════════════ */
 
-function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boosting, boosted, boostResult, buyerBotResult, buyerBotLoading, collapsed, onToggle }: {
+function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boosting, boosted, boostResult, boostError, buyerBotResult, buyerBotLoading, collapsed, onToggle }: {
   aiData: any;
   itemId: string;
   onSuperBoost: () => void;
@@ -5420,6 +5448,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
   boosting: boolean;
   boosted: boolean;
   boostResult: any;
+  boostError?: string | null;
   buyerBotResult?: any;
   buyerBotLoading?: boolean;
   collapsed?: boolean;
@@ -5707,7 +5736,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
         )}
 
         {/* MegaBot boost results — outside the hasResult check so it shows even without regular BuyerBot run */}
-        {boosted && boostResult && (<>
+            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4 }}>{boostError}</div>)}        {boosted && boostResult && (<>
           <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={buyerOpenSections.has("megabot-results")} onToggle={toggleBuyerSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
           {buyerOpenSections.has("megabot-results") && <MegaBotBoostResults botType="buyers" result={boostResult} aiData={aiData} />}
         </>)}
@@ -9890,6 +9919,7 @@ export default function ItemDashboardPanels({
   const BOT_TO_PANEL: Record<string, string> = {
     analyzebot: "analysis", analysis: "analysis",
     pricebot: "pricing", pricing: "pricing",
+    shipbot: "shipping", shipping: "shipping",
     photobot: "photos", photos: "photos",
     buyerbot: "buyers", buyers: "buyers",
     listbot: "listing", listing: "listing",
@@ -10148,7 +10178,7 @@ export default function ItemDashboardPanels({
           boosting={boostingBot === "analysis"}
           boosted={boostedBots.has("analysis")}
           boostResult={boostResults.analysis}
-          collapsed={collapsed.analysis}
+          boostError={boostingBot === null && boostError ? boostError : null}          collapsed={collapsed.analysis}
           onToggle={() => togglePanel("analysis")}
           demandScore={demandScore}
           botDisagreement={botDisagreement}
@@ -10164,7 +10194,7 @@ export default function ItemDashboardPanels({
           boosting={boostingBot === "pricing"}
           boosted={boostedBots.has("pricing")}
           boostResult={boostResults.pricing}
-          priceBotResult={priceBotResult}
+          boostError={boostingBot === null && boostError ? boostError : null}          priceBotResult={priceBotResult}
           priceBotLoading={priceBotLoading}
           collapsed={collapsed.pricing}
           onToggle={() => togglePanel("pricing")}
@@ -10186,7 +10216,7 @@ export default function ItemDashboardPanels({
           boosting={boostingBot === "shipping"}
           boosted={boostedBots.has("shipping")}
           boostResult={boostResults.shipping}
-          collapsed={collapsed.shipping}
+          boostError={boostingBot === null && boostError ? boostError : null}          collapsed={collapsed.shipping}
           onToggle={() => togglePanel("shipping")}
           shippingData={shippingData}
           onQuotedRate={setLiveShippingRate}
@@ -10200,7 +10230,7 @@ export default function ItemDashboardPanels({
           boosting={boostingBot === "photos"}
           boosted={boostedBots.has("photos")}
           boostResult={boostResults.photos}
-          collapsed={collapsed.photos}
+          boostError={boostingBot === null && boostError ? boostError : null}          collapsed={collapsed.photos}
           onToggle={() => togglePanel("photos")}
         />
 
@@ -10214,7 +10244,7 @@ export default function ItemDashboardPanels({
           boosting={boostingBot === "buyers"}
           boosted={boostedBots.has("buyers")}
           boostResult={boostResults.buyers}
-          buyerBotResult={buyerBotResult}
+          boostError={boostingBot === null && boostError ? boostError : null}          buyerBotResult={buyerBotResult}
           buyerBotLoading={buyerBotLoading}
           collapsed={collapsed.buyers}
           onToggle={() => togglePanel("buyers")}
