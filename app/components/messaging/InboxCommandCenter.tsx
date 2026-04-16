@@ -95,7 +95,19 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
         />
       )}
       {/* LEFT — Agent Sidebar */}
-      <div style={{ width: "clamp(0px, 22vw, 220px)", minWidth: 0, maxWidth: 220, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderRight: "1px solid var(--border-default)", display: isMobile && !sidebarOpen ? "none" : "flex", flexDirection: "column", ...(isMobile && sidebarOpen ? { position: "absolute" as const, zIndex: 15, width: 220, maxWidth: 220, boxShadow: "4px 0 20px rgba(0,0,0,0.4)" } : {}) }}>
+      <div style={{
+        width: isMobile ? 220 : "clamp(0px, 22vw, 220px)", minWidth: 0, maxWidth: 220, flexShrink: 0, height: "100%",
+        overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderRight: "1px solid var(--border-default)",
+        display: isMobile ? "flex" : "flex", flexDirection: "column",
+        ...(isMobile ? {
+          position: "absolute" as const, zIndex: 15, left: 0, top: 0,
+          transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
+          opacity: sidebarOpen ? 1 : 0,
+          transition: "transform 0.25s cubic-bezier(0.23,1,0.32,1), opacity 0.2s ease",
+          pointerEvents: sidebarOpen ? "auto" as const : "none" as const,
+          boxShadow: sidebarOpen ? "4px 0 20px rgba(0,0,0,0.4)" : "none",
+        } : {}),
+      }}>
         {/* Agent Status */}
         <div style={{ padding: 16, borderBottom: "1px solid var(--border-default)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -159,7 +171,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
       </div>
 
       {/* Mobile Intel toggle button — bottom-right floating */}
-      {isMobile && (
+      {isMobile && !threadActive && (
         <button
           onClick={() => setIntelOpen(o => !o)}
           style={{
@@ -202,14 +214,18 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
         overflowX: "hidden",
         background: "var(--bg-card)",
         borderLeft: "1px solid var(--border-default)",
-        display: isMobile && !intelOpen ? "none" : "flex",
+        display: isMobile ? "flex" : "flex",
         flexDirection: "column",
-        ...(isMobile && intelOpen ? {
+        ...(isMobile ? {
           position: "absolute" as const,
           right: 0,
           top: 0,
           zIndex: 15,
-          boxShadow: "-4px 0 20px rgba(0,0,0,0.4)",
+          transform: intelOpen ? "translateX(0)" : "translateX(100%)",
+          opacity: intelOpen ? 1 : 0,
+          transition: "transform 0.25s cubic-bezier(0.23,1,0.32,1), opacity 0.2s ease",
+          pointerEvents: intelOpen ? "auto" as const : "none" as const,
+          boxShadow: intelOpen ? "-4px 0 20px rgba(0,0,0,0.4)" : "none",
         } : {}),
       }}>
         {selectedConversationId ? (

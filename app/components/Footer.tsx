@@ -21,7 +21,7 @@ export default function Footer() {
 
   return (
     <footer
-      className="no-print"
+      className="no-print app-footer"
       style={{
         borderTop: "1px solid var(--border-default)",
         background: "var(--bg-secondary)",

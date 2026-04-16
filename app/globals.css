@@ -1281,3 +1281,9 @@ html.light .glass-nav-scrolled {
     width: 100% !important;
   }
 }
+
+/* CMD-MESSAGES-CENTER-UPGRADE: Hide footer on messages page */
+.messages-layout-root ~ .app-footer,
+.messages-layout-root + .app-footer {
+  display: none !important;
+}

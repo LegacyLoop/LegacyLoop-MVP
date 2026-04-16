@@ -768,6 +768,8 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                   <button
                     key={conv.id}
                     onClick={() => handleSelectConv(conv)}
+                    onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "var(--ghost-bg)"; }}
+                    onMouseLeave={(e) => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "var(--bg-card-solid)"; }}
                     style={{
                       textAlign: "left",
                       padding: "0.75rem",
@@ -965,18 +967,37 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
             )}
           </div>
 
-          {/* New conversation button */}
+          {/* New conversation button — sticky FAB on mobile, full-width on desktop */}
           <button
             onClick={() => setComposing(true)}
-            style={{ padding: "0.75rem", fontSize: "0.85rem", minHeight: "44px", width: "100%", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", fontWeight: 700, border: "none", borderRadius: "0.75rem", cursor: "pointer", boxShadow: "0 4px 12px var(--accent-glow)" }}
+            aria-label="New conversation"
+            style={{
+              position: "sticky", bottom: 12, zIndex: 5,
+              ...(isMobile ? {
+                alignSelf: "center", width: 48, height: 48, borderRadius: "50%",
+                padding: 0, fontSize: 24,
+              } : {
+                width: "100%", padding: "0.75rem", fontSize: "0.85rem", borderRadius: "0.75rem",
+              }),
+              minHeight: 44, background: "linear-gradient(135deg, var(--accent), var(--accent-deep))",
+              color: "#fff", fontWeight: 700, border: "none", cursor: "pointer",
+              boxShadow: "0 4px 16px var(--accent-glow)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
           >
-            + New Conversation
+            {isMobile ? "+" : "+ New Conversation"}
           </button>
         </div>
 
         {/* ─── MAIN THREAD AREA ──────────────────────────────── */}
         {/* CMD-MOBILE-8D: Hidden when no thread selected on mobile */}
-        <div style={{ flex: 1, display: isMobile && selectedId === null && !composing ? "none" : "flex", flexDirection: "column" as const, minWidth: 0, minHeight: 0, overflow: "hidden" }}>
+        <div style={{
+          flex: 1, display: isMobile && selectedId === null && !composing ? "none" : "flex",
+          flexDirection: "column" as const, minWidth: 0, minHeight: 0, overflow: "hidden",
+          opacity: (!isMobile || selectedId !== null || composing) ? 1 : 0,
+          transform: (!isMobile || selectedId !== null || composing) ? "translateX(0)" : "translateX(20px)",
+          transition: "opacity 0.2s ease, transform 0.2s ease",
+        }}>
           {composing ? (
             <div style={{ background: "var(--bg-card-solid)", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>
               {/* CMD-MOBILE-8D: Back button in compose mode on mobile */}
@@ -1111,7 +1132,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                     const b = getBotStyle(selected.botScore);
                     return (
                       <div style={{ padding: "4px 12px", borderRadius: 20, background: b.bg, color: b.color, border: `1.5px solid ${b.border}`, fontWeight: 700, fontSize: 11 }}>
-                        {b.label} \u00b7 {selected.botScore}/100
+                        {b.label} {"\u00b7"} {selected.botScore}/100
                       </div>
                     );
                   })()}
@@ -1239,6 +1260,22 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                 )}
               </div>
 
+              {/* Typing indicator placeholder (hidden by default — activate when AI drafts) */}
+              {agentSuggestion && (
+                <div style={{ padding: "4px 16px", display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ display: "flex", gap: 3 }}>
+                    {[0, 1, 2].map(i => (
+                      <span key={i} style={{
+                        width: 6, height: 6, borderRadius: "50%", background: "var(--accent)",
+                        animation: "pulse 1.2s ease-in-out infinite",
+                        animationDelay: `${i * 0.2}s`, opacity: 0.6,
+                      }} />
+                    ))}
+                  </span>
+                  <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontStyle: "italic" }}>AI is drafting...</span>
+                </div>
+              )}
+
               {/* ═══ ZONE 3: Reply Input (always visible) ═══ */}
               <div style={{ flexShrink: 0, borderTop: "1px solid var(--border-default)", padding: "10px 16px", paddingBottom: "calc(10px + env(safe-area-inset-bottom, 0px))", background: "var(--ghost-bg)" }}>
                 <form onSubmit={handleReply} style={{ display: "flex", gap: 8 }}>
@@ -1260,20 +1297,29 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
             </>
           ) : (
             <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "var(--bg-card-solid)", borderRadius: "1.25rem", padding: "2.5rem 1.5rem", textAlign: "center" }}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ width: "48px", height: "48px", color: "var(--text-muted)", marginBottom: "0.75rem" }}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25z" />
-              </svg>
-              <div style={{ fontWeight: 600, fontSize: "1.1rem", color: "var(--text-primary)" }}>
-                Select a conversation
+              <div style={{
+                width: 72, height: 72, borderRadius: 20,
+                background: "var(--accent-dim)", border: "1px solid var(--accent-border)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 32, marginBottom: "1rem",
+                boxShadow: "0 0 40px var(--accent-glow)",
+              }}>💬</div>
+              <div style={{ fontWeight: 700, fontSize: "1.3rem", color: "var(--text-primary)", fontFamily: "var(--font-heading)", letterSpacing: "-0.02em" }}>
+                Your AI-Powered Inbox
               </div>
-              <p style={{ color: "var(--text-muted)", marginTop: "0.5rem", marginBottom: "1rem", fontSize: "0.88rem" }}>Your AI agent will analyze it and provide real-time intelligence.</p>
+              <p style={{ color: "var(--text-muted)", marginTop: "0.5rem", marginBottom: "1rem", fontSize: "0.88rem", maxWidth: 340, lineHeight: 1.5 }}>Select a conversation to view AI intelligence, negotiation coaching, and buyer analysis in real-time.</p>
+              <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.25rem", flexWrap: "wrap", justifyContent: "center" }}>
+                {["🤖 AI Agent", "🧠 Buyer Intel", "💰 Negotiation Coach"].map(pill => (
+                  <span key={pill} style={{ padding: "0.2rem 0.6rem", borderRadius: 9999, fontSize: "0.65rem", fontWeight: 600, background: "var(--accent-dim)", color: "var(--accent)", border: "1px solid var(--accent-border)" }}>{pill}</span>
+                ))}
+              </div>
               <button
                 onClick={() => setComposing(true)}
                 style={{ padding: "0.75rem 1.5rem", borderRadius: "0.75rem", background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff", fontWeight: 600, fontSize: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 12px var(--accent-glow)", minHeight: 44 }}
               >
                 + New Conversation
               </button>
+              <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>or press N to start</span>
             </div>
           )}
         </div>
