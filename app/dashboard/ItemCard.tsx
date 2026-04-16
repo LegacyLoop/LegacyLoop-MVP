@@ -161,370 +161,39 @@ export default function ItemCard({ item }: ItemCardProps) {
           </div>
         )}
 
-        {/* Top-left badges — unified flex column */}
-        <div style={{ position: "absolute", top: "8px", left: "8px", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "4px", zIndex: 10 }}>
-          {item.megabotUsed && (
-            <div style={{ background: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "#fff", fontSize: "0.68rem", fontWeight: 800, padding: "0.2rem 0.55rem", borderRadius: "9999px" }}>
-              ⚡ MegaBot
-            </div>
-          )}
-          {item.aiItemName && !item.megabotUsed && (
-            <div style={{ background: "rgba(0,188,212,0.85)", color: "#fff", fontSize: "0.62rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: "9999px" }}>
-              AI Analyzed
-            </div>
-          )}
+        {/* Overlays removed — badges moved to status row below photo */}
 
-        {/* Antique badge + tooltip — inside flex column */}
+      </div>
+
+      {/* Status row — all badges moved from photo overlay */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", padding: "0.4rem 0.75rem 0", minHeight: "22px", alignItems: "center" }}>
+        {item.megabotUsed && (
+          <span style={{ background: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "#fff", fontSize: "0.6rem", fontWeight: 800, padding: "0.15rem 0.45rem", borderRadius: "9999px" }}>⚡ MegaBot</span>
+        )}
+        {item.aiItemName && !item.megabotUsed && (
+          <span style={{ background: "rgba(0,188,212,0.15)", color: "var(--accent, #00bcd4)", fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: "1px solid rgba(0,188,212,0.25)" }}>AI Analyzed</span>
+        )}
         {item.isAntique && item.antiqueTier && (
-          <div
-            onMouseEnter={handleAntiqueMouseEnter}
-            onMouseLeave={handleAntiqueMouseLeave}
-            style={{
-              position: 'relative',
-            }}
-          >
-            {/* BADGE */}
-            <div style={{
-              background: item.antiqueTier === 'platinum'
-                ? 'linear-gradient(135deg, rgba(226,232,240,0.92), rgba(148,163,184,0.88))'
-                : item.antiqueTier === 'gold'
-                ? 'linear-gradient(135deg, rgba(251,191,36,0.92), rgba(217,119,6,0.88))'
-                : 'linear-gradient(135deg, rgba(245,158,11,0.92), rgba(180,83,9,0.88))',
-              color: item.antiqueTier === 'platinum' ? '#1e293b' : 'white',
-              borderRadius: '7px',
-              padding: '0.2rem 0.5rem',
-              backdropFilter: 'blur(4px)',
-              boxShadow: item.antiqueTier === 'platinum'
-                ? '0 2px 8px rgba(226,232,240,0.3)'
-                : item.antiqueTier === 'gold'
-                ? '0 2px 8px rgba(251,191,36,0.3)'
-                : '0 2px 8px rgba(245,158,11,0.3)',
-              cursor: 'default',
-              display: 'flex',
-              flexDirection: 'column' as const,
-              alignItems: 'center',
-              gap: '0.05rem',
-            }}>
-              <span style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.05em', opacity: 0.9 }}>
-                🏛️ ANTIQUE
-              </span>
-              <span style={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.06em' }}>
-                {item.antiqueTier?.toUpperCase()} · {item.authenticityScore}
-              </span>
-            </div>
-
-            {/* TOOLTIP — renders inside same hover container */}
-            {showAntiqueTooltip && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                marginTop: '0.35rem',
-                width: '210px',
-                background: 'rgba(15, 15, 20, 0.97)',
-                border: `1px solid ${
-                  item.antiqueTier === 'platinum' ? 'rgba(226,232,240,0.3)'
-                  : item.antiqueTier === 'gold' ? 'rgba(251,191,36,0.3)'
-                  : 'rgba(245,158,11,0.3)'
-                }`,
-                borderRadius: '12px',
-                padding: '0.85rem 1rem',
-                backdropFilter: 'blur(20px)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                zIndex: 20,
-              }}>
-                {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
-                  <span style={{ color: 'white', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.04em' }}>
-                    🏛️ Authenticity Score
-                  </span>
-                  <span style={{
-                    color: item.antiqueTier === 'platinum' ? '#e2e8f0'
-                      : item.antiqueTier === 'gold' ? '#fbbf24'
-                      : '#f59e0b',
-                    fontWeight: 800,
-                    fontSize: '1rem',
-                  }}>
-                    {item.authenticityScore}
-                    <span style={{ fontSize: '0.6rem', opacity: 0.6 }}>/100</span>
-                  </span>
-                </div>
-
-                {/* Progress meter */}
-                <div style={{
-                  height: '5px',
-                  background: 'rgba(255,255,255,0.08)',
-                  borderRadius: '3px',
-                  overflow: 'hidden',
-                  marginBottom: '0.6rem',
-                }}>
-                  <div style={{
-                    height: '100%',
-                    width: `${item.authenticityScore}%`,
-                    background: item.antiqueTier === 'platinum'
-                      ? 'linear-gradient(90deg, #94a3b8, #e2e8f0)'
-                      : item.antiqueTier === 'gold'
-                      ? 'linear-gradient(90deg, #d97706, #fbbf24)'
-                      : 'linear-gradient(90deg, #b45309, #f59e0b)',
-                    borderRadius: '3px',
-                  }} />
-                </div>
-
-                {/* Tier pill */}
-                <div style={{ marginBottom: '0.6rem' }}>
-                  <span style={{
-                    background: item.antiqueTier === 'platinum'
-                      ? 'rgba(226,232,240,0.12)'
-                      : item.antiqueTier === 'gold'
-                      ? 'rgba(251,191,36,0.12)'
-                      : 'rgba(245,158,11,0.12)',
-                    border: `1px solid ${
-                      item.antiqueTier === 'platinum' ? 'rgba(226,232,240,0.25)'
-                      : item.antiqueTier === 'gold' ? 'rgba(251,191,36,0.25)'
-                      : 'rgba(245,158,11,0.25)'
-                    }`,
-                    borderRadius: '20px',
-                    padding: '0.15rem 0.6rem',
-                    color: item.antiqueTier === 'platinum' ? '#e2e8f0'
-                      : item.antiqueTier === 'gold' ? '#fbbf24'
-                      : '#f59e0b',
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                  }}>
-                    {item.antiqueTier === 'platinum' ? '⭐ Expert Verified'
-                      : item.antiqueTier === 'gold' ? '✓ Bot Confirmed'
-                      : '◎ AI Detected'}
-                  </span>
-                </div>
-
-                {/* Tier steps */}
-                <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.3rem' }}>
-                  {[
-                    { tier: 'amber', label: '◎ AI Detected', range: '1–33', done: true },
-                    { tier: 'gold', label: '✓ Bot Confirmed', range: '34–66', done: item.antiqueTier === 'gold' || item.antiqueTier === 'platinum' },
-                    { tier: 'platinum', label: '⭐ Expert Verified', range: '67–100', done: item.antiqueTier === 'platinum' },
-                  ].map(step => (
-                    <div key={step.tier} style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      opacity: step.done ? 1 : 0.35,
-                    }}>
-                      <span style={{ color: step.done ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)', fontSize: '0.65rem' }}>
-                        {step.label}
-                      </span>
-                      <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.6rem' }}>
-                        {step.range}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Bottom hint */}
-                {item.antiqueTier !== 'platinum' && (
-                  <div style={{
-                    marginTop: '0.6rem',
-                    paddingTop: '0.6rem',
-                    borderTop: '1px solid rgba(255,255,255,0.06)',
-                    color: 'rgba(255,255,255,0.4)',
-                    fontSize: '0.62rem',
-                  }}>
-                    {item.antiqueTier === 'amber' ? 'Run AntiqueBot to reach Gold' : 'Run MegaBot to reach Platinum'}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <span title={`Antique ${item.antiqueTier} · Score: ${item.authenticityScore}`} style={{ background: "rgba(212,175,55,0.15)", color: "#D4AF37", fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: "1px solid rgba(212,175,55,0.3)" }}>🏛 {item.antiqueTier.toUpperCase()} · {item.authenticityScore}</span>
         )}
-
-        {/* Collectible badge + tooltip — inside flex column */}
         {item.isCollectible && item.collectiblesTier && (
-          <div
-            onMouseEnter={handleCollectibleMouseEnter}
-            onMouseLeave={handleCollectibleMouseLeave}
-            style={{
-              position: 'relative',
-            }}
-          >
-            {/* BADGE */}
-            <div style={{
-              background: item.collectiblesTier === 'gold'
-                ? 'linear-gradient(135deg, rgba(251,191,36,0.92), rgba(217,119,6,0.88))'
-                : item.collectiblesTier === 'silver'
-                ? 'linear-gradient(135deg, rgba(148,163,184,0.92), rgba(100,116,139,0.88))'
-                : 'linear-gradient(135deg, rgba(139,92,246,0.92), rgba(109,40,217,0.88))',
-              color: 'white',
-              borderRadius: '7px',
-              padding: '0.2rem 0.5rem',
-              backdropFilter: 'blur(4px)',
-              boxShadow: item.collectiblesTier === 'gold'
-                ? '0 2px 8px rgba(251,191,36,0.3)'
-                : item.collectiblesTier === 'silver'
-                ? '0 2px 8px rgba(148,163,184,0.3)'
-                : '0 2px 8px rgba(139,92,246,0.3)',
-              cursor: 'default',
-              display: 'flex',
-              flexDirection: 'column' as const,
-              alignItems: 'center',
-              gap: '0.05rem',
-            }}>
-              <span style={{ fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.05em', opacity: 0.9 }}>
-                🎴 COLLECTIBLE
-              </span>
-              <span style={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.06em' }}>
-                {item.collectiblesTier?.toUpperCase()} · {item.collectiblesScore}
-              </span>
-            </div>
-
-            {/* TOOLTIP */}
-            {showCollectibleTooltip && (
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                marginTop: '0.35rem',
-                width: '210px',
-                background: 'rgba(15,15,20,0.97)',
-                border: `1px solid ${
-                  item.collectiblesTier === 'gold' ? 'rgba(251,191,36,0.3)'
-                  : item.collectiblesTier === 'silver' ? 'rgba(148,163,184,0.3)'
-                  : 'rgba(139,92,246,0.3)'
-                }`,
-                borderRadius: '12px',
-                padding: '0.85rem 1rem',
-                backdropFilter: 'blur(20px)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                zIndex: 20,
-              }}>
-                {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
-                  <span style={{ color: 'white', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.04em' }}>
-                    🎴 Collector Grade
-                  </span>
-                  <span style={{
-                    color: item.collectiblesTier === 'gold' ? '#fbbf24'
-                      : item.collectiblesTier === 'silver' ? '#94a3b8'
-                      : '#8b5cf6',
-                    fontWeight: 800, fontSize: '1rem',
-                  }}>
-                    {item.collectiblesScore}<span style={{ fontSize: '0.6rem', opacity: 0.6 }}>/100</span>
-                  </span>
-                </div>
-
-                {/* Progress meter */}
-                <div style={{ height: '5px', background: 'rgba(255,255,255,0.08)', borderRadius: '3px', overflow: 'hidden', marginBottom: '0.6rem' }}>
-                  <div style={{
-                    height: '100%',
-                    width: `${item.collectiblesScore}%`,
-                    background: item.collectiblesTier === 'gold'
-                      ? 'linear-gradient(90deg, #d97706, #fbbf24)'
-                      : item.collectiblesTier === 'silver'
-                      ? 'linear-gradient(90deg, #64748b, #94a3b8)'
-                      : 'linear-gradient(90deg, #6d28d9, #8b5cf6)',
-                    borderRadius: '3px',
-                  }} />
-                </div>
-
-                {/* Tier pill */}
-                <div style={{ marginBottom: '0.6rem' }}>
-                  <span style={{
-                    background: item.collectiblesTier === 'gold' ? 'rgba(251,191,36,0.12)'
-                      : item.collectiblesTier === 'silver' ? 'rgba(148,163,184,0.12)'
-                      : 'rgba(139,92,246,0.12)',
-                    border: `1px solid ${item.collectiblesTier === 'gold' ? 'rgba(251,191,36,0.25)' : item.collectiblesTier === 'silver' ? 'rgba(148,163,184,0.25)' : 'rgba(139,92,246,0.25)'}`,
-                    borderRadius: '20px',
-                    padding: '0.15rem 0.6rem',
-                    color: item.collectiblesTier === 'gold' ? '#fbbf24' : item.collectiblesTier === 'silver' ? '#94a3b8' : '#8b5cf6',
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                  }}>
-                    {item.collectiblesTier === 'gold' ? '⭐ Expert Certified'
-                      : item.collectiblesTier === 'silver' ? '✓ Bot Graded'
-                      : '◎ AI Detected'}
-                  </span>
-                </div>
-
-                {/* Tier steps */}
-                <div style={{ display: 'flex', flexDirection: 'column' as const, gap: '0.3rem' }}>
-                  {[
-                    { tier: 'bronze', label: '◎ AI Detected', range: '1–33', done: true },
-                    { tier: 'silver', label: '✓ Bot Graded', range: '34–66', done: item.collectiblesTier === 'silver' || item.collectiblesTier === 'gold' },
-                    { tier: 'gold', label: '⭐ Expert Certified', range: '67–100', done: item.collectiblesTier === 'gold' },
-                  ].map(step => (
-                    <div key={step.tier} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', opacity: step.done ? 1 : 0.35 }}>
-                      <span style={{ color: step.done ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)', fontSize: '0.65rem' }}>{step.label}</span>
-                      <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.6rem' }}>{step.range}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Bottom hint */}
-                {item.collectiblesTier !== 'gold' && (
-                  <div style={{ marginTop: '0.6rem', paddingTop: '0.6rem', borderTop: '1px solid rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)', fontSize: '0.62rem' }}>
-                    {item.collectiblesTier === 'bronze' ? 'Run CollectiblesBot to reach Silver' : 'Run MegaBot to reach Gold'}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          <span title={`Collectible ${item.collectiblesTier} · Score: ${item.collectiblesScore}`} style={{ background: "var(--purple-bg)", color: "#a78bfa", fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: "1px solid var(--purple-border)" }}>✨ {item.collectiblesTier.toUpperCase()} · {item.collectiblesScore}</span>
         )}
-        </div>
-
-        {/* Bottom-left: bot run status pills */}
-        {item.botStatus && (
-          <div style={{ position: "absolute", bottom: "0.5rem", left: "0.5rem", display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
-            {item.botStatus.buyerBotRun && (
-              <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "rgba(59,130,246,0.75)", color: "#fff", backdropFilter: "blur(4px)" }}>
-                👥 Buyers
-              </span>
-            )}
-            {item.botStatus.reconBotRun && (
-              <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "rgba(139,92,246,0.75)", color: "#fff", backdropFilter: "blur(4px)" }}>
-                🔭 Market
-              </span>
-            )}
-            {item.botStatus.listBotRun && (
-              <span style={{ fontSize: "0.6rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "rgba(0,188,212,0.75)", color: "#fff", backdropFilter: "blur(4px)" }}>
-                📋 Listed
-              </span>
-            )}
-          </div>
+        <span style={{ background: cfg.bg, color: cfg.color, fontSize: "0.6rem", fontWeight: 700, padding: "0.15rem 0.45rem", borderRadius: "9999px", border: `1px solid ${cfg.border}`, letterSpacing: "0.03em", ...(status === "INTERESTED" ? { animation: "pulse 2s infinite" } : {}) }}>{cfg.label}</span>
+        {item.botStatus?.buyerBotRun && (
+          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "rgba(59,130,246,0.12)", color: "#3b82f6", border: "1px solid rgba(59,130,246,0.25)" }}>👥 Buyers</span>
         )}
-
-        {/* Top-right: status badge + message badge */}
-        <div style={{ position: "absolute", top: "0.6rem", right: "0.6rem", display: "flex", flexDirection: "column", gap: "0.3rem", alignItems: "flex-end" }}>
-          <span
-            style={{
-              padding: "0.2rem 0.65rem",
-              borderRadius: "9999px",
-              fontSize: "0.68rem",
-              fontWeight: 700,
-              background: cfg.bg,
-              color: cfg.color,
-              border: `1px solid ${cfg.border}`,
-              letterSpacing: "0.03em",
-              ...(status === "INTERESTED" ? { animation: "pulse 2s infinite" } : {}),
-            }}
-          >
-            {cfg.label}
+        {item.botStatus?.reconBotRun && (
+          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "var(--purple-bg)", color: "#a78bfa", border: "1px solid var(--purple-border)" }}>🔭 Market</span>
+        )}
+        {item.botStatus?.listBotRun && (
+          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: "rgba(0,188,212,0.12)", color: "var(--accent, #00bcd4)", border: "1px solid rgba(0,188,212,0.25)" }}>📋 Listed</span>
+        )}
+        {item.convCount > 0 && (
+          <span style={{ fontSize: "0.55rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: item.hasBotConv ? "rgba(239,68,68,0.12)" : item.unreadMsgs > 0 ? "rgba(220,38,38,0.12)" : "var(--ghost-bg)", color: item.hasBotConv ? "#f87171" : item.unreadMsgs > 0 ? "#dc2626" : "var(--text-secondary)", border: item.hasBotConv ? "1px solid rgba(239,68,68,0.25)" : item.unreadMsgs > 0 ? "1px solid rgba(220,38,38,0.25)" : "1px solid var(--border-default)" }}>
+            {item.hasBotConv ? "⚠️ bot?" : `💬 ${item.convCount}`}
           </span>
-          {item.convCount > 0 && (
-            <span
-              style={{
-                padding: "0.15rem 0.55rem",
-                borderRadius: "9999px",
-                fontSize: "0.68rem",
-                fontWeight: 700,
-                background: item.hasBotConv ? "rgba(239,68,68,0.15)" : item.unreadMsgs > 0 ? "#dc2626" : "var(--ghost-bg)",
-                color: item.hasBotConv ? "#f87171" : item.unreadMsgs > 0 ? "#fff" : "var(--text-secondary)",
-                border: item.hasBotConv ? "1px solid rgba(239,68,68,0.3)" : "none",
-              }}
-            >
-              {item.hasBotConv ? "⚠️ bot?" : `💬 ${item.convCount}`}
-              {item.unreadMsgs > 0 && !item.hasBotConv && ` (${item.unreadMsgs} new)`}
-            </span>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Body */}

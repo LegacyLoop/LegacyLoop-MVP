@@ -994,9 +994,6 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
         <div style={{
           flex: 1, display: isMobile && selectedId === null && !composing ? "none" : "flex",
           flexDirection: "column" as const, minWidth: 0, minHeight: 0, overflow: "hidden",
-          opacity: (!isMobile || selectedId !== null || composing) ? 1 : 0,
-          transform: (!isMobile || selectedId !== null || composing) ? "translateX(0)" : "translateX(20px)",
-          transition: "opacity 0.2s ease, transform 0.2s ease",
         }}>
           {composing ? (
             <div style={{ background: "var(--bg-card-solid)", border: "1px solid var(--border-card)", borderRadius: "1.25rem", padding: "1.5rem" }}>

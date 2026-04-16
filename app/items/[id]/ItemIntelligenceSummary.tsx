@@ -710,7 +710,7 @@ export default function ItemIntelligenceSummary(props: Props) {
               {aiIntel ? (
                 <>
                   {/* Bloomberg-style 3×2 data tile */}
-                  <div className="intel-hud-grid" style={{ background: "var(--ghost-bg)", borderRadius: 8, border: "1px solid var(--border-default)", overflow: "hidden", marginBottom: "6px" }}>
+                  <div className="intel-hud-grid" style={{ width: "100%", background: "var(--ghost-bg)", borderRadius: 8, border: "1px solid var(--border-default)", overflow: "hidden", marginBottom: "6px" }}>
                     {[
                       { lbl: "SWEET SPOT", val: `$${Math.round(aiIntel.pricingIntel.sweetSpot)}`, color: "var(--accent, #00bcd4)", unit: "best price" },
                       { lbl: "FULL RANGE", val: `$${Math.round(aiIntel.pricingIntel.recommendedLow)}–$${Math.round(aiIntel.pricingIntel.recommendedHigh)}`, color: "var(--text-primary)", unit: "estimated" },
@@ -744,7 +744,7 @@ export default function ItemIntelligenceSummary(props: Props) {
                 </>
               ) : valuation ? (
                 <>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", background: "var(--ghost-bg)", borderRadius: 8, border: "1px solid var(--border-default)", overflow: "hidden", marginBottom: "6px" }}>
+                  <div style={{ width: "100%", display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", background: "var(--ghost-bg)", borderRadius: 8, border: "1px solid var(--border-default)", overflow: "hidden", marginBottom: "6px" }}>
                     <div style={{ padding: "8px 6px", borderRight: "1px solid var(--border-default)" }}>
                       <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600, fontFamily: "var(--font-body)" }}>VALUE RANGE</div>
                       <div style={{ fontSize: "clamp(13px, 3.5vw, 16px)", fontWeight: 700, fontFamily: "var(--font-data)", color: "var(--accent, #00bcd4)" }}>${Math.round(valuation.low || 0)}–${Math.round(valuation.high || 0)}</div>
