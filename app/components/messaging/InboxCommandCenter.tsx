@@ -51,7 +51,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail;
-      setThreadActive(!!(detail?.id || detail?.conversationId));
+      setThreadActive(!!detail?.conversationId);
     };
     window.addEventListener("conversation-selected", handler);
     return () => window.removeEventListener("conversation-selected", handler);

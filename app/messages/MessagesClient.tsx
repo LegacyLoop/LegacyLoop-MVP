@@ -122,7 +122,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
   const searchParams = useSearchParams();
   const initialItemId = searchParams.get("itemId") || "";
   const [convs, setConvs] = useState<Conversation[]>(initialConversations);
-  const [selectedId, setSelectedId] = useState<string | null>(convs[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [composing, setComposing] = useState(false);
 
   // CMD-MOBILE-8D: mobile tab-switching state.
@@ -135,6 +135,14 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
+  // CMD-MESSAGES-STRUCTURAL-FIX: On desktop, auto-select first conversation.
+  // On mobile, leave null so user sees the conversation list first.
+  useEffect(() => {
+    if (!isMobile && convs.length > 0 && selectedId === null) {
+      setSelectedId(convs[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile, convs.length]);
   const [reply, setReply] = useState("");
   const [busyReply, setBusyReply] = useState(false);
   const [zone2Open, setZone2Open] = useState(false);
@@ -154,9 +162,9 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
 
   // ── AI Agent Bridge: Fix 1 — Conversation selection event ──
   useEffect(() => {
-    if (selectedId) {
-      window.dispatchEvent(new CustomEvent("conversation-selected", { detail: { conversationId: selectedId } }));
-    }
+    window.dispatchEvent(new CustomEvent("conversation-selected", {
+      detail: { conversationId: selectedId },
+    }));
   }, [selectedId]);
 
   // ── AI Agent Bridge: Fix 2 — Listen for agent-fill-message ──

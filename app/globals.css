@@ -1289,3 +1289,12 @@ html.light .glass-nav-scrolled {
 .messages-layout-root + .app-footer {
   display: none !important;
 }
+
+/* CMD-MESSAGES-STRUCTURAL-FIX: Mobile paddingTop override.
+   Desktop keeps 108px (64px nav + ~44px breadcrumbs).
+   Mobile hides breadcrumbs, so only need 64px nav + safe-area. */
+@media (max-width: 768px) {
+  .messages-layout-root {
+    padding-top: calc(64px + env(safe-area-inset-top, 0px)) !important;
+  }
+}
