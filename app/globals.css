@@ -112,7 +112,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-
   --arta-accent-dim:     rgba(255, 215, 0, 0.1);
 
   /* Bottom nav clearance */
-  --bottom-nav-height:   72px;
+  --bottom-nav-height:   64px;
 
   /* Glass tokens — single source of truth */
   --glass-bg:            rgba(22, 27, 34, 0.6);

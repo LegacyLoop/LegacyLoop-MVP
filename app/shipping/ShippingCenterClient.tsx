@@ -291,7 +291,7 @@ function ShippingRecommendation({ item }: { item: any }) {
           {cfg.label}
         </span>
       </div>
-      <div style={{ fontSize: "0.62rem", color: "#94a3b8", lineHeight: 1.45 }}>
+      <div style={{ fontSize: "0.65rem", color: "#94a3b8", lineHeight: 1.45 }}>
         {cfg.desc}
       </div>
 
@@ -301,7 +301,7 @@ function ShippingRecommendation({ item }: { item: any }) {
       }}>
         {item.aiShippingDifficulty && (
           <span style={{
-            fontSize: "0.62rem", padding: "2px 6px", borderRadius: "6px",
+            fontSize: "0.65rem", padding: "2px 6px", borderRadius: "6px",
             background: item.aiShippingDifficulty === "Easy" ? "rgba(76,175,80,0.1)"
                        : item.aiShippingDifficulty === "Moderate" ? "rgba(255,152,0,0.1)"
                        : "rgba(244,67,54,0.1)",
@@ -313,7 +313,7 @@ function ShippingRecommendation({ item }: { item: any }) {
         )}
         {(item.aiWeightLbs || item.userWeight || item.weight) && (
           <span style={{
-            fontSize: "0.62rem", padding: "2px 6px", borderRadius: "6px",
+            fontSize: "0.65rem", padding: "2px 6px", borderRadius: "6px",
             background: "var(--accent-dim)", color: "#94a3b8",
           }}>
             ⚖️ {item.weight ? `${item.weight} lbs (confirmed)` : item.aiWeightLbs ? `~${item.aiWeightLbs} lbs (AI est.)` : `~${item.aiEstWeight} lbs`}
@@ -321,7 +321,7 @@ function ShippingRecommendation({ item }: { item: any }) {
         )}
         {item.aiShippingConfidence != null && (
           <span style={{
-            fontSize: "0.62rem", padding: "2px 6px", borderRadius: "6px",
+            fontSize: "0.65rem", padding: "2px 6px", borderRadius: "6px",
             background: "var(--accent-dim)", color: "#94a3b8",
           }}>
             🎯 {Math.round(item.aiShippingConfidence * 100)}%
@@ -329,7 +329,7 @@ function ShippingRecommendation({ item }: { item: any }) {
         )}
         {item.isFragile && (
           <span style={{
-            fontSize: "0.62rem", padding: "2px 6px", borderRadius: "6px",
+            fontSize: "0.65rem", padding: "2px 6px", borderRadius: "6px",
             background: "var(--error-bg)", color: "var(--error-text)",
           }}>
             ⚠️ FRAGILE
@@ -337,7 +337,7 @@ function ShippingRecommendation({ item }: { item: any }) {
         )}
         {item.shippingPreference && item.shippingPreference !== "BUYER_PAYS" && (
           <span style={{
-            fontSize: "0.62rem", padding: "2px 6px", borderRadius: "6px",
+            fontSize: "0.65rem", padding: "2px 6px", borderRadius: "6px",
             background: "var(--success-bg)", color: "var(--success-text)",
           }}>
             {item.shippingPreference === "FREE_SHIPPING" ? "🆓 Free Shipping" : item.shippingPreference === "LOCAL_ONLY" ? "📍 Local Only" : item.shippingPreference === "SPLIT_SHIPPING" ? "🤝 Split Shipping" : item.shippingPreference}
@@ -350,7 +350,7 @@ function ShippingRecommendation({ item }: { item: any }) {
         <div style={{
           marginTop: "0.4rem", padding: "0.35rem 0.5rem",
           background: "rgba(0,0,0,0.12)", borderRadius: "6px",
-          fontSize: "0.62rem", color: "#94a3b8", fontStyle: "italic",
+          fontSize: "0.65rem", color: "#94a3b8", fontStyle: "italic",
         }}>
           💡 {item.aiShippingNotes}
         </div>

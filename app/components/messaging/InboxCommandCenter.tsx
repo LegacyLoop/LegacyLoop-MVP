@@ -71,19 +71,31 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
           {sidebarOpen ? "✕" : "☰"}
         </button>
       )}
+      {/* Backdrop scrim for ☰ sidebar — tap to dismiss */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "absolute", inset: 0, zIndex: 14,
+            background: "rgba(0, 0, 0, 0.4)",
+            backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)",
+          }}
+          aria-hidden="true"
+        />
+      )}
       {/* LEFT — Agent Sidebar */}
       <div style={{ width: "clamp(0px, 22vw, 220px)", minWidth: 0, maxWidth: 220, flexShrink: 0, height: "100%", overflowY: "auto", overflowX: "hidden", background: "var(--bg-card)", borderRight: "1px solid var(--border-default)", display: isMobile && !sidebarOpen ? "none" : "flex", flexDirection: "column", ...(isMobile && sidebarOpen ? { position: "absolute" as const, zIndex: 15, width: 220, maxWidth: 220, boxShadow: "4px 0 20px rgba(0,0,0,0.4)" } : {}) }}>
         {/* Agent Status */}
         <div style={{ padding: 16, borderBottom: "1px solid var(--border-default)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>🤖 AI Agent</span>
-            <span style={{ fontSize: 9, padding: "3px 10px", borderRadius: 20, border: `1px solid ${ms.border}`, color: ms.color }}>{ms.label}</span>
+            <span style={{ fontSize: 10, padding: "3px 10px", borderRadius: 20, border: `1px solid ${ms.border}`, color: ms.color }}>{ms.label}</span>
           </div>
         </div>
 
         {/* Smart Views */}
         <div style={{ padding: "12px 16px 8px", flex: 1, overflow: "auto" }}>
-          <div style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: 1.5, marginBottom: 8 }}>INBOX</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: 1.5, marginBottom: 8 }}>INBOX</div>
           {[
             { icon: "🔥", label: "Hot Leads", key: "hot", count: counts.hot },
             { icon: "💬", label: "Needs Reply", key: "needs_reply", count: counts.needsReply },
@@ -109,7 +121,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
               <span style={{ flex: 1, fontSize: 11, fontWeight: activeView === tab.key ? 700 : 400, color: activeView === tab.key ? "var(--accent)" : "var(--text-secondary)" }}>{tab.label}</span>
               {tab.count > 0 && (
                 <span style={{
-                  fontSize: 9, minWidth: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, fontWeight: 700,
+                  fontSize: 10, minWidth: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, fontWeight: 700,
                   background: activeView === tab.key ? "var(--accent)" : (tab.key === "hot" || tab.key === "needs_reply") ? "var(--accent-dim)" : "var(--ghost-bg)",
                   color: activeView === tab.key ? "#fff" : (tab.key === "hot" || tab.key === "needs_reply") ? "var(--accent)" : "var(--text-muted)",
                 }}>
@@ -120,7 +132,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
           ))}
 
           {/* Agent Activity */}
-          <div style={{ fontSize: 9, fontWeight: 700, color: "var(--text-muted)", letterSpacing: 1.5, marginTop: 20, marginBottom: 8 }}>AGENT ACTIVITY</div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: 1.5, marginTop: 20, marginBottom: 8 }}>AGENT ACTIVITY</div>
           <div style={{ fontSize: 10, color: "var(--text-muted)", fontStyle: "italic" }}>No agent activity yet</div>
         </div>
 
@@ -153,6 +165,19 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
         >
           {intelOpen ? "✕" : "\uD83E\uDDE0"}
         </button>
+      )}
+
+      {/* Backdrop scrim for 🧠 intel panel — tap to dismiss */}
+      {isMobile && intelOpen && (
+        <div
+          onClick={() => setIntelOpen(false)}
+          style={{
+            position: "absolute", inset: 0, zIndex: 14,
+            background: "rgba(0, 0, 0, 0.4)",
+            backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)",
+          }}
+          aria-hidden="true"
+        />
       )}
 
       {/* RIGHT — Intelligence Panel (desktop: inline, mobile: overlay via toggle) */}

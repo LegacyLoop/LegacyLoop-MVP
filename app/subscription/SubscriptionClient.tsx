@@ -398,12 +398,13 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                   </div>
 
                   {/* Info pills row */}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "0.5rem", alignItems: "center" }}>
                     <span style={{
                       display: "inline-flex", alignItems: "center", gap: "0.3rem",
                       padding: "0.25rem 0.75rem", borderRadius: 8,
                       background: "var(--accent-dim)", border: "1px solid var(--accent-dim)",
                       fontSize: "0.78rem", color: "var(--text-secondary)", fontWeight: 600,
+                      whiteSpace: "nowrap",
                     }}>
                       💎 {getTierCommission(tier)}% commission
                     </span>
@@ -413,6 +414,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                         padding: "0.25rem 0.75rem", borderRadius: 8,
                         background: "var(--ghost-bg)", border: "1px solid var(--border-default)",
                         fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: 500,
+                        whiteSpace: "nowrap",
                       }}>
                         📅 Next billing: {periodEnd.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </span>
@@ -424,6 +426,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                       color: subscription?.status === "ACTIVE" ? "var(--success-text)" : subscription ? "var(--error-text)" : "var(--text-muted)",
                       border: subscription?.status === "ACTIVE" ? "1px solid var(--success-border)" : subscription ? "1px solid var(--error-border)" : "1px solid var(--border-default)",
                       fontSize: "0.72rem", fontWeight: 700, letterSpacing: "0.04em",
+                      whiteSpace: "nowrap",
                     }}>
                       {subscription?.status === "ACTIVE" ? "● ACTIVE" : subscription?.status || "No subscription"}
                     </span>
