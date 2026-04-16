@@ -45,6 +45,8 @@ html, body {
 /* ── HUD metric grid — responsive 4→2 col ── */
 .hud-metric-grid { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
 @media (max-width: 399px) { .hud-metric-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important; } }
+.intel-hud-grid { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+@media (max-width: 399px) { .intel-hud-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
 
 /* ── Responsive table → card toggle (billing/subscription history) ── */
 .table-desktop { display: block; }

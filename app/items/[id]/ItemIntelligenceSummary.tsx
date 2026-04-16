@@ -710,7 +710,7 @@ export default function ItemIntelligenceSummary(props: Props) {
               {aiIntel ? (
                 <>
                   {/* Bloomberg-style 3×2 data tile */}
-                  <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", overflow: "hidden", marginBottom: "6px" }}>
+                  <div className="intel-hud-grid" style={{ background: "var(--ghost-bg)", borderRadius: 8, border: "1px solid var(--border-default)", overflow: "hidden", marginBottom: "6px" }}>
                     {[
                       { lbl: "SWEET SPOT", val: `$${Math.round(aiIntel.pricingIntel.sweetSpot)}`, color: "var(--accent, #00bcd4)", unit: "best price" },
                       { lbl: "FULL RANGE", val: `$${Math.round(aiIntel.pricingIntel.recommendedLow)}–$${Math.round(aiIntel.pricingIntel.recommendedHigh)}`, color: "var(--text-primary)", unit: "estimated" },
@@ -721,12 +721,12 @@ export default function ItemIntelligenceSummary(props: Props) {
                     ].map((c, i) => (
                       <div key={c.lbl} style={{
                         padding: "8px 6px", boxSizing: "border-box", overflow: "hidden",
-                        borderRight: i % 3 < 2 ? "1px solid rgba(255,255,255,0.06)" : "none",
-                        borderBottom: i < 3 ? "1px solid rgba(255,255,255,0.06)" : "none",
+                        borderRight: i % 3 < 2 ? "1px solid var(--border-default)" : "none",
+                        borderBottom: i < 3 ? "1px solid var(--border-default)" : "none",
                       }}>
-                        <div style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600 }}>{c.lbl}</div>
-                        <div style={{ fontSize: "16px", fontWeight: 700, fontFamily: "var(--font-data)", color: c.color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.val}</div>
-                        <div style={{ fontSize: "9px", color: "var(--text-muted)" }}>{c.unit}</div>
+                        <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600, fontFamily: "var(--font-body)" }}>{c.lbl}</div>
+                        <div style={{ fontSize: "clamp(13px, 3.5vw, 16px)", fontWeight: 700, fontFamily: "var(--font-data)", color: c.color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.val}</div>
+                        <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>{c.unit}</div>
                       </div>
                     ))}
                   </div>
@@ -744,16 +744,16 @@ export default function ItemIntelligenceSummary(props: Props) {
                 </>
               ) : valuation ? (
                 <>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "rgba(255,255,255,0.03)", borderRadius: 8, border: "1px solid rgba(255,255,255,0.06)", overflow: "hidden", marginBottom: "6px" }}>
-                    <div style={{ padding: "8px 6px", borderRight: "1px solid rgba(255,255,255,0.06)" }}>
-                      <div style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600 }}>VALUE RANGE</div>
-                      <div style={{ fontSize: "16px", fontWeight: 700, fontFamily: "var(--font-data)", color: "var(--accent, #00bcd4)" }}>${Math.round(valuation.low || 0)}–${Math.round(valuation.high || 0)}</div>
-                      <div style={{ fontSize: "9px", color: "var(--text-muted)" }}>AI estimate</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", background: "var(--ghost-bg)", borderRadius: 8, border: "1px solid var(--border-default)", overflow: "hidden", marginBottom: "6px" }}>
+                    <div style={{ padding: "8px 6px", borderRight: "1px solid var(--border-default)" }}>
+                      <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600, fontFamily: "var(--font-body)" }}>VALUE RANGE</div>
+                      <div style={{ fontSize: "clamp(13px, 3.5vw, 16px)", fontWeight: 700, fontFamily: "var(--font-data)", color: "var(--accent, #00bcd4)" }}>${Math.round(valuation.low || 0)}–${Math.round(valuation.high || 0)}</div>
+                      <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>AI estimate</div>
                     </div>
                     <div style={{ padding: "8px 6px" }}>
-                      <div style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600 }}>READINESS</div>
-                      <div style={{ fontSize: "16px", fontWeight: 700, fontFamily: "var(--font-data)", color: readinessColor }}>{readinessScore}/10</div>
-                      <div style={{ fontSize: "9px", color: "var(--text-muted)" }}>to sell</div>
+                      <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 600, fontFamily: "var(--font-body)" }}>READINESS</div>
+                      <div style={{ fontSize: "clamp(13px, 3.5vw, 16px)", fontWeight: 700, fontFamily: "var(--font-data)", color: readinessColor }}>{readinessScore}/10</div>
+                      <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>to sell</div>
                     </div>
                   </div>
                   {aiData && !aiIntel && (
