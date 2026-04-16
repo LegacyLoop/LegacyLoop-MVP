@@ -3835,18 +3835,58 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   {gsPrices.auctionAnchored && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(212,175,55,0.1)", color: "#D4AF37" }}>Auction anchored</span>}
                   {gsPrices.brandPremium && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(0,188,212,0.1)", color: "#00bcd4" }}>Brand premium</span>}
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
-                  <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,175,55,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
-                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#D4AF37", fontWeight: 600 }}>GARAGE SALE</div>
-                    <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", marginTop: "0.15rem" }}>${gsPrices.garageSalePrice}–${gsPrices.garageSalePriceHigh}</div>
-                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Collectible — holds value</div>
+                {v8Prices ? (<>
+                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,175,55,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#D4AF37", fontWeight: 600 }}>HOLD</div>
+                      <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", marginTop: "0.15rem" }}>${v8Prices.listPrice}</div>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Sticker price</div>
+                      <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(v8Prices.listPrice * (1 - commRate))}</div>
+                    </div>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,175,55,0.20)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#D4AF37", fontWeight: 600 }}>NEGOTIATE</div>
+                      <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", marginTop: "0.15rem" }}>${v8Prices.acceptPrice}</div>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Fair deal</div>
+                      <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(v8Prices.acceptPrice * (1 - commRate))}</div>
+                    </div>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#f59e0b", fontWeight: 600 }}>MINIMUM</div>
+                      <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#f59e0b", marginTop: "0.15rem" }}>${v8Prices.floorPrice}</div>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Walk-away min</div>
+                      <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(v8Prices.floorPrice * (1 - commRate))}</div>
+                    </div>
                   </div>
-                  <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,175,55,0.15)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
-                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#D4AF37", fontWeight: 600 }}>QUICK SALE</div>
-                    <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", marginTop: "0.15rem" }}>${gsPrices.quickSalePrice}–${gsPrices.quickSalePriceHigh}</div>
-                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Gone today · Still holds value</div>
+                  {v8Prices.channelRecommendation && (
+                    <div style={{ marginTop: "0.4rem", display: "flex", alignItems: "center", gap: "0.35rem", flexWrap: "wrap" }}>
+                      <span style={{ padding: "0.15rem 0.5rem", borderRadius: "9999px", fontSize: "0.55rem", fontWeight: 600, background: "rgba(212,175,55,0.12)", color: "#D4AF37", border: "1px solid rgba(212,175,55,0.25)" }}>📍 {v8Prices.channelRecommendation}</span>
+                      {v8Prices.channelReason && <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontStyle: "italic" }}>{v8Prices.channelReason}</span>}
+                    </div>
+                  )}
+                  {v8Prices.locationNote && (
+                    <div style={{ marginTop: "0.25rem", fontSize: "0.5rem", color: "var(--text-muted)", fontStyle: "italic", paddingLeft: "0.15rem" }}>📌 {v8Prices.locationNote}</div>
+                  )}
+                  {gsPrices?.confidenceNarrowed && (
+                    <div style={{ marginTop: "0.4rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                      <div style={{ flex: 1, height: "3px", borderRadius: "2px", background: "var(--border-default)", overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: "100%", borderRadius: "2px", background: (v?.confidence ?? 0) >= 0.85 ? "#22c55e" : "#f59e0b" }} />
+                      </div>
+                      <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 500, whiteSpace: "nowrap" }}>AI-narrowed range</span>
+                    </div>
+                  )}
+                </>) : (<>
+                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,175,55,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#D4AF37", fontWeight: 600 }}>GARAGE SALE</div>
+                      <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", marginTop: "0.15rem" }}>${gsPrices.garageSalePrice}–${gsPrices.garageSalePriceHigh}</div>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Collectible — holds value</div>
+                    </div>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,175,55,0.15)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#D4AF37", fontWeight: 600 }}>QUICK SALE</div>
+                      <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", marginTop: "0.15rem" }}>${gsPrices.quickSalePrice}–${gsPrices.quickSalePriceHigh}</div>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Gone today · Still holds value</div>
+                    </div>
                   </div>
-                </div>
+                </>)}
               </div>
             )}
 
