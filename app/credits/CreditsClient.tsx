@@ -1023,9 +1023,9 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
                             <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary)" }}>💎 {addon.credits} credits</span>
                             {owned ? (
                               ADDON_TOOL_ROUTES[addon.id] ? (
-                                <a href={ADDON_TOOL_ROUTES[addon.id]} style={{ fontSize: 11, fontWeight: 700, padding: "5px 14px", borderRadius: 7, background: "rgba(76,175,80,0.15)", border: "1px solid #4caf50", color: "#4caf50", textDecoration: "none" }}>Launch Tool →</a>
+                                <a href={ADDON_TOOL_ROUTES[addon.id]} style={{ fontSize: 11, fontWeight: 700, padding: "5px 14px", borderRadius: 7, background: "rgba(76,175,80,0.15)", border: "1px solid #22c55e", color: "#22c55e", textDecoration: "none" }}>Launch Tool →</a>
                               ) : (
-                                <span style={{ fontSize: 11, fontWeight: 700, padding: "5px 14px", borderRadius: 7, background: "rgba(76,175,80,0.15)", border: "1px solid #4caf50", color: "#4caf50" }}>✓ Owned</span>
+                                <span style={{ fontSize: 11, fontWeight: 700, padding: "5px 14px", borderRadius: 7, background: "rgba(76,175,80,0.15)", border: "1px solid #22c55e", color: "#22c55e" }}>✓ Owned</span>
                               )
                             ) : (
                               <button

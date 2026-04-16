@@ -1064,7 +1064,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
           ) : selected ? (
             <>
               {/* Offer panel for this item (if any active offers) */}
-              {selected.messages.some((m) => m.content.startsWith("OFFER ") || m.content.startsWith("COUNTER OFFER:")) && (
+              {!isMobile && selected.messages.some((m) => m.content.startsWith("OFFER ") || m.content.startsWith("COUNTER OFFER:")) && (
                 <div style={{ marginBottom: "0.75rem" }}>
                   <ActiveOffersWidget itemId={selected.itemId} />
                 </div>
@@ -1192,7 +1192,13 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                 {/* Toggle pill — visible on mobile only */}
                 {isMobile && (
                   <button
-                    onClick={() => setZone2Open(o => !o)}
+                    onClick={() => {
+                      setZone2Open(o => {
+                        const next = !o;
+                        try { fetch("/api/messages/zone2-event", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: next ? "open" : "close", conversationId: selectedId, isMobile }) }).catch(() => {}); } catch {}
+                        return next;
+                      });
+                    }}
                     style={{
                       width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                       padding: "8px 16px", background: "transparent", border: "none",

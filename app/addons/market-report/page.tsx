@@ -18,10 +18,10 @@ const TABS = [
 ];
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return "#4caf50";
+  if (score >= 80) return "#22c55e";
   if (score >= 60) return "#00bcd4";
-  if (score >= 40) return "#ff9800";
-  return "#f44336";
+  if (score >= 40) return "#f59e0b";
+  return "#ef4444";
 }
 
 function getTrendIcon(trend: string): string {
@@ -31,9 +31,9 @@ function getTrendIcon(trend: string): string {
 }
 
 function getTrendColor(trend: string): string {
-  if (trend === "rising") return "#4caf50";
-  if (trend === "falling") return "#f44336";
-  return "#ff9800";
+  if (trend === "rising") return "#22c55e";
+  if (trend === "falling") return "#ef4444";
+  return "#f59e0b";
 }
 
 function MarketReportInner() {
@@ -239,7 +239,7 @@ function MarketReportInner() {
                 textAlign: "center",
               }}
             >
-              <div style={{ fontSize: 24, fontWeight: 800, color: "#ff9800" }}>~30s</div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: "#f59e0b" }}>~30s</div>
               <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Est. Time</div>
             </div>
           </div>
@@ -263,7 +263,7 @@ function MarketReportInner() {
             Generate Full Report
           </button>
           {(!itemCount || itemCount === 0) && (
-            <div style={{ fontSize: 11, color: "#f44336", marginTop: 12 }}>
+            <div style={{ fontSize: 11, color: "#ef4444", marginTop: 12 }}>
               Add items to your inventory first to generate a report.
             </div>
           )}
@@ -284,7 +284,7 @@ function MarketReportInner() {
                   key={e.key}
                   style={{
                     background: "var(--ghost-bg)",
-                    border: `1px solid ${status === "complete" ? "#4caf50" : status === "failed" ? "#f44336" : "var(--border-default)"}`,
+                    border: `1px solid ${status === "complete" ? "#22c55e" : status === "failed" ? "#ef4444" : "var(--border-default)"}`,
                     borderRadius: 12,
                     padding: 16,
                     textAlign: "center",
@@ -368,15 +368,15 @@ function MarketReportInner() {
                 <div style={{ fontSize: 9, color: "var(--text-muted)" }}>Items</div>
               </div>
               <div style={{ background: "rgba(76,175,80,0.1)", border: "1px solid rgba(76,175,80,0.2)", borderRadius: 10, padding: "10px 18px", textAlign: "center" }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "#4caf50" }}>${(report.totalEstimatedValue || 0).toLocaleString()}</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#22c55e" }}>${(report.totalEstimatedValue || 0).toLocaleString()}</div>
                 <div style={{ fontSize: 9, color: "var(--text-muted)" }}>Est. Value</div>
               </div>
               <div style={{ background: "rgba(255,152,0,0.1)", border: "1px solid rgba(255,152,0,0.2)", borderRadius: 10, padding: "10px 18px", textAlign: "center" }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: "#ff9800" }}>${(report.revenuePotential || 0).toLocaleString()}</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#f59e0b" }}>${(report.revenuePotential || 0).toLocaleString()}</div>
                 <div style={{ fontSize: 9, color: "var(--text-muted)" }}>Revenue Potential</div>
               </div>
               <div style={{ background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: 10, padding: "10px 18px", textAlign: "center" }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: report.revenueGap > 0 ? "#4caf50" : "#f44336" }}>
+                <div style={{ fontSize: 20, fontWeight: 800, color: report.revenueGap > 0 ? "#22c55e" : "#ef4444" }}>
                   {report.revenueGap > 0 ? "+" : ""}${(report.revenueGap || 0).toLocaleString()}
                 </div>
                 <div style={{ fontSize: 9, color: "var(--text-muted)" }}>Revenue Gap</div>
@@ -385,13 +385,13 @@ function MarketReportInner() {
 
             {/* Status badges */}
             <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 10, padding: "4px 12px", borderRadius: 20, background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.3)", color: "#4caf50", fontWeight: 700 }}>
+              <span style={{ fontSize: 10, padding: "4px 12px", borderRadius: 20, background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.3)", color: "#22c55e", fontWeight: 700 }}>
                 {wellPriced} Well-Priced
               </span>
-              <span style={{ fontSize: 10, padding: "4px 12px", borderRadius: 20, background: "rgba(255,152,0,0.12)", border: "1px solid rgba(255,152,0,0.3)", color: "#ff9800", fontWeight: 700 }}>
+              <span style={{ fontSize: 10, padding: "4px 12px", borderRadius: 20, background: "rgba(255,152,0,0.12)", border: "1px solid rgba(255,152,0,0.3)", color: "#f59e0b", fontWeight: 700 }}>
                 {attention} Need Attention
               </span>
-              <span style={{ fontSize: 10, padding: "4px 12px", borderRadius: 20, background: "rgba(244,67,54,0.12)", border: "1px solid rgba(244,67,54,0.3)", color: "#f44336", fontWeight: 700 }}>
+              <span style={{ fontSize: 10, padding: "4px 12px", borderRadius: 20, background: "rgba(244,67,54,0.12)", border: "1px solid rgba(244,67,54,0.3)", color: "#ef4444", fontWeight: 700 }}>
                 {urgent} Urgent
               </span>
             </div>
@@ -418,7 +418,7 @@ function MarketReportInner() {
                   <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)", margin: "4px 0" }}>
                     {agent.score || "—"}
                   </div>
-                  <div style={{ fontSize: 9, color: agent.status === "success" ? "#4caf50" : "#f44336" }}>
+                  <div style={{ fontSize: 9, color: agent.status === "success" ? "#22c55e" : "#ef4444" }}>
                     {agent.status} · {Math.round(agent.ms / 1000)}s
                   </div>
                 </div>
@@ -515,7 +515,7 @@ function MarketReportInner() {
                       style={{
                         background: "var(--bg-card)",
                         border: "1px solid var(--border-default)",
-                        borderLeft: `4px solid ${isUp ? "#4caf50" : diff < 0 ? "#f44336" : "#ff9800"}`,
+                        borderLeft: `4px solid ${isUp ? "#22c55e" : diff < 0 ? "#ef4444" : "#f59e0b"}`,
                         borderRadius: 10,
                         padding: "14px 18px",
                         marginBottom: 8,
@@ -535,10 +535,10 @@ function MarketReportInner() {
                           <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Current</div>
                           <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text-muted)" }}>${adj.current || 0}</div>
                         </div>
-                        <div style={{ fontSize: 16, color: isUp ? "#4caf50" : "#f44336" }}>{isUp ? "→" : "→"}</div>
+                        <div style={{ fontSize: 16, color: isUp ? "#22c55e" : "#ef4444" }}>{isUp ? "→" : "→"}</div>
                         <div style={{ textAlign: "center" }}>
                           <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Suggested</div>
-                          <div style={{ fontSize: 16, fontWeight: 700, color: isUp ? "#4caf50" : "#f44336" }}>${adj.recommended || 0}</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: isUp ? "#22c55e" : "#ef4444" }}>${adj.recommended || 0}</div>
                         </div>
                         <span
                           style={{
@@ -546,8 +546,8 @@ function MarketReportInner() {
                             padding: "3px 10px",
                             borderRadius: 20,
                             background: isUp ? "rgba(76,175,80,0.12)" : "rgba(244,67,54,0.12)",
-                            border: `1px solid ${isUp ? "#4caf50" : "#f44336"}`,
-                            color: isUp ? "#4caf50" : "#f44336",
+                            border: `1px solid ${isUp ? "#22c55e" : "#ef4444"}`,
+                            color: isUp ? "#22c55e" : "#ef4444",
                             fontWeight: 700,
                           }}
                         >
@@ -592,8 +592,8 @@ function MarketReportInner() {
                             padding: "2px 8px",
                             borderRadius: 20,
                             background: opp.priority === 1 ? "rgba(244,67,54,0.12)" : opp.priority === 2 ? "rgba(255,152,0,0.12)" : "rgba(76,175,80,0.12)",
-                            border: `1px solid ${opp.priority === 1 ? "#f44336" : opp.priority === 2 ? "#ff9800" : "#4caf50"}`,
-                            color: opp.priority === 1 ? "#f44336" : opp.priority === 2 ? "#ff9800" : "#4caf50",
+                            border: `1px solid ${opp.priority === 1 ? "#ef4444" : opp.priority === 2 ? "#f59e0b" : "#22c55e"}`,
+                            color: opp.priority === 1 ? "#ef4444" : opp.priority === 2 ? "#f59e0b" : "#22c55e",
                             fontWeight: 700,
                           }}
                         >
@@ -601,7 +601,7 @@ function MarketReportInner() {
                         </span>
                       )}
                       {opp.impact && (
-                        <span style={{ fontSize: 11, color: "#4caf50", fontWeight: 700, marginLeft: "auto" }}>
+                        <span style={{ fontSize: 11, color: "#22c55e", fontWeight: 700, marginLeft: "auto" }}>
                           {opp.impact}
                         </span>
                       )}
@@ -733,7 +733,7 @@ function MarketReportInner() {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 12 }}>
               {(report.topOpportunities || []).slice(0, 3).map((opp: any, i: number) => {
-                const priorityColors = ["#f44336", "#ff9800", "#4caf50"];
+                const priorityColors = ["#ef4444", "#f59e0b", "#22c55e"];
                 const pColor = priorityColors[Math.min((opp.priority || 3) - 1, 2)];
                 return (
                   <div
@@ -773,7 +773,7 @@ function MarketReportInner() {
                       {opp.action || ""}
                     </div>
                     {opp.impact && (
-                      <div style={{ display: "inline-block", fontSize: 11, padding: "4px 12px", borderRadius: 20, background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.3)", color: "#4caf50", fontWeight: 700 }}>
+                      <div style={{ display: "inline-block", fontSize: 11, padding: "4px 12px", borderRadius: 20, background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.3)", color: "#22c55e", fontWeight: 700 }}>
                         Impact: {opp.impact}
                       </div>
                     )}
@@ -798,7 +798,7 @@ function MarketReportInner() {
                 }}
               >
                 {(report.recommendations || []).map((rec: any, i: number) => {
-                  const pColor = rec.priority === 1 ? "#f44336" : rec.priority === 2 ? "#ff9800" : "#4caf50";
+                  const pColor = rec.priority === 1 ? "#ef4444" : rec.priority === 2 ? "#f59e0b" : "#22c55e";
                   return (
                     <div
                       key={i}
@@ -910,7 +910,7 @@ function MarketReportInner() {
                   height: 44,
                   background: "transparent",
                   border: "1px solid var(--border-default)",
-                  color: copiedId === "__summary__" ? "#4caf50" : "var(--text-muted)",
+                  color: copiedId === "__summary__" ? "#22c55e" : "var(--text-muted)",
                   fontWeight: 700,
                   fontSize: 13,
                   borderRadius: 10,

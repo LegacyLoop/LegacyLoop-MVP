@@ -100,7 +100,7 @@ function AgentShipCard({ agent }: { agent: AgentResult }) {
           marginLeft: "auto", fontSize: "0.6rem", fontWeight: 600, padding: "0.15rem 0.45rem",
           borderRadius: "9999px",
           background: isPlaceholder ? "var(--ghost-bg)" : "rgba(76,175,80,0.15)",
-          color: isPlaceholder ? "var(--text-muted)" : "#4caf50",
+          color: isPlaceholder ? "var(--text-muted)" : "#22c55e",
         }}>
           {isPlaceholder ? "Coming Soon" : `${Math.round(agent.confidence * 100)}%`}
         </span>
@@ -407,12 +407,12 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
             padding: "0.75rem 1.25rem", flexWrap: "wrap", gap: "0.5rem",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              <span style={{ width: 8, height: 8, borderRadius: "50%", background: megaMode ? "#4caf50" : "var(--accent)" }} />
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: megaMode ? "#22c55e" : "var(--accent)" }} />
               <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text-primary)" }}>
                 {megaMode ? "Mega Mode Active" : "Standard Mode — OpenAI Agent"}
               </span>
               {megaMode && (
-                <span style={{ fontSize: "0.6rem", fontWeight: 600, padding: "0.15rem 0.5rem", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#4caf50" }}>4 AGENTS</span>
+                <span style={{ fontSize: "0.6rem", fontWeight: 600, padding: "0.15rem 0.5rem", borderRadius: "9999px", background: "rgba(76,175,80,0.15)", color: "#22c55e" }}>4 AGENTS</span>
               )}
             </div>
             {!megaMode && !megaAnimating && (
@@ -433,7 +433,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                 <div key={a.name} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.5rem 0" }}>
                   <span>{a.icon}</span>
                   <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)", flex: 1 }}>{a.name}</span>
-                  <span style={{ fontSize: "0.65rem", fontWeight: 600, padding: "0.15rem 0.5rem", borderRadius: "9999px", background: megaStep >= a.step ? "rgba(76,175,80,0.15)" : "rgba(255,152,0,0.15)", color: megaStep >= a.step ? "#4caf50" : "#ff9800" }}>
+                  <span style={{ fontSize: "0.65rem", fontWeight: 600, padding: "0.15rem 0.5rem", borderRadius: "9999px", background: megaStep >= a.step ? "rgba(76,175,80,0.15)" : "rgba(255,152,0,0.15)", color: megaStep >= a.step ? "#22c55e" : "#f59e0b" }}>
                     {megaStep >= a.step ? "Complete" : "Analyzing..."}
                   </span>
                 </div>
@@ -456,7 +456,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                   <span style={{
                     fontSize: "0.6rem", fontWeight: 600, padding: "0.15rem 0.55rem", borderRadius: "9999px",
                     background: ms.agreeLevel === "strong" ? "rgba(76,175,80,0.15)" : ms.agreeLevel === "mixed" ? "rgba(255,152,0,0.15)" : "rgba(239,68,68,0.15)",
-                    color: ms.agreeLevel === "strong" ? "#4caf50" : ms.agreeLevel === "mixed" ? "#ff9800" : "#ef5350",
+                    color: ms.agreeLevel === "strong" ? "#22c55e" : ms.agreeLevel === "mixed" ? "#f59e0b" : "#ef5350",
                   }}>
                     {ms.agreeLevel === "strong" ? "Strong Agreement" : ms.agreeLevel === "mixed" ? "Mixed" : "Divergent"}
                   </span>
@@ -723,7 +723,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                     </button>
                   ))}
                   {rates[0]?.isDemo && (
-                    <span style={{ marginLeft: "auto", fontSize: "0.65rem", padding: "0.2rem 0.5rem", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#ff9800", fontWeight: 600 }}>DEMO RATES</span>
+                    <span style={{ marginLeft: "auto", fontSize: "0.65rem", padding: "0.2rem 0.5rem", borderRadius: "9999px", background: "rgba(255,152,0,0.12)", color: "#f59e0b", fontWeight: 600 }}>DEMO RATES</span>
                   )}
                 </div>
 
@@ -838,7 +838,7 @@ export default function ShipBotClient({ items }: { items: ItemData[] }) {
                   {freightScheduled && (
                     <div style={{ padding: "0.75rem 1rem", borderRadius: "0.75rem", background: "rgba(76,175,80,0.1)", border: "1px solid rgba(76,175,80,0.2)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       <span style={{ fontSize: "1rem" }}>✅</span>
-                      <span style={{ fontSize: "0.82rem", color: "#4caf50", fontWeight: 600 }}>Freight pickup scheduled — carrier will contact you to confirm window</span>
+                      <span style={{ fontSize: "0.82rem", color: "#22c55e", fontWeight: 600 }}>Freight pickup scheduled — carrier will contact you to confirm window</span>
                     </div>
                   )}
                 </div>

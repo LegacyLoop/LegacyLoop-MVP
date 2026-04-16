@@ -12,15 +12,15 @@ const AI_ENGINES = [
 ];
 
 const SENSITIVITY_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  low: { bg: "rgba(76,175,80,0.15)", border: "#4caf50", text: "#4caf50" },
+  low: { bg: "rgba(76,175,80,0.15)", border: "#22c55e", text: "#22c55e" },
   medium: { bg: "rgba(255,193,7,0.15)", border: "#ffc107", text: "#ffc107" },
-  high: { bg: "rgba(244,67,54,0.15)", border: "#f44336", text: "#f44336" },
+  high: { bg: "rgba(244,67,54,0.15)", border: "#ef4444", text: "#ef4444" },
 };
 
 const TONE_COLORS: Record<string, string> = {
-  friendly: "#4caf50",
+  friendly: "#22c55e",
   professional: "#2196f3",
-  casual: "#ff9800",
+  casual: "#f59e0b",
   enthusiastic: "#e91e63",
 };
 
@@ -281,9 +281,9 @@ function BuyerOutreachInner() {
                     background: "var(--ghost-bg)",
                     border: `1px solid ${
                       status === "complete"
-                        ? "#4caf50"
+                        ? "#22c55e"
                         : status === "failed"
-                          ? "#f44336"
+                          ? "#ef4444"
                           : "var(--text-muted)"
                     }`,
                     borderRadius: 12,
@@ -367,7 +367,7 @@ function BuyerOutreachInner() {
                 textAlign: "center",
               }}
             >
-              <div style={{ fontSize: 28, fontWeight: 800, color: "#4caf50" }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: "#22c55e" }}>
                 {result.totalMessages || 0}
               </div>
               <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Outreach Messages</div>
@@ -381,7 +381,7 @@ function BuyerOutreachInner() {
                 textAlign: "center",
               }}
             >
-              <div style={{ fontSize: 28, fontWeight: 800, color: "#ff9800" }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: "#f59e0b" }}>
                 {result.topPersona?.likelihood_to_buy || 0}%
               </div>
               <div style={{ fontSize: 10, color: "var(--text-muted)" }}>Top Match Score</div>
@@ -419,7 +419,7 @@ function BuyerOutreachInner() {
                   <div
                     style={{
                       fontSize: 9,
-                      color: agent.status === "success" ? "#4caf50" : "#f44336",
+                      color: agent.status === "success" ? "#22c55e" : "#ef4444",
                     }}
                   >
                     {agent.status} · {Math.round(agent.ms / 1000)}s
@@ -574,10 +574,10 @@ function BuyerOutreachInner() {
                           borderRadius: 3,
                           background:
                             (persona.likelihood_to_buy || 0) >= 70
-                              ? "linear-gradient(90deg, #4caf50, #66bb6a)"
+                              ? "linear-gradient(90deg, #22c55e, #66bb6a)"
                               : (persona.likelihood_to_buy || 0) >= 40
-                                ? "linear-gradient(90deg, #ff9800, #ffb74d)"
-                                : "linear-gradient(90deg, #f44336, #ef5350)",
+                                ? "linear-gradient(90deg, #f59e0b, #ffb74d)"
+                                : "linear-gradient(90deg, #ef4444, #ef5350)",
                           transition: "width 0.5s ease",
                         }}
                       />
@@ -794,9 +794,9 @@ function BuyerOutreachInner() {
                                     ? "rgba(76,175,80,0.15)"
                                     : "rgba(0,188,212,0.1)",
                                   border: isCopied
-                                    ? "1px solid #4caf50"
+                                    ? "1px solid #22c55e"
                                     : "1px solid rgba(0,188,212,0.2)",
-                                  color: isCopied ? "#4caf50" : "#00bcd4",
+                                  color: isCopied ? "#22c55e" : "#00bcd4",
                                   cursor: "pointer",
                                 }}
                               >
@@ -897,8 +897,8 @@ function BuyerOutreachInner() {
                     padding: "2px 10px",
                     borderRadius: 20,
                     background: "rgba(76,175,80,0.15)",
-                    border: "1px solid #4caf50",
-                    color: "#4caf50",
+                    border: "1px solid #22c55e",
+                    color: "#22c55e",
                     fontWeight: 700,
                     marginLeft: "auto",
                   }}

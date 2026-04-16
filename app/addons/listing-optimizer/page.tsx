@@ -301,9 +301,9 @@ function ListingOptimizerInner() {
                     background: "var(--ghost-bg)",
                     border: `1px solid ${
                       status === "complete"
-                        ? "#4caf50"
+                        ? "#22c55e"
                         : status === "failed"
-                          ? "#f44336"
+                          ? "#ef4444"
                           : "var(--text-muted)"
                     }`,
                     borderRadius: 12,
@@ -434,8 +434,8 @@ function ListingOptimizerInner() {
             <span
               style={{
                 background: "rgba(76,175,80,0.15)",
-                border: "1px solid #4caf50",
-                color: "#4caf50",
+                border: "1px solid #22c55e",
+                color: "#22c55e",
                 fontSize: 14,
                 fontWeight: 700,
                 borderRadius: 20,
@@ -492,7 +492,7 @@ function ListingOptimizerInner() {
                   style={{
                     fontSize: 9,
                     color:
-                      agent.status === "success" ? "#4caf50" : "#f44336",
+                      agent.status === "success" ? "#22c55e" : "#ef4444",
                   }}
                 >
                   {agent.status} · {Math.round(agent.ms / 1000)}s
@@ -571,7 +571,7 @@ function ListingOptimizerInner() {
                         padding: "2px 8px",
                         borderRadius: 20,
                         background: "rgba(76,175,80,0.15)",
-                        color: "#4caf50",
+                        color: "#22c55e",
                         fontWeight: 700,
                       }}
                     >
@@ -720,7 +720,7 @@ function ListingOptimizerInner() {
                               key={i}
                               style={{
                                 fontSize: 10,
-                                color: "#4caf50",
+                                color: "#22c55e",
                                 marginBottom: 2,
                               }}
                             >
@@ -748,9 +748,9 @@ function ListingOptimizerInner() {
                           ? "rgba(76,175,80,0.15)"
                           : "rgba(0,188,212,0.12)",
                         border: isCopied
-                          ? "1px solid #4caf50"
+                          ? "1px solid #22c55e"
                           : "1px solid #00bcd4",
-                        color: isCopied ? "#4caf50" : "#00bcd4",
+                        color: isCopied ? "#22c55e" : "#00bcd4",
                         cursor: "pointer",
                       }}
                     >

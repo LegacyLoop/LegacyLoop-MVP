@@ -602,7 +602,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
                             position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
                             background: "linear-gradient(135deg, var(--accent), var(--accent-deep))", color: "#fff",
                             padding: "0.2rem 1.25rem", borderRadius: "0 0 10px 10px",
-                            fontSize: "0.62rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase",
+                            fontSize: "0.65rem", fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase",
                             boxShadow: "0 4px 12px var(--accent-glow)",
                           }}>
                             MOST POPULAR

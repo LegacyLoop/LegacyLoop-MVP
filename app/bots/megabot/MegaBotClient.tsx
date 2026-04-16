@@ -32,12 +32,12 @@ const PROVIDER_META: Record<string, { icon: string; label: string; color: string
 const BOT_META: Record<string, { label: string; icon: string; color: string; href: string }> = {
   analysis: { label: "AnalyzeBot", icon: "🧠", color: "#00bcd4", href: "/bots/analyzebot" },
   analyzebot: { label: "AnalyzeBot", icon: "🧠", color: "#00bcd4", href: "/bots/analyzebot" },
-  pricebot: { label: "PriceBot", icon: "💰", color: "#4caf50", href: "/bots/pricebot" },
-  pricing: { label: "PriceBot", icon: "💰", color: "#4caf50", href: "/bots/pricebot" },
+  pricebot: { label: "PriceBot", icon: "💰", color: "#22c55e", href: "/bots/pricebot" },
+  pricing: { label: "PriceBot", icon: "💰", color: "#22c55e", href: "/bots/pricebot" },
   buyerbot: { label: "BuyerBot", icon: "🎯", color: "#e91e63", href: "/bots/buyerbot" },
   buyers: { label: "BuyerBot", icon: "🎯", color: "#e91e63", href: "/bots/buyerbot" },
-  listbot: { label: "ListBot", icon: "📝", color: "#ff9800", href: "/bots/listbot" },
-  listing: { label: "ListBot", icon: "📝", color: "#ff9800", href: "/bots/listbot" },
+  listbot: { label: "ListBot", icon: "📝", color: "#f59e0b", href: "/bots/listbot" },
+  listing: { label: "ListBot", icon: "📝", color: "#f59e0b", href: "/bots/listbot" },
   reconbot: { label: "ReconBot", icon: "🔍", color: "#607d8b", href: "/bots/reconbot" },
   recon: { label: "ReconBot", icon: "🔍", color: "#607d8b", href: "/bots/reconbot" },
   photobot: { label: "PhotoBot", icon: "📷", color: "#f06292", href: "/bots/photobot" },
@@ -396,7 +396,7 @@ function BuyersTabContent({ result, providers, agreement }: {
                   const pm = PROVIDER_META[p.provider];
                   return <th key={p.provider} style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: pm?.color || "#888", fontWeight: 700 }}>{pm?.icon} {pm?.label}</th>;
                 })}
-                <th style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: "#4caf50", fontWeight: 700 }}>✅ Combined</th>
+                <th style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: "#22c55e", fontWeight: 700 }}>✅ Combined</th>
               </tr>
             </thead>
             <tbody>
@@ -413,7 +413,7 @@ function BuyersTabContent({ result, providers, agreement }: {
                   {successful.map((p: any, i: number) => (
                     <td key={p.provider} style={{ padding: "0.3rem 0.5rem", textAlign: "center", color: "var(--text-primary)" }}>{row.get(allBH[i])}</td>
                   ))}
-                  <td style={{ padding: "0.3rem 0.5rem", textAlign: "center", fontWeight: 700, color: "#4caf50" }}>{typeof row.combined === "string" && row.combined.length > 25 ? row.combined.slice(0, 25) + "..." : row.combined}</td>
+                  <td style={{ padding: "0.3rem 0.5rem", textAlign: "center", fontWeight: 700, color: "#22c55e" }}>{typeof row.combined === "string" && row.combined.length > 25 ? row.combined.slice(0, 25) + "..." : row.combined}</td>
                 </tr>
               ))}
             </tbody>
@@ -460,7 +460,7 @@ function BuyersTabContent({ result, providers, agreement }: {
                       <td style={{ padding: "0.25rem 0.4rem", fontWeight: 600, color: "var(--text-primary)", textTransform: "capitalize" }}>{key}</td>
                       <td style={{ padding: "0.25rem 0.4rem", textAlign: "center", fontSize: "0.62rem", color: "var(--text-muted)" }}>{entries.map(e => e.agent).join(", ")}</td>
                       <td style={{ padding: "0.25rem 0.4rem", textAlign: "center" }}>
-                        <span style={{ fontSize: "0.55rem", padding: "0.05rem 0.3rem", borderRadius: 99, background: (best.opportunity_level || "").toLowerCase().includes("excel") ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: (best.opportunity_level || "").toLowerCase().includes("excel") ? "#4caf50" : "#ff9800" }}>{best.opportunity_level || "—"}</span>
+                        <span style={{ fontSize: "0.55rem", padding: "0.05rem 0.3rem", borderRadius: 99, background: (best.opportunity_level || "").toLowerCase().includes("excel") ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: (best.opportunity_level || "").toLowerCase().includes("excel") ? "#22c55e" : "#f59e0b" }}>{best.opportunity_level || "—"}</span>
                       </td>
                       <td style={{ padding: "0.25rem 0.4rem", textAlign: "right", color: "var(--text-secondary)" }}>{best.estimated_buyers != null ? `~${best.estimated_buyers}` : "—"}</td>
                       <td style={{ padding: "0.25rem 0.4rem", textAlign: "right", color: "var(--accent)", fontWeight: 600 }}>{best.avg_sale_price_here != null || best.avg_sale_price != null ? `$${best.avg_sale_price_here || best.avg_sale_price}` : "—"}</td>
@@ -481,7 +481,7 @@ function BuyersTabContent({ result, providers, agreement }: {
             return (order[(a.urgency || "").toLowerCase()] ?? 3) - (order[(b.urgency || "").toLowerCase()] ?? 3);
           }).slice(0, 10).map((l: any) => ({
             label: `${l._agent} — ${l.urgency || "Soon"}`,
-            color: (l.urgency || "").toLowerCase().includes("now") ? "#ef4444" : "#ff9800",
+            color: (l.urgency || "").toLowerCase().includes("now") ? "#ef4444" : "#f59e0b",
             text: `${l.lead_description || l.description || "Active buyer"}${l.estimated_price_theyd_pay || l.estimated_price ? ` — ~$${l.estimated_price_theyd_pay || l.estimated_price}` : ""}${l.how_to_reach ? ` — ${l.how_to_reach}` : ""}`,
           }))
         } />
@@ -629,7 +629,7 @@ function BuyersTabContent({ result, providers, agreement }: {
                     {bh.profileCount} profiles · {bh.platformCount} platforms · {bh.hotLeadCount} leads
                     {bh.demandLevel && ` · ${bh.demandLevel}`}
                   </span>
-                  <span style={{ fontSize: "0.62rem", color: "#4caf50" }}>✅ {timeStr}</span>
+                  <span style={{ fontSize: "0.62rem", color: "#22c55e" }}>✅ {timeStr}</span>
                   <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", transform: isExp ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▾</span>
                 </button>
                 {isExp && (
@@ -657,7 +657,7 @@ function BuyersTabContent({ result, providers, agreement }: {
                         {bh.platforms.map((pl: any, i: number) => (
                           <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.25rem 0", borderBottom: i < bh.platforms.length - 1 ? "1px solid var(--border-default)" : "none" }}>
                             <span style={{ fontSize: "0.72rem", fontWeight: 600, color: "var(--text-primary)", minWidth: 80 }}>{pl.platform}</span>
-                            <span style={{ fontSize: "0.55rem", padding: "0.05rem 0.3rem", borderRadius: 99, background: (pl.opportunity_level || "").toLowerCase().includes("excel") ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: (pl.opportunity_level || "").toLowerCase().includes("excel") ? "#4caf50" : "#ff9800" }}>{pl.opportunity_level || "—"}</span>
+                            <span style={{ fontSize: "0.55rem", padding: "0.05rem 0.3rem", borderRadius: 99, background: (pl.opportunity_level || "").toLowerCase().includes("excel") ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: (pl.opportunity_level || "").toLowerCase().includes("excel") ? "#22c55e" : "#f59e0b" }}>{pl.opportunity_level || "—"}</span>
                             <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", flex: 1 }}>{pl.estimated_buyers != null ? `~${pl.estimated_buyers} buyers` : ""}{pl.avg_sale_price_here || pl.avg_sale_price ? ` · avg $${pl.avg_sale_price_here || pl.avg_sale_price}` : ""}</span>
                           </div>
                         ))}
@@ -671,7 +671,7 @@ function BuyersTabContent({ result, providers, agreement }: {
                         {bh.hotLeads.map((l: any, i: number) => (
                           <div key={i} style={{ padding: "0.2rem 0", borderBottom: i < bh.hotLeads.length - 1 ? "1px solid var(--border-default)" : "none" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                              <span style={{ fontSize: "0.55rem", padding: "0.05rem 0.25rem", borderRadius: 99, background: (l.urgency || "").toLowerCase().includes("now") ? "rgba(239,68,68,0.15)" : "rgba(255,152,0,0.12)", color: (l.urgency || "").toLowerCase().includes("now") ? "#ef4444" : "#ff9800", fontWeight: 600 }}>{l.urgency || "Soon"}</span>
+                              <span style={{ fontSize: "0.55rem", padding: "0.05rem 0.25rem", borderRadius: 99, background: (l.urgency || "").toLowerCase().includes("now") ? "rgba(239,68,68,0.15)" : "rgba(255,152,0,0.12)", color: (l.urgency || "").toLowerCase().includes("now") ? "#ef4444" : "#f59e0b", fontWeight: 600 }}>{l.urgency || "Soon"}</span>
                               <span style={{ fontSize: "0.68rem", color: "var(--text-primary)", flex: 1 }}>{l.lead_description || "Buyer"}</span>
                               {(l.estimated_price_theyd_pay || l.estimated_price) && <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "#4ade80" }}>~${l.estimated_price_theyd_pay || l.estimated_price}</span>}
                             </div>
@@ -840,7 +840,7 @@ function PricingTabContent({ result, providers, agreement }: {
         borderRadius: "1.25rem", overflow: "hidden",
       }}>
         <div style={{ padding: "0.85rem 1.25rem", borderBottom: "1px solid var(--border-default)" }}>
-          <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#4caf50", fontWeight: 700 }}>
+          <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#22c55e", fontWeight: 700 }}>
             4-Agent Pricing Comparison
           </div>
         </div>
@@ -930,7 +930,7 @@ function PricingTabContent({ result, providers, agreement }: {
                       <td style={{ padding: "0.3rem 0.4rem", textAlign: "right", color: "var(--text-secondary)" }}>{plat.list_price || plat.recommended_list_price ? `$${plat.list_price || plat.recommended_list_price}` : "\u2014"}</td>
                       <td style={{ padding: "0.3rem 0.4rem", textAlign: "right", color: "var(--text-secondary)" }}>{plat.expected_sell || plat.expected_sell_price ? `$${plat.expected_sell || plat.expected_sell_price}` : "\u2014"}</td>
                       <td style={{ padding: "0.3rem 0.4rem", textAlign: "right", color: "var(--text-muted)" }}>{plat.fees_pct || plat.fees_percentage ? `${plat.fees_pct || plat.fees_percentage}%` : "\u2014"}</td>
-                      <td style={{ padding: "0.3rem 0.4rem", textAlign: "right", color: "#4caf50", fontWeight: 600 }}>{plat.seller_net || plat.seller_net_after_fees ? `$${plat.seller_net || plat.seller_net_after_fees}` : "\u2014"}</td>
+                      <td style={{ padding: "0.3rem 0.4rem", textAlign: "right", color: "#22c55e", fontWeight: 600 }}>{plat.seller_net || plat.seller_net_after_fees ? `$${plat.seller_net || plat.seller_net_after_fees}` : "\u2014"}</td>
                       <td style={{ padding: "0.3rem 0.4rem", textAlign: "right", color: "var(--text-muted)" }}>{plat.days_to_sell || plat.avg_days_to_sell || "\u2014"}</td>
                       <td style={{ padding: "0.3rem 0.4rem", fontSize: "0.62rem", color: "var(--text-muted)" }}>{best.agent}</td>
                     </tr>
@@ -1068,7 +1068,7 @@ function PricingTabContent({ result, providers, agreement }: {
                     {ph.bestPlatform && typeof ph.bestPlatform === "string" && ` \u00B7 ${ph.bestPlatform}`}
                     {ph.demandLevel && ` \u00B7 ${ph.demandLevel}`}
                   </span>
-                  <span style={{ fontSize: "0.62rem", color: "#4caf50" }}>✅ {timeStr}</span>
+                  <span style={{ fontSize: "0.62rem", color: "#22c55e" }}>✅ {timeStr}</span>
                   <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", transform: isExp ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▾</span>
                 </button>
                 {isExp && (
@@ -1081,7 +1081,7 @@ function PricingTabContent({ result, providers, agreement }: {
                         <span style={{ color: "var(--text-muted)" }}>{"\u2014"}</span>
                         <span style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--accent)" }}>${ph.priceHigh != null ? Math.round(Number(ph.priceHigh)) : "?"}</span>
                         {ph.priceMid != null && <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>mid ${Math.round(Number(ph.priceMid))}</span>}
-                        {ph.confidence != null && <span style={{ fontSize: "0.72rem", fontWeight: 600, color: Number(ph.confidence) >= 70 ? "#4caf50" : "#ff9800" }}>{Math.round(Number(ph.confidence))}%</span>}
+                        {ph.confidence != null && <span style={{ fontSize: "0.72rem", fontWeight: 600, color: Number(ph.confidence) >= 70 ? "#22c55e" : "#f59e0b" }}>{Math.round(Number(ph.confidence))}%</span>}
                       </div>
                       {ph.rationale && <p style={{ fontSize: "0.75rem", color: "var(--text-secondary)", margin: 0, lineHeight: 1.5 }}>{typeof ph.rationale === "string" && ph.rationale.length > 300 ? ph.rationale.slice(0, 300) + "..." : ph.rationale}</p>}
                     </div>
@@ -1125,7 +1125,7 @@ function PricingTabContent({ result, providers, agreement }: {
                                   <tr key={key} style={{ borderTop: "1px solid var(--border-default)" }}>
                                     <td style={{ padding: "0.25rem 0.3rem", color: "var(--text-primary)", fontWeight: 500 }}>{name}</td>
                                     <td style={{ padding: "0.25rem 0.3rem", textAlign: "right", color: "var(--text-secondary)" }}>{plat.list_price || plat.recommended_list_price ? `$${plat.list_price || plat.recommended_list_price}` : "\u2014"}</td>
-                                    <td style={{ padding: "0.25rem 0.3rem", textAlign: "right", color: "#4caf50", fontWeight: 600 }}>{plat.seller_net || plat.seller_net_after_fees ? `$${plat.seller_net || plat.seller_net_after_fees}` : "\u2014"}</td>
+                                    <td style={{ padding: "0.25rem 0.3rem", textAlign: "right", color: "#22c55e", fontWeight: 600 }}>{plat.seller_net || plat.seller_net_after_fees ? `$${plat.seller_net || plat.seller_net_after_fees}` : "\u2014"}</td>
                                     <td style={{ padding: "0.25rem 0.3rem", textAlign: "right", color: "var(--text-muted)" }}>{plat.days_to_sell || plat.avg_days_to_sell || "\u2014"}</td>
                                   </tr>
                                 );
@@ -1140,7 +1140,7 @@ function PricingTabContent({ result, providers, agreement }: {
                     {/* Deep Pricing Intelligence */}
                     {(ph.demandLevel || ph.listPrice || ph.priceHistoryTrend) && (
                       <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "linear-gradient(135deg, rgba(76,175,80,0.04), rgba(0,188,212,0.02))", borderRadius: "0.6rem", border: "1px solid rgba(76,175,80,0.12)" }}>
-                        <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#4caf50", fontWeight: 700, marginBottom: "0.4rem" }}>Deep Pricing Intel</div>
+                        <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#22c55e", fontWeight: 700, marginBottom: "0.4rem" }}>Deep Pricing Intel</div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", fontSize: "0.72rem", color: "var(--text-secondary)" }}>
                           {ph.demandLevel && <div>📊 {ph.demandLevel} demand{ph.demandTrend ? ` \u00B7 ${ph.demandTrend}` : ""}{ph.supplyLevel ? ` \u00B7 Supply: ${ph.supplyLevel}` : ""}</div>}
                           {ph.listPrice && <div>🤝 List ${Math.round(Number(ph.listPrice))}{ph.sweetSpot ? ` \u00B7 Sweet spot $${Math.round(Number(ph.sweetSpot))}` : ""}{ph.minAccept ? ` \u00B7 Floor $${Math.round(Number(ph.minAccept))}` : ""}</div>}
@@ -1191,10 +1191,10 @@ function PricingTabContent({ result, providers, agreement }: {
       {maxSpread > 0 && priceRanges.length >= 2 && (
         <div style={{
           background: "rgba(255,152,0,0.06)", border: "1px solid rgba(255,152,0,0.2)",
-          borderLeft: "4px solid #ff9800", borderRadius: "0 0.85rem 0.85rem 0",
+          borderLeft: "4px solid #f59e0b", borderRadius: "0 0.85rem 0.85rem 0",
           padding: "1rem 1.25rem",
         }}>
-          <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#ff9800", fontWeight: 700, marginBottom: "0.5rem" }}>
+          <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#f59e0b", fontWeight: 700, marginBottom: "0.5rem" }}>
             ⚠️ Price Disagreements — ${maxSpread} spread
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
@@ -1234,11 +1234,11 @@ function PricingTabContent({ result, providers, agreement }: {
       <div style={{
         background: "linear-gradient(135deg, rgba(76,175,80,0.06), rgba(0,188,212,0.04))",
         border: "1px solid rgba(76,175,80,0.25)",
-        borderLeft: "4px solid #4caf50",
+        borderLeft: "4px solid #22c55e",
         borderRadius: "0 1.25rem 1.25rem 0",
         padding: "1.25rem 1.5rem",
       }}>
-        <div style={{ fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#4caf50", fontWeight: 700, marginBottom: "0.5rem" }}>
+        <div style={{ fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#22c55e", fontWeight: 700, marginBottom: "0.5rem" }}>
           💰 MegaBot Pricing Report
         </div>
         <p style={{ fontSize: "0.88rem", lineHeight: 1.7, color: "var(--text-secondary)", margin: 0 }}>
@@ -1467,7 +1467,7 @@ function AnalysisTabContent({ result, consensus, providers, agreement }: {
                     {condNum != null && ` \u00B7 ${condNum}/10 ${condLbl}`}
                     {h.isTextOnly && " (text only)"}
                   </span>
-                  <span style={{ fontSize: "0.62rem", color: "#4caf50" }}>✅ {timeStr}</span>
+                  <span style={{ fontSize: "0.62rem", color: "#22c55e" }}>✅ {timeStr}</span>
                   <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", transform: isExp ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>▾</span>
                 </button>
                 {isExp && (
@@ -1489,7 +1489,7 @@ function AnalysisTabContent({ result, consensus, providers, agreement }: {
                       <div style={{ marginBottom: "0.5rem", padding: "0.6rem", background: "var(--bg-card)", borderRadius: "0.6rem", border: "1px solid var(--border-default)" }}>
                         <div style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.1em", color: pm.color, fontWeight: 700, marginBottom: "0.35rem" }}>Condition</div>
                         <div style={{ display: "flex", gap: "1rem", fontSize: "0.82rem", marginBottom: "0.3rem" }}>
-                          <span><strong style={{ color: condNum >= 7 ? "#4caf50" : condNum >= 4 ? "#ff9800" : "#ef4444" }}>{condNum}/10</strong> Overall</span>
+                          <span><strong style={{ color: condNum >= 7 ? "#22c55e" : condNum >= 4 ? "#f59e0b" : "#ef4444" }}>{condNum}/10</strong> Overall</span>
                           {h.condCosm != null && <span>{h.condCosm}/10 Cosmetic</span>}
                           {h.condFunc != null && <span>{h.condFunc}/10 Functional</span>}
                         </div>
@@ -1775,8 +1775,8 @@ function CollectiblesTabContent({ result, providers, agreement }: {
                 {ch.year && <div><span style={{ color: "var(--text-muted)" }}>Year: </span><span style={{ color: "var(--text-primary)" }}>{ch.year}</span></div>}
                 {ch.conditionGrade && <div><span style={{ color: "var(--text-muted)" }}>Grade: </span><span style={{ color: "var(--text-primary)" }}>{ch.conditionGrade}</span></div>}
                 {ch.estMid && <div><span style={{ color: "var(--text-muted)" }}>Est: </span><span style={{ color: BLUE, fontWeight: 600 }}>${Math.round(Number(ch.estMid)).toLocaleString()}</span></div>}
-                {ch.bestVenue && <div><span style={{ color: "var(--text-muted)" }}>Sell at: </span><span style={{ color: "#4caf50", fontWeight: 600 }}>{ch.bestVenue}</span></div>}
-                {ch.priceTrend && <div><span style={{ color: "var(--text-muted)" }}>Trend: </span><span style={{ color: ch.priceTrend === "Rising" ? "#4caf50" : ch.priceTrend === "Declining" ? "#ef4444" : "var(--text-primary)" }}>{ch.priceTrend}</span></div>}
+                {ch.bestVenue && <div><span style={{ color: "var(--text-muted)" }}>Sell at: </span><span style={{ color: "#22c55e", fontWeight: 600 }}>{ch.bestVenue}</span></div>}
+                {ch.priceTrend && <div><span style={{ color: "var(--text-muted)" }}>Trend: </span><span style={{ color: ch.priceTrend === "Rising" ? "#22c55e" : ch.priceTrend === "Declining" ? "#ef4444" : "var(--text-primary)" }}>{ch.priceTrend}</span></div>}
               </div>
               {ch.summary && (
                 <div style={{ fontSize: "0.65rem", color: "var(--text-secondary)", marginTop: "0.3rem", lineHeight: 1.4, fontStyle: "italic" }}>
@@ -1824,7 +1824,7 @@ function ListingTabContent({ result, providers, agreement }: {
                   const pm = PROVIDER_META[p.provider];
                   return <th key={p.provider} style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: pm?.color || "#888", fontWeight: 700 }}>{pm?.icon} {pm?.label}</th>;
                 })}
-                <th style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: "#4caf50", fontWeight: 700 }}>Combined</th>
+                <th style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: "#22c55e", fontWeight: 700 }}>Combined</th>
               </tr>
             </thead>
             <tbody>
@@ -1838,7 +1838,7 @@ function ListingTabContent({ result, providers, agreement }: {
                   {successful.map((_, i: number) => (
                     <td key={i} style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "var(--text-primary)" }}>{row.get(allLH[i])}</td>
                   ))}
-                  <td style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "#4caf50", fontWeight: 700 }}>{row.combined}</td>
+                  <td style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "#22c55e", fontWeight: 700 }}>{row.combined}</td>
                 </tr>
               ))}
             </tbody>
@@ -1921,7 +1921,7 @@ function ReconTabContent({ result, providers, agreement }: {
                   const pm = PROVIDER_META[p.provider];
                   return <th key={p.provider} style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: pm?.color || "#888", fontWeight: 700 }}>{pm?.icon} {pm?.label}</th>;
                 })}
-                <th style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: "#4caf50", fontWeight: 700 }}>Combined</th>
+                <th style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: "#22c55e", fontWeight: 700 }}>Combined</th>
               </tr>
             </thead>
             <tbody>
@@ -1936,7 +1936,7 @@ function ReconTabContent({ result, providers, agreement }: {
                   {successful.map((_, i: number) => (
                     <td key={i} style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "var(--text-primary)" }}>{row.get(allRH[i])}</td>
                   ))}
-                  <td style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "#4caf50", fontWeight: 700 }}>{row.combined}</td>
+                  <td style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "#22c55e", fontWeight: 700 }}>{row.combined}</td>
                 </tr>
               ))}
             </tbody>
@@ -2128,7 +2128,7 @@ function AntiqueTabContent({ result, providers, agreement }: {
                 {ah.era && <div><span style={{ color: "var(--text-muted)" }}>Era: </span><span style={{ color: "var(--text-primary)" }}>{ah.era}</span></div>}
                 {ah.maker && <div><span style={{ color: "var(--text-muted)" }}>Maker: </span><span style={{ color: "var(--text-primary)" }}>{ah.maker}</span></div>}
                 {ah.fairMarket != null && <div><span style={{ color: "var(--text-muted)" }}>Fair Market: </span><span style={{ color: "var(--accent)", fontWeight: 600 }}>{_fmtPrice(ah.fairMarket)}</span></div>}
-                {ah.auctionEst != null && <div><span style={{ color: "var(--text-muted)" }}>Auction: </span><span style={{ color: "#4caf50", fontWeight: 600 }}>{_fmtPrice(ah.auctionEst)}</span></div>}
+                {ah.auctionEst != null && <div><span style={{ color: "var(--text-muted)" }}>Auction: </span><span style={{ color: "#22c55e", fontWeight: 600 }}>{_fmtPrice(ah.auctionEst)}</span></div>}
               </div>
             </div>
           );
@@ -2171,7 +2171,7 @@ function PhotosTabContent({ result, providers, agreement }: {
                   const pm = PROVIDER_META[p.provider];
                   return <th key={p.provider} style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: pm?.color || "#888", fontWeight: 700 }}>{pm?.icon} {pm?.label}</th>;
                 })}
-                <th style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: "#4caf50", fontWeight: 700 }}>Average</th>
+                <th style={{ textAlign: "center", padding: "0.35rem 0.5rem", color: "#22c55e", fontWeight: 700 }}>Average</th>
               </tr>
             </thead>
             <tbody>
@@ -2186,7 +2186,7 @@ function PhotosTabContent({ result, providers, agreement }: {
                   {successful.map((_, i: number) => (
                     <td key={i} style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "var(--text-primary)" }}>{row.get(allPhH[i])}</td>
                   ))}
-                  <td style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "#4caf50", fontWeight: 700 }}>{row.combined}</td>
+                  <td style={{ textAlign: "center", padding: "0.3rem 0.5rem", color: "#22c55e", fontWeight: 700 }}>{row.combined}</td>
                 </tr>
               ))}
             </tbody>
@@ -2421,8 +2421,8 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
               {"\uD83D\uDCE6"} Item Breakdown ({statData.total} total)
             </div>
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "0.75rem", fontSize: "0.75rem" }}>
-              <span style={{ color: "var(--text-secondary)" }}>Analyzed: <strong style={{ color: "#4caf50" }}>{statData.analyzed}</strong></span>
-              <span style={{ color: "var(--text-secondary)" }}>Pending: <strong style={{ color: "#ff9800" }}>{statData.total - statData.analyzed}</strong></span>
+              <span style={{ color: "var(--text-secondary)" }}>Analyzed: <strong style={{ color: "#22c55e" }}>{statData.analyzed}</strong></span>
+              <span style={{ color: "var(--text-secondary)" }}>Pending: <strong style={{ color: "#f59e0b" }}>{statData.total - statData.analyzed}</strong></span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
               {items.map((itm) => (
@@ -2448,7 +2448,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                     padding: "0.1rem 0.4rem",
                     borderRadius: "9999px",
                     background: itm.hasAnalysis ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)",
-                    color: itm.hasAnalysis ? "#4caf50" : "#ff9800",
+                    color: itm.hasAnalysis ? "#22c55e" : "#f59e0b",
                     fontWeight: 600,
                   }}>{itm.status}</span>
                 </div>
@@ -2504,7 +2504,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                         <span style={{
                           fontSize: "0.55rem", padding: "0.1rem 0.35rem", borderRadius: "9999px",
                           background: Number(val.confidence) >= 70 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)",
-                          color: Number(val.confidence) >= 70 ? "#4caf50" : "#ff9800",
+                          color: Number(val.confidence) >= 70 ? "#22c55e" : "#f59e0b",
                           fontWeight: 600,
                         }}>{Math.round(Number(val.confidence))}%</span>
                       )}
@@ -2557,7 +2557,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                           <span style={{
                             fontSize: "0.55rem", padding: "0.1rem 0.4rem", borderRadius: "9999px",
                             background: agree >= 75 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)",
-                            color: agree >= 75 ? "#4caf50" : "#ff9800",
+                            color: agree >= 75 ? "#22c55e" : "#f59e0b",
                             fontWeight: 700,
                           }}>{agree}% agreement</span>
                         </div>
@@ -2670,7 +2670,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
           }}>
             {[
               { label: "Bots Enhanced", value: totalBots, color: "var(--accent)" },
-              { label: "Avg Agreement", value: `${avgAgreement}%`, color: avgAgreement >= 75 ? "#4caf50" : "#ff9800" },
+              { label: "Avg Agreement", value: `${avgAgreement}%`, color: avgAgreement >= 75 ? "#22c55e" : "#f59e0b" },
               { label: "Agent Runs", value: totalAgents, color: "#a855f7" },
             ].map((s) => (
               <div key={s.label} style={{ textAlign: "center" }}>
@@ -2828,7 +2828,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", marginBottom: "0.15rem" }}>
                               <span style={{ fontSize: "0.72rem", fontWeight: 700, color: ef.botColor }}>{ef.botLabel}</span>
-                              <span style={{ fontSize: "0.55rem", padding: "1px 5px", borderRadius: 99, fontWeight: 600, background: ef.agreement >= 75 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: ef.agreement >= 75 ? "#4caf50" : "#ff9800" }}>{ef.agreement}%</span>
+                              <span style={{ fontSize: "0.55rem", padding: "1px 5px", borderRadius: 99, fontWeight: 600, background: ef.agreement >= 75 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: ef.agreement >= 75 ? "#22c55e" : "#f59e0b" }}>{ef.agreement}%</span>
                               {ef.responseTime > 0 && <span style={{ fontSize: "0.55rem", color: "var(--text-muted)" }}>{(ef.responseTime / 1000).toFixed(1)}s</span>}
                               {priceFair != null && <span style={{ fontSize: "0.62rem", fontWeight: 700, color: em.color, marginLeft: "auto" }}>${typeof priceFair === "number" ? Math.round(priceFair).toLocaleString() : priceFair}</span>}
                             </div>
@@ -2940,7 +2940,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                   <span style={{
                     fontSize: "0.55rem", fontWeight: 600, padding: "0.1rem 0.35rem", borderRadius: "9999px",
                     background: agree >= 75 ? "rgba(76,175,80,0.15)" : "rgba(255,152,0,0.15)",
-                    color: agree >= 75 ? "#4caf50" : "#ff9800",
+                    color: agree >= 75 ? "#22c55e" : "#f59e0b",
                   }}>{agree}%</span>
                 </button>
               );
@@ -2980,7 +2980,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                   <div style={{
                     padding: "0.25rem 0.65rem", borderRadius: "9999px",
                     background: agree >= 75 ? "rgba(76,175,80,0.15)" : "rgba(255,152,0,0.15)",
-                    color: agree >= 75 ? "#4caf50" : "#ff9800",
+                    color: agree >= 75 ? "#22c55e" : "#f59e0b",
                     fontSize: "0.72rem", fontWeight: 700,
                   }}>
                     {agree}% Agreement
@@ -2992,7 +2992,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                   <div style={{ height: 6, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
                     <div style={{
                       height: "100%", width: `${agree}%`, borderRadius: 99,
-                      background: agree >= 80 ? "#4caf50" : agree >= 60 ? "#ff9800" : "#ef4444",
+                      background: agree >= 80 ? "#22c55e" : agree >= 60 ? "#f59e0b" : "#ef4444",
                     }} />
                   </div>
                 </div>
@@ -3220,7 +3220,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                 <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "#8b5cf6", textTransform: "uppercase" as const, letterSpacing: "0.1em", marginBottom: "0.35rem" }}>§ Overview</div>
                 <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" as const, fontSize: "0.78rem", color: "var(--text-secondary)" }}>
                   <span>Bots Analyzed: <strong style={{ color: "var(--text-primary)" }}>{totalBots}</strong></span>
-                  <span>Avg Agreement: <strong style={{ color: avgAgreement >= 75 ? "#4caf50" : "#f59e0b" }}>{avgAgreement}%</strong></span>
+                  <span>Avg Agreement: <strong style={{ color: avgAgreement >= 75 ? "#22c55e" : "#f59e0b" }}>{avgAgreement}%</strong></span>
                   <span>AI Agents: <strong style={{ color: "var(--text-primary)" }}>{totalAgents}</strong></span>
                 </div>
               </div>
@@ -3238,7 +3238,7 @@ export default function MegaBotClient({ items }: { items: ItemData[] }) {
                   <div key={key} style={{ borderBottom: "1px dashed rgba(139,92,246,0.2)", paddingBottom: "0.75rem", marginBottom: "0.75rem" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.3rem" }}>
                       <div style={{ fontSize: "0.6rem", fontWeight: 700, color: meta.color, textTransform: "uppercase" as const, letterSpacing: "0.1em" }}>§ {meta.icon} {meta.label}</div>
-                      <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: agree >= 75 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: agree >= 75 ? "#4caf50" : "#ff9800" }}>{agree}% · {successful.length}/{providers.length} AIs</span>
+                      <span style={{ fontSize: "0.58rem", fontWeight: 700, padding: "0.1rem 0.4rem", borderRadius: "9999px", background: agree >= 75 ? "rgba(76,175,80,0.12)" : "rgba(255,152,0,0.12)", color: agree >= 75 ? "#22c55e" : "#f59e0b" }}>{agree}% · {successful.length}/{providers.length} AIs</span>
                     </div>
                     {consensus?.item_name && <div style={{ fontSize: "0.78rem", color: "var(--text-primary)", fontWeight: 600, marginBottom: "0.15rem" }}>{consensus.item_name}</div>}
                     <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" as const, fontSize: "0.72rem", color: "var(--text-secondary)" }}>

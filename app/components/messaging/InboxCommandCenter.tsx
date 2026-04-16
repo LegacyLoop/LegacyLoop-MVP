@@ -9,6 +9,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [intelOpen, setIntelOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [threadActive, setThreadActive] = useState(false);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
@@ -46,6 +47,16 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
     return () => window.removeEventListener("inbox-filter-reset", handler);
   }, []);
 
+  // Listen for conversation selection to hide ☰ when thread active
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      setThreadActive(!!(detail?.id || detail?.conversationId));
+    };
+    window.addEventListener("conversation-selected", handler);
+    return () => window.removeEventListener("conversation-selected", handler);
+  }, []);
+
   const modeStyles: Record<string, { border: string; color: string; label: string }> = {
     monitor: { border: "var(--border-default)", color: "var(--text-muted)", label: "Monitoring" },
     copilot: { border: "var(--accent)", color: "var(--accent)", label: "Co-Pilot" },
@@ -56,7 +67,7 @@ export default function InboxCommandCenter({ children, selectedConversationId, s
   return (
     <div style={{ display: "flex", flexDirection: "row", width: "100%", height: "100%", background: "var(--bg-primary)", overflow: "hidden", position: "relative" }}>
       {/* Mobile sidebar toggle */}
-      {isMobile && (
+      {isMobile && !threadActive && (
         <button
           onClick={() => setSidebarOpen(o => !o)}
           style={{

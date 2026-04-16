@@ -14,7 +14,7 @@ export default function AiSuggestionsPanel({ data, onUseMessage, onDismiss }: { 
             <button onClick={onDismiss} style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 10, cursor: "pointer" }}>✕ Dismiss</button>
           </div>
           {data.result.suggestions.map((s: any, i: number) => {
-            const toneColors: Record<string, string> = { Friendly: "#4caf50", Professional: "#00bcd4", Firm: "#ff9800" };
+            const toneColors: Record<string, string> = { Friendly: "#22c55e", Professional: "#00bcd4", Firm: "#f59e0b" };
             return (
               <div key={i} onClick={() => onUseMessage(s.message)} style={{ background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: 10, padding: "12px 14px", cursor: "pointer", marginBottom: 8, transition: "all 0.15s" }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,188,212,0.4)"; (e.currentTarget as HTMLElement).style.background = "rgba(0,188,212,0.06)"; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--border-default)"; (e.currentTarget as HTMLElement).style.background = "var(--ghost-bg)"; }}>
                 <span style={{ fontSize: 9, padding: "3px 10px", borderRadius: 20, background: toneColors[s.label] || "#00bcd4", color: "#000", fontWeight: 700 }}>{s.label}</span>
