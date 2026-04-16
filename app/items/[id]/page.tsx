@@ -106,7 +106,7 @@ export default async function ItemPage({ params }: { params: Params }) {
   }
 
   // Fetch engagement metrics + document count + latest shipping quote for control center
-  const [engagement, docCount, latestShippingQuote, demandScoreLog, disagreementLog] = await Promise.all([
+  const [engagement, docCount, latestShippingQuote, demandScoreLog, disagreementLog, v8CalcLog] = await Promise.all([
     prisma.itemEngagementMetrics.findUnique({ where: { itemId: item.id }, select: { totalViews: true, inquiries: true, buyersFound: true } }).catch(() => null),
     prisma.itemDocument.count({ where: { itemId: item.id } }).catch(() => 0),
     prisma.eventLog.findFirst({
@@ -124,10 +124,16 @@ export default async function ItemPage({ params }: { params: Params }) {
       orderBy: { createdAt: "desc" },
       select: { payload: true },
     }).catch(() => null),
+    prisma.eventLog.findFirst({
+      where: { itemId: item.id, eventType: "GARAGE_SALE_V8_CALC" },
+      orderBy: { createdAt: "desc" },
+      select: { payload: true },
+    }).catch(() => null),
   ]);
 
   const demandScore = demandScoreLog?.payload ? safeJsonParse(demandScoreLog.payload) : null;
   const botDisagreement = disagreementLog?.payload ? safeJsonParse(disagreementLog.payload) : null;
+  const v8CalcData = v8CalcLog?.payload ? safeJsonParse(v8CalcLog.payload) : null;
 
   const enriched = await enrichItemContext(item.id, (item as any).listingPrice ?? null).catch(() => null);
   const aiObj = item.aiResult?.rawJson ? safeJsonParse(item.aiResult.rawJson) : null;
@@ -661,6 +667,7 @@ export default async function ItemPage({ params }: { params: Params }) {
           } : null}
           itemSaleMethod={(item as any).saleMethod || null}
           itemIsCollectible={isCollectibleFromAI}
+          v8CalcData={v8CalcData}
         />
       </div>
 

@@ -87,6 +87,7 @@ type Props = {
   };
   demandScore?: { score: number; label: string; signals?: any[] } | null;
   botDisagreement?: { disagreements?: { botA: string; botB: string; priceA: number; priceB: number; diffPercent: number }[]; summary?: string } | null;
+  v8CalcData?: { listPrice: number; acceptPrice: number; floorPrice: number; channelRecommendation: string; channelReason: string; locationNote: string; saleTypeUsed: string } | null;
   controlCenterExtra?: {
     totalViews: number;
     inquiries: number;
@@ -3406,7 +3407,7 @@ function _removedGarageSaleStrip({ itemId, marketPrice, category, condition }: {
    PANEL 2: Pricing (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt, shippingPreference, sellerListingPrice, saleZip }: {
+function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt, shippingPreference, sellerListingPrice, saleZip, v8CalcData }: {
   valuation: any;
   antique: any;
   aiData: any;
@@ -3426,6 +3427,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   shippingPreference?: string;
   sellerListingPrice?: number | null;
   saleZip?: string | null;
+  v8CalcData?: { listPrice: number; acceptPrice: number; floorPrice: number; channelRecommendation: string; channelReason: string; locationNote: string; saleTypeUsed: string } | null;
 }) {
   const [showCalc, setShowCalc] = useState(false);
   const [priceOpenSections, setPriceOpenSections] = useState<Set<string>>(
@@ -3463,6 +3465,40 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
       ));
     }).catch(() => {});
   }, [v, aiData, antique]);
+
+  // V8 3-number pricing (primary: EventLog, fallback: client-side calc)
+  const [v8Prices, setV8Prices] = useState<{
+    listPrice: number; acceptPrice: number; floorPrice: number;
+    channelRecommendation: string; channelReason: string;
+    locationNote: string; saleTypeUsed: string;
+  } | null>(v8CalcData ?? null);
+
+  useEffect(() => {
+    if (v8CalcData) { setV8Prices(v8CalcData); return; }
+    if (!v || !gsPrices) return;
+    const mid = v.mid ?? Math.round((v.low + v.high) / 2);
+    if (mid <= 0) return;
+    import("@/lib/pricing/garage-sale").then(({ calculateGarageSaleV8Prices }) => {
+      const result = calculateGarageSaleV8Prices(
+        mid,
+        (aiData as any)?.category || "",
+        (aiData as any)?.condition_guess || "good",
+        saleZip ?? undefined,
+        {
+          isAntique: antique?.isAntique ?? false,
+          auctionLow: antique?.auctionLow ?? undefined,
+          auctionHigh: antique?.auctionHigh ?? undefined,
+          confidenceScore: v?.confidence ?? undefined,
+          brand: (aiData as any)?.brand ?? undefined,
+        },
+      );
+      setV8Prices({
+        listPrice: result.listPrice, acceptPrice: result.acceptPrice, floorPrice: result.floorPrice,
+        channelRecommendation: result.channelRecommendation, channelReason: result.channelReason,
+        locationNote: result.locationNote, saleTypeUsed: result.saleTypeUsed,
+      });
+    }).catch(() => {});
+  }, [v8CalcData, v, gsPrices, aiData, antique, saleZip]);
 
   // Parse extended pricing from onlineRationale
   let pr: any = null;
@@ -3574,7 +3610,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
         preview={hasData ? `$${Math.round(v.low)} – $${Math.round(v.high)} · ${v.source || "AI estimate"}` : "Awaiting analysis"}
       />
 
-      {collapsed && hasData && <CollapsedSummary botType="pricing" data={{ low: v.low, high: v.high, confidence: v.confidence, demand: pr?.regionalIntel?.localDemand || null, netPayout: pr?.sellerNet?.local || null, garageSale: gsPrices ? `$${gsPrices.garageSalePrice}–${gsPrices.garageSalePriceHigh}` : null, quickSale: gsPrices ? `$${gsPrices.quickSalePrice}–${gsPrices.quickSalePriceHigh}` : null }} megaData={boosted ? boostResult : undefined} buttons={<>
+      {collapsed && hasData && <CollapsedSummary botType="pricing" data={{ low: v.low, high: v.high, confidence: v.confidence, demand: pr?.regionalIntel?.localDemand || null, netPayout: pr?.sellerNet?.local || null, garageSale: v8Prices ? `LIST $${v8Prices.listPrice} / ACCEPT $${v8Prices.acceptPrice} / FLOOR $${v8Prices.floorPrice}` : gsPrices ? `$${gsPrices.garageSalePrice}–${gsPrices.garageSalePriceHigh}` : null, quickSale: v8Prices ? null : (gsPrices ? `$${gsPrices.quickSalePrice}–${gsPrices.quickSalePriceHigh}` : null) }} megaData={boosted ? boostResult : undefined} buttons={<>
         {onPriceBotRun && <button onClick={onPriceBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>💰 Re-Run · 1 cr</button>}
         {onSuperBoost && <button onClick={onSuperBoost} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "none", background: "linear-gradient(135deg, #00bcd4, #009688)", color: "#fff", cursor: "pointer", minHeight: "32px" }}>{boosted ? "🔄 MegaBot Re-Run · 4 cr" : "⚡ MegaBot · 7 cr"}</button>}
         <a href="/bots/pricebot" style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid rgba(0,188,212,0.3)", color: "#00bcd4", textDecoration: "none", display: "inline-flex", alignItems: "center", minHeight: "32px" }}>Open PriceBot →</a>
@@ -3700,7 +3736,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 {pr.regionalIntel?.bestWhy && (
                   <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", marginTop: "0.15rem", lineHeight: 1.35, maxWidth: "100%" }}>{pr.regionalIntel.bestWhy.slice(0, 80)}{pr.regionalIntel.bestWhy.length > 80 ? "..." : ""}</div>
                 )}
-                {pr.sellerNet && <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4caf50", marginTop: "0.25rem" }}>You get: ${pr.sellerNet.bestMarket.toFixed(0)}</div>}
+                {pr.sellerNet && <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#22c55e", marginTop: "0.25rem" }}>You get: ${pr.sellerNet.bestMarket.toFixed(0)}</div>}
                 {/* SPEC-WIRE FIX: freight cost line for freight items */}
                 {freightCostEstimate != null && pr.sellerNet && (
                   <div style={{ fontSize: "0.55rem", color: "#eab308", marginTop: "0.1rem", fontWeight: 600 }}>
@@ -3726,31 +3762,70 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   {gsPrices.auctionAnchored && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(212,175,55,0.1)", color: "#D4AF37" }}>Auction anchored</span>}
                   {gsPrices.brandPremium && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(0,188,212,0.1)", color: "#00bcd4" }}>Brand premium</span>}
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
-                  <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
-                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#00bcd4", fontWeight: 600 }}>GARAGE SALE</div>
-                    <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4", marginTop: "0.15rem" }}>${gsPrices.garageSalePrice}–${gsPrices.garageSalePriceHigh}</div>
-                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>In person · This weekend</div>
-                    <div style={{ marginTop: "0.2rem", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontSize: "0.5rem", fontWeight: 600, display: "inline-block", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>Saturday pricing</div>
-                    <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#4caf50", marginTop: "0.25rem" }}>You get: ${Math.round(gsPrices.garageSalePriceHigh * (1 - commRate))}</div>
-                  </div>
-                  <div style={{ background: "var(--bg-card)", border: "1px solid rgba(29,158,117,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
-                    <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#1D9E75", fontWeight: 600 }}>QUICK SALE</div>
-                    <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#1D9E75", marginTop: "0.15rem" }}>${gsPrices.quickSalePrice}–${gsPrices.quickSalePriceHigh}</div>
-                    <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Gone today · No waiting</div>
-                    <div style={{ marginTop: "0.2rem", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontSize: "0.5rem", fontWeight: 600, display: "inline-block", background: "rgba(29,158,117,0.12)", color: "#1D9E75" }}>Move it now</div>
-                    <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#4caf50", marginTop: "0.25rem" }}>You get: ${Math.round(gsPrices.quickSalePriceHigh * (1 - commRate))}</div>
-                  </div>
-                </div>
-                {/* Confidence meter */}
-                {gsPrices.confidenceNarrowed && (
-                  <div style={{ marginTop: "0.4rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <div style={{ flex: 1, height: "3px", borderRadius: "2px", background: "var(--border-default)", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: "100%", borderRadius: "2px", background: (v?.confidence ?? 0) >= 0.85 ? "#22c55e" : "#f59e0b" }} />
+                {v8Prices ? (<>
+                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#00bcd4", fontWeight: 600 }}>LIST</div>
+                      <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4", marginTop: "0.15rem" }}>${v8Prices.listPrice}</div>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Sign price</div>
+                      <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(v8Prices.listPrice * (1 - commRate))}</div>
                     </div>
-                    <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 500, whiteSpace: "nowrap" }}>AI-narrowed range</span>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#22c55e", fontWeight: 600 }}>ACCEPT</div>
+                      <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.15rem" }}>${v8Prices.acceptPrice}</div>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Deal target</div>
+                      <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(v8Prices.acceptPrice * (1 - commRate))}</div>
+                    </div>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "0.65rem", padding: "0.6rem 0.4rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#f59e0b", fontWeight: 600 }}>FLOOR</div>
+                      <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#f59e0b", marginTop: "0.15rem" }}>${v8Prices.floorPrice}</div>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Walk-away min</div>
+                      <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(v8Prices.floorPrice * (1 - commRate))}</div>
+                    </div>
                   </div>
-                )}
+                  {v8Prices.channelRecommendation && (
+                    <div style={{ marginTop: "0.4rem", display: "flex", alignItems: "center", gap: "0.35rem", flexWrap: "wrap" }}>
+                      <span style={{ padding: "0.15rem 0.5rem", borderRadius: "9999px", fontSize: "0.55rem", fontWeight: 600, background: "rgba(0,188,212,0.12)", color: "#00bcd4", border: "1px solid rgba(0,188,212,0.25)" }}>📍 {v8Prices.channelRecommendation}</span>
+                      {v8Prices.channelReason && <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontStyle: "italic" }}>{v8Prices.channelReason}</span>}
+                    </div>
+                  )}
+                  {v8Prices.locationNote && (
+                    <div style={{ marginTop: "0.25rem", fontSize: "0.5rem", color: "var(--text-muted)", fontStyle: "italic", paddingLeft: "0.15rem" }}>📌 {v8Prices.locationNote}</div>
+                  )}
+                  {gsPrices?.confidenceNarrowed && (
+                    <div style={{ marginTop: "0.4rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                      <div style={{ flex: 1, height: "3px", borderRadius: "2px", background: "var(--border-default)", overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: "100%", borderRadius: "2px", background: (v?.confidence ?? 0) >= 0.85 ? "#22c55e" : "#f59e0b" }} />
+                      </div>
+                      <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 500, whiteSpace: "nowrap" }}>AI-narrowed range</span>
+                    </div>
+                  )}
+                </>) : (<>
+                  <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: "0.5rem" }}>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(0,188,212,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#00bcd4", fontWeight: 600 }}>GARAGE SALE</div>
+                      <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4", marginTop: "0.15rem" }}>${gsPrices.garageSalePrice}–${gsPrices.garageSalePriceHigh}</div>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>In person · This weekend</div>
+                      <div style={{ marginTop: "0.2rem", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontSize: "0.5rem", fontWeight: 600, display: "inline-block", background: "rgba(0,188,212,0.12)", color: "#00bcd4" }}>Saturday pricing</div>
+                      <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(gsPrices.garageSalePriceHigh * (1 - commRate))}</div>
+                    </div>
+                    <div style={{ background: "var(--bg-card)", border: "1px solid rgba(29,158,117,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+                      <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#1D9E75", fontWeight: 600 }}>QUICK SALE</div>
+                      <div style={{ fontSize: "1.05rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#1D9E75", marginTop: "0.15rem" }}>${gsPrices.quickSalePrice}–${gsPrices.quickSalePriceHigh}</div>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>Gone today · No waiting</div>
+                      <div style={{ marginTop: "0.2rem", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontSize: "0.5rem", fontWeight: 600, display: "inline-block", background: "rgba(29,158,117,0.12)", color: "#1D9E75" }}>Move it now</div>
+                      <div style={{ fontSize: "0.68rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", marginTop: "0.25rem" }}>You get: ${Math.round(gsPrices.quickSalePriceHigh * (1 - commRate))}</div>
+                    </div>
+                  </div>
+                  {gsPrices.confidenceNarrowed && (
+                    <div style={{ marginTop: "0.4rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                      <div style={{ flex: 1, height: "3px", borderRadius: "2px", background: "var(--border-default)", overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: "100%", borderRadius: "2px", background: (v?.confidence ?? 0) >= 0.85 ? "#22c55e" : "#f59e0b" }} />
+                      </div>
+                      <span style={{ fontSize: "0.5rem", color: "var(--text-muted)", fontWeight: 500, whiteSpace: "nowrap" }}>AI-narrowed range</span>
+                    </div>
+                  )}
+                </>)}
               </div>
             )}
             {gsPrices?.isExempt && (
@@ -9453,7 +9528,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
    ═══════════════════════════════════════════ */
 
 export default function ItemDashboardPanels({
-  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra, projectId, demandScore, botDisagreement, enriched, itemSaleMethod, itemIsCollectible,
+  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra, projectId, demandScore, botDisagreement, enriched, itemSaleMethod, itemIsCollectible, v8CalcData,
 }: Props) {
   // Track which bots have been enhanced with MegaBot
   const [boostedBots, setBoostedBots] = useState<Set<string>>(new Set());
@@ -10058,6 +10133,7 @@ export default function ItemDashboardPanels({
           shippingPreference={shippingData?.preference ?? "BUYER_PAYS"}
           sellerListingPrice={listingPrice ?? null}
           saleZip={saleZip}
+          v8CalcData={v8CalcData ?? null}
         />
 
 
