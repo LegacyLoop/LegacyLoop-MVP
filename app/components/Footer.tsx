@@ -261,7 +261,7 @@ export default function Footer() {
         >
           <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
             <img src="/images/logos/logo-icon.png" alt="LegacyLoop" style={{ height: "24px", width: "24px", objectFit: "contain" }} />
-            &copy; {year} LegacyLoop, Inc. &middot; Waterville, Maine &middot; All rights reserved.
+            &copy; {year} LegacyLoop Tech LLC &middot; Waterville, Maine &middot; All rights reserved.
           </span>
           <span
             style={{

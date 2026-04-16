@@ -252,7 +252,7 @@ export default function ReceiptPage() {
               Questions? Contact support@legacy-loop.com
             </div>
             <div style={{ fontSize: "9px", color: "#cbd5e1", marginTop: "8px" }}>
-              LegacyLoop, Inc. &middot; legacy-loop.com &middot; Receipt {rn}
+              LegacyLoop Tech LLC &middot; legacy-loop.com &middot; Receipt {rn}
             </div>
           </div>
         </div>

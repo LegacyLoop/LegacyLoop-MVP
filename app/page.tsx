@@ -389,7 +389,7 @@ export default async function HomePage() {
           </div>
         </div>
         <div style={{ textAlign: "center", paddingTop: "1.5rem", borderTop: "1px solid var(--border-default)", fontSize: "0.72rem", color: "var(--text-muted)" }}>
-          © 2026 LegacyLoop. All rights reserved. · v0.1.0-beta
+          © 2026 LegacyLoop Tech LLC. All rights reserved. · v0.1.0-beta
         </div>
       </section>
     </div>
