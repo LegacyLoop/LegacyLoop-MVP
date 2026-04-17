@@ -2801,6 +2801,7 @@ class MegaBotErrorBoundary extends Component<
   }
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("[MegaBotErrorBoundary] Render crash:", error, info?.componentStack);
+    fetch("/api/user-event", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ eventType: "MEGABOT_RENDER_CRASH", metadata: { error: String(error?.message || "unknown").slice(0, 500), componentStack: String(info?.componentStack || "").slice(0, 1500) } }) }).catch(() => {});
   }
   render() {
     if (this.state.hasError) {

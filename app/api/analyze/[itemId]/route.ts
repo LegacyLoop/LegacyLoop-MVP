@@ -198,6 +198,7 @@ export async function POST(
   // If timeout, proceed with Amazon-only context — zero regression.
   const PRE_AI_MARKET_TIMEOUT_MS = 6000;
   let preAiMarketIntel: any = null;
+  const preAiStartTime = Date.now();
   try {
     const preAiItemName = item.title || "item";
     const preAiCategory = (item as any).category || "General";
@@ -248,9 +249,13 @@ export async function POST(
     sellerContext = (sellerContext || "") + "\n" + compLines.join("\n");
     console.log(`[analyze] Pre-AI market comps injected: ${mi.compCount ?? mi.comps.length} comps from ${mi.sources?.join(", ") ?? "unknown"}`);
   }
+  const preAiDuration = Date.now() - preAiStartTime;
+  prisma.eventLog.create({
+    data: { itemId: item.id, eventType: "ANALYZEBOT_PRE_AI_LATENCY", payload: JSON.stringify({ durationMs: preAiDuration, compsReturned: preAiMarketIntel?.comps?.length ?? 0, usable: !!(preAiMarketIntel && (preAiMarketIntel.comps?.length ?? 0) >= 3), timedOut: preAiDuration >= PRE_AI_MARKET_TIMEOUT_MS - 50 }) },
+  }).catch(() => null);
 
-  // CMD-ANALYZEBOT-CORE-A: skill pack loading. Content empty until Skills-B —
-  // skillPackBlock will be empty string. Wiring here for telemetry + future packs.
+  // Skill pack loading — all 17 AnalyzeBot packs load via loadSkillPack()
+  // and prepend to seller context (wired since CMD-ANALYZEBOT-CORE-A).
   const skillPack = loadSkillPack("analyzebot");
   const skillPackBlock = skillPack.systemPromptBlock
     ? skillPack.systemPromptBlock + "\n\n"
