@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authAdapter } from "@/lib/adapters/auth";
 import { generateIntelligence, getCachedIntelligence } from "@/lib/intelligence/generate";
+import { computePricingConsensus } from "@/lib/pricing/reconcile";
 import { BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -103,6 +104,17 @@ export async function POST(
       photoCount: item.photos.length,
       saleZip: item.saleZip ?? null,
     });
+
+    // CMD-PRICING-CONSENSUS-V1: enforce consensus values on pricingIntel
+    const consensus = await computePricingConsensus(itemId).catch(() => null);
+    if (consensus && result.pricingIntel) {
+      result.pricingIntel.sweetSpot = consensus.consensusAcceptPrice;
+      result.pricingIntel.premiumPrice = consensus.consensusListPrice;
+      result.pricingIntel.quickSalePrice = consensus.consensusFloorPrice;
+      result.pricingIntel.recommendedLow = consensus.consensusValueLow;
+      result.pricingIntel.recommendedHigh = consensus.consensusValueHigh;
+      (result.pricingIntel as any)._consensus_enforced = true;
+    }
 
     // Cache in EventLog
     await prisma.eventLog.create({

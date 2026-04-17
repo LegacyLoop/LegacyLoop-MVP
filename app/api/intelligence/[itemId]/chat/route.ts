@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { authAdapter } from "@/lib/adapters/auth";
 import { getItemEnrichmentContext } from "@/lib/enrichment";
+import { computePricingConsensus } from "@/lib/pricing/reconcile";
 import { BOT_CREDIT_COSTS, canUseAskClaude } from "@/lib/constants/pricing";
 import { loadSkillPack } from "@/lib/bots/skill-loader";
 
@@ -132,7 +133,13 @@ export async function POST(
     if (pack.systemPromptBlock) skillContext = pack.systemPromptBlock + "\n\n";
   } catch { /* skill pack is optional */ }
 
-  const systemPrompt = `${skillContext}You are LegacyLoop's AI assistant helping a seller understand their item's intelligence data. You have access to ALL bot analysis results, market comps, pricing data, and enrichment info for this specific item.
+  // CMD-PRICING-CONSENSUS-V1: inject consensus into chat prompt
+  const consensus = await computePricingConsensus(itemId).catch(() => null);
+  const consensusBlock = consensus
+    ? `\n\nPRICING TRUTH (USE THESE NUMBERS — DO NOT INVENT NEW RANGES):\n- List Price: $${consensus.consensusListPrice}\n- Sweet Spot / Accept Price: $${consensus.consensusAcceptPrice}\n- Floor / Quick Sale Price: $${consensus.consensusFloorPrice}\n- Value Range: $${consensus.consensusValueLow}–$${consensus.consensusValueHigh}\n- Confidence: ${consensus.consensusConfidence}% (${consensus.confidenceTier}, from ${consensus.sourceCount} sources)\nThese are the reconciled SOURCE OF TRUTH. For any pricing question, reference these exact numbers.\n`
+    : "";
+
+  const systemPrompt = `${skillContext}${consensusBlock}You are LegacyLoop's AI assistant helping a seller understand their item's intelligence data. You have access to ALL bot analysis results, market comps, pricing data, and enrichment info for this specific item.
 
 Rules:
 - Be concise: 2-4 sentences max per answer
@@ -141,6 +148,7 @@ Rules:
 - If the data doesn't cover their question, say so honestly
 - Never make up prices or data — only reference what's in the context below
 - If they ask about something no bot has analyzed yet, suggest which bot to run
+- If a PRICING TRUTH block is present above, use those exact numbers for any pricing question
 
 ═══ ALL ITEM INTELLIGENCE DATA ═══
 ${enrichment.contextBlock || "No enrichment data available yet. Suggest running AI Analysis first."}

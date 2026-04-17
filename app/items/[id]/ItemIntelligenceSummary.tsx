@@ -73,6 +73,7 @@ interface Props {
   isCollectible: boolean;
   authenticityScore: number | null;
   userTier?: number;
+  pricingConsensus?: import("@/lib/pricing/reconcile").PricingConsensus | null;
   collapsed?: boolean;
   onToggle?: () => void;
 }
@@ -156,7 +157,7 @@ export default function ItemIntelligenceSummary(props: Props) {
     itemId, status, aiData, valuation, enriched, engagement,
     shippingData, saleMethod, listingPrice, hasPhotos, photoCount,
     isAntique, isCollectible, authenticityScore,
-    userTier = 1, collapsed = false, onToggle,
+    userTier = 1, pricingConsensus = null, collapsed = false, onToggle,
   } = props;
 
   // ── AI Intelligence state ──

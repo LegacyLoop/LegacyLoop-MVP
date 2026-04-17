@@ -88,6 +88,7 @@ type Props = {
   demandScore?: { score: number; label: string; signals?: any[] } | null;
   botDisagreement?: { disagreements?: { botA: string; botB: string; priceA: number; priceB: number; diffPercent: number }[]; summary?: string } | null;
   v8CalcData?: { listPrice: number; acceptPrice: number; floorPrice: number; channelRecommendation: string; channelReason: string; locationNote: string; saleTypeUsed: string } | null;
+  pricingConsensus?: import("@/lib/pricing/reconcile").PricingConsensus | null;
   controlCenterExtra?: {
     totalViews: number;
     inquiries: number;
@@ -9597,7 +9598,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
    ═══════════════════════════════════════════ */
 
 export default function ItemDashboardPanels({
-  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra, projectId, demandScore, botDisagreement, enriched, itemSaleMethod, itemIsCollectible, v8CalcData,
+  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra, projectId, demandScore, botDisagreement, enriched, itemSaleMethod, itemIsCollectible, v8CalcData, pricingConsensus,
 }: Props) {
   // Track which bots have been enhanced with MegaBot
   const [boostedBots, setBoostedBots] = useState<Set<string>>(new Set());
@@ -10150,6 +10151,7 @@ export default function ItemDashboardPanels({
           isCollectible={itemIsCollectible ?? false}
           authenticityScore={authenticityScore?.score ?? null}
           userTier={userTier}
+          pricingConsensus={pricingConsensus ?? null}
           collapsed={collapsed.intelligence}
           onToggle={() => togglePanel("intelligence")}
         />
