@@ -340,6 +340,25 @@ export default function ItemIntelligenceSummary(props: Props) {
   };
   const nextAction = getNextAction();
 
+  // ── CMD-INTEL-HUD-CONSENSUS-WIRE: derived display values ──
+  const displayPricing: { sweetSpot: number; recommendedLow: number; recommendedHigh: number; quickSalePrice: number; premiumPrice: number } | null = pricingConsensus
+    ? {
+        sweetSpot: pricingConsensus.consensusAcceptPrice,
+        recommendedLow: pricingConsensus.consensusValueLow,
+        recommendedHigh: pricingConsensus.consensusValueHigh,
+        quickSalePrice: pricingConsensus.consensusFloorPrice,
+        premiumPrice: pricingConsensus.consensusListPrice,
+      }
+    : aiIntel?.pricingIntel
+    ? {
+        sweetSpot: aiIntel.pricingIntel.sweetSpot,
+        recommendedLow: aiIntel.pricingIntel.recommendedLow,
+        recommendedHigh: aiIntel.pricingIntel.recommendedHigh,
+        quickSalePrice: aiIntel.pricingIntel.quickSalePrice,
+        premiumPrice: aiIntel.pricingIntel.premiumPrice,
+      }
+    : null;
+
   // ── Overall score ──
   const overallScore = Math.min(100, Math.round(
     (readinessScore * 6) +
@@ -715,6 +734,12 @@ export default function ItemIntelligenceSummary(props: Props) {
         }
       `}</style>
 
+      {pricingConsensus?.warningBanner && (
+        <div style={{ padding: "0.5rem 0.75rem", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "0.4rem", fontSize: "0.7rem", color: "#b45309", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.4rem", lineHeight: 1.4 }}>
+          <span style={{ flexShrink: 0 }}>⚠️</span>
+          <span style={{ flex: 1, minWidth: 0 }}>{pricingConsensus.warningBanner}</span>
+        </div>
+      )}
       <div className="intel-hud">
         {/* ═══ HEADER ═══ */}
         <div className="intel-header">
@@ -743,8 +768,8 @@ export default function ItemIntelligenceSummary(props: Props) {
                   {/* Bloomberg-style 3×2 data tile */}
                   <div className="intel-hud-grid" style={{ width: "100%", background: "var(--ghost-bg)", borderRadius: 8, border: "1px solid var(--border-default)", overflow: "hidden", marginBottom: "6px" }}>
                     {[
-                      { lbl: "SWEET SPOT", val: <CountUp value={aiIntel.pricingIntel.sweetSpot} format={(n) => `$${Math.round(n)}`} /> as React.ReactNode, color: "var(--accent, #00bcd4)", unit: "best price" },
-                      { lbl: "FULL RANGE", val: `$${Math.round(aiIntel.pricingIntel.recommendedLow)}–$${Math.round(aiIntel.pricingIntel.recommendedHigh)}`, color: "var(--text-primary)", unit: "estimated" },
+                      { lbl: "SWEET SPOT", val: <CountUp value={displayPricing?.sweetSpot ?? aiIntel.pricingIntel.sweetSpot} format={(n) => `$${Math.round(n)}`} /> as React.ReactNode, color: "var(--accent, #00bcd4)", unit: "best price" },
+                      { lbl: "FULL RANGE", val: `$${Math.round(displayPricing?.recommendedLow ?? aiIntel.pricingIntel.recommendedLow)}–$${Math.round(displayPricing?.recommendedHigh ?? aiIntel.pricingIntel.recommendedHigh)}`, color: "var(--text-primary)", unit: "estimated" },
                       { lbl: "DEMAND", val: aiIntel.marketPosition?.demand || "\u2014", color: /high|hot|strong/i.test(aiIntel.marketPosition?.demand || "") ? "#22c55e" : /low|cold|weak/i.test(aiIntel.marketPosition?.demand || "") ? "#ef4444" : "#f59e0b", unit: "local signal" },
                       { lbl: "READINESS", val: <><CountUp value={readinessScore} />/10</> as React.ReactNode, color: readinessScore >= 8 ? "#22c55e" : readinessScore >= 5 ? "#f59e0b" : "#ef4444", unit: "to sell" },
                       { lbl: "BEST SELL", val: aiIntel.sellingStrategy?.bestPlatform || "\u2014", color: "var(--accent, #00bcd4)", unit: "recommended" },
@@ -761,6 +786,11 @@ export default function ItemIntelligenceSummary(props: Props) {
                       </div>
                     ))}
                   </div>
+                  {pricingConsensus && (
+                    <div style={{ fontSize: "9px", color: "var(--text-muted)", textAlign: "right" as const, marginTop: "4px", fontStyle: "italic" as const, opacity: 0.7 }}>
+                      Reconciled from {pricingConsensus.sourceCount} source{pricingConsensus.sourceCount === 1 ? "" : "s"} · confidence {pricingConsensus.consensusConfidence}%
+                    </div>
+                  )}
                   {/* Insight line */}
                   {(aiIntel.sellingStrategy?.timing || aiStale) && (
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
@@ -901,15 +931,15 @@ export default function ItemIntelligenceSummary(props: Props) {
                 <>
                   <div className="intel-price-cards">
                     <div className="intel-price-card">
-                      <span className="intel-price-val" style={{ color: "#f59e0b" }}>${Math.round(aiIntel.pricingIntel.quickSalePrice)}</span>
+                      <span className="intel-price-val" style={{ color: "#f59e0b" }}>${Math.round(displayPricing?.quickSalePrice ?? aiIntel.pricingIntel.quickSalePrice)}</span>
                       <span className="intel-price-lbl">Quick Sale</span>
                     </div>
                     <div className="intel-price-card highlight">
-                      <span className="intel-price-val" style={{ color: "var(--accent)" }}>${Math.round(aiIntel.pricingIntel.sweetSpot)}</span>
+                      <span className="intel-price-val" style={{ color: "var(--accent)" }}>${Math.round(displayPricing?.sweetSpot ?? aiIntel.pricingIntel.sweetSpot)}</span>
                       <span className="intel-price-lbl">Sweet Spot</span>
                     </div>
                     <div className="intel-price-card">
-                      <span className="intel-price-val" style={{ color: "#22c55e" }}>${Math.round(aiIntel.pricingIntel.premiumPrice)}</span>
+                      <span className="intel-price-val" style={{ color: "#22c55e" }}>${Math.round(displayPricing?.premiumPrice ?? aiIntel.pricingIntel.premiumPrice)}</span>
                       <span className="intel-price-lbl">Premium</span>
                     </div>
                   </div>
