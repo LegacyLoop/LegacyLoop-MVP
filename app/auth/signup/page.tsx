@@ -267,7 +267,7 @@ export default function SignupPage() {
               type={showPass ? "text" : "password"}
               autoComplete="new-password"
               required
-              placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+              placeholder="At least 8 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               style={{
@@ -361,7 +361,7 @@ export default function SignupPage() {
               type={showConfirm ? "text" : "password"}
               autoComplete="new-password"
               required
-              placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+              placeholder="Re-enter your password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               style={{
