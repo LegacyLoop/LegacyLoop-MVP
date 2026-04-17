@@ -337,14 +337,15 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
       const tag = el.tagName;
       return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || !!el.isContentEditable;
     };
+    const trackKey = (key: string) => { fetch("/api/user-event", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ eventType: "KEYBOARD_SHORTCUT", metadata: JSON.stringify({ key, page: "messages" }) }) }).catch(() => {}); };
     const handler = (e: KeyboardEvent) => {
       if (isEditable()) return;
       if ((e.key === "n" || e.key === "N") && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        e.preventDefault(); setComposing(true); try { navigator?.vibrate?.(6); } catch {} return;
+        e.preventDefault(); setComposing(true); try { navigator?.vibrate?.(6); } catch {} trackKey("N"); return;
       }
       if (e.key === "Escape") {
-        if (composing) { setComposing(false); return; }
-        if (selectedId !== null) { setSelectedId(null); try { navigator?.vibrate?.(6); } catch {} } return;
+        if (composing) { setComposing(false); trackKey("Esc"); return; }
+        if (selectedId !== null) { setSelectedId(null); try { navigator?.vibrate?.(6); } catch {} trackKey("Esc"); } return;
       }
       if (!isMobile && !composing && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
         if (filteredConvs.length === 0) return;
@@ -352,6 +353,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
         const curIdx = selectedId ? filteredConvs.findIndex(c => c.id === selectedId) : -1;
         const nextIdx = e.key === "ArrowDown" ? (curIdx < filteredConvs.length - 1 ? curIdx + 1 : 0) : (curIdx > 0 ? curIdx - 1 : filteredConvs.length - 1);
         handleSelectConv(filteredConvs[nextIdx]);
+        trackKey(e.key === "ArrowDown" ? "ArrowDown" : "ArrowUp");
       }
     };
     window.addEventListener("keydown", handler);
@@ -813,9 +815,13 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                       padding: "0.75rem",
                       minHeight: "56px",
                       borderRadius: "0.875rem",
-                      border: `1.5px solid ${isSelected ? "var(--accent)" : "var(--border-default)"}`,
-                      borderLeft: isSelected ? "3px solid var(--accent)" : "1.5px solid var(--border-default)",
-                      background: isSelected ? "var(--accent-dim)" : "var(--bg-card-solid)",
+                      ...(isSelected
+                        ? (isMobile
+                          ? { border: "1px solid var(--accent)", borderLeft: "3px solid var(--accent)", background: "var(--accent-dim)" }
+                          : { border: "1px solid transparent", backgroundImage: "linear-gradient(var(--bg-card-solid), var(--bg-card-solid)), linear-gradient(135deg, #00bcd4, #22c55e, #00bcd4)", backgroundOrigin: "border-box", backgroundClip: "padding-box, border-box", backgroundSize: "100% 100%, 200% 200%", animation: "gradientShift 3s linear infinite" }
+                        )
+                        : { border: "1.5px solid var(--border-default)", borderLeft: "1.5px solid var(--border-default)", background: "var(--bg-card-solid)" }
+                      ),
                       cursor: "pointer",
                       display: "flex",
                       gap: "0.65rem",

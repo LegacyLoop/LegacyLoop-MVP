@@ -3303,7 +3303,7 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
             )}
 
             {/* ── SECTION H: MEGABOT RESULTS ── */}
-            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4 }}>{boostError}</div>)}            {boosted && boostResult && (
+            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4, display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}><span style={{ flex: 1, minWidth: 0 }}>{boostError}</span>{onSuperBoost && (<button type="button" onClick={() => { try { (navigator as any)?.vibrate?.(6); } catch {} onSuperBoost(); }} style={{ padding: "0.4rem 0.85rem", minHeight: 44, borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.3)", background: "transparent", color: "#00bcd4", fontSize: "0.72rem", fontFamily: "var(--font-data)", fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>↻ Retry</button>)}</div>)}            {boosted && boostResult && (
               <>
                 <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={aiOpenSections.has("megabot-results")} onToggle={toggleAiSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
                 {aiOpenSections.has("megabot-results") && <MegaBotBoostResults botType="analysis" result={boostResult} aiData={aiData} />}
@@ -4313,7 +4313,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
       </div>
 
       {/* ═══ MEGABOT DEEP PRICING — premium positioned after enrichment ═══ */}
-            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4 }}>{boostError}</div>)}      {boosted && boostResult && (() => {
+            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4, display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}><span style={{ flex: 1, minWidth: 0 }}>{boostError}</span>{onSuperBoost && (<button type="button" onClick={() => { try { (navigator as any)?.vibrate?.(6); } catch {} onSuperBoost(); }} style={{ padding: "0.4rem 0.85rem", minHeight: 44, borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.3)", background: "transparent", color: "#00bcd4", fontSize: "0.72rem", fontFamily: "var(--font-data)", fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>↻ Retry</button>)}</div>)}      {boosted && boostResult && (() => {
         const mbProviders = (boostResult.providers || []).filter((p: any) => (p.data || p.result) && !p.error);
         const mbAgreement = Math.round((boostResult.agreementScore ?? 0) > 1 ? boostResult.agreementScore : (boostResult.agreementScore ?? 0) * 100);
         const mbTimestamp = boostResult.timestamp ? new Date(boostResult.timestamp) : null;
@@ -4686,7 +4686,7 @@ function ShippingEstimatesPanel({ itemId, aiData, saleZip, valuation, status, ca
           </>
         )}
 
-            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4 }}>{boostError}</div>)}        {boosted && boostResult && (<>
+            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4, display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}><span style={{ flex: 1, minWidth: 0 }}>{boostError}</span>{onSuperBoost && (<button type="button" onClick={() => { try { (navigator as any)?.vibrate?.(6); } catch {} onSuperBoost(); }} style={{ padding: "0.4rem 0.85rem", minHeight: 44, borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.3)", background: "transparent", color: "#00bcd4", fontSize: "0.72rem", fontFamily: "var(--font-data)", fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>↻ Retry</button>)}</div>)}        {boosted && boostResult && (<>
           <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={shipSections.has("megabot-results")} onToggle={toggleShipSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
           {shipSections.has("megabot-results") && <MegaBotBoostResults botType="shipping" result={boostResult} aiData={aiData} />}
         </>)}
@@ -5302,7 +5302,7 @@ function PhotoQualityPanel({ photos, aiData, itemId, onSuperBoost, boosting, boo
             </>)}
 
             {/* ═══ ACCORDION: MegaBot Results ═══ */}
-            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4 }}>{boostError}</div>)}            {boosted && boostResult && (<>
+            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4, display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}><span style={{ flex: 1, minWidth: 0 }}>{boostError}</span>{onSuperBoost && (<button type="button" onClick={() => { try { (navigator as any)?.vibrate?.(6); } catch {} onSuperBoost(); }} style={{ padding: "0.4rem 0.85rem", minHeight: 44, borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.3)", background: "transparent", color: "#00bcd4", fontSize: "0.72rem", fontFamily: "var(--font-data)", fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>↻ Retry</button>)}</div>)}            {boosted && boostResult && (<>
               <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={photoSections.has("megabot-results")} onToggle={togglePhotoSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
               {photoSections.has("megabot-results") && (
                 <div style={{ padding: "0.75rem 0.4rem" }}>
@@ -5738,7 +5738,7 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
         )}
 
         {/* MegaBot boost results — outside the hasResult check so it shows even without regular BuyerBot run */}
-            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4 }}>{boostError}</div>)}        {boosted && boostResult && (<>
+            {boostError && !boosting && (<div style={{ padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4, display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}><span style={{ flex: 1, minWidth: 0 }}>{boostError}</span>{onSuperBoost && (<button type="button" onClick={() => { try { (navigator as any)?.vibrate?.(6); } catch {} onSuperBoost(); }} style={{ padding: "0.4rem 0.85rem", minHeight: 44, borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.3)", background: "transparent", color: "#00bcd4", fontSize: "0.72rem", fontFamily: "var(--font-data)", fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>↻ Retry</button>)}</div>)}        {boosted && boostResult && (<>
           <AccordionHeader id="megabot-results" icon="⚡" title="MEGABOT MULTI-AI ANALYSIS" subtitle={`${boostResult.agreementScore ?? "?"}% Agreement`} isOpen={buyerOpenSections.has("megabot-results")} onToggle={toggleBuyerSection} accentColor="#8b5cf6" badge={`${(boostResult.providers || []).filter((p: any) => p.data || !p.error).length} AI`} />
           {buyerOpenSections.has("megabot-results") && <MegaBotBoostResults botType="buyers" result={boostResult} aiData={aiData} />}
         </>)}
@@ -6145,8 +6145,10 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
             padding: "0.5rem 0.75rem", borderRadius: "0.4rem", marginTop: "0.5rem",
             background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
             fontSize: "0.75rem", color: "#ef4444", lineHeight: 1.4,
+            display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap",
           }}>
-            {boostError}
+            <span style={{ flex: 1, minWidth: 0 }}>{boostError}</span>
+            {onSuperBoost && (<button type="button" onClick={() => { try { (navigator as any)?.vibrate?.(6); } catch {} onSuperBoost(); }} style={{ padding: "0.4rem 0.85rem", minHeight: 44, borderRadius: "0.5rem", border: "1px solid rgba(0,188,212,0.3)", background: "transparent", color: "#00bcd4", fontSize: "0.72rem", fontFamily: "var(--font-data)", fontWeight: 600, cursor: "pointer", flexShrink: 0 }}>↻ Retry</button>)}
           </div>
         )}
         {boosted && boostResult && (<>
@@ -9932,6 +9934,10 @@ export default function ItemDashboardPanels({
     videobot: "video", video: "video",
   };
 
+  const logMegaBotFailure = (botType: string, error: string, kind: "no_results" | "http_error" | "timeout" | "network") => {
+    fetch("/api/user-event", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ eventType: "MEGABOT_FAILURE", itemId, metadata: JSON.stringify({ botType, error: String(error).slice(0, 500), kind, ts: Date.now() }) }) }).catch(() => {});
+  };
+
   async function superBoost(botType: string) {
     // Clear old data immediately so UI shows loading state (not stale results)
     setBoostResults((prev) => { const next = { ...prev }; delete next[botType]; return next; });
@@ -9990,6 +9996,7 @@ export default function ItemDashboardPanels({
         } else {
           console.log(`[MegaBot] ${botType} NO RESULTS — response data:`, data);
           setBoostError(`MegaBot returned no results for ${botType}. Try again.`);
+          logMegaBotFailure(botType, "no providers in response", "no_results");
           console.warn(`[MegaBot] ${botType}: API returned OK but no providers/consensus`, data);
         }
       } else {
@@ -9997,14 +10004,17 @@ export default function ItemDashboardPanels({
         console.log(`[MegaBot] ${botType} HTTP ERROR ${res.status}`, errData);
         setBoostError(errData?.error || `MegaBot failed (${res.status}). Try again.`);
         console.warn(`[MegaBot] ${botType}: API returned ${res.status}`);
+          logMegaBotFailure(botType, errData?.error || "HTTP " + res.status, "http_error");
       }
     } catch (err: any) {
       if (err?.name === "AbortError") {
         setBoostError(`MegaBot timed out after 3 minutes. The AI agents may be overloaded — try again.`);
         console.warn(`[MegaBot] ${botType}: timed out after 3 minutes`);
+        logMegaBotFailure(botType, "AbortError after 180s", "timeout");
       } else {
         setBoostError(err?.message || "Network error — check your connection and try again.");
         console.warn(`[MegaBot] ${botType}: fetch error`, err);
+        logMegaBotFailure(botType, err?.message || String(err), "network");
       }
     }
     setBoostingBot(null);
