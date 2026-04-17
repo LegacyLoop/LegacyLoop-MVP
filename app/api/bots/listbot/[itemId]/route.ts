@@ -202,6 +202,25 @@ export async function POST(
       specialtyBotContext = sb.join("\n");
     }
 
+    // ══ CMD-FLAG-POLISH-BATCH-B FIX 3: structured V8 pricing fetch ══
+    let v8Block = "";
+    try {
+      const v8Log = await prisma.eventLog.findFirst({
+        where: { itemId, eventType: "GARAGE_SALE_V8_CALC" },
+        orderBy: { createdAt: "desc" },
+        select: { payload: true },
+      });
+      let v8: any = null;
+      if (v8Log?.payload) { try { v8 = JSON.parse(v8Log.payload); } catch { v8 = null; } }
+      const list = typeof v8?.listPrice === "number" ? v8.listPrice : (typeof (item as any).garageSalePriceHigh === "number" ? (item as any).garageSalePriceHigh : null);
+      const accept = typeof v8?.acceptPrice === "number" ? v8.acceptPrice : (typeof (item as any).garageSalePrice === "number" ? (item as any).garageSalePrice : null);
+      const floor = typeof v8?.floorPrice === "number" ? v8.floorPrice : (typeof (item as any).quickSalePrice === "number" ? (item as any).quickSalePrice : null);
+      if (list != null || accept != null || floor != null) {
+        v8Block = `\n\n[V8 PRICING — STRUCTURED, USE THESE EXACT NUMBERS IN YOUR LISTINGS]\nlistPrice (sticker / "list at"): ${list != null ? "$" + list : "N/A"}\nacceptPrice (sweet spot / target): ${accept != null ? "$" + accept : "N/A"}\nfloorPrice (walk-away minimum): ${floor != null ? "$" + floor : "N/A"}\nchannelRecommendation: ${v8?.channelRecommendation || "Not available"}\nlocationNote: ${v8?.locationNote || ""}\nsaleMethod: ${(item as any).saleMethod ?? "BOTH"}\n\nINSTRUCTION: Pack 17 (V8 vocabulary) tells you HOW to use these.\nThis block tells you WHAT they are. Use the listed numbers verbatim\nin listing copy — do not invent ranges.\n`;
+      }
+    } catch (v8Err: any) { console.warn("[listbot] V8 fetch failed (non-fatal):", v8Err?.message); v8Block = ""; }
+    specialtyBotContext = specialtyBotContext + v8Block;
+
     // ══ BATMAN READS ROBIN — BuyerBot intelligence for smarter listings ══
     let buyerIntelligence = "";
     try {
@@ -600,6 +619,19 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
           hybrid.social.rawResult,
         );
         aiBreakdown = listbotResult._ai_breakdown;
+
+        // CMD-FLAG-POLISH-BATCH-B FIX 9: V8 vocabulary hit-rate telemetry
+        try {
+          const listingTextBlob = JSON.stringify(listbotResult?.listings ?? {});
+          const v8VocabRegex = /\$([\d,]+)\s*(firm|OBO|takes it|asking|priced)/i;
+          const hasV8Vocab = v8VocabRegex.test(listingTextBlob);
+          const hasV8Numbers = !!v8Block && /\$\d/.test(listingTextBlob);
+          if (user?.id) {
+            prisma.userEvent.create({
+              data: { userId: user.id, eventType: "LISTBOT_V8_HIT_RATE", itemId, metadata: JSON.stringify({ hasV8Vocab, hasV8Numbers, hadV8Input: !!v8Block, platformCount: listbotResult?.listings ? Object.keys(listbotResult.listings).length : 0 }) },
+            }).catch(() => null);
+          }
+        } catch { /* non-fatal telemetry */ }
 
         // STEP 4.6: Use citations from the OpenAI web_search_preview pre-pass
         // (Claude + Grok don't share that tool, so the pre-pass collects them).

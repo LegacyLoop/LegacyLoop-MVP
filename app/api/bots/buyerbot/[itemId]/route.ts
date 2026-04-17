@@ -261,6 +261,29 @@ Use this data to identify WHERE buyers are active and WHAT price brackets they'r
       specialtyBotContext = sb.join("\n");
     }
 
+    // ══ CMD-FLAG-POLISH-BATCH-B FIX 4: structured V8 pricing + location fetch ══
+    let v8Block = "";
+    try {
+      const v8Log = await prisma.eventLog.findFirst({
+        where: { itemId, eventType: "GARAGE_SALE_V8_CALC" },
+        orderBy: { createdAt: "desc" },
+        select: { payload: true },
+      });
+      let v8: any = null;
+      if (v8Log?.payload) { try { v8 = JSON.parse(v8Log.payload); } catch { v8 = null; } }
+      const list = typeof v8?.listPrice === "number" ? v8.listPrice : (typeof (item as any).garageSalePriceHigh === "number" ? (item as any).garageSalePriceHigh : null);
+      const accept = typeof v8?.acceptPrice === "number" ? v8.acceptPrice : (typeof (item as any).garageSalePrice === "number" ? (item as any).garageSalePrice : null);
+      const floor = typeof v8?.floorPrice === "number" ? v8.floorPrice : (typeof (item as any).quickSalePrice === "number" ? (item as any).quickSalePrice : null);
+      if (list != null || accept != null || floor != null) {
+        const saleMethod = (item as any).saleMethod ?? "BOTH";
+        const saleZip = (item as any).saleZip ?? "Not set";
+        const saleRadiusMi = (item as any).saleRadiusMi ?? 25;
+        const shippingDifficulty = (item as any).aiShippingDifficulty ?? "standard";
+        v8Block = `\n\n[V8 PRICING — STRUCTURED, USE FOR BUYER POOL SEGMENTATION]\nlistPrice: ${list != null ? "$" + list : "N/A"}\nacceptPrice: ${accept != null ? "$" + accept : "N/A"}\nfloorPrice: ${floor != null ? "$" + floor : "N/A"}\nchannelRecommendation: ${v8?.channelRecommendation || "Not available"}\nlocationNote: ${v8?.locationNote || ""}\nsaleMethod: ${saleMethod}\nsaleZip: ${saleZip}\nsaleRadiusMi: ${saleRadiusMi}\nshippingDifficulty: ${shippingDifficulty}\n\nINSTRUCTION: Pack 17 (V8 buyer matching) tells you HOW to use these.\nFor LOCAL_PICKUP items, suppress ship-required platforms in\nplatform_opportunities output. Use saleZip + saleRadiusMi for radius targeting.\n`;
+      }
+    } catch (v8Err: any) { console.warn("[buyerbot] V8 fetch failed (non-fatal):", v8Err?.message); v8Block = ""; }
+    specialtyBotContext = specialtyBotContext + v8Block;
+
     // ══ ROBIN READS BATMAN — ListBot intelligence for smarter buyer targeting ══
     let listingIntelligence = "";
     try {
