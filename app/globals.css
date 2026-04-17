@@ -1327,3 +1327,18 @@ html.light .glass-nav-scrolled {
     transform: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   CMD-V8-PILLS-MOBILE-OVERFLOW — right column expands to
+   full row width when flex-wrapped below the title on
+   mobile, so the inner overflow-x:auto container has a
+   bounded parent to scroll against. Desktop >768px
+   unchanged — column stays content-sized, right-aligned.
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .item-header-right {
+    width: 100% !important;
+    max-width: 100% !important;
+    align-items: stretch !important;
+  }
+}

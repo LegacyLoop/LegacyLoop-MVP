@@ -403,10 +403,10 @@ export default async function ItemPage({ params }: { params: Params }) {
         </div>
 
         {/* Right: Quick Stats + Actions */}
-        <div style={{ display: "flex", flexDirection: "column" as const, alignItems: "flex-end", gap: "0.5rem", flexShrink: 1, minWidth: 0 }}>
+        <div className="item-header-right" style={{ display: "flex", flexDirection: "column" as const, alignItems: "flex-end", gap: "0.5rem", flexShrink: 1, minWidth: 0 }}>
           {/* Quick Stats */}
           {v && (
-            <div style={{ display: "flex", gap: "0.5rem", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", paddingBottom: "2px" }}>
+            <div style={{ display: "flex", gap: "0.5rem", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", paddingBottom: "2px", maxWidth: "100%", width: "100%", WebkitMaskImage: "linear-gradient(to right, black 0, black calc(100% - 20px), transparent 100%)", maskImage: "linear-gradient(to right, black 0, black calc(100% - 20px), transparent 100%)" }}>
               <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", minWidth: "55px", flexShrink: 0 }}>
                 <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Value</div>
                 <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "var(--accent)", letterSpacing: "-0.01em" }}>${pricingConsensus?.consensusValueLow ?? Math.round(v.low || 0)}–${pricingConsensus?.consensusValueHigh ?? Math.round(v.high || 0)}</div>
