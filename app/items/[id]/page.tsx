@@ -9,10 +9,11 @@ import ItemPhotoStrip from "./ItemPhotoStrip";
 import { computeAuthenticityScore } from "@/lib/antique-score";
 import { computeCollectiblesScore } from "@/lib/collectibles-score";
 import { calculateGarageSalePrices } from "@/lib/pricing/garage-sale";
-import { computePricingConsensus, type PricingConsensus } from "@/lib/pricing/reconcile";
+import { computePricingConsensus } from "@/lib/pricing/reconcile";
 import { detectCollectible } from "@/lib/collectible-detect";
 import AmazonPriceBadge from "./AmazonPriceBadge";
 import V8PillsStrip from "./V8PillsStrip";
+import ConfidencePill from "./ConfidencePill";
 import DetectionHUD from "./DetectionHUD";
 import SoldPriceWidget from "./SoldPriceWidget";
 import SaleCongratsBar from "./SaleCongratsBar";
@@ -145,13 +146,6 @@ export default async function ItemPage({ params }: { params: Params }) {
   const displayTitle = item.title || aiObj?.item_name || (item.status === "DRAFT" ? "New Item — Awaiting Analysis" : `Item #${item.id.slice(0, 8)}`);
   const antique = item.antiqueCheck;
 
-  // Check if AntiqueBot has been run and confirmed
-  const antiqueBotConfirmed = await prisma.eventLog.findFirst({
-    where: { itemId: item.id, eventType: "ANTIQUEBOT_RESULT" },
-    orderBy: { createdAt: "desc" },
-    select: { id: true },
-  }).then((r) => !!r).catch(() => false);
-
   // Detect antique from AI analysis (fires before AntiqueBot is run)
   let isAntiqueFromAI = false;
   if (aiObj) {
@@ -185,7 +179,6 @@ export default async function ItemPage({ params }: { params: Params }) {
 
   const v = item.valuation as any;
   const comps = Array.isArray(item.marketComps) ? item.marketComps : [];
-  const primaryPhoto = item.photos.find((p) => p.isPrimary) || item.photos[0];
 
   // Public listing statuses
   const PUBLIC_STATUSES = ["LISTED", "ANALYZED", "READY", "INTERESTED"];
@@ -252,13 +245,11 @@ export default async function ItemPage({ params }: { params: Params }) {
       }}>
       <div className="item-header-row" style={{
         display: "flex",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        gap: "1.5rem",
-        flexWrap: "wrap",
+        flexDirection: "column" as const,
+        gap: 0,
       }}>
-        {/* Left: Title + Status + Subtitle */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        {/* ═══ BAND 1 — IDENTITY ═══ */}
+        <div className="item-header-band" style={{ display: "flex", flexDirection: "column" as const, gap: "0.5rem", width: "100%", maxWidth: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.65rem", flexWrap: "wrap" }}>
             <h1 style={{
               fontSize: "1.85rem",
@@ -287,7 +278,7 @@ export default async function ItemPage({ params }: { params: Params }) {
               {item.status}
             </span>
 
-            {/* Antique badge — shows on AI detection or AntiqueBot confirmation */}
+            {/* Antique badge */}
             {showAntiqueUI && (
               <span style={{
                 padding: "0.2rem 0.65rem",
@@ -319,7 +310,7 @@ export default async function ItemPage({ params }: { params: Params }) {
               </span>
             )}
 
-            {/* Vehicle detected badge — CMD-ANALYZEBOT-BUG-FIX: removed "tractor", added outdoor exclusion */}
+            {/* Vehicle detected badge */}
             {(() => {
               const VEHICLE_KW = ["car", "truck", "vehicle", "automobile", "suv", "van", "motorcycle", "atv", "boat", "trailer", "rv", "camper"];
               const cat = (aiObj?.category || "").toLowerCase();
@@ -368,8 +359,7 @@ export default async function ItemPage({ params }: { params: Params }) {
             <p style={{
               fontSize: "0.82rem",
               color: "var(--text-muted)",
-              marginTop: "0.45rem",
-              margin: "0.45rem 0 0 0",
+              margin: 0,
             }}>
               {subtitleParts.join(" · ")}
             </p>
@@ -380,10 +370,9 @@ export default async function ItemPage({ params }: { params: Params }) {
             <p style={{
               fontSize: "0.85rem",
               color: "var(--text-secondary)",
-              marginTop: "0.6rem",
-              margin: "0.6rem 0 0 0",
+              margin: 0,
               lineHeight: 1.6,
-              maxWidth: "600px",
+              maxWidth: "720px",
               paddingLeft: "0.75rem",
               borderLeft: "3px solid rgba(0,188,212,0.25)",
             }}>
@@ -393,8 +382,7 @@ export default async function ItemPage({ params }: { params: Params }) {
             <p style={{
               fontSize: "0.82rem",
               color: "var(--text-muted)",
-              marginTop: "0.6rem",
-              margin: "0.6rem 0 0 0",
+              margin: 0,
               fontStyle: "italic",
             }}>
               Run AI analysis to get a detailed description and valuation.
@@ -402,95 +390,112 @@ export default async function ItemPage({ params }: { params: Params }) {
           ) : null}
         </div>
 
-        {/* Right: Quick Stats + Actions */}
-        <div className="item-header-right" style={{ display: "flex", flexDirection: "column" as const, alignItems: "flex-end", gap: "0.5rem", flexShrink: 1, minWidth: 0 }}>
-          {/* Quick Stats */}
-          {v && (
-            <div style={{ display: "flex", gap: "0.5rem", overflowX: "auto", WebkitOverflowScrolling: "touch", scrollbarWidth: "none", paddingBottom: "2px", maxWidth: "100%", width: "100%", WebkitMaskImage: "linear-gradient(to right, black 0, black calc(100% - 20px), transparent 100%)", maskImage: "linear-gradient(to right, black 0, black calc(100% - 20px), transparent 100%)" }}>
-              <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", minWidth: "55px", flexShrink: 0 }}>
-                <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Value</div>
-                <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "var(--accent)", letterSpacing: "-0.01em" }}>${pricingConsensus?.consensusValueLow ?? Math.round(v.low || 0)}–${pricingConsensus?.consensusValueHigh ?? Math.round(v.high || 0)}</div>
-              </div>
-              {v.confidence != null && (
-                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", flexShrink: 0 }}>
-                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Confidence</div>
-                  <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: (pricingConsensus?.consensusConfidence ?? (v.confidence > 1 ? v.confidence : v.confidence * 100)) > 70 ? "#22c55e" : "#f59e0b" }}>{pricingConsensus?.consensusConfidence ?? Math.round(v.confidence > 1 ? v.confidence : v.confidence * 100)}%</div>
-                </div>
-              )}
-              {gsCalc && !gsCalc.isExempt && (pricingConsensus || v8CalcData) && (
-                <V8PillsStrip itemId={item.id} pills={[
-                  { label: "List", value: pricingConsensus?.consensusListPrice ?? v8CalcData!.listPrice, color: "#00bcd4", bg: "rgba(0,188,212,0.06)", border: "rgba(0,188,212,0.2)" },
-                  { label: "Accept", value: pricingConsensus?.consensusAcceptPrice ?? v8CalcData!.acceptPrice, color: "#22c55e", bg: "rgba(34,197,94,0.06)", border: "rgba(34,197,94,0.2)" },
-                  { label: "Floor", value: pricingConsensus?.consensusFloorPrice ?? v8CalcData!.floorPrice, color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
-                ]} />
-              )}
-              {gsCalc && !gsCalc.isExempt && !v8CalcData && (<>
-                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.2)", minWidth: "55px", flexShrink: 0 }}>
-                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#00bcd4", fontWeight: 700 }}>Garage Sale</div>
-                  <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4", letterSpacing: "-0.01em" }}>${gsCalc.garageSalePrice}–${gsCalc.garageSalePriceHigh}</div>
-                </div>
-                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(29,158,117,0.06)", border: "1px solid rgba(29,158,117,0.2)", minWidth: "55px", flexShrink: 0 }}>
-                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#1D9E75", fontWeight: 700 }}>Quick Sale</div>
-                  <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#1D9E75", letterSpacing: "-0.01em" }}>${gsCalc.quickSalePrice}–${gsCalc.quickSalePriceHigh}</div>
-                </div>
-              </>)}
-              {gsCalc?.isExempt && (pricingConsensus || v8CalcData) && (
-                <V8PillsStrip itemId={item.id} pills={[
-                  { label: "Hold", value: pricingConsensus?.consensusListPrice ?? v8CalcData!.listPrice, color: "#D4AF37", bg: "rgba(212,175,55,0.08)", border: "rgba(212,175,55,0.25)" },
-                  { label: "Negotiate", value: pricingConsensus?.consensusAcceptPrice ?? v8CalcData!.acceptPrice, color: "#D4AF37", bg: "rgba(212,175,55,0.06)", border: "rgba(212,175,55,0.20)" },
-                  { label: "Minimum", value: pricingConsensus?.consensusFloorPrice ?? v8CalcData!.floorPrice, color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
-                ]} />
-              )}
-              {gsCalc?.isExempt && !v8CalcData && (
-                <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", flexShrink: 0 }}>
-                  <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#D4AF37", fontWeight: 700 }}>Collectible</div>
-                  <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", letterSpacing: "-0.01em" }}>${gsCalc.garageSalePrice}–${gsCalc.garageSalePriceHigh}</div>
-                </div>
-              )}
+        {v && <div className="item-header-divider" />}
+
+        {/* ═══ BAND 2 — PRICING INTELLIGENCE ═══ */}
+        {v && (
+          <div
+            className="item-header-band item-header-pricing-band"
+            style={{
+              display: "flex",
+              flexDirection: "row" as const,
+              flexWrap: "nowrap" as const,
+              gap: "0.5rem",
+              width: "100%",
+              maxWidth: "100%",
+              overflowX: "auto",
+              WebkitOverflowScrolling: "touch",
+              scrollbarWidth: "none",
+              paddingBottom: "2px",
+              WebkitMaskImage: "linear-gradient(to right, black 0, black calc(100% - 20px), transparent 100%)",
+              maskImage: "linear-gradient(to right, black 0, black calc(100% - 20px), transparent 100%)",
+            }}
+          >
+            <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", minWidth: "55px", flexShrink: 0 }}>
+              <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Value</div>
+              <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "var(--accent)", letterSpacing: "-0.01em" }}>{`$${pricingConsensus?.consensusValueLow ?? Math.round(v.low || 0)}–${pricingConsensus?.consensusValueHigh ?? Math.round(v.high || 0)}`}</div>
             </div>
+            {v.confidence != null && (
+              <ConfidencePill
+                value={pricingConsensus?.consensusConfidence ?? (v.confidence > 1 ? v.confidence : v.confidence * 100)}
+                itemId={item.id}
+              />
+            )}
+            {gsCalc && !gsCalc.isExempt && (pricingConsensus || v8CalcData) && (
+              <V8PillsStrip itemId={item.id} pills={[
+                { label: "List", value: pricingConsensus?.consensusListPrice ?? v8CalcData!.listPrice, color: "#00bcd4", bg: "rgba(0,188,212,0.06)", border: "rgba(0,188,212,0.2)", trustRing: (pricingConsensus?.consensusConfidence ?? 0) >= 90 },
+                { label: "Accept", value: pricingConsensus?.consensusAcceptPrice ?? v8CalcData!.acceptPrice, color: "#22c55e", bg: "rgba(34,197,94,0.06)", border: "rgba(34,197,94,0.2)" },
+                { label: "Floor", value: pricingConsensus?.consensusFloorPrice ?? v8CalcData!.floorPrice, color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
+              ]} />
+            )}
+            {gsCalc && !gsCalc.isExempt && !v8CalcData && !pricingConsensus && (<>
+              <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.2)", minWidth: "55px", flexShrink: 0 }}>
+                <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#00bcd4", fontWeight: 700 }}>Garage Sale</div>
+                <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4", letterSpacing: "-0.01em" }}>{`$${gsCalc.garageSalePrice}–${gsCalc.garageSalePriceHigh}`}</div>
+              </div>
+              <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(29,158,117,0.06)", border: "1px solid rgba(29,158,117,0.2)", minWidth: "55px", flexShrink: 0 }}>
+                <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#1D9E75", fontWeight: 700 }}>Quick Sale</div>
+                <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#1D9E75", letterSpacing: "-0.01em" }}>{`$${gsCalc.quickSalePrice}–${gsCalc.quickSalePriceHigh}`}</div>
+              </div>
+            </>)}
+            {gsCalc?.isExempt && (pricingConsensus || v8CalcData) && (
+              <V8PillsStrip itemId={item.id} pills={[
+                { label: "Hold", value: pricingConsensus?.consensusListPrice ?? v8CalcData!.listPrice, color: "#D4AF37", bg: "rgba(212,175,55,0.08)", border: "rgba(212,175,55,0.25)" },
+                { label: "Negotiate", value: pricingConsensus?.consensusAcceptPrice ?? v8CalcData!.acceptPrice, color: "#D4AF37", bg: "rgba(212,175,55,0.06)", border: "rgba(212,175,55,0.20)" },
+                { label: "Minimum", value: pricingConsensus?.consensusFloorPrice ?? v8CalcData!.floorPrice, color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
+              ]} />
+            )}
+            {gsCalc?.isExempt && !v8CalcData && !pricingConsensus && (
+              <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", flexShrink: 0 }}>
+                <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#D4AF37", fontWeight: 700 }}>Collectible</div>
+                <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", letterSpacing: "-0.01em" }}>{`$${gsCalc.garageSalePrice}–${gsCalc.garageSalePriceHigh}`}</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="item-header-divider" />
+
+        {/* ═══ BAND 3 — ACTIONS ═══ */}
+        <div className="item-header-band item-header-actions" style={{ display: "flex", flexDirection: "row" as const, alignItems: "center", gap: "0.5rem", flexWrap: "wrap", width: "100%", maxWidth: "100%" }}>
+          <span style={{
+            padding: "0.2rem 0.55rem", borderRadius: "9999px",
+            fontSize: "0.62rem", fontWeight: 600,
+            background: "var(--ghost-bg)", color: "var(--text-muted)",
+            border: "1px solid var(--border-default)",
+          }}>
+            Tier {user.tier}
+          </span>
+
+          <Link
+            className="btn-ghost"
+            href={`/items/${item.id}/edit`}
+            style={{ padding: "0.35rem 0.85rem", fontSize: "0.78rem" }}
+          >
+            Edit
+          </Link>
+
+          {isPublic && (
+            <a
+              href={`/store/${user.id}/item/${item.id}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                padding: "0.35rem 0.85rem", fontSize: "0.72rem", fontWeight: 600,
+                borderRadius: "0.5rem", border: "1px solid var(--accent)",
+                background: "transparent", color: "var(--accent)",
+                textDecoration: "none",
+              }}
+            >
+              View Listing
+            </a>
           )}
 
-          {/* Action Bar */}
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-            <span style={{
-              padding: "0.2rem 0.55rem", borderRadius: "9999px",
-              fontSize: "0.62rem", fontWeight: 600,
-              background: "var(--ghost-bg)", color: "var(--text-muted)",
-              border: "1px solid var(--border-default)",
-            }}>
-              Tier {user.tier}
-            </span>
-
-            <Link
-              className="btn-ghost"
-              href={`/items/${item.id}/edit`}
-              style={{ padding: "0.35rem 0.85rem", fontSize: "0.78rem" }}
-            >
-              Edit
-            </Link>
-
-            {isPublic && (
-              <a
-                href={`/store/${user.id}/item/${item.id}`}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  padding: "0.35rem 0.85rem", fontSize: "0.72rem", fontWeight: 600,
-                  borderRadius: "0.5rem", border: "1px solid var(--accent)",
-                  background: "transparent", color: "var(--accent)",
-                  textDecoration: "none",
-                }}
-              >
-                View Listing
-              </a>
-            )}
-
-            <ShareDropdown
-              url={shareUrl}
-              title={displayTitle}
-              description={item.description || "Check out this item on LegacyLoop"}
-            />
-          </div>
+          <ShareDropdown
+            url={shareUrl}
+            title={displayTitle}
+            description={item.description || "Check out this item on LegacyLoop"}
+          />
         </div>
       </div>
       </div>

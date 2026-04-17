@@ -8,6 +8,7 @@ interface V8Pill {
   color: string;
   bg: string;
   border: string;
+  trustRing?: boolean;
 }
 
 export default function V8PillsStrip({ pills, itemId }: { pills: V8Pill[]; itemId: string }) {
@@ -31,6 +32,7 @@ export default function V8PillsStrip({ pills, itemId }: { pills: V8Pill[]; itemI
             textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem",
             background: p.bg, border: `1px solid ${p.border}`, minWidth: "55px", flexShrink: 0,
             cursor: "pointer", fontFamily: "inherit", animation: `fadeIn 0.3s ease-out ${i * 60}ms both`,
+            boxShadow: p.trustRing ? "0 0 0 2px rgba(212,175,55,0.55), 0 0 12px rgba(212,175,55,0.2)" : undefined,
           }}
         >
           <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: p.color, fontWeight: 700 }}>{p.label}</div>
