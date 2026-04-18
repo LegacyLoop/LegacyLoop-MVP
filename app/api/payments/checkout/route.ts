@@ -8,6 +8,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email/send";
 import { creditPurchaseEmail, subscriptionUpgradeEmail, itemSoldEmail, orderConfirmationEmail } from "@/lib/email/templates";
 import { n8nPaymentReceived, n8nSmsAlert } from "@/lib/n8n";
+import { handleSoldTransition } from "@/lib/pricing/feedback-loop-hook";
 import {
   calculateProcessingFee,
   calculateTotalWithFee,
@@ -457,10 +458,25 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // Mark item as SOLD
+      // Mark item as SOLD (with mirror for feedback-loop fast path)
+      const soldPriceUsd = typeof itemPrice === "number" && itemPrice > 0
+        ? Math.round(itemPrice)
+        : undefined;
+      const soldAt = new Date();
       await prisma.item.update({
         where: { id: id },
-        data: { status: "SOLD" },
+        data: {
+          status: "SOLD",
+          ...(soldPriceUsd != null ? { soldPrice: soldPriceUsd, soldAt } : {}),
+        },
+      });
+
+      // CMD-PRICING-FEEDBACK-LOOP-V1c: fire accuracy compute
+      await handleSoldTransition(id, {
+        soldPrice: soldPriceUsd,
+        soldAt,
+        source: "payments_checkout",
+        mirrorToItem: false, // mirrored above
       });
 
       // First sale bonus: award 25 credits to seller

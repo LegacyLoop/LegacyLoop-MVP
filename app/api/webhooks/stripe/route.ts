@@ -6,6 +6,7 @@ import { n8nRenewalReminder } from "@/lib/n8n";
 import { sendEmail } from "@/lib/email/send";
 import { whiteGloveBookingConfirmEmail } from "@/lib/email/templates";
 import type Stripe from "stripe";
+import { handleSoldTransition } from "@/lib/pricing/feedback-loop-hook";
 
 /**
  * POST /api/webhooks/stripe
@@ -84,10 +85,26 @@ export async function POST(req: NextRequest) {
       if (paymentType === "item_purchase") {
         const itemId = pi.metadata?.itemId;
         if (itemId) {
+          // Stripe pi.amount is in cents — convert to USD for soldPrice
+          const soldPriceUsd = typeof pi.amount === "number" && pi.amount > 0
+            ? Math.round(pi.amount / 100)
+            : undefined;
+          const soldAt = new Date();
           await prisma.item.update({
             where: { id: itemId },
-            data: { status: "SOLD" },
+            data: {
+              status: "SOLD",
+              ...(soldPriceUsd != null ? { soldPrice: soldPriceUsd, soldAt } : {}),
+            },
           }).catch(() => {});
+
+          // CMD-PRICING-FEEDBACK-LOOP-V1c: fire accuracy compute
+          await handleSoldTransition(itemId, {
+            soldPrice: soldPriceUsd,
+            soldAt,
+            source: "stripe_webhook",
+            mirrorToItem: false, // mirrored above
+          });
         }
       }
 

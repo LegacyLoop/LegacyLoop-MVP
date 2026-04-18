@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { isDemoMode } from "@/lib/bot-mode";
 import { sendTradeNotification } from "@/lib/email/send";
 import { tradeAcceptedEmail, tradeDeclinedEmail, tradeCounteredEmail } from "@/lib/email/templates";
+import { handleSoldTransition } from "@/lib/pricing/feedback-loop-hook";
 
 export async function POST(req: NextRequest) {
   try {
@@ -93,9 +94,10 @@ export async function POST(req: NextRequest) {
 
     if (body.action === "ACCEPT") {
       const soldPrice = Math.round(proposal.totalValue || 0);
+      const soldAt = new Date();
       await prisma.item.update({
         where: { id: tradeLog.itemId },
-        data: { status: "SOLD", soldPrice, soldAt: new Date() },
+        data: { status: "SOLD", soldPrice, soldAt },
       });
       await prisma.eventLog.create({
         data: {
@@ -109,6 +111,16 @@ export async function POST(req: NextRequest) {
             cashAdded: proposal.cashAdded,
           }),
         },
+      });
+
+      // CMD-PRICING-FEEDBACK-LOOP-V1c: fire accuracy compute.
+      // Barter trades with zero cash value pass soldPrice: undefined —
+      // accuracy compute falls back via Tier 2/3 if present.
+      await handleSoldTransition(tradeLog.itemId, {
+        soldPrice: soldPrice > 0 ? soldPrice : undefined,
+        soldAt,
+        source: "trades_respond",
+        mirrorToItem: false, // mirrored above
       });
     }
 

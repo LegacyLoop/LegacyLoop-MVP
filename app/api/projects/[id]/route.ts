@@ -1,6 +1,7 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { updateProjectRollup } from "@/lib/data/project-rollup";
+import { handleSoldTransition } from "@/lib/pricing/feedback-loop-hook";
 
 type Params = Promise<{ id: string }>;
 
@@ -92,11 +93,20 @@ export async function PATCH(req: Request, { params }: { params: Params }) {
       ? Math.round((bulkPrice / unsoldItems.length) * 100) / 100
       : null;
 
+    const bulkAllSoldAt = new Date();
     for (const item of unsoldItems) {
       const soldPrice = perItemPrice ?? Math.round((Number(item.listingPrice) || 0) * (1 - (discountPct ?? 0) / 100));
+      const soldPriceRounded = Math.round(soldPrice);
       await prisma.item.update({
         where: { id: item.id },
-        data: { status: "SOLD", soldPrice: Math.round(soldPrice) },
+        data: { status: "SOLD", soldPrice: soldPriceRounded, soldAt: bulkAllSoldAt },
+      });
+      // CMD-PRICING-FEEDBACK-LOOP-V1c
+      await handleSoldTransition(item.id, {
+        soldPrice: soldPriceRounded,
+        soldAt: bulkAllSoldAt,
+        source: "projects_bulk_all",
+        mirrorToItem: false,
       });
     }
 
@@ -150,8 +160,24 @@ export async function PATCH(req: Request, { params }: { params: Params }) {
     const finalPrice = bulkPrice != null ? Number(bulkPrice) : Math.round(totalValue * (1 - (discountPct || 25) / 100));
     const perItem = Math.round(finalPrice / deptItems.length);
 
+    const bulkDeptSoldAt = new Date();
     for (const item of deptItems) {
-      await prisma.item.update({ where: { id: item.id }, data: { status: "SOLD", listingPrice: perItem } });
+      await prisma.item.update({
+        where: { id: item.id },
+        data: {
+          status: "SOLD",
+          soldPrice: Math.round(perItem),
+          soldAt: bulkDeptSoldAt,
+          listingPrice: perItem,
+        },
+      });
+      // CMD-PRICING-FEEDBACK-LOOP-V1c
+      await handleSoldTransition(item.id, {
+        soldPrice: Math.round(perItem),
+        soldAt: bulkDeptSoldAt,
+        source: "projects_bulk_department",
+        mirrorToItem: false,
+      });
     }
 
     await prisma.eventLog.create({

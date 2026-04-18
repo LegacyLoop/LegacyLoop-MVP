@@ -3,6 +3,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { isDemoMode } from "@/lib/bot-mode";
 import { logSoldPrice } from "@/lib/data/sold-price-log";
+import { handleSoldTransition } from "@/lib/pricing/feedback-loop-hook";
 
 export async function POST(req: NextRequest) {
   try {
@@ -91,6 +92,14 @@ export async function POST(req: NextRequest) {
       condition,
       soldAt,
     }).catch(() => {});
+
+    // CMD-PRICING-FEEDBACK-LOOP-V1c: fire accuracy compute
+    await handleSoldTransition(body.itemId, {
+      soldPrice: Math.round(soldPrice),
+      soldAt,
+      source: "items_sold_endpoint",
+      mirrorToItem: false, // already mirrored in transaction above
+    });
 
     return NextResponse.json({
       success: true,
