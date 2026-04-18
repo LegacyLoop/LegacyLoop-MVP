@@ -19,6 +19,7 @@ export interface SourceRegistryEntry {
   ageYears: number;
   legalStatus:
     | "pending_written_permission"
+    | "demo_testing"            // demo activation, not production-ready
     | "tos_permissive"
     | "requires_api_key"
     | "deferred";
@@ -33,9 +34,9 @@ export const SOURCE_REGISTRY: Record<LocalSourceSlug, SourceRegistryEntry> = {
     coversStates: ["ME", "NH", "VT", "MA"],
     coverageTier: "regional",
     ageYears: 56,
-    legalStatus: "pending_written_permission",
-    active: false,
-    notes: "Primary endpoint candidate: /ad_stream/feed (JSON). Fallback: HTML at /classified/:id. Awaiting written permission from privacy@unclehenrys.com (email sent Apr 18).",
+    legalStatus: "demo_testing",
+    active: true,
+    notes: "DEMO MODE activation (Apr 18 2026) — verified /ad_stream/feed JSON endpoint. Permission email to privacy@unclehenrys.com still pending; flip legalStatus to 'tos_permissive' when response confirms. If no response 30+ days, flip to 'deferred' + active:false. Do NOT scale production traffic on demo_testing status.",
   },
   thrifty_nickel: {
     slug: "thrifty_nickel",

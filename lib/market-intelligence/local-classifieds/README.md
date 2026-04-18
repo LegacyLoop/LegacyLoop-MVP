@@ -101,19 +101,24 @@ Every entry in `SOURCE_REGISTRY` carries a `legalStatus` field:
 
 | Value | Meaning |
 |---|---|
-| `pending_written_permission` | Outreach sent; waiting on written consent. |
-| `tos_permissive` | Source's ToU explicitly allows automated use. |
+| `pending_written_permission` | Outreach sent; waiting on written consent. Adapter stays `active: false`. |
+| `demo_testing` | DEMO mode activation (`DEMO_MODE=true` or `LOCAL_CLASSIFIEDS_ENABLED=true` in dev). Adapter may fire for testing. NOT production-traffic-ready. |
+| `tos_permissive` | Source's ToU explicitly allows automated use. Production-ready. |
 | `requires_api_key` | Public API available; adapter pending key. |
 | `deferred` | No active outreach or technical readiness yet. |
 
-**No adapter may flip `active: true` until `legalStatus` is
-`pending_written_permission` → resolved, OR `tos_permissive`, OR
-`requires_api_key` with key in hand.**
+**`active: true` is permitted when `legalStatus` is ANY of:
+`demo_testing` (demo / dev testing only, not production traffic),
+`tos_permissive` (written consent or explicitly-permissive ToU),
+or `requires_api_key` with credentials provisioned. Production traffic
+requires `tos_permissive` or `requires_api_key`; `demo_testing`
+activation is bounded to `DEMO_MODE=true` environments.**
 
 Uncle Henry's (`uncle_henrys`) is the primary Phase 1 target. Permission
-email sent to `privacy@unclehenrys.com` on April 18, 2026. Status stays
-`pending_written_permission` + `active: false` until written response
-arrives.
+email sent to `privacy@unclehenrys.com` on April 18, 2026. Activated
+`demo_testing` + `active: true` on April 18, 2026 for in-app testing.
+Transition to `tos_permissive` when written permission arrives. If no
+response 30+ days, revert to `deferred` + `active: false`.
 
 The **legacy** HTML scraper at
 `lib/market-intelligence/adapters/uncle-henrys.ts` continues to serve
