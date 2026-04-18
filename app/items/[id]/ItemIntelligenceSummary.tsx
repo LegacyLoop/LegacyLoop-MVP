@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { canAccessIntelTab } from "@/lib/constants/pricing";
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -153,6 +153,35 @@ function timeAgo(iso: string): string {
    Main Component
    ═══════════════════════════════════════════════════════════════════════ */
 
+// CMD-PRICING-FRESHNESS-STAMP: trust-signal age formatter
+function formatAge(iso: string | undefined | null): string | null {
+  if (!iso) return null;
+  const then = new Date(iso).getTime();
+  if (!Number.isFinite(then)) return null;
+  const diffMs = Math.max(0, Date.now() - then);
+  const s = Math.floor(diffMs / 1000);
+  if (s < 30) return "just now";
+  if (s < 60) return `${s}s ago`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d ago`;
+  const w = Math.floor(d / 7);
+  if (w < 5) return `${w}w ago`;
+  return "over a month ago";
+}
+
+function ageStaleness(iso: string | undefined | null): "fresh" | "aging" | "stale" {
+  if (!iso) return "fresh";
+  const diffMs = Math.max(0, Date.now() - new Date(iso).getTime());
+  const h = diffMs / 3_600_000;
+  if (h > 24 * 7) return "stale";
+  if (h > 24) return "aging";
+  return "fresh";
+}
+
 export default function ItemIntelligenceSummary(props: Props) {
   const {
     itemId, status, aiData, valuation, enriched, engagement,
@@ -160,6 +189,22 @@ export default function ItemIntelligenceSummary(props: Props) {
     isAntique, isCollectible, authenticityScore,
     userTier = 1, pricingConsensus = null, v9Data = null, collapsed = false, onToggle,
   } = props;
+
+  // CMD-PRICING-FRESHNESS-STAMP: tick every 30s so "Updated Xm ago" stays
+  // accurate without a page reload.
+  const [ageTick, setAgeTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setAgeTick((t) => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
+  const consensusAgeString = useMemo(
+    () => formatAge(pricingConsensus?.computedAt),
+    [pricingConsensus?.computedAt, ageTick]
+  );
+  const consensusAgeStale = useMemo(
+    () => ageStaleness(pricingConsensus?.computedAt),
+    [pricingConsensus?.computedAt, ageTick]
+  );
 
   // ── AI Intelligence state ──
   const [aiIntel, setAiIntel] = useState<AIIntelligence | null>(null);
@@ -814,6 +859,25 @@ export default function ItemIntelligenceSummary(props: Props) {
                       Reconciled from {pricingConsensus.sourceCount} source{pricingConsensus.sourceCount === 1 ? "" : "s"} · confidence {pricingConsensus.consensusConfidence}%
                       {pricingConsensus.trustScore != null && (
                         <> · Trust {pricingConsensus.trustScore}/100 ({pricingConsensus.trustTier})</>
+                      )}
+                      {consensusAgeString && (
+                        <span
+                          style={{
+                            color: consensusAgeStale === "fresh" ? "var(--text-muted)" : "#f59e0b",
+                            fontWeight: consensusAgeStale === "stale" ? 600 : 400,
+                            marginLeft: "0.35rem",
+                          }}
+                          aria-label={`Pricing consensus updated ${consensusAgeString}`}
+                          title={
+                            consensusAgeStale === "stale"
+                              ? "Over a week old. Consider refreshing pricing."
+                              : consensusAgeStale === "aging"
+                              ? "Over a day old. Consider refreshing pricing."
+                              : `Pricing computed ${consensusAgeString}`
+                          }
+                        >
+                          {" · Updated "}{consensusAgeString}
+                        </span>
                       )}
                     </div>
                   )}
