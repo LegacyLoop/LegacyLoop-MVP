@@ -145,6 +145,62 @@ function safeFmtPrice(v: any): string { const n = safeExtractPrice(v); return n 
    Shared Components
    ═══════════════════════════════════════════ */
 
+/**
+ * IntelAnchorChip — CMD-PRICING-UI-ANCHOR-SURFACE
+ * Surfaces the Intelligence-anchor state across PriceBot / ListBot / BuyerBot.
+ * Palette locked: teal (anchored), amber (hybrid), neutral grey (formula).
+ * Age tooltip ("3m ago" / "2d ago — stale") mirrors INTEL_FRESH/STALE thresholds.
+ */
+function IntelAnchorChip({ pricingSource, intelligenceAgeMs }: {
+  pricingSource?: string | null;
+  intelligenceAgeMs?: number | null;
+}) {
+  if (!pricingSource) return null;
+
+  const palette = {
+    intelligence_anchored: { color: "#00BCD4", label: "🎯 Intel-anchored" },
+    hybrid:                { color: "#f59e0b", label: "⚖️ Hybrid" },
+    v8_formula:            { color: "rgba(255,255,255,0.4)", label: "Formula" },
+  } as const;
+
+  const p = palette[pricingSource as keyof typeof palette];
+  if (!p) return null;
+
+  const ageLabel =
+    intelligenceAgeMs == null ? "" :
+    intelligenceAgeMs < 60_000 ? "just now" :
+    intelligenceAgeMs < 3_600_000 ? `${Math.round(intelligenceAgeMs / 60_000)}m ago` :
+    intelligenceAgeMs < 86_400_000 ? `${Math.round(intelligenceAgeMs / 3_600_000)}h ago` :
+    intelligenceAgeMs < 604_800_000 ? `${Math.round(intelligenceAgeMs / 86_400_000)}d ago — stale` :
+    `${Math.round(intelligenceAgeMs / 604_800_000)}w ago — stale`;
+
+  const tooltip = ageLabel ? `${p.label} · Intelligence ${ageLabel}` : p.label;
+
+  return (
+    <span
+      title={tooltip}
+      aria-label={tooltip}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "0.25rem",
+        fontSize: "0.55rem",
+        fontWeight: 700,
+        padding: "3px 8px",
+        borderRadius: "9999px",
+        background: `${p.color}18`,
+        border: `1px solid ${p.color}40`,
+        color: p.color,
+        letterSpacing: "0.02em",
+        whiteSpace: "nowrap",
+        cursor: "help",
+      }}
+    >
+      {p.label}
+    </span>
+  );
+}
+
 function AccordionHeader({ id, icon, title, subtitle, isOpen, onToggle, accentColor, badge }: {
   id: string; icon: string; title: string; subtitle?: string;
   isOpen: boolean; onToggle: (id: string) => void; accentColor?: string; badge?: string;
@@ -3638,6 +3694,14 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
       <PanelHeader icon="💰" title="Price Estimate" hasData={hasData} collapsed={collapsed} onToggle={onToggle}
         preview={hasData ? `$${Math.round(v.low)} – $${Math.round(v.high)} · ${v.source || "AI estimate"}` : "Awaiting analysis"}
       />
+      {!collapsed && priceBotResult && (priceBotResult as any)?.pricingSource && (
+        <div style={{ padding: "0 0.85rem 0.35rem", display: "flex" }}>
+          <IntelAnchorChip
+            pricingSource={(priceBotResult as any)?.pricingSource}
+            intelligenceAgeMs={(priceBotResult as any)?.intelligenceAgeMs}
+          />
+        </div>
+      )}
 
       {collapsed && hasData && <CollapsedSummary botType="pricing" data={{ low: v.low, high: v.high, confidence: v.confidence, demand: pr?.regionalIntel?.localDemand || null, netPayout: pr?.sellerNet?.local || null, garageSale: v8Prices ? `LIST $${v8Prices.listPrice} / ACCEPT $${v8Prices.acceptPrice} / FLOOR $${v8Prices.floorPrice}` : gsPrices ? `$${gsPrices.garageSalePrice}–${gsPrices.garageSalePriceHigh}` : null, quickSale: v8Prices ? null : (gsPrices ? `$${gsPrices.quickSalePrice}–${gsPrices.quickSalePriceHigh}` : null) }} megaData={boosted ? boostResult : undefined} buttons={<>
         {onPriceBotRun && <button onClick={onPriceBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>💰 Re-Run · 1 cr</button>}
@@ -5602,6 +5666,14 @@ function BuyerFinderPanel({ aiData, itemId, onSuperBoost, onBuyerBotRun, boostin
       <PanelHeader icon="🎯" title="Buyer Finder" hasData={hasResult} badge={!hasResult ? "REQUIRES CREDITS" : undefined} collapsed={collapsed} onToggle={onToggle}
         preview={hasResult ? `${hotLeads.length} hot leads · Best: ${bestPlatform?.platform || "—"}` : "Not run yet"}
       />
+      {!collapsed && bb && (bb as any)?.pricingSource && (
+        <div style={{ padding: "0 0.85rem 0.35rem", display: "flex" }}>
+          <IntelAnchorChip
+            pricingSource={(bb as any)?.pricingSource}
+            intelligenceAgeMs={(bb as any)?.intelligenceAgeMs}
+          />
+        </div>
+      )}
 
       {collapsed && hasResult && <CollapsedSummary botType="buyers" data={{ leadCount: hotLeads.length + profiles.length, bestPlatform: bestPlatform?.platform, hotCount: hotLeads.length, platformCount: platforms.length, profileCount: profiles.length }} megaData={boosted ? boostResult : undefined} buttons={<>
         {onBuyerBotRun && <button onClick={onBuyerBotRun} style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem", fontWeight: 600, borderRadius: "0.4rem", border: "1px solid var(--border-default)", background: "var(--ghost-bg)", color: "var(--text-secondary)", cursor: "pointer", minHeight: "32px" }}>🎯 Re-Run · 2 cr</button>}
@@ -6043,6 +6115,14 @@ function ListingCreatorPanel({ aiData, itemId, onSuperBoost, onListBotRun, boost
       <PanelHeader icon="📋" title="Listing Creator" hasData={hasListBotData} badge={hasListBotData ? `${platformCount} LISTINGS` : "LISTBOT"} collapsed={collapsed} onToggle={onToggle}
         preview={hasListBotData ? `${platformCount} platform listings ready` : "Ready to generate"}
       />
+      {!collapsed && listBotResult && (listBotResult as any)?.pricingSource && (
+        <div style={{ padding: "0 0.85rem 0.35rem", display: "flex" }}>
+          <IntelAnchorChip
+            pricingSource={(listBotResult as any)?.pricingSource}
+            intelligenceAgeMs={(listBotResult as any)?.intelligenceAgeMs}
+          />
+        </div>
+      )}
       {!collapsed && hasListBotData && autoReady && readyCount > 0 && (
         <div style={{ padding: "0 0.85rem 0.35rem", display: "flex" }}>
           <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", padding: "0.2rem 0.65rem", borderRadius: "8px", fontSize: "0.72rem", fontWeight: 600, background: needsWorkCount === 0 ? "rgba(34,197,94,0.1)" : "rgba(234,179,8,0.1)", border: `1px solid ${needsWorkCount === 0 ? "rgba(34,197,94,0.2)" : "rgba(234,179,8,0.2)"}`, color: needsWorkCount === 0 ? "#22c55e" : "#eab308" }}>
@@ -9787,7 +9867,12 @@ export default function ItemDashboardPanels({
       const res = await fetch(`/api/bots/pricebot/${itemId}`, { method: "POST" });
       if (res.ok) {
         const data = await res.json();
-        setPriceBotResult(data.result);
+        // CMD-PRICING-UI-ANCHOR-SURFACE: PriceBot route returns pricingSource +
+        // intelligenceAgeMs at the top level (not inside result). Merge so the
+        // IntelAnchorChip can read them off priceBotResult.
+        setPriceBotResult(data.result
+          ? { ...data.result, pricingSource: data.pricingSource, intelligenceAgeMs: data.intelligenceAgeMs }
+          : data.result);
         setCollapsed(prev => ({ ...prev, pricing: false }));
       } else if (res.status === 402 || res.status === 403) {
         const err = await res.json().catch(() => ({ error: "error", message: "Something went wrong." }));
