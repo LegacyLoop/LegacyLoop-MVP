@@ -86,6 +86,11 @@ const PREMIUM_BRANDS = new Set([
   "craftsman", "ego", "greenworks", "toro", "ariens",
   "briggs & stratton", "kohler engines", "honda power",
   "kubota", "bobcat", "simplicity",
+  // CMD-PRICING-INTELLIGENCE-V3: musical instrument brand expansion
+  "dean", "washburn", "schecter", "esp", "jackson", "ibanez",
+  "epiphone", "gretsch", "prs", "rickenbacker", "mesa boogie",
+  "marshall", "fender acoustic", "cordoba", "takamine",
+  "ovation", "godin",
 ]);
 
 // ── Category normalization ──────────────────────────────────────────────
@@ -465,4 +470,135 @@ function v8LocationNote(
     return `Rural/lower-density market (ZIP ${prefix}xx): prices typically ${Math.abs(pctDiff)}% below national average. FLOOR adjusted accordingly.`;
   }
   return `Average market (ZIP ${prefix}xx): pricing at national baseline.`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// V9 — Dual-Local Pricing Engine (CMD-PRICING-INTELLIGENCE-V3)
+// V8 preserved unchanged above. V9 wraps V8 and adds:
+//   • localEnthusiastPrice — player-to-player / specialty-local channel
+//   • seasonal multiplier (month × category)
+//   • timeToSellDays (demand-informed)
+//   • localEnthusiastChannel (recommended marketplace)
+// ═══════════════════════════════════════════════════════════════════════
+
+import { LOCAL_ENTHUSIAST_MODIFIERS } from "./constants";
+
+export interface GarageSaleV9Prices extends GarageSaleV8Prices {
+  localEnthusiastPrice: number;
+  localEnthusiastPriceHigh: number;
+  localEnthusiastChannel: string;
+  timeToSellDays: { min: number; max: number };
+  seasonalMultiplier: number;
+  v9: true;
+}
+
+// Month is 0-11 to match Date#getMonth(). Spring months favor musical
+// instruments; Nov-Jan depress due to holiday gift-budget diversion.
+const SEASONAL_BY_CATEGORY: Record<string, number[]> = {
+  musical_instruments: [0.95, 0.95, 1.08, 1.10, 1.08, 1.02, 1.00, 1.02, 1.05, 1.00, 0.95, 0.95],
+  power_equipment:     [0.90, 0.92, 1.05, 1.10, 1.12, 1.08, 1.00, 0.95, 0.95, 1.00, 0.90, 0.88],
+  tools:               [1.00, 1.00, 1.02, 1.05, 1.05, 1.02, 1.00, 1.00, 1.00, 1.00, 0.98, 0.95],
+  furniture:           [1.00, 1.00, 1.02, 1.05, 1.05, 1.02, 1.00, 1.00, 1.00, 1.00, 0.98, 0.95],
+  electronics:         [0.95, 0.95, 1.00, 1.00, 1.00, 1.00, 1.00, 1.05, 1.05, 1.00, 1.10, 1.15],
+  default:             [1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00],
+};
+
+function resolveLocalModifierKey(categoryKey: string): keyof typeof LOCAL_ENTHUSIAST_MODIFIERS {
+  if (categoryKey === "musical instruments" || categoryKey === "music") return "musical_instruments";
+  if (categoryKey === "tools") return "tools";
+  if (categoryKey === "automotive" || categoryKey === "vehicle") return "power_equipment";
+  if (categoryKey === "outdoor" || categoryKey === "garden") return "power_equipment";
+  if (categoryKey === "furniture") return "furniture";
+  if (categoryKey === "electronics" || categoryKey === "appliances") return "electronics";
+  return "default";
+}
+
+function resolveSeasonalKey(categoryKey: string): keyof typeof SEASONAL_BY_CATEGORY {
+  if (categoryKey === "musical instruments" || categoryKey === "music") return "musical_instruments";
+  if (categoryKey === "outdoor" || categoryKey === "garden" || categoryKey === "automotive") return "power_equipment";
+  if (categoryKey === "tools") return "tools";
+  if (categoryKey === "furniture") return "furniture";
+  if (categoryKey === "electronics" || categoryKey === "appliances") return "electronics";
+  return "default";
+}
+
+function recommendLocalChannel(
+  categoryKey: string,
+  acceptPrice: number,
+  isExempt: boolean,
+  fallback: string,
+): string {
+  if (isExempt) return "Specialist dealer or auction";
+  if ((categoryKey === "musical instruments" || categoryKey === "music") && acceptPrice >= 100) {
+    return "Reverb local / Facebook Marketplace";
+  }
+  if (categoryKey === "tools" && acceptPrice >= 50) {
+    return "Facebook Marketplace / Craigslist";
+  }
+  if ((categoryKey === "automotive" || categoryKey === "vehicle" ||
+       categoryKey === "outdoor" || categoryKey === "garden") && acceptPrice >= 200) {
+    return "Craigslist / Estate sale";
+  }
+  return fallback;
+}
+
+function timeToSellRange(demandScore?: number): { min: number; max: number } {
+  if (!demandScore || demandScore <= 0) return { min: 14, max: 45 };
+  if (demandScore >= 60) return { min: 3, max: 7 };
+  if (demandScore >= 40) return { min: 7, max: 21 };
+  return { min: 21, max: 60 };
+}
+
+export function calculateGarageSaleV9Prices(
+  marketPrice: number,
+  category: string | null | undefined,
+  condition: string | null | undefined,
+  zip?: string | null,
+  options?: GarageSaleV8Options,
+): GarageSaleV9Prices {
+  const v8 = calculateGarageSaleV8Prices(marketPrice, category, condition, zip, options);
+
+  const categoryKey = v8.categoryKey;
+  const modKey = resolveLocalModifierKey(categoryKey);
+  const mod = LOCAL_ENTHUSIAST_MODIFIERS[modKey];
+  const conditionPos = getConditionPosition(condition);
+  const locMult = v8.locationMultiplier;
+
+  // Seasonal multiplier (current month from server time)
+  const month = new Date().getMonth();
+  const seasonalKey = resolveSeasonalKey(categoryKey);
+  const seasonalMultiplier = SEASONAL_BY_CATEGORY[seasonalKey][month] ?? 1.0;
+
+  // Range midpoint shifts with condition pos (0.15 poor → 0.90 mint)
+  const midFactor = mod.min + (mod.max - mod.min) * conditionPos;
+  const spread = (mod.max - mod.min) * 0.4;
+  const lowFactor = Math.max(0.10, midFactor - spread);
+  const highFactor = Math.min(1.0, midFactor + spread);
+
+  let leLow = Math.round(marketPrice * lowFactor * locMult * seasonalMultiplier);
+  let leHigh = Math.round(marketPrice * highFactor * locMult * seasonalMultiplier);
+
+  // Exempt categories: local-enthusiast retains closer-to-market
+  if (v8.isExempt) {
+    leLow = Math.max(leLow, Math.round(marketPrice * 0.60 * locMult));
+    leHigh = Math.max(leHigh, Math.round(marketPrice * 0.80 * locMult));
+  }
+
+  // Floor against V8 acceptPrice so local-enthusiast never undercuts accept
+  leLow = Math.max(leLow, Math.round(v8.acceptPrice * 0.95));
+  leHigh = Math.max(leHigh, leLow);
+
+  const localEnthusiastChannel = recommendLocalChannel(
+    categoryKey, v8.acceptPrice, v8.isExempt, v8.channelRecommendation,
+  );
+
+  return {
+    ...v8,
+    localEnthusiastPrice: leLow,
+    localEnthusiastPriceHigh: leHigh,
+    localEnthusiastChannel,
+    timeToSellDays: timeToSellRange(options?.demandScore),
+    seasonalMultiplier,
+    v9: true as const,
+  };
 }

@@ -3070,10 +3070,10 @@ function AiAnalysisPanel({ aiData, itemId, status, onSuperBoost, boosting, boost
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", marginBottom: "0.25rem" }}>
                     <span style={{ color: "var(--text-secondary)" }}>Confidence</span>
-                    <span style={{ fontWeight: 600, color: confPct >= 70 ? "#4caf50" : "#ff9800" }}>{confPct}%</span>
+                    <span style={{ fontWeight: 600, color: confPct >= 70 ? "#22c55e" : "#f59e0b" }}>{confPct}%</span>
                   </div>
                   <div style={{ height: 6, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${confPct}%`, borderRadius: 99, background: confPct >= 70 ? "#4caf50" : "#ff9800", transition: "width 0.5s ease" }} />
+                    <div style={{ height: "100%", width: `${confPct}%`, borderRadius: 99, background: confPct >= 70 ? "#22c55e" : "#f59e0b", transition: "width 0.5s ease" }} />
                   </div>
                 </div>
               );
@@ -8635,7 +8635,7 @@ const STATUS_FLOW = [
   { key: "COMPLETED", label: "Done", icon: "🎉" },
 ];
 
-function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: initialListingPrice, collapsed, onToggle, photos, category, extra, shippingData, projectId }: {
+function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: initialListingPrice, collapsed, onToggle, photos, category, extra, shippingData, projectId, pricingConsensus }: {
   itemId: string;
   status: string;
   valuation: any;
@@ -8648,6 +8648,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   extra?: { totalViews: number; inquiries: number; buyersFound: number; documentCount: number; updatedAt: string; shippingReady: boolean };
   shippingData?: { weight: number | null; length: number | null; width: number | null; height: number | null; isFragile: boolean; preference: string; aiWeightLbs: number | null; aiDimsEstimate: string | null; aiShippingDifficulty: string | null; aiShippingNotes: string | null; aiShippingConfidence: number | null };
   projectId?: string | null;
+  pricingConsensus?: import("@/lib/pricing/reconcile").PricingConsensus | null;
 }) {
   const router = useRouter();
   const [updating, setUpdating] = useState(false);
@@ -8793,8 +8794,10 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   const sellerFeeEst = Math.round(listPriceNum * 0.0175 * 100) / 100;
   const netEst = Math.round((listPriceNum - commissionEst - sellerFeeEst) * 100) / 100;
 
-  // Confidence value
-  const rawConf = valuation?.confidence ?? aiData?.confidence ?? 0;
+  // Confidence value — prefer V3 trustScore (SSOT) when available
+  const rawConf = pricingConsensus?.trustScore != null
+    ? pricingConsensus.trustScore / 100
+    : valuation?.confidence ?? aiData?.confidence ?? 0;
   const confPct = Math.round(rawConf > 1 ? rawConf : rawConf * 100);
 
   // ── Sub-accordion state ──
@@ -8848,8 +8851,18 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
         const readyColor = readyScore >= 4 ? "#22c55e" : readyScore >= 2 ? "#f59e0b" : "#ef4444";
         const remaining = 5 - readyScore;
         const readySub = readyScore === 5 ? "Ready to list" : `${remaining} step${remaining !== 1 ? "s" : ""} left`;
-        const priceStr = initialListingPrice ? `$${Math.round(initialListingPrice)}` : valuation?.low != null ? `$${Math.round(valuation.low)}\u2013$${Math.round(valuation.high)}` : "\u2014";
-        const priceSub = initialListingPrice ? "asking" : valuation ? "AI range" : "Set a price";
+        const priceStr = initialListingPrice
+          ? `$${Math.round(initialListingPrice)}`
+          : pricingConsensus?.consensusValueLow != null
+          ? `$${pricingConsensus.consensusValueLow}\u2013${pricingConsensus.consensusValueHigh}`
+          : valuation?.low != null
+          ? `$${Math.round(valuation.low)}\u2013${Math.round(valuation.high)}`
+          : "\u2014";
+        const priceSub = initialListingPrice
+          ? "asking"
+          : pricingConsensus?.consensusValueLow != null
+          ? "reconciled"
+          : valuation ? "AI range" : "Set a price";
         const views = extra?.totalViews ?? 0;
         const confColor = confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#f59e0b" : confPct > 0 ? "#ef4444" : "var(--text-muted)";
         const confSub = confPct >= 80 ? "High" : confPct >= 60 ? "Medium" : confPct > 0 ? "Low" : "";
@@ -10124,7 +10137,7 @@ export default function ItemDashboardPanels({
 
       {/* ── ITEM CONTROL CENTER (full width, above panel grid) ── */}
       <div style={{ marginBottom: "1rem" }}>
-        <ItemControlCenter itemId={itemId} status={status} valuation={valuation} aiData={aiData} listingPrice={listingPrice} collapsed={collapsed.control} onToggle={() => togglePanel("control")} photos={photos} category={category} extra={controlCenterExtra} shippingData={shippingData} projectId={projectId} />
+        <ItemControlCenter itemId={itemId} status={status} valuation={valuation} aiData={aiData} listingPrice={listingPrice} collapsed={collapsed.control} onToggle={() => togglePanel("control")} photos={photos} category={category} extra={controlCenterExtra} shippingData={shippingData} projectId={projectId} pricingConsensus={pricingConsensus} />
       </div>
 
       {/* ── ACTIVE OFFERS (below Sale Assignment) ── */}

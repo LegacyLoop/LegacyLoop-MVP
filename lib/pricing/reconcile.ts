@@ -10,6 +10,7 @@
  */
 
 import { prisma } from "@/lib/db";
+import { CATEGORY_WEIGHT_PROFILES, pickPricingCategory, type PricingCategory } from "./constants";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -42,6 +43,18 @@ export interface PricingDissent {
   values: Array<{ source: PricingSourceName; value: number }>;
 }
 
+export interface PricingDroppedOutlier {
+  source: PricingSourceName;
+  field: "listPrice" | "acceptPrice" | "floorPrice";
+  value: number;
+  deviation: number;
+}
+
+export interface PricingIdentityPenalty {
+  source: PricingSourceName;
+  reason: string;
+}
+
 export interface PricingConsensus {
   consensusListPrice: number;
   consensusAcceptPrice: number;
@@ -58,20 +71,14 @@ export interface PricingConsensus {
   warningBanner: string | null;
   confidenceTier: "high" | "medium" | "low";
   computedAt: string;
-  v: 1;
+  // V3 additions (all optional on reader side for backward-compat)
+  droppedOutliers?: PricingDroppedOutlier[];
+  identityPenalized?: PricingIdentityPenalty[];
+  categoryProfile?: PricingCategory;
+  trustScore?: number;
+  trustTier?: "high" | "medium" | "low";
+  v: 1 | 2;
 }
-
-// ── Constants ──────────────────────────────────────────────────────
-
-const SOURCE_BASE_WEIGHTS: Record<PricingSourceName, number> = {
-  v8_engine: 1.00,
-  megabot_consensus: 0.90,
-  pricebot_ai: 0.85,
-  intelligence_claude: 0.70,
-  analyzebot_estimate: 0.60,
-  v2_valuation: 0.55,
-  market_comps_median: 0.50,
-};
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -112,9 +119,24 @@ function safeJson(raw: string | null | undefined): any {
 
 // ── Main ───────────────────────────────────────────────────────────
 
-export async function computePricingConsensus(itemId: string): Promise<PricingConsensus | null> {
+export interface ComputePricingConsensusOptions {
+  category?: string | null;
+  brand?: string | null;
+  isAntique?: boolean;
+  isCollectible?: boolean;
+}
+
+export async function computePricingConsensus(
+  itemId: string,
+  opts?: ComputePricingConsensusOptions,
+): Promise<PricingConsensus | null> {
   const snapshots: PricingSourceSnapshot[] = [];
   const now = Date.now();
+
+  const categoryProfile = pickPricingCategory(
+    opts?.category, opts?.brand, opts?.isAntique, opts?.isCollectible,
+  );
+  const weights = CATEGORY_WEIGHT_PROFILES[categoryProfile];
 
   // 1a. V2 Valuation
   const val = await prisma.valuation.findUnique({ where: { itemId } }).catch(() => null);
@@ -122,8 +144,8 @@ export async function computePricingConsensus(itemId: string): Promise<PricingCo
     const ts = ((val as any).updatedAt ?? (val as any).createdAt ?? new Date()).toISOString();
     const fresh = freshnessDecay(now - new Date(ts).getTime());
     snapshots.push({
-      name: "v2_valuation", weight: SOURCE_BASE_WEIGHTS.v2_valuation,
-      freshness: fresh, effectiveWeight: SOURCE_BASE_WEIGHTS.v2_valuation * fresh,
+      name: "v2_valuation", weight: weights.v2_valuation,
+      freshness: fresh, effectiveWeight: weights.v2_valuation * fresh,
       timestamp: ts, valueLow: Number(val.low), valueHigh: Number(val.high),
       confidence: val.confidence ? Math.round(val.confidence > 1 ? val.confidence : val.confidence * 100) : undefined,
     });
@@ -140,8 +162,8 @@ export async function computePricingConsensus(itemId: string): Promise<PricingCo
       const ts = v8Log.createdAt.toISOString();
       const fresh = freshnessDecay(now - v8Log.createdAt.getTime());
       snapshots.push({
-        name: "v8_engine", weight: SOURCE_BASE_WEIGHTS.v8_engine,
-        freshness: fresh, effectiveWeight: SOURCE_BASE_WEIGHTS.v8_engine * fresh,
+        name: "v8_engine", weight: weights.v8_engine,
+        freshness: fresh, effectiveWeight: weights.v8_engine * fresh,
         timestamp: ts,
         listPrice: typeof v8.listPrice === "number" ? v8.listPrice : undefined,
         acceptPrice: typeof v8.acceptPrice === "number" ? v8.acceptPrice : undefined,
@@ -166,8 +188,8 @@ export async function computePricingConsensus(itemId: string): Promise<PricingCo
       const valHigh = result?.bestMarket?.high ?? result?.nationalPrice?.high;
       if (typeof lp === "number" || typeof valLow === "number") {
         snapshots.push({
-          name: "pricebot_ai", weight: SOURCE_BASE_WEIGHTS.pricebot_ai,
-          freshness: fresh, effectiveWeight: SOURCE_BASE_WEIGHTS.pricebot_ai * fresh,
+          name: "pricebot_ai", weight: weights.pricebot_ai,
+          freshness: fresh, effectiveWeight: weights.pricebot_ai * fresh,
           timestamp: ts,
           acceptPrice: typeof lp === "number" ? lp : undefined,
           valueLow: typeof valLow === "number" ? valLow : undefined,
@@ -190,8 +212,8 @@ export async function computePricingConsensus(itemId: string): Promise<PricingCo
       const ts = intelLog.createdAt.toISOString();
       const fresh = freshnessDecay(now - intelLog.createdAt.getTime());
       snapshots.push({
-        name: "intelligence_claude", weight: SOURCE_BASE_WEIGHTS.intelligence_claude,
-        freshness: fresh, effectiveWeight: SOURCE_BASE_WEIGHTS.intelligence_claude * fresh,
+        name: "intelligence_claude", weight: weights.intelligence_claude,
+        freshness: fresh, effectiveWeight: weights.intelligence_claude * fresh,
         timestamp: ts,
         listPrice: typeof pi.premiumPrice === "number" ? pi.premiumPrice : undefined,
         acceptPrice: typeof pi.sweetSpot === "number" ? pi.sweetSpot : undefined,
@@ -215,8 +237,8 @@ export async function computePricingConsensus(itemId: string): Promise<PricingCo
       const vM = ai.estimated_value_mid ?? ai.estimatedValueMid ?? (typeof vL === "number" && typeof vH === "number" ? Math.round((vL + vH) / 2) : undefined);
       if (typeof vL === "number" || typeof vM === "number") {
         snapshots.push({
-          name: "analyzebot_estimate", weight: SOURCE_BASE_WEIGHTS.analyzebot_estimate,
-          freshness: fresh, effectiveWeight: SOURCE_BASE_WEIGHTS.analyzebot_estimate * fresh,
+          name: "analyzebot_estimate", weight: weights.analyzebot_estimate,
+          freshness: fresh, effectiveWeight: weights.analyzebot_estimate * fresh,
           timestamp: ts, acceptPrice: typeof vM === "number" ? vM : undefined,
           valueLow: typeof vL === "number" ? vL : undefined, valueHigh: typeof vH === "number" ? vH : undefined,
           confidence: typeof aiResult.confidence === "number" ? Math.round(aiResult.confidence > 1 ? aiResult.confidence : aiResult.confidence * 100) : undefined,
@@ -236,8 +258,8 @@ export async function computePricingConsensus(itemId: string): Promise<PricingCo
       const ts = compsLog.createdAt.toISOString();
       const fresh = freshnessDecay(now - compsLog.createdAt.getTime());
       snapshots.push({
-        name: "market_comps_median", weight: SOURCE_BASE_WEIGHTS.market_comps_median,
-        freshness: fresh, effectiveWeight: SOURCE_BASE_WEIGHTS.market_comps_median * fresh,
+        name: "market_comps_median", weight: weights.market_comps_median,
+        freshness: fresh, effectiveWeight: weights.market_comps_median * fresh,
         timestamp: ts, acceptPrice: comps.median,
         valueLow: comps.low ?? undefined, valueHigh: comps.high ?? undefined,
       });
@@ -246,6 +268,51 @@ export async function computePricingConsensus(itemId: string): Promise<PricingCo
 
   // 2. No sources → null (caller renders fallback)
   if (snapshots.length === 0) return null;
+
+  // 2b. OUTLIER DETECTION — down-weight sources >2σ from mean per field
+  const droppedOutliers: PricingDroppedOutlier[] = [];
+  if (snapshots.length >= 3) {
+    const fields: Array<"listPrice" | "acceptPrice" | "floorPrice"> = ["listPrice", "acceptPrice", "floorPrice"];
+    for (const f of fields) {
+      const present = snapshots.filter(s => typeof (s as any)[f] === "number");
+      if (present.length < 3) continue;
+      const values = present.map(s => (s as any)[f] as number);
+      const mean = values.reduce((a, b) => a + b, 0) / values.length;
+      const variance = values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length;
+      const sd = Math.sqrt(variance);
+      if (sd <= 0) continue;
+      for (const s of present) {
+        const v = (s as any)[f] as number;
+        const dev = Math.abs(v - mean) / sd;
+        if (dev > 2) {
+          s.effectiveWeight = s.effectiveWeight * 0.15;
+          droppedOutliers.push({ source: s.name, field: f, value: v, deviation: Math.round(dev * 100) / 100 });
+        }
+      }
+    }
+  }
+
+  // 2c. IDENTITY ANCHOR — if AnalyzeBot ≥80% confident, penalize sources
+  // whose category/brand payload clearly diverges. Lightweight heuristic:
+  // only fires when we have actual mismatch signal in opts vs source timestamps.
+  const identityPenalized: PricingIdentityPenalty[] = [];
+  const anchor = snapshots.find(s => s.name === "analyzebot_estimate" && typeof s.confidence === "number" && s.confidence >= 80);
+  if (anchor && snapshots.length >= 2 && opts?.category) {
+    const anchorMid = anchor.acceptPrice ?? (anchor.valueLow && anchor.valueHigh ? (anchor.valueLow + anchor.valueHigh) / 2 : null);
+    if (anchorMid && anchorMid > 0) {
+      for (const s of snapshots) {
+        if (s.name === "analyzebot_estimate") continue;
+        const sMid = s.acceptPrice ?? (s.valueLow && s.valueHigh ? (s.valueLow + s.valueHigh) / 2 : null);
+        if (sMid && sMid > 0) {
+          const ratio = sMid / anchorMid;
+          if (ratio > 4 || ratio < 0.25) {
+            s.effectiveWeight = s.effectiveWeight * 0.30;
+            identityPenalized.push({ source: s.name, reason: `value ${Math.round(ratio * 100) / 100}× anchor; likely different item spec` });
+          }
+        }
+      }
+    }
+  }
 
   // 3. Weighted-median consensus
   const acceptPairs = snapshots.filter(s => typeof s.acceptPrice === "number").map(s => ({ value: s.acceptPrice!, weight: s.effectiveWeight }));
@@ -310,6 +377,15 @@ export async function computePricingConsensus(itemId: string): Promise<PricingCo
     ? `Pricing source disagreement on ${dissents[0].field} (${Math.round(dissents[0].spreadPct * 100)}% spread).`
     : null;
 
+  // 7b. Trust Score — unified 0-100 blended signal
+  const trustScore = Math.max(0, Math.min(100, Math.round(
+    0.4 * agreementScore
+    + 0.3 * freshnessScore
+    + 0.2 * (Math.min(snapshots.length, 7) / 7 * 100)
+    + 0.1 * consensusConfidence
+  )));
+  const trustTier: "high" | "medium" | "low" = trustScore >= 80 ? "high" : trustScore >= 50 ? "medium" : "low";
+
   // 8. Assemble + persist
   const consensus: PricingConsensus = {
     consensusListPrice: cList, consensusAcceptPrice: cAccept, consensusFloorPrice: cFloor,
@@ -317,12 +393,28 @@ export async function computePricingConsensus(itemId: string): Promise<PricingCo
     consensusConfidence, agreementScore, freshnessScore,
     sourceCount: snapshots.length, sources: snapshots, dissents,
     primaryDisplayLabel, warningBanner, confidenceTier,
-    computedAt: new Date().toISOString(), v: 1 as const,
+    droppedOutliers, identityPenalized, categoryProfile,
+    trustScore, trustTier,
+    computedAt: new Date().toISOString(), v: 2 as const,
   };
 
   prisma.eventLog.create({
-    data: { itemId, eventType: "PRICING_CONSENSUS", payload: JSON.stringify(consensus) },
+    data: { itemId, eventType: "PRICING_CONSENSUS_V3", payload: JSON.stringify(consensus) },
   }).catch(() => null);
+
+  // V3 telemetry: log dropped outliers + identity penalties for model calibration
+  for (const d of droppedOutliers) {
+    prisma.eventLog.create({
+      data: { itemId, eventType: "PRICING_SOURCE_DROPPED",
+        payload: JSON.stringify({ cause: "outlier", ...d }) },
+    }).catch(() => null);
+  }
+  for (const p of identityPenalized) {
+    prisma.eventLog.create({
+      data: { itemId, eventType: "PRICING_SOURCE_DROPPED",
+        payload: JSON.stringify({ cause: "identity_anchor", ...p }) },
+    }).catch(() => null);
+  }
 
   return consensus;
 }

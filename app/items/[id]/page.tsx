@@ -138,9 +138,6 @@ export default async function ItemPage({ params }: { params: Params }) {
   const botDisagreement = disagreementLog?.payload ? safeJsonParse(disagreementLog.payload) : null;
   const v8CalcData = v8CalcLog?.payload ? safeJsonParse(v8CalcLog.payload) : null;
 
-  // CMD-PRICING-CONSENSUS-V1: compute reconciled pricing from all sources
-  const pricingConsensus = await computePricingConsensus(item.id).catch(() => null);
-
   const enriched = await enrichItemContext(item.id, (item as any).listingPrice ?? null).catch(() => null);
   const aiObj = item.aiResult?.rawJson ? safeJsonParse(item.aiResult.rawJson) : null;
   const displayTitle = item.title || aiObj?.item_name || (item.status === "DRAFT" ? "New Item — Awaiting Analysis" : `Item #${item.id.slice(0, 8)}`);
@@ -176,6 +173,15 @@ export default async function ItemPage({ params }: { params: Params }) {
         megaBotResult: null,
       })
     : null;
+
+  // CMD-PRICING-INTELLIGENCE-V3: compute reconciled pricing with category-
+  // aware weights + outlier detection + identity anchor + Trust Score
+  const pricingConsensus = await computePricingConsensus(item.id, {
+    category: aiObj?.category,
+    brand: aiObj?.brand,
+    isAntique: showAntiqueUI,
+    isCollectible: isCollectibleFromAI,
+  }).catch(() => null);
 
   const v = item.valuation as any;
   const comps = Array.isArray(item.marketComps) ? item.marketComps : [];

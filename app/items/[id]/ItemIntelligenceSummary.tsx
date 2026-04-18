@@ -167,6 +167,28 @@ export default function ItemIntelligenceSummary(props: Props) {
   const [aiCachedAt, setAiCachedAt] = useState<string | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
 
+  // CMD-PRICING-INTELLIGENCE-V3: single-fire TRUST_SCORE_VIEW telemetry
+  const trustScoreFired = useRef(false);
+  useEffect(() => {
+    if (trustScoreFired.current) return;
+    if (pricingConsensus?.trustScore == null) return;
+    trustScoreFired.current = true;
+    fetch("/api/user-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventType: "TRUST_SCORE_VIEW",
+        itemId,
+        metadata: JSON.stringify({
+          trustScore: pricingConsensus.trustScore,
+          trustTier: pricingConsensus.trustTier,
+          categoryProfile: pricingConsensus.categoryProfile,
+          sourceCount: pricingConsensus.sourceCount,
+        }),
+      }),
+    }).catch(() => {});
+  }, [itemId, pricingConsensus]);
+
   // ── Chat state ──
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState("");
@@ -789,6 +811,9 @@ export default function ItemIntelligenceSummary(props: Props) {
                   {pricingConsensus && (
                     <div style={{ fontSize: "9px", color: "var(--text-muted)", textAlign: "right" as const, marginTop: "4px", fontStyle: "italic" as const, opacity: 0.7 }}>
                       Reconciled from {pricingConsensus.sourceCount} source{pricingConsensus.sourceCount === 1 ? "" : "s"} · confidence {pricingConsensus.consensusConfidence}%
+                      {pricingConsensus.trustScore != null && (
+                        <> · Trust {pricingConsensus.trustScore}/100 ({pricingConsensus.trustTier})</>
+                      )}
                     </div>
                   )}
                   {/* Insight line */}
