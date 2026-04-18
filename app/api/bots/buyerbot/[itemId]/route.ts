@@ -780,6 +780,40 @@ Include a "web_sources" array in your response with {"url": "...", "title": "...
       if (buyerbotResult[key] === undefined) buyerbotResult[key] = null;
     }
 
+    // CMD-BUYERBOT-INTEL-ANCHOR: canonical offer-recommendation anchored
+    // to Item Intelligence. Per-buyer-profile estimated_offer_range strings
+    // preserved untouched (they're persona narrative, not SSOT).
+    const { resolveIntelligenceAnchor, applyAnchorToFormula, pricingSourceFromAnchor } =
+      await import("@/lib/pricing/intelligence-anchor");
+    const intelligenceAnchor = await resolveIntelligenceAnchor(itemId);
+    const pricingSource = pricingSourceFromAnchor(intelligenceAnchor);
+    // Formula baseline: buyer typically offers midPrice at top, ~70% at bottom.
+    const formulaOfferMax = midPrice;
+    const formulaOfferMin = Math.round(midPrice * 0.7);
+    const formulaOfferMid = Math.round((formulaOfferMax + formulaOfferMin) / 2);
+    // Map anchor into offer-side semantics via shared helper:
+    //   listPrice slot  → max offer (sweetSpot = what seller accepts)
+    //   acceptPrice slot → mid offer (negotiation target)
+    //   floorPrice slot  → min offer (quickSalePrice = seller's walk-away)
+    const anchorTarget = intelligenceAnchor
+      ? {
+          listPrice: intelligenceAnchor.sweetSpot,
+          acceptPrice: Math.round((intelligenceAnchor.sweetSpot + intelligenceAnchor.quickSalePrice) / 2),
+          floorPrice: intelligenceAnchor.quickSalePrice,
+        }
+      : { listPrice: formulaOfferMax, acceptPrice: formulaOfferMid, floorPrice: formulaOfferMin };
+    const anchored = applyAnchorToFormula(intelligenceAnchor, anchorTarget);
+    (buyerbotResult as any).offer_recommendation = {
+      max: anchored.listPrice,
+      mid: anchored.acceptPrice,
+      min: anchored.floorPrice,
+      source: pricingSource,
+    };
+    (buyerbotResult as any).formulaOfferMax = formulaOfferMax;
+    (buyerbotResult as any).formulaOfferMin = formulaOfferMin;
+    (buyerbotResult as any).pricingSource = pricingSource;
+    (buyerbotResult as any).intelligenceAgeMs = intelligenceAnchor?.ageMs ?? null;
+
     // Store in EventLog
     await prisma.eventLog.create({
       data: {
@@ -801,6 +835,11 @@ Include a "web_sources" array in your response with {"url": "...", "title": "...
           skillPackVersion: skillPack.version,
           skillPackCount: skillPack.skillNames.length,
           skillPackChars: skillPack.totalChars,
+          // CMD-BUYERBOT-INTEL-ANCHOR telemetry
+          pricingSource,
+          intelligenceAgeMs: intelligenceAnchor?.ageMs ?? null,
+          formulaOfferMax,
+          formulaOfferMin,
         }),
       },
     });
@@ -815,6 +854,8 @@ Include a "web_sources" array in your response with {"url": "...", "title": "...
       success: true,
       result: buyerbotResult,
       isDemo: !!buyerbotResult._isDemo,
+      pricingSource,
+      intelligenceAgeMs: intelligenceAnchor?.ageMs ?? null,
     });
   } catch (e) {
     console.error("[buyerbot POST]", e);
