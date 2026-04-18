@@ -11,6 +11,7 @@
 
 import { prisma } from "@/lib/db";
 import { CATEGORY_WEIGHT_PROFILES, pickPricingCategory, type PricingCategory } from "./constants";
+import { runPricingJury, shouldFireJury, type JuryInput, type JuryVerdict } from "./jury";
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -77,6 +78,9 @@ export interface PricingConsensus {
   categoryProfile?: PricingCategory;
   trustScore?: number;
   trustTier?: "high" | "medium" | "low";
+  // V1b additions — jury wiring
+  juryVerdict?: JuryVerdict | null;
+  consensusResolvedBy?: "jury" | "weighted_median";
   v: 1 | 2;
 }
 
@@ -354,6 +358,65 @@ export async function computePricingConsensus(
     });
   }
 
+  // 5b. CMD-AI-JURY-V1b: when dissent threshold exceeded, check jury cache.
+  // Cache hit → override consensus prices with verdict. Cache miss fires the
+  // jury inside runPricingJury (best-effort; errors fall through to median).
+  let juryVerdict: JuryVerdict | null = null;
+  let consensusResolvedBy: "jury" | "weighted_median" = "weighted_median";
+  if (shouldFireJury({ dissents } as any)) {
+    try {
+      const item = await prisma.item.findUnique({
+        where: { id: itemId },
+        select: {
+          title: true, saleZip: true, condition: true,
+          aiResult: { select: { rawJson: true } },
+        },
+      });
+      if (item) {
+        const ai = item.aiResult?.rawJson ? safeJson(item.aiResult.rawJson) : null;
+        const juryInput: JuryInput = {
+          item: {
+            itemId,
+            title: item.title ?? "Unknown Item",
+            category: opts?.category ?? ai?.category ?? null,
+            brand: opts?.brand ?? ai?.brand ?? null,
+            condition: item.condition ?? ai?.condition_guess ?? null,
+            ageYears: typeof ai?.estimated_age_years === "number" ? ai.estimated_age_years : null,
+            locationZip: item.saleZip ?? null,
+          },
+          sources: snapshots.map(s => ({
+            name: s.name,
+            listPrice: s.listPrice,
+            acceptPrice: s.acceptPrice,
+            floorPrice: s.floorPrice,
+            valueLow: s.valueLow,
+            valueHigh: s.valueHigh,
+            confidence: s.confidence,
+            ageHours: (Date.now() - new Date(s.timestamp).getTime()) / 3_600_000,
+          })),
+          spread: {
+            listPrice: dissents.find(d => d.field === "listPrice")?.spreadPct,
+            acceptPrice: dissents.find(d => d.field === "acceptPrice")?.spreadPct,
+            floorPrice: dissents.find(d => d.field === "floorPrice")?.spreadPct,
+            valueRange: dissents.find(d => d.field === "valueRange")?.spreadPct,
+          },
+          force: false,
+        };
+        const juryResult = await runPricingJury(juryInput);
+        if ((juryResult.status === "ok" || juryResult.status === "cache_hit") && juryResult.verdict) {
+          juryVerdict = juryResult.verdict;
+          cList = juryVerdict.listPrice;
+          cAccept = juryVerdict.acceptPrice;
+          cFloor = juryVerdict.floorPrice;
+          consensusResolvedBy = "jury";
+        }
+      }
+    } catch (err) {
+      console.error("[reconcile] jury integration error", err);
+      // Fall through — don't crash consensus compute
+    }
+  }
+
   // 6. Confidence + agreement
   const totalEW = snapshots.reduce((s, sn) => s + sn.effectiveWeight, 0);
   const totalRW = snapshots.reduce((s, sn) => s + sn.weight, 0);
@@ -368,12 +431,16 @@ export async function computePricingConsensus(
   }, { tw: 0, ws: 0 });
   const baseConf = confAcc.tw > 0 ? confAcc.ws / confAcc.tw : 60;
   const dissentPenalty = Math.min(30, dissents.length * 10);
-  const consensusConfidence = Math.max(0, Math.min(100, Math.round(baseConf * (freshnessScore / 100) - dissentPenalty)));
+  let consensusConfidence = Math.max(0, Math.min(100, Math.round(baseConf * (freshnessScore / 100) - dissentPenalty)));
+  // CMD-AI-JURY-V1b: jury resolution lifts confidence — never lowers.
+  if (juryVerdict) consensusConfidence = Math.max(consensusConfidence, juryVerdict.confidence);
   const confidenceTier: "high" | "medium" | "low" = consensusConfidence >= 80 ? "high" : consensusConfidence >= 50 ? "medium" : "low";
 
   // 7. UI-ready
   const primaryDisplayLabel = `List $${cList} · Accept $${cAccept} · Floor $${cFloor}`;
-  const warningBanner = dissents.length >= 2
+  const warningBanner = juryVerdict
+    ? null // CMD-AI-JURY-V1b: jury resolved — positive banner is CMD-JURY-REPLACE-DISAGREEMENT-BANNER (banked).
+    : dissents.length >= 2
     ? `Pricing sources disagree by ${Math.round(Math.max(...dissents.map(d => d.spreadPct)) * 100)}% on ${dissents.length} fields. Re-run PriceBot to reconcile.`
     : dissents.length === 1
     ? `Pricing source disagreement on ${dissents[0].field} (${Math.round(dissents[0].spreadPct * 100)}% spread).`
@@ -397,6 +464,7 @@ export async function computePricingConsensus(
     primaryDisplayLabel, warningBanner, confidenceTier,
     droppedOutliers, identityPenalized, categoryProfile,
     trustScore, trustTier,
+    juryVerdict, consensusResolvedBy,
     computedAt: new Date().toISOString(), v: 2 as const,
   };
 
