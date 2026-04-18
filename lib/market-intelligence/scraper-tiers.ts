@@ -144,6 +144,16 @@ const TIER_1_BUILTINS: ScraperRegistryEntry[] = [
     note: "Local resale signal. Free HTML scrape variant.",
   },
   {
+    slug: "builtin/local-classifieds",
+    displayName: "Local Classifieds Network",
+    tier: 1,
+    costPer1k: 0,
+    estimatedCostPerCall: 0,
+    status: "active",
+    source: "builtin",
+    note: "Framework at lib/market-intelligence/local-classifieds/. Fans out over registered local-source adapters per ZIP geo-routing. Inert unless LOCAL_CLASSIFIEDS_ENABLED=true AND at least one registry entry has active:true.",
+  },
+  {
     slug: "builtin/reddit-builtin-html",
     displayName: "Reddit (built-in HTML)",
     tier: 1,

@@ -54,8 +54,19 @@
  * Author: Ryan Hallee
  */
 
-import type { ScraperResult } from "./types";
+import type { MarketComp, ScraperResult } from "./types";
 import { SCRAPER_REGISTRY, getScraperEntry } from "./scraper-tiers";
+
+// CMD-LOCAL-COMPS-BOT-WIRE: side-effect import so the Uncle Henry's
+// adapter self-registers via registerAdapter() at module load. The
+// framework.fanOut() call in the dispatch entry below reads the
+// runtime registry; if no adapter registered (or registry entry is
+// active:false / LOCAL_CLASSIFIEDS_ENABLED unset), fanOut returns an
+// empty result defensively.
+import "./local-classifieds/sources/uncle-henrys-json";
+import { fanOut as localClassifiedsFanOut } from "./local-classifieds/framework";
+import type { LocalListing } from "./local-classifieds/types";
+import { pickPricingCategory } from "@/lib/pricing/constants";
 
 // Built-in free adapters (real files, ScraperResult return)
 import { scrapeRubyLane } from "./adapters/ruby-lane";
@@ -170,6 +181,53 @@ export const SCRAPER_DISPATCH_MAP: Record<string, ScraperDispatchFn> = {
 
   // CMD-NETWORK-AUDIT-FIX: Beckett free HTML scraper (Tier 1 builtin)
   "builtin/beckett-html": ({ itemName }) => scrapeBeckettHtml(itemName),
+
+  // CMD-LOCAL-COMPS-BOT-WIRE: local classifieds network (Tier 1 builtin).
+  // Fans out over registered local-source adapters per ZIP geo-routing.
+  // Inert unless LOCAL_CLASSIFIEDS_ENABLED=true AND at least one registry
+  // entry has active:true — returns success:false + empty comps otherwise.
+  "builtin/local-classifieds": async ({ itemName, category, sellerZip }) => {
+    try {
+      const normalizedCategory = pickPricingCategory(category);
+      const result = await localClassifiedsFanOut({
+        itemName,
+        category: normalizedCategory,
+        sellerZip: sellerZip ?? null,
+        limit: 20,
+      });
+
+      const comps: MarketComp[] = result.listings
+        .map((l: LocalListing) => ({
+          item: l.title,
+          price: l.price ?? 0,
+          date: l.datePosted.toISOString().slice(0, 10),
+          platform: `${l.source.replace(/_/g, " ")} (local)`,
+          condition: "As Listed",
+          url: l.url,
+          location:
+            l.location.city && l.location.state
+              ? `${l.location.city}, ${l.location.state}`
+              : null,
+        }))
+        .filter((c) => c.price > 0);
+
+      return {
+        success: comps.length > 0,
+        comps,
+        source: "Local Classifieds Network",
+        ...(result.errors.length > 0 && {
+          error: `${result.errors.length} source(s) failed: ${result.errors.map((e) => e.source).join(", ")}`,
+        }),
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        comps: [],
+        source: "Local Classifieds Network",
+        error: err?.message ?? String(err),
+      };
+    }
+  },
 };
 
 /** Look up a dispatch function by slug. Undefined = no adapter. */

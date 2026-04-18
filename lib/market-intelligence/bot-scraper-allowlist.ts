@@ -57,6 +57,7 @@ const antiquebot: BotScraperAllowlist = {
     "builtin/firstdibs-html",
     "builtin/shopgoodwill-html",
     "builtin/liveauctioneers-html",
+    "builtin/local-classifieds",
     "ivanvs/ebay-scraper-pay-per-result",
     "damilo/google-shopping-apify",
     "misterkhan/chrono24-search-scraper",
@@ -76,6 +77,7 @@ const listbot: BotScraperAllowlist = {
   normalAllowlist: [
     "builtin/ebay-browse-api",
     "builtin/craigslist-html",
+    "builtin/local-classifieds",
     "ivanvs/ebay-scraper-pay-per-result",
     "damilo/google-shopping-apify",
     "builtin/reddit-builtin-html",
@@ -116,6 +118,7 @@ const reconbot: BotScraperAllowlist = {
   normalAllowlist: [
     "builtin/ebay-browse-api",
     "builtin/craigslist-html",
+    "builtin/local-classifieds",
     "ivanvs/ebay-scraper-pay-per-result",
     "damilo/google-shopping-apify",
   ],
@@ -132,6 +135,7 @@ const pricebot: BotScraperAllowlist = {
   bot: "pricebot",
   normalAllowlist: [
     "builtin/ebay-browse-api",
+    "builtin/local-classifieds",
     "builtin/ruby-lane-html",
     "builtin/shopgoodwill-html",
     "builtin/liveauctioneers-html",
@@ -140,7 +144,8 @@ const pricebot: BotScraperAllowlist = {
   ],
   megaBotAddOns: ["logical_scrapers/amazon-product-scraper"],
   strategy:
-    "Pricing engine needs broad sold-comp coverage. 4 free sources always. " +
+    "Pricing engine needs broad sold-comp coverage. 4 free sources always " +
+    "+ Local Classifieds Network for local-ZIP signal. " +
     "Amazon MegaBot for manufactured-goods reference pricing.",
 };
 
@@ -180,6 +185,7 @@ const collectiblesbot: BotScraperAllowlist = {
   bot: "collectiblesbot",
   normalAllowlist: [
     "builtin/ebay-browse-api",
+    "builtin/local-classifieds",
     "piotrv1001/stockx-listings-scraper",
     "devcake/tcgplayer-data-scraper",
     "misterkhan/chrono24-search-scraper",
