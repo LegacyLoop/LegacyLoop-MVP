@@ -39,11 +39,23 @@ export interface PricingAccuracyRecord {
   effectiveWeight: number;
 }
 
+export type SoldPriceSource =
+  | "item_field"
+  | "transaction"
+  | "seller_earnings"
+  | "unresolved";
+
+export interface SoldPriceResolution {
+  price: number | null;
+  source: SoldPriceSource;
+}
+
 export interface PricingAccuracyItemSummary {
   itemId: string;
   categoryProfile: string;
   soldPrice: number;
   soldAt: string;
+  soldPriceSource: SoldPriceSource;
   snapshotCount: number;
   recordCount: number;
   bestSource: PricingSourceName | null;
@@ -81,11 +93,53 @@ type ItemLike = {
   soldAt: Date | null;
 };
 
-function resolveSoldPrice(item: ItemLike): number | null {
+async function resolveSoldPrice(
+  itemId: string,
+  item: ItemLike,
+): Promise<SoldPriceResolution> {
+  // Tier 1: Item.soldPrice (direct field — fastest)
   if (typeof item.soldPrice === "number" && item.soldPrice > 0) {
-    return item.soldPrice;
+    return { price: item.soldPrice, source: "item_field" };
   }
-  return null;
+
+  // Tier 2: Transaction (most-recent COMPLETED ITEM_SALE for this item)
+  try {
+    const tx = await prisma.transaction.findFirst({
+      where: {
+        itemId,
+        type: "ITEM_SALE",
+        status: "COMPLETED",
+      },
+      orderBy: { createdAt: "desc" },
+      select: { amount: true },
+    });
+    if (tx && typeof tx.amount === "number" && tx.amount > 0) {
+      return { price: tx.amount, source: "transaction" };
+    }
+  } catch (err) {
+    console.warn("[resolveSoldPrice] transaction lookup failed", err);
+  }
+
+  // Tier 3: SellerEarnings (settled per-item seller row —
+  // PaymentLedger has no itemId FK so SellerEarnings is the
+  // authoritative per-item settlement source)
+  try {
+    const earnings = await prisma.sellerEarnings.findFirst({
+      where: {
+        itemId,
+        status: { in: ["available", "paid_out"] },
+      },
+      orderBy: { createdAt: "desc" },
+      select: { saleAmount: true },
+    });
+    if (earnings && typeof earnings.saleAmount === "number" && earnings.saleAmount > 0) {
+      return { price: earnings.saleAmount, source: "seller_earnings" };
+    }
+  } catch (err) {
+    console.warn("[resolveSoldPrice] seller earnings lookup failed", err);
+  }
+
+  return { price: null, source: "unresolved" };
 }
 
 function resolveSoldAt(item: ItemLike): string | null {
@@ -152,12 +206,13 @@ export async function computePricingAccuracy(
       };
     }
 
-    const soldPrice = resolveSoldPrice(item);
+    const soldResolution = await resolveSoldPrice(itemId, item);
+    const soldPrice = soldResolution.price;
     const soldAt = resolveSoldAt(item);
     if (soldPrice == null || soldAt == null) {
       return {
         status: "error", records: [], summary: null,
-        message: "Could not resolve sold price or sold-at timestamp",
+        message: `Could not resolve sold price (source: ${soldResolution.source}) or sold-at timestamp`,
       };
     }
 
@@ -256,6 +311,7 @@ export async function computePricingAccuracy(
       categoryProfile,
       soldPrice,
       soldAt,
+      soldPriceSource: soldResolution.source,
       snapshotCount: snapshotLogs.length,
       recordCount: records.length,
       bestSource: best?.sourceName ?? null,
