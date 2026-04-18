@@ -74,6 +74,7 @@ interface Props {
   authenticityScore: number | null;
   userTier?: number;
   pricingConsensus?: import("@/lib/pricing/reconcile").PricingConsensus | null;
+  v9Data?: import("@/lib/pricing/garage-sale").GarageSaleV9Prices | null;
   collapsed?: boolean;
   onToggle?: () => void;
 }
@@ -157,7 +158,7 @@ export default function ItemIntelligenceSummary(props: Props) {
     itemId, status, aiData, valuation, enriched, engagement,
     shippingData, saleMethod, listingPrice, hasPhotos, photoCount,
     isAntique, isCollectible, authenticityScore,
-    userTier = 1, pricingConsensus = null, collapsed = false, onToggle,
+    userTier = 1, pricingConsensus = null, v9Data = null, collapsed = false, onToggle,
   } = props;
 
   // ── AI Intelligence state ──
@@ -968,6 +969,45 @@ export default function ItemIntelligenceSummary(props: Props) {
                       <span className="intel-price-lbl">Premium</span>
                     </div>
                   </div>
+
+                  {/* CMD-V9-WIRE: Local Enthusiast specialty-channel tier */}
+                  {v9Data?.localEnthusiastPrice != null && (
+                    <div style={{
+                      marginTop: "4px",
+                      padding: "10px 12px",
+                      background: "rgba(212,160,23,0.06)",
+                      border: "1px solid rgba(212,160,23,0.25)",
+                      borderRadius: "10px",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                      gap: "12px",
+                      justifyContent: "space-between",
+                    }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 }}>
+                        <div style={{ fontSize: "9px", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#D4A017", fontWeight: 700 }}>
+                          Local Enthusiast
+                        </div>
+                        <div style={{ fontSize: "16px", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4A017" }}>
+                          {`$${v9Data.localEnthusiastPrice}\u2013${v9Data.localEnthusiastPriceHigh}`}
+                        </div>
+                        <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>sell to enthusiast</div>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "2px", alignItems: "flex-end", minWidth: 0 }}>
+                        <div style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 600, textAlign: "right" as const, maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          {v9Data.localEnthusiastChannel}
+                        </div>
+                        <div style={{ fontSize: "10px", color: "#22c55e", fontWeight: 700, fontFamily: "var(--font-data)" }}>
+                          You get: ${Math.round(((v9Data.localEnthusiastPrice + v9Data.localEnthusiastPriceHigh) / 2) * 0.965)}
+                        </div>
+                        {v9Data.timeToSellDays && (
+                          <div style={{ fontSize: "9px", color: "var(--text-muted)" }}>
+                            ~{v9Data.timeToSellDays.min}–{v9Data.timeToSellDays.max} days typical
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
                     <span className="intel-chip" style={{ borderColor: `${pricingConfColor}30`, color: pricingConfColor, background: `${pricingConfColor}0d` }}>
                       {aiIntel.pricingIntel.confidence.toUpperCase()} CONFIDENCE

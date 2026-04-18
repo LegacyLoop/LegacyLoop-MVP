@@ -206,7 +206,7 @@ export async function POST(
     let v8Block = "";
     try {
       const v8Log = await prisma.eventLog.findFirst({
-        where: { itemId, eventType: "GARAGE_SALE_V8_CALC" },
+        where: { itemId, eventType: { in: ["GARAGE_SALE_V9_CALC", "GARAGE_SALE_V8_CALC"] } },
         orderBy: { createdAt: "desc" },
         select: { payload: true },
       });

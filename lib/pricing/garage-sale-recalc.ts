@@ -8,14 +8,14 @@
  */
 
 import { prisma } from "@/lib/db";
-import { calculateGarageSaleV8Prices, type GarageSaleV8Prices, type GarageSaleV8Options, calculateGarageSalePrices, type GarageSalePrices, type GarageSaleOptions } from "./garage-sale";
+import { calculateGarageSaleV9Prices, type GarageSaleV9Prices, type GarageSaleV8Options, calculateGarageSalePrices, type GarageSalePrices, type GarageSaleOptions } from "./garage-sale";
 
 function safeJson(raw: string | null | undefined): any {
   if (!raw) return null;
   try { return JSON.parse(raw); } catch { return null; }
 }
 
-export async function recalcGarageSalePrices(itemId: string): Promise<GarageSaleV8Prices | null> {
+export async function recalcGarageSalePrices(itemId: string): Promise<GarageSaleV9Prices | null> {
   const item = await prisma.item.findUnique({
     where: { id: itemId },
     include: {
@@ -78,7 +78,7 @@ export async function recalcGarageSalePrices(itemId: string): Promise<GarageSale
     itemTitle: item.title || undefined,
   };
 
-  const prices = calculateGarageSaleV8Prices(marketMid, category, condition, zip, v8Options);
+  const prices = calculateGarageSaleV9Prices(marketMid, category, condition, zip, v8Options);
 
   // Save to item record (V8 mapping: LIST→High, ACCEPT→Price, FLOOR→Quick)
   await prisma.item.update({
@@ -96,12 +96,12 @@ export async function recalcGarageSalePrices(itemId: string): Promise<GarageSale
   await prisma.eventLog.create({
     data: {
       itemId,
-      eventType: "GARAGE_SALE_V8_CALC",
+      eventType: "GARAGE_SALE_V9_CALC",
       payload: JSON.stringify({
         ...prices,
         optionsUsed: v8Options,
         marketMid,
-        v8: true,
+        v9: true,
       }),
     },
   }).catch(() => {});

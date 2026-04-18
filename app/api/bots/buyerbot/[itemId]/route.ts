@@ -265,7 +265,7 @@ Use this data to identify WHERE buyers are active and WHAT price brackets they'r
     let v8Block = "";
     try {
       const v8Log = await prisma.eventLog.findFirst({
-        where: { itemId, eventType: "GARAGE_SALE_V8_CALC" },
+        where: { itemId, eventType: { in: ["GARAGE_SALE_V9_CALC", "GARAGE_SALE_V8_CALC"] } },
         orderBy: { createdAt: "desc" },
         select: { payload: true },
       });

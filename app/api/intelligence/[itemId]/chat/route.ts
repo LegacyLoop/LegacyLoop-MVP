@@ -139,7 +139,23 @@ export async function POST(
     ? `\n\nPRICING TRUTH (USE THESE NUMBERS — DO NOT INVENT NEW RANGES):\n- List Price: $${consensus.consensusListPrice}\n- Sweet Spot / Accept Price: $${consensus.consensusAcceptPrice}\n- Floor / Quick Sale Price: $${consensus.consensusFloorPrice}\n- Value Range: $${consensus.consensusValueLow}–$${consensus.consensusValueHigh}\n- Confidence: ${consensus.consensusConfidence}% (${consensus.confidenceTier}, from ${consensus.sourceCount} sources)\nThese are the reconciled SOURCE OF TRUTH. For any pricing question, reference these exact numbers.\n`
     : "";
 
-  const systemPrompt = `${skillContext}${consensusBlock}You are LegacyLoop's AI assistant helping a seller understand their item's intelligence data. You have access to ALL bot analysis results, market comps, pricing data, and enrichment info for this specific item.
+  // CMD-V9-WIRE: inject Garage Sale V9 (dual-local) data into chat prompt
+  const v9Log = await prisma.eventLog.findFirst({
+    where: { itemId, eventType: "GARAGE_SALE_V9_CALC" },
+    orderBy: { createdAt: "desc" },
+    select: { payload: true },
+  }).catch(() => null);
+  let v9Block = "";
+  if (v9Log?.payload) {
+    try {
+      const v9 = JSON.parse(v9Log.payload);
+      if (v9 && typeof v9.localEnthusiastPrice === "number") {
+        v9Block = `\n\nIN-PERSON CHANNEL PRICING (V9 — USE WHEN USER ASKS ABOUT LOCAL / GARAGE-SALE / ENTHUSIAST PRICING):\n- List (sign price): $${v9.listPrice}\n- Accept (deal target): $${v9.acceptPrice}\n- Floor (yard-sale walk-away min): $${v9.floorPrice}\n- Local Enthusiast (specialty-channel, sell to hobbyist): $${v9.localEnthusiastPrice}–${v9.localEnthusiastPriceHigh}\n- Enthusiast Channel: ${v9.localEnthusiastChannel || "varies"}\n- Typical days-to-sell: ${v9.timeToSellDays ? `${v9.timeToSellDays.min}–${v9.timeToSellDays.max} days` : "varies by demand"}\n- Seasonal multiplier: ${typeof v9.seasonalMultiplier === "number" ? v9.seasonalMultiplier.toFixed(2) : "1.00"}×\n- Brand premium applied: ${v9.brandPremium ? "yes" : "no"}\nIMPORTANT: Distinguish yard-sale pricing (floorPrice, impulse-buyer discount) from enthusiast-channel pricing (localEnthusiastPrice, specialty local market). These are different tiers.\n`;
+      }
+    } catch { /* ignore malformed payload */ }
+  }
+
+  const systemPrompt = `${skillContext}${consensusBlock}${v9Block}You are LegacyLoop's AI assistant helping a seller understand their item's intelligence data. You have access to ALL bot analysis results, market comps, pricing data, and enrichment info for this specific item.
 
 Rules:
 - Be concise: 2-4 sentences max per answer
@@ -149,6 +165,7 @@ Rules:
 - Never make up prices or data — only reference what's in the context below
 - If they ask about something no bot has analyzed yet, suggest which bot to run
 - If a PRICING TRUTH block is present above, use those exact numbers for any pricing question
+- When the user asks about local, in-person, or enthusiast-channel pricing, reference the V9 localEnthusiastPrice and localEnthusiastChannel. Distinguish between yard-sale discount pricing (floorPrice) and enthusiast-channel pricing (localEnthusiastPrice) — they are different tiers.
 
 ═══ ALL ITEM INTELLIGENCE DATA ═══
 ${enrichment.contextBlock || "No enrichment data available yet. Suggest running AI Analysis first."}

@@ -88,6 +88,7 @@ type Props = {
   demandScore?: { score: number; label: string; signals?: any[] } | null;
   botDisagreement?: { disagreements?: { botA: string; botB: string; priceA: number; priceB: number; diffPercent: number }[]; summary?: string } | null;
   v8CalcData?: { listPrice: number; acceptPrice: number; floorPrice: number; channelRecommendation: string; channelReason: string; locationNote: string; saleTypeUsed: string } | null;
+  v9CalcData?: import("@/lib/pricing/garage-sale").GarageSaleV9Prices | null;
   pricingConsensus?: import("@/lib/pricing/reconcile").PricingConsensus | null;
   controlCenterExtra?: {
     totalViews: number;
@@ -3506,8 +3507,8 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
     if (!v || !gsPrices) return;
     const mid = v.mid ?? Math.round((v.low + v.high) / 2);
     if (mid <= 0) return;
-    import("@/lib/pricing/garage-sale").then(({ calculateGarageSaleV8Prices }) => {
-      const result = calculateGarageSaleV8Prices(
+    import("@/lib/pricing/garage-sale").then(({ calculateGarageSaleV9Prices }) => {
+      const result = calculateGarageSaleV9Prices(
         mid,
         (aiData as any)?.category || "",
         (aiData as any)?.condition_guess || "good",
@@ -9614,7 +9615,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
    ═══════════════════════════════════════════ */
 
 export default function ItemDashboardPanels({
-  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra, projectId, demandScore, botDisagreement, enriched, itemSaleMethod, itemIsCollectible, v8CalcData, pricingConsensus,
+  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra, projectId, demandScore, botDisagreement, enriched, itemSaleMethod, itemIsCollectible, v8CalcData, v9CalcData, pricingConsensus,
 }: Props) {
   // Track which bots have been enhanced with MegaBot
   const [boostedBots, setBoostedBots] = useState<Set<string>>(new Set());
@@ -10176,6 +10177,7 @@ export default function ItemDashboardPanels({
           authenticityScore={authenticityScore?.score ?? null}
           userTier={userTier}
           pricingConsensus={pricingConsensus ?? null}
+          v9Data={v9CalcData ?? null}
           collapsed={collapsed.intelligence}
           onToggle={() => togglePanel("intelligence")}
         />

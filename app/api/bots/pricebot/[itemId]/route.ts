@@ -670,12 +670,12 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
     // Fire-and-forget: create structured PriceSnapshot via populate function
     populateFromPriceBot(itemId, pricebotResult as Record<string, unknown>).catch(() => null);
 
-    // Fire-and-forget: calculate V8 garage sale prices from the market price
-    import("@/lib/pricing/garage-sale").then(({ calculateGarageSaleV8Prices }) => {
+    // Fire-and-forget: calculate V9 garage sale prices from the market price
+    import("@/lib/pricing/garage-sale").then(({ calculateGarageSaleV9Prices }) => {
       const revisedMid = (pricebotResult as any)?.price_validation?.revised_mid;
       const marketPrice = revisedMid || (item as any).valuation?.mid || Math.round(((item as any).valuation?.low + (item as any).valuation?.high) / 2) || 0;
       if (marketPrice > 0) {
-        const gsPrices = calculateGarageSaleV8Prices(
+        const gsPrices = calculateGarageSaleV9Prices(
           marketPrice,
           category,
           (item as any).conditionGrade || (item as any).condition || "good",
@@ -697,7 +697,7 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
         }}).catch(() => null);
         prisma.eventLog.create({ data: {
           itemId,
-          eventType: "GARAGE_SALE_V8_CALC",
+          eventType: "GARAGE_SALE_V9_CALC",
           payload: JSON.stringify({
             listPrice: gsPrices.listPrice,
             acceptPrice: gsPrices.acceptPrice,
@@ -705,8 +705,14 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
             channel: gsPrices.channelRecommendation,
             locationNote: gsPrices.locationNote,
             saleType: gsPrices.saleTypeUsed,
+            localEnthusiastPrice: gsPrices.localEnthusiastPrice,
+            localEnthusiastPriceHigh: gsPrices.localEnthusiastPriceHigh,
+            localEnthusiastChannel: gsPrices.localEnthusiastChannel,
+            timeToSellDays: gsPrices.timeToSellDays,
+            seasonalMultiplier: gsPrices.seasonalMultiplier,
+            brandPremium: gsPrices.brandPremium,
             marketPrice,
-            v8: true,
+            v9: true,
           }),
         }}).catch(() => null);
       }

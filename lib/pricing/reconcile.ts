@@ -151,9 +151,11 @@ export async function computePricingConsensus(
     });
   }
 
-  // 1b. V8 engine
+  // 1b. V8 engine — V9-WIRE: prefer V9 event, fall back to V8 for items
+  // computed before V9-WIRE landed. Snapshot name stays "v8_engine" — the
+  // source IS the engine regardless of emission version.
   const v8Log = await prisma.eventLog.findFirst({
-    where: { itemId, eventType: "GARAGE_SALE_V8_CALC" },
+    where: { itemId, eventType: { in: ["GARAGE_SALE_V9_CALC", "GARAGE_SALE_V8_CALC"] } },
     orderBy: { createdAt: "desc" }, select: { payload: true, createdAt: true },
   }).catch(() => null);
   if (v8Log?.payload) {
