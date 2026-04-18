@@ -683,7 +683,7 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
     // Fire-and-forget: calculate V9 garage sale prices from the market price.
     // CMD-PRICEBOT-ENGINE-V9: override/blend In-Person tiers with Intelligence
     // anchor per pricingSource policy above.
-    import("@/lib/pricing/garage-sale").then(({ calculateGarageSaleV9Prices }) => {
+    import("@/lib/pricing/garage-sale").then(({ calculateGarageSaleV9Prices, resolveInPersonTier }) => {
       const revisedMid = (pricebotResult as any)?.price_validation?.revised_mid;
       const marketPrice = revisedMid || (item as any).valuation?.mid || Math.round(((item as any).valuation?.low + (item as any).valuation?.high) / 2) || 0;
       if (marketPrice > 0) {
@@ -701,11 +701,14 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
           },
         );
 
-        // Intelligence-anchored In-Person tiers via shared helper
+        // CMD-PRICEBOT-ENGINE-V10: category-aware In-Person tier
+        // (specialty categories use localEnthusiast range). Intelligence
+        // anchor below still refines V10's baseline on top.
+        const v10Tier = resolveInPersonTier(gsPrices, category);
         const anchored = applyAnchorToFormula(intelligenceAnchor, {
-          listPrice: gsPrices.listPrice,
-          acceptPrice: gsPrices.acceptPrice,
-          floorPrice: gsPrices.floorPrice,
+          listPrice: v10Tier.listPrice,
+          acceptPrice: v10Tier.acceptPrice,
+          floorPrice: v10Tier.floorPrice,
         });
         const inPersonList = anchored.listPrice;
         const inPersonAccept = anchored.acceptPrice;
@@ -740,6 +743,7 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
             formulaListPrice: gsPrices.listPrice,
             formulaAcceptPrice: gsPrices.acceptPrice,
             formulaFloorPrice: gsPrices.floorPrice,
+            inPersonTier: v10Tier.tier,
             v9: true,
           }),
         }}).catch(() => null);

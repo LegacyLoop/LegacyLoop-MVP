@@ -602,3 +602,60 @@ export function calculateGarageSaleV9Prices(
     v9: true as const,
   };
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// V10 — Category-aware In-Person tier resolver (CMD-PRICEBOT-ENGINE-V10)
+// Specialty categories (retention ≥ 0.40) use the localEnthusiast range
+// V9 already computes, with a 12% ask premium for LIST. Commodity
+// categories fall through to V9's garage-sale tier unchanged.
+// V9 function preserved intact; V10 wraps its output without mutation.
+// ═══════════════════════════════════════════════════════════════════════
+
+export type InPersonTier = "specialty" | "commodity";
+
+export interface InPersonTierResult {
+  listPrice: number;
+  acceptPrice: number;
+  floorPrice: number;
+  tier: InPersonTier;
+}
+
+const SPECIALTY_THRESHOLD = 0.40;
+const SPECIALTY_ASK_PREMIUM = 1.12;
+
+export function resolveInPersonTier(
+  gsPrices: GarageSaleV9Prices,
+  category: string | null | undefined,
+): InPersonTierResult {
+  const categoryKey = getCategoryKey(category);
+  const modKey = resolveLocalModifierKey(categoryKey);
+  const modifiers = LOCAL_ENTHUSIAST_MODIFIERS[modKey] ?? LOCAL_ENTHUSIAST_MODIFIERS.default;
+  const isSpecialty = modifiers.min >= SPECIALTY_THRESHOLD;
+
+  if (
+    isSpecialty &&
+    typeof gsPrices.localEnthusiastPrice === "number" &&
+    typeof gsPrices.localEnthusiastPriceHigh === "number" &&
+    gsPrices.localEnthusiastPrice > 0 &&
+    gsPrices.localEnthusiastPriceHigh > 0
+  ) {
+    const acceptPrice = gsPrices.localEnthusiastPriceHigh;
+    let listPrice = Math.round(acceptPrice * SPECIALTY_ASK_PREMIUM);
+    let floorPrice = gsPrices.localEnthusiastPrice;
+    if (listPrice < acceptPrice) listPrice = acceptPrice;
+    if (floorPrice > acceptPrice) floorPrice = acceptPrice;
+    return {
+      listPrice: v8Round(listPrice, acceptPrice),
+      acceptPrice: v8Round(acceptPrice, acceptPrice),
+      floorPrice: v8Round(floorPrice, acceptPrice),
+      tier: "specialty",
+    };
+  }
+
+  return {
+    listPrice: gsPrices.listPrice,
+    acceptPrice: gsPrices.acceptPrice,
+    floorPrice: gsPrices.floorPrice,
+    tier: "commodity",
+  };
+}

@@ -14,6 +14,7 @@ import {
   applyAnchorToFormula,
   pricingSourceFromAnchor,
 } from "./intelligence-anchor";
+import { resolveInPersonTier } from "./garage-sale";
 
 function safeJson(raw: string | null | undefined): any {
   if (!raw) return null;
@@ -85,6 +86,10 @@ export async function recalcGarageSalePrices(itemId: string): Promise<GarageSale
 
   const prices = calculateGarageSaleV9Prices(marketMid, category, condition, zip, v8Options);
 
+  // CMD-PRICEBOT-ENGINE-V10: category-aware In-Person tier (specialty
+  // vs commodity). Intelligence anchor below still refines V10 baseline.
+  const v10Tier = resolveInPersonTier(prices, category);
+
   // CMD-V9-RECALC-ANCHOR-FIX: Intelligence-anchored In-Person tiers.
   // Keeps parity with PriceBot V9 route so whichever path wrote the
   // latest GARAGE_SALE_V9_CALC event, consumers see the same anchored
@@ -94,9 +99,9 @@ export async function recalcGarageSalePrices(itemId: string): Promise<GarageSale
   const anchor = await resolveIntelligenceAnchor(itemId);
   const pricingSource = pricingSourceFromAnchor(anchor);
   const anchored = applyAnchorToFormula(anchor, {
-    listPrice: prices.listPrice,
-    acceptPrice: prices.acceptPrice,
-    floorPrice: prices.floorPrice,
+    listPrice: v10Tier.listPrice,
+    acceptPrice: v10Tier.acceptPrice,
+    floorPrice: v10Tier.floorPrice,
   });
   const intelligenceAgeMs = anchor?.ageMs ?? null;
 
@@ -127,6 +132,7 @@ export async function recalcGarageSalePrices(itemId: string): Promise<GarageSale
         formulaFloorPrice: prices.floorPrice,
         pricingSource,
         intelligenceAgeMs,
+        inPersonTier: v10Tier.tier,
         optionsUsed: v8Options,
         marketMid,
         v9: true,
