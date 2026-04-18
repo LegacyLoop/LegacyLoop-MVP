@@ -1337,7 +1337,8 @@ html.light .glass-nav-scrolled {
    ═══════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .item-header-pricing-band {
-    max-width: 100vw;
+    max-width: 100%;
+    min-width: 0;
   }
 }
 

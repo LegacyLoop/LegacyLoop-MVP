@@ -259,6 +259,7 @@ export default async function ItemPage({ params }: { params: Params }) {
         display: "flex",
         flexDirection: "column" as const,
         gap: 0,
+        minWidth: 0,
       }}>
         {/* ═══ BAND 1 — IDENTITY ═══ */}
         <div className="item-header-band" style={{ display: "flex", flexDirection: "column" as const, gap: "0.5rem", width: "100%", maxWidth: "100%" }}>
@@ -415,6 +416,7 @@ export default async function ItemPage({ params }: { params: Params }) {
               gap: "0.5rem",
               width: "100%",
               maxWidth: "100%",
+              minWidth: 0,
               overflowX: "auto",
               WebkitOverflowScrolling: "touch",
               scrollbarWidth: "none",
