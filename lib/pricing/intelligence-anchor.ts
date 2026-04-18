@@ -15,6 +15,12 @@
 
 import { prisma } from "@/lib/db";
 
+// CMD-PRICEBOT-INTEL-FRESHNESS: functional decay thresholds.
+// Aligned with FRESHNESS-STAMP visual thresholds so user-visible
+// aging signals match algorithm behavior.
+export const INTEL_FRESH_THRESHOLD_MS = 24 * 60 * 60 * 1000;      // 24h
+export const INTEL_STALE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000;  // 7d
+
 export type IntelligenceConfidence = "high" | "medium";
 export type PricingSourceTag =
   | "intelligence_anchored"
@@ -57,12 +63,27 @@ export async function resolveIntelligenceAnchor(
       typeof pi.quickSalePrice === "number" &&
       (pi.confidence === "high" || pi.confidence === "medium")
     ) {
+      const ageMs = Date.now() - intelLog.createdAt.getTime();
+
+      // CMD-PRICEBOT-INTEL-FRESHNESS: stale → null (abandon anchor,
+      // caller falls back to formula-only pricing).
+      if (ageMs > INTEL_STALE_THRESHOLD_MS) {
+        return null;
+      }
+
+      // Aging → degrade high confidence to medium (hedge against
+      // market shift). Medium stays medium — no lower tier.
+      const effectiveConfidence: IntelligenceConfidence =
+        ageMs > INTEL_FRESH_THRESHOLD_MS && pi.confidence === "high"
+          ? "medium"
+          : pi.confidence;
+
       return {
         quickSalePrice: pi.quickSalePrice,
         sweetSpot: pi.sweetSpot,
         premiumPrice: pi.premiumPrice,
-        confidence: pi.confidence,
-        ageMs: Date.now() - intelLog.createdAt.getTime(),
+        confidence: effectiveConfidence,
+        ageMs,
       };
     }
   } catch {
