@@ -327,17 +327,40 @@ export async function POST(
     return new Response(`AI analysis failed: ${msg}`, { status: 422 });
   }
 
-  // CMD-ANALYZEBOT-CATEGORY-DEEP-DIVE-V9: category-gated specialty second-pass.
-  // Runs BEFORE the aiResult upsert so _specialtyDetail lands in a single DB
-  // write. Non-MI items skip this entirely; MI items fire Claude Sonnet with
-  // a structured prompt that extracts era/variant/provenance/confidence.
+  // CMD-ANALYZEBOT-CATEGORY-DEEP-DIVE-V9 + ANTIQUES-DEEP-DIVE-V9:
+  // Specialty second-pass via kind-map dispatch. Each entry is a
+  // predicate-matched specialty kind; first match wins. Runs BEFORE the
+  // aiResult upsert so _specialtyDetail lands in a single DB write.
+  // Non-matching items skip this entirely.
+  type SpecialtyTrigger = {
+    kind: import("@/lib/bots/analyzebot/specialty-deep-dive").SpecialtyKind;
+    categoryLabel: string;
+    matches: (a: any) => boolean;
+  };
+  const SPECIALTY_TRIGGERS: SpecialtyTrigger[] = [
+    {
+      kind: "musical_instrument",
+      categoryLabel: "Musical Instruments",
+      matches: (a) => a?.category === "Musical Instruments",
+    },
+    {
+      // CMD-ANALYZEBOT-ANTIQUES-DEEP-DIVE-V9: AnalyzeBot's category enum
+      // has no "Antiques" key — antique status is the is_antique boolean
+      // flag set by primary analysis + post-validation (age / markers).
+      kind: "antique",
+      categoryLabel: "Antiques",
+      matches: (a) => a?.is_antique === true,
+    },
+  ];
+
   let specialtyDetail: import("@/lib/bots/analyzebot/specialty-deep-dive").SpecialtyDetail | null = null;
-  if (analysis.category === "Musical Instruments") {
+  const matchedTrigger = SPECIALTY_TRIGGERS.find((t) => t.matches(analysis));
+  if (matchedTrigger) {
     const dStart = Date.now();
     try {
       const { extractSpecialty } = await import("@/lib/bots/analyzebot/specialty-deep-dive");
       specialtyDetail = await extractSpecialty(
-        "musical_instrument",
+        matchedTrigger.kind,
         photoPaths,
         {
           item_name: analysis.item_name,
@@ -346,7 +369,7 @@ export async function POST(
         }
       );
     } catch (err: any) {
-      console.error("[ANALYZEBOT_DEEP_DIVE] MI extraction failed:", err?.message ?? err);
+      console.error(`[ANALYZEBOT_DEEP_DIVE] ${matchedTrigger.kind} extraction failed:`, err?.message ?? err);
       specialtyDetail = null;
     }
     prisma.eventLog.create({
@@ -354,8 +377,8 @@ export async function POST(
         itemId: item.id,
         eventType: "ANALYZEBOT_CATEGORY_DEEP_DIVE",
         payload: JSON.stringify({
-          category: "Musical Instruments",
-          kind: "musical_instrument",
+          category: matchedTrigger.categoryLabel,
+          kind: matchedTrigger.kind,
           durationMs: specialtyDetail?.durationMs ?? (Date.now() - dStart),
           extractedFields: specialtyDetail
             ? (["era", "variant", "provenance", "rationale"] as const)
