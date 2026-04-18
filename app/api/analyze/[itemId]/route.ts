@@ -327,13 +327,56 @@ export async function POST(
     return new Response(`AI analysis failed: ${msg}`, { status: 422 });
   }
 
-  // Persist merged analysis + hybrid metadata in rawJson (no schema change)
+  // CMD-ANALYZEBOT-CATEGORY-DEEP-DIVE-V9: category-gated specialty second-pass.
+  // Runs BEFORE the aiResult upsert so _specialtyDetail lands in a single DB
+  // write. Non-MI items skip this entirely; MI items fire Claude Sonnet with
+  // a structured prompt that extracts era/variant/provenance/confidence.
+  let specialtyDetail: import("@/lib/bots/analyzebot/specialty-deep-dive").SpecialtyDetail | null = null;
+  if (analysis.category === "Musical Instruments") {
+    const dStart = Date.now();
+    try {
+      const { extractSpecialty } = await import("@/lib/bots/analyzebot/specialty-deep-dive");
+      specialtyDetail = await extractSpecialty(
+        "musical_instrument",
+        photoPaths,
+        {
+          item_name: analysis.item_name,
+          category: analysis.category,
+          description: analysis.description,
+        }
+      );
+    } catch (err: any) {
+      console.error("[ANALYZEBOT_DEEP_DIVE] MI extraction failed:", err?.message ?? err);
+      specialtyDetail = null;
+    }
+    prisma.eventLog.create({
+      data: {
+        itemId: item.id,
+        eventType: "ANALYZEBOT_CATEGORY_DEEP_DIVE",
+        payload: JSON.stringify({
+          category: "Musical Instruments",
+          kind: "musical_instrument",
+          durationMs: specialtyDetail?.durationMs ?? (Date.now() - dStart),
+          extractedFields: specialtyDetail
+            ? (["era", "variant", "provenance", "rationale"] as const)
+                .filter((k) => (specialtyDetail as any)[k] != null)
+            : [],
+          secondaryConfidence: specialtyDetail?.confidence ?? null,
+          succeeded: !!specialtyDetail,
+        }),
+      },
+    }).catch(() => null);
+  }
+
+  // Persist merged analysis + hybrid metadata + specialty detail in rawJson
+  // (no schema change)
   const rawJsonPayload = JSON.stringify({
     ...analysis,
     _analyzerSource: analyzerSource,
     _primaryConfidence: primaryConfidence,
     _secondaryConfidence: secondaryConfidence,
     _agreementScore: agreementScore,
+    _specialtyDetail: specialtyDetail,
   });
   await prisma.aiResult.upsert({
     where: { itemId: item.id },
@@ -821,6 +864,7 @@ export async function POST(
       primaryConfidence,
       secondaryConfidence,
       agreementScore,
+      specialtyDetail,
     }),
     { status: 200, headers: { "Content-Type": "application/json" } }
   );
