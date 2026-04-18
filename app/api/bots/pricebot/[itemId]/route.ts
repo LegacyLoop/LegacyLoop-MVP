@@ -623,51 +623,13 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
       }
     }
 
-    // CMD-PRICEBOT-ENGINE-V9: ingest Item Intelligence before computing
-    // In-Person tiers. High-confidence Intelligence overrides the formula;
-    // medium blends 60/40 toward Intelligence; low/absent falls through.
-    const intelLog = await prisma.eventLog.findFirst({
-      where: { itemId, eventType: "INTELLIGENCE_RESULT" },
-      orderBy: { createdAt: "desc" },
-      select: { payload: true, createdAt: true },
-    }).catch(() => null);
-
-    let intelligenceAnchor: {
-      quickSalePrice: number;
-      sweetSpot: number;
-      premiumPrice: number;
-      confidence: "high" | "medium";
-      ageMs: number;
-    } | null = null;
-
-    if (intelLog?.payload) {
-      try {
-        const parsed = JSON.parse(intelLog.payload);
-        const pi = parsed?.pricingIntel || parsed?.result?.pricingIntel;
-        if (
-          pi &&
-          typeof pi.sweetSpot === "number" &&
-          typeof pi.premiumPrice === "number" &&
-          typeof pi.quickSalePrice === "number" &&
-          (pi.confidence === "high" || pi.confidence === "medium")
-        ) {
-          intelligenceAnchor = {
-            quickSalePrice: pi.quickSalePrice,
-            sweetSpot: pi.sweetSpot,
-            premiumPrice: pi.premiumPrice,
-            confidence: pi.confidence,
-            ageMs: Date.now() - intelLog.createdAt.getTime(),
-          };
-        }
-      } catch { /* malformed payload — fall through to formula */ }
-    }
-
-    const pricingSource: "intelligence_anchored" | "hybrid" | "v8_formula" =
-      intelligenceAnchor?.confidence === "high"
-        ? "intelligence_anchored"
-        : intelligenceAnchor?.confidence === "medium"
-        ? "hybrid"
-        : "v8_formula";
+    // CMD-PRICEBOT-ENGINE-V9 + V9-RECALC-ANCHOR-FIX:
+    // Resolve Intelligence anchor via shared helper (also used by recalc path
+    // in lib/pricing/garage-sale-recalc.ts — single source of truth).
+    const { resolveIntelligenceAnchor, pricingSourceFromAnchor, applyAnchorToFormula } =
+      await import("@/lib/pricing/intelligence-anchor");
+    const intelligenceAnchor = await resolveIntelligenceAnchor(itemId);
+    const pricingSource = pricingSourceFromAnchor(intelligenceAnchor);
 
     // Store in EventLog
     await prisma.eventLog.create({
@@ -739,24 +701,15 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
           },
         );
 
-        // Intelligence-anchored In-Person tiers
-        let inPersonList = gsPrices.listPrice;
-        let inPersonAccept = gsPrices.acceptPrice;
-        let inPersonFloor = gsPrices.floorPrice;
-        if (intelligenceAnchor) {
-          if (intelligenceAnchor.confidence === "high") {
-            inPersonList = intelligenceAnchor.premiumPrice;
-            inPersonAccept = intelligenceAnchor.sweetSpot;
-            inPersonFloor = intelligenceAnchor.quickSalePrice;
-          } else {
-            inPersonList = Math.round(intelligenceAnchor.premiumPrice * 0.6 + gsPrices.listPrice * 0.4);
-            inPersonAccept = Math.round(intelligenceAnchor.sweetSpot * 0.6 + gsPrices.acceptPrice * 0.4);
-            inPersonFloor = Math.round(intelligenceAnchor.quickSalePrice * 0.6 + gsPrices.floorPrice * 0.4);
-          }
-          // Preserve invariant: list ≥ accept ≥ floor
-          if (inPersonList < inPersonAccept) inPersonList = inPersonAccept;
-          if (inPersonFloor > inPersonAccept) inPersonFloor = inPersonAccept;
-        }
+        // Intelligence-anchored In-Person tiers via shared helper
+        const anchored = applyAnchorToFormula(intelligenceAnchor, {
+          listPrice: gsPrices.listPrice,
+          acceptPrice: gsPrices.acceptPrice,
+          floorPrice: gsPrices.floorPrice,
+        });
+        const inPersonList = anchored.listPrice;
+        const inPersonAccept = anchored.acceptPrice;
+        const inPersonFloor = anchored.floorPrice;
 
         prisma.item.update({ where: { id: itemId }, data: {
           garageSalePrice: inPersonAccept,

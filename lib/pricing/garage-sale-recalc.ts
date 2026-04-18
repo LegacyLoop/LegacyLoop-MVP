@@ -9,6 +9,11 @@
 
 import { prisma } from "@/lib/db";
 import { calculateGarageSaleV9Prices, type GarageSaleV9Prices, type GarageSaleV8Options, calculateGarageSalePrices, type GarageSalePrices, type GarageSaleOptions } from "./garage-sale";
+import {
+  resolveIntelligenceAnchor,
+  applyAnchorToFormula,
+  pricingSourceFromAnchor,
+} from "./intelligence-anchor";
 
 function safeJson(raw: string | null | undefined): any {
   if (!raw) return null;
@@ -80,25 +85,48 @@ export async function recalcGarageSalePrices(itemId: string): Promise<GarageSale
 
   const prices = calculateGarageSaleV9Prices(marketMid, category, condition, zip, v8Options);
 
+  // CMD-V9-RECALC-ANCHOR-FIX: Intelligence-anchored In-Person tiers.
+  // Keeps parity with PriceBot V9 route so whichever path wrote the
+  // latest GARAGE_SALE_V9_CALC event, consumers see the same anchored
+  // values. Without this, recalc (which fires ~500ms after PriceBot's
+  // own anchored write via the demand-score chain) used to shadow the
+  // anchored event with formula-only output.
+  const anchor = await resolveIntelligenceAnchor(itemId);
+  const pricingSource = pricingSourceFromAnchor(anchor);
+  const anchored = applyAnchorToFormula(anchor, {
+    listPrice: prices.listPrice,
+    acceptPrice: prices.acceptPrice,
+    floorPrice: prices.floorPrice,
+  });
+  const intelligenceAgeMs = anchor?.ageMs ?? null;
+
   // Save to item record (V8 mapping: LIST→High, ACCEPT→Price, FLOOR→Quick)
   await prisma.item.update({
     where: { id: itemId },
     data: {
-      garageSalePrice: prices.acceptPrice,
-      garageSalePriceHigh: prices.listPrice,
-      quickSalePrice: prices.floorPrice,
+      garageSalePrice: anchored.acceptPrice,
+      garageSalePriceHigh: anchored.listPrice,
+      quickSalePrice: anchored.floorPrice,
       quickSalePriceHigh: prices.quickSalePriceHigh,
       garageSaleCalcAt: new Date(),
     },
   });
 
-  // Audit log
+  // Audit log — anchored values at top level, formula values kept for audit
   await prisma.eventLog.create({
     data: {
       itemId,
       eventType: "GARAGE_SALE_V9_CALC",
       payload: JSON.stringify({
         ...prices,
+        listPrice: anchored.listPrice,
+        acceptPrice: anchored.acceptPrice,
+        floorPrice: anchored.floorPrice,
+        formulaListPrice: prices.listPrice,
+        formulaAcceptPrice: prices.acceptPrice,
+        formulaFloorPrice: prices.floorPrice,
+        pricingSource,
+        intelligenceAgeMs,
         optionsUsed: v8Options,
         marketMid,
         v9: true,
@@ -106,5 +134,10 @@ export async function recalcGarageSalePrices(itemId: string): Promise<GarageSale
     },
   }).catch(() => {});
 
-  return prices;
+  return {
+    ...prices,
+    listPrice: anchored.listPrice,
+    acceptPrice: anchored.acceptPrice,
+    floorPrice: anchored.floorPrice,
+  };
 }
