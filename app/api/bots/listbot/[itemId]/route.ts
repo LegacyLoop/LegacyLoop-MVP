@@ -684,6 +684,23 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
       listbotResult._heroImageUrl = heroImageUrl;
     }
 
+    // CMD-LISTBOT-INTEL-ANCHOR: resolve Intelligence anchor + apply to
+    // top-level listing_price. Per-platform listings preserved untouched.
+    const { resolveIntelligenceAnchor, applyAnchorToFormula, pricingSourceFromAnchor } =
+      await import("@/lib/pricing/intelligence-anchor");
+    const intelligenceAnchor = await resolveIntelligenceAnchor(itemId);
+    const pricingSource = pricingSourceFromAnchor(intelligenceAnchor);
+    const formulaListingPrice = midPrice;
+    const anchoredTier = applyAnchorToFormula(intelligenceAnchor, {
+      listPrice: formulaListingPrice,
+      acceptPrice: formulaListingPrice,
+      floorPrice: formulaListingPrice,
+    });
+    (listbotResult as any).listing_price = anchoredTier.listPrice;
+    (listbotResult as any).formulaListingPrice = formulaListingPrice;
+    (listbotResult as any).pricingSource = pricingSource;
+    (listbotResult as any).intelligenceAgeMs = intelligenceAnchor?.ageMs ?? null;
+
     // Store in EventLog
     await prisma.eventLog.create({
       data: {
@@ -709,6 +726,10 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
           claudeCacheHit: (listbotHybridRun?.marketplace as any)?.cacheInfo?.cacheHit ?? false,
           claudeCacheReadTokens: (listbotHybridRun?.marketplace as any)?.cacheInfo?.cacheReadInputTokens ?? 0,
           claudeCacheSavingsUsd: (listbotHybridRun?.marketplace as any)?.cacheInfo?.estimatedSavingsUsd ?? 0,
+          // CMD-LISTBOT-INTEL-ANCHOR telemetry
+          pricingSource,
+          intelligenceAgeMs: intelligenceAnchor?.ageMs ?? null,
+          formulaListingPrice,
         }),
       },
     });
@@ -724,6 +745,8 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
       result: listbotResult,
       heroImageUrl,
       isDemo: !!listbotResult._isDemo,
+      pricingSource,
+      intelligenceAgeMs: intelligenceAnchor?.ageMs ?? null,
     });
   } catch (e) {
     console.error("[listbot POST]", e);
