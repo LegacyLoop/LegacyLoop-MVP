@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { canAccessIntelTab } from "@/lib/constants/pricing";
+import JuryVerdictSheet from "./JuryVerdictSheet";
 
 /* ═══════════════════════════════════════════════════════════════════════
    Types
@@ -189,6 +190,31 @@ export default function ItemIntelligenceSummary(props: Props) {
     isAntique, isCollectible, authenticityScore,
     userTier = 1, pricingConsensus = null, v9Data = null, collapsed = false, onToggle,
   } = props;
+
+  // CMD-JURY-VERDICT-SURFACE: modal state + single-fire chip-render telemetry
+  const [juryModalOpen, setJuryModalOpen] = useState(false);
+  const juryChipFiredRef = useRef(false);
+  useEffect(() => {
+    if (juryChipFiredRef.current) return;
+    if (
+      pricingConsensus?.juryVerdict &&
+      pricingConsensus?.consensusResolvedBy === "jury"
+    ) {
+      juryChipFiredRef.current = true;
+      fetch("/api/user-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventType: "JURY_CHIP_RENDERED",
+          itemId,
+          metadata: JSON.stringify({
+            listPrice: pricingConsensus.juryVerdict.listPrice,
+            confidence: pricingConsensus.juryVerdict.confidence,
+          }),
+        }),
+      }).catch(() => {});
+    }
+  }, [pricingConsensus, itemId]);
 
   // CMD-PRICING-FRESHNESS-STAMP: tick every 30s so "Updated Xm ago" stays
   // accurate without a page reload.
@@ -879,6 +905,44 @@ export default function ItemIntelligenceSummary(props: Props) {
                           {" · Updated "}{consensusAgeString}
                         </span>
                       )}
+                      {pricingConsensus.juryVerdict &&
+                        pricingConsensus.consensusResolvedBy === "jury" && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setJuryModalOpen(true);
+                              try { (navigator as any)?.vibrate?.(8); } catch {}
+                              fetch("/api/user-event", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                  eventType: "JURY_TRANSCRIPT_OPEN",
+                                  itemId,
+                                }),
+                              }).catch(() => {});
+                            }}
+                            aria-label="Resolved by pricing jury — tap to see transcript"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.3rem",
+                              padding: "0.2rem 0.55rem",
+                              borderRadius: "9999px",
+                              background: "rgba(0,188,212,0.14)",
+                              border: "1px solid rgba(0,188,212,0.35)",
+                              color: "var(--accent, #00BCD4)",
+                              fontSize: "0.62rem",
+                              fontWeight: 700,
+                              letterSpacing: "0.04em",
+                              cursor: "pointer",
+                              marginLeft: "0.35rem",
+                              animation: "accentPulse 2.4s ease-in-out infinite",
+                              fontFamily: "inherit",
+                            }}
+                          >
+                            🎯 Resolved by jury
+                          </button>
+                        )}
                     </div>
                   )}
                   {/* Insight line */}
@@ -1497,6 +1561,13 @@ export default function ItemIntelligenceSummary(props: Props) {
         </>
         )}
       </div>
+      {pricingConsensus?.juryVerdict && (
+        <JuryVerdictSheet
+          verdict={pricingConsensus.juryVerdict}
+          open={juryModalOpen}
+          onClose={() => setJuryModalOpen(false)}
+        />
+      )}
     </>
   );
 }
