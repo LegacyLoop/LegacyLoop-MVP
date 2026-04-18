@@ -3780,6 +3780,30 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               <div style={{ marginTop: "0.5rem" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem", paddingLeft: "0.15rem", flexWrap: "wrap" }}>
                   <span style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", fontWeight: 700 }}>IN-PERSON SELLING</span>
+                  {/* CMD-PRICEBOT-ENGINE-V9: Intelligence-anchor badge */}
+                  {(v8CalcData as any)?.pricingSource === "intelligence_anchored" && (
+                    <span
+                      title="Pricing anchored to Item Intelligence's high-confidence reasoning for realistic local sale."
+                      aria-label="Pricing anchored to Item Intelligence"
+                      style={{
+                        fontSize: "0.45rem", fontWeight: 700, padding: "1px 6px", borderRadius: 6,
+                        background: "rgba(0,188,212,0.15)", color: "#00BCD4",
+                        border: "1px solid rgba(0,188,212,0.35)",
+                        animation: "accentPulse 2.4s ease-in-out infinite",
+                      }}
+                    >🎯 AI-anchored</span>
+                  )}
+                  {(v8CalcData as any)?.pricingSource === "hybrid" && (
+                    <span
+                      title="Pricing blends Item Intelligence with formula output."
+                      aria-label="Pricing blends Item Intelligence with formula"
+                      style={{
+                        fontSize: "0.45rem", fontWeight: 700, padding: "1px 6px", borderRadius: 6,
+                        background: "rgba(245,158,11,0.15)", color: "#f59e0b",
+                        border: "1px solid rgba(245,158,11,0.35)",
+                      }}
+                    >🎯 AI-blended</span>
+                  )}
                   {gsPrices.locationTier === "HIGH" && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(34,197,94,0.1)", color: "#22c55e" }}>Strong local market</span>}
                   {gsPrices.locationTier === "LOW" && <span style={{ fontSize: "0.45rem", fontWeight: 600, padding: "1px 5px", borderRadius: 6, background: "rgba(245,158,11,0.1)", color: "#f59e0b" }}>Rural market adjusted</span>}
                   {gsPrices.demandLabel && gsPrices.demandLabel !== "Unknown" && (

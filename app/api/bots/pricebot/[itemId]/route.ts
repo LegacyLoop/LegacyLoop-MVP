@@ -623,6 +623,52 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
       }
     }
 
+    // CMD-PRICEBOT-ENGINE-V9: ingest Item Intelligence before computing
+    // In-Person tiers. High-confidence Intelligence overrides the formula;
+    // medium blends 60/40 toward Intelligence; low/absent falls through.
+    const intelLog = await prisma.eventLog.findFirst({
+      where: { itemId, eventType: "INTELLIGENCE_RESULT" },
+      orderBy: { createdAt: "desc" },
+      select: { payload: true, createdAt: true },
+    }).catch(() => null);
+
+    let intelligenceAnchor: {
+      quickSalePrice: number;
+      sweetSpot: number;
+      premiumPrice: number;
+      confidence: "high" | "medium";
+      ageMs: number;
+    } | null = null;
+
+    if (intelLog?.payload) {
+      try {
+        const parsed = JSON.parse(intelLog.payload);
+        const pi = parsed?.pricingIntel || parsed?.result?.pricingIntel;
+        if (
+          pi &&
+          typeof pi.sweetSpot === "number" &&
+          typeof pi.premiumPrice === "number" &&
+          typeof pi.quickSalePrice === "number" &&
+          (pi.confidence === "high" || pi.confidence === "medium")
+        ) {
+          intelligenceAnchor = {
+            quickSalePrice: pi.quickSalePrice,
+            sweetSpot: pi.sweetSpot,
+            premiumPrice: pi.premiumPrice,
+            confidence: pi.confidence,
+            ageMs: Date.now() - intelLog.createdAt.getTime(),
+          };
+        }
+      } catch { /* malformed payload — fall through to formula */ }
+    }
+
+    const pricingSource: "intelligence_anchored" | "hybrid" | "v8_formula" =
+      intelligenceAnchor?.confidence === "high"
+        ? "intelligence_anchored"
+        : intelligenceAnchor?.confidence === "medium"
+        ? "hybrid"
+        : "v8_formula";
+
     // Store in EventLog
     await prisma.eventLog.create({
       data: {
@@ -660,6 +706,8 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
             latencyMs: hybridRun?.latencyMs ?? 0,
             tokens: hybridRun?.tokens ?? { input: 0, output: 0, total: 0 },
             isDemo: !!pricebotResult?._isDemo,
+            pricingSource,
+            intelligenceAgeMs: intelligenceAnchor?.ageMs ?? null,
           }),
         },
       });
@@ -670,7 +718,9 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
     // Fire-and-forget: create structured PriceSnapshot via populate function
     populateFromPriceBot(itemId, pricebotResult as Record<string, unknown>).catch(() => null);
 
-    // Fire-and-forget: calculate V9 garage sale prices from the market price
+    // Fire-and-forget: calculate V9 garage sale prices from the market price.
+    // CMD-PRICEBOT-ENGINE-V9: override/blend In-Person tiers with Intelligence
+    // anchor per pricingSource policy above.
     import("@/lib/pricing/garage-sale").then(({ calculateGarageSaleV9Prices }) => {
       const revisedMid = (pricebotResult as any)?.price_validation?.revised_mid;
       const marketPrice = revisedMid || (item as any).valuation?.mid || Math.round(((item as any).valuation?.low + (item as any).valuation?.high) / 2) || 0;
@@ -688,10 +738,30 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
             itemTitle: (item as any).title ?? undefined,
           },
         );
+
+        // Intelligence-anchored In-Person tiers
+        let inPersonList = gsPrices.listPrice;
+        let inPersonAccept = gsPrices.acceptPrice;
+        let inPersonFloor = gsPrices.floorPrice;
+        if (intelligenceAnchor) {
+          if (intelligenceAnchor.confidence === "high") {
+            inPersonList = intelligenceAnchor.premiumPrice;
+            inPersonAccept = intelligenceAnchor.sweetSpot;
+            inPersonFloor = intelligenceAnchor.quickSalePrice;
+          } else {
+            inPersonList = Math.round(intelligenceAnchor.premiumPrice * 0.6 + gsPrices.listPrice * 0.4);
+            inPersonAccept = Math.round(intelligenceAnchor.sweetSpot * 0.6 + gsPrices.acceptPrice * 0.4);
+            inPersonFloor = Math.round(intelligenceAnchor.quickSalePrice * 0.6 + gsPrices.floorPrice * 0.4);
+          }
+          // Preserve invariant: list ≥ accept ≥ floor
+          if (inPersonList < inPersonAccept) inPersonList = inPersonAccept;
+          if (inPersonFloor > inPersonAccept) inPersonFloor = inPersonAccept;
+        }
+
         prisma.item.update({ where: { id: itemId }, data: {
-          garageSalePrice: gsPrices.acceptPrice,
-          garageSalePriceHigh: gsPrices.listPrice,
-          quickSalePrice: gsPrices.floorPrice,
+          garageSalePrice: inPersonAccept,
+          garageSalePriceHigh: inPersonList,
+          quickSalePrice: inPersonFloor,
           quickSalePriceHigh: gsPrices.quickSalePriceHigh,
           garageSaleCalcAt: new Date(),
         }}).catch(() => null);
@@ -699,9 +769,9 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
           itemId,
           eventType: "GARAGE_SALE_V9_CALC",
           payload: JSON.stringify({
-            listPrice: gsPrices.listPrice,
-            acceptPrice: gsPrices.acceptPrice,
-            floorPrice: gsPrices.floorPrice,
+            listPrice: inPersonList,
+            acceptPrice: inPersonAccept,
+            floorPrice: inPersonFloor,
             channel: gsPrices.channelRecommendation,
             locationNote: gsPrices.locationNote,
             saleType: gsPrices.saleTypeUsed,
@@ -712,6 +782,11 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
             seasonalMultiplier: gsPrices.seasonalMultiplier,
             brandPremium: gsPrices.brandPremium,
             marketPrice,
+            pricingSource,
+            intelligenceAgeMs: intelligenceAnchor?.ageMs ?? null,
+            formulaListPrice: gsPrices.listPrice,
+            formulaAcceptPrice: gsPrices.acceptPrice,
+            formulaFloorPrice: gsPrices.floorPrice,
             v9: true,
           }),
         }}).catch(() => null);
@@ -739,6 +814,8 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
       success: true,
       result: pricebotResult,
       isDemo: !!pricebotResult._isDemo,
+      pricingSource,
+      intelligenceAgeMs: intelligenceAnchor?.ageMs ?? null,
     });
   } catch (e) {
     console.error("[pricebot POST]", e);
