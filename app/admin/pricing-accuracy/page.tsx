@@ -69,6 +69,7 @@ async function fetchAllData() {
     soldTransitionLogs,
     v9CalcLogs,
     totalSoldItemsCount,
+    sweepRunLogs,
   ] = await Promise.all([
     prisma.eventLog.findMany({
       where: { eventType: "PRICING_ACCURACY_ITEM_COMPLETE", createdAt: { gte: since } },
@@ -116,6 +117,12 @@ async function fetchAllData() {
         soldAt: { gte: since },
       },
     }),
+    prisma.eventLog.findMany({
+      where: { eventType: "PRICING_ACCURACY_SWEEP_RUN" },
+      orderBy: { createdAt: "desc" },
+      take: 7,
+      select: { payload: true, createdAt: true },
+    }),
   ]);
 
   const summaries = accuracyCompleteLogs
@@ -156,6 +163,26 @@ async function fetchAllData() {
     if (p) v9CalcByItem.set(l.itemId, p);
   }
 
+  // CMD-V1e-SWEEP-HEALTH-SECTION: parse last 7 sweep runs for health panel
+  const sweepRuns = sweepRunLogs
+    .map(l => {
+      const payload = safeJson<{
+        processed: number;
+        ok: number;
+        already_computed: number;
+        no_snapshots: number;
+        not_sold: number;
+        errors: number;
+        sampleErrors: string[];
+        durationMs: number;
+        triggeredBy: "cron" | "admin";
+        maxItems: number;
+      }>(l.payload);
+      if (!payload) return null;
+      return { createdAt: l.createdAt, ...payload };
+    })
+    .filter((x): x is NonNullable<typeof x> => x != null);
+
   return {
     since,
     summaries,
@@ -169,6 +196,7 @@ async function fetchAllData() {
     soldTransitions,
     v9CalcByItem,
     totalSoldItemsCount,
+    sweepRuns,
   };
 }
 
@@ -398,6 +426,26 @@ function KpiTile({ label, value, sub, color }: { label: string; value: string; s
       {sub && (
         <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginTop: "0.3rem" }}>{sub}</div>
       )}
+    </div>
+  );
+}
+
+function MetricCell({ label, value, color }: { label: string; value: string | number; color?: string }) {
+  return (
+    <div>
+      <div style={{
+        fontSize: "0.7rem", color: "var(--text-muted)",
+        textTransform: "uppercase", letterSpacing: "0.04em",
+      }}>
+        {label}
+      </div>
+      <div style={{
+        fontSize: "1.25rem", fontFamily: "var(--font-data)",
+        fontWeight: 700, color: color ?? "var(--text-primary)",
+        lineHeight: 1.1,
+      }}>
+        {value}
+      </div>
     </div>
   );
 }
@@ -703,6 +751,72 @@ export default async function PricingAccuracyAdminPage() {
             sub="@ $0.001 per call"
           />
         </div>
+      </Section>
+
+      {/* ── Sweep Health — CMD-V1e-SWEEP-HEALTH-SECTION ── */}
+      <Section
+        title="Sweep Health — Nightly Cron (V1d)"
+        subtitle="Last 7 runs of /api/cron/pricing-accuracy-sweep. Green = healthy; amber = no-op; red = errors."
+      >
+        {data.sweepRuns.length === 0 ? (
+          <div style={{ ...CARD, color: "var(--text-muted)" }}>
+            No sweep runs yet. Cron fires nightly at 03:00 UTC.
+          </div>
+        ) : (
+          <div style={{ display: "grid", gap: "0.75rem" }}>
+            {data.sweepRuns.map((run) => {
+              const healthColor =
+                run.errors > 0 ? "#ef4444"
+                : run.processed === 0 ? "#94a3b8"
+                : "#22c55e";
+              const perItemMs = run.processed > 0
+                ? Math.round(run.durationMs / run.processed)
+                : null;
+              return (
+                <div key={run.createdAt.toISOString()} style={{
+                  ...CARD,
+                  padding: "1rem 1.25rem",
+                  borderLeft: `3px solid ${healthColor}`,
+                  display: "grid",
+                  gridTemplateColumns: "minmax(0,1.6fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                  gap: "1rem",
+                  alignItems: "center",
+                }}>
+                  <div>
+                    <div style={{
+                      fontSize: "0.75rem", color: "var(--text-muted)",
+                      textTransform: "uppercase", letterSpacing: "0.04em",
+                    }}>
+                      {run.createdAt.toLocaleString()}
+                    </div>
+                    <div style={{
+                      fontSize: "0.78rem", color: "var(--text-secondary)",
+                      marginTop: "0.15rem",
+                    }}>
+                      {run.triggeredBy} · cap {run.maxItems}
+                    </div>
+                  </div>
+                  <MetricCell label="Processed" value={run.processed} />
+                  <MetricCell
+                    label="OK"
+                    value={run.ok}
+                    color={run.ok > 0 ? "#22c55e" : undefined}
+                  />
+                  <MetricCell
+                    label="Errors"
+                    value={run.errors}
+                    color={run.errors > 0 ? "#ef4444" : undefined}
+                  />
+                  <MetricCell
+                    label="Duration"
+                    value={`${(run.durationMs / 1000).toFixed(1)}s`}
+                    color={perItemMs != null ? undefined : "var(--text-muted)"}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
       </Section>
 
       {/* ── Moat freshness per category ── */}
