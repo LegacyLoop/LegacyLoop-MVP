@@ -254,7 +254,7 @@ async function analyzeWithOpenAI(absPath: string, context?: string, extraPaths?:
 
 // ─── Claude analysis (comprehensive) ────────────────────────────────────
 
-async function analyzeWithClaude(absPath: string, context?: string, extraPaths?: string[]): Promise<AiAnalysis> {
+export async function analyzeWithClaude(absPath: string, context?: string, extraPaths?: string[]): Promise<AiAnalysis> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key || key.includes("YOUR_CLAUDE") || key.length < 10) throw new Error("No Anthropic key configured");
 
@@ -546,7 +546,7 @@ function unionArrays(results: AiAnalysis[], getter: (r: AiAnalysis) => string[] 
   return [...set].slice(0, max);
 }
 
-function mergeConsensus(results: AiAnalysis[]): AiAnalysis {
+export function mergeConsensus(results: AiAnalysis[]): AiAnalysis {
   if (results.length === 0) throw new Error("No results to merge");
   if (results.length === 1) return results[0];
 
@@ -717,7 +717,7 @@ function mergeConsensus(results: AiAnalysis[]): AiAnalysis {
   return merged as AiAnalysis;
 }
 
-function calcAgreement(results: AiAnalysis[]): number {
+export function calcAgreement(results: AiAnalysis[]): number {
   if (results.length < 2) return 100;
 
   let totalScore = 0;

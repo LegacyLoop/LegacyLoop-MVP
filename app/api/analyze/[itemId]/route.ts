@@ -264,19 +264,81 @@ export async function POST(
   // Prepend skill pack to sellerContext so it feeds into aiAdapter.analyze()
   const enrichedSellerContext = skillPackBlock + (sellerContext || "");
 
-  // 1) Vision analysis
-  let analysis;
+  // 1) Vision analysis — CMD-ANALYZEBOT-ENGINE-V9 hybrid fallback
+  //    When primary confidence < 0.70, fire Claude Sonnet as secondary via
+  //    shared multi-ai helpers and reconcile via mergeConsensus. High-confidence
+  //    primary short-circuits the secondary call to save cost + latency.
+  let analysis: any;
+  let analyzerSource: "primary" | "hybrid" = "primary";
+  let primaryConfidence = 0;
+  let secondaryConfidence: number | null = null;
+  let agreementScore: number | null = null;
+  let primaryLatencyMs = 0;
+  let secondaryLatencyMs = 0;
+
   try {
-    analysis = await aiAdapter.analyze(photoPaths, enrichedSellerContext || undefined);
+    const primaryStart = Date.now();
+    const primary = await aiAdapter.analyze(photoPaths, enrichedSellerContext || undefined);
+    primaryLatencyMs = Date.now() - primaryStart;
+    primaryConfidence = typeof primary?.confidence === "number" ? primary.confidence : 0;
+    analysis = primary;
+
+    if (primaryConfidence < 0.70) {
+      let secondary: any = null;
+      const secondaryStart = Date.now();
+      try {
+        const { analyzeWithClaude, mergeConsensus, calcAgreement } =
+          await import("@/lib/adapters/multi-ai");
+        const [firstPath, ...extraPaths] = photoPaths;
+        secondary = await analyzeWithClaude(firstPath, enrichedSellerContext || undefined, extraPaths);
+        secondaryLatencyMs = Date.now() - secondaryStart;
+        if (secondary) {
+          secondaryConfidence = typeof secondary.confidence === "number" ? secondary.confidence : null;
+          agreementScore = calcAgreement([primary, secondary]);
+          analysis = mergeConsensus([primary, secondary]) ?? primary;
+          analyzerSource = "hybrid";
+        }
+      } catch (secErr: any) {
+        console.error("[ANALYZEBOT_HYBRID] Secondary failed (falling back to primary):", secErr?.message ?? secErr);
+        secondaryLatencyMs = Date.now() - secondaryStart;
+        // analysis stays = primary
+      }
+
+      prisma.eventLog.create({
+        data: {
+          itemId: item.id,
+          eventType: "ANALYZEBOT_HYBRID_FIRED",
+          payload: JSON.stringify({
+            primaryConfidence,
+            secondaryConfidence,
+            primaryCategory: primary?.category ?? null,
+            secondaryCategory: secondary?.category ?? null,
+            agreementScore,
+            trigger: "low_confidence",
+            primaryLatencyMs,
+            secondaryLatencyMs,
+            wasUsed: analyzerSource === "hybrid",
+          }),
+        },
+      }).catch(() => null);
+    }
   } catch (aiErr: any) {
     const msg = aiErr?.message ?? String(aiErr);
     return new Response(`AI analysis failed: ${msg}`, { status: 422 });
   }
 
+  // Persist merged analysis + hybrid metadata in rawJson (no schema change)
+  const rawJsonPayload = JSON.stringify({
+    ...analysis,
+    _analyzerSource: analyzerSource,
+    _primaryConfidence: primaryConfidence,
+    _secondaryConfidence: secondaryConfidence,
+    _agreementScore: agreementScore,
+  });
   await prisma.aiResult.upsert({
     where: { itemId: item.id },
-    update: { rawJson: JSON.stringify(analysis), confidence: analysis.confidence },
-    create: { itemId: item.id, rawJson: JSON.stringify(analysis), confidence: analysis.confidence },
+    update: { rawJson: rawJsonPayload, confidence: analysis.confidence },
+    create: { itemId: item.id, rawJson: rawJsonPayload, confidence: analysis.confidence },
   });
 
   // Fire-and-forget: populate structured intelligence fields from AI analysis
@@ -712,6 +774,11 @@ export async function POST(
           isCollectible: !!(analysis as any).is_collectible || !!collectibleResult?.isCollectible,
           isVehicle,
           isOutdoorEquipment,
+          // CMD-ANALYZEBOT-ENGINE-V9: hybrid telemetry
+          analyzerSource,
+          primaryConfidence,
+          secondaryConfidence,
+          agreementScore,
         }),
       },
     });
@@ -743,5 +810,18 @@ export async function POST(
   // Fire-and-forget: demand score
   import("@/lib/bots/demand-score").then(m => m.calculateDemandScore(item.id)).catch(() => null);
 
-  return new Response("OK", { status: 200 });
+  // CMD-ANALYZEBOT-ENGINE-V9: JSON body adds hybrid metadata for clients that
+  // want to inspect the analyzer source. Backward-compat: clients checking
+  // only `res.ok` still pass; text-body readers will now see JSON (treated
+  // as string — no crash). Body text "OK" superseded by `{ ok: true, ... }`.
+  return new Response(
+    JSON.stringify({
+      ok: true,
+      analyzerSource,
+      primaryConfidence,
+      secondaryConfidence,
+      agreementScore,
+    }),
+    { status: 200, headers: { "Content-Type": "application/json" } }
+  );
 }
