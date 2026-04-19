@@ -211,6 +211,13 @@ export const SCRAPER_DISPATCH_MAP: Record<string, ScraperDispatchFn> = {
         }))
         .filter((c) => c.price > 0);
 
+      // CMD-SALE-METHOD-SYSTEMIC-RESPECT FIX 9: zero-cost observability
+      // for local-classifieds dispatch. Enables Ryan to see in dev console
+      // whether Uncle Henry's fires and how many comps return.
+      console.log(
+        `[market-intel] [local-classifieds] dispatch: ${comps.length} comps for "${itemName}" (zip=${sellerZip ?? "none"}, sources=${result.sources.join(",") || "none"}, errors=${result.errors.length})`
+      );
+
       return {
         success: comps.length > 0,
         comps,

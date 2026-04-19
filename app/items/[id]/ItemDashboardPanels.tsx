@@ -3522,7 +3522,7 @@ function _removedGarageSaleStrip({ itemId, marketPrice, category, condition }: {
    PANEL 2: Pricing (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, boostError, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt, shippingPreference, sellerListingPrice, saleZip, v8CalcData }: {
+function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, boostError, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt, shippingPreference, sellerListingPrice, saleZip, saleMethod, saleRadiusMi, v8CalcData }: {
   valuation: any;
   antique: any;
   aiData: any;
@@ -3543,6 +3543,8 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   shippingPreference?: string;
   sellerListingPrice?: number | null;
   saleZip?: string | null;
+  saleMethod?: string | null;
+  saleRadiusMi?: number | null;
   v8CalcData?: { listPrice: number; acceptPrice: number; floorPrice: number; channelRecommendation: string; channelReason: string; locationNote: string; saleTypeUsed: string } | null;
 }) {
   const [showCalc, setShowCalc] = useState(false);
@@ -3853,21 +3855,32 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   </div>
                 )}
               </div>
-              <div style={{ background: "var(--bg-card)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
-                <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#fbbf24" }}>Best Market</div>
-                <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "#fbbf24", marginTop: "0.15rem" }}>${Math.round((pr.bestMarket.low + pr.bestMarket.high) / 2)}</div>
-                <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{pr.bestMarket.label || "Top market"}</div>
-                {pr.regionalIntel?.bestWhy && (
-                  <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", marginTop: "0.15rem", lineHeight: 1.35, maxWidth: "100%" }}>{pr.regionalIntel.bestWhy.slice(0, 80)}{pr.regionalIntel.bestWhy.length > 80 ? "..." : ""}</div>
-                )}
-                {pr.sellerNet && <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#22c55e", marginTop: "0.25rem" }}>You get: ${pr.sellerNet.bestMarket.toFixed(0)}</div>}
-                {/* SPEC-WIRE FIX: freight cost line for freight items */}
-                {freightCostEstimate != null && pr.sellerNet && (
-                  <div style={{ fontSize: "0.55rem", color: "#eab308", marginTop: "0.1rem", fontWeight: 600 }}>
-                    −${freightCostEstimate} freight ⇒ ${(pr.sellerNet.bestMarket - freightCostEstimate).toFixed(0)}
-                  </div>
-                )}
-              </div>
+              {/* CMD-SALE-METHOD-SYSTEMIC-RESPECT: Best Market card suppressed
+                  when seller opted LOCAL_PICKUP; replaced with local pickup
+                  indicator card. */}
+              {saleMethod === "LOCAL_PICKUP" ? (
+                <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,160,23,0.35)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+                  <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#D4A017" }}>Local Pickup</div>
+                  <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#D4A017", marginTop: "0.35rem", lineHeight: 1.25 }}>📍 {saleRadiusMi ?? 25}mi of {saleZip ?? "seller"}</div>
+                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.25rem", lineHeight: 1.3 }}>No shipping — pickup only</div>
+                </div>
+              ) : (
+                <div style={{ background: "var(--bg-card)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
+                  <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#fbbf24" }}>Best Market</div>
+                  <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "#fbbf24", marginTop: "0.15rem" }}>${Math.round((pr.bestMarket.low + pr.bestMarket.high) / 2)}</div>
+                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{pr.bestMarket.label || "Top market"}</div>
+                  {pr.regionalIntel?.bestWhy && (
+                    <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", marginTop: "0.15rem", lineHeight: 1.35, maxWidth: "100%" }}>{pr.regionalIntel.bestWhy.slice(0, 80)}{pr.regionalIntel.bestWhy.length > 80 ? "..." : ""}</div>
+                  )}
+                  {pr.sellerNet && <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#22c55e", marginTop: "0.25rem" }}>You get: ${pr.sellerNet.bestMarket.toFixed(0)}</div>}
+                  {/* SPEC-WIRE FIX: freight cost line for freight items */}
+                  {freightCostEstimate != null && pr.sellerNet && (
+                    <div style={{ fontSize: "0.55rem", color: "#eab308", marginTop: "0.1rem", fontWeight: 600 }}>
+                      −${freightCostEstimate} freight ⇒ ${(pr.sellerNet.bestMarket - freightCostEstimate).toFixed(0)}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* ── IN-PERSON SELLING — right after price columns, before Local Pickup ── */}
@@ -10473,6 +10486,8 @@ export default function ItemDashboardPanels({
           shippingPreference={shippingData?.preference ?? "BUYER_PAYS"}
           sellerListingPrice={listingPrice ?? null}
           saleZip={saleZip}
+          saleMethod={itemSaleMethod ?? null}
+          saleRadiusMi={(valuation as any)?.saleRadiusMi ?? null}
           v8CalcData={v8CalcData ?? null}
         />
 

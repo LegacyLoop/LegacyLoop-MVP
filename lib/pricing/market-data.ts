@@ -15,7 +15,7 @@
 
 // ─── Market tier definitions ─────────────────────────────────────────────────
 
-export type MarketTier = "HIGH" | "MEDIUM" | "LOW" | "SPECIALTY";
+export type MarketTier = "HIGH" | "MEDIUM" | "LOW" | "SPECIALTY" | "LOCAL";
 
 export interface MarketInfo {
   tier: MarketTier;
@@ -301,12 +301,33 @@ export function getMarketInfo(zip: string | null | undefined): MarketInfo {
  * Get the best market to ship to (highest multiplier).
  * Returns the NYC market as default best since it has highest demand.
  */
-export function getBestMarket(category?: string | null, zip?: string | null): MarketInfo {
+export function getBestMarket(
+  category?: string | null,
+  zip?: string | null,
+  saleMethod?: "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH" | null,
+  saleRadiusMi?: number | null,
+): MarketInfo {
   const cat = (category || "").toLowerCase();
 
   // Derive local label from zip if available
   const localInfo = zip ? getMarketInfo(zip) : null;
   const localLabel = localInfo && localInfo.label !== "National average" ? `Local market — ${localInfo.label}` : "Local market";
+
+  // CMD-SALE-METHOD-SYSTEMIC-RESPECT: LOCAL_PICKUP short-circuit.
+  // When seller opted for local-only sale, best market IS the local
+  // market. No national city suggestion, no ship-to math.
+  if (saleMethod === "LOCAL_PICKUP") {
+    const baseLabel = localInfo?.label && localInfo.label !== "National average"
+      ? localInfo.label
+      : "Local market";
+    const radius = saleRadiusMi ?? 25;
+    return {
+      tier: "LOCAL",
+      multiplier: localInfo?.multiplier ?? 1.0,
+      label: `${baseLabel} (${radius}mi radius)`,
+      demandNote: `LOCAL PICKUP only — pricing for ${radius}-mile radius of ${zip ?? "seller ZIP"}. National demand suggestions disabled.`,
+    };
+  }
 
   if (/lawn|mower|tractor|outdoor|garden|power|equipment|farm|riding|zero.?turn|john.?deere|kubota|husqvarna|cub.?cadet|chainsaw|snowblower|generator|atv|utv|side.?by.?side/i.test(cat) || /vehicle|furniture/i.test(cat)) {
     return { tier: "MEDIUM", multiplier: 1.05, label: localLabel, demandNote: "Large/heavy items sell best locally. Shipping is impractical." };
@@ -370,13 +391,15 @@ export function getLocationPrices(
   baseHigh: number,
   sellerZip: string | null | undefined,
   category?: string | null,
+  saleMethod?: "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH" | null,
+  saleRadiusMi?: number | null,
 ): {
   local: { low: number; high: number; label: string; note: string };
   national: { low: number; high: number };
   bestMarket: { low: number; high: number; label: string; shippingCost: number; netLow: number; netHigh: number };
 } {
   const sellerMarket = getMarketInfo(sellerZip);
-  const bestMarket = getBestMarket(category, sellerZip);
+  const bestMarket = getBestMarket(category, sellerZip, saleMethod, saleRadiusMi);
   const shippingCost = estimateShippingCost(sellerZip ?? null, "100", 12);
 
   return {

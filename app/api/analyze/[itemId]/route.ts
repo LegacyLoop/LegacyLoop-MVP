@@ -51,6 +51,25 @@ function buildSellerContext(item: any): string {
   add("Sale ZIP code", item.saleZip);
   add("Sale radius", item.saleRadiusMi != null ? `${item.saleRadiusMi} miles` : null);
 
+  // CMD-SALE-METHOD-SYSTEMIC-RESPECT: prominent LOCAL_PICKUP discipline
+  // block for the AI. Schema-level description hints may be overridden
+  // when context is noisy — this explicit directive block takes priority.
+  if (item.saleMethod === "LOCAL_PICKUP") {
+    const radius = item.saleRadiusMi ?? 25;
+    lines.push(
+      "",
+      "⚠️ CRITICAL — LOCAL PICKUP ONLY:",
+      `- Sale method: LOCAL_PICKUP`,
+      `- Sale ZIP: ${item.saleZip ?? "not set"}`,
+      `- Sale radius: ${radius} miles`,
+      `- DO NOT suggest national cities (regional_best_city must be null)`,
+      `- DO NOT suggest shipping nationally (regional_ship_or_local must focus on local sale math, not ship-to cost)`,
+      `- DO populate regional_local_best_city with the best city WITHIN the ${radius}-mile radius`,
+      `- DO populate regional_local_demand with demand within the radius`,
+      "",
+    );
+  }
+
   if (item.description) {
     // Strip tags from description for the "Additional notes" line
     const cleaned = item.description.replace(/\[[^\]]+\]/g, "").trim();
@@ -445,6 +464,9 @@ export async function POST(
       isHero: false,
       purchasePrice: item.purchasePrice,
       category: analysis.category,
+      // CMD-SALE-METHOD-SYSTEMIC-RESPECT
+      saleMethod: (item as any).saleMethod ?? null,
+      saleRadiusMi: (item as any).saleRadiusMi ?? null,
     })),
   ]);
 

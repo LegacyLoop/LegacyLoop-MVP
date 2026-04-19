@@ -28,6 +28,9 @@ export interface PricingCalcInput {
   isHero?: boolean;
   purchasePrice?: number | null;
   category?: string | null;
+  // CMD-SALE-METHOD-SYSTEMIC-RESPECT
+  saleMethod?: "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH" | null;
+  saleRadiusMi?: number | null;
 }
 
 export interface PricingAdjustment {
@@ -262,7 +265,7 @@ function narrowPriceRange(range: PriceRange, band: number): void {
 // ─── Main pipeline ──────────────────────────────────────────────────────────
 
 export function calculatePricing(input: PricingCalcInput): PricingResult {
-  const { ai, sellerCondition, numOwners, saleZip, userTier, isHero, purchasePrice, category } = input;
+  const { ai, sellerCondition, numOwners, saleZip, userTier, isHero, purchasePrice, category, saleMethod, saleRadiusMi } = input;
 
   const adjustments: PricingAdjustment[] = [];
   const recommendations: string[] = [];
@@ -339,7 +342,7 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
 
   // ── Step 5: Location multipliers (prefer AI regional data when available) ──
   const sellerMarket = getMarketInfo(saleZip);
-  const bestMarketInfo = getBestMarket(category || ai.category || null, saleZip);
+  const bestMarketInfo = getBestMarket(category || ai.category || null, saleZip, saleMethod, saleRadiusMi);
 
   // Check if AI provided item-specific regional pricing intelligence
   const hasAiRegional = !!(ai.regional_best_city && ai.regional_best_price_low && ai.regional_best_price_high);

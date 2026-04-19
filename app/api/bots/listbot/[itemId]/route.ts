@@ -221,6 +221,25 @@ export async function POST(
     } catch (v8Err: any) { console.warn("[listbot] V8 fetch failed (non-fatal):", v8Err?.message); v8Block = ""; }
     specialtyBotContext = specialtyBotContext + v8Block;
 
+    // CMD-SALE-METHOD-SYSTEMIC-RESPECT: LOCAL_PICKUP discipline block.
+    // Tells the LLM to generate LOCAL-ONLY platform listings (FB
+    // Marketplace / Craigslist / Uncle Henry's / OfferUp / Nextdoor)
+    // and skip national platforms (eBay / Mercari / Etsy / Reverb /
+    // Poshmark) when the seller opted for local-pickup-only.
+    if ((item as any).saleMethod === "LOCAL_PICKUP") {
+      const radius = (item as any).saleRadiusMi ?? 25;
+      const zip = (item as any).saleZip ?? "the seller ZIP";
+      specialtyBotContext = specialtyBotContext + `\n\n⚠️ CRITICAL — LOCAL PICKUP ONLY:
+- Sale method: LOCAL_PICKUP
+- Sale ZIP: ${zip}
+- Sale radius: ${radius} miles
+- DO NOT generate listings for national platforms (eBay, Mercari, Etsy, Reverb, Poshmark).
+- DO generate listings ONLY for local-pickup platforms: Facebook Marketplace (local), Craigslist, Uncle Henry's, OfferUp (local), Nextdoor.
+- Listing copy should emphasize in-person pickup within ${radius} miles of ${zip}.
+- best_platforms array should list ONLY local-pickup-friendly platforms.
+- DO NOT recommend shipping, packaging, or national buyer outreach.\n`;
+    }
+
     // ══ BATMAN READS ROBIN — BuyerBot intelligence for smarter listings ══
     let buyerIntelligence = "";
     try {
