@@ -1076,7 +1076,7 @@ export default function ItemIntelligenceSummary(props: Props) {
 
           {/* ── MARKET TAB ── */}
           {activeTab === "market" && canAccessIntelTab(userTier, "market") && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", minWidth: 0 }}>
               {/* AI summary */}
               {aiIntel?.summary && <div className="intel-summary">{aiIntel.summary}</div>}
 
@@ -1136,6 +1136,56 @@ export default function ItemIntelligenceSummary(props: Props) {
                       </div>
                     </div>
                   )}
+
+                  {/* CMD-INTEL-PANEL-GS-HUD: In-Person Garage Sale tier (V8
+                      LIST / ACCEPT / FLOOR canonical palette). Renders when
+                      v9Data carries V8 GS fields; hidden gracefully when
+                      absent. */}
+                  {v9Data?.garageSalePrice != null &&
+                    v9Data?.garageSalePriceHigh != null &&
+                    v9Data?.quickSalePrice != null && (
+                      <div
+                        style={{
+                          marginTop: "4px",
+                          padding: "10px 12px",
+                          background: "rgba(0,188,212,0.04)",
+                          border: "1px solid rgba(0,188,212,0.15)",
+                          borderRadius: "10px",
+                          display: "grid",
+                          gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                          gap: "8px",
+                          alignItems: "start",
+                        }}
+                      >
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: "9px", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#00bcd4", fontWeight: 700 }}>
+                            LIST
+                          </div>
+                          <div style={{ fontSize: "15px", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            ${v9Data.garageSalePriceHigh}
+                          </div>
+                          <div style={{ fontSize: "9px", color: "var(--text-muted)" }}>in-person top</div>
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: "9px", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#22c55e", fontWeight: 700 }}>
+                            ACCEPT
+                          </div>
+                          <div style={{ fontSize: "15px", fontWeight: 700, fontFamily: "var(--font-data)", color: "#22c55e", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            ${v9Data.garageSalePrice}
+                          </div>
+                          <div style={{ fontSize: "9px", color: "var(--text-muted)" }}>sweet spot</div>
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: "9px", textTransform: "uppercase" as const, letterSpacing: "0.1em", color: "#f59e0b", fontWeight: 700 }}>
+                            FLOOR
+                          </div>
+                          <div style={{ fontSize: "15px", fontWeight: 700, fontFamily: "var(--font-data)", color: "#f59e0b", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            ${v9Data.quickSalePrice}
+                          </div>
+                          <div style={{ fontSize: "9px", color: "var(--text-muted)" }}>walkaway</div>
+                        </div>
+                      </div>
+                    )}
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
                     <span className="intel-chip" style={{ borderColor: `${pricingConfColor}30`, color: pricingConfColor, background: `${pricingConfColor}0d` }}>
                       {aiIntel.pricingIntel.confidence.toUpperCase()} CONFIDENCE
@@ -1146,7 +1196,7 @@ export default function ItemIntelligenceSummary(props: Props) {
                       </span>
                     ))}
                   </div>
-                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <div style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.5, minWidth: 0, maxWidth: "100%", wordBreak: "break-word", overflowWrap: "anywhere" }}>
                     {aiIntel.pricingIntel.reasoning}
                   </div>
                 </>
@@ -1168,7 +1218,7 @@ export default function ItemIntelligenceSummary(props: Props) {
 
               {/* AI condition assessment */}
               {aiIntel?.conditionAssessment && (
-                <div style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                <div style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.5, minWidth: 0, maxWidth: "100%", wordBreak: "break-word", overflowWrap: "anywhere" }}>
                   <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>Condition: </span>
                   {aiIntel.conditionAssessment}
                 </div>
@@ -1206,7 +1256,7 @@ export default function ItemIntelligenceSummary(props: Props) {
 
               {/* Market insight */}
               {aiIntel?.marketPosition?.insight && (
-                <div style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.5, fontStyle: "italic" }}>
+                <div style={{ fontSize: "11px", color: "var(--text-secondary)", lineHeight: 1.5, fontStyle: "italic", minWidth: 0, maxWidth: "100%", wordBreak: "break-word", overflowWrap: "anywhere" }}>
                   💡 {aiIntel.marketPosition.insight}
                 </div>
               )}
@@ -1320,7 +1370,7 @@ export default function ItemIntelligenceSummary(props: Props) {
                     </div>
                   )}
 
-                  <div style={{ fontSize: "11.5px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                  <div style={{ fontSize: "11.5px", color: "var(--text-secondary)", lineHeight: 1.5, minWidth: 0, maxWidth: "100%", wordBreak: "break-word", overflowWrap: "anywhere" }}>
                     {aiIntel.sellingStrategy.reasoning}
                   </div>
 
@@ -1353,7 +1403,7 @@ export default function ItemIntelligenceSummary(props: Props) {
 
               {/* Strategy advice fallback */}
               {!aiIntel?.sellingStrategy && (
-                <div style={{ fontSize: "11.5px", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                <div style={{ fontSize: "11.5px", color: "var(--text-secondary)", lineHeight: 1.5, minWidth: 0, maxWidth: "100%", wordBreak: "break-word", overflowWrap: "anywhere" }}>
                   {valuation?.localHigh && valuation?.onlineHigh ? (
                     valuation.onlineHigh > valuation.localHigh * 1.15
                       ? "📦 Ship nationally for best price — online markets pay more for this item."
