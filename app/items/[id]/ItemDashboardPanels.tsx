@@ -9086,11 +9086,10 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               </div>
             )}
 
-            {/* CMD-ICC-BOT-NETWORK-ORCHESTRATION: Bot Suggestions row —
-                chips from AnalyzeBot V9 (_specialtyDetail), ListBot, BuyerBot.
-                Local-comps chip deferred — BOT-WIRE hasn't threaded a
-                (local) marker into pricingConsensus.sources yet. Renders
-                nothing when no signals available. */}
+            {/* CMD-ICC-BOT-NETWORK-ORCHESTRATION + CMD-BOT-WIRE-LOCAL-COMPS-
+                COUNT-TELEMETRY: Bot Suggestions row — chips from AnalyzeBot
+                V9 (_specialtyDetail), ListBot, BuyerBot, local-classifieds
+                comps count. Renders nothing when no signals available. */}
             {(() => {
               const specialtyLabel = aiData?._specialtyDetail?.variant
                 ?? aiData?._specialtyDetail?.era
@@ -9101,12 +9100,15 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               const topBuyer = buyerBotResult?.buyer_profiles?.[0]?.type
                 ?? buyerBotResult?.hot_leads?.[0]?.buyer_type
                 ?? null;
-              if (!specialtyLabel && !topPlatform && !topBuyer) return null;
+              const localCompsCount = (pricingConsensus?.sources ?? [])
+                .find((s: any) => s.name === "local_comps_median")?.count ?? 0;
+              if (!specialtyLabel && !topPlatform && !topBuyer && localCompsCount === 0) return null;
               return (
                 <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" as const, minWidth: 0 }}>
                   {specialtyLabel && <ICCChip icon="\u{1F3AF}" label={String(specialtyLabel)} color="#00bcd4" />}
                   {topPlatform && <ICCChip icon="\u{1F4CB}" label={`List on ${topPlatform}`} color="#a78bfa" />}
                   {topBuyer && <ICCChip icon="\u{1F465}" label={String(topBuyer)} color="#3b82f6" />}
+                  {localCompsCount > 0 && <ICCChip icon="\u{1F332}" label={`${localCompsCount} local comps`} color="#D4A017" />}
                 </div>
               );
             })()}
@@ -9205,12 +9207,15 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           const topBuyer = buyerBotResult?.buyer_profiles?.[0]?.type
             ?? buyerBotResult?.hot_leads?.[0]?.buyer_type
             ?? null;
-          if (!specialtyLabel && !topPlatform && !topBuyer) return null;
+          const localCompsCount = (pricingConsensus?.sources ?? [])
+            .find((s: any) => s.name === "local_comps_median")?.count ?? 0;
+          if (!specialtyLabel && !topPlatform && !topBuyer && localCompsCount === 0) return null;
           return (
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" as const, minWidth: 0, marginBottom: "0.5rem" }}>
               {specialtyLabel && <ICCChip icon="\u{1F3AF}" label={String(specialtyLabel)} color="#00bcd4" />}
               {topPlatform && <ICCChip icon="\u{1F4CB}" label={`List on ${topPlatform}`} color="#a78bfa" />}
               {topBuyer && <ICCChip icon="\u{1F465}" label={String(topBuyer)} color="#3b82f6" />}
+              {localCompsCount > 0 && <ICCChip icon="\u{1F332}" label={`${localCompsCount} local comps`} color="#D4A017" />}
             </div>
           );
         })()}

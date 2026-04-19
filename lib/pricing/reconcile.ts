@@ -22,7 +22,8 @@ export type PricingSourceName =
   | "intelligence_claude"
   | "analyzebot_estimate"
   | "v2_valuation"
-  | "market_comps_median";
+  | "market_comps_median"
+  | "local_comps_median";
 
 export interface PricingSourceSnapshot {
   name: PricingSourceName;
@@ -36,6 +37,9 @@ export interface PricingSourceSnapshot {
   floorPrice?: number;
   valueLow?: number;
   valueHigh?: number;
+  // CMD-BOT-WIRE-LOCAL-COMPS-COUNT-TELEMETRY: observability metadata
+  // for UI consumers (ICC chip). Not used by weighted-median math.
+  count?: number;
 }
 
 export interface PricingDissent {
@@ -269,6 +273,35 @@ export async function computePricingConsensus(
         timestamp: ts, acceptPrice: comps.median,
         valueLow: comps.low ?? undefined, valueHigh: comps.high ?? undefined,
       });
+
+      // CMD-BOT-WIRE-LOCAL-COMPS-COUNT-TELEMETRY: observability snapshot
+      // for local-classifieds entries within the consolidated comps[].
+      // Filter by `(local)` platform marker (CMD-LOCAL-COMPS-BOT-WIRE
+      // shim tags every local comp with this suffix). Weight=0 means no
+      // consensus-math contribution — pure UI metadata for ICC chip and
+      // future V1e moat-#3 tile. Preserves single-source-of-truth: local
+      // comps still vote via market_comps_median (the real median
+      // includes them already).
+      const allComps: Array<{ platform?: string; price?: number }> = Array.isArray(comps.comps) ? comps.comps : [];
+      const localComps = allComps.filter((c) => /\(local\)/i.test(String(c.platform ?? "")));
+      if (localComps.length > 0) {
+        const localPrices = localComps
+          .map((c) => Number(c.price))
+          .filter((p) => Number.isFinite(p) && p > 0)
+          .sort((a, b) => a - b);
+        const localMedian = localPrices.length > 0
+          ? localPrices[Math.floor(localPrices.length / 2)]
+          : 0;
+        snapshots.push({
+          name: "local_comps_median",
+          weight: 0,
+          freshness: fresh,
+          effectiveWeight: 0,
+          timestamp: ts,
+          acceptPrice: localMedian > 0 ? localMedian : undefined,
+          count: localComps.length,
+        });
+      }
     }
   }
 
