@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import type { AiAnalysis } from "../types";
 import { readPhotoAsBuffer, guessMimeType } from "@/lib/adapters/storage";
+import { applyLocalPickupDiscipline } from "@/lib/bots/analyzebot/sale-method-post-process";
 
 async function fileToDataUrl(filePath: string) {
   const buffer = await readPhotoAsBuffer(filePath);
@@ -462,36 +463,10 @@ Return ONLY the JSON object matching the schema.`.trim();
       parsed.confidence = Math.max(parsed.confidence, 0.85);
     }
 
-    // ── CMD-SALE-METHOD-FOUNDATION: runtime null-out of national
-    // regional fields when seller opted LOCAL_PICKUP. Schema prompts
-    // the model to null these but LLMs ignore instructions sometimes
-    // (Nashville/Austin mask on Dean guitar). Detection via context
-    // string because analyze/route.ts threads "Sale method: <VALUE>"
-    // into the seller data block. The radius-aware local_* fields are
-    // PRESERVED so Intelligence can still recommend Augusta/Bangor.
-    const ctxStr = context ?? "";
-    const isLocalPickup = /Sale method:\s*LOCAL_PICKUP/i.test(ctxStr);
-    if (isLocalPickup) {
-      const nulledFields: string[] = [];
-      for (const f of [
-        "regional_best_city",
-        "regional_best_state",
-        "regional_best_price_low",
-        "regional_best_price_high",
-        "regional_best_why",
-        "regional_ship_or_local",
-        "regional_national_best_city",
-        "regional_national_best_state",
-      ]) {
-        if ((parsed as any)[f] != null) {
-          nulledFields.push(f);
-          (parsed as any)[f] = null;
-        }
-      }
-      if (nulledFields.length > 0) {
-        console.log(`[AI Post-Process] LOCAL_PICKUP nulled ${nulledFields.length} national field(s): ${nulledFields.join(", ")}`);
-      }
-    }
+    // CMD-BOT-ENGINE-CANONIZE-SALE-METHOD: delegated to helper per F1
+    // doctrine. Skill pack 21 documents the policy. Runtime contract
+    // enforced in: lib/bots/analyzebot/sale-method-post-process.ts
+    applyLocalPickupDiscipline(parsed, context);
 
     return parsed;
   },
