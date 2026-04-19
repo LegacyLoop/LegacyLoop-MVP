@@ -190,6 +190,10 @@ export default async function ItemPage({ params }: { params: Params }) {
   }).catch(() => null);
 
   const v = item.valuation as any;
+  // CMD-NET-PAYOUT-LOCAL-PICKUP-MATH: top-card V8 pills swap to
+  // in-person (gsCalc) tier when seller opted local-only.
+  const itemSaleMethod = (item as any).saleMethod ?? "BOTH";
+  const isLocalPickup = itemSaleMethod === "LOCAL_PICKUP";
   const comps = Array.isArray(item.marketComps) ? item.marketComps : [];
 
   // Public listing statuses
@@ -435,11 +439,11 @@ export default async function ItemPage({ params }: { params: Params }) {
                 itemId={item.id}
               />
             )}
-            {gsCalc && !gsCalc.isExempt && (pricingConsensus || v8CalcData) && (
+            {gsCalc && !gsCalc.isExempt && (pricingConsensus || v8CalcData || (isLocalPickup && gsCalc)) && (
               <V8PillsStrip itemId={item.id} pills={[
-                { label: "List", value: pricingConsensus?.consensusListPrice ?? v8CalcData!.listPrice, color: "#00bcd4", bg: "rgba(0,188,212,0.06)", border: "rgba(0,188,212,0.2)", trustRing: (pricingConsensus?.consensusConfidence ?? 0) >= 90 },
-                { label: "Accept", value: pricingConsensus?.consensusAcceptPrice ?? v8CalcData!.acceptPrice, color: "#22c55e", bg: "rgba(34,197,94,0.06)", border: "rgba(34,197,94,0.2)" },
-                { label: "Floor", value: pricingConsensus?.consensusFloorPrice ?? v8CalcData!.floorPrice, color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
+                { label: "List", value: isLocalPickup && gsCalc ? gsCalc.garageSalePriceHigh : (pricingConsensus?.consensusListPrice ?? v8CalcData!.listPrice), color: "#00bcd4", bg: "rgba(0,188,212,0.06)", border: "rgba(0,188,212,0.2)", trustRing: (pricingConsensus?.consensusConfidence ?? 0) >= 90 },
+                { label: "Accept", value: isLocalPickup && gsCalc ? gsCalc.garageSalePrice : (pricingConsensus?.consensusAcceptPrice ?? v8CalcData!.acceptPrice), color: "#22c55e", bg: "rgba(34,197,94,0.06)", border: "rgba(34,197,94,0.2)" },
+                { label: "Floor", value: isLocalPickup && gsCalc ? gsCalc.quickSalePrice : (pricingConsensus?.consensusFloorPrice ?? v8CalcData!.floorPrice), color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
               ]} />
             )}
             {gsCalc && !gsCalc.isExempt && !v8CalcData && !pricingConsensus && (<>
@@ -452,11 +456,11 @@ export default async function ItemPage({ params }: { params: Params }) {
                 <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#1D9E75", letterSpacing: "-0.01em" }}>{`$${gsCalc.quickSalePrice}–${gsCalc.quickSalePriceHigh}`}</div>
               </div>
             </>)}
-            {gsCalc?.isExempt && (pricingConsensus || v8CalcData) && (
+            {gsCalc?.isExempt && (pricingConsensus || v8CalcData || (isLocalPickup && gsCalc)) && (
               <V8PillsStrip itemId={item.id} pills={[
-                { label: "Hold", value: pricingConsensus?.consensusListPrice ?? v8CalcData!.listPrice, color: "#D4AF37", bg: "rgba(212,175,55,0.08)", border: "rgba(212,175,55,0.25)" },
-                { label: "Negotiate", value: pricingConsensus?.consensusAcceptPrice ?? v8CalcData!.acceptPrice, color: "#D4AF37", bg: "rgba(212,175,55,0.06)", border: "rgba(212,175,55,0.20)" },
-                { label: "Minimum", value: pricingConsensus?.consensusFloorPrice ?? v8CalcData!.floorPrice, color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
+                { label: "Hold", value: isLocalPickup && gsCalc ? gsCalc.garageSalePriceHigh : (pricingConsensus?.consensusListPrice ?? v8CalcData!.listPrice), color: "#D4AF37", bg: "rgba(212,175,55,0.08)", border: "rgba(212,175,55,0.25)" },
+                { label: "Negotiate", value: isLocalPickup && gsCalc ? gsCalc.garageSalePrice : (pricingConsensus?.consensusAcceptPrice ?? v8CalcData!.acceptPrice), color: "#D4AF37", bg: "rgba(212,175,55,0.06)", border: "rgba(212,175,55,0.20)" },
+                { label: "Minimum", value: isLocalPickup && gsCalc ? gsCalc.quickSalePrice : (pricingConsensus?.consensusFloorPrice ?? v8CalcData!.floorPrice), color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
               ]} />
             )}
             {gsCalc?.isExempt && !v8CalcData && !pricingConsensus && (

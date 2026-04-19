@@ -3691,7 +3691,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
     const aiDifficulty = aiData?.shipping_difficulty ?? null;
     const isHeavyItem = (aiWeight != null && aiWeight > 100) || /freight|difficult/i.test(aiDifficulty || "");
     const isLocalOnlyItem = (aiWeight != null && aiWeight > 150) || /local.only|vehicle|riding.mow|lawn.tractor/i.test((aiData?.category || "").toLowerCase());
-    const sellerChoseLocal = shippingPreference === "LOCAL_ONLY" || shippingPreference === "local_only";
+    const sellerChoseLocal = shippingPreference === "LOCAL_ONLY" || shippingPreference === "local_only" || saleMethod === "LOCAL_PICKUP";
 
     if (localMid <= 0) {
       pr.recommendation = "This item has no resale value. We recommend donating it to charity or recycling.";
@@ -4058,7 +4058,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                   <span style={{ fontSize: "0.68rem", color: "var(--text-secondary)" }}>🤝 Local Pickup</span>
                   <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#4ade80" }}>Net ${Math.round(pr.sellerNet.local)}</span>
                 </div>
-                {pr.sellerNet.bestMarket > 0 && pr.sellerNet.bestMarket > pr.sellerNet.local * 0.8 && (
+                {saleMethod !== "LOCAL_PICKUP" && pr.sellerNet.bestMarket > 0 && pr.sellerNet.bestMarket > pr.sellerNet.local * 0.8 && (
                   <div style={{ display: "flex", justifyContent: "space-between", padding: "0.35rem 0.6rem", borderBottom: "1px solid var(--border-default)" }}>
                     <span style={{ fontSize: "0.68rem", color: "var(--text-secondary)" }}>📦 Ship to Best Market</span>
                     <span style={{ fontSize: "0.68rem", fontWeight: 700, color: pr.sellerNet.bestMarket > pr.sellerNet.local ? "#4ade80" : "var(--text-muted)" }}>Net ${Math.round(pr.sellerNet.bestMarket)}</span>
@@ -4206,7 +4206,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
           // ── ADDITION 1: Best net payout scenario ──
           // Priority: 1) Seller's listing price if set, 2) AI valuation mid
           // Shipping: respect shippingPreference — LOCAL_ONLY/customer pickup = $0
-          const isLocalOnly = shippingPreference === "LOCAL_ONLY" || shippingPreference === "local_only";
+          const isLocalOnly = shippingPreference === "LOCAL_ONLY" || shippingPreference === "local_only" || saleMethod === "LOCAL_PICKUP";
           let salePrice = 0, shipCost = 0, isLocal = false, scenario = "";
           const realQuotedRate = quotedShippingRate ?? null;
 
@@ -4305,7 +4305,10 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                 {priceOpenSections.has("price-value") && (
                 <div style={{ padding: "0.35rem 0" }}>
                 <div style={{ background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "0.6rem", padding: "0.75rem" }}>
-                  <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "0.45rem" }}>💵 Your Best Net Payout</div>
+                  <div style={{ fontSize: "0.6rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>💵 Your Best Net Payout</div>
+                  <div style={{ fontSize: "0.55rem", color: "var(--text-secondary)", fontWeight: 500, marginBottom: "0.3rem", letterSpacing: "0.04em" }}>
+                    {isLocalOnly ? "local pickup · no shipping" : "after shipping & fees"}
+                  </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.72rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-secondary)" }}>
                       <span>Sale price ({scenario})</span>
