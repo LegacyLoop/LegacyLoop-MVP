@@ -201,6 +201,37 @@ function IntelAnchorChip({ pricingSource, intelligenceAgeMs }: {
   );
 }
 
+/**
+ * ICCChip — CMD-ICC-BOT-NETWORK-ORCHESTRATION
+ * Compact rounded-pill chip for Item Control Center's Bot Suggestions row.
+ * Palette keys: analyze=#00bcd4, list=#a78bfa, buyer=#3b82f6, local=#D4A017.
+ * Hidden by caller when no signal; never renders a no-data state.
+ */
+function ICCChip({ icon, label, color }: { icon: string; label: string; color: string }) {
+  return (
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "4px",
+      fontSize: "0.58rem",
+      fontWeight: 700,
+      padding: "3px 8px",
+      borderRadius: "9999px",
+      background: `${color}18`,
+      border: `1px solid ${color}40`,
+      color,
+      letterSpacing: "0.02em",
+      whiteSpace: "nowrap" as const,
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      maxWidth: "100%",
+    }}>
+      <span aria-hidden="true">{icon}</span>
+      <span>{label}</span>
+    </span>
+  );
+}
+
 function AccordionHeader({ id, icon, title, subtitle, isOpen, onToggle, accentColor, badge }: {
   id: string; icon: string; title: string; subtitle?: string;
   isOpen: boolean; onToggle: (id: string) => void; accentColor?: string; badge?: string;
@@ -8740,7 +8771,7 @@ const STATUS_FLOW = [
   { key: "COMPLETED", label: "Done", icon: "🎉" },
 ];
 
-function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: initialListingPrice, collapsed, onToggle, photos, category, extra, shippingData, projectId, pricingConsensus }: {
+function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: initialListingPrice, collapsed, onToggle, photos, category, extra, shippingData, projectId, pricingConsensus, v8CalcData, listBotResult, buyerBotResult }: {
   itemId: string;
   status: string;
   valuation: any;
@@ -8754,6 +8785,12 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   shippingData?: { weight: number | null; length: number | null; width: number | null; height: number | null; isFragile: boolean; preference: string; aiWeightLbs: number | null; aiDimsEstimate: string | null; aiShippingDifficulty: string | null; aiShippingNotes: string | null; aiShippingConfidence: number | null };
   projectId?: string | null;
   pricingConsensus?: import("@/lib/pricing/reconcile").PricingConsensus | null;
+  // CMD-ICC-BOT-NETWORK-ORCHESTRATION: bot signal sources for the
+  // Bot Suggestions row + In-Person GS HUD. All optional — chips
+  // hide gracefully when absent.
+  v8CalcData?: { listPrice: number; acceptPrice: number; floorPrice: number } | null;
+  listBotResult?: any;
+  buyerBotResult?: any;
 }) {
   const router = useRouter();
   const [updating, setUpdating] = useState(false);
@@ -9011,6 +9048,56 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
               ))}
             </div>
 
+            {/* CMD-ICC-BOT-NETWORK-ORCHESTRATION: In-Person GS HUD
+                (3-cell row — LIST / ACCEPT / FLOOR). Renders only when
+                v8CalcData is present; hidden gracefully otherwise. */}
+            {v8CalcData && (
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+                gap: "1px",
+                background: "var(--border-default)",
+                borderRadius: 6,
+                overflow: "hidden",
+              }}>
+                {[
+                  { lbl: "LIST", val: `$${Math.round(v8CalcData.listPrice)}`, color: "#00bcd4" },
+                  { lbl: "ACCEPT", val: `$${Math.round(v8CalcData.acceptPrice)}`, color: "#22c55e" },
+                  { lbl: "FLOOR", val: `$${Math.round(v8CalcData.floorPrice)}`, color: "#f59e0b" },
+                ].map((t) => (
+                  <div key={t.lbl} style={{ padding: "6px 8px", background: "var(--ghost-bg)", textAlign: "center" as const, overflow: "hidden" }}>
+                    <div style={{ fontSize: "8px", fontWeight: 600, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)" }}>{t.lbl}</div>
+                    <div style={{ fontSize: "13px", fontWeight: 700, fontFamily: "var(--font-data)", color: t.color, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{t.val}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* CMD-ICC-BOT-NETWORK-ORCHESTRATION: Bot Suggestions row —
+                chips from AnalyzeBot V9 (_specialtyDetail), ListBot, BuyerBot.
+                Local-comps chip deferred — BOT-WIRE hasn't threaded a
+                (local) marker into pricingConsensus.sources yet. Renders
+                nothing when no signals available. */}
+            {(() => {
+              const specialtyLabel = aiData?._specialtyDetail?.variant
+                ?? aiData?._specialtyDetail?.era
+                ?? null;
+              const topPlatform = listBotResult?.best_platform
+                ?? listBotResult?.top_platforms?.[0]
+                ?? null;
+              const topBuyer = buyerBotResult?.buyer_profiles?.[0]?.type
+                ?? buyerBotResult?.hot_leads?.[0]?.buyer_type
+                ?? null;
+              if (!specialtyLabel && !topPlatform && !topBuyer) return null;
+              return (
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" as const, minWidth: 0 }}>
+                  {specialtyLabel && <ICCChip icon="\u{1F3AF}" label={String(specialtyLabel)} color="#00bcd4" />}
+                  {topPlatform && <ICCChip icon="\u{1F4CB}" label={`List on ${topPlatform}`} color="#a78bfa" />}
+                  {topBuyer && <ICCChip icon="\u{1F465}" label={String(topBuyer)} color="#3b82f6" />}
+                </div>
+              );
+            })()}
+
             {/* Row 3 — Context Line */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", height: "28px" }}>
               {(category || aiData?.category) && <span style={{ fontSize: "0.55rem", padding: "2px 8px", borderRadius: "9999px", border: "1px solid rgba(0,188,212,0.2)", color: "var(--text-secondary)", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "45%" }}>{category || aiData.category}</span>}
@@ -9068,6 +9155,52 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
             })}
           </div>
         </div>
+
+        {/* CMD-ICC-BOT-NETWORK-ORCHESTRATION: Expanded-view mirror of
+            In-Person GS HUD + Bot Suggestions chips. Same signal sources
+            as the collapsed view — hidden gracefully when absent. */}
+        {v8CalcData && (
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",
+            gap: "2px",
+            marginBottom: "0.5rem",
+            background: "var(--border-default)",
+            borderRadius: 6,
+            overflow: "hidden",
+          }}>
+            {[
+              { lbl: "LIST", val: `$${Math.round(v8CalcData.listPrice)}`, color: "#00bcd4", sub: "In-Person" },
+              { lbl: "ACCEPT", val: `$${Math.round(v8CalcData.acceptPrice)}`, color: "#22c55e", sub: "Sweet spot" },
+              { lbl: "FLOOR", val: `$${Math.round(v8CalcData.floorPrice)}`, color: "#f59e0b", sub: "Walk-away" },
+            ].map((t) => (
+              <div key={t.lbl} style={{ padding: "8px 10px", background: "var(--ghost-bg)", textAlign: "center" as const, overflow: "hidden" }}>
+                <div style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)" }}>{t.lbl}</div>
+                <div style={{ fontSize: "16px", fontWeight: 700, fontFamily: "var(--font-data)", color: t.color, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis", marginTop: "2px" }}>{t.val}</div>
+                <div style={{ fontSize: "9px", color: "var(--text-muted)", marginTop: "1px" }}>{t.sub}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {(() => {
+          const specialtyLabel = aiData?._specialtyDetail?.variant
+            ?? aiData?._specialtyDetail?.era
+            ?? null;
+          const topPlatform = listBotResult?.best_platform
+            ?? listBotResult?.top_platforms?.[0]
+            ?? null;
+          const topBuyer = buyerBotResult?.buyer_profiles?.[0]?.type
+            ?? buyerBotResult?.hot_leads?.[0]?.buyer_type
+            ?? null;
+          if (!specialtyLabel && !topPlatform && !topBuyer) return null;
+          return (
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" as const, minWidth: 0, marginBottom: "0.5rem" }}>
+              {specialtyLabel && <ICCChip icon="\u{1F3AF}" label={String(specialtyLabel)} color="#00bcd4" />}
+              {topPlatform && <ICCChip icon="\u{1F4CB}" label={`List on ${topPlatform}`} color="#a78bfa" />}
+              {topBuyer && <ICCChip icon="\u{1F465}" label={String(topBuyer)} color="#3b82f6" />}
+            </div>
+          );
+        })()}
 
         {/* ── AI SUGGESTED NEXT ACTION ── */}
         {(() => {
@@ -10247,7 +10380,7 @@ export default function ItemDashboardPanels({
 
       {/* ── ITEM CONTROL CENTER (full width, above panel grid) ── */}
       <div style={{ marginBottom: "1rem" }}>
-        <ItemControlCenter itemId={itemId} status={status} valuation={valuation} aiData={aiData} listingPrice={listingPrice} collapsed={collapsed.control} onToggle={() => togglePanel("control")} photos={photos} category={category} extra={controlCenterExtra} shippingData={shippingData} projectId={projectId} pricingConsensus={pricingConsensus} />
+        <ItemControlCenter itemId={itemId} status={status} valuation={valuation} aiData={aiData} listingPrice={listingPrice} collapsed={collapsed.control} onToggle={() => togglePanel("control")} photos={photos} category={category} extra={controlCenterExtra} shippingData={shippingData} projectId={projectId} pricingConsensus={pricingConsensus} v8CalcData={v8CalcData ?? null} listBotResult={listBotResult} buyerBotResult={buyerBotResult} />
       </div>
 
       {/* ── ACTIVE OFFERS (below Sale Assignment) ── */}
