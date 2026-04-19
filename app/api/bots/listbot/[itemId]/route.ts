@@ -309,6 +309,9 @@ INSTRUCTION: Use these buyer profiles to tailor your listing language.
           undefined, // phase1Only
           undefined, // isMegaBot
           "listbot", // CMD-SCRAPER-WIRING-C2
+          undefined, // attribution
+          ((item as any).saleMethod as "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH" | undefined) ?? "BOTH", // CMD-SALE-METHOD-FOUNDATION
+          (item as any).saleRadiusMi ?? 25,
         ), // likely cached from PriceBot
       ];
       // Etsy is Apify-powered — only in normal/full mode

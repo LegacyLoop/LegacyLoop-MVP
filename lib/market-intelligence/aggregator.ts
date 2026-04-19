@@ -174,6 +174,12 @@ export async function getMarketIntelligence(
   // the way to logScraperUsage + persistEnrichmentComps. Optional
   // with default {} so existing callers compile unchanged.
   attribution?: { itemId?: string | null; userId?: string | null },
+  // CMD-SALE-METHOD-FOUNDATION: sale-method context. Threaded into
+  // ScraperDispatchContext so local-classifieds adapters can geo-
+  // filter by radius when seller opted LOCAL_PICKUP. Optional;
+  // existing callers omitting these get the legacy path unchanged.
+  saleMethod?: "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH",
+  saleRadiusMi?: number,
 ): Promise<MarketIntelligence> {
   const cacheKey = `${category.toLowerCase()}:${itemName.toLowerCase().slice(0, 80)}:${sellerZip || ""}`;
   const cached = resultCache.get(cacheKey);
@@ -354,7 +360,7 @@ export async function getMarketIntelligence(
 
     const warnedMissing = new Set<string>();
     const botAdapters: Array<() => Promise<ScraperResult>> = [];
-    const ctx: ScraperDispatchContext = { itemName, category, sellerZip };
+    const ctx: ScraperDispatchContext = { itemName, category, sellerZip, saleMethod, saleRadiusMi };
 
     for (const entry of effectiveEntries) {
       if (entry.slug === "builtin/ebay-browse-api") {

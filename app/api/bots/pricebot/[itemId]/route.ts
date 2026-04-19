@@ -215,6 +215,9 @@ This is a HARD RULE — do not ignore it.`;
           undefined, // phase1Only
           undefined, // isMegaBot
           "pricebot", // CMD-SCRAPER-WIRING-C2
+          undefined, // attribution
+          ((item as any).saleMethod as "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH" | undefined) ?? "BOTH", // CMD-SALE-METHOD-FOUNDATION
+          (item as any).saleRadiusMi ?? 25,
         );
         console.log(`[PriceBot] Fresh market intelligence: ${marketIntel?.comps?.length ?? 0} real comps from ${marketIntel?.sources?.join(", ") || "none"}`);
       } catch (miErr: any) {

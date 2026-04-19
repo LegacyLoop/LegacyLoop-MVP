@@ -233,6 +233,9 @@ When specialty bot findings conflict with raw market data:
         undefined, // phase1Only
         undefined, // isMegaBot
         "reconbot", // CMD-SCRAPER-WIRING-C2
+        undefined, // attribution
+        ((item as any).saleMethod as "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH" | undefined) ?? "BOTH", // CMD-SALE-METHOD-FOUNDATION
+        (item as any).saleRadiusMi ?? 25,
       );
       marketIntelMedian = marketIntel?.median ?? null;
       if (marketIntel?.comps?.length > 0) {

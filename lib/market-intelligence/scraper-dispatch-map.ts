@@ -107,6 +107,12 @@ export interface ScraperDispatchContext {
   itemName: string;
   category: string;
   sellerZip?: string;
+  // CMD-SALE-METHOD-FOUNDATION: sale-method context for geo-aware
+  // adapters (local-classifieds dispatch filters by radius when
+  // saleMethod === "LOCAL_PICKUP"). Optional — existing adapters
+  // ignore.
+  saleMethod?: "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH";
+  saleRadiusMi?: number;
 }
 
 /** Uniform dispatch signature. */
