@@ -446,9 +446,9 @@ export default async function ItemPage({ params }: { params: Params }) {
             )}
             {gsCalc && !gsCalc.isExempt && (pricingConsensus || (isLocalPickup && gsCalc)) && (
               <V8PillsStrip itemId={item.id} pills={[
-                { label: "List", value: isLocalPickup && gsCalc ? gsCalc.garageSalePriceHigh : (pricingConsensus?.consensusListPrice ?? 0), color: "#00bcd4", bg: "rgba(0,188,212,0.06)", border: "rgba(0,188,212,0.2)", trustRing: (pricingConsensus?.consensusConfidence ?? 0) >= 90 },
-                { label: "Accept", value: isLocalPickup && gsCalc ? gsCalc.garageSalePrice : (pricingConsensus?.consensusAcceptPrice ?? 0), color: "#22c55e", bg: "rgba(34,197,94,0.06)", border: "rgba(34,197,94,0.2)" },
-                { label: "Floor", value: isLocalPickup && gsCalc ? gsCalc.quickSalePrice : (pricingConsensus?.consensusFloorPrice ?? 0), color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
+                { label: "List", value: pricingConsensus?.consensusListPrice ?? 0, color: "#00bcd4", bg: "rgba(0,188,212,0.06)", border: "rgba(0,188,212,0.2)", trustRing: (pricingConsensus?.consensusConfidence ?? 0) >= 90 },
+                { label: "Accept", value: pricingConsensus?.consensusAcceptPrice ?? 0, color: "#22c55e", bg: "rgba(34,197,94,0.06)", border: "rgba(34,197,94,0.2)" },
+                { label: "Floor", value: pricingConsensus?.consensusFloorPrice ?? 0, color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
               ]} />
             )}
             {gsCalc && !gsCalc.isExempt && !pricingConsensus && (<>
@@ -463,9 +463,9 @@ export default async function ItemPage({ params }: { params: Params }) {
             </>)}
             {gsCalc?.isExempt && (pricingConsensus || (isLocalPickup && gsCalc)) && (
               <V8PillsStrip itemId={item.id} pills={[
-                { label: "Hold", value: isLocalPickup && gsCalc ? gsCalc.garageSalePriceHigh : (pricingConsensus?.consensusListPrice ?? 0), color: "#D4AF37", bg: "rgba(212,175,55,0.08)", border: "rgba(212,175,55,0.25)" },
-                { label: "Negotiate", value: isLocalPickup && gsCalc ? gsCalc.garageSalePrice : (pricingConsensus?.consensusAcceptPrice ?? 0), color: "#D4AF37", bg: "rgba(212,175,55,0.06)", border: "rgba(212,175,55,0.20)" },
-                { label: "Minimum", value: isLocalPickup && gsCalc ? gsCalc.quickSalePrice : (pricingConsensus?.consensusFloorPrice ?? 0), color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
+                { label: "Hold", value: pricingConsensus?.consensusListPrice ?? 0, color: "#D4AF37", bg: "rgba(212,175,55,0.08)", border: "rgba(212,175,55,0.25)" },
+                { label: "Negotiate", value: pricingConsensus?.consensusAcceptPrice ?? 0, color: "#D4AF37", bg: "rgba(212,175,55,0.06)", border: "rgba(212,175,55,0.20)" },
+                { label: "Minimum", value: pricingConsensus?.consensusFloorPrice ?? 0, color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
               ]} />
             )}
             {gsCalc?.isExempt && !pricingConsensus && (
