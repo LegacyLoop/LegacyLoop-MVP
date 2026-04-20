@@ -8972,9 +8972,10 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   const sellerFeeEst = Math.round(listPriceNum * 0.0175 * 100) / 100;
   const netEst = Math.round((listPriceNum - commissionEst - sellerFeeEst) * 100) / 100;
 
-  // Confidence value — prefer V3 trustScore (SSOT) when available
-  const rawConf = pricingConsensus?.trustScore != null
-    ? pricingConsensus.trustScore / 100
+  // CMD-ICC-CONFIDENCE-PILL-RELABEL: consensusConfidence is the canonical
+  // item-level confidence scalar (0-100 int). Matches Top Card + Intel Panel.
+  const rawConf = pricingConsensus?.consensusConfidence != null
+    ? pricingConsensus.consensusConfidence
     : valuation?.confidence ?? aiData?.confidence ?? 0;
   const confPct = Math.round(rawConf > 1 ? rawConf : rawConf * 100);
 
@@ -9042,8 +9043,8 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           ? "reconciled"
           : valuation ? "AI range" : "Set a price";
         const views = extra?.totalViews ?? 0;
-        const confColor = confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#f59e0b" : confPct > 0 ? "#ef4444" : "var(--text-muted)";
-        const confSub = confPct >= 80 ? "High" : confPct >= 60 ? "Medium" : confPct > 0 ? "Low" : "";
+        const confColor = confPct >= 80 ? "#22c55e" : confPct >= 50 ? "#f59e0b" : confPct > 0 ? "#ef4444" : "var(--text-muted)";
+        const confSub = confPct >= 80 ? "High" : confPct >= 50 ? "Medium" : confPct > 0 ? "Low" : "";
         return (
           <div style={{ padding: "8px 12px 10px", display: "flex", flexDirection: "column", gap: "6px", width: "100%", maxWidth: "100%", overflow: "hidden", boxSizing: "border-box" }}>
             {/* Row 1 — Pipeline Bar with Labels */}
@@ -9072,7 +9073,7 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
             <div className="hud-metric-grid" style={{ background: "var(--ghost-bg)", borderRadius: 8, border: "1px solid var(--border-default)", overflow: "hidden" }}>
               {[
                 { lbl: "ASKING", val: priceStr, color: "var(--accent, #00bcd4)", sub: priceSub },
-                { lbl: "AI CONF", val: confPct > 0 ? `${confPct}%` : "\u2014", color: confColor, sub: confSub },
+                { lbl: "Confidence", val: confPct > 0 ? `${confPct}%` : "\u2014", color: confColor, sub: confSub },
                 { lbl: "ACTIVITY", val: String(views), color: views > 0 ? "var(--accent, #00bcd4)" : "var(--text-muted)", sub: views > 0 ? `${views} views` : "No activity" },
                 { lbl: "READY", val: `${readyScore}/5`, color: readyColor, sub: readySub },
               ].map((m, i) => (
@@ -9285,9 +9286,9 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
           {confPct > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
               <div style={{ width: "28px", height: "4px", borderRadius: "2px", background: "var(--ghost-bg)", overflow: "hidden" }}>
-                <div style={{ width: `${confPct}%`, height: "100%", borderRadius: "2px", background: confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#eab308" : "#ef4444", transition: "width 0.5s ease" }} />
+                <div style={{ width: `${confPct}%`, height: "100%", borderRadius: "2px", background: confPct >= 80 ? "#22c55e" : confPct >= 50 ? "#eab308" : "#ef4444", transition: "width 0.5s ease" }} />
               </div>
-              <span style={{ fontSize: "0.6rem", fontWeight: 700, color: confPct >= 80 ? "#22c55e" : confPct >= 60 ? "#eab308" : "#ef4444" }}>{confPct}%</span>
+              <span style={{ fontSize: "0.6rem", fontWeight: 700, color: confPct >= 80 ? "#22c55e" : confPct >= 50 ? "#eab308" : "#ef4444" }}>{confPct}%</span>
             </div>
           )}
           {(category || aiData?.category) && <span style={{ fontSize: "0.6rem", fontWeight: 600, color: "var(--text-secondary)" }}>{category || aiData.category}</span>}
