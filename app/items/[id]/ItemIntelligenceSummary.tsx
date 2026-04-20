@@ -475,7 +475,14 @@ export default function ItemIntelligenceSummary(props: Props) {
   ];
 
   // ── Derived values ──
-  const aiConf = enriched?.aiConfidence != null ? (enriched.aiConfidence > 1 ? Math.round(enriched.aiConfidence) : Math.round(enriched.aiConfidence * 100)) : null;
+  // CMD-AGREEMENT-SCORE-CANONICAL: pricingConsensus.consensusConfidence is the
+  // canonical overall-confidence scalar (matches Top Card pill). enriched.aiConfidence
+  // is a legacy fallback for items without a consensus record.
+  const aiConf = pricingConsensus?.consensusConfidence != null
+    ? Math.round(pricingConsensus.consensusConfidence)
+    : enriched?.aiConfidence != null
+    ? (enriched.aiConfidence > 1 ? Math.round(enriched.aiConfidence) : Math.round(enriched.aiConfidence * 100))
+    : null;
   const pricingConfColor = aiIntel?.pricingIntel?.confidence === "high" ? "#22c55e" : aiIntel?.pricingIntel?.confidence === "medium" ? "#f59e0b" : "#ef4444";
 
   return (
@@ -1275,7 +1282,7 @@ export default function ItemIntelligenceSummary(props: Props) {
                 )}
                 {aiConf != null && (
                   <span className="intel-chip" style={{ borderColor: "rgba(0,188,212,0.2)", color: "var(--accent)", background: "rgba(0,188,212,0.06)" }}>
-                    🎯 AI: {aiConf}%
+                    🎯 Confidence: {aiConf}%
                   </span>
                 )}
               </div>
