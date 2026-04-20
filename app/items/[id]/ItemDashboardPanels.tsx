@@ -4227,6 +4227,8 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
           // Priority: 1) Seller's listing price if set, 2) AI valuation mid
           // Shipping: respect shippingPreference — LOCAL_ONLY/customer pickup = $0
           const isLocalOnly = shippingPreference === "LOCAL_ONLY" || shippingPreference === "local_only" || saleMethod === "LOCAL_PICKUP";
+          // CMD-AI-TIP-CONSENSUS-ALIGN: salePrice reads pricingConsensus.consensusAcceptPrice canonical.
+          // All 4 branches prefix-guard consensus before existing cascade; pr/v fallbacks stay as safety nets.
           let salePrice = 0, shipCost = 0, isLocal = false, scenario = "";
           const realQuotedRate = quotedShippingRate ?? null;
 
@@ -4249,7 +4251,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
 
           if (_shipMode === "local") {
             // Seller chose local pickup OR item too heavy for cost-effective shipping
-            salePrice = useListingPrice ? listPrice : (pr ? (pr.localPrice?.mid ?? 0) : (v?.mid ?? Math.round((v?.low + v?.high) / 2)));
+            salePrice = useListingPrice ? listPrice : (pricingConsensus?.consensusAcceptPrice ?? (pr ? (pr.localPrice?.mid ?? 0) : (v?.mid ?? Math.round((v?.low + v?.high) / 2))));
             isLocal = true;
             scenario = _forceLocalForFreight ? "Local pickup (freight item)" : "Local pickup";
           } else if (pr) {
@@ -4261,7 +4263,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               : (realQuotedRate ?? pr.bestMarket?.shippingCost ?? pr.shippingEstimate ?? 25);
             const ln = lm - lm * cRate, sn = bm - bm * cRate - sc;
             if (sn > ln && bm > 0) {
-              salePrice = useListingPrice ? listPrice : bm;
+              salePrice = useListingPrice ? listPrice : (pricingConsensus?.consensusAcceptPrice ?? bm);
               shipCost = sc;
               const _modeLabel = _shipMode === "freight" ? "Freight to" : "Parcel to";
               const _rawLabel = pr.bestMarket?.label ?? "best market";
@@ -4269,13 +4271,13 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               scenario = `${_modeLabel} ${_cleanLabel}`;
             } else {
               // Best market doesn't beat local after real shipping cost — go local
-              salePrice = useListingPrice ? listPrice : lm;
+              salePrice = useListingPrice ? listPrice : (pricingConsensus?.consensusAcceptPrice ?? lm);
               isLocal = true;
               _shipMode = "local";
               scenario = _isFreightItem ? "Local pickup (freight too costly)" : "Local pickup";
             }
           } else if (v) {
-            salePrice = useListingPrice ? listPrice : (v.mid ?? Math.round((v.low + v.high) / 2));
+            salePrice = useListingPrice ? listPrice : (pricingConsensus?.consensusAcceptPrice ?? (v.mid ?? Math.round((v.low + v.high) / 2)));
             isLocal = true; scenario = "Local sale";
           }
 
