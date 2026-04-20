@@ -6,7 +6,11 @@ import { prisma } from "@/lib/db";
    ═══════════════════════════════════════════════════════════════════════ */
 
 export interface IntelligenceResult {
-  summary: string;
+  // CMD-AI-INTEL-SUMMARY-STRUCTURED-PHRASING: `summary` field removed.
+  // The IntelSummary UI now renders structured phrasing from
+  // pricingConsensus (canonical SSOT) instead of a cached LLM narrative
+  // that drifted on re-analysis. Legacy cached payloads may still
+  // contain a `summary` string — readers ignore it.
   pricingIntel: {
     recommendedLow: number;
     recommendedHigh: number;
@@ -151,7 +155,6 @@ PRICING RULES — CRITICAL:
 
 Return ONLY valid JSON (no markdown fences, no text outside the JSON):
 {
-  "summary": "1-2 sentence plain-English assessment — what is this item and how is it positioned in the market right now",
   "pricingIntel": {
     "recommendedLow": 0,
     "recommendedHigh": 0,

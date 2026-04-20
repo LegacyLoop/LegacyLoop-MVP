@@ -1084,8 +1084,26 @@ export default function ItemIntelligenceSummary(props: Props) {
           {/* ── MARKET TAB ── */}
           {activeTab === "market" && canAccessIntelTab(userTier, "market") && (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", minWidth: 0 }}>
-              {/* AI summary */}
-              {aiIntel?.summary && <div className="intel-summary">{aiIntel.summary}</div>}
+              {/* CMD-AI-INTEL-SUMMARY-STRUCTURED-PHRASING: structured template
+                  reads pricingConsensus directly. Cannot go stale by construction.
+                  Replaces the LLM-narrative prose that drifted from current pricing
+                  on re-analysis (the "$149–$700" staleness Sylvia caught Apr 20). */}
+              {pricingConsensus != null && pricingConsensus.consensusValueLow != null && pricingConsensus.consensusValueHigh != null ? (
+                <div className="intel-summary">
+                  <strong>Estimated value: ${pricingConsensus.consensusValueLow}–${pricingConsensus.consensusValueHigh}</strong>
+                  {" · Confidence "}{pricingConsensus.consensusConfidence}%
+                  {pricingConsensus.consensusAcceptPrice ? ` · Best offer: $${pricingConsensus.consensusAcceptPrice}` : ""}
+                  {pricingConsensus.sourceCount ? (
+                    <div style={{ opacity: 0.7, fontSize: "0.9em", marginTop: "0.25rem" }}>
+                      Based on consensus across {pricingConsensus.sourceCount} data source{pricingConsensus.sourceCount === 1 ? "" : "s"}.
+                    </div>
+                  ) : null}
+                </div>
+              ) : aiIntel ? (
+                <div className="intel-summary" style={{ opacity: 0.7 }}>
+                  Pricing in progress — run AnalyzeBot and PriceBot for the full estimate.
+                </div>
+              ) : null}
 
               {/* AI-powered pricing (3 cards) */}
               {aiIntel?.pricingIntel ? (
