@@ -187,6 +187,11 @@ export default async function ItemPage({ params }: { params: Params }) {
     brand: aiObj?.brand,
     isAntique: showAntiqueUI,
     isCollectible: isCollectibleFromAI,
+    // CMD-RECONCILE-SALE-METHOD-AWARE: SSR path threads saleMethod +
+    // saleRadiusMi so LOCAL_PICKUP items get v8_engine pass-through
+    // for list/accept/floor and local-tier Valuation range.
+    saleMethod: (item as any).saleMethod ?? undefined,
+    saleRadiusMi: (item as any).saleRadiusMi ?? undefined,
   }).catch(() => null);
 
   const v = item.valuation as any;

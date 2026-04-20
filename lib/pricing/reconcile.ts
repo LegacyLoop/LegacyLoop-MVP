@@ -132,6 +132,14 @@ export interface ComputePricingConsensusOptions {
   brand?: string | null;
   isAntique?: boolean;
   isCollectible?: boolean;
+  // CMD-RECONCILE-SALE-METHOD-AWARE: producer gains saleMethod awareness.
+  // When saleMethod === "LOCAL_PICKUP", the v8_engine snapshot (fed by
+  // GARAGE_SALE_V9_CALC EventLog from PriceBot) passes through as the
+  // canonical list/accept/floor, and Valuation snapshot consumes the
+  // local tier (localLow/localHigh) rather than the national tier. All
+  // existing callers that omit saleMethod see zero behavior change.
+  saleMethod?: "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH" | null;
+  saleRadiusMi?: number | null;
 }
 
 export async function computePricingConsensus(
@@ -148,13 +156,22 @@ export async function computePricingConsensus(
 
   // 1a. V2 Valuation
   const val = await prisma.valuation.findUnique({ where: { itemId } }).catch(() => null);
-  if (val && val.low != null && val.high != null) {
+  // CMD-RECONCILE-SALE-METHOD-AWARE: on LOCAL_PICKUP, prefer the local
+  // tier (within saleRadiusMi) over the national low/high. Falls back
+  // to low/high when localLow/localHigh are null on this Valuation row.
+  const useLocalTier = opts?.saleMethod === "LOCAL_PICKUP"
+    && val != null
+    && typeof (val as any).localLow === "number"
+    && typeof (val as any).localHigh === "number";
+  const vLo = useLocalTier ? Number((val as any).localLow) : (val?.low != null ? Number(val.low) : null);
+  const vHi = useLocalTier ? Number((val as any).localHigh) : (val?.high != null ? Number(val.high) : null);
+  if (val && vLo != null && vHi != null) {
     const ts = ((val as any).updatedAt ?? (val as any).createdAt ?? new Date()).toISOString();
     const fresh = freshnessDecay(now - new Date(ts).getTime());
     snapshots.push({
       name: "v2_valuation", weight: weights.v2_valuation,
       freshness: fresh, effectiveWeight: weights.v2_valuation * fresh,
-      timestamp: ts, valueLow: Number(val.low), valueHigh: Number(val.high),
+      timestamp: ts, valueLow: vLo, valueHigh: vHi,
       confidence: val.confidence ? Math.round(val.confidence > 1 ? val.confidence : val.confidence * 100) : undefined,
     });
   }
@@ -447,6 +464,29 @@ export async function computePricingConsensus(
     } catch (err) {
       console.error("[reconcile] jury integration error", err);
       // Fall through — don't crash consensus compute
+    }
+  }
+
+  // 5c. CMD-RECONCILE-SALE-METHOD-AWARE: LOCAL_PICKUP pass-through.
+  // The v8_engine snapshot carries gsCalc's listPrice/acceptPrice/
+  // floorPrice verbatim (PriceBot writes GARAGE_SALE_V9_CALC with
+  // the canonical calculateGarageSalePrices output). On LOCAL_PICKUP
+  // items, consensus for these three fields MUST equal the snapshot
+  // byte-for-byte — no weighted blend, no jury override — so the
+  // SSOT contract holds: Top Card (gsCalc render) and consensus
+  // output produce identical LIST/ACCEPT/FLOOR. Overrides run after
+  // the weighted-median, invariant, dissent detection, and jury so
+  // any of those remain observational (telemetry intact) while the
+  // published consensus numbers stay canonical.
+  if (opts?.saleMethod === "LOCAL_PICKUP") {
+    const v8 = snapshots.find(s => s.name === "v8_engine");
+    if (v8
+      && typeof v8.listPrice === "number"
+      && typeof v8.acceptPrice === "number"
+      && typeof v8.floorPrice === "number") {
+      cList = v8.listPrice;
+      cAccept = v8.acceptPrice;
+      cFloor = v8.floorPrice;
     }
   }
 
