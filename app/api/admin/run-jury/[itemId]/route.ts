@@ -47,6 +47,11 @@ export async function POST(
         brand: true,
         condition: true,
         saleZip: true,
+        // CMD-RECONCILE-SALE-METHOD-CALLSITES: thread saleMethod +
+        // saleRadiusMi into consensus so LOCAL_PICKUP items get
+        // v8_engine pass-through at jury-time (SSOT with page.tsx SSR).
+        saleMethod: true,
+        saleRadiusMi: true,
       },
     });
     if (!item) {
@@ -56,6 +61,8 @@ export async function POST(
     const consensus = await computePricingConsensus(itemId, {
       category: item.category,
       brand: item.brand,
+      saleMethod: item.saleMethod,
+      saleRadiusMi: item.saleRadiusMi,
     });
     if (!consensus || consensus.sources.length === 0) {
       return NextResponse.json({

@@ -50,6 +50,12 @@ export async function POST(
       id: true,
       status: true,
       saleZip: true,
+      // CMD-RECONCILE-SALE-METHOD-CALLSITES: thread saleMethod +
+      // saleRadiusMi into consensus (SSOT with page.tsx SSR + admin/
+      // run-jury). Item is the canonical source — body.saleMethod may
+      // be absent and should not be relied on here.
+      saleMethod: true,
+      saleRadiusMi: true,
       photos: { select: { id: true } },
       aiResult: { select: { id: true } },
     },
@@ -106,7 +112,12 @@ export async function POST(
     });
 
     // CMD-PRICING-CONSENSUS-V1: enforce consensus values on pricingIntel
-    const consensus = await computePricingConsensus(itemId).catch(() => null);
+    // CMD-RECONCILE-SALE-METHOD-CALLSITES: pass saleMethod + saleRadiusMi
+    // so LOCAL_PICKUP items receive v8_engine pass-through (SSOT).
+    const consensus = await computePricingConsensus(itemId, {
+      saleMethod: item.saleMethod,
+      saleRadiusMi: item.saleRadiusMi,
+    }).catch(() => null);
     if (consensus && result.pricingIntel) {
       result.pricingIntel.sweetSpot = consensus.consensusAcceptPrice;
       result.pricingIntel.premiumPrice = consensus.consensusListPrice;

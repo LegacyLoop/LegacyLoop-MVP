@@ -72,7 +72,11 @@ export async function POST(
 
   const item = await prisma.item.findFirst({
     where: { id: itemId, userId: user.id },
-    select: { id: true },
+    // CMD-RECONCILE-SALE-METHOD-CALLSITES: select saleMethod + saleRadiusMi
+    // so the chat's consensus injection is LOCAL_PICKUP-aware (SSOT with
+    // page.tsx SSR + intelligence POST + admin run-jury). Chat body carries
+    // only { question } — Item is the canonical source for saleMethod.
+    select: { id: true, saleMethod: true, saleRadiusMi: true },
   });
   if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
 
@@ -134,7 +138,12 @@ export async function POST(
   } catch { /* skill pack is optional */ }
 
   // CMD-PRICING-CONSENSUS-V1: inject consensus into chat prompt
-  const consensus = await computePricingConsensus(itemId).catch(() => null);
+  // CMD-RECONCILE-SALE-METHOD-CALLSITES: pass saleMethod + saleRadiusMi
+  // so LOCAL_PICKUP items receive v8_engine pass-through (SSOT).
+  const consensus = await computePricingConsensus(itemId, {
+    saleMethod: item.saleMethod,
+    saleRadiusMi: item.saleRadiusMi,
+  }).catch(() => null);
   const consensusBlock = consensus
     ? `\n\nPRICING TRUTH (USE THESE NUMBERS — DO NOT INVENT NEW RANGES):\n- List Price: $${consensus.consensusListPrice}\n- Sweet Spot / Accept Price: $${consensus.consensusAcceptPrice}\n- Floor / Quick Sale Price: $${consensus.consensusFloorPrice}\n- Value Range: $${consensus.consensusValueLow}–$${consensus.consensusValueHigh}\n- Confidence: ${consensus.consensusConfidence}% (${consensus.confidenceTier}, from ${consensus.sourceCount} sources)\nThese are the reconciled SOURCE OF TRUTH. For any pricing question, reference these exact numbers.\n`
     : "";
