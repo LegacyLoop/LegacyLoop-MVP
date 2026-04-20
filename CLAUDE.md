@@ -209,6 +209,16 @@ CSS Variables:
 - GRID RULE (enforced): ALL gridTemplateColumns must use minmax(0,1fr) — NOT plain 1fr.
   Plain 1fr = minmax(auto,1fr) = cells cannot shrink on mobile = right-side clipping.
   This caused 7 failed fix attempts. Never use plain 1fr again.
+- FLEX-SHRINK RULE (enforced — added Apr 18 after V8 pills 8th attempt, 9fd024c):
+  Flex parents of overflow-scrolling children MUST have minWidth: 0. Default
+  min-width:auto on flex items blocks the shrink contract on iOS/Safari and
+  prevents overflow-x:auto from engaging. Applies to BOTH: (a) the scroll
+  container itself (element with overflow-x:auto), AND (b) every flex
+  ancestor up to the nearest non-flex parent. Symptoms without this rule:
+  right-side clipping on mobile, scroll container never engages because its
+  width exceeds viewport. Pair rule: prefer max-width:100% over 100vw in
+  mobile media queries — 100vw includes scrollbar width on some Android
+  browsers.
 - CollectiblesBot = gold standard for bot panel design. PriceBot is NOT the standard.
 - Light AND dark mode supported via CSS variables.
 - 7 breakpoints defined: xxl, xl, large, main, medium, small, tiny.
@@ -395,6 +405,17 @@ Credits            = universal key (soft gates, never hard blocks)
 - New skills: create new .md file in the appropriate bot directory.
 - Skill loader: `lib/bots/skill-loader.ts` — reads .md files dynamically.
 - Vercel config ensures skills bundled: `outputFileTracingIncludes: lib/bots/skills/**`
+
+### 🏁 F1 ENGINE DOCTRINE (enforced — added Apr 18 2026 after saleMethod inline-text violation)
+**Bot capability upgrades are additive skill packs, NEVER inline prompt text in route files.**
+
+- **Static policy → skill pack.** Any rule, discipline, instruction, or capability description that tells the LLM HOW to behave must live in `lib/bots/skills/[bot]/NN-name.md`. Never hardcoded into bot route files.
+- **Dynamic context → route.** Per-item interpolation (item fields, user context) belongs in the sellerContext string at the route level — that's by design.
+- **Version tags in command names.** When a bot gains new capability, the CMD name carries the engine version: `CMD-PRICEBOT-V11-SALE-METHOD`, `CMD-LISTBOT-V10-*`. Cross-cutting capability names (e.g., `CMD-SALE-METHOD-FOUNDATION`) hide version bumps and leave the scoreboard stale — AVOID for bot engine work.
+- **Scoreboard update mandatory.** Every version bump requires updating the engine scoreboard in `memory/project_bot_v12_roadmap.md` + `memory/MEMORY.md`. Silent capability additions = F1 audit failure.
+- **One cylinder at a time.** Per canonical V17.1 §7 — engine tunes ship per-bot. Cross-cutting commands touching 5+ bot routes in one commit violate the "tactically" F1 rule.
+
+Why this rule exists: on Apr 18 2026, CMD-SALE-METHOD-SYSTEMIC-RESPECT added inline LOCAL_PICKUP prompt discipline directly to PriceBot/ListBot/AnalyzeBot routes AND extracted none of it to skill packs. Three bots silently got capability upgrades that weren't versioned, weren't in skill packs, weren't on the scoreboard. CMD-BOT-ENGINE-CANONIZE-SALE-METHOD restored the doctrine by extracting the inline text to skill packs 18/NN/21 and bumping versions to V11/V10/V9b. This rule now prevents the violation class permanently.
 
 ---
 
