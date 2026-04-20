@@ -3522,7 +3522,7 @@ function _removedGarageSaleStrip({ itemId, marketPrice, category, condition }: {
    PANEL 2: Pricing (FREE — auto-populates)
    ═══════════════════════════════════════════ */
 
-function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, boostError, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt, shippingPreference, sellerListingPrice, saleZip, saleMethod, saleRadiusMi, v8CalcData }: {
+function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuperBoost, onPriceBotRun, boosting, boosted, boostResult, boostError, priceBotResult, priceBotLoading, collapsed, onToggle, quotedShippingRate, quotedShippingAt, shippingPreference, sellerListingPrice, saleZip, saleMethod, saleRadiusMi, v8CalcData, pricingConsensus }: {
   valuation: any;
   antique: any;
   aiData: any;
@@ -3546,6 +3546,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   saleMethod?: string | null;
   saleRadiusMi?: number | null;
   v8CalcData?: { listPrice: number; acceptPrice: number; floorPrice: number; channelRecommendation: string; channelReason: string; locationNote: string; saleTypeUsed: string } | null;
+  pricingConsensus?: import("@/lib/pricing/reconcile").PricingConsensus | null;
 }) {
   const [showCalc, setShowCalc] = useState(false);
   const [priceOpenSections, setPriceOpenSections] = useState<Set<string>>(
@@ -3584,15 +3585,34 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
     }).catch(() => {});
   }, [v, aiData, antique]);
 
-  // V8 3-number pricing (primary: EventLog, fallback: client-side calc)
+  // 3-number pricing trio (LIST/ACCEPT/FLOOR).
+  // CMD-PRICING-CONSENSUS-PRECEDENCE-CONTRACT: pricingConsensus is SSOT.
+  // Precedence: pricingConsensus → runtime V9 calc fallback. v8CalcData
+  // (EventLog read) is NO LONGER consulted here — the SSOT contract
+  // routes all non-LOCAL_PICKUP UI pricing reads through pricingConsensus.
+  const consensusTrio = pricingConsensus
+    && pricingConsensus.consensusListPrice != null
+    && pricingConsensus.consensusAcceptPrice != null
+    && pricingConsensus.consensusFloorPrice != null
+    ? {
+        listPrice: pricingConsensus.consensusListPrice,
+        acceptPrice: pricingConsensus.consensusAcceptPrice,
+        floorPrice: pricingConsensus.consensusFloorPrice,
+        channelRecommendation: "",
+        channelReason: "",
+        locationNote: "",
+        saleTypeUsed: "CONSENSUS",
+      }
+    : null;
+
   const [v8Prices, setV8Prices] = useState<{
     listPrice: number; acceptPrice: number; floorPrice: number;
     channelRecommendation: string; channelReason: string;
     locationNote: string; saleTypeUsed: string;
-  } | null>(v8CalcData ?? null);
+  } | null>(consensusTrio);
 
   useEffect(() => {
-    if (v8CalcData) { setV8Prices(v8CalcData); return; }
+    if (consensusTrio) { setV8Prices(consensusTrio); return; }
     if (!v || !gsPrices) return;
     const mid = v.mid ?? Math.round((v.low + v.high) / 2);
     if (mid <= 0) return;
@@ -3616,7 +3636,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
         locationNote: result.locationNote, saleTypeUsed: result.saleTypeUsed,
       });
     }).catch(() => {});
-  }, [v8CalcData, v, gsPrices, aiData, antique, saleZip]);
+  }, [consensusTrio, v, gsPrices, aiData, antique, saleZip]);
 
   // Parse extended pricing from onlineRationale
   let pr: any = null;
@@ -10497,6 +10517,7 @@ export default function ItemDashboardPanels({
           saleMethod={itemSaleMethod ?? null}
           saleRadiusMi={(valuation as any)?.saleRadiusMi ?? null}
           v8CalcData={v8CalcData ?? null}
+          pricingConsensus={pricingConsensus ?? null}
         />
 
 

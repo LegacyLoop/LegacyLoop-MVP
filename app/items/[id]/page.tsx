@@ -439,14 +439,14 @@ export default async function ItemPage({ params }: { params: Params }) {
                 itemId={item.id}
               />
             )}
-            {gsCalc && !gsCalc.isExempt && (pricingConsensus || v8CalcData || (isLocalPickup && gsCalc)) && (
+            {gsCalc && !gsCalc.isExempt && (pricingConsensus || (isLocalPickup && gsCalc)) && (
               <V8PillsStrip itemId={item.id} pills={[
-                { label: "List", value: isLocalPickup && gsCalc ? gsCalc.garageSalePriceHigh : (pricingConsensus?.consensusListPrice ?? v8CalcData!.listPrice), color: "#00bcd4", bg: "rgba(0,188,212,0.06)", border: "rgba(0,188,212,0.2)", trustRing: (pricingConsensus?.consensusConfidence ?? 0) >= 90 },
-                { label: "Accept", value: isLocalPickup && gsCalc ? gsCalc.garageSalePrice : (pricingConsensus?.consensusAcceptPrice ?? v8CalcData!.acceptPrice), color: "#22c55e", bg: "rgba(34,197,94,0.06)", border: "rgba(34,197,94,0.2)" },
-                { label: "Floor", value: isLocalPickup && gsCalc ? gsCalc.quickSalePrice : (pricingConsensus?.consensusFloorPrice ?? v8CalcData!.floorPrice), color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
+                { label: "List", value: isLocalPickup && gsCalc ? gsCalc.garageSalePriceHigh : (pricingConsensus?.consensusListPrice ?? 0), color: "#00bcd4", bg: "rgba(0,188,212,0.06)", border: "rgba(0,188,212,0.2)", trustRing: (pricingConsensus?.consensusConfidence ?? 0) >= 90 },
+                { label: "Accept", value: isLocalPickup && gsCalc ? gsCalc.garageSalePrice : (pricingConsensus?.consensusAcceptPrice ?? 0), color: "#22c55e", bg: "rgba(34,197,94,0.06)", border: "rgba(34,197,94,0.2)" },
+                { label: "Floor", value: isLocalPickup && gsCalc ? gsCalc.quickSalePrice : (pricingConsensus?.consensusFloorPrice ?? 0), color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
               ]} />
             )}
-            {gsCalc && !gsCalc.isExempt && !v8CalcData && !pricingConsensus && (<>
+            {gsCalc && !gsCalc.isExempt && !pricingConsensus && (<>
               <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(0,188,212,0.06)", border: "1px solid rgba(0,188,212,0.2)", minWidth: "55px", flexShrink: 0 }}>
                 <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#00bcd4", fontWeight: 700 }}>Garage Sale</div>
                 <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#00bcd4", letterSpacing: "-0.01em" }}>{`$${gsCalc.garageSalePrice}–${gsCalc.garageSalePriceHigh}`}</div>
@@ -456,14 +456,14 @@ export default async function ItemPage({ params }: { params: Params }) {
                 <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#1D9E75", letterSpacing: "-0.01em" }}>{`$${gsCalc.quickSalePrice}–${gsCalc.quickSalePriceHigh}`}</div>
               </div>
             </>)}
-            {gsCalc?.isExempt && (pricingConsensus || v8CalcData || (isLocalPickup && gsCalc)) && (
+            {gsCalc?.isExempt && (pricingConsensus || (isLocalPickup && gsCalc)) && (
               <V8PillsStrip itemId={item.id} pills={[
-                { label: "Hold", value: isLocalPickup && gsCalc ? gsCalc.garageSalePriceHigh : (pricingConsensus?.consensusListPrice ?? v8CalcData!.listPrice), color: "#D4AF37", bg: "rgba(212,175,55,0.08)", border: "rgba(212,175,55,0.25)" },
-                { label: "Negotiate", value: isLocalPickup && gsCalc ? gsCalc.garageSalePrice : (pricingConsensus?.consensusAcceptPrice ?? v8CalcData!.acceptPrice), color: "#D4AF37", bg: "rgba(212,175,55,0.06)", border: "rgba(212,175,55,0.20)" },
-                { label: "Minimum", value: isLocalPickup && gsCalc ? gsCalc.quickSalePrice : (pricingConsensus?.consensusFloorPrice ?? v8CalcData!.floorPrice), color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
+                { label: "Hold", value: isLocalPickup && gsCalc ? gsCalc.garageSalePriceHigh : (pricingConsensus?.consensusListPrice ?? 0), color: "#D4AF37", bg: "rgba(212,175,55,0.08)", border: "rgba(212,175,55,0.25)" },
+                { label: "Negotiate", value: isLocalPickup && gsCalc ? gsCalc.garageSalePrice : (pricingConsensus?.consensusAcceptPrice ?? 0), color: "#D4AF37", bg: "rgba(212,175,55,0.06)", border: "rgba(212,175,55,0.20)" },
+                { label: "Minimum", value: isLocalPickup && gsCalc ? gsCalc.quickSalePrice : (pricingConsensus?.consensusFloorPrice ?? 0), color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.2)" },
               ]} />
             )}
-            {gsCalc?.isExempt && !v8CalcData && !pricingConsensus && (
+            {gsCalc?.isExempt && !pricingConsensus && (
               <div style={{ textAlign: "center" as const, padding: "0.35rem 0.65rem", borderRadius: "0.5rem", background: "rgba(212,175,55,0.08)", border: "1px solid rgba(212,175,55,0.2)", flexShrink: 0 }}>
                 <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "#D4AF37", fontWeight: 700 }}>Collectible</div>
                 <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "#D4AF37", letterSpacing: "-0.01em" }}>{`$${gsCalc.garageSalePrice}–${gsCalc.garageSalePriceHigh}`}</div>
