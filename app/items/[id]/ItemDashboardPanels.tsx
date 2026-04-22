@@ -3902,14 +3902,14 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                           AI returned regional_local_best_city. L/A/F sources
                           from pricingConsensus (canonical v8_engine pass-
                           through on LOCAL_PICKUP per reconcile.ts). */}
-                      <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#D4A017", marginTop: "0.3rem", lineHeight: 1.2 }}>📍 {pr.regionalIntel.localBestCity}</div>
+                      <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "#D4A017", marginTop: "0.3rem", lineHeight: 1.2 }}>📍 {pr.regionalIntel.localBestCity}</div>
                       {pricingConsensus?.consensusListPrice != null && (
-                        <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", marginTop: "0.25rem", lineHeight: 1.35, fontFamily: "var(--font-data)" }}>
+                        <div style={{ fontSize: "0.56rem", color: "var(--text-muted)", marginTop: "0.25rem", lineHeight: 1.35, fontFamily: "var(--font-data)" }}>
                           List ${Math.round(pricingConsensus.consensusListPrice)} · Accept ${Math.round(pricingConsensus.consensusAcceptPrice ?? 0)} · Floor ${Math.round(pricingConsensus.consensusFloorPrice ?? 0)}
                         </div>
                       )}
                       {pr.regionalIntel?.localDemand && (
-                        <div style={{ marginTop: "0.2rem", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontSize: "0.5rem", fontWeight: 600, display: "inline-block",
+                        <div style={{ marginTop: "0.2rem", padding: "0.14rem 0.42rem", borderRadius: "9999px", fontSize: "0.5rem", fontWeight: 600, display: "inline-block",
                           background: /strong/i.test(pr.regionalIntel.localDemand) ? "rgba(76,175,80,0.12)" : /weak/i.test(pr.regionalIntel.localDemand) ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)",
                           color: /strong/i.test(pr.regionalIntel.localDemand) ? "#4caf50" : /weak/i.test(pr.regionalIntel.localDemand) ? "#ef4444" : "#f59e0b",
                         }}>{pr.regionalIntel.localDemand} demand</div>
