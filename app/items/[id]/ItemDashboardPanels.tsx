@@ -3590,20 +3590,29 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   // Precedence: pricingConsensus → runtime V9 calc fallback. v8CalcData
   // (EventLog read) is NO LONGER consulted here — the SSOT contract
   // routes all non-LOCAL_PICKUP UI pricing reads through pricingConsensus.
-  const consensusTrio = pricingConsensus
-    && pricingConsensus.consensusListPrice != null
-    && pricingConsensus.consensusAcceptPrice != null
-    && pricingConsensus.consensusFloorPrice != null
-    ? {
-        listPrice: pricingConsensus.consensusListPrice,
-        acceptPrice: pricingConsensus.consensusAcceptPrice,
-        floorPrice: pricingConsensus.consensusFloorPrice,
-        channelRecommendation: "",
-        channelReason: "",
-        locationNote: "",
-        saleTypeUsed: "CONSENSUS",
-      }
-    : null;
+  // CMD-RENDER-STABILITY-BUG-A: memoized on 3 primitive deps so the
+  // effect below sees a stable reference when underlying prices are
+  // unchanged. Prior object-literal-in-ternary churned identity every
+  // render → dep change → setState loop → "Maximum update depth".
+  const consensusTrio = useMemo(() => {
+    if (!pricingConsensus) return null;
+    if (pricingConsensus.consensusListPrice == null) return null;
+    if (pricingConsensus.consensusAcceptPrice == null) return null;
+    if (pricingConsensus.consensusFloorPrice == null) return null;
+    return {
+      listPrice: pricingConsensus.consensusListPrice,
+      acceptPrice: pricingConsensus.consensusAcceptPrice,
+      floorPrice: pricingConsensus.consensusFloorPrice,
+      channelRecommendation: "",
+      channelReason: "",
+      locationNote: "",
+      saleTypeUsed: "CONSENSUS",
+    };
+  }, [
+    pricingConsensus?.consensusListPrice,
+    pricingConsensus?.consensusAcceptPrice,
+    pricingConsensus?.consensusFloorPrice,
+  ]);
 
   const [v8Prices, setV8Prices] = useState<{
     listPrice: number; acceptPrice: number; floorPrice: number;
