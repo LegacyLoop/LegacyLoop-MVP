@@ -473,7 +473,7 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
         const shouldRunSecondary =
           estimatedMid >= 500 || isAntique ||
           !!(ai.is_collectible) ||
-          !!(ai as any).is_vehicle;
+          !!(ai.is_vehicle);
 
         hybridRun = await routePriceBotHybrid({
           itemId: item.id,

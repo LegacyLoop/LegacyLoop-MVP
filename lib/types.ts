@@ -51,6 +51,7 @@ export interface AiAnalysis {
   appraisal_recommended?: boolean | null;
   potential_value_if_authenticated?: number | null;
   is_collectible?: boolean | null;
+  is_vehicle?: boolean | null;
 
   // Listing suggestions
   recommended_title?: string | null;
