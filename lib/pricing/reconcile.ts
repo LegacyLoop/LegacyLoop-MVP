@@ -413,7 +413,11 @@ export async function computePricingConsensus(
   // jury inside runPricingJury (best-effort; errors fall through to median).
   let juryVerdict: JuryVerdict | null = null;
   let consensusResolvedBy: "jury" | "weighted_median" = "weighted_median";
-  if (shouldFireJury({ dissents } as any)) {
+  // CMD-JURY-SKIP-LOCAL-PICKUP: skip jury execution when LOCAL_PICKUP
+  // pass-through at :481-491 will override any verdict with v8_engine
+  // byte-for-byte. Saves Claude API calls + eliminates misleading
+  // JURY_CACHE_HIT / JURY_FIRED EventLog entries on LOCAL_PICKUP items.
+  if (opts?.saleMethod !== "LOCAL_PICKUP" && shouldFireJury({ dissents } as any)) {
     try {
       const item = await prisma.item.findUnique({
         where: { id: itemId },
