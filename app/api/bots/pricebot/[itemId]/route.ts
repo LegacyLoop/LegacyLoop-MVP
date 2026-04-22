@@ -472,7 +472,7 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
         // Caller-side trigger evaluation: high_value OR specialty_item
         const shouldRunSecondary =
           estimatedMid >= 500 || isAntique ||
-          !!(ai as any).is_collectible ||
+          !!(ai.is_collectible) ||
           !!(ai as any).is_vehicle;
 
         hybridRun = await routePriceBotHybrid({
@@ -697,7 +697,7 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
           sellerZip,
           {
             isAntique,
-            brand: (ai as any)?.brand ?? undefined,
+            brand: ai?.brand ?? undefined,
             saleMethod,
             shippingDifficulty: specCtx?.shippingDifficulty ?? undefined,
             itemTitle: (item as any).title ?? undefined,
@@ -764,7 +764,7 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
     const cookieHeader = _req.headers.get("cookie") || "";
     import("@/lib/bots/sequencer").then(m => m.triggerNextBots({
       itemId, completedBot: "pricebot", category, isAntique,
-      isCollectible: !!(ai as any).is_collectible,
+      isCollectible: !!(ai.is_collectible),
       isVehicle: category.toLowerCase().includes("vehicle"),
       isHighValue: (pricebotResult?.localPrice?.mid ?? 0) >= 500,
       cookie: cookieHeader,
