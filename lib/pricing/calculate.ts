@@ -378,7 +378,7 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
     (ai.weight_estimate_lbs != null && ai.weight_estimate_lbs > 70) ||
     (ai.regional_best_city === null && ai.regional_local_demand != null)
   );
-  const hasLocalBest = !!((ai as any).regional_local_best_city);
+  const hasLocalBest = !!(ai.regional_local_best_city);
 
   let bestMarketRaw: PriceRange;
   if (isShipImpractical && hasLocalBest) {
@@ -387,7 +387,7 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
       low: Math.round(adjLow * localBestMult),
       mid: Math.round(adjMid * localBestMult),
       high: Math.round(adjHigh * localBestMult),
-      label: `${(ai as any).regional_local_best_city}`,
+      label: `${ai.regional_local_best_city}`,
     };
   } else if (hasAiRegional) {
     bestMarketRaw = {
