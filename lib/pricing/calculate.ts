@@ -80,6 +80,12 @@ export interface PricingResult {
     bestCity: string | null;
     bestState: string | null;
     bestWhy: string | null;
+    // CMD-LOCAL-BEST-MARKET-EXPOSURE: radius-aware local intelligence
+    // from ai.regional_local_best_city. When saleMethod === "LOCAL_PICKUP"
+    // or item isShipImpractical, this is the recommended town within
+    // saleRadiusMi of saleZip (e.g., "Augusta, ME" for Waterville seller).
+    localBestCity: string | null;
+    localBestWhy: string | null;
     localDemand: string | null;
     localReasoning: string | null;
     shipOrLocal: string | null;
@@ -570,6 +576,9 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
       bestCity: ai.regional_best_city ?? null,
       bestState: ai.regional_best_state ?? null,
       bestWhy: ai.regional_best_why ?? null,
+      // CMD-LOCAL-BEST-MARKET-EXPOSURE: pass through AI radius-aware fields
+      localBestCity: (ai as any).regional_local_best_city ?? null,
+      localBestWhy: (ai as any).regional_local_best_why ?? null,
       localDemand: localDemand,
       localReasoning: localReasoning,
       shipOrLocal: ai.regional_ship_or_local ?? null,
