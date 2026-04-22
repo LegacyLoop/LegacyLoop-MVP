@@ -577,8 +577,8 @@ export function calculatePricing(input: PricingCalcInput): PricingResult {
       bestState: ai.regional_best_state ?? null,
       bestWhy: ai.regional_best_why ?? null,
       // CMD-LOCAL-BEST-MARKET-EXPOSURE: pass through AI radius-aware fields
-      localBestCity: (ai as any).regional_local_best_city ?? null,
-      localBestWhy: (ai as any).regional_local_best_why ?? null,
+      localBestCity: ai.regional_local_best_city ?? null,
+      localBestWhy: ai.regional_local_best_why ?? null,
       localDemand: localDemand,
       localReasoning: localReasoning,
       shipOrLocal: ai.regional_ship_or_local ?? null,
