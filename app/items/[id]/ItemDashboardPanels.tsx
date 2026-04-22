@@ -3915,7 +3915,7 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                         }}>{pr.regionalIntel.localDemand} demand</div>
                       )}
                       {pr.regionalIntel?.localBestWhy && (
-                        <div style={{ fontSize: "0.46rem", color: "var(--text-muted)", marginTop: "0.2rem", lineHeight: 1.35, maxWidth: "100%" }}
+                        <div style={{ fontSize: "0.48rem", color: "var(--text-muted)", marginTop: "0.2rem", lineHeight: 1.35, maxWidth: "100%" }}
                              title={pr.regionalIntel.localBestWhy}>
                           {pr.regionalIntel.localBestWhy.slice(0, 80)}{pr.regionalIntel.localBestWhy.length > 80 ? "..." : ""}
                         </div>
