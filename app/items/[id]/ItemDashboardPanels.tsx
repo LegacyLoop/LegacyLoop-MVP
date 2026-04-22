@@ -3701,7 +3701,13 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
   if (pr) {
     const commPct = Math.round(commRate * 100);
 
-    const localMid = pr.localPrice?.mid ?? 0;
+    // CMD-NARRATIVE-SSOT-SWEEP: anchor localMid to canonical
+    // pricingConsensus.consensusAcceptPrice with pr.localPrice.mid fallback.
+    // Cascades through localNet, pr.sellerNet.local, and all 6
+    // pr.recommendation branches below · aligns AI Tip narrative with
+    // Top Card ACCEPT pill (LOCAL_PICKUP: byte-identical via pass-through;
+    // non-LOCAL_PICKUP: closes weighted-median drift).
+    const localMid = pricingConsensus?.consensusAcceptPrice ?? (pr.localPrice?.mid ?? 0);
     const nationalMid = pr.nationalPrice?.mid ?? 0;
     const bestMid = pr.bestMarket?.mid ?? 0;
     const shippingCost = quotedShippingRate ?? pr.bestMarket?.shippingCost ?? pr.shippingEstimate ?? 25;
