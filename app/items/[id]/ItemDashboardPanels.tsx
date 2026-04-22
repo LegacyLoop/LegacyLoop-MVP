@@ -3920,6 +3920,9 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
                           {pr.regionalIntel.localBestWhy.slice(0, 80)}{pr.regionalIntel.localBestWhy.length > 80 ? "..." : ""}
                         </div>
                       )}
+                      {pr.sellerNet && <div style={{ fontSize: "0.68rem", fontWeight: 700, color: "#22c55e", marginTop: "0.25rem" }}>
+                        You get: ${pr.sellerNet.local.toFixed(0)}
+                      </div>}
                     </>
                   ) : (
                     <>
