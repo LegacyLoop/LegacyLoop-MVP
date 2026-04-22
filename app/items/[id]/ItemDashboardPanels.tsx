@@ -3890,8 +3890,40 @@ function PricingPanel({ valuation: v, antique, aiData, userTier, itemId, onSuper
               {saleMethod === "LOCAL_PICKUP" ? (
                 <div style={{ background: "var(--bg-card)", border: "1px solid rgba(212,160,23,0.35)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
                   <div style={{ fontSize: "0.5rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "#D4A017" }}>Local Pickup</div>
-                  <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#D4A017", marginTop: "0.35rem", lineHeight: 1.25 }}>📍 {saleRadiusMi ?? 25}mi of {saleZip ?? "seller"}</div>
-                  <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.25rem", lineHeight: 1.3 }}>No shipping — pickup only</div>
+                  {pr?.regionalIntel?.localBestCity ? (
+                    <>
+                      {/* CMD-LOCAL-PICKUP-PANEL-V2: intelligent render when
+                          AI returned regional_local_best_city. L/A/F sources
+                          from pricingConsensus (canonical v8_engine pass-
+                          through on LOCAL_PICKUP per reconcile.ts). */}
+                      <div style={{ fontSize: "0.7rem", fontWeight: 700, color: "#D4A017", marginTop: "0.3rem", lineHeight: 1.2 }}>📍 {pr.regionalIntel.localBestCity}</div>
+                      {pricingConsensus?.consensusListPrice != null && (
+                        <div style={{ fontSize: "0.52rem", color: "var(--text-muted)", marginTop: "0.25rem", lineHeight: 1.35, fontFamily: "var(--font-data)" }}>
+                          List ${Math.round(pricingConsensus.consensusListPrice)} · Accept ${Math.round(pricingConsensus.consensusAcceptPrice ?? 0)} · Floor ${Math.round(pricingConsensus.consensusFloorPrice ?? 0)}
+                        </div>
+                      )}
+                      {pr.regionalIntel?.localDemand && (
+                        <div style={{ marginTop: "0.2rem", padding: "0.1rem 0.35rem", borderRadius: "9999px", fontSize: "0.5rem", fontWeight: 600, display: "inline-block",
+                          background: /strong/i.test(pr.regionalIntel.localDemand) ? "rgba(76,175,80,0.12)" : /weak/i.test(pr.regionalIntel.localDemand) ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)",
+                          color: /strong/i.test(pr.regionalIntel.localDemand) ? "#4caf50" : /weak/i.test(pr.regionalIntel.localDemand) ? "#ef4444" : "#f59e0b",
+                        }}>{pr.regionalIntel.localDemand} demand</div>
+                      )}
+                      {pr.regionalIntel?.localBestWhy && (
+                        <div style={{ fontSize: "0.46rem", color: "var(--text-muted)", marginTop: "0.2rem", lineHeight: 1.35, maxWidth: "100%" }}
+                             title={pr.regionalIntel.localBestWhy}>
+                          {pr.regionalIntel.localBestWhy.slice(0, 60)}{pr.regionalIntel.localBestWhy.length > 60 ? "..." : ""}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {/* Fallback · preserves current behavior byte-for-byte
+                          when AI returned null for regional_local_best_city
+                          OR item has not been re-analyzed since P2a shipped. */}
+                      <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#D4A017", marginTop: "0.35rem", lineHeight: 1.25 }}>📍 {saleRadiusMi ?? 25}mi of {saleZip ?? "seller"}</div>
+                      <div style={{ fontSize: "0.55rem", color: "var(--text-muted)", marginTop: "0.25rem", lineHeight: 1.3 }}>No shipping — pickup only</div>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div style={{ background: "var(--bg-card)", border: "1px solid rgba(251,191,36,0.25)", borderRadius: "0.65rem", padding: "0.6rem", textAlign: "center" }}>
