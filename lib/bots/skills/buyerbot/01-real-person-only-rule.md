@@ -2,8 +2,10 @@
 name: real-person-only-rule
 description: The foundational rule for BuyerBot. Every output lead must be a real human with real identifiers, never a theoretical persona.
 when_to_use: Every BuyerBot scan. First skill loaded, rule governs every other skill.
-version: 1.0.0
+version: 2.0.0
 ---
+
+> **v2.0 (Apr 2026):** Inline prompt at `app/api/bots/buyerbot/[itemId]/route.ts:490-609` extracted into versioned skill packs (CMD-BUYERBOT-V2-EXTRACT-INLINE). Count discipline → skill 19. Web search query templates → skill 20. Outreach specificity → skill 13 v1.1.0 additive section. JSON output schema migration to the 7-field real-lead spec is banked as Cylinder 2B.
 
 # The Real-Person-Only Rule
 

@@ -1,8 +1,8 @@
 ---
 name: outreach-message-crafting-per-platform
-description: Craft outreach messages that get responses, customized per platform culture and buyer type.
+description: Craft outreach messages that get responses, customized per platform culture and buyer type. v1.1.0 adds Specificity Floor — Action Completability section ported from inline route prompt.
 when_to_use: After producing hot_leads[], generate personalized outreach for each.
-version: 1.0.0
+version: 1.1.0
 ---
 
 # Outreach Is the Difference Between Finding a Buyer and Getting a Sale
@@ -133,3 +133,40 @@ Generic templates are spam. Personalize every outreach:
 ## Output
 
 In outreach_strategies[] or per-lead, generate custom script for top 3-5 leads only. Include lead_id, platform, outreach_script (full message), send_method, best_send_time.
+
+## Specificity Floor — Action Completability
+
+Ported from the legacy inline route prompt (CMD-BUYERBOT-V2-EXTRACT-INLINE, Apr 2026). Every outreach strategy must clear the **Action Completability Floor**: a 70-year-old seller can complete the action in under 2 minutes without follow-up questions.
+
+### What "specific enough to act on" looks like
+
+Each outreach strategy must include a concrete action the seller can take **right now**, not "post on Facebook" or "reach out to dealers." Use one of these patterns:
+
+- **Facebook group:** "Join the Facebook group `[GROUP NAME]` (URL) and post your item with these photos."
+- **Reddit:** "Search Reddit `r/[SUBREDDIT]` for 'WTB [ITEM]' posts from the last 30 days and reply to user `u/[handle]`."
+- **Dealer email:** "Email `[DEALER NAME]` shops in `[AREA]` (e.g. Coastal Antiques of Maine, Brunswick) using the template above."
+- **Instagram:** "Message `@[HANDLE]` on Instagram — they post `[CATEGORY]` items regularly. Lead with the photo."
+- **Forum:** "Post in `[FORUM NAME] > [SUBFORUM]` (URL) replying to thread `[THREAD TITLE]`."
+
+### Parametric requirements
+
+Message templates must include the **actual** values from item context, not placeholders:
+- ITEM NAME (the real `itemName`, not `[ITEM]`)
+- PRICE (the real `midPrice` or `listPrice`, not `$X`)
+- CONDITION (the real `condLabel`, not `[CONDITION]`)
+- LOCATION (Maine, the seller's town if available, not `[LOCATION]`)
+
+Generic placeholders are spam-quality. Personalized templates with real values are sales-quality.
+
+### URLs, names, handles — never invent
+
+Include specific URLs, group names, subreddit names, and Instagram handles **only when the scraper data, web search, or your verified knowledge confirmed they exist**. Do not invent group names, subreddits, dealer shops, or handles to make the output look richer. Skill 01's hallucination prohibition (Mistake 3) applies to this skill too.
+
+### The 2-minute test
+
+Before shipping any `outreach_strategy`, ask:
+- Can the seller copy this message into the named platform without editing?
+- Is the destination (group, sub, handle, email address) verifiable?
+- Will the recipient understand who is contacting them and why, in one read?
+
+If any answer is no, rewrite or skip. Better fewer outreach strategies that work than many that fail the test.

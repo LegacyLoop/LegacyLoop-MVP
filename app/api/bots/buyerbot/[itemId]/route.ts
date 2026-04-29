@@ -573,37 +573,8 @@ Return a JSON object with this structure:
   "executive_summary": "3-4 sentence plain-language summary. Who are the most likely buyers, where to find them, and what to expect."
 }
 
-IMPORTANT INSTRUCTIONS:
-- Generate 4-6 buyer profiles (not more).
-- Generate 4-5 platform opportunities (not more).
-- Generate 2-3 outreach strategies with SHORT message templates.
-- Generate 3-4 hot leads.
-- Be SPECIFIC. Don't say 'post on Facebook.' Say which specific groups or communities.
-- Consider the seller's location (Maine) for local opportunities.
-- Message templates must sound HUMAN and WARM — never like a bot or spam.
-${isAntique ? "- This IS an antique: include auction houses, collector forums, specialty dealers." : ""}
-${isVehicle ? "- This IS a vehicle: focus on LOCAL buyers, dealerships, enthusiast groups within 100 miles. LOCAL PICKUP ONLY." : ""}
-- Every recommendation must be actionable — the seller should be able to DO something immediately.
+Apply the loaded skill pack rules. Skills 01, 19, 20, and 13's specificity floor govern lead quality, output counts, web search discipline, and outreach specificity.
 - All prices in USD.
-
-OUTREACH SPECIFICITY RULES:
-- For EVERY outreach strategy, include a SPECIFIC action the seller can take RIGHT NOW:
-  • "Join the Facebook group '[GROUP NAME]' and post your item with these photos"
-  • "Search Reddit r/[SUBREDDIT] for 'WTB [ITEM]' posts from the last 30 days and reply"
-  • "Email [TYPE OF DEALER] shops in [AREA] with this template"
-  • "Message @[HANDLE] on Instagram — they post [CATEGORY] items regularly"
-- Message templates must include the ITEM NAME ($${midPrice}), PRICE, and CONDITION — not generic placeholders.
-- Include specific URLs, group names, subreddit names, and handles where the scraper data found real communities.
-- Every outreach action should be completable in under 2 minutes.
-
-WEB SEARCH INSTRUCTIONS:
-If you have web search capability, USE IT AGGRESSIVELY to find real buyers:
-1. Search Facebook Groups for "${category} buy sell" and "${itemName} wanted"
-2. Search eBay for "${itemName}" to see who's bidding on similar items
-3. Search Reddit for relevant subreddits (e.g. WTB posts, collector communities)
-4. Search Craigslist for "${category} wanted" postings
-5. Search collector forums for "${ai.brand || ""} ${itemName} wanted" or "ISO"
-6. Search Instagram hashtags like #${category.replace(/\s/g, "")}collector
 
 For each hot lead, include WHERE you found evidence of their interest.
 Include a "web_sources" array in your response with {"url": "...", "title": "..."} objects for pages you found. If no web search performed, return empty array.`;
