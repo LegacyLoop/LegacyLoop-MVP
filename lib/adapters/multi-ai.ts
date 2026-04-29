@@ -205,7 +205,12 @@ Be bold. Be specific. Bring insights the other AI agents won't have.`;
 
 const openai =
   process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 10
-    ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+    ? new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+        baseURL: process.env.LITELLM_BASE_URL
+          ? `${process.env.LITELLM_BASE_URL}/openai/v1`
+          : undefined,
+      })
     : null;
 
 async function analyzeWithOpenAI(absPath: string, context?: string, extraPaths?: string[]): Promise<AiAnalysis> {
@@ -307,7 +312,10 @@ export async function analyzeWithClaude(absPath: string, context?: string, extra
   const claudeTimeout = setTimeout(() => claudeController.abort(), 40_000);
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const anthropicBase = process.env.LITELLM_BASE_URL
+      ? `${process.env.LITELLM_BASE_URL}/anthropic`
+      : "https://api.anthropic.com";
+    const res = await fetch(`${anthropicBase}/v1/messages`, {
       method: "POST",
       headers: {
         "x-api-key": key,
@@ -394,9 +402,12 @@ async function analyzeWithGemini(absPath: string, context?: string, extraPaths?:
   };
 
   // CMD-GEMINI-FALLBACK-FIX: try each model in fallback chain
+  const geminiBase = process.env.LITELLM_BASE_URL
+    ? `${process.env.LITELLM_BASE_URL}/gemini`
+    : "https://generativelanguage.googleapis.com";
   for (let mi = 0; mi < GEMINI_FALLBACK_MODELS.length; mi++) {
     const tryModel = GEMINI_FALLBACK_MODELS[mi];
-    const tryUrl = `https://generativelanguage.googleapis.com/v1beta/models/${tryModel}:generateContent?key=${key}`;
+    const tryUrl = `${geminiBase}/v1beta/models/${tryModel}:generateContent?key=${key}`;
     try {
       const res = await Promise.race([
         fetch(tryUrl, {
@@ -438,7 +449,9 @@ async function analyzeWithGrok(absPath: string, context?: string, extraPaths?: s
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey || apiKey.length < 10) throw new Error("No XAI_API_KEY configured");
 
-  const baseUrl = process.env.XAI_BASE_URL || "https://api.x.ai/v1";
+  const baseUrl = process.env.LITELLM_BASE_URL
+    ? `${process.env.LITELLM_BASE_URL}/xai/v1`
+    : (process.env.XAI_BASE_URL || "https://api.x.ai/v1");
   const model = process.env.XAI_MODEL_VISION || "grok-4";
   const prompt = buildComprehensivePrompt(context) + GROK_SPECIALTY;
 

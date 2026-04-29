@@ -62,3 +62,7 @@ next-env.d.ts
 
 # Slack scratch exports (local only — never commit)
 slack_*.txt
+
+# LiteLLM Gateway (DEV ONLY — never commit config or logs)
+litellm_config.yaml
+litellm.log

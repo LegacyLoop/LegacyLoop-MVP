@@ -200,7 +200,12 @@ interface ProviderRawResult {
 
 const openaiClient =
   process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 10
-    ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+    ? new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+        baseURL: process.env.LITELLM_BASE_URL
+          ? `${process.env.LITELLM_BASE_URL}/openai/v1`
+          : undefined,
+      })
     : null;
 
 async function callOpenAIRaw(
@@ -265,7 +270,10 @@ async function callClaudeRaw(
     // The anthropic-beta header enables prompt caching.
     // cache_control on the LAST system content block tells
     // Anthropic to cache everything up to and including it.
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const anthropicBase = process.env.LITELLM_BASE_URL
+      ? `${process.env.LITELLM_BASE_URL}/anthropic`
+      : "https://api.anthropic.com";
+    const res = await fetch(`${anthropicBase}/v1/messages`, {
       method: "POST",
       headers: {
         "x-api-key": key,
@@ -377,7 +385,10 @@ async function callGeminiRaw(
     "gemini-3-flash-preview",
   ];
   let model = GEMINI_FALLBACK_MODELS[0];
-  let url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  const geminiBase = process.env.LITELLM_BASE_URL
+    ? `${process.env.LITELLM_BASE_URL}/gemini`
+    : "https://generativelanguage.googleapis.com";
+  let url = `${geminiBase}/v1beta/models/${model}:generateContent?key=${key}`;
   const { base64, mime } = await fileToDataUrl(absPath);
 
   // CMD-RECONBOT-API-A: dual-attempt grounding pattern.
@@ -456,7 +467,7 @@ async function callGeminiRaw(
   if (!data) {
     for (let mi = 0; mi < GEMINI_FALLBACK_MODELS.length; mi++) {
       model = GEMINI_FALLBACK_MODELS[mi];
-      url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+      url = `${geminiBase}/v1beta/models/${model}:generateContent?key=${key}`;
       try {
         const res = await Promise.race([
           fetch(url, {
@@ -536,7 +547,9 @@ async function callGrokRaw(
 ): Promise<ProviderRawResult> {
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey || apiKey.length < 10) throw new Error("No XAI_API_KEY configured");
-  const baseUrl = process.env.XAI_BASE_URL || "https://api.x.ai/v1";
+  const baseUrl = process.env.LITELLM_BASE_URL
+    ? `${process.env.LITELLM_BASE_URL}/xai/v1`
+    : (process.env.XAI_BASE_URL || "https://api.x.ai/v1");
   const model = process.env.XAI_MODEL_VISION || "grok-4";
   const { dataUrl } = await fileToDataUrl(absPath);
 
