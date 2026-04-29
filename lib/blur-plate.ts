@@ -125,7 +125,12 @@ async function detectPlates(imageBuffer: Buffer): Promise<PlateBox[]> {
     return [];
   }
 
-  const openai = new OpenAI({ apiKey });
+  const openai = new OpenAI({
+    apiKey,
+    baseURL: process.env.LITELLM_BASE_URL
+      ? `${process.env.LITELLM_BASE_URL}/openai/v1`
+      : undefined,
+  });
   const base64Image = imageBuffer.toString("base64");
 
   // ── Pass 1: Primary detection with gpt-4o ──

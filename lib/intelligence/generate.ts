@@ -69,7 +69,10 @@ export async function generateIntelligence(
   const timeout = setTimeout(() => controller.abort(), 45000);
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const anthropicBase = process.env.LITELLM_BASE_URL
+      ? `${process.env.LITELLM_BASE_URL}/anthropic`
+      : "https://api.anthropic.com";
+    const res = await fetch(`${anthropicBase}/v1/messages`, {
       method: "POST",
       headers: {
         "x-api-key": key,

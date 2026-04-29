@@ -11,7 +11,12 @@ async function fileToDataUrl(filePath: string) {
 
 const openai =
   process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 10
-    ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+    ? new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+        baseURL: process.env.LITELLM_BASE_URL
+          ? `${process.env.LITELLM_BASE_URL}/openai/v1`
+          : undefined,
+      })
     : null;
 
 // Structured JSON schema for the AI response — must match AiAnalysis interface

@@ -183,7 +183,12 @@ function conditionMultiplier(condition?: string | null) {
 
 const openaiClient =
   process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.length > 10
-    ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+    ? new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+        baseURL: process.env.LITELLM_BASE_URL
+          ? `${process.env.LITELLM_BASE_URL}/openai/v1`
+          : undefined,
+      })
     : null;
 
 const AI_PRICE_SCHEMA = {

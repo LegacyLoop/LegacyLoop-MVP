@@ -438,7 +438,12 @@ async function callOpenAI(
 ): Promise<{ data: any; raw: string; webSources?: Array<{ url: string; title: string }> }> {
   const key = process.env.OPENAI_API_KEY;
   if (!key || key.length < 10) throw new Error("No OPENAI_API_KEY");
-  const openai = new OpenAI({ apiKey: key });
+  const openai = new OpenAI({
+    apiKey: key,
+    baseURL: process.env.LITELLM_BASE_URL
+      ? `${process.env.LITELLM_BASE_URL}/openai/v1`
+      : undefined,
+  });
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
   // Build multi-photo content (up to 4 photos)
@@ -559,7 +564,10 @@ async function callClaude(
         // system (cacheable skill packs + base) and user (short
         // instruction). Prefill trick preserved in assistant message.
         // Skill packs are 28-40k tokens — cache hits cost 0.1x.
-        const res = await fetch("https://api.anthropic.com/v1/messages", {
+        const anthropicBase = process.env.LITELLM_BASE_URL
+          ? `${process.env.LITELLM_BASE_URL}/anthropic`
+          : "https://api.anthropic.com";
+        const res = await fetch(`${anthropicBase}/v1/messages`, {
           method: "POST",
           headers: {
             "x-api-key": key,
@@ -734,8 +742,11 @@ async function callGemini(
   let json: any;
   let lastError = "";
 
+  const geminiBase = process.env.LITELLM_BASE_URL
+    ? `${process.env.LITELLM_BASE_URL}/gemini`
+    : "https://generativelanguage.googleapis.com";
   for (const tryModel of GEMINI_MODELS) {
-    const tryUrl = `https://generativelanguage.googleapis.com/v1beta/models/${tryModel}:generateContent?key=${key}`;
+    const tryUrl = `${geminiBase}/v1beta/models/${tryModel}:generateContent?key=${key}`;
     let succeeded = false;
 
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -876,7 +887,9 @@ async function callGrok(
 ): Promise<{ data: any; raw: string }> {
   const apiKey = process.env.XAI_API_KEY;
   if (!apiKey || apiKey.length < 10) throw new Error("No XAI_API_KEY");
-  const baseUrl = process.env.XAI_BASE_URL || "https://api.x.ai/v1";
+  const baseUrl = process.env.LITELLM_BASE_URL
+    ? `${process.env.LITELLM_BASE_URL}/xai/v1`
+    : (process.env.XAI_BASE_URL || "https://api.x.ai/v1");
   // Text-only model: much faster, no photo upload overhead
   // OpenAI, Claude, and Gemini already analyze photos — Grok's strength is social/trending data
   const textModel = process.env.XAI_MODEL_TEXT || "grok-3-fast";

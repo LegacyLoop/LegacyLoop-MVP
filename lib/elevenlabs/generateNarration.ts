@@ -14,7 +14,12 @@ import OpenAI from "openai";
 import { resolveVoiceMode, VOICE_CONFIG, type VoiceMode } from "./voiceConfig";
 
 const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  ? new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: process.env.LITELLM_BASE_URL
+        ? `${process.env.LITELLM_BASE_URL}/openai/v1`
+        : undefined,
+    })
   : null;
 
 // ─────────────────────────────────────────────

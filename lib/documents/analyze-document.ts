@@ -111,7 +111,12 @@ async function callOpenAI(
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("No OPENAI_API_KEY");
 
-  const openai = new OpenAI({ apiKey });
+  const openai = new OpenAI({
+    apiKey,
+    baseURL: process.env.LITELLM_BASE_URL
+      ? `${process.env.LITELLM_BASE_URL}/openai/v1`
+      : undefined,
+  });
   const input: any[] = [];
   if (imageBase64) {
     input.push({ type: "input_image", image_url: `data:${imageMime};base64,${imageBase64}`, detail: "high" });
@@ -151,7 +156,10 @@ async function callClaude(
   const timeout = setTimeout(() => controller.abort(), 40000);
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const anthropicBase = process.env.LITELLM_BASE_URL
+      ? `${process.env.LITELLM_BASE_URL}/anthropic`
+      : "https://api.anthropic.com";
+    const res = await fetch(`${anthropicBase}/v1/messages`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -189,9 +197,12 @@ async function callGemini(
   }
   parts.push({ text: prompt });
 
+  const geminiBase = process.env.LITELLM_BASE_URL
+    ? `${process.env.LITELLM_BASE_URL}/gemini`
+    : "https://generativelanguage.googleapis.com";
   const res = await Promise.race([
     fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL || "gemini-2.5-flash"}:generateContent?key=${apiKey}`,
+      `${geminiBase}/v1beta/models/${process.env.GEMINI_MODEL || "gemini-2.5-flash"}:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -231,8 +242,11 @@ async function callGrok(
     },
   ];
 
+  const xaiBase = process.env.LITELLM_BASE_URL
+    ? `${process.env.LITELLM_BASE_URL}/xai/v1`
+    : "https://api.x.ai/v1";
   const res = await Promise.race([
-    fetch("https://api.x.ai/v1/chat/completions", {
+    fetch(`${xaiBase}/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ model, messages, max_tokens: 2000 }),
