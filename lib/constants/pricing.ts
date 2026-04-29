@@ -325,6 +325,28 @@ export const BOT_CREDIT_COSTS = {
 } as const;
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// SECTION F2 — AI CONFIDENCE THRESHOLDS
+// CMD-DEV-UX-CLEANUP · 2026-04-29
+// ═══════════════════════════════════════════════════════════════════════════════
+/**
+ * Thresholds for the AI confidence pill UI and
+ * automatic background re-analyze. SSOT — never
+ * inline these numbers in components.
+ *
+ * LOW: below this percentage · auto-reanalyze
+ *      eligible (also drives amber pill color).
+ * HIGH: above this percentage · pill is green.
+ * AUTO_REANALYZE_STALE_HOURS: re-analyze allowed
+ *      only if last analyze older than this AND
+ *      confidence below LOW.
+ */
+export const AI_CONFIDENCE_THRESHOLDS = {
+  LOW: 50,
+  HIGH: 70,
+  AUTO_REANALYZE_STALE_HOURS: 24,
+} as const;
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SECTION G — CREDIT PACKS
 // ═══════════════════════════════════════════════════════════════════════════════
 

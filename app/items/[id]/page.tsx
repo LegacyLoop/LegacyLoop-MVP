@@ -438,12 +438,24 @@ export default async function ItemPage({ params }: { params: Params }) {
               <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Value</div>
               <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "var(--accent)", letterSpacing: "-0.01em" }}>{`$${pricingConsensus?.consensusValueLow ?? Math.round(v.low || 0)}–${pricingConsensus?.consensusValueHigh ?? Math.round(v.high || 0)}`}</div>
             </div>
-            {v.confidence != null && (
-              <ConfidencePill
-                value={pricingConsensus?.consensusConfidence ?? (v.confidence > 1 ? v.confidence : v.confidence * 100)}
-                itemId={item.id}
-              />
-            )}
+            {v.confidence != null && (() => {
+              // CMD-DEV-UX-CLEANUP · auto-reanalyze inputs
+              const photosFingerprint = item.photos
+                .map((p) => p.id)
+                .sort()
+                .join("-") || null;
+              const lastAnalyzedAt = item.aiResult?.createdAt
+                ? new Date(item.aiResult.createdAt).toISOString()
+                : null;
+              return (
+                <ConfidencePill
+                  value={pricingConsensus?.consensusConfidence ?? (v.confidence > 1 ? v.confidence : v.confidence * 100)}
+                  itemId={item.id}
+                  lastAnalyzedAt={lastAnalyzedAt}
+                  photosFingerprint={photosFingerprint}
+                />
+              );
+            })()}
             {gsCalc && !gsCalc.isExempt && (pricingConsensus || (isLocalPickup && gsCalc)) && (
               <V8PillsStrip itemId={item.id} pills={[
                 { label: "List", value: pricingConsensus?.consensusListPrice ?? 0, color: "#00bcd4", bg: "rgba(0,188,212,0.06)", border: "rgba(0,188,212,0.2)", trustRing: (pricingConsensus?.consensusConfidence ?? 0) >= 90 },

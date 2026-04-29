@@ -105,6 +105,18 @@ export async function getFedExParcelRates(
   width: number,
   height: number,
 ): Promise<FedExParcelRate[]> {
+  // CMD-DEV-UX-CLEANUP · feature flag DISABLE
+  // FedEx direct calls until ACCOUNT.NUMBER.MISMATCH
+  // is resolved (split-account fix · banked
+  // CMD-FEDEX-ACCOUNT-SPLIT). Shippo + EasyPost
+  // cover · zero UX impact · ~15s/page latency
+  // eliminated. Default false. Set
+  // FEDEX_PARCEL_DIRECT_ENABLED=true to re-enable.
+  if (process.env.FEDEX_PARCEL_DIRECT_ENABLED !== "true") {
+    console.log("[FedEx Parcel] Direct call disabled by feature flag (FEDEX_PARCEL_DIRECT_ENABLED) · Shippo + EasyPost cover fallback");
+    return [];
+  }
+
   const token = await getAuthToken();
   if (!token) {
     console.log("[FedEx Parcel] No auth token — returning empty (no fake rates)");
