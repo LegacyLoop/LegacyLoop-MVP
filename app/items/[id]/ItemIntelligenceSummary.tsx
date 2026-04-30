@@ -954,7 +954,7 @@ export default function ItemIntelligenceSummary(props: Props) {
                   )}
                   {/* Insight line */}
                   {(aiIntel.sellingStrategy?.timing || aiStale) && (
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", width: "100%", minWidth: 0 }}>
                       {aiIntel.sellingStrategy?.timing && (
                         <div style={{ borderLeft: "2px solid var(--accent, #00bcd4)", paddingLeft: "8px", fontSize: "12px", color: "var(--text-secondary)", fontStyle: "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
                           {aiIntel.sellingStrategy.bestPlatform || "Sell now"} · {aiIntel.sellingStrategy.timing}
@@ -1147,7 +1147,7 @@ export default function ItemIntelligenceSummary(props: Props) {
                         <div style={{ fontSize: "10px", color: "var(--text-muted)" }}>sell to enthusiast</div>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "2px", alignItems: "flex-end", minWidth: 0 }}>
-                        <div style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 600, textAlign: "right" as const, maxWidth: "220px", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        <div style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 600, textAlign: "right" as const, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {v9Data.localEnthusiastChannel}
                         </div>
                         <div style={{ fontSize: "10px", color: "#22c55e", fontWeight: 700, fontFamily: "var(--font-data)" }}>
