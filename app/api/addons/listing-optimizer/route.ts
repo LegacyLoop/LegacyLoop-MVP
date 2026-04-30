@@ -6,7 +6,14 @@ import OpenAI from "openai";
 
 const PLATFORMS = ["ebay", "facebook_marketplace", "instagram", "tiktok", "etsy", "craigslist", "offerup", "mercari", "poshmark", "legacyloop"];
 
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : null;
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: process.env.LITELLM_BASE_URL
+        ? `${process.env.LITELLM_BASE_URL}/openai/v1`
+        : undefined,
+    })
+  : null;
 
 function safeJson(s: string | null | undefined): any {
   if (!s) return null;
@@ -63,7 +70,10 @@ async function callOpenAI(prompt: string): Promise<any> {
 async function callClaude(prompt: string): Promise<any> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key || key.length < 10) throw new Error("No Anthropic key");
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const ANTHROPIC_BASE = process.env.LITELLM_BASE_URL
+    ? `${process.env.LITELLM_BASE_URL}/anthropic`
+    : "https://api.anthropic.com";
+  const res = await fetch(`${ANTHROPIC_BASE}/v1/messages`, {
     method: "POST",
     headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
     body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 4096, system: SYSTEM_PROMPT + "\n\nYou specialize in emotional storytelling and craftsmanship angles.", messages: [{ role: "user", content: prompt }] }),
@@ -76,7 +86,10 @@ async function callClaude(prompt: string): Promise<any> {
 async function callGemini(prompt: string): Promise<any> {
   const key = process.env.GEMINI_API_KEY;
   if (!key || key.length < 10) throw new Error("No Gemini key");
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
+  const GEMINI_BASE = process.env.LITELLM_BASE_URL
+    ? `${process.env.LITELLM_BASE_URL}/gemini`
+    : "https://generativelanguage.googleapis.com";
+  const url = `${GEMINI_BASE}/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -90,7 +103,10 @@ async function callGemini(prompt: string): Promise<any> {
 async function callGrok(prompt: string): Promise<any> {
   const key = process.env.XAI_API_KEY;
   if (!key || key.length < 10) throw new Error("No Grok key");
-  const res = await fetch(`${process.env.XAI_BASE_URL || "https://api.x.ai/v1"}/chat/completions`, {
+  const XAI_BASE = process.env.LITELLM_BASE_URL
+    ? `${process.env.LITELLM_BASE_URL}/xai/v1`
+    : (process.env.XAI_BASE_URL || "https://api.x.ai/v1");
+  const res = await fetch(`${XAI_BASE}/chat/completions`, {
     method: "POST",
     headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({ model: process.env.XAI_MODEL_TEXT || "grok-3-fast", messages: [{ role: "system", content: SYSTEM_PROMPT + "\n\nYou specialize in social media viral angles and trending hooks." }, { role: "user", content: prompt }], max_tokens: 4096 }),

@@ -68,7 +68,10 @@ export async function POST(req: NextRequest) {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 12000);
 
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const ANTHROPIC_BASE = process.env.LITELLM_BASE_URL
+        ? `${process.env.LITELLM_BASE_URL}/anthropic`
+        : "https://api.anthropic.com";
+      const res = await fetch(`${ANTHROPIC_BASE}/v1/messages`, {
         method: "POST",
         headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
         body: JSON.stringify({

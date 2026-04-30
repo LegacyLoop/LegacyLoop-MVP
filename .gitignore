@@ -66,3 +66,6 @@ slack_*.txt
 # LiteLLM Gateway (DEV ONLY — never commit config or logs)
 litellm_config.yaml
 litellm.log
+
+# Scratch / working memory (cylinder verification artifacts)
+.scratch/

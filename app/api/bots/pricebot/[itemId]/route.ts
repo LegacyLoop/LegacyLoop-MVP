@@ -23,7 +23,12 @@ import {
 } from "@/lib/bots/spec-guards";
 
 const openai = process.env.OPENAI_API_KEY
-  ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  ? new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: process.env.LITELLM_BASE_URL
+        ? `${process.env.LITELLM_BASE_URL}/openai/v1`
+        : undefined,
+    })
   : null;
 
 function safeJson(s: string | null | undefined): any {

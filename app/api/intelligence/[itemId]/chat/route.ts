@@ -184,7 +184,10 @@ ${enrichment.contextBlock || "No enrichment data available yet. Suggest running 
   const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const ANTHROPIC_BASE = process.env.LITELLM_BASE_URL
+      ? `${process.env.LITELLM_BASE_URL}/anthropic`
+      : "https://api.anthropic.com";
+    const res = await fetch(`${ANTHROPIC_BASE}/v1/messages`, {
       method: "POST",
       headers: {
         "x-api-key": key,

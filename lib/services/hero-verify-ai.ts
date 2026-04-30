@@ -104,7 +104,10 @@ export async function analyzeHeroDocument(
     .replace("{DEPARTMENT}", department || "Not provided");
 
   try {
-    const response = await fetch("https://api.openai.com/v1/responses", {
+    const OPENAI_BASE = process.env.LITELLM_BASE_URL
+      ? `${process.env.LITELLM_BASE_URL}/openai`
+      : "https://api.openai.com";
+    const response = await fetch(`${OPENAI_BASE}/v1/responses`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,

@@ -226,7 +226,12 @@ export async function POST(req: NextRequest) {
       const prompt = `${skillPack.systemPromptBlock}\n\nITEM: ${itemData?.title || "Unknown"}\nCATEGORY: ${itemData?.category || "general"}\nWEIGHT: ${weight} lbs\nFRAGILE: ${isFragile}\nCHEAPEST RATE: $${cheapestPrice} via ${cheapest?.carrier ?? "N/A"}\nONLINE VALUE: $${marketPrice}\nGARAGE SALE PRICE: $${gsPrice || "not set"}\nSHIPPING FROM: ${fromZip} TO: ${toZip}\n\nProvide a brief 2-3 sentence shipping recommendation. Best carrier, packing tips, and whether local pickup is better if shipping cost is high relative to value.`;
 
       const OpenAI = (await import("openai")).default;
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+        baseURL: process.env.LITELLM_BASE_URL
+          ? `${process.env.LITELLM_BASE_URL}/openai/v1`
+          : undefined,
+      });
       const aiRes = await openai.responses.create({
         model: "gpt-4o-mini",
         input: [{ role: "user", content: prompt }],
