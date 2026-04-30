@@ -73,7 +73,7 @@ cat > "$PLIST_PATH" <<EOF
         <string>127.0.0.1:11434</string>
 
         <key>OLLAMA_KEEP_ALIVE</key>
-        <string>5m</string>
+        <string>4h</string>
 
         <key>HOME</key>
         <string>${HOME}</string>
@@ -118,6 +118,16 @@ launchctl list | grep "${PLIST_LABEL}" || {
 # 8. Confirm models still accessible
 echo "[install-ollama-autostart] Available models:"
 ollama list
+
+# 9. Pre-warm qwen-coder so first V17.2 / Cyl 7 prompt is warm
+# Background fire-and-forget · installer exits without waiting
+echo "[install-ollama-autostart] Triggering background pre-warm..."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -x "${SCRIPT_DIR}/prewarm-ollama.sh" ]; then
+  bash "${SCRIPT_DIR}/prewarm-ollama.sh" --background qwen-coder-2.5-local 2>&1 | sed 's/^/[install-ollama-autostart]   /'
+else
+  echo "[install-ollama-autostart]   prewarm-ollama.sh not found · skipping (run manually later)"
+fi
 
 echo "[install-ollama-autostart] ✓ Autostart installed · daemon managed by launchctl"
 echo "[install-ollama-autostart]   To uninstall: launchctl unload $PLIST_PATH && rm $PLIST_PATH"
