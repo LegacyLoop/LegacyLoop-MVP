@@ -8,7 +8,8 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
-    "litellm:dev": "bash scripts/litellm-dev.sh"
+    "litellm:dev": "bash scripts/litellm-dev.sh",
+    "setup:touchid": "echo 'Run: sudo bash scripts/setup-touchid.sh (sudo prompt at YOUR terminal · DOC-BAN-PASSWORD-PASTE)' && exit 1"
   },
   "engines": {
     "node": ">=20.9.0 <21",
