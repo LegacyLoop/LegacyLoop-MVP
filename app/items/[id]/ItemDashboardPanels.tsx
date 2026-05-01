@@ -12,7 +12,8 @@ import ItemIntelligenceSummary from "./ItemIntelligenceSummary";
 import { PROCESSING_FEE } from "@/lib/constants/pricing";
 import EnrichmentBadge from "@/app/components/EnrichmentBadge";
 import BotLoadingState from "@/app/components/BotLoadingState";
-import { canUseBotOnTier, TIER_NAMES, BOT_ACCESS, type BotName } from "@/lib/constants/pricing";
+import { canUseBotOnTier, TIER_NAMES, BOT_ACCESS, AI_CONFIDENCE_THRESHOLDS, type BotName } from "@/lib/constants/pricing";
+import { useAutoBotRefresh } from "./useAutoBotRefresh";
 import { isDemoMode } from "@/lib/bot-mode";
 import AmazonPriceBadge from "./AmazonPriceBadge";
 import DocumentVault from "./DocumentVault";
@@ -119,6 +120,7 @@ type Props = {
   } | null;
   itemSaleMethod?: string | null;
   itemIsCollectible?: boolean;
+  lastAnalyzedAt?: string | null;
 };
 
 /* ═══════════════════════════════════════════
@@ -9951,7 +9953,7 @@ function ReconBotPanel({ aiData, itemId, reconBotResult, reconBotLoading, onReco
    ═══════════════════════════════════════════ */
 
 export default function ItemDashboardPanels({
-  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra, projectId, demandScore, botDisagreement, enriched, itemSaleMethod, itemIsCollectible, v8CalcData, v9CalcData, pricingConsensus,
+  itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier, listingPrice, authenticityScore, collectiblesScore, shippingData, controlCenterExtra, projectId, demandScore, botDisagreement, enriched, itemSaleMethod, itemIsCollectible, v8CalcData, v9CalcData, pricingConsensus, lastAnalyzedAt,
 }: Props) {
   // Track which bots have been enhanced with MegaBot
   const [boostedBots, setBoostedBots] = useState<Set<string>>(new Set());
@@ -9998,6 +10000,43 @@ export default function ItemDashboardPanels({
   // PriceBot state
   const [priceBotResult, setPriceBotResult] = useState<any>(null);
   const [priceBotLoading, setPriceBotLoading] = useState(false);
+
+  // CMD-CYL-6-AUTOFIRE-ROLLOUT V18 · pairs with S4 LOCAL_PICKUP confidence
+  // floor (1a70255). PriceBot auto-fires when AnalyzeBot identification
+  // confidence < AI_CONFIDENCE_THRESHOLDS.LOW (50) AND last analyze older
+  // than AI_CONFIDENCE_THRESHOLDS.AUTO_REANALYZE_STALE_HOURS (24).
+  // Hook handles ref-guard + sessionStorage breaker + AbortController.
+  // See useAutoBotRefresh.ts:1-193 for full discipline contract.
+  const priceBotPhotosFingerprint = useMemo(
+    () => (photos?.length ? photos.map((p) => p.id).sort().join("-") : null),
+    [photos]
+  );
+  const priceBotIdConfidence = aiData?.confidence != null
+    ? (aiData.confidence > 1 ? aiData.confidence : aiData.confidence * 100)
+    : null;
+  useAutoBotRefresh({
+    botKey: "pricebot",
+    itemId,
+    confidence: priceBotIdConfidence,
+    lastAnalyzedAt: lastAnalyzedAt ?? null,
+    photosFingerprint: priceBotPhotosFingerprint,
+    lowThreshold: AI_CONFIDENCE_THRESHOLDS.LOW,
+    staleHours: AI_CONFIDENCE_THRESHOLDS.AUTO_REANALYZE_STALE_HOURS,
+    endpoint: `/api/bots/pricebot/${itemId}`,
+    telemetryPrefix: "PRICEBOT_AUTO_RUN",
+    onComplete: () => {
+      fetch(`/api/bots/pricebot/${itemId}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.hasResult) {
+            setPriceBotResult(d.result?.pricingSource
+              ? d.result
+              : { ...d.result, pricingSource: d.pricingSource, intelligenceAgeMs: d.intelligenceAgeMs });
+          }
+        })
+        .catch(() => {});
+    },
+  });
 
   // BuyerBot state
   const [buyerBotResult, setBuyerBotResult] = useState<any>(null);

@@ -724,6 +724,7 @@ export default async function ItemPage({ params }: { params: Params }) {
           v8CalcData={v8CalcData}
           v9CalcData={v9CalcData}
           pricingConsensus={pricingConsensus}
+          lastAnalyzedAt={item.aiResult?.createdAt ? new Date(item.aiResult.createdAt).toISOString() : null}
         />
       </div>
 
