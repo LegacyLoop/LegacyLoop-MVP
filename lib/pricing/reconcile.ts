@@ -549,12 +549,16 @@ export async function computePricingConsensus(
 
   // 7. UI-ready
   const primaryDisplayLabel = `List $${cList} · Accept $${cAccept} · Floor $${cFloor}`;
+  // CMD-PRICING-DISSENT-BANNER-COPY: range-multiplier framing per
+  // CMD-PRICING-RECONCILE-AUDIT V18 §12 Q5. spreadPct = (max-min)/min,
+  // so max = (1 + spreadPct) × min. "2.3× range" reads cleaner than
+  // "131% disagreement" — same number, less alarming, senior-friendly.
   const warningBanner = juryVerdict
     ? null // CMD-AI-JURY-V1b: jury resolved — positive banner is CMD-JURY-REPLACE-DISAGREEMENT-BANNER (banked).
     : dissents.length >= 2
-    ? `Pricing sources disagree by ${Math.round(Math.max(...dissents.map(d => d.spreadPct)) * 100)}% on ${dissents.length} fields. Re-run PriceBot to reconcile.`
+    ? `Pricing sources span a ${(1 + Math.max(...dissents.map(d => d.spreadPct))).toFixed(1)}× range on ${dissents.length} fields. Re-run PriceBot to reconcile.`
     : dissents.length === 1
-    ? `Pricing source disagreement on ${dissents[0].field} (${Math.round(dissents[0].spreadPct * 100)}% spread).`
+    ? `Pricing source spread on ${dissents[0].field}: ${(1 + dissents[0].spreadPct).toFixed(1)}× range.`
     : null;
 
   // 7b. Trust Score — unified 0-100 blended signal
