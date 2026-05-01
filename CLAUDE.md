@@ -277,7 +277,7 @@ SaleMethod: LOCAL_PICKUP | ONLINE_SHIPPING | BOTH
 - After push: `npx prisma generate` to regenerate client.
 - Report ALL schema changes in V17.1 FLAGS section.
 - Never delete a model or field without explicit approval.
-- Prisma singleton lives at `lib/prisma.ts` — NEVER modify.
+- Prisma singleton lives at `lib/db.ts` — NEVER modify.
 
 ---
 
@@ -791,7 +791,7 @@ lib/bots/disagreement.ts    — Multi-model disagreement handling
 ### Data Layer
 ```
 prisma/schema.prisma         — 51 models, all enums
-lib/prisma.ts                — Prisma singleton (LOCKED)
+lib/db.ts                    — Prisma singleton (LOCKED)
 ```
 
 ### Config
