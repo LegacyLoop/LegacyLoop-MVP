@@ -88,6 +88,28 @@ export interface PricingConsensus {
   v: 1 | 2;
 }
 
+// ── Constants ──────────────────────────────────────────────────────
+
+/**
+ * CMD-PRICING-RECONCILE-FIX V18 · LOCAL_PICKUP confidence floor.
+ *
+ * When the LOCAL_PICKUP v8 override fires at L485-495, the system has
+ * made a decisive canonical pricing choice (gsCalc → garage-sale.ts
+ * deterministic output via v8_engine snapshot). The pre-override
+ * dissent math at L506-513 reflects raw multi-source disagreement and
+ * does NOT account for the canonical resolution. This floor ensures
+ * consensusConfidence reflects the system's confident decision.
+ *
+ * 80 chosen because:
+ *  · matches "high" tier threshold at L514
+ *  · v8_engine canonical IS decisive but not infallible · no 100
+ *  · investor-narrative discipline: honest measurement · no inflation
+ *
+ * Mirrors juryVerdict.confidence lift design (L513): only LIFTS ·
+ * never lowers · preserves underlying dissent telemetry intact.
+ */
+const LOCAL_PICKUP_V8_CONFIDENCE_FLOOR = 80;
+
 // ── Helpers ────────────────────────────────────────────────────────
 
 function freshnessDecay(ageMs: number): number {
@@ -482,6 +504,10 @@ export async function computePricingConsensus(
   // the weighted-median, invariant, dissent detection, and jury so
   // any of those remain observational (telemetry intact) while the
   // published consensus numbers stay canonical.
+  // CMD-PRICING-RECONCILE-FIX V18: track whether the override actually
+  // fired (v8 present + all 3 prices valid). Used at L513+ to lift
+  // consensusConfidence to floor when canonical override is in effect.
+  let localPickupV8Override = false;
   if (opts?.saleMethod === "LOCAL_PICKUP") {
     const v8 = snapshots.find(s => s.name === "v8_engine");
     if (v8
@@ -491,6 +517,7 @@ export async function computePricingConsensus(
       cList = v8.listPrice;
       cAccept = v8.acceptPrice;
       cFloor = v8.floorPrice;
+      localPickupV8Override = true;
     }
   }
 
@@ -511,6 +538,13 @@ export async function computePricingConsensus(
   let consensusConfidence = Math.max(0, Math.min(100, Math.round(baseConf * (freshnessScore / 100) - dissentPenalty)));
   // CMD-AI-JURY-V1b: jury resolution lifts confidence — never lowers.
   if (juryVerdict) consensusConfidence = Math.max(consensusConfidence, juryVerdict.confidence);
+  // CMD-PRICING-RECONCILE-FIX V18: LOCAL_PICKUP v8_engine canonical
+  // override (above) makes a decisive pricing call · consensusConfidence
+  // must reflect that decision rather than pre-override dissent math.
+  // Floor only LIFTS · never lowers · preserves dissent telemetry intact.
+  if (localPickupV8Override) {
+    consensusConfidence = Math.max(consensusConfidence, LOCAL_PICKUP_V8_CONFIDENCE_FLOOR);
+  }
   const confidenceTier: "high" | "medium" | "low" = consensusConfidence >= 80 ? "high" : consensusConfidence >= 50 ? "medium" : "low";
 
   // 7. UI-ready
