@@ -9,11 +9,16 @@ export default function ConfidencePill({
   itemId,
   lastAnalyzedAt,
   photosFingerprint,
+  label = "Confidence",
 }: {
   value: number | null;
   itemId: string;
   lastAnalyzedAt?: string | null;
   photosFingerprint?: string | null;
+  // CMD-CONFIDENCEPILL-LABEL-PROP V18: enables future PRICE CONFIDENCE
+  // pill (S16 CMD-CONFIDENCE-LABEL-LEXICON) without component
+  // duplication · default preserves Cyl 23A WIRING-FIX call sites.
+  label?: string;
 }) {
   const router = useRouter();
 
@@ -51,10 +56,10 @@ export default function ConfidencePill({
         border: "1px solid var(--border-default)",
         flexShrink: 0,
       }}
-      aria-label={`Confidence ${pct}%${isLow ? ", low, auto-reanalyzing" : ""}`}
+      aria-label={`${label} ${pct}%${isLow ? ", low, auto-reanalyzing" : ""}`}
     >
       <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>
-        Confidence
+        {label}
       </div>
       <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color }}>{pct}%</div>
     </div>
