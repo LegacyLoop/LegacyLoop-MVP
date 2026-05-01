@@ -58,6 +58,16 @@ export interface BotAIConfig {
   triggers: TriggerName[];
   /** Maximum spend tier for this bot's routeBotAI() invocations. */
   costTier: CostTier;
+  /**
+   * CMD-PERPLEXITY-BOT-WIRING: optional live-web specialty provider ·
+   * dispatched when the caller signals signals.requiresLiveWeb=true
+   * AND triggers include "live_web_needed". When this branch fires it
+   * REPLACES the primary for that call (secondary is suppressed since
+   * Sonar already returns live-web-grounded results). Defaults to
+   * undefined for bots that haven't opted in — those keep their
+   * existing primary/secondary routing unchanged.
+   */
+  liveWebProvider?: ProviderName | null;
 }
 
 // ─── Router input/output ────────────────────────────────────────

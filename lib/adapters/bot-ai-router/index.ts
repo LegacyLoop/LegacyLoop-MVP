@@ -806,7 +806,25 @@ export async function routeBotAI(input: RouterInput): Promise<RoutedAIResult> {
   }
 
   // ── Standard bot flow ──
-  const { primary: primaryProvider, secondary: secondaryProvider } = selectProviders(config, input);
+  let { primary: primaryProvider, secondary: secondaryProvider } = selectProviders(config, input);
+
+  // CMD-PERPLEXITY-BOT-WIRING: route to liveWebProvider when caller
+  // signals requiresLiveWeb=true AND bot has opted in (config.liveWeb-
+  // Provider set + live_web_needed in triggers). Replaces primary for
+  // that call; suppresses secondary because Sonar already returns
+  // live-web-grounded results (no consensus opinion needed). 8 non-
+  // opt-in bots ignore this branch — config.liveWebProvider is
+  // undefined → identical behavior. Trigger telemetry still fires
+  // post-hoc via evaluateTriggers at L844 (live_web_needed appended
+  // to triggersFired when signals.requiresLiveWeb=true).
+  if (
+    input.signals?.requiresLiveWeb === true &&
+    config.liveWebProvider &&
+    config.triggers.includes("live_web_needed")
+  ) {
+    primaryProvider = config.liveWebProvider;
+    secondaryProvider = null;
+  }
 
   const providersAttempted: ProviderName[] = [];
   const providersUsed: ProviderName[] = [];

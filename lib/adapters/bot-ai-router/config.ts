@@ -54,8 +54,12 @@ export const BOT_AI_CONFIG: Record<BotName, BotAIConfig> = {
   pricebot: {
     primary: "openai",
     secondary: "gemini",
-    triggers: ["high_value", "specialty_item"],
+    triggers: ["high_value", "specialty_item", "live_web_needed"],
     costTier: "balanced",
+    // CMD-PERPLEXITY-BOT-WIRING: Sonar fallback for volatile categories
+    // (Antiques · Collectibles · Vehicles · Watches) · advisor I3.
+    // Primary/secondary preserved for non-live-web calls.
+    liveWebProvider: "perplexity",
   },
   photobot: {
     primary: "openai",
@@ -72,8 +76,12 @@ export const BOT_AI_CONFIG: Record<BotName, BotAIConfig> = {
   reconbot: {
     primary: "gemini",
     secondary: "grok",
-    triggers: ["high_disagreement"],
+    triggers: ["high_disagreement", "live_web_needed"],
     costTier: "balanced",
+    // CMD-PERPLEXITY-BOT-WIRING: Sonar deep-research for live market
+    // intel · advisor I3 · Cyl 7 scraper-cleaning foundation. Grok
+    // fallback on high_disagreement preserved.
+    liveWebProvider: "perplexity",
   },
   listbot: {
     primary: "claude",
