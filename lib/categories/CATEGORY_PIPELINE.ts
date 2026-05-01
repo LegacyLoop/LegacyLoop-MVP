@@ -15,6 +15,11 @@
  * Pure data + pure functions · no React imports · no JSX · no side effects.
  */
 
+// CMD-CYL-6-REGISTRY-ADOPTION (May 1 2026): 46 inline gate-flag refs measured
+// in ItemDashboardPanels.tsx (`grep -cE "\b(isVehicle|isAntiqueItem|isAntique|
+// isCollectible|isOutdoorEquipment)\b"`). 5 whole-panel gates wired this commit.
+// Remaining ~41 (MegaBot ternaries + banners + intra-panel) banked as V2 rollout.
+
 export type CategoryKey =
   | "antique"
   | "collectible"

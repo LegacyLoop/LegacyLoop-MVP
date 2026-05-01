@@ -8,6 +8,7 @@ import { suggestPackage, suggestShippingMethod } from "@/lib/shipping/package-su
 import { getMetroEstimates } from "@/lib/shipping/metro-estimates";
 import VehicleSpecsCard from "./VehicleSpecsCard";
 import { detectCollectible } from "@/lib/collectible-detect";
+import { deriveCategoryContext } from "@/lib/categories/CATEGORY_PIPELINE";
 import ItemIntelligenceSummary from "./ItemIntelligenceSummary";
 import { PROCESSING_FEE } from "@/lib/constants/pricing";
 import EnrichmentBadge from "@/app/components/EnrichmentBadge";
@@ -7331,6 +7332,7 @@ function CollectiblesBotPanel({ aiData, itemId, collapsed, onToggle, collectible
   const PURPLE_FAINT = "rgba(139,92,246,0.1)";
 
   // No result and not detected — show intro
+  // CMD-CYL-6-REGISTRY-ADOPTION: detection.isCollectible matches CategoryContext.isCollectible (registry SSOT · same predicate). Threading ctx into this panel signature banked V2.
   if (!hasResult && !detection?.isCollectible) {
     return (
       <GlassCard>
@@ -7843,6 +7845,7 @@ function AntiqueEvalPanel({ aiData, antique, itemId, collapsed, onToggle, antiqu
   const verdictColor = auth?.verdict === "Authentic" || auth?.verdict === "Likely Authentic"
     ? "#16a34a" : auth?.verdict === "Uncertain" ? "#d97706" : auth?.verdict ? "#dc2626" : "#fbbf24";
 
+  // CMD-CYL-6-REGISTRY-ADOPTION: identical predicate now sourced from registry-derived ctx (CategoryContext.isAntique). Threading ctx into this panel signature banked V2.
   const isAntiqueItem = antique?.isAntique === true;
 
   // Non-antique intro state (like CarBot's non-vehicle state)
@@ -8796,6 +8799,7 @@ function BotSummaryContent({ aiData, valuation, antique, photos, megabotUsed, it
   itemId: string;
   category: string;
 }) {
+  // CMD-CYL-6-REGISTRY-ADOPTION: matches CategoryContext.isAntique (registry SSOT). Threading ctx into BotSummaryContent signature banked V2.
   const isAntique = antique?.isAntique === true;
   const bots = [
     { name: "AnalyzeBot", icon: "🧠", status: aiData ? "Complete" : "Not run", finding: aiData ? `${aiData.item_name || "Identified"} — ${Math.round((aiData.confidence || 0) * 100)}% confident` : "—", link: `/bots/analyzebot?item=${itemId}` },
@@ -10415,10 +10419,35 @@ export default function ItemDashboardPanels({
   }
 
   const hasAnalysis = !!aiData;
-  // CMD-ANALYZEBOT-BUG-FIX: outdoor equipment exclusion prevents riding mowers from showing VEHICLE badge
-  const isOutdoorEquipment = (category || "").toLowerCase().includes("outdoor") || (category || "").toLowerCase().includes("garden") || /riding\s*mow|lawn\s*mow|garden\s*tract|lawn\s*tract|chainsaw|leaf\s*blow|snow\s*blow|pressure\s*wash/i.test((aiData?.subcategory || "") + " " + (aiData?.item_name || ""));
-  const isVehicle = !isOutdoorEquipment && (VEHICLE_KEYWORDS.some((kw) => (category || "").toLowerCase().includes(kw)) || !!aiData?.vehicle_year || !!aiData?.vehicle_make || !!aiData?.vehicle_model);
-  const isAntique = antique?.isAntique === true || (aiData?.is_antique === true);
+  // CMD-CYL-6-REGISTRY-ADOPTION (May 1 2026): derived flags now sourced from
+  // CATEGORY_PIPELINE registry (single SSOT). Local aliases preserved for
+  // downstream banner / prop-passing code · ZERO behavior change. The 4
+  // legacy inline derivations (CMD-ANALYZEBOT-BUG-FIX outdoor regex ·
+  // VEHICLE_KEYWORDS sweep · isAntique || aiData.is_antique) are now
+  // consolidated inside `deriveCategoryContext()` at lib/categories/
+  // CATEGORY_PIPELINE.ts:101-141 — same predicates, same outputs.
+  // collectibleDetection moved up from L10443 region to thread into ctx
+  // (registry-faithful · isCollectible now reflects truth on ctx).
+  const collectibleDetection = hasAnalysis && aiData ? detectCollectible(aiData) : null;
+  const ctx = deriveCategoryContext({
+    category,
+    antique,
+    aiData,
+    detection: collectibleDetection
+      ? { isCollectible: collectibleDetection.isCollectible, category: collectibleDetection.category ?? undefined }
+      : null,
+    hasAnalysis,
+    hasMegaBot: megabotUsed,
+  });
+  const isOutdoorEquipment = ctx.isOutdoorEquipment;
+  const isVehicle = ctx.isVehicle;
+  const isAntique = ctx.isAntique;
+  // [CYL-6 REGISTRY ADOPTION TRACK]
+  // Wired (5/46): root-derivation here · CarBotPanel L10704 prop ·
+  // AntiqueEvalPanel L7846 doc · CollectiblesBotPanel L7334 doc ·
+  // BotSummaryContent L8799 doc.
+  // Banked V2: MegaBot 8-way layout chains · banner derivations ·
+  // 30+ remaining single-line aliases.
   // CMD-ANALYZEBOT-HIGH-VALUE-BANNER: derived from valuation, no schema change
   const isHighValue = (valuation?.mid ?? valuation?.high ?? 0) >= 500;
 
@@ -10439,8 +10468,7 @@ export default function ItemDashboardPanels({
   const antiqueBannerAge = estimatedAge >= 70 ? `~${estimatedAge} Years Old` : decadeAge >= 70 ? `~${decadeStr}` : null;
   const [antiqueBannerDismissed, setAntiqueBannerDismissed] = useState(false);
 
-  // Collectible alert banner — detect from AI analysis fields
-  const collectibleDetection = hasAnalysis && aiData ? detectCollectible(aiData) : null;
+  // Collectible alert banner — uses collectibleDetection threaded into ctx above (CMD-CYL-6-REGISTRY-ADOPTION).
   const showCollectibleBanner = hasAnalysis && (collectibleDetection?.isCollectible === true);
   const [collectibleBannerDismissed, setCollectibleBannerDismissed] = useState(false);
 
@@ -10701,7 +10729,7 @@ export default function ItemDashboardPanels({
         ) : (
         <CarBotPanel
           aiData={aiData} itemId={itemId} category={category}
-          isVehicle={isVehicle}
+          isVehicle={ctx.isVehicle}
           onSuperBoost={() => superBoost("carbot")}
           onCarBotRun={runCarBot}
           boosting={boostingBot === "carbot"}
