@@ -480,11 +480,59 @@ Include a "web_sources" array in your response with objects like {"url": "...", 
           !!(ai.is_collectible) ||
           !!(ai.is_vehicle);
 
+        // CMD-PERPLEXITY-LIVE-WEB-CALLER-WIRE: volatile-category predicate
+        // for Sonar live-web routing. Conservative ruleset uses signals
+        // already in scope at L153/L147/L153/L154-156:
+        //   • estimatedMid >= 500       (high_value · sparse retail comp)
+        //   • isAntique                 (auction-house-driven pricing)
+        //   • ai.is_collectible         (cultural-moment volatility)
+        //   • ai.is_vehicle             (real-time market data)
+        // Predicate parity with shouldRunSecondary by design — same items
+        // that warrant a Gemini second opinion warrant a Sonar live-web
+        // primary. When true, routePriceBotHybrid swaps OpenAI primary
+        // for Perplexity Sonar (config.liveWebProvider). Falls back to
+        // OpenAI if Sonar fails (existing fallbackChain).
+        const requiresLiveWeb =
+          estimatedMid >= 500 || isAntique ||
+          !!(ai.is_collectible) ||
+          !!(ai.is_vehicle);
+
+        // CMD-PERPLEXITY-LIVE-WEB-CALLER-WIRE: telemetry banks B1+B2.
+        // Fires regardless of whether the router-side gate ultimately
+        // dispatches Sonar — we want the *intent* logged so cost
+        // calibration can correlate predicate-firing with actual
+        // Sonar latency + token spend downstream.
+        if (requiresLiveWeb) {
+          try {
+            await prisma.eventLog.create({
+              data: {
+                itemId: item.id,
+                eventType: "LIVE_WEB_REQUESTED",
+                payload: JSON.stringify({
+                  bot: "pricebot",
+                  reason: {
+                    high_value: estimatedMid >= 500,
+                    is_antique: isAntique,
+                    is_collectible: !!(ai.is_collectible),
+                    is_vehicle: !!(ai.is_vehicle),
+                  },
+                  estimated_mid: estimatedMid,
+                  category,
+                  timestamp: new Date().toISOString(),
+                }),
+              },
+            });
+          } catch (e: any) {
+            console.warn("[pricebot] LIVE_WEB_REQUESTED log failed:", e?.message);
+          }
+        }
+
         hybridRun = await routePriceBotHybrid({
           itemId: item.id,
           photoPath: photoUrls,
           pricingPrompt: systemPrompt,
           shouldRunSecondary,
+          enableLiveWeb: requiresLiveWeb,
           timeoutMs: 90_000,
           maxTokens: 16_384,
         });

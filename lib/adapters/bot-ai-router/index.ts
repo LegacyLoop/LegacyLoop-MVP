@@ -1464,18 +1464,30 @@ export async function routeReconBotHybrid(
   let fallbackUsed = false;
 
   // ── PRIMARY: Gemini (with optional grounding) ──────────
-  const wantsGrounding = input.enableGrounding === true;
-  let primary: RawRunOutcome = await runRaw("gemini", input.reconPrompt, wantsGrounding);
-  providersAttempted.push("gemini");
-  totalEstCost += estimateProviderCost("gemini");
+  // CMD-PERPLEXITY-LIVE-WEB-CALLER-WIRE: opt-in Sonar swap mirrors the
+  // standard-flow override at L820-826. Sonar is mutually exclusive with
+  // grounding (Sonar IS live web — Gemini's google_search tool would be
+  // redundant and not even applicable to Perplexity).
+  const liveWebActive =
+    input.enableLiveWeb === true &&
+    !!config.liveWebProvider &&
+    config.triggers.includes("live_web_needed");
+  const primaryProvider: ProviderName = liveWebActive
+    ? config.liveWebProvider!
+    : "gemini";
+  const wantsGrounding = input.enableGrounding === true && !liveWebActive;
+
+  let primary: RawRunOutcome = await runRaw(primaryProvider, input.reconPrompt, wantsGrounding);
+  providersAttempted.push(primaryProvider);
+  totalEstCost += estimateProviderCost(primaryProvider);
   if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
-  if (primary.rawResult) providersUsed.push("gemini");
+  if (primary.rawResult) providersUsed.push(primaryProvider);
 
   // ── Graceful fallback chain on primary failure ────────
   // Fallback providers do NOT inherit enableGrounding — only
   // Gemini supports it, and the others have no equivalent.
   if (!primary.rawResult) {
-    const chain = fallbackChain("gemini", providersAttempted);
+    const chain = fallbackChain(primaryProvider, providersAttempted);
     let attempts = 0;
     for (const fallback of chain) {
       if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
@@ -2640,15 +2652,27 @@ export async function routePriceBotHybrid(
   let fallbackUsed = false;
 
   // ── PRIMARY: OpenAI (pricing with web_search) ──────────
-  let primary: RawRunOutcome = await runRaw("openai", input.pricingPrompt);
-  providersAttempted.push("openai");
-  totalEstCost += estimateProviderCost("openai");
+  // CMD-PERPLEXITY-LIVE-WEB-CALLER-WIRE: opt-in Sonar swap mirrors the
+  // standard-flow override at L820-826 but applied to the hybrid path.
+  // Same gate (config.liveWebProvider set + live_web_needed trigger);
+  // same fall-through (failure → standard fallbackChain catches).
+  const liveWebActive =
+    input.enableLiveWeb === true &&
+    !!config.liveWebProvider &&
+    config.triggers.includes("live_web_needed");
+  const primaryProvider: ProviderName = liveWebActive
+    ? config.liveWebProvider!
+    : "openai";
+
+  let primary: RawRunOutcome = await runRaw(primaryProvider, input.pricingPrompt);
+  providersAttempted.push(primaryProvider);
+  totalEstCost += estimateProviderCost(primaryProvider);
   if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
-  if (primary.rawResult) providersUsed.push("openai");
+  if (primary.rawResult) providersUsed.push(primaryProvider);
 
   // ── Graceful fallback chain on primary failure ────────
   if (!primary.rawResult) {
-    const chain = fallbackChain("openai", providersAttempted);
+    const chain = fallbackChain(primaryProvider, providersAttempted);
     let attempts = 0;
     for (const fallback of chain) {
       if (attempts >= MAX_FALLBACK_ATTEMPTS) break;

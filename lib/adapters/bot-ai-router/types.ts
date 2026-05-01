@@ -293,6 +293,13 @@ export interface ReconBotHybridInput {
    *  and CarBot (Step 8) — both Gemini-primary bots that
    *  benefit from real-time web data. */
   enableGrounding?: boolean;
+  /** CMD-PERPLEXITY-LIVE-WEB-CALLER-WIRE: opt-in for Sonar primary on
+   *  volatile-category items. When true AND config.liveWebProvider is
+   *  set AND config.triggers includes "live_web_needed", primary is
+   *  swapped from Gemini to Perplexity Sonar. Default false. Mutually
+   *  exclusive with enableGrounding (Sonar already returns live web —
+   *  grounding is suppressed when liveWebActive). */
+  enableLiveWeb?: boolean;
   /** Optional logging skip flag for tests. Default false. */
   skipLogging?: boolean;
 }
@@ -706,6 +713,11 @@ export interface PriceBotHybridInput {
   photoPath: string | string[];
   pricingPrompt: string;
   shouldRunSecondary?: boolean;
+  /** CMD-PERPLEXITY-LIVE-WEB-CALLER-WIRE: opt-in for Sonar primary on
+   *  volatile-category items. When true AND config.liveWebProvider is
+   *  set AND config.triggers includes "live_web_needed", primary is
+   *  swapped from OpenAI to Perplexity Sonar. Default false. */
+  enableLiveWeb?: boolean;
   timeoutMs?: number;
   maxTokens?: number;
   apifyCostUsd?: number;
