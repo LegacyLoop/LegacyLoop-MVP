@@ -6,7 +6,7 @@ import { getItemEnrichmentContext } from "@/lib/enrichment";
 import { getMarketInfo } from "@/lib/pricing/market-data";
 import { populateFromPriceBot } from "@/lib/data/populate-intelligence";
 import { logUserEvent } from "@/lib/data/user-events";
-import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
+import { canUseBotOnTier, BOT_CREDIT_COSTS, AUTO_RECONCILE_THRESHOLDS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
@@ -96,6 +96,27 @@ export async function POST(
         return NextResponse.json({ error: "insufficient_credits", message: "Not enough credits to run PriceBot.", balance: cc.balance, required: cost, buyUrl: "/credits" }, { status: 402 });
       }
       await deductCredits(user.id, cost, isRerun ? "PriceBot re-run" : "PriceBot run", itemId);
+    }
+
+    // CMD-PRICEBOT-AUTO-RECONCILE V18 · server-side rate-limit defense.
+    // Soft-block ONLY when X-Auto-Reconcile=1 header is set (auto-fire path).
+    // Manual user clicks bypass · credits already gate manual.
+    const isAutoFire = _req.headers.get("x-auto-reconcile") === "1";
+    if (isAutoFire) {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const oneDayAgo  = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const [userHourCount, itemDayCount] = await Promise.all([
+        prisma.userEvent.count({ where: { userId: user.id, eventType: "RECONCILE_AUTOFIX_FIRED", createdAt: { gte: oneHourAgo } } }),
+        prisma.userEvent.count({ where: { itemId, eventType: "RECONCILE_AUTOFIX_FIRED", createdAt: { gte: oneDayAgo } } }),
+      ]);
+      if (userHourCount >= AUTO_RECONCILE_THRESHOLDS.MAX_PER_USER_PER_HOUR) {
+        await logUserEvent(user.id, "RECONCILE_AUTOFIX_RATE_LIMITED", { itemId, metadata: { scope: "user_hour", count: userHourCount } });
+        return NextResponse.json({ skipped: true, reason: "rate_limit_user_hour" }, { status: 200 });
+      }
+      if (itemDayCount >= AUTO_RECONCILE_THRESHOLDS.MAX_PER_ITEM_PER_DAY) {
+        await logUserEvent(user.id, "RECONCILE_AUTOFIX_RATE_LIMITED", { itemId, metadata: { scope: "item_day", count: itemDayCount } });
+        return NextResponse.json({ skipped: true, reason: "rate_limit_item_day" }, { status: 200 });
+      }
     }
 
     // Fetch item with analysis data

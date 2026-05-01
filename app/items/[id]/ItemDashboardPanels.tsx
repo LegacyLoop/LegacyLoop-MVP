@@ -9740,6 +9740,7 @@ export default function ItemDashboardPanels({
           v9Data={v9CalcData ?? null}
           collapsed={collapsed.intelligence}
           onToggle={() => togglePanel("intelligence")}
+          identificationConfidence={aiData?.confidence != null ? (aiData.confidence > 1 ? aiData.confidence : aiData.confidence * 100) : null}
         />
       </div>
 

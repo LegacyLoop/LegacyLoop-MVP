@@ -346,6 +346,32 @@ export const AI_CONFIDENCE_THRESHOLDS = {
   AUTO_REANALYZE_STALE_HOURS: 24,
 } as const;
 
+/**
+ * CMD-PRICEBOT-AUTO-RECONCILE V18 thresholds. SSOT — never inline.
+ *
+ * Auto-reconcile re-runs PriceBot when the disagreement banner emits AND
+ * safety gates are met. See useAutoReconcile.ts for gate logic.
+ *
+ * DISSENT_FLOOR=2:        matches reconcile.ts:558 multi-field banner.
+ * VOLATILITY_CEILING=3.0: spreadPct above which market is "real volatile" · skip.
+ * FRESHNESS_HOURS=4:      comps re-pull window · below = no value to refire.
+ * DEBOUNCE_MS=600000:     10-minute per-item cross-session debounce.
+ * USER_QUIESCE_MS=30000:  skip if user input < 30s ago.
+ * STAGGER_MS=1500:        Tech Advisor stagger · matches Cyl 6 AUTOFIRE doctrine.
+ * MAX_PER_USER_PER_HOUR=8: cost-spike soft cap (server-side rate-limit gate).
+ * MAX_PER_ITEM_PER_DAY=3:  cost-spike soft cap (server-side rate-limit gate).
+ */
+export const AUTO_RECONCILE_THRESHOLDS = {
+  DISSENT_FLOOR: 2,
+  VOLATILITY_CEILING: 3.0,
+  FRESHNESS_HOURS: 4,
+  DEBOUNCE_MS: 600_000,
+  USER_QUIESCE_MS: 30_000,
+  STAGGER_MS: 1_500,
+  MAX_PER_USER_PER_HOUR: 8,
+  MAX_PER_ITEM_PER_DAY: 3,
+} as const;
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SECTION G — CREDIT PACKS
 // ═══════════════════════════════════════════════════════════════════════════════

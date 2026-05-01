@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { canAccessIntelTab } from "@/lib/constants/pricing";
 import JuryVerdictSheet from "./JuryVerdictSheet";
+import { useAutoReconcile } from "./useAutoReconcile";
 
 /* ═══════════════════════════════════════════════════════════════════════
    Types
@@ -78,6 +80,10 @@ interface Props {
   v9Data?: import("@/lib/pricing/garage-sale").GarageSaleV9Prices | null;
   collapsed?: boolean;
   onToggle?: () => void;
+  // CMD-PRICEBOT-AUTO-RECONCILE V18: AnalyzeBot identification confidence
+  // (0-100, normalized at IDP mount per ConfidencePill.tsx pattern). Used
+  // by useAutoReconcile Gate F to skip auto-fire on unidentified items.
+  identificationConfidence?: number | null;
 }
 
 type Tab = "market" | "ready" | "sell" | "alerts" | "action";
@@ -189,7 +195,23 @@ export default function ItemIntelligenceSummary(props: Props) {
     shippingData, saleMethod, listingPrice, hasPhotos, photoCount,
     isAntique, isCollectible, authenticityScore,
     userTier = 1, pricingConsensus = null, v9Data = null, collapsed = false, onToggle,
+    identificationConfidence = null,
   } = props;
+
+  // CMD-PRICEBOT-AUTO-RECONCILE V18: invisible auto-fire when the
+  // dissent banner emits AND 7 safety gates pass. Co-located with the
+  // banner UI surface (banner JSX at L848+ reads `autoReconcile.busy`
+  // for the "Refreshing" suffix). Hook handles strict-mode + session
+  // debounce + AbortController + 4-event telemetry. See
+  // useAutoReconcile.ts for full gate logic + threshold sources.
+  const reconcileRouter = useRouter();
+  const autoReconcile = useAutoReconcile({
+    itemId,
+    pricingConsensus,
+    identificationConfidence,
+    saleMethod: saleMethod as "LOCAL_PICKUP" | "ONLINE_SHIPPING" | "BOTH" | null,
+    onComplete: () => reconcileRouter.refresh(),
+  });
 
   // CMD-JURY-VERDICT-SURFACE: modal state + single-fire chip-render telemetry
   const [juryModalOpen, setJuryModalOpen] = useState(false);
@@ -836,9 +858,20 @@ export default function ItemIntelligenceSummary(props: Props) {
       `}</style>
 
       {pricingConsensus?.warningBanner && (
-        <div style={{ padding: "0.5rem 0.75rem", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "0.4rem", fontSize: "0.7rem", color: "#b45309", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.4rem", lineHeight: 1.4 }}>
+        <div
+          aria-live="polite"
+          aria-label={autoReconcile.busy ? "Pricing range warning · re-running PriceBot" : "Pricing range warning"}
+          style={{ padding: "0.5rem 0.75rem", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "0.4rem", fontSize: "0.7rem", color: "#b45309", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.4rem", lineHeight: 1.4 }}
+        >
           <span style={{ flexShrink: 0 }}>⚠️</span>
-          <span style={{ flex: 1, minWidth: 0 }}>{pricingConsensus.warningBanner}</span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            {pricingConsensus.warningBanner}
+            {autoReconcile.busy && (
+              <span style={{ marginLeft: "0.4rem", opacity: 0.85, animation: "softPulse 1.6s ease-in-out infinite" }}>
+                … Refreshing
+              </span>
+            )}
+          </span>
         </div>
       )}
       <div className="intel-hud">
