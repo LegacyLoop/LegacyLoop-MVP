@@ -69,6 +69,9 @@ const PROVIDER_COST_USD: Record<ProviderName, number> = {
   claude: 0.045,
   gemini: 0.004,
   grok: 0.045,
+  // CMD-PERPLEXITY-DECLARATIVE: aggregate flat estimate matches claude tier
+  // (sonar-pro mid-tier · conservative · banked: per-alias granularity)
+  perplexity: 0.040,
 };
 
 /** Lookup the cost ceiling for a given tier. */
@@ -137,6 +140,9 @@ export const TOKEN_RATES_PER_1K: Record<ProviderName, { input: number; output: n
   claude: { input: 0.001,    output: 0.005 },
   gemini: { input: 0.000075, output: 0.0003 },
   grok:   { input: 0.0005,   output: 0.0015 },
+  // CMD-PERPLEXITY-DECLARATIVE: sonar-pro mid-tier rates
+  // (banked: per-alias rate map for sonar/sonar-pro/sonar-reasoning-pro/sonar-deep-research)
+  perplexity: { input: 0.003, output: 0.015 },
 };
 
 /**

@@ -593,6 +593,60 @@ async function callGrokRaw(
   return { text, tokens };
 }
 
+/**
+ * Perplexity Sonar API call · OpenAI-compatible · routes via LiteLLM Gateway.
+ * Model alias selected based on bot intent (deep-research for ReconBot ·
+ * pro for PriceBot · reasoning-pro for BuyerBot · default sonar otherwise).
+ *
+ * CMD-PERPLEXITY-DECLARATIVE.
+ */
+async function callPerplexityRaw(
+  absPath: string,
+  prompt: string,
+  options: { timeoutMs?: number; maxTokens?: number; enableGrounding?: boolean } = {},
+): Promise<ProviderRawResult> {
+  // Default model selection · banks per-bot tuning as CMD-PERPLEXITY-MODEL-TUNING
+  // For declarative phase · use sonar (cheapest live-web tier · safe default)
+  const model = "sonar";
+  const baseUrl = process.env.LITELLM_BASE_URL || "http://localhost:8000/v1";
+  const timeoutMs = options.timeoutMs ?? PROVIDER_TIMEOUT_MS;
+  const maxTokens = options.maxTokens ?? 4096;
+
+  // Build OpenAI-compatible request · LiteLLM Gateway routes to Perplexity Sonar
+  // Image input matches existing OpenAI/Claude raw caller pattern (base64 data URL)
+  const { dataUrl } = await fileToDataUrl(absPath);
+  const messages = [
+    {
+      role: "user",
+      content: [
+        { type: "text", text: prompt },
+        { type: "image_url", image_url: { url: dataUrl } },
+      ],
+    },
+  ];
+
+  const res = await Promise.race([
+    fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model, messages, max_tokens: maxTokens }),
+    }),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Perplexity timeout")), timeoutMs),
+    ),
+  ]);
+  if (!res.ok) throw new Error(`Perplexity API ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content ?? "";
+  const usage = data.usage ?? {};
+  const tokens: TokenUsage = {
+    inputTokens: usage.prompt_tokens ?? null,
+    outputTokens: usage.completion_tokens ?? null,
+    totalTokens: usage.total_tokens ?? null,
+  };
+  return { text, tokens };
+}
+
 /** Dispatch a raw provider call by name. */
 async function callProviderRaw(
   provider: ProviderName,
@@ -608,10 +662,11 @@ async function callProviderRaw(
   } = {},
 ): Promise<ProviderRawResult> {
   switch (provider) {
-    case "openai": return callOpenAIRaw(absPath, prompt, options);
-    case "claude": return callClaudeRaw(absPath, prompt, options);
-    case "gemini": return callGeminiRaw(absPath, prompt, options);
-    case "grok":   return callGrokRaw(absPath, prompt, options);
+    case "openai":     return callOpenAIRaw(absPath, prompt, options);
+    case "claude":     return callClaudeRaw(absPath, prompt, options);
+    case "gemini":     return callGeminiRaw(absPath, prompt, options);
+    case "grok":       return callGrokRaw(absPath, prompt, options);
+    case "perplexity": return callPerplexityRaw(absPath, prompt, options);
   }
 }
 

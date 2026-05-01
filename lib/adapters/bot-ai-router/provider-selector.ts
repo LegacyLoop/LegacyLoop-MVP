@@ -122,6 +122,15 @@ export function evaluateTriggers(
         fired.push("always");
         break;
       }
+
+      case "live_web_needed": {
+        // Caller-set boolean flag · fires when bot needs real-time web data
+        // (volatile pricing · current market conditions · recency-sensitive comps)
+        // Caller responsibility: set signals.requiresLiveWeb = true based on
+        // category volatility · explicit user intent · or bot-specific heuristic
+        if (signals.requiresLiveWeb === true) fired.push("live_web_needed");
+        break;
+      }
     }
   }
 
@@ -182,6 +191,12 @@ export function fallbackChain(
   failedProvider: ProviderName,
   alreadyTried: ProviderName[] = [],
 ): ProviderName[] {
+  // Perplexity is INTENTIONALLY excluded from the general fallback chain.
+  // Reason: Sonar is a specialty provider for live web data · invoking it
+  // as a generic fallback wastes budget on items that don't need real-time
+  // freshness. Perplexity is reached only via explicit primary/secondary
+  // in BotAIConfig OR options.forceProvider = "perplexity".
+  // Banked: CMD-PERPLEXITY-FALLBACK-OPT-IN if telemetry shows utility.
   const fullChain: ProviderName[] = ["openai", "claude", "gemini", "grok"];
   const tried = new Set<ProviderName>([failedProvider, ...alreadyTried]);
   return fullChain.filter((p) => !tried.has(p));

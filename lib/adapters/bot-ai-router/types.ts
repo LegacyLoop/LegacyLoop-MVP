@@ -31,7 +31,7 @@ export type BotName =
   | "megabot";
 
 /** AI providers wired into multi-ai.ts. */
-export type ProviderName = "openai" | "claude" | "gemini" | "grok";
+export type ProviderName = "openai" | "claude" | "gemini" | "grok" | "perplexity";
 
 /** Cost tiers — bound the maximum spend per single routeBotAI() call. */
 export type CostTier = "budget" | "balanced" | "premium";
@@ -44,7 +44,8 @@ export type TriggerName =
   | "high_disagreement"
   | "borderline_grading"
   | "rare_vehicle"
-  | "always";
+  | "always"
+  | "live_web_needed";
 
 // ─── Config shape (config.ts populates this) ─────────────────────
 
@@ -86,6 +87,8 @@ export interface RouterInput {
     conditionScore?: number | null;
     carYear?: number | null;
     mileage?: number | null;
+    // CMD-PERPLEXITY-DECLARATIVE: caller-set flag · fires live_web_needed trigger
+    requiresLiveWeb?: boolean;
   };
   /** Caller overrides — useful for tests + admin tools. */
   options?: {
