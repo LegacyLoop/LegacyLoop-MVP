@@ -465,6 +465,43 @@ ${isAntique ? "- This IS an antique: include auction houses, specialty dealers, 
             "executive_summary fields with the cultural narrative."
           : undefined;
 
+        // CMD-PERPLEXITY-LIVE-WEB-CALLER-WIRE: volatile-category predicate
+        // for Sonar live-web routing. ReconBot fires on:
+        //   • wantsSecondary           (high_disagreement · scraper vs valuation >20%)
+        //   • isAntique                (collector-market volatility)
+        //   • midPrice >= 500          (high_value · sparse retail comp)
+        // The high_disagreement signal is the strongest live-web indicator
+        // for ReconBot — when scrapers and valuation disagree by >20%, the
+        // truth lives in real-time auction/specialty marketplaces that
+        // Gemini's training set cannot see. Sonar's live web fills the gap.
+        const requiresLiveWeb =
+          wantsSecondary || isAntique || midPrice >= 500;
+
+        if (requiresLiveWeb) {
+          try {
+            await prisma.eventLog.create({
+              data: {
+                itemId: item.id,
+                eventType: "LIVE_WEB_REQUESTED",
+                payload: JSON.stringify({
+                  bot: "reconbot",
+                  reason: {
+                    high_disagreement: wantsSecondary,
+                    is_antique: isAntique,
+                    high_value: midPrice >= 500,
+                  },
+                  market_intel_median: marketIntelMedian,
+                  mid_price: midPrice,
+                  category,
+                  timestamp: new Date().toISOString(),
+                }),
+              },
+            });
+          } catch (e: any) {
+            console.warn("[reconbot] LIVE_WEB_REQUESTED log failed:", e?.message);
+          }
+        }
+
         const hybridResult = await routeReconBotHybrid({
           itemId: item.id,
           photoPath: photoPaths,
@@ -472,6 +509,7 @@ ${isAntique ? "- This IS an antique: include auction houses, specialty dealers, 
           culturalContext,
           shouldRunSecondary: wantsSecondary,
           enableGrounding: true, // ← OPT-IN: Round 6A grounding goes live
+          enableLiveWeb: requiresLiveWeb, // ← OPT-IN: Block 4 Sonar dispatch
           apifyCostUsd,
           skipLogging: false,
         });
