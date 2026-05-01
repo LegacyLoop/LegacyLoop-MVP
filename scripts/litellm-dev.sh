@@ -24,7 +24,10 @@ echo "[litellm-dev] Killing stale proxy processes..."
 pkill -f 'litellm.*--config litellm_config.yaml' 2>/dev/null || true
 sleep 1
 
-# 2. Surgical key export from .env.local — only the 4 provider keys.
+# 2. Surgical key export from .env.local — only the active cloud-provider keys.
+# DOC-LAUNCHER-EXPORT-PARITY: this regex MUST mirror the litellm_config.yaml
+# model_list provider set. When adding a new cloud alias to the yaml that
+# references os.environ/<KEY>, extend this regex in the same cylinder.
 # DO NOT source .env.local wholesale: it contains LITELLM_* vars
 # (BASE_URL, MASTER_KEY) that, if present in the proxy's process
 # env, switch the proxy into authenticated mode and break
@@ -32,8 +35,8 @@ sleep 1
 # otherwise trigger LiteLLM's Prisma client init (Python prisma vs
 # our Node prisma → ImportError → crash).
 if [ -f .env.local ]; then
-  echo "[litellm-dev] Exporting provider keys from .env.local (OPENAI/ANTHROPIC/GEMINI/XAI)"
-  KEY_LINES=$(grep -E '^(OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|XAI_API_KEY)=' .env.local || true)
+  echo "[litellm-dev] Exporting provider keys from .env.local (OPENAI/ANTHROPIC/GEMINI/XAI/PERPLEXITY)"
+  KEY_LINES=$(grep -E '^(OPENAI_API_KEY|ANTHROPIC_API_KEY|GEMINI_API_KEY|XAI_API_KEY|PERPLEXITY_API_KEY)=' .env.local || true)
   if [ -z "$KEY_LINES" ]; then
     echo "[litellm-dev] WARNING: no provider keys found in .env.local"
   else
