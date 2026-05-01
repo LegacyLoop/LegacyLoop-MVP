@@ -76,6 +76,11 @@ const VEHICLE_KEYWORDS = [
   "rv",
   "atv",
   "boat",
+  "automobile",
+  "suv",
+  "van",
+  "trailer",
+  "camper",
 ];
 
 const OUTDOOR_KEYWORDS = ["outdoor", "garden"];
