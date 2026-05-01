@@ -449,7 +449,11 @@ export default async function ItemPage({ params }: { params: Params }) {
                 : null;
               return (
                 <ConfidencePill
-                  value={pricingConsensus?.consensusConfidence ?? (v.confidence > 1 ? v.confidence : v.confidence * 100)}
+                  value={
+                    aiObj?.confidence != null
+                      ? (aiObj.confidence > 1 ? aiObj.confidence : aiObj.confidence * 100)
+                      : (v.confidence > 1 ? v.confidence : v.confidence * 100)
+                  }
                   itemId={item.id}
                   lastAnalyzedAt={lastAnalyzedAt}
                   photosFingerprint={photosFingerprint}

@@ -9024,11 +9024,16 @@ function ItemControlCenter({ itemId, status, valuation, aiData, listingPrice: in
   const sellerFeeEst = Math.round(listPriceNum * 0.0175 * 100) / 100;
   const netEst = Math.round((listPriceNum - commissionEst - sellerFeeEst) * 100) / 100;
 
-  // CMD-ICC-CONFIDENCE-PILL-RELABEL: consensusConfidence is the canonical
-  // item-level confidence scalar (0-100 int). Matches Top Card + Intel Panel.
-  const rawConf = pricingConsensus?.consensusConfidence != null
-    ? pricingConsensus.consensusConfidence
-    : valuation?.confidence ?? aiData?.confidence ?? 0;
+  // CMD-CONFIDENCE-WIRING-FIX: AnalyzeBot identification confidence is the
+  // canonical "Confidence" scalar for the headline HUD row. Matches the
+  // pills-row ConfidencePill mount (page.tsx:451-452). Pricing-source
+  // agreement (consensusConfidence) is INTENTIONALLY demoted to fallback ·
+  // its disagreement signal is already surfaced via lib/pricing/reconcile.ts:521
+  // 131% banner on a separate UI surface. Fixes 5-way "CONFIDENCE" label
+  // divergence + auto-fire credit-burn loop.
+  const rawConf = aiData?.confidence != null
+    ? aiData.confidence
+    : valuation?.confidence ?? pricingConsensus?.consensusConfidence ?? 0;
   const confPct = Math.round(rawConf > 1 ? rawConf : rawConf * 100);
 
   // ── Sub-accordion state ──
