@@ -574,7 +574,7 @@ app/globals.css | app/layout.tsx
 lib/enrichment/index.ts | lib/enrichment/item-context.ts
 All /app/api/auth/* routes
 prisma/schema.prisma (unless migration explicitly approved)
-lib/db.ts | lib/prisma.ts
+lib/db.ts
 ItemDashboardPanels.tsx (9,000+ lines — surgical unlock required per command)
 public/images/logos/* — NEVER modify logo files
 ```

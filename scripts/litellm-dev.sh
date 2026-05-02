@@ -8,6 +8,26 @@
 #   3. Skips master_key (preserves Cyl 3 unauth dev access)
 #   4. Kills stale proxy processes before launch
 # ═══════════════════════════════════════════════════════════════
+# Gateway routing model · CMD-LITELLM-LAUNCHER-LOCAL-PATH-DOC V18
+# (DOC-LITELLM-LOCAL-MODEL-PATH companion · banks ratification ·
+#  empirically verified at Cyl 7B 0e4b64f live spec-drift catch):
+#
+#   CLOUD aliases (provider passthrough)
+#     OpenAI    → http://localhost:8000/openai/v1/...
+#     Anthropic → http://localhost:8000/anthropic/v1/...
+#     Gemini    → http://localhost:8000/gemini/...
+#     xAI       → http://localhost:8000/xai/v1/...
+#     ref: lib/adapters/multi-ai.ts:210-214
+#
+#   LOCAL aliases (Ollama-backed model_list · catch-all)
+#     llama-3.2-local · qwen-coder-2.5-local · deepseek-r1-local
+#                → http://localhost:8000/v1/chat/completions
+#     ref: lib/scraper-parser/adapter.ts:33-38
+#
+#   GOTCHA: hitting /openai/v1/... with a local alias 404s.
+#           Local aliases require the catch-all /v1/ route so
+#           the proxy performs model_list lookup internally.
+# ═══════════════════════════════════════════════════════════════
 # Usage: bash scripts/litellm-dev.sh   OR   npm run litellm:dev
 # Stops automatically when terminal closes (foreground process).
 # ═══════════════════════════════════════════════════════════════
