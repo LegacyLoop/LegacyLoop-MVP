@@ -32,28 +32,56 @@ import {
   persistEnrichmentComps,
   type EnrichmentCompInput,
 } from "@/lib/market-intelligence/enrichment-writer";
+import type { ScraperParsedItem } from "@/lib/scraper-parser/types";
+
+// Re-export the canonical type so existing callers that imported
+// `ScraperParsedItem` from this module keep working.
+export type { ScraperParsedItem };
 
 /**
- * Cyl 7B's typed parser output. Forward-compat local shim per §0
- * PRE-FIRE DECISIONS LOCKED — 7B's lib/scraper-parser/types.ts was
- * absent at draft time. CMD-CYLINDER-7C-V2-CANONICAL-TYPE-IMPORT
- * banks the consolidation cylinder once 7B ratifies. Extra fields
- * on the input object are silently ignored (writer only reads
- * fields it knows).
+ * CMD-CYLINDER-7C-V2-CANONICAL-TYPE-IMPORT V18: adapter for 7B's
+ * JSON-string fields (keywordsJson, imageUrlsJson, metadataJson) →
+ * writer's array/object fields (keywords, imageUrls, metadata).
+ * The writer (enrichment-writer.ts:L87-90) re-stringifies the
+ * arrays before persisting; we parse → writer re-stringifies, which
+ * round-trips cleanly because both use the same JSON representation.
+ * Ratifies DOC-FORWARD-COMPAT-TYPE-CONSOLIDATION on this clean fire.
  */
-export interface ScraperParsedItem {
-  slug: string;
-  sourceUrl?: string | null;
-  sourcePlatform: string;
-  title: string;
-  description?: string | null;
-  priceUsd?: number | null;
-  soldPrice?: number | null;
-  condition?: string | null;
-  category?: string | null;
-  keywords?: string[];
-  imageUrls?: string[];
-  metadata?: Record<string, unknown>;
+function safeJsonParse<T>(s: string, fallback: T): T {
+  try {
+    return JSON.parse(s) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function toEnrichmentInput(
+  parsed: ScraperParsedItem,
+  attribution: ScraperPersistAttribution,
+): EnrichmentCompInput {
+  return {
+    slug: parsed.slug,
+    sourceUrl: parsed.sourceUrl ?? null,
+    sourcePlatform: parsed.sourcePlatform,
+    title: parsed.title,
+    description: parsed.description ?? null,
+    priceUsd: parsed.priceUsd ?? null,
+    soldPrice: parsed.soldPrice ?? null,
+    condition: parsed.condition ?? null,
+    category: parsed.category ?? null,
+    keywords: parsed.keywordsJson
+      ? safeJsonParse<string[]>(parsed.keywordsJson, [])
+      : undefined,
+    imageUrls: parsed.imageUrlsJson
+      ? safeJsonParse<string[]>(parsed.imageUrlsJson, [])
+      : undefined,
+    metadata: parsed.metadataJson
+      ? safeJsonParse<Record<string, unknown>>(parsed.metadataJson, {})
+      : undefined,
+    contributingBot: attribution.contributingBot,
+    sourceItemId: attribution.sourceItemId ?? null,
+    sourceUserId: attribution.sourceUserId ?? null,
+  };
 }
 
 export interface ScraperPersistAttribution {
@@ -90,25 +118,12 @@ export async function persistScraperParsedItems(
     return { written: 0, deduped: 0, durationMs: 0 };
   }
 
-  // Map ScraperParsedItem → EnrichmentCompInput (writer's canonical shape).
-  // attribution.contributingBot is required for contributor list bookkeeping.
-  const writerInputs: EnrichmentCompInput[] = items.map((item) => ({
-    slug: item.slug,
-    sourceUrl: item.sourceUrl ?? null,
-    sourcePlatform: item.sourcePlatform,
-    title: item.title,
-    description: item.description ?? null,
-    priceUsd: item.priceUsd ?? null,
-    soldPrice: item.soldPrice ?? null,
-    condition: item.condition ?? null,
-    category: item.category ?? null,
-    keywords: item.keywords,
-    imageUrls: item.imageUrls,
-    metadata: item.metadata,
-    contributingBot: attribution.contributingBot,
-    sourceItemId: attribution.sourceItemId ?? null,
-    sourceUserId: attribution.sourceUserId ?? null,
-  }));
+  // Map ScraperParsedItem → EnrichmentCompInput (writer's canonical shape)
+  // via toEnrichmentInput · 7B emits JSON-string fields that the adapter
+  // parses into the array/object shape the writer expects.
+  const writerInputs: EnrichmentCompInput[] = items.map((item) =>
+    toEnrichmentInput(item, attribution),
+  );
 
   // Delegate to shipped persister · find-then-update-or-create on
   // @@unique([slug, sourceUrl]) compound key · accumulates contributor
