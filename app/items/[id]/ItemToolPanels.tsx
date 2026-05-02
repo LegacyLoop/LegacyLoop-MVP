@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import CollapsiblePanel from "@/app/components/CollapsiblePanel";
 import { getCommissionPct } from "@/lib/commission";
 import { PROCESSING_FEE } from "@/lib/constants/pricing";
+import { toPct } from "@/lib/utils/confidence-scale";
 
 type Props = {
   itemId: string;
@@ -81,7 +82,7 @@ function AiPanel({ aiData, itemId, status }: { aiData: any; itemId: string; stat
     );
   }
 
-  const confPct = Math.round(Math.min(100, (aiData.confidence || 0) * 100));
+  const confPct = toPct(aiData?.confidence ?? 0) ?? 0;
   const keywords: string[] = Array.isArray(aiData.keywords) ? aiData.keywords : [];
 
   return (
@@ -898,7 +899,7 @@ function BotSummaryPanel({ aiData, valuation, antique, photos, megabotUsed, item
   const isAntique = antique?.isAntique === true;
 
   const bots: { name: string; icon: string; status: string; finding: string; link: string; highlight?: boolean }[] = [
-    { name: "AnalyzeBot", icon: "🧠", status: aiData ? "Complete" : "Not run", finding: aiData ? `${aiData.item_name || "Identified"} — ${Math.round((aiData.confidence || 0) * 100)}% confident` : "—", link: `/bots/analyzebot?item=${itemId}` },
+    { name: "AnalyzeBot", icon: "🧠", status: aiData ? "Complete" : "Not run", finding: aiData ? `${aiData.item_name || "Identified"} — ${toPct(aiData.confidence ?? 0)}% confident` : "—", link: `/bots/analyzebot?item=${itemId}` },
     { name: "PriceBot", icon: "💰", status: valuation ? "Complete" : "Not run", finding: valuation ? `$${Math.round(valuation.low)} – $${Math.round(valuation.high)}` : "—", link: `/bots/pricebot?item=${itemId}` },
     { name: "ListBot", icon: "📝", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Ready to generate listing" : "Needs analysis first", link: `/bots/listbot?item=${itemId}` },
     { name: "BuyerBot", icon: "🎯", status: aiData ? "Ready" : "Waiting", finding: aiData ? "Ready to scan for buyers" : "Analyze item first", link: `/bots/buyerbot?item=${itemId}` },
@@ -971,7 +972,7 @@ function BotSummaryPanel({ aiData, valuation, antique, photos, megabotUsed, item
 
 /* ─── Main ItemToolPanels ─── */
 export default function ItemToolPanels({ itemId, aiData, valuation, antique, comps, photos, status, category, saleZip, megabotUsed, userTier }: Props) {
-  const confPct = aiData ? Math.round(Math.min(100, (aiData.confidence || 0) * 100)) : null;
+  const confPct = aiData ? toPct(aiData.confidence ?? 0) : null;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
