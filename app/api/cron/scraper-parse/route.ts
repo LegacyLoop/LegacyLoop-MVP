@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { processBatch } from "@/lib/scraper-parser/parser";
 import type { ParseInput } from "@/lib/scraper-parser/types";
 
-export const maxDuration = 60; // CMD-VERCEL-MAXDURATION-HOTFIX V18 · Hobby tier cap (Hobby 60s · Pro 300s · Enterprise 900s) · matches existing cron ceiling (cache-report · monthly-credits · offers · pricing-accuracy-sweep all = 60) · supersedes Cyl 7B's 800s declaration which assumed Enterprise · LIMIT_PER_FIRE / TIMEOUT_MS / MAX_ATTEMPTS tunes deferred to S20 CMD-CYLINDER-7B-V2-CPU-BUDGET-TUNE · Pro upgrade is separate CEO business call
+export const maxDuration = 60; // CMD-VERCEL-MAXDURATION-HOTFIX V18 + CMD-CYLINDER-7B-V2-PARSER-HARDEN V18 · Hobby tier cap (Hobby 60s · Pro 300s · Enterprise 900s) · matches existing cron ceiling · LIMIT_PER_FIRE=8 (this cylinder · extracted from inline magic 20) · production fast-fail algebra: 8 × ~10ms = 80ms when LITELLM_BASE_URL undefined (architecturally correct on Vercel · Phase D opens hosted Gateway) · Pro upgrade is separate CEO business call · TIMEOUT_MS / MAX_ATTEMPTS / BACKOFF_MS tunes banked S20-CPU-BUDGET-TUNE if telemetry warrants
+
+// CMD-CYLINDER-7B-V2-PARSER-HARDEN V18 · Hobby tier rate cap.
+// 8 × ~10ms fast-fail (production · LITELLM_BASE_URL undefined) = 80ms wall ·
+// safe under maxDuration=60s. Was inline magic number 20 (assumed Enterprise
+// tier paired with maxDuration=800 · superseded by hotfix to 60). Banks
+// S20-CPU-BUDGET-TUNE if telemetry warrants further reduction.
+const LIMIT_PER_FIRE = 8;
 
 /**
  * CMD-CYLINDER-7B-OLLAMA-GATEWAY-PARSE V18: cron-triggered consumer.
@@ -59,8 +66,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Cap at 20 per cron call · spec §4 Q6
-  const capped = inputs.slice(0, 20);
+  // Cap per cron call · LIMIT_PER_FIRE constant declared at top of file
+  // (CMD-CYLINDER-7B-V2-PARSER-HARDEN V18 · Hobby tier algebra)
+  const capped = inputs.slice(0, LIMIT_PER_FIRE);
   if (capped.length === 0) {
     return NextResponse.json({ processed: 0, parsed: [], errors: [] });
   }

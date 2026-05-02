@@ -80,7 +80,7 @@ export async function parseScraperOutput(
         }),
         new Promise<never>((_, reject) =>
           setTimeout(
-            () => reject(new Error("llama-3.2-local timeout (30s)")),
+            () => reject(new Error("llama-3.2-local timeout (60s)")),
             TIMEOUT_MS
           )
         ),
