@@ -87,7 +87,17 @@ export default async function ItemPage({ params }: { params: Params }) {
           authenticityScore: antiqueForGs?.authenticityScore ?? undefined,
           auctionLow: antiqueForGs?.auctionLow ?? undefined,
           auctionHigh: antiqueForGs?.auctionHigh ?? undefined,
-          confidenceScore: aiDataForGs.pricing_confidence ?? (valForGs?.confidence ?? undefined),
+          // CMD-CONFIDENCE-WIRING-FIX-V4 V18: gsCalc consumes 0-1 scale
+          // (garage-sale.ts:304 `if (conf >= 0.85)`). pricing_confidence
+          // is 0-100 per AiAnalysis type · valuation.confidence is 0-1
+          // per Valuation model. Coerce both to 0-1 here at producer site.
+          confidenceScore: (() => {
+            const pc = aiDataForGs.pricing_confidence;
+            if (pc != null) return pc > 1 ? pc / 100 : pc;
+            const vc = valForGs?.confidence;
+            if (vc != null) return vc > 1 ? vc / 100 : vc;
+            return undefined;
+          })(),
           brand: aiDataForGs.brand ?? undefined,
           marketCompsCount: item.marketComps?.length ?? 0,
         },
@@ -438,8 +448,20 @@ export default async function ItemPage({ params }: { params: Params }) {
               <div style={{ fontSize: "0.48rem", textTransform: "uppercase" as const, letterSpacing: "0.08em", color: "var(--text-muted)", fontWeight: 700 }}>Value</div>
               <div style={{ fontSize: "0.92rem", fontWeight: 700, fontFamily: "var(--font-data)", color: "var(--accent)", letterSpacing: "-0.01em" }}>{`$${pricingConsensus?.consensusValueLow ?? Math.round(v.low || 0)}–${pricingConsensus?.consensusValueHigh ?? Math.round(v.high || 0)}`}</div>
             </div>
-            {v.confidence != null && (() => {
-              // CMD-DEV-UX-CLEANUP · auto-reanalyze inputs
+            {(() => {
+              // CMD-CONFIDENCE-WIRING-FIX-V4 V18: tighten render gate.
+              // Resolve confidence ONCE · gate on > 0 · suppress pill when
+              // both aiObj.confidence and v.confidence are zero/null
+              // (CEO smoke 2026-05-01 · "Confidence 0%" false-positive).
+              // Safe ternary preserves 0-1 OR 0-100 input scale tolerance.
+              const aiConf = aiObj?.confidence;
+              const vConf = v?.confidence;
+              const rawConf = aiConf != null && aiConf > 0
+                ? aiConf
+                : (vConf != null && vConf > 0 ? vConf : null);
+              if (rawConf == null) return null;
+              const pillValue = rawConf > 1 ? rawConf : rawConf * 100;
+              // CMD-DEV-UX-CLEANUP · auto-reanalyze inputs (preserved)
               const photosFingerprint = item.photos
                 .map((p) => p.id)
                 .sort()
@@ -449,11 +471,7 @@ export default async function ItemPage({ params }: { params: Params }) {
                 : null;
               return (
                 <ConfidencePill
-                  value={
-                    aiObj?.confidence != null
-                      ? (aiObj.confidence > 1 ? aiObj.confidence : aiObj.confidence * 100)
-                      : (v.confidence > 1 ? v.confidence : v.confidence * 100)
-                  }
+                  value={pillValue}
                   itemId={item.id}
                   lastAnalyzedAt={lastAnalyzedAt}
                   photosFingerprint={photosFingerprint}
