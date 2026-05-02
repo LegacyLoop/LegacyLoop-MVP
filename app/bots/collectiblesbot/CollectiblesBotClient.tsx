@@ -6,6 +6,7 @@ import BotItemSelector from "../BotItemSelector";
 import BotLoadingState from "@/app/components/BotLoadingState";
 import { detectCollectible } from "@/lib/collectible-detect";
 import { computeCollectiblesScore, getCollectibleTierStyles } from "@/lib/collectibles-score";
+import { toPct } from "@/lib/utils/confidence-scale";
 
 type ItemPhoto = { id: string; filePath: string };
 
@@ -840,7 +841,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
           </div>
           {/* Confidence bar */}
           <div style={{ height: 4, borderRadius: 99, background: "var(--ghost-bg)", overflow: "hidden", marginBottom: "0.65rem" }}>
-            <div style={{ height: "100%", width: `${Math.min(100, detection.confidence)}%`, borderRadius: 99, background: `linear-gradient(90deg, ${PURPLE}, ${TEAL})`, transition: "width 0.5s ease" }} />
+            <div style={{ height: "100%", width: `${toPct(detection.confidence)}%`, borderRadius: 99, background: `linear-gradient(90deg, ${PURPLE}, ${TEAL})`, transition: "width 0.5s ease" }} />
           </div>
           {detection.category && (
             <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
