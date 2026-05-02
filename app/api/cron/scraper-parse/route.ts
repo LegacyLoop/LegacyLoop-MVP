@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { processBatch } from "@/lib/scraper-parser/parser";
 import type { ParseInput } from "@/lib/scraper-parser/types";
 
-export const maxDuration = 800; // 13.3 min · spec §4 Q6 (under Vercel cron 15-min cap)
+export const maxDuration = 60; // CMD-VERCEL-MAXDURATION-HOTFIX V18 · Hobby tier cap (Hobby 60s · Pro 300s · Enterprise 900s) · matches existing cron ceiling (cache-report · monthly-credits · offers · pricing-accuracy-sweep all = 60) · supersedes Cyl 7B's 800s declaration which assumed Enterprise · LIMIT_PER_FIRE / TIMEOUT_MS / MAX_ATTEMPTS tunes deferred to S20 CMD-CYLINDER-7B-V2-CPU-BUDGET-TUNE · Pro upgrade is separate CEO business call
 
 /**
  * CMD-CYLINDER-7B-OLLAMA-GATEWAY-PARSE V18: cron-triggered consumer.
