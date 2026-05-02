@@ -424,7 +424,7 @@ model Item {
   aiDimsEstimate         String?
   aiShippingDifficulty   String?
   aiShippingNotes        String?
-  aiShippingConfidence   Float?
+  aiShippingConfidence   Float?  // 0-1 (AnalyzeBot identification confidence)
 
   // Post-sale pickup/meetup tracking
   pickupStatus        String?  // INVITE_SENT | CONFIRMED | EN_ROUTE | HANDED_OFF | COMPLETED
@@ -523,7 +523,7 @@ model AiResult {
   id         String   @id @default(cuid())
   itemId     String   @unique
   rawJson    String
-  confidence Float
+  confidence Float    // 0-1 (AiAnalysis identification · per types.ts:20)
   createdAt  DateTime @default(now())
 
   item       Item     @relation(fields: [itemId], references: [id])
@@ -536,21 +536,21 @@ model Valuation {
   low        Float
   mid        Float?
   high       Float
-  confidence Float
+  confidence Float    // 0-1 (AiAnalysis-derived · same source as AiResult.confidence)
   source     String
   rationale  String?
 
   localLow        Float?
   localMid        Float?
   localHigh       Float?
-  localConfidence Float?
+  localConfidence Float?  // 0-1
   localSource     String?
   localRationale  String?
 
   onlineLow        Float?
   onlineMid        Float?
   onlineHigh       Float?
-  onlineConfidence Float?
+  onlineConfidence Float?  // 0-1
   onlineSource     String?
   onlineRationale  String?
 
@@ -713,7 +713,7 @@ model BuyerLead {
   urgency         String    @default("medium")     // low | medium | high
   matchScore      Int       @default(75)           // 0-100
   matchReason     String?
-  aiConfidence    Float     @default(0.8)
+  aiConfidence    Float     @default(0.8)              // 0-1 (default 0.8 is dispositive)
   botScore        Int       @default(75)
   outreachStatus  String    @default("PENDING")    // PENDING | CONTACTED | REPLIED | CONVERTED
   messageSent     String?
@@ -866,7 +866,7 @@ model ReconBot {
   currentStatus   String  @default("ANALYZING")
   // ANALYZING | PRICED_WELL | TOO_HIGH | TOO_LOW | NO_COMPETITORS | NOT_PRICED | MARKET_SHIFTING
   recommendation  String?
-  confidenceScore Float?
+  confidenceScore Float?  // 0-1 (ReconBot data_quality · NOT same scale as ItemDocument.confidenceScore which is 0-100)
 
   alerts         ReconAlert[]
 
@@ -1079,7 +1079,7 @@ model PriceSnapshot {
   priceLow    Int?
   priceHigh   Int?
   priceMedian Int?
-  confidence  String?
+  confidence  String?  // String with embedded scale: "grade_confidence: 0.75" (0-1, collectiblesbot) OR "id_confidence: 78" (0-100, carbot) — bot-specific · parse with care
   rawPayload  String?
   createdAt   DateTime @default(now())
 
