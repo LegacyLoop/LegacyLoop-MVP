@@ -38,6 +38,7 @@ import type {
   TriageResult,
   TriageTelemetry,
 } from "./types";
+import { recordTriage } from "./memory";
 
 // ─── Constants ────────────────────────────────────────────────────
 
@@ -287,9 +288,23 @@ async function callGateway(
 // ─── Telemetry ────────────────────────────────────────────────────
 
 async function emitTelemetry(t: TriageTelemetry): Promise<void> {
-  // V1 sink: structured JSON to console.log
-  // V2 (Spec 3) swaps this for Prisma SylviaMemory write
+  // V1 sink: structured JSON to console.log (preserved for dev visibility)
   console.log(`[sylvia-triage] ${JSON.stringify(t)}`);
+
+  // V2 sink: Prisma SylviaMemory persist · CMD-SYLVIA-TRIAGE-ROUTER-V2-
+  // TELEMETRY-PERSIST 2026-05-03 · activates compounding moat (Investor
+  // Moat #8). Memory write failure is NON-FATAL · routing path must
+  // never break because telemetry persistence hiccupped. V2.1 banked
+  // for caller-context propagation (userId · itemId · responseText).
+  try {
+    await recordTriage({ telemetry: t });
+  } catch (err) {
+    console.warn(
+      `[sylvia-triage] memory persist failed: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
+  }
 }
 
 function hashPrompt(prompt: string): string {
