@@ -25,3 +25,17 @@ export type {
   TriageResult,
   TriageTelemetry,
 } from "./types";
+
+// CMD-SYLVIA-COLLECTIVE-MEMORY-V1 · V18 · 2026-05-03
+// Memory layer (Spec 3) · persisted triage telemetry · cross-agent
+// context recall · pairs with V2-TELEMETRY-PERSIST (banked) for
+// auto-record on every triageAndRoute call.
+
+export {
+  recordTriage,
+  recallSimilar,
+  getSessionStats,
+  pruneOld,
+} from "./memory";
+
+export type { RecordTriageInput, RecallSimilarOpts } from "./memory";

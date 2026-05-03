@@ -30,30 +30,30 @@ enum SaleMethod {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  tier         Int      @default(1)
-  heroVerified Boolean  @default(false)
-  heroCategory String?
-  googleId     String?  @unique
-  displayName  String?
-  avatarUrl    String?
-  phoneNumber       String?  @unique
-  stripeCustomerId  String?  @unique
-  createdAt         DateTime @default(now())
+  id               String   @id @default(cuid())
+  email            String   @unique
+  passwordHash     String
+  tier             Int      @default(1)
+  heroVerified     Boolean  @default(false)
+  heroCategory     String?
+  googleId         String?  @unique
+  displayName      String?
+  avatarUrl        String?
+  phoneNumber      String?  @unique
+  stripeCustomerId String?  @unique
+  createdAt        DateTime @default(now())
 
   // CMD-ONBOARDING-7A: Onboarding fields
-  quizCompletedAt    DateTime?
-  sellerType         String?   // "estate" | "garage" | "neighborhood"
-  recommendedTier    String?   // quiz-recommended tier
-  servicePreference  String?   // "diy" | "whiteGlove"
-  onboardingStep     Int       @default(0) // 0=new, 1=quiz done, 2=first item, 3=complete
+  quizCompletedAt   DateTime?
+  sellerType        String? // "estate" | "garage" | "neighborhood"
+  recommendedTier   String? // quiz-recommended tier
+  servicePreference String? // "diy" | "whiteGlove"
+  onboardingStep    Int       @default(0) // 0=new, 1=quiz done, 2=first item, 3=complete
 
   // CMD-EMAIL-VERIFICATION: Email verification
-  emailVerified       Boolean   @default(false)
-  emailVerifyToken    String?
-  emailVerifyExpires  DateTime?
+  emailVerified      Boolean   @default(false)
+  emailVerifyToken   String?
+  emailVerifyExpires DateTime?
 
   items                 Item[]
   projects              Project[]
@@ -77,6 +77,7 @@ model User {
   offers                Offer[]
   userAddons            UserAddon[]
   listingPublishes      ListingPublish[]
+  sylviaMemories        SylviaMemory[]
   budgetPreferences     BudgetPreferences?
 }
 
@@ -84,40 +85,40 @@ model BudgetPreferences {
   id                  String   @id @default(cuid())
   userId              String   @unique
   user                User     @relation(fields: [userId], references: [id])
-  monthlySpendCap     Float?   // dollars — null = unlimited
-  perProjectCap       Float?   // dollars — null = unlimited
-  perItemCap          Float?   // dollars — null = unlimited
-  alertThreshold      Int      @default(80)  // percentage to trigger warning
+  monthlySpendCap     Float? // dollars — null = unlimited
+  perProjectCap       Float? // dollars — null = unlimited
+  perItemCap          Float? // dollars — null = unlimited
+  alertThreshold      Int      @default(80) // percentage to trigger warning
   autoStopEnabled     Boolean  @default(false) // auto-pause bots at limit
-  saleDurationDefault Int?     // default sale days — null = no default
+  saleDurationDefault Int? // default sale days — null = no default
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 }
 
 model UserCredits {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  user         User     @relation(fields: [userId], references: [id])
-  balance      Int      @default(0)
-  lifetime     Int      @default(0)
-  spent        Int      @default(0)
+  id       String @id @default(cuid())
+  userId   String @unique
+  user     User   @relation(fields: [userId], references: [id])
+  balance  Int    @default(0)
+  lifetime Int    @default(0)
+  spent    Int    @default(0)
 
-  autoReloadEnabled    Boolean   @default(false)
-  autoReloadThreshold  Int       @default(20)
-  autoReloadPackId     String    @default("pack_25")
-  autoReloadFailedAt   DateTime?
+  autoReloadEnabled   Boolean   @default(false)
+  autoReloadThreshold Int       @default(20)
+  autoReloadPackId    String    @default("pack_25")
+  autoReloadFailedAt  DateTime?
 
   transactions CreditTransaction[]
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime            @updatedAt
 }
 
 model CreditTransaction {
   id            String      @id @default(cuid())
   userCreditsId String
   userCredits   UserCredits @relation(fields: [userCreditsId], references: [id])
-  type          String      // "purchase" | "spend" | "bonus" | "earned" | "refund"
-  amount        Int         // positive = earned, negative = spent
-  balance       Int         // balance AFTER this transaction
+  type          String // "purchase" | "spend" | "bonus" | "earned" | "refund"
+  amount        Int // positive = earned, negative = spent
+  balance       Int // balance AFTER this transaction
   description   String
   itemId        String?
   paymentAmount Float?
@@ -130,7 +131,7 @@ model ConnectedPlatform {
   id               String    @id @default(cuid())
   userId           String
   user             User      @relation(fields: [userId], references: [id])
-  platform         String    // "facebook" | "instagram" | "ebay" | etc.
+  platform         String // "facebook" | "instagram" | "ebay" | etc.
   platformUsername String?
   isActive         Boolean   @default(true)
   lastSync         DateTime?
@@ -143,23 +144,23 @@ model ConnectedPlatform {
 }
 
 model Subscription {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 
-  tier      String   // FREE | STARTER | PLUS | PRO
-  price     Float    @default(0)
-  commission Float   @default(0.05)
+  tier       String // FREE | STARTER | PLUS | PRO
+  price      Float  @default(0)
+  commission Float  @default(0.05)
 
-  limitsJson String  @default("{}") // JSON: { items, photos, projects }
+  limitsJson   String @default("{}") // JSON: { items, photos, projects }
   featuresJson String @default("[]") // JSON array of feature keys
 
-  status    String   @default("ACTIVE") // ACTIVE | CANCELLED | EXPIRED | PAST_DUE
+  status String @default("ACTIVE") // ACTIVE | CANCELLED | EXPIRED | PAST_DUE
 
-  billingPeriod          String   @default("monthly")
-  currentPeriodStart     DateTime @default(now())
-  currentPeriodEnd       DateTime @default(now())
-  stripeSubscriptionId   String?  @unique
+  billingPeriod        String   @default("monthly")
+  currentPeriodStart   DateTime @default(now())
+  currentPeriodEnd     DateTime @default(now())
+  stripeSubscriptionId String?  @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -172,20 +173,20 @@ model WhiteGloveProject {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  tier          String  // ESSENTIALS | PROFESSIONAL | LEGACY
-  basePrice     Float
+  tier           String // ESSENTIALS | PROFESSIONAL | LEGACY
+  basePrice      Float
   additionalFees Float  @default(0)
-  totalUpfront  Float
-  commission    Float   @default(0.30)
+  totalUpfront   Float
+  commission     Float  @default(0.30)
 
   estimatedValue Float?
   actualRevenue  Float  @default(0)
 
-  address   String
-  city      String
-  state     String
-  zip       String
-  bedrooms  Int?
+  address        String
+  city           String
+  state          String
+  zip            String
+  bedrooms       Int?
   estimatedItems Int    @default(0)
 
   projectManager String?
@@ -200,7 +201,7 @@ model WhiteGloveProject {
   includedServicesJson String @default("[]") // JSON array
   addOnServicesJson    String @default("[]") // JSON array
 
-  status      String @default("QUOTE_REQUESTED")
+  status String @default("QUOTE_REQUESTED")
   // QUOTE_REQUESTED | QUOTE_SENT | DEPOSIT_PAID | IN_PROGRESS | COMPLETED
 
   contractUrl  String?
@@ -233,34 +234,34 @@ model WhiteGlovePhase {
 }
 
 model WhiteGloveBooking {
-  id                      String    @id @default(cuid())
-  userId                  String
-  user                    User      @relation(fields: [userId], references: [id])
-  tier                    String    // ESSENTIALS | PROFESSIONAL | LEGACY
-  serviceType             String    // ESTATE_SALE | NEIGHBORHOOD_BUNDLE
-  totalAmount             Float
-  depositAmount           Float
-  balanceAmount           Float
-  depositPaid             Boolean   @default(false)
-  depositPaidAt           DateTime?
-  depositStripePaymentId  String?
-  balancePaid             Boolean   @default(false)
-  balancePaidAt           DateTime?
-  balanceStripePaymentId  String?
-  addOnsTotal             Float     @default(0)
-  addOnsDetail            String?   // JSON: [{name, amount}]
-  status                  String    @default("PENDING_DEPOSIT") // PENDING_DEPOSIT | BOOKED | IN_PROGRESS | COMPLETED | CANCELLED
-  refundAmount            Float?
-  refundStripeId          String?
-  heroesDiscount          Boolean   @default(false)
-  scheduledAt             DateTime?
-  completedAt             DateTime?
-  cancelledAt             DateTime?
-  cancellationReason      String?
-  clientNotes             String?
-  internalNotes           String?
-  createdAt               DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
+  id                     String    @id @default(cuid())
+  userId                 String
+  user                   User      @relation(fields: [userId], references: [id])
+  tier                   String // ESSENTIALS | PROFESSIONAL | LEGACY
+  serviceType            String // ESTATE_SALE | NEIGHBORHOOD_BUNDLE
+  totalAmount            Float
+  depositAmount          Float
+  balanceAmount          Float
+  depositPaid            Boolean   @default(false)
+  depositPaidAt          DateTime?
+  depositStripePaymentId String?
+  balancePaid            Boolean   @default(false)
+  balancePaidAt          DateTime?
+  balanceStripePaymentId String?
+  addOnsTotal            Float     @default(0)
+  addOnsDetail           String? // JSON: [{name, amount}]
+  status                 String    @default("PENDING_DEPOSIT") // PENDING_DEPOSIT | BOOKED | IN_PROGRESS | COMPLETED | CANCELLED
+  refundAmount           Float?
+  refundStripeId         String?
+  heroesDiscount         Boolean   @default(false)
+  scheduledAt            DateTime?
+  completedAt            DateTime?
+  cancelledAt            DateTime?
+  cancellationReason     String?
+  clientNotes            String?
+  internalNotes          String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   @@index([userId])
   @@index([status])
@@ -270,7 +271,7 @@ model EstateCareContract {
   id                   String    @id @default(cuid())
   userId               String
   user                 User      @relation(fields: [userId], references: [id])
-  contractType         String    // MONTHLY | THREE_MONTH | FULL_RESOLUTION
+  contractType         String // MONTHLY | THREE_MONTH | FULL_RESOLUTION
   totalAmount          Float
   prelaunchPricing     Boolean   @default(true)
   heroesDiscount       Boolean   @default(false)
@@ -289,7 +290,7 @@ model EstateCareContract {
 
 model Contractor {
   id          String          @id @default(cuid())
-  type        String          // JUNK_REMOVAL | CLEANING | STAGING | DONATION | PHOTOGRAPHY | APPRAISAL
+  type        String // JUNK_REMOVAL | CLEANING | STAGING | DONATION | PHOTOGRAPHY | APPRAISAL
   company     String
   contactName String
   phone       String
@@ -325,26 +326,26 @@ model ContractorJob {
 }
 
 model ServiceQuote {
-  id     String @id @default(cuid())
+  id     String  @id @default(cuid())
   userId String?
 
-  fullName  String
-  email     String
-  phone     String
+  fullName String
+  email    String
+  phone    String
 
-  address     String
-  city        String
-  state       String
-  zip         String
+  address String
+  city    String
+  state   String
+  zip     String
 
   propertyType   String
   bedrooms       Int?
   squareFeet     Int?
   estimatedItems String
 
-  requestedTier  String
-  addOnsJson     String @default("[]") // JSON array
-  urgency        String @default("flexible")
+  requestedTier String
+  addOnsJson    String @default("[]") // JSON array
+  urgency       String @default("flexible")
 
   specialItems    String?
   accessConcerns  String?
@@ -355,7 +356,7 @@ model ServiceQuote {
   quoteSentAt      DateTime?
   quoteSentBy      String?
 
-  status    String @default("NEW")
+  status String @default("NEW")
   // NEW | REVIEWING | QUOTE_SENT | ACCEPTED | DECLINED
 
   createdAt DateTime @default(now())
@@ -377,26 +378,26 @@ model Project {
   status      String    @default("DRAFT") // DRAFT | ACTIVE | COMPLETED
 
   // ── Project Rollup Fields (computed, cached) ──
-  itemCount     Int      @default(0)
-  totalValue    Float    @default(0)
-  soldCount     Int      @default(0)
-  totalRevenue  Float    @default(0)
+  itemCount    Int   @default(0)
+  totalValue   Float @default(0)
+  soldCount    Int   @default(0)
+  totalRevenue Float @default(0)
 
-  user        User      @relation(fields: [userId], references: [id])
-  items       Item[]
+  user  User   @relation(fields: [userId], references: [id])
+  items Item[]
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
 }
 
 model Item {
-  id            String     @id @default(cuid())
-  userId        String
-  projectId     String?
-  status        ItemStatus @default(DRAFT)
-  createdAt     DateTime   @default(now())
+  id        String     @id @default(cuid())
+  userId    String
+  projectId String?
+  status    ItemStatus @default(DRAFT)
+  createdAt DateTime   @default(now())
 
   title         String?
   description   String?
@@ -404,72 +405,72 @@ model Item {
   purchasePrice Float?
   purchaseDate  DateTime?
 
-  saleMethod    SaleMethod @default(BOTH)
-  saleZip       String?
-  saleRadiusMi  Int        @default(25)
+  saleMethod   SaleMethod @default(BOTH)
+  saleZip      String?
+  saleRadiusMi Int        @default(25)
 
-  megabotUsed   Boolean    @default(false)
-  listingPrice  Float?
+  megabotUsed  Boolean @default(false)
+  listingPrice Float?
 
   // Shipping dimensions (from AI suggestion or manual entry)
-  shippingWeight Float?
-  shippingLength Float?
-  shippingWidth  Float?
-  shippingHeight Float?
-  isFragile      Boolean @default(false)
-  shippingPreference String @default("BUYER_PAYS") // BUYER_PAYS | FREE_SHIPPING | LOCAL_ONLY
+  shippingWeight     Float?
+  shippingLength     Float?
+  shippingWidth      Float?
+  shippingHeight     Float?
+  isFragile          Boolean @default(false)
+  shippingPreference String  @default("BUYER_PAYS") // BUYER_PAYS | FREE_SHIPPING | LOCAL_ONLY
 
   // AI Shipping Intelligence (populated by analyze route)
-  aiWeightLbs            Float?
-  aiDimsEstimate         String?
-  aiShippingDifficulty   String?
-  aiShippingNotes        String?
-  aiShippingConfidence   Float?  // 0-1 (AnalyzeBot identification confidence)
+  aiWeightLbs          Float?
+  aiDimsEstimate       String?
+  aiShippingDifficulty String?
+  aiShippingNotes      String?
+  aiShippingConfidence Float? // 0-1 (AnalyzeBot identification confidence)
 
   // Post-sale pickup/meetup tracking
-  pickupStatus        String?  // INVITE_SENT | CONFIRMED | EN_ROUTE | HANDED_OFF | COMPLETED
+  pickupStatus        String? // INVITE_SENT | CONFIRMED | EN_ROUTE | HANDED_OFF | COMPLETED
   pickupConfirmedAt   DateTime?
   pickupCompletedAt   DateTime?
-  pickupLocation      String?  // JSON: {type, address, otherDesc?}
+  pickupLocation      String? // JSON: {type, address, otherDesc?}
   pickupNotes         String?
   pickupInviteSentAt  DateTime?
   pickupScheduledAt   DateTime?
-  pickupTimeSlots     String?  // JSON array: ["8 AM – 12 PM", ...]
-  pickupBuyerTimeSlot String?  // slot buyer selected
+  pickupTimeSlots     String? // JSON array: ["8 AM – 12 PM", ...]
+  pickupBuyerTimeSlot String? // slot buyer selected
   pickupBuyerMessage  String?
-  pickupContactMethod String?  // in_app | text | email
-  pickupPaymentMethod String?  // legacyloop | cash | venmo | decide_later
-  pickupHandoffCode   String?  // 4-digit confirmation code
-  pickupConfirmedBy   String?  // seller | buyer | both
-  pickupRadius        Int?     // miles
+  pickupContactMethod String? // in_app | text | email
+  pickupPaymentMethod String? // legacyloop | cash | venmo | decide_later
+  pickupHandoffCode   String? // 4-digit confirmation code
+  pickupConfirmedBy   String? // seller | buyer | both
+  pickupRadius        Int? // miles
 
   // Post-sale LTL freight tracking
-  ltlStatus         String?  // QUOTE_ACCEPTED | PICKUP_SCHEDULED | PICKED_UP | IN_TRANSIT | DELIVERED
+  ltlStatus         String? // QUOTE_ACCEPTED | PICKUP_SCHEDULED | PICKED_UP | IN_TRANSIT | DELIVERED
   ltlCarrierName    String?
   ltlTrackingNumber String?
   ltlBolNumber      String?
   ltlPickupDate     DateTime?
   ltlDeliveryDate   DateTime?
-  ltlQuoteJson      String?  // JSON: full quote details
+  ltlQuoteJson      String? // JSON: full quote details
 
   // Seller-provided item details
-  numberOfOwners      String?
-  approximateAge      String?
-  worksProperly       String?
-  knownDamage         String?
+  numberOfOwners       String?
+  approximateAge       String?
+  worksProperly        String?
+  knownDamage          String?
   hasOriginalPackaging String?
 
   // Legacy storytelling
-  story         String?
+  story String?
 
   // ── Structured Intelligence Fields (populated from AI analysis) ──
-  category          String?
-  brand             String?
-  era               String?
-  material          String?
-  maker             String?
-  itemStyle         String?
-  countryOfOrigin   String?
+  category            String?
+  brand               String?
+  era                 String?
+  material            String?
+  maker               String?
+  itemStyle           String?
+  countryOfOrigin     String?
   conditionGrade      String?
   garageSalePrice     Float?
   garageSalePriceHigh Float?
@@ -478,28 +479,29 @@ model Item {
   garageSaleCalcAt    DateTime?
 
   // ── Financial Truth Fields ──
-  soldPrice         Int?
-  soldAt            DateTime?
+  soldPrice Int?
+  soldAt    DateTime?
 
-  photos             ItemPhoto[]
-  aiResult           AiResult?
-  valuation          Valuation?
-  antiqueCheck       AntiqueCheck?
-  eventLogs          EventLog[]
-  marketComps        MarketComp[]
-  conversations      Conversation[]
-  transactions       Transaction[]
-  buyerBots          BuyerBot[]
-  engagementMetrics  ItemEngagementMetrics?
-  shipmentLabels     ShipmentLabel[]
-  reconBots          ReconBot[]
-  documents          ItemDocument[]
-  priceSnapshots     PriceSnapshot[]
-  offers             Offer[]
-  listingPublishes   ListingPublish[]
+  photos            ItemPhoto[]
+  aiResult          AiResult?
+  valuation         Valuation?
+  antiqueCheck      AntiqueCheck?
+  eventLogs         EventLog[]
+  marketComps       MarketComp[]
+  conversations     Conversation[]
+  transactions      Transaction[]
+  buyerBots         BuyerBot[]
+  engagementMetrics ItemEngagementMetrics?
+  shipmentLabels    ShipmentLabel[]
+  reconBots         ReconBot[]
+  documents         ItemDocument[]
+  priceSnapshots    PriceSnapshot[]
+  offers            Offer[]
+  listingPublishes  ListingPublish[]
+  sylviaMemories    SylviaMemory[]
 
-  user          User       @relation(fields: [userId], references: [id])
-  project       Project?   @relation(fields: [projectId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
 
   @@index([userId])
   @@index([projectId])
@@ -514,7 +516,7 @@ model ItemPhoto {
   caption   String?
   createdAt DateTime @default(now())
 
-  item      Item     @relation(fields: [itemId], references: [id])
+  item Item @relation(fields: [itemId], references: [id])
 
   @@index([itemId])
 }
@@ -523,41 +525,41 @@ model AiResult {
   id         String   @id @default(cuid())
   itemId     String   @unique
   rawJson    String
-  confidence Float    // 0-1 (AiAnalysis identification · per types.ts:20)
+  confidence Float // 0-1 (AiAnalysis identification · per types.ts:20)
   createdAt  DateTime @default(now())
 
-  item       Item     @relation(fields: [itemId], references: [id])
+  item Item @relation(fields: [itemId], references: [id])
 }
 
 model Valuation {
-  id         String   @id @default(cuid())
-  itemId     String   @unique
+  id     String @id @default(cuid())
+  itemId String @unique
 
   low        Float
   mid        Float?
   high       Float
-  confidence Float    // 0-1 (AiAnalysis-derived · same source as AiResult.confidence)
+  confidence Float // 0-1 (AiAnalysis-derived · same source as AiResult.confidence)
   source     String
   rationale  String?
 
   localLow        Float?
   localMid        Float?
   localHigh       Float?
-  localConfidence Float?  // 0-1
+  localConfidence Float? // 0-1
   localSource     String?
   localRationale  String?
 
   onlineLow        Float?
   onlineMid        Float?
   onlineHigh       Float?
-  onlineConfidence Float?  // 0-1
+  onlineConfidence Float? // 0-1
   onlineSource     String?
   onlineRationale  String?
 
-  bestMarketLow    Float?
-  bestMarketMid    Float?
-  bestMarketHigh   Float?
-  bestMarketCity   String?
+  bestMarketLow  Float?
+  bestMarketMid  Float?
+  bestMarketHigh Float?
+  bestMarketCity String?
 
   sellerNetLocal      Float?
   sellerNetNational   Float?
@@ -566,22 +568,22 @@ model Valuation {
   recommendation String?
   adjustments    String?
 
-  createdAt  DateTime @default(now())
+  createdAt DateTime @default(now())
 
-  item       Item     @relation(fields: [itemId], references: [id])
+  item Item @relation(fields: [itemId], references: [id])
 }
 
 model AntiqueCheck {
-  id          String   @id @default(cuid())
-  itemId      String   @unique
-  isAntique   Boolean
-  reason      String
-  auctionLow  Float?
-  auctionHigh      Float?
+  id                String   @id @default(cuid())
+  itemId            String   @unique
+  isAntique         Boolean
+  reason            String
+  auctionLow        Float?
+  auctionHigh       Float?
   authenticityScore Int?     @default(0)
-  createdAt   DateTime @default(now())
+  createdAt         DateTime @default(now())
 
-  item        Item     @relation(fields: [itemId], references: [id])
+  item Item @relation(fields: [itemId], references: [id])
 }
 
 model EventLog {
@@ -592,7 +594,7 @@ model EventLog {
   payload   String?
   createdAt DateTime @default(now())
 
-  item      Item     @relation(fields: [itemId], references: [id])
+  item Item @relation(fields: [itemId], references: [id])
 
   @@index([itemId])
   @@index([userId])
@@ -602,9 +604,9 @@ model UserEvent {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  eventType String   // ITEM_CREATED | ITEM_ANALYZED | ITEM_LISTED | ITEM_SOLD | SALE_CREATED | DOCUMENT_UPLOADED | BOT_ACTIVATED | CREDIT_PURCHASED | LOGIN
+  eventType String // ITEM_CREATED | ITEM_ANALYZED | ITEM_LISTED | ITEM_SOLD | SALE_CREATED | DOCUMENT_UPLOADED | BOT_ACTIVATED | CREDIT_PURCHASED | LOGIN
   itemId    String?
-  metadata  String?  // JSON string for extra context
+  metadata  String? // JSON string for extra context
   createdAt DateTime @default(now())
 
   @@index([userId])
@@ -622,36 +624,36 @@ model MarketComp {
   shipping  Float?
   createdAt DateTime @default(now())
 
-  item      Item     @relation(fields: [itemId], references: [id])
+  item Item @relation(fields: [itemId], references: [id])
 
   @@index([itemId])
 }
 
 model Conversation {
-  id         String    @id @default(cuid())
+  id         String   @id @default(cuid())
   itemId     String
   buyerName  String
   buyerEmail String?
-  platform   String    @default("direct")
-  botScore   Int       @default(50)
-  createdAt  DateTime  @default(now())
+  platform   String   @default("direct")
+  botScore   Int      @default(50)
+  createdAt  DateTime @default(now())
 
-  item       Item      @relation(fields: [itemId], references: [id])
-  messages   Message[]
-  offers     Offer[]
+  item     Item      @relation(fields: [itemId], references: [id])
+  messages Message[]
+  offers   Offer[]
 
   @@index([itemId])
 }
 
 model Message {
-  id             String       @id @default(cuid())
+  id             String   @id @default(cuid())
   conversationId String
-  sender         String       // "buyer" | "seller"
+  sender         String // "buyer" | "seller"
   content        String
-  isRead         Boolean      @default(false)
-  createdAt      DateTime     @default(now())
+  isRead         Boolean  @default(false)
+  createdAt      DateTime @default(now())
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversation Conversation @relation(fields: [conversationId], references: [id])
 
   @@index([conversationId])
 }
@@ -660,7 +662,7 @@ model Transaction {
   id          String   @id @default(cuid())
   userId      String
   itemId      String?
-  type        String   // "ITEM_SALE" | "ADDON" | "TIER_FEE"
+  type        String // "ITEM_SALE" | "ADDON" | "TIER_FEE"
   description String
   amount      Float
   commission  Float    @default(0)
@@ -668,30 +670,30 @@ model Transaction {
   status      String   @default("PENDING") // PENDING | COMPLETED | REFUNDED
   createdAt   DateTime @default(now())
 
-  user        User     @relation(fields: [userId], references: [id])
-  item        Item?    @relation(fields: [itemId], references: [id])
+  user User  @relation(fields: [userId], references: [id])
+  item Item? @relation(fields: [itemId], references: [id])
 
   @@index([userId])
 }
 
 model BuyerBot {
-  id                  String      @id @default(cuid())
-  itemId              String
-  item                Item        @relation(fields: [itemId], references: [id])
-  isActive            Boolean     @default(true)
-  isMegaBot           Boolean     @default(false)
-  platformsJson       String      @default("[]") // JSON array of platform names
-  radius              Int         @default(50)    // miles
-  scansCompleted      Int         @default(0)
-  buyersFound         Int         @default(0)
-  outreachSent        Int         @default(0)
-  responsesReceived   Int         @default(0)
-  conversionsToSale   Int         @default(0)
-  lastScanAt          DateTime?
-  nextScanAt          DateTime?
-  leads               BuyerLead[]
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
+  id                String      @id @default(cuid())
+  itemId            String
+  item              Item        @relation(fields: [itemId], references: [id])
+  isActive          Boolean     @default(true)
+  isMegaBot         Boolean     @default(false)
+  platformsJson     String      @default("[]") // JSON array of platform names
+  radius            Int         @default(50) // miles
+  scansCompleted    Int         @default(0)
+  buyersFound       Int         @default(0)
+  outreachSent      Int         @default(0)
+  responsesReceived Int         @default(0)
+  conversionsToSale Int         @default(0)
+  lastScanAt        DateTime?
+  nextScanAt        DateTime?
+  leads             BuyerLead[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
   @@index([itemId])
 }
@@ -710,12 +712,12 @@ model BuyerLead {
   searchingFor    String?
   maxBudget       Float?
   location        String?
-  urgency         String    @default("medium")     // low | medium | high
-  matchScore      Int       @default(75)           // 0-100
+  urgency         String    @default("medium") // low | medium | high
+  matchScore      Int       @default(75) // 0-100
   matchReason     String?
-  aiConfidence    Float     @default(0.8)              // 0-1 (default 0.8 is dispositive)
+  aiConfidence    Float     @default(0.8) // 0-1 (default 0.8 is dispositive)
   botScore        Int       @default(75)
-  outreachStatus  String    @default("PENDING")    // PENDING | CONTACTED | REPLIED | CONVERTED
+  outreachStatus  String    @default("PENDING") // PENDING | CONTACTED | REPLIED | CONVERTED
   messageSent     String?
   contactedAt     DateTime?
   firstResponseAt DateTime?
@@ -747,77 +749,77 @@ model ItemEngagementMetrics {
 }
 
 model Referral {
-  id             String    @id @default(cuid())
-  referrerId     String
-  referrer       User      @relation(fields: [referrerId], references: [id])
-  referredEmail  String?
-  code           String    @unique
-  rewardCredits  Int       @default(25)
-  status         String    @default("PENDING") // PENDING | USED
-  usedAt         DateTime?
-  createdAt      DateTime  @default(now())
+  id            String    @id @default(cuid())
+  referrerId    String
+  referrer      User      @relation(fields: [referrerId], references: [id])
+  referredEmail String?
+  code          String    @unique
+  rewardCredits Int       @default(25)
+  status        String    @default("PENDING") // PENDING | USED
+  usedAt        DateTime?
+  createdAt     DateTime  @default(now())
 
   @@index([referrerId])
   @@index([code])
 }
 
 model PasswordReset {
-  id             String   @id @default(cuid())
-  userId         String
-  user           User     @relation(fields: [userId], references: [id])
-  token          String   @unique
-  expiresAt      DateTime
-  used           Boolean  @default(false)
-  requestedFrom  String?
-  createdAt      DateTime @default(now())
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  token         String   @unique
+  expiresAt     DateTime
+  used          Boolean  @default(false)
+  requestedFrom String?
+  createdAt     DateTime @default(now())
 
   @@index([userId])
   @@index([token])
 }
 
 model SubscriptionChange {
-  id                   String   @id @default(cuid())
-  userId               String
-  user                 User     @relation(fields: [userId], references: [id])
-  fromTier             String?
-  toTier               String?
-  changeType           String   // upgrade | downgrade | cancel
-  amountPaid           Float
-  daysUsed             Int
-  daysRemaining        Int
-  proratedRefund       Float
-  creditIssued         Float    @default(0)
-  originalPeriodStart  DateTime
-  originalPeriodEnd    DateTime
-  changeDate           DateTime @default(now())
-  refundStatus         String   @default("PENDING")
-  refundedAt           DateTime?
-  refundMethod         String?
-  reason               String?
-  createdAt            DateTime @default(now())
+  id                  String    @id @default(cuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id])
+  fromTier            String?
+  toTier              String?
+  changeType          String // upgrade | downgrade | cancel
+  amountPaid          Float
+  daysUsed            Int
+  daysRemaining       Int
+  proratedRefund      Float
+  creditIssued        Float     @default(0)
+  originalPeriodStart DateTime
+  originalPeriodEnd   DateTime
+  changeDate          DateTime  @default(now())
+  refundStatus        String    @default("PENDING")
+  refundedAt          DateTime?
+  refundMethod        String?
+  reason              String?
+  createdAt           DateTime  @default(now())
 
   @@index([userId])
 }
 
 model ShipmentLabel {
-  id               String   @id @default(cuid())
-  itemId           String
-  item             Item     @relation(fields: [itemId], references: [id])
-  fromAddressJson  String
-  toAddressJson    String
-  weight           Float
-  carrier          String
-  service          String
-  rate             Float
-  labelUrl         String
-  trackingNumber   String
-  trackingUrl      String?
-  qrCodeUrl        String?
-  status           String   @default("CREATED")
-  deliveryMethod   String   @default("print") // print | qr | pickup
-  estimatedDays    Int?
-  statusHistory    String   @default("[]") // JSON array of {status, timestamp, location?}
-  createdAt        DateTime @default(now())
+  id              String   @id @default(cuid())
+  itemId          String
+  item            Item     @relation(fields: [itemId], references: [id])
+  fromAddressJson String
+  toAddressJson   String
+  weight          Float
+  carrier         String
+  service         String
+  rate            Float
+  labelUrl        String
+  trackingNumber  String
+  trackingUrl     String?
+  qrCodeUrl       String?
+  status          String   @default("CREATED")
+  deliveryMethod  String   @default("print") // print | qr | pickup
+  estimatedDays   Int?
+  statusHistory   String   @default("[]") // JSON array of {status, timestamp, location?}
+  createdAt       DateTime @default(now())
 
   @@index([itemId])
 }
@@ -825,7 +827,7 @@ model ShipmentLabel {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
-  type      String   // SALE_COMPLETE | SHIP_REMINDER | TRACKING_UPDATE | DELIVERY_CONFIRMED
+  type      String // SALE_COMPLETE | SHIP_REMINDER | TRACKING_UPDATE | DELIVERY_CONFIRMED
   title     String
   message   String
   link      String?
@@ -849,9 +851,9 @@ model ReconBot {
   isActive        Boolean @default(true)
   autoScanEnabled Boolean @default(false) // Premium: auto-scan on schedule (costs credits)
   // JSON array of platform names e.g. ["facebook","ebay","craigslist"]
-  platformsJson String  @default("[\"facebook\",\"ebay\",\"craigslist\"]")
-  searchRadius  Int     @default(50) // miles
-  scanFrequency Int     @default(6)  // hours
+  platformsJson   String  @default("[\"facebook\",\"ebay\",\"craigslist\"]")
+  searchRadius    Int     @default(50) // miles
+  scanFrequency   Int     @default(6) // hours
 
   // Latest aggregate market data
   competitorCount       Int    @default(0)
@@ -866,14 +868,14 @@ model ReconBot {
   currentStatus   String  @default("ANALYZING")
   // ANALYZING | PRICED_WELL | TOO_HIGH | TOO_LOW | NO_COMPETITORS | NOT_PRICED | MARKET_SHIFTING
   recommendation  String?
-  confidenceScore Float?  // 0-1 (ReconBot data_quality · NOT same scale as ItemDocument.confidenceScore which is 0-100)
+  confidenceScore Float? // 0-1 (ReconBot data_quality · NOT same scale as ItemDocument.confidenceScore which is 0-100)
 
-  alerts         ReconAlert[]
+  alerts ReconAlert[]
 
   lastScan       DateTime?
   nextScan       DateTime?
-  scansCompleted Int      @default(0)
-  alertsSent     Int      @default(0)
+  scansCompleted Int       @default(0)
+  alertsSent     Int       @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -898,9 +900,9 @@ model ReconAlert {
   suggestedAction String?
   triggerDataJson String  @default("{}")
 
-  viewed      Boolean  @default(false)
+  viewed      Boolean   @default(false)
   viewedAt    DateTime?
-  dismissed   Boolean  @default(false)
+  dismissed   Boolean   @default(false)
   dismissedAt DateTime?
   actionTaken String?
 
@@ -940,7 +942,7 @@ model HeroVerification {
   user            User?     @relation(fields: [userId], references: [id])
   fullName        String
   email           String
-  serviceCategory String    // MILITARY | LAW_ENFORCEMENT | FIRE_EMS
+  serviceCategory String // MILITARY | LAW_ENFORCEMENT | FIRE_EMS
   serviceDetail   String
   department      String?
   proofFileName   String?
@@ -960,17 +962,17 @@ model HeroVerification {
 model PaymentLedger {
   id              String   @id @default(cuid())
   userId          String
-  type            String   // subscription, credit_pack, item_purchase, refund, payout, estate_service
+  type            String // subscription, credit_pack, item_purchase, refund, payout, estate_service
   stripePaymentId String?  @unique
   stripeSessionId String?
   receiptUrl      String?
-  subtotal        Float    // amount before processing fee
-  processingFee   Float    // 3.5% fee charged to buyer/purchaser
-  totalCharged    Float    // subtotal + processingFee = what buyer actually paid
+  subtotal        Float // amount before processing fee
+  processingFee   Float // 3.5% fee charged to buyer/purchaser
+  totalCharged    Float // subtotal + processingFee = what buyer actually paid
   currency        String   @default("USD")
   status          String   @default("pending") // pending, completed, failed, refunded
   description     String
-  metadata        String?  // JSON: tier name, credit count, item id, pack id, etc.
+  metadata        String? // JSON: tier name, credit count, item id, pack id, etc.
   isDemo          Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -984,10 +986,10 @@ model SellerEarnings {
   id               String    @id @default(cuid())
   userId           String
   itemId           String?
-  saleAmount       Float     // what buyer paid for item (not including shipping or processing fee)
-  commissionRate   Float     // 0.05, 0.08, etc.
-  commissionAmount Float     // saleAmount * commissionRate
-  netEarnings      Float     // saleAmount - commissionAmount (NO processing fee deduction)
+  saleAmount       Float // what buyer paid for item (not including shipping or processing fee)
+  commissionRate   Float // 0.05, 0.08, etc.
+  commissionAmount Float // saleAmount * commissionRate
+  netEarnings      Float // saleAmount - commissionAmount (NO processing fee deduction)
   status           String    @default("pending") // pending, available, paid_out, refunded
   holdUntil        DateTime? // 3 days after delivery confirmed
   payoutMethod     String?
@@ -1055,14 +1057,14 @@ model ItemDocument {
   item            Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
   fileName        String
   fileUrl         String
-  fileType        String   // MIME type
+  fileType        String // MIME type
   fileSizeBytes   Int
-  docType         String   // RECEIPT | CERTIFICATE | LEGAL | MAINTENANCE | MANUAL | PROVENANCE | APPRAISAL | OTHER
+  docType         String // RECEIPT | CERTIFICATE | LEGAL | MAINTENANCE | MANUAL | PROVENANCE | APPRAISAL | OTHER
   label           String?
   aiSummary       String?
-  aiAnalysis      String?  // JSON: multi-AI structured extraction (dates, prices, serial numbers, etc.)
-  confidenceScore Float?   // 0-100 consensus confidence across providers
-  providerResults String?  // JSON: per-provider raw results for transparency
+  aiAnalysis      String? // JSON: multi-AI structured extraction (dates, prices, serial numbers, etc.)
+  confidenceScore Float? // 0-100 consensus confidence across providers
+  providerResults String? // JSON: per-provider raw results for transparency
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -1075,11 +1077,11 @@ model PriceSnapshot {
   id          String   @id @default(cuid())
   itemId      String
   item        Item     @relation(fields: [itemId], references: [id], onDelete: Cascade)
-  source      String   // PRICEBOT | MEGABOT | RAINFOREST | ANTIQUE_EVAL | MANUAL
+  source      String // PRICEBOT | MEGABOT | RAINFOREST | ANTIQUE_EVAL | MANUAL
   priceLow    Int?
   priceHigh   Int?
   priceMedian Int?
-  confidence  String?  // String with embedded scale: "grade_confidence: 0.75" (0-1, collectiblesbot) OR "id_confidence: 78" (0-100, carbot) — bot-specific · parse with care
+  confidence  String? // String with embedded scale: "grade_confidence: 0.75" (0-1, collectiblesbot) OR "id_confidence: 78" (0-100, carbot) — bot-specific · parse with care
   rawPayload  String?
   createdAt   DateTime @default(now())
 
@@ -1127,10 +1129,10 @@ model Offer {
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
 
-  item           Item          @relation(fields: [itemId], references: [id])
-  seller         User          @relation(fields: [sellerId], references: [id])
-  conversation   Conversation? @relation(fields: [conversationId], references: [id])
-  events         OfferEvent[]
+  item         Item          @relation(fields: [itemId], references: [id])
+  seller       User          @relation(fields: [sellerId], references: [id])
+  conversation Conversation? @relation(fields: [conversationId], references: [id])
+  events       OfferEvent[]
 
   @@index([itemId])
   @@index([sellerId])
@@ -1146,7 +1148,7 @@ model OfferEvent {
   message   String?
   createdAt DateTime    @default(now())
 
-  offer     Offer       @relation(fields: [offerId], references: [id])
+  offer Offer @relation(fields: [offerId], references: [id])
 
   @@index([offerId])
 }
@@ -1259,4 +1261,77 @@ model ScraperComp {
   @@index([sourcePlatform, soldPrice])
   @@index([sourceItemId])
   @@index([sourceUserId])
+}
+
+// ─────────────────────────────────────────────────────────────────
+// SYLVIA COLLECTIVE MEMORY (CMD-SYLVIA-COLLECTIVE-MEMORY-V1 · 2026-05-03)
+// Cross-agent context layer · persisted triage telemetry · pairs with
+// Cyl 7 ScraperComp data via shared itemId foreign key. V1 storage +
+// helpers · V2 wires lib/sylvia/triage-router.ts to write here.
+// ─────────────────────────────────────────────────────────────────
+
+enum SylviaMemoryClassification {
+  SIMPLE
+  MEDIUM
+  COMPLEX
+  SPECIALIZED
+}
+
+model SylviaMemory {
+  id String @id @default(cuid())
+
+  // Session + prompt identity
+  sessionId    String
+  promptHash   String // 8-char non-crypto hash for de-dup
+  promptLength Int
+  agentName    String // "sylvia" · "@Sylvia-Architect" · "@Sylvia-Pricing" · etc
+
+  // Classification + routing
+  classifier       String // "rule-based" · "hint-override" · "force-alias" · "llm-based" (V2)
+  classification   SylviaMemoryClassification
+  chosenAlias      String // ModelAlias literal (TS-side enforced · stored as String for forward-compat)
+  cascadeAttempted String // JSON-stringified ModelAlias[] (SQLite compat)
+  fallbackUsed     Boolean                    @default(false)
+
+  // Cost + ceiling
+  costEstimateUsd  Float
+  costActualUsd    Float  @default(0)
+  ceilingTriggered String @default("none") // "none" · "per-call" · "per-session"
+
+  // Performance
+  durationMs Int
+  tokensIn   Int?
+  tokensOut  Int?
+
+  // Response (optional for memory recall · null when caller opts out for privacy)
+  responseText   String?
+  responseHash   String?
+  responseLength Int?
+
+  // Cross-references (SET NULL on parent delete · learnings outlive items)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  itemId String?
+  item   Item?   @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  // Error capture
+  errorClass String? // First 100 chars of caught error message · null on success
+
+  // Catch-all metadata (JSON-stringified · forward-compat)
+  metadata String?
+
+  // Audit timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sessionId])
+  @@index([promptHash])
+  @@index([agentName])
+  @@index([userId])
+  @@index([itemId])
+  @@index([classification])
+  @@index([createdAt])
+  @@index([sessionId, createdAt])
+  @@map("sylvia_memory")
 }
