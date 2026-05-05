@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import ItemCard from "./ItemCard";
 import BundleSuggestions from "@/app/components/BundleSuggestions";
 import BudgetGuard from "@/app/components/BudgetGuard";
 import WelcomeModal from "@/app/components/WelcomeModal";
+import { AnimatedNumber } from "./AnimatedNumber";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,7 +58,7 @@ type StatFilter = "all" | "analyzed" | "antiques" | "collectibles" | "listed" | 
 interface StatCardDef {
   key: StatFilter;
   label: string;
-  value: string;
+  value: ReactNode;
   sub: string;
   accentColor?: string;
   subColor?: string;
@@ -261,41 +262,41 @@ export default function DashboardClient({ items, stats, events, onboardingUser }
     {
       key: "all",
       label: "Your Items",
-      value: stats.totalItems.toString(),
+      value: <AnimatedNumber value={stats.totalItems} />,
       sub: `${stats.totalItems} item${stats.totalItems !== 1 ? "s" : ""} uploaded for sale`,
     },
     {
       key: "analyzed",
       label: "AI Analyzed",
-      value: stats.analyzedItems.toString(),
+      value: <AnimatedNumber value={stats.analyzedItems} />,
       sub: stats.megabotItems > 0 ? `${stats.megabotItems} via MegaBot` : "items priced by AI",
       subColor: stats.megabotItems > 0 ? "#8b5cf6" : undefined,
     },
     {
       key: "antiques",
       label: "Antiques Found",
-      value: stats.antiqueItems.toString(),
+      value: <AnimatedNumber value={stats.antiqueItems} />,
       sub: stats.antiqueItems > 0 ? "may be worth more at auction" : "none detected yet",
       accentColor: stats.antiqueItems > 0 ? "#f59e0b" : undefined,
     },
     {
       key: "collectibles",
       label: "Collectibles Found",
-      value: stats.collectibleItems.toString(),
+      value: <AnimatedNumber value={stats.collectibleItems} />,
       sub: stats.collectibleItems > 0 ? "may have collector premium" : "none detected yet",
       accentColor: stats.collectibleItems > 0 ? "#8b5cf6" : undefined,
     },
     {
       key: "listed",
       label: "Listed for Sale",
-      value: stats.listedItems.toString(),
+      value: <AnimatedNumber value={stats.listedItems} />,
       sub: "visible to buyers now",
       accentColor: stats.listedItems > 0 ? "#0ea5e9" : undefined,
     },
     {
       key: "sold",
       label: "Sold",
-      value: stats.soldItems.toString(),
+      value: <AnimatedNumber value={stats.soldItems} />,
       sub: stats.totalEarnings > 0 ? `$${Math.round(stats.totalEarnings).toLocaleString()} earned from ${stats.soldItems} sale${stats.soldItems !== 1 ? "s" : ""}` : "from completed sales",
       accentColor: stats.soldItems > 0 ? "#22c55e" : undefined,
     },
