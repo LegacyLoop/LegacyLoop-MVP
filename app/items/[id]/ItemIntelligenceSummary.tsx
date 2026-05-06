@@ -1026,8 +1026,8 @@ export default function ItemIntelligenceSummary(props: Props) {
                   {/* Bloomberg-style 3×2 data tile */}
                   <div className="intel-hud-grid" style={{ width: "100%", background: "var(--ghost-bg)", borderRadius: 8, border: "1px solid var(--border-default)", overflow: "hidden", marginBottom: "6px" }}>
                     {[
-                      { lbl: "SWEET SPOT", val: <CountUp value={displayPricing?.sweetSpot ?? aiIntel.pricingIntel.sweetSpot} format={(n) => `$${Math.round(n)}`} /> as React.ReactNode, color: "var(--accent, #00bcd4)", unit: "best price" },
-                      { lbl: "FULL RANGE", val: `$${Math.round(displayPricing?.recommendedLow ?? aiIntel.pricingIntel.recommendedLow)}–$${Math.round(displayPricing?.recommendedHigh ?? aiIntel.pricingIntel.recommendedHigh)}`, color: "var(--text-primary)", unit: "estimated" },
+                      { lbl: "★ SWEET SPOT", val: <CountUp value={displayPricing?.sweetSpot ?? aiIntel.pricingIntel.sweetSpot} format={(n) => `$${Math.round(n)}`} /> as React.ReactNode, color: "var(--accent, #00bcd4)", unit: "AI recommendation" },
+                      { lbl: "FULL RANGE", val: `$${Math.round(displayPricing?.recommendedLow ?? aiIntel.pricingIntel.recommendedLow)}–$${Math.round(displayPricing?.recommendedHigh ?? aiIntel.pricingIntel.recommendedHigh)}`, color: "var(--text-primary)", unit: "AI estimate range" },
                       { lbl: "DEMAND", val: aiIntel.marketPosition?.demand || "\u2014", color: /high|hot|strong/i.test(aiIntel.marketPosition?.demand || "") ? "#22c55e" : /low|cold|weak/i.test(aiIntel.marketPosition?.demand || "") ? "#ef4444" : "#f59e0b", unit: "local signal" },
                       { lbl: "READINESS", val: <><CountUp value={readinessScore} />/10</> as React.ReactNode, color: readinessScore >= 8 ? "#22c55e" : readinessScore >= 5 ? "#f59e0b" : "#ef4444", unit: "to sell" },
                       { lbl: "BEST SELL", val: aiIntel.sellingStrategy?.bestPlatform || "\u2014", color: "var(--accent, #00bcd4)", unit: "recommended" },
@@ -1262,21 +1262,21 @@ export default function ItemIntelligenceSummary(props: Props) {
                 </div>
               ) : null}
 
-              {/* AI-powered pricing (3 cards) */}
+              {/* AI-powered pricing (3 cards) · CMD-PRICE-CANONICAL-HIERARCHY semantic labels */}
               {aiIntel?.pricingIntel ? (
                 <>
                   <div className="intel-price-cards">
-                    <div className="intel-price-card">
+                    <div className="intel-price-card" title="Quick sale: lowest reasonable ask · expect to sell within 7 days">
                       <span className="intel-price-val" style={{ color: "#f59e0b" }}>${Math.round(displayPricing?.quickSalePrice ?? aiIntel.pricingIntel.quickSalePrice)}</span>
-                      <span className="intel-price-lbl">Quick Sale</span>
+                      <span className="intel-price-lbl">Quick sale <span style={{ fontWeight: 500, opacity: 0.75 }}>(under 7 days)</span></span>
                     </div>
-                    <div className="intel-price-card highlight">
+                    <div className="intel-price-card highlight" title="Sweet spot: AI's recommended canonical ask price · best balance of speed and value" aria-label="AI recommended canonical price">
                       <span className="intel-price-val" style={{ color: "var(--accent)" }}>${Math.round(displayPricing?.sweetSpot ?? aiIntel.pricingIntel.sweetSpot)}</span>
-                      <span className="intel-price-lbl">Sweet Spot</span>
+                      <span className="intel-price-lbl" style={{ fontWeight: 700 }}>{"★"} Recommended <span style={{ fontWeight: 500, opacity: 0.75 }}>(sweet spot)</span></span>
                     </div>
-                    <div className="intel-price-card">
+                    <div className="intel-price-card" title="Premium: aspirational ask · expect a longer wait for the right buyer">
                       <span className="intel-price-val" style={{ color: "#22c55e" }}>${Math.round(displayPricing?.premiumPrice ?? aiIntel.pricingIntel.premiumPrice)}</span>
-                      <span className="intel-price-lbl">Premium</span>
+                      <span className="intel-price-lbl">Premium <span style={{ fontWeight: 500, opacity: 0.75 }}>(longer wait)</span></span>
                     </div>
                   </div>
 

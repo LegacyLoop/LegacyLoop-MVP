@@ -619,6 +619,17 @@ export default function ItemControlCenter({ itemId, status, valuation, aiData, l
                     }}>{a.label}</button>
                   ))}
                 </div>
+                {/* Canonical-price label · CMD-PRICE-CANONICAL-HIERARCHY */}
+                <div style={{ display: "flex", alignItems: "baseline", gap: "0.4rem", flexWrap: "wrap", fontSize: "0.78rem" }}>
+                  <span style={{ fontWeight: 700, color: "var(--accent)", letterSpacing: "0.02em" }} title="The price your listing goes live at. Other panel numbers are reference data.">
+                    {"\u{1F48E}"} Your listing price <span style={{ fontWeight: 600, color: "var(--text-secondary)" }}>(canonical)</span>
+                  </span>
+                  {valuation?.mid && listPriceNum > 0 && Math.abs(valuation.mid - listPriceNum) / Math.max(valuation.mid, 1) > 0.1 && (
+                    <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", fontWeight: 500 }} aria-label={`AI recommendation differs by more than 10 percent from your listing price`}>
+                      {"·"} AI suggests ${Math.round(valuation.mid)}
+                    </span>
+                  )}
+                </div>
                 {/* Price input row */}
                 <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
                   <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-muted)" }}>$</span>

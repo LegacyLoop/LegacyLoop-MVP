@@ -294,12 +294,12 @@ export default function AmazonPriceBadge({ itemId }: { itemId: string }) {
         {/* Data Grid */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div className="amz-hud-data">
-            {/* Median Price */}
-            <div className="amz-hud-cell">
+            {/* Median Price · CMD-PRICE-CANONICAL-HIERARCHY · disambiguates as Amazon retail comp, not canonical sell price */}
+            <div className="amz-hud-cell" title="Amazon retail median · reference data only · not your canonical sell price" aria-label="Amazon retail median price (reference comp only)">
               <span className="amz-hud-value price">
                 {marketPrice ? `$${marketPrice}` : "—"}
               </span>
-              <span className="amz-hud-label">Median</span>
+              <span className="amz-hud-label">Median <span style={{ fontWeight: 500, opacity: 0.7, fontSize: "0.85em" }}>(retail comp)</span></span>
               {lowPrice && highPrice && lowPrice !== highPrice && (
                 <span className="amz-hud-range">${lowPrice}–${highPrice}</span>
               )}
