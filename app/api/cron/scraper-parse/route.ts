@@ -1,35 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 import { processBatch } from "@/lib/scraper-parser/parser";
+import { persistScraperParsedItems } from "@/lib/scraper-comp/persist";
 import type { ParseInput } from "@/lib/scraper-parser/types";
 
-export const maxDuration = 60; // CMD-VERCEL-MAXDURATION-HOTFIX V18 + CMD-CYLINDER-7B-V2-PARSER-HARDEN V18 · Hobby tier cap (Hobby 60s · Pro 300s · Enterprise 900s) · matches existing cron ceiling · LIMIT_PER_FIRE=8 (this cylinder · extracted from inline magic 20) · production fast-fail algebra: 8 × ~10ms = 80ms when LITELLM_BASE_URL undefined (architecturally correct on Vercel · Phase D opens hosted Gateway) · Pro upgrade is separate CEO business call · TIMEOUT_MS / MAX_ATTEMPTS / BACKOFF_MS tunes banked S20-CPU-BUDGET-TUNE if telemetry warrants
+export const maxDuration = 60;
 
-// CMD-CYLINDER-7B-V2-PARSER-HARDEN V18 · Hobby tier rate cap.
-// 8 × ~10ms fast-fail (production · LITELLM_BASE_URL undefined) = 80ms wall ·
-// safe under maxDuration=60s. Was inline magic number 20 (assumed Enterprise
-// tier paired with maxDuration=800 · superseded by hotfix to 60). Banks
-// S20-CPU-BUDGET-TUNE if telemetry warrants further reduction.
 const LIMIT_PER_FIRE = 8;
 
 /**
- * CMD-CYLINDER-7B-OLLAMA-GATEWAY-PARSE V18: cron-triggered consumer.
- * POST /api/cron/scraper-parse
+ * CMD-CYL-7B-WIRE-FILL V18 (R15 P1 · 2026-05-06): consumer cron
+ * route for scraper.catch payloads queued by Cyl 7A receiver.
  *
- * AUTH: triple-source CRON_SECRET (matches recon-autoscan/route.ts:17-36)
- *   - Authorization: Bearer $CRON_SECRET
- *   - x-cron-secret: $CRON_SECRET
- *   - ?secret=$CRON_SECRET
+ * GET handler: Vercel cron at every-15-min schedule polls
+ * ScraperUsageLog for unprocessed rows (payloadJson NOT NULL AND
+ * parsedAt IS NULL), reconstructs ParseInput[], invokes 7B parser,
+ * persists results via 7C, marks parsedAt on success.
  *
- * BODY: { inputs: ParseInput[] }
- *   Each input: { scraperId, platform, itemUrl, rawHtml?, parsedFields? }
+ * POST handler: preserved for manual smoke testing (accepts
+ * {inputs:ParseInput[]} in body · backward compat with original
+ * Cyl 7B ship 0e4b64f).
  *
- * RETURNS: 200 with { processed, parsed, errors } | 401 unauth | 400 invalid
+ * AUTH: triple-source CRON_SECRET (preserved from prior route ·
+ * Authorization: Bearer · x-cron-secret · ?secret).
+ *
+ * IDEMPOTENCY: 3-layer
+ *   1. Receiver layer: 24h ScraperUsageLog dedupe at receipt (Cyl 7A)
+ *   2. Cron layer: parsedAt IS NULL filter excludes processed rows
+ *   3. Persister layer: ScraperComp @@unique([slug, sourceUrl])
  *
  * ADVISOR A1 ABSOLUTE: zero LangChain · all LLM via Gateway alias
- *   "llama-3.2-local" · adapter clones multi-ai.ts:206-214 pattern.
+ *   "llama-3.2-local". DOC-TELEMETRY-LOCK preserved.
+ *
+ * Hobby tier cap: 60s maxDuration · LIMIT_PER_FIRE=8 · production
+ * fast-fail algebra: 8 × ~10ms = 80ms when LITELLM_BASE_URL undefined
+ * (architecturally correct on Vercel · Phase D opens hosted Gateway).
  */
-export async function POST(req: NextRequest) {
-  // ── Auth ──
+
+function authenticate(req: NextRequest): { ok: boolean; error?: string } {
   const authHeader = req.headers.get("authorization");
   const cronHeader = req.headers.get("x-cron-secret");
   const querySecret = req.nextUrl.searchParams.get("secret");
@@ -37,20 +45,172 @@ export async function POST(req: NextRequest) {
 
   if (!cronSecret) {
     console.error("[CRON-SCRAPER-PARSE] CRON_SECRET not configured");
-    return NextResponse.json(
-      { error: "Cron not configured" },
-      { status: 500 }
-    );
+    return { ok: false, error: "Cron not configured" };
   }
 
   const providedSecret =
     authHeader?.replace("Bearer ", "") || cronHeader || querySecret || "";
   if (providedSecret !== cronSecret) {
     console.warn("[CRON-SCRAPER-PARSE] Unauthorized attempt");
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return { ok: false, error: "Unauthorized" };
   }
 
-  // ── Body validation ──
+  return { ok: true };
+}
+
+async function processInputs(inputs: ParseInput[]): Promise<{
+  parsed: number;
+  failed: number;
+  persistResult: { written: number; deduped: number; durationMs: number };
+}> {
+  const capped = inputs.slice(0, LIMIT_PER_FIRE);
+  if (capped.length === 0) {
+    return {
+      parsed: 0,
+      failed: 0,
+      persistResult: { written: 0, deduped: 0, durationMs: 0 },
+    };
+  }
+
+  console.log(
+    `[CRON-SCRAPER-PARSE] Processing ${capped.length} input(s) via llama-3.2-local`
+  );
+
+  const { parsed, errors } = await processBatch(capped);
+  const persistResult = await persistScraperParsedItems(parsed, {
+    contributingBot: "n8n_scraper_catch",
+  }).catch((err) => {
+    console.error("[CRON-SCRAPER-PARSE] Persist failure:", err);
+    return { written: 0, deduped: 0, durationMs: 0 };
+  });
+
+  console.log(
+    `[CRON-SCRAPER-PARSE] Done · parsed=${parsed.length} errors=${errors.length} persisted=${persistResult.written} deduped=${persistResult.deduped}`
+  );
+
+  return { parsed: parsed.length, failed: errors.length, persistResult };
+}
+
+/**
+ * GET handler — Vercel cron entry point.
+ * Polls ScraperUsageLog · processes batch · marks parsedAt.
+ */
+export async function GET(req: NextRequest) {
+  const auth = authenticate(req);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: 401 });
+  }
+
+  const startedAt = Date.now();
+
+  // Poll unprocessed rows · FIFO · capped per fire
+  const unprocessed = await prisma.scraperUsageLog.findMany({
+    where: {
+      payloadJson: { not: null },
+      parsedAt: null,
+    },
+    orderBy: { createdAt: "asc" },
+    take: LIMIT_PER_FIRE,
+    select: { id: true, slug: true, payloadJson: true },
+  });
+
+  if (unprocessed.length === 0) {
+    return NextResponse.json({
+      tick: "scraper-parse",
+      processed: 0,
+      parsed: 0,
+      failed: 0,
+      message: "No unprocessed rows",
+    });
+  }
+
+  // Reconstruct ParseInput[] from payloadJson · per-row try/catch on JSON.parse
+  const candidates: { row: (typeof unprocessed)[number]; input: ParseInput }[] = [];
+  for (const row of unprocessed) {
+    if (!row.payloadJson) continue;
+    try {
+      const payload = JSON.parse(row.payloadJson);
+      candidates.push({
+        row,
+        input: {
+          scraperId: payload.scraperId,
+          platform: payload.platform,
+          itemUrl: payload.itemUrl,
+          rawHtml: payload.rawHtml ?? null,
+          parsedFields: payload.parsedFields ?? undefined,
+        } as ParseInput,
+      });
+    } catch (err) {
+      console.error(
+        `[CRON-SCRAPER-PARSE] JSON.parse failed for row ${row.id}:`,
+        err
+      );
+      // Mark as parsed (skip · malformed payload · won't recover)
+      await prisma.scraperUsageLog.update({
+        where: { id: row.id },
+        data: { parsedAt: new Date() },
+      });
+    }
+  }
+
+  const result = await processInputs(candidates.map((c) => c.input));
+
+  // Mark parsedAt on each successfully-staged row · per-row try/catch
+  const now = new Date();
+  for (const { row } of candidates) {
+    try {
+      await prisma.scraperUsageLog.update({
+        where: { id: row.id },
+        data: { parsedAt: now },
+      });
+    } catch (err) {
+      console.error(
+        `[CRON-SCRAPER-PARSE] parsedAt update failed for row ${row.id}:`,
+        err
+      );
+    }
+  }
+
+  // Telemetry · DOC-EMIT-WITH-PROVENANCE (BINDING #15)
+  const durationMs = Date.now() - startedAt;
+  await prisma.eventLog
+    .create({
+      data: {
+        itemId: "system", // cron has no per-item context · sentinel value
+        eventType: "SCRAPER_PARSE_TICK",
+        payload: JSON.stringify({
+          processed: unprocessed.length,
+          parsed: result.parsed,
+          failed: result.failed,
+          persisted: result.persistResult.written,
+          deduped: result.persistResult.deduped,
+          durationMs,
+        }),
+      },
+    })
+    .catch(() => null);
+
+  return NextResponse.json({
+    tick: "scraper-parse",
+    processed: unprocessed.length,
+    parsed: result.parsed,
+    failed: result.failed,
+    persisted: result.persistResult.written,
+    deduped: result.persistResult.deduped,
+    durationMs,
+  });
+}
+
+/**
+ * POST handler — manual smoke testing path · preserved from
+ * Cyl 7B original ship 0e4b64f for backward compat.
+ */
+export async function POST(req: NextRequest) {
+  const auth = authenticate(req);
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: 401 });
+  }
+
   let body: { inputs?: ParseInput[] };
   try {
     body = await req.json();
@@ -66,29 +226,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Cap per cron call · LIMIT_PER_FIRE constant declared at top of file
-  // (CMD-CYLINDER-7B-V2-PARSER-HARDEN V18 · Hobby tier algebra)
-  const capped = inputs.slice(0, LIMIT_PER_FIRE);
-  if (capped.length === 0) {
-    return NextResponse.json({ processed: 0, parsed: [], errors: [] });
-  }
+  const result = await processInputs(inputs);
 
-  console.log(
-    `[CRON-SCRAPER-PARSE] Processing ${capped.length} input(s) via llama-3.2-local`
-  );
-
-  try {
-    const { parsed, errors } = await processBatch(capped);
-    console.log(
-      `[CRON-SCRAPER-PARSE] Done · parsed=${parsed.length} errors=${errors.length}`
-    );
-    return NextResponse.json({ processed: capped.length, parsed, errors });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    console.error("[CRON-SCRAPER-PARSE]", err);
-    return NextResponse.json(
-      { error: "Internal error", detail: msg.slice(0, 300) },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({
+    processed: Math.min(inputs.length, LIMIT_PER_FIRE),
+    parsed: result.parsed,
+    errors: result.failed,
+    persistResult: result.persistResult,
+  });
 }
