@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
 
 // CMD-CYLINDER-7A-N8N-WEBHOOK V18: payload shape for scraper.catch action.
@@ -31,13 +32,35 @@ export async function GET() {
   return NextResponse.json({ status: "ok", service: "n8n-webhook" });
 }
 
-/** POST — n8n callback webhook with secret validation */
+/** POST — n8n callback webhook with secret validation
+ *
+ * CMD-CYL-7E-HMAC-DEFENSE V18 (R16 P0 · 2026-05-06): constant-time
+ * compare via crypto.timingSafeEqual closes the timing-attack
+ * side-channel on N8N_WEBHOOK_SECRET. Plain `!==` short-circuits at
+ * first byte mismatch; an attacker can leak per-byte secret state by
+ * timing 401 responses across many probe attempts. timingSafeEqual
+ * always compares full Buffer length regardless of mismatch position.
+ *
+ * Length guard pre-empts the Buffer-length-mismatch throw: a wrong-
+ * length secret is guaranteed-invalid → 401 immediately, no try/catch
+ * needed. Behavior preserved verbatim for legitimate callers.
+ */
 export async function POST(req: NextRequest) {
   try {
-    const secret = req.headers.get("x-webhook-secret");
+    const secret = req.headers.get("x-webhook-secret") ?? "";
     const expectedSecret = process.env.N8N_WEBHOOK_SECRET;
 
-    if (!expectedSecret || secret !== expectedSecret) {
+    if (!expectedSecret) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const provided = Buffer.from(secret, "utf8");
+    const expected = Buffer.from(expectedSecret, "utf8");
+
+    if (
+      provided.length !== expected.length ||
+      !timingSafeEqual(provided, expected)
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
