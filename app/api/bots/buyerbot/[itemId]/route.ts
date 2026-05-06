@@ -925,12 +925,21 @@ Include a "web_sources" array in your response with {"url": "...", "title": "...
     // Fire-and-forget: demand score recalculation
     import("@/lib/bots/demand-score").then(m => m.calculateDemandScore(itemId)).catch(() => null);
 
+    // CMD-BUYERBOT-PERSIST-TELEMETRY V18 (Cyl 2F): expose persistResult +
+    // cumulative dataset size for investor-grade visibility on Moat #1.
+    // Demo path returns null persistResult so client renders nothing.
+    const cumulativeLeadCount = buyerbotResult._isDemo
+      ? null
+      : await prisma.buyerLead.count({ where: { itemId } }).catch(() => null);
+
     return NextResponse.json({
       success: true,
       result: buyerbotResult,
       isDemo: !!buyerbotResult._isDemo,
       pricingSource,
       intelligenceAgeMs: intelligenceAnchor?.ageMs ?? null,
+      persistResult: buyerbotResult._isDemo ? null : persistResult,
+      cumulativeLeadCount,
     });
   } catch (e) {
     console.error("[buyerbot POST]", e);

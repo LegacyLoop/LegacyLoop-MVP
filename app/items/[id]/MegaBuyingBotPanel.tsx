@@ -381,7 +381,28 @@ export default function MegaBuyingBotPanel({ itemId, itemTitle, initialBot, init
 
       {/* Leads */}
       <div className="p-6 space-y-3">
-        <div className="section-title">Qualified Buyers ({leads.length})</div>
+        <div className="section-title">
+          Qualified Buyers (
+          <span style={{ fontFamily: "var(--font-data), inherit", fontWeight: 600 }}>
+            {leads.length}
+          </span>
+          {leads.length > 0 && (
+            <span
+              style={{
+                marginLeft: "0.4rem",
+                fontSize: "0.75rem",
+                color: "var(--accent)",
+                fontWeight: 500,
+                cursor: "help",
+              }}
+              title="Cumulative buyer-lead dataset · compounds with every BuyerBot scan · Moat #1 evidence"
+              aria-label="Cumulative buyer-lead count: compounds with every scan"
+            >
+              · compounding
+            </span>
+          )}
+          )
+        </div>
         {leads.map((lead) => {
           const expanded = expandedLeadId === lead.id;
           const contacted = isContacted(lead.id);

@@ -736,6 +736,27 @@ export default function BuyerBotClient({ items }: { items: ItemData[] }) {
                 {summary}
               </p>
             )}
+            {/* CMD-BUYERBOT-PERSIST-TELEMETRY V18 (R13 P1): Moat #1 visibility · persist telemetry rendered only in production (demo path returns null persistResult). */}
+            {(result as any)?.persistResult && (
+              <p
+                style={{
+                  fontSize: "0.875rem",
+                  color: "var(--text-secondary)",
+                  marginTop: "0.5rem",
+                  lineHeight: 1.5,
+                  fontFamily: "var(--font-data), inherit",
+                }}
+                aria-label={`Persist telemetry: ${(result as any).persistResult.inserted} new buyers persisted, ${(result as any).persistResult.skipped} duplicates skipped${typeof (result as any).cumulativeLeadCount === "number" ? `, ${(result as any).cumulativeLeadCount} total in dataset` : ""}`}
+              >
+                📥 <strong style={{ color: "var(--accent)" }}>{(result as any).persistResult.inserted}</strong> new buyer{(result as any).persistResult.inserted !== 1 ? "s" : ""} persisted
+                {(result as any).persistResult.skipped > 0 && (
+                  <> · <strong>{(result as any).persistResult.skipped}</strong> skipped (already in dataset)</>
+                )}
+                {typeof (result as any).cumulativeLeadCount === "number" && (
+                  <> · <strong style={{ color: "var(--text-primary)" }}>{(result as any).cumulativeLeadCount}</strong> total compounding</>
+                )}
+              </p>
+            )}
           </Card>
 
           {/* SECTION B — Hot Leads */}
