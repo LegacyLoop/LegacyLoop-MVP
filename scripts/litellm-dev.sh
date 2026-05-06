@@ -60,7 +60,15 @@ if [ -f .env.local ]; then
   if [ -z "$KEY_LINES" ]; then
     echo "[litellm-dev] WARNING: no provider keys found in .env.local"
   else
-    eval "$(printf '%s\n' "$KEY_LINES" | sed 's/^/export /')"
+    # CMD-LITELLM-LAUNCHER-HARDEN-EVAL V18: declare -gx replaces eval ·
+    # ratifies DOC-MALFORMED-ENV-VALUE-CANARY · zero shell-injection surface
+    while IFS='=' read -r KEY VALUE; do
+      [ -z "$KEY" ] && continue
+      # Strip surrounding double-quotes if present (matches export semantics)
+      VALUE="${VALUE%\"}"
+      VALUE="${VALUE#\"}"
+      declare -gx "$KEY=$VALUE"
+    done <<< "$KEY_LINES"
   fi
 else
   echo "[litellm-dev] WARNING: .env.local not found · provider keys may be missing"
