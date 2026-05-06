@@ -1219,10 +1219,28 @@ model ScraperUsageLog {
   userId        String?
   createdAt     DateTime @default(now())
 
+  // CMD-SCRAPER-USAGE-LOG-PAYLOAD-FIELD V18 (R15 P0 · 2026-05-06):
+  // Cyl 7A receiver writes scraper.catch payload here · cron consumer
+  // (Cyl 7B wire-fill · R15 P1) reads back to reconstruct ParseInput[]
+  // for batch parsing. JSON-stringified · matches ScraperComp pattern
+  // (keywordsJson · imageUrlsJson · metadataJson). Nullable to preserve
+  // backward compat with rows from non-scraper.catch sources (e.g.,
+  // direct logScraperUsage helper from existing bots).
+  payloadJson String?
+
+  // Idempotency marker: NULL = unprocessed (cron eligible) · timestamp =
+  // processed (cron skips). Cyl 7B wire-fill cron polls
+  // `WHERE payloadJson IS NOT NULL AND parsedAt IS NULL` and sets this
+  // after successful parse + ScraperComp persist.
+  parsedAt DateTime?
+
   @@index([botName, createdAt])
   @@index([slug, createdAt])
   @@index([blocked, createdAt])
   @@index([userId, createdAt])
+  // Cron polling efficiency: composite index supports
+  // `WHERE parsedAt IS NULL ORDER BY createdAt` (FIFO processing)
+  @@index([parsedAt, createdAt])
 }
 
 // CMD-SCRAPER-ENRICHMENT-E: persistent comp knowledge graph.

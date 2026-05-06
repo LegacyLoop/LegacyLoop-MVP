@@ -99,6 +99,12 @@ export async function POST(req: NextRequest) {
           durationMs: 0,
           itemId: null,
           userId: null,
+          // CMD-SCRAPER-USAGE-LOG-PAYLOAD-FIELD V18 (R15 P0): receiver
+          // writes scraper.catch payload for cron-side reconstruction.
+          // Cyl 7B wire-fill (R15 P1) consumes this field. Synchronous
+          // write preserves idempotency contract (row written BEFORE ack
+          // returns).
+          payloadJson: JSON.stringify(payload),
         },
       });
 
