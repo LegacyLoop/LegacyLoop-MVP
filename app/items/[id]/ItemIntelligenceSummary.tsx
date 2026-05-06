@@ -213,6 +213,42 @@ export default function ItemIntelligenceSummary(props: Props) {
     onComplete: () => reconcileRouter.refresh(),
   });
 
+  // CMD-ITEMINTELLIGENCESUMMARY-SONAR-SLOT V18 (Wire H · 8th Sylvia consumer)
+  // 3-bot foundation overlay · validates Analyze + Price + Recon aggregate
+  // against current-day live web · forceAlias "sonar-pro" · audit row §2.3 P1
+  type WireHValidation = {
+    identification_validation?: { match?: string; evidence?: string };
+    pricing_validation?: { current_market_low?: number; current_market_high?: number; current_market_median?: number; divergence_from_pricebot?: string; source_urls?: string[] };
+    market_position?: { current_demand?: string; best_platform_today?: string; evidence?: string };
+    key_insights_overlay?: string[];
+    confidence_overall?: number;
+    reasoning?: string;
+    sources?: string[];
+  };
+  const [validation, setValidation] = useState<WireHValidation | null>(null);
+  const [validating, setValidating] = useState(false);
+  async function refreshValidation() {
+    if (validating) return;
+    setValidating(true);
+    try {
+      const res = await fetch(`/api/items/${itemId}/intelligence-sonar-refresh`, { method: "POST" });
+      const d = await res.json();
+      const raw = d.result;
+      if (raw) {
+        try {
+          const parsed: WireHValidation = typeof raw === "string" ? JSON.parse(raw) : raw;
+          setValidation(parsed);
+        } catch {
+          // Non-critical · keep existing display
+        }
+      }
+    } catch {
+      // Non-critical
+    } finally {
+      setValidating(false);
+    }
+  }
+
   // CMD-JURY-VERDICT-SURFACE: modal state + single-fire chip-render telemetry
   const [juryModalOpen, setJuryModalOpen] = useState(false);
   const juryChipFiredRef = useRef(false);
@@ -874,6 +910,94 @@ export default function ItemIntelligenceSummary(props: Props) {
           </span>
         </div>
       )}
+      {/* Wire H · Live-web validation overlay (CMD-ITEMINTELLIGENCESUMMARY-SONAR-SLOT V18) */}
+      {validation ? (
+        <div style={{
+          marginBottom: 12, borderRadius: 12, padding: "12px 16px",
+          background: "rgba(0,188,212,0.04)",
+          border: "1px solid rgba(0,188,212,0.25)",
+          fontSize: 13, lineHeight: 1.5,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: "var(--accent, #00bcd4)" }}>
+              ✓ Live-web validated
+            </span>
+            {typeof validation.confidence_overall === "number" && (
+              <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-secondary)" }}>
+                · confidence {Math.round(validation.confidence_overall * 100)}%
+              </span>
+            )}
+          </div>
+          {validation.identification_validation?.evidence && (
+            <div style={{ marginBottom: 6, color: "var(--text-primary)" }}>
+              <strong>Identification:</strong> {validation.identification_validation.evidence}
+            </div>
+          )}
+          {validation.pricing_validation?.current_market_median != null && (
+            <div style={{ marginBottom: 6, color: "var(--text-primary)" }}>
+              <strong>Market:</strong> ${validation.pricing_validation.current_market_median}
+              {validation.pricing_validation.divergence_from_pricebot && (
+                <> (3-bot divergence: {validation.pricing_validation.divergence_from_pricebot})</>
+              )}
+            </div>
+          )}
+          {validation.market_position?.current_demand && (
+            <div style={{ marginBottom: 6, color: "var(--text-primary)" }}>
+              <strong>Demand:</strong> {validation.market_position.current_demand}
+              {validation.market_position.best_platform_today && (
+                <> · best platform today: {validation.market_position.best_platform_today}</>
+              )}
+            </div>
+          )}
+          {validation.key_insights_overlay && validation.key_insights_overlay.length > 0 && (
+            <ul style={{ margin: "6px 0", paddingLeft: 20, color: "var(--text-primary)" }}>
+              {validation.key_insights_overlay.slice(0, 5).map((insight, i) => (
+                <li key={i} style={{ marginBottom: 2 }}>{insight}</li>
+              ))}
+            </ul>
+          )}
+          {validation.sources && validation.sources.length > 0 && (
+            <div style={{ marginTop: 8, fontSize: 11, color: "var(--text-muted)" }}>
+              Sources:{" "}
+              {validation.sources.slice(0, 3).map((src, i) => (
+                <a
+                  key={i}
+                  href={src}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "var(--accent, #00bcd4)", marginRight: 8 }}
+                >
+                  [{i + 1}]
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={refreshValidation}
+          disabled={validating}
+          aria-label="Validate intelligence summary against current market"
+          style={{
+            display: "block", marginBottom: 12, padding: "10px 16px",
+            minHeight: 44, width: "100%",
+            background: "transparent",
+            border: "1px dashed rgba(0,188,212,0.4)",
+            borderRadius: 12,
+            cursor: validating ? "wait" : "pointer",
+            color: "var(--accent, #00bcd4)",
+            fontSize: 13, fontWeight: 600, letterSpacing: "0.04em",
+            opacity: validating ? 0.6 : 0.85,
+            transition: "opacity 0.15s, background 0.15s",
+          }}
+          onMouseOver={(e) => { if (!validating) e.currentTarget.style.opacity = "1"; }}
+          onMouseOut={(e) => { if (!validating) e.currentTarget.style.opacity = "0.85"; }}
+        >
+          {validating ? "Validating against current market…" : "✓ Validate against live web"}
+        </button>
+      )}
+
       <div className="intel-hud">
         {/* ═══ HEADER ═══ */}
         <div className="intel-header">
