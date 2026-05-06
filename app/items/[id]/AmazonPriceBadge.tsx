@@ -36,8 +36,35 @@ export default function AmazonPriceBadge({ itemId }: { itemId: string }) {
   const [data, setData] = useState<AmazonData | null>(null);
   const [cachedAt, setCachedAt] = useState<string | null>(null);
   const [notAvailable, setNotAvailable] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const retriesRef = useRef(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // ── Wire G · live-Amazon Sonar refresh (CMD-AMAZONPRICEBADGE-SONAR-SLOT V18) ──
+  async function refreshFromSonar() {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      const res = await fetch(`/api/items/${itemId}/amazon-sonar-refresh`, { method: "POST" });
+      const d = await res.json();
+      if (d.result) {
+        try {
+          const live = typeof d.result === "string" ? JSON.parse(d.result) : d.result;
+          if (live && live.priceRange) {
+            setData(live as AmazonData);
+            setCachedAt(live.fetchedAt ?? new Date().toISOString());
+            setNotAvailable(false);
+          }
+        } catch {
+          // Non-critical · fallback to existing data
+        }
+      }
+    } catch {
+      // Non-critical
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -310,6 +337,37 @@ export default function AmazonPriceBadge({ itemId }: { itemId: string }) {
                   Updated {timeAgo(freshness)}
                 </span>
               </>
+            )}
+            <span className="amz-hud-footer-sep" />
+            {refreshing ? (
+              <span className="amz-hud-footer-text" aria-live="polite">Refreshing…</span>
+            ) : (
+              <button
+                type="button"
+                onClick={refreshFromSonar}
+                aria-label="Refresh price from live Amazon search"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  padding: "4px 8px",
+                  margin: "-4px -4px -4px 0",
+                  minHeight: "20px",
+                  cursor: "pointer",
+                  fontSize: "8px",
+                  fontWeight: 600,
+                  letterSpacing: "0.08em",
+                  color: "var(--accent, #00bcd4)",
+                  opacity: 0.7,
+                  textTransform: "uppercase",
+                  transition: "opacity 0.15s",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.opacity = "1")}
+                onMouseOut={(e) => (e.currentTarget.style.opacity = "0.7")}
+                onFocus={(e) => (e.currentTarget.style.opacity = "1")}
+                onBlur={(e) => (e.currentTarget.style.opacity = "0.7")}
+              >
+                ↻ Live
+              </button>
             )}
           </div>
         </div>
