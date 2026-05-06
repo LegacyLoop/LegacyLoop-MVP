@@ -28,6 +28,7 @@ const STATUS_FLOW = [
   { key: "READY", label: "Ready", icon: "✅" },
   { key: "LISTED", label: "Listed", icon: "📢" },
   { key: "INTERESTED", label: "Interest", icon: "💬" },
+  { key: "OFFER_PENDING", label: "Offer", icon: "🤝" },
   { key: "SOLD", label: "Sold", icon: "💰" },
   { key: "SHIPPED", label: "Shipped", icon: "📦" },
   { key: "COMPLETED", label: "Done", icon: "🎉" },

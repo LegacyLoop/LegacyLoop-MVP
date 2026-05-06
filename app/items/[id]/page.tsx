@@ -35,6 +35,7 @@ const STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   READY: { bg: "rgba(0,188,212,0.15)", color: "#00bcd4" },
   LISTED: { bg: "rgba(34,197,94,0.15)", color: "#22c55e" },
   INTERESTED: { bg: "rgba(59,130,246,0.15)", color: "#3b82f6" },
+  OFFER_PENDING: { bg: "rgba(245,158,11,0.15)", color: "#f59e0b" },
   SOLD: { bg: "rgba(251,191,36,0.15)", color: "#fbbf24" },
   SHIPPED: { bg: "rgba(168,85,247,0.15)", color: "#a855f7" },
   COMPLETED: { bg: "rgba(34,197,94,0.15)", color: "#22c55e" },
