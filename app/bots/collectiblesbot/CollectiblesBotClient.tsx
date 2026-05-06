@@ -835,7 +835,7 @@ export default function CollectiblesBotClient({ items }: { items: ItemData[] }) 
             </Badge>
             <div style={{ display: "flex", gap: "0.75rem", fontSize: "0.75rem" }}>
               <span style={{ color: "var(--text-muted)" }}>Score: <span style={{ fontWeight: 700, color: PURPLE }}>{detection.score}</span></span>
-              <span style={{ color: "var(--text-muted)" }}>Confidence: <span style={{ fontWeight: 700, color: PURPLE }}>{detection.confidence}%</span></span>
+              <span style={{ color: "var(--text-muted)" }}>Confidence: <span style={{ fontWeight: 700, color: PURPLE }}>{toPct(detection.confidence)}%</span></span>
               <span style={{ color: "var(--text-muted)" }}>Potential: <span style={{ fontWeight: 700, color: detection.potentialValue === "Very High" || detection.potentialValue === "High" ? GREEN : "var(--text-primary)" }}>{detection.potentialValue}</span></span>
             </div>
           </div>
