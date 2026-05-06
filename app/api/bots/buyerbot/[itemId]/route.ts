@@ -554,10 +554,15 @@ Return a JSON object with this structure:
 
   "hot_leads": [
     {
-      "lead_description": "Who is actively looking",
+      "platform": "eBay | Reddit | Facebook Marketplace | Etsy | specialist forum name — be specific",
+      "buyer_identifier": "username, handle, profile URL, or group name + post URL — NEVER generic 'collectors of X'",
+      "intent_signal": "exact quote from post/comment OR hashtag they use OR search-history hint — must be specific",
+      "recency": "ISO date or 'X days ago' — yesterday is gold, last week good, last month borderline, last year dead",
+      "path_to_contact": "DM link, email if public, group post URL, or forum PM link — exactly how seller reaches them today",
       "urgency": "Act now | This week | This month",
-      "how_to_reach": "Specific action",
-      "estimated_price_theyd_pay": 50
+      "estimated_price_theyd_pay": 50,
+      "lead_description": "1-line summary combining who they are + what they want (legacy compat field)",
+      "how_to_reach": "Mirror of path_to_contact (legacy compat field)"
     }
   ],
 
@@ -1099,45 +1104,76 @@ function generateDemoResult(
 
     hot_leads: [
       {
+        platform: "eBay",
+        buyer_identifier: `saved-search alerts (anonymous · platform-internal · search term: "${itemName.split(" ").slice(0, 2).join(" ")}")`,
+        intent_signal: `${Math.floor(Math.random() * 20 + 15)} active saved-search alerts firing for this exact phrase`,
+        recency: "active this month",
+        path_to_contact: `List on eBay with Buy It Now at $${Math.round(price * 1.05)} with Best Offer enabled — saved-search subscribers get instant email alerts`,
+        urgency: "Act now",
+        estimated_price_theyd_pay: Math.round(price * 0.95),
         lead_description: `Active ${category.toLowerCase()} collector searching on eBay with saved alerts`,
         evidence: `${Math.floor(Math.random() * 20 + 15)} saved-search alerts active for "${itemName.split(" ").slice(0, 2).join(" ")}" on eBay this month. Category demand is up ${Math.floor(Math.random() * 15 + 5)}% year-over-year`,
-        urgency: "Act now",
         how_to_reach: `List on eBay with Buy It Now at $${Math.round(price * 1.05)} with Best Offer enabled. These buyers get instant alerts`,
-        estimated_price_theyd_pay: Math.round(price * 0.95),
       },
       {
+        platform: "Facebook Marketplace",
+        buyer_identifier: `Local Maine browsers (radius 50mi · ${category.toLowerCase()} category)`,
+        intent_signal: `${Math.floor(Math.random() * 30 + 40)} active listings viewed in the past week for similar items in your area`,
+        recency: "this week",
+        path_to_contact: `Post on Facebook Marketplace with great photos at $${price} — local buyers expect 5-10% negotiation`,
+        urgency: "This week",
+        estimated_price_theyd_pay: Math.round(price * 0.9),
         lead_description: `Facebook Marketplace buyers in Maine actively browsing ${category.toLowerCase()} items`,
         evidence: `${Math.floor(Math.random() * 30 + 40)} active listings viewed in the past week for similar items in your area. Local demand is strong`,
-        urgency: "This week",
         how_to_reach: "Post on Facebook Marketplace with great photos. Price at $" + price + " — local buyers expect 5-10% negotiation",
-        estimated_price_theyd_pay: Math.round(price * 0.9),
       },
       {
+        platform: isAntique ? "Maine Antique Digest" : "Facebook Groups (ISO posts)",
+        buyer_identifier: isAntique
+          ? "Antique dealer network · 3-4 New England shops listed in current MAD issue"
+          : `Members posting "In Search Of" for ${category.toLowerCase()}-adjacent items`,
+        intent_signal: isAntique
+          ? "Multiple dealers posted 'buying' ads in Maine Antique Digest this month — spring buying season open"
+          : `3 "In Search Of" posts matching your item type in relevant Facebook groups in the past 2 weeks`,
+        recency: isAntique ? "this month" : "past 2 weeks",
+        path_to_contact: isAntique
+          ? "Contact 3-4 antique shops directly with photos and asking price — dealers decide quickly"
+          : "Reply to ISO posts in Facebook groups with your item details and photos",
+        urgency: "This week",
+        estimated_price_theyd_pay: isAntique ? Math.round(price * 0.65) : Math.round(price * 0.88),
         lead_description: isAntique
           ? "Antique dealer network in New England actively buying inventory"
           : `${category} enthusiast groups with active "ISO" posts`,
         evidence: isAntique
           ? "Multiple dealers posted 'buying' ads in Maine Antique Digest this month. Spring buying season has begun"
           : `3 "In Search Of" posts matching your item type in relevant Facebook groups in the past 2 weeks`,
-        urgency: "This week",
         how_to_reach: isAntique
           ? "Contact 3-4 antique shops directly with photos and asking price. Dealers decide quickly"
           : "Reply to ISO posts in Facebook groups with your item details and photos",
-        estimated_price_theyd_pay: isAntique ? Math.round(price * 0.65) : Math.round(price * 0.88),
       },
       {
+        platform: "Etsy",
+        buyer_identifier: `Vintage/${category.toLowerCase()} category browsers (anonymous search-volume signal)`,
+        intent_signal: `"${category}" search volume on Etsy is trending up — ${Math.floor(Math.random() * 50 + 80)} searches per day for similar items`,
+        recency: "trending now",
+        path_to_contact: `Create an Etsy listing with strong SEO keywords — include "${era || "vintage"}" and "${material || category}" in title`,
+        urgency: "This month",
+        estimated_price_theyd_pay: Math.round(price * 1.05),
         lead_description: "Etsy vintage buyers searching for this exact category",
         evidence: `"${category}" search volume on Etsy is trending up. ${Math.floor(Math.random() * 50 + 80)} searches per day for similar items`,
-        urgency: "This month",
         how_to_reach: "Create an Etsy listing with strong SEO keywords. Include " + (era || "vintage") + " and " + (material || category) + " in title",
-        estimated_price_theyd_pay: Math.round(price * 1.05),
       },
       {
+        platform: "Portland Flea / Montsweag Flea Market",
+        buyer_identifier: "Weekend foot-traffic shoppers (in-person · cash buyers)",
+        intent_signal: "Spring flea market season just started — weekend foot traffic at Maine antique venues is at seasonal peak",
+        recency: "weekly (weekend events)",
+        path_to_contact: "Book a table at Portland Flea or Montsweag Flea Market — bring this item plus any others you're selling",
+        urgency: "This month",
+        estimated_price_theyd_pay: Math.round(price * 0.75),
         lead_description: "Weekend flea market and estate sale shoppers",
         evidence: "Spring flea market season just started. Weekend foot traffic at Maine antique venues is at seasonal peak",
-        urgency: "This month",
         how_to_reach: "Book a table at Portland Flea or Montsweag Flea Market. Bring this item plus any others you're selling",
-        estimated_price_theyd_pay: Math.round(price * 0.75),
       },
     ],
 

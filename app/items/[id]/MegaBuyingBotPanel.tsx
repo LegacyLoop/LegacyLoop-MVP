@@ -17,6 +17,7 @@ interface BotLead {
   botScore: number;
   outreachStatus: string;
   contactedAt: string | null;
+  sourceUrl?: string | null;
 }
 
 interface BotData {
@@ -426,6 +427,32 @@ export default function MegaBuyingBotPanel({ itemId, itemTitle, initialBot, init
                   {lead.matchReason && (
                     <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.75rem" }}>
                       <strong>Why matched:</strong> {lead.matchReason}
+                    </div>
+                  )}
+                  {lead.sourceUrl && (
+                    <div style={{ marginBottom: "0.75rem" }}>
+                      <a
+                        href={lead.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.4rem",
+                          fontSize: "0.85rem",
+                          fontWeight: 600,
+                          color: "var(--accent)",
+                          textDecoration: "none",
+                          background: "var(--accent-dim)",
+                          border: "1px solid var(--accent-border)",
+                          borderRadius: "0.5rem",
+                          padding: "0.45rem 0.75rem",
+                          minHeight: "44px",
+                        }}
+                        aria-label="Open buyer source link in new tab"
+                      >
+                        🔗 Reach this buyer →
+                      </a>
                     </div>
                   )}
                   <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
