@@ -1,10 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTheme } from "@/app/components/ThemeProvider";
 
 export default function NoiseOverlay() {
   const { resolved } = useTheme();
   const opacity = resolved === "dark" ? 0.035 : 0.018;
+
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  if (reducedMotion) return null;
 
   return (
     <>
