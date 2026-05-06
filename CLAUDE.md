@@ -758,6 +758,29 @@ Examples:
 ---
 
 ## ═══════════════════════════════════════════
+## SECTION 15.5: MULTI-AGENT WORKTREE PATTERN
+## ═══════════════════════════════════════════
+
+Parallel IT execution uses **per-agent git worktrees** — each terminal
+operates in its own checkout with its own `.git/index`. Eliminates the
+shared-index race window that produced multi-agent commit-label drift
+incidents Round 11 (`ca0bbd7`) + Round 12 (`20bf67a`/`e4cafdf`/`dd7aa96`).
+
+**Topology:**
+- `/Users/ryanhallee/legacy-loop-mvp/` — main worktree (Devin L1 + L3)
+- `/Users/ryanhallee/legacy-loop-mvp-agent-{1,2,3}/` — IT slots
+
+**Helper scripts:** `scripts/worktree-setup.sh` · `scripts/worktree-reset.sh` · `scripts/agent-ship.sh`
+
+**Full reference:** `docs/MULTI_AGENT_WORKTREE.md`
+
+**Workflow:** Devin verifies parallel-safety → CEO opens 3 terminals (`cd` to slot) → IT agent commits to slot branch → `bash scripts/agent-ship.sh` runs FF-push to main (no force-push) → §12 cites Vercel `dpl_<id>` READY + curl HTTP=200.
+
+**Daemon QUARTET stays anchored to main worktree.** Per-worktree dev.db (isolation by default) · symlinked `.env.local` (single secret SOT) · APFS-cloned node_modules (near-zero disk).
+
+---
+
+## ═══════════════════════════════════════════
 ## SECTION 16: KEY FILES — READ BEFORE TOUCHING
 ## ═══════════════════════════════════════════
 
