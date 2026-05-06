@@ -198,6 +198,15 @@ export interface BuyerBotHybridInput {
    *  Persisted in BOT_AI_ROUTING EventLog payload via the
    *  apifyCostUsd field added in Step 4.8. */
   apifyCostUsd?: number;
+  /** CMD-HYBRID-LIVE-WEB-FIELD-EXTEND V18 (R14 PM 2026-05-06):
+   *  opt-in for Sonar primary on live buyer-intent signals. When
+   *  true AND config.liveWebProvider is set AND config.triggers
+   *  includes "live_web_needed", primary is swapped from Grok to
+   *  Perplexity Sonar. Default false. Mirrors PriceBot L716 +
+   *  ReconBot L302 canonical pattern. Activates Moat #1 + Moat #8
+   *  compound on every live-mode BuyerBot scan (post-this-fix
+   *  R15 P1 BuyerBot Live-Web Wire activates the caller-side flag). */
+  enableLiveWeb?: boolean;
   /** Optional logging skip flag for tests. Default false. */
   skipLogging?: boolean;
 }
@@ -400,6 +409,14 @@ export interface AntiqueBotHybridInput {
    *  the third bot to populate this field after BuyerBot and
    *  ReconBot. */
   apifyCostUsd?: number;
+  /** CMD-HYBRID-LIVE-WEB-FIELD-EXTEND V18 (R14 PM 2026-05-06):
+   *  opt-in for Sonar primary on volatile-category items. When true
+   *  AND config.liveWebProvider is set AND config.triggers includes
+   *  "live_web_needed", primary is swapped from Claude to Perplexity
+   *  Sonar. Default false. Mirrors PriceBot L716 + ReconBot L302
+   *  canonical pattern. Closes architectural drift caught at R13 P2
+   *  HALT (DOC-SPEC-GROUNDING-VERIFY · BINDING #7). */
+  enableLiveWeb?: boolean;
   /** Optional logging skip flag for tests. Default false. */
   skipLogging?: boolean;
 }
@@ -521,6 +538,15 @@ export interface CarBotHybridInput {
    *  Persisted in BOT_AI_ROUTING EventLog payload via the
    *  apifyCostUsd field added in Step 4.8. */
   apifyCostUsd?: number;
+  /** CMD-HYBRID-LIVE-WEB-FIELD-EXTEND V18 (R14 PM 2026-05-06):
+   *  opt-in for Sonar primary on vehicle-pricing volatility. When
+   *  true AND config.liveWebProvider is set AND config.triggers
+   *  includes "live_web_needed", primary is swapped from Gemini to
+   *  Perplexity Sonar. Default false. MUTUALLY EXCLUSIVE with
+   *  enableGrounding (Sonar IS live web — Gemini's google_search
+   *  tool is suppressed when liveWebActive). Mirrors ReconBot
+   *  L302 canonical pattern. */
+  enableLiveWeb?: boolean;
   /** Optional logging skip flag for tests. Default false. */
   skipLogging?: boolean;
 }
@@ -640,6 +666,13 @@ export interface CollectiblesBotHybridInput {
    *  call. Persisted in BOT_AI_ROUTING EventLog payload via the
    *  apifyCostUsd field added in Step 4.8. */
   apifyCostUsd?: number;
+  /** CMD-HYBRID-LIVE-WEB-FIELD-EXTEND V18 (R14 PM 2026-05-06):
+   *  opt-in for Sonar primary on graded-collectible market intel.
+   *  When true AND config.liveWebProvider is set AND config.triggers
+   *  includes "live_web_needed", primary is swapped from Claude to
+   *  Perplexity Sonar. Default false. Mirrors PriceBot L716 +
+   *  ReconBot L302 canonical pattern. */
+  enableLiveWeb?: boolean;
   /** Optional logging skip flag for tests. Default false. */
   skipLogging?: boolean;
 }

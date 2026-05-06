@@ -950,6 +950,15 @@ export interface ListBotHybridInput {
   marketplacePrompt: string;
   /** Full social prompt text — passed AS-IS to Grok. */
   socialPrompt: string;
+  /** CMD-HYBRID-LIVE-WEB-FIELD-EXTEND V18 (R14 PM 2026-05-06):
+   *  opt-in for Sonar primary on specialty-listing language tone.
+   *  When true AND config.liveWebProvider is set AND config.triggers
+   *  includes "live_web_needed", marketplace primary is swapped from
+   *  Claude to Perplexity Sonar. Default false. Mirrors PriceBot
+   *  L716 canonical pattern. Note: ListBot fires Claude+Grok in
+   *  parallel ("always" trigger) · enableLiveWeb only swaps the
+   *  marketplace (Claude) primary; social (Grok) preserved. */
+  enableLiveWeb?: boolean;
   /** Optional logging skip flag for tests. */
   skipLogging?: boolean;
 }
@@ -1027,13 +1036,25 @@ export async function routeListBotHybrid(
     }
   };
 
+  // CMD-HYBRID-LIVE-WEB-FIELD-EXTEND V18: opt-in Sonar swap on
+  // marketplace branch only · social (Grok) preserved verbatim.
+  // Mirrors PriceBot L2660 canonical pattern.
+  const config = getBotConfig("listbot");
+  const liveWebActive =
+    input.enableLiveWeb === true &&
+    !!config.liveWebProvider &&
+    config.triggers.includes("live_web_needed");
+  const marketplaceProvider: ProviderName = liveWebActive
+    ? config.liveWebProvider!
+    : "claude";
+
   const [marketplace, social] = await Promise.all([
-    runOne("claude", input.marketplacePrompt),
+    runOne(marketplaceProvider, input.marketplacePrompt),
     runOne("grok", input.socialPrompt),
   ]);
 
   const totalEstCost =
-    estimateProviderCost("claude") + estimateProviderCost("grok");
+    estimateProviderCost(marketplaceProvider) + estimateProviderCost("grok");
   const totalActualCost =
     (marketplace.actualCostUsd ?? 0) + (social.actualCostUsd ?? 0);
 
@@ -1054,17 +1075,17 @@ export async function routeListBotHybrid(
   // Fire-and-forget log
   if (!input.skipLogging) {
     const providersUsed: ProviderName[] = [];
-    if (marketplace.rawResult) providersUsed.push("claude");
+    if (marketplace.rawResult) providersUsed.push(marketplaceProvider);
     if (social.rawResult) providersUsed.push("grok");
 
     void logRoutingDecision({
       itemId: input.itemId,
       payload: {
         botName: "listbot",
-        primary: "claude",
+        primary: marketplaceProvider,
         secondary: "grok",
         triggersFired: ["always"],
-        providersAttempted: ["claude", "grok"],
+        providersAttempted: [marketplaceProvider, "grok"],
         providersUsed,
         costUsd: result.costUsd,
         actualCostUsd: result.actualCostUsd,
@@ -1199,15 +1220,25 @@ export async function routeBuyerBotHybrid(
   let fallbackUsed = false;
 
   // ── PRIMARY: Grok ──────────────────────────────────────
-  let primary: RawRunOutcome = await runRaw("grok", input.buyerPrompt);
-  providersAttempted.push("grok");
-  totalEstCost += estimateProviderCost("grok");
+  // CMD-HYBRID-LIVE-WEB-FIELD-EXTEND V18: opt-in Sonar swap mirrors
+  // PriceBot L2660 + ReconBot L1472 canonical pattern.
+  const liveWebActive =
+    input.enableLiveWeb === true &&
+    !!config.liveWebProvider &&
+    config.triggers.includes("live_web_needed");
+  const primaryProvider: ProviderName = liveWebActive
+    ? config.liveWebProvider!
+    : "grok";
+
+  let primary: RawRunOutcome = await runRaw(primaryProvider, input.buyerPrompt);
+  providersAttempted.push(primaryProvider);
+  totalEstCost += estimateProviderCost(primaryProvider);
   if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
-  if (primary.rawResult) providersUsed.push("grok");
+  if (primary.rawResult) providersUsed.push(primaryProvider);
 
   // ── Graceful fallback chain on primary failure ────────
   if (!primary.rawResult) {
-    const chain = fallbackChain("grok", providersAttempted);
+    const chain = fallbackChain(primaryProvider, providersAttempted);
     let attempts = 0;
     for (const fallback of chain) {
       if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
@@ -1745,15 +1776,25 @@ export async function routeAntiqueBotHybrid(
   let fallbackUsed = false;
 
   // ── PRIMARY: Claude (museum-grade reasoning) ───────────
-  let primary: RawRunOutcome = await runRaw("claude", input.appraisalPrompt);
-  providersAttempted.push("claude");
-  totalEstCost += estimateProviderCost("claude");
+  // CMD-HYBRID-LIVE-WEB-FIELD-EXTEND V18: opt-in Sonar swap mirrors
+  // PriceBot L2660 + ReconBot L1472 canonical pattern.
+  const liveWebActive =
+    input.enableLiveWeb === true &&
+    !!config.liveWebProvider &&
+    config.triggers.includes("live_web_needed");
+  const primaryProvider: ProviderName = liveWebActive
+    ? config.liveWebProvider!
+    : "claude";
+
+  let primary: RawRunOutcome = await runRaw(primaryProvider, input.appraisalPrompt);
+  providersAttempted.push(primaryProvider);
+  totalEstCost += estimateProviderCost(primaryProvider);
   if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
-  if (primary.rawResult) providersUsed.push("claude");
+  if (primary.rawResult) providersUsed.push(primaryProvider);
 
   // ── Graceful fallback chain on primary failure ────────
   if (!primary.rawResult) {
-    const chain = fallbackChain("claude", providersAttempted);
+    const chain = fallbackChain(primaryProvider, providersAttempted);
     let attempts = 0;
     for (const fallback of chain) {
       if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
@@ -2047,15 +2088,25 @@ export async function routeCollectiblesBotHybrid(
   let fallbackUsed = false;
 
   // ── PRIMARY: Claude (nuanced grading reasoning) ────────
-  let primary: RawRunOutcome = await runRaw("claude", input.gradingPrompt);
-  providersAttempted.push("claude");
-  totalEstCost += estimateProviderCost("claude");
+  // CMD-HYBRID-LIVE-WEB-FIELD-EXTEND V18: opt-in Sonar swap mirrors
+  // PriceBot L2660 + ReconBot L1472 canonical pattern.
+  const liveWebActive =
+    input.enableLiveWeb === true &&
+    !!config.liveWebProvider &&
+    config.triggers.includes("live_web_needed");
+  const primaryProvider: ProviderName = liveWebActive
+    ? config.liveWebProvider!
+    : "claude";
+
+  let primary: RawRunOutcome = await runRaw(primaryProvider, input.gradingPrompt);
+  providersAttempted.push(primaryProvider);
+  totalEstCost += estimateProviderCost(primaryProvider);
   if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
-  if (primary.rawResult) providersUsed.push("claude");
+  if (primary.rawResult) providersUsed.push(primaryProvider);
 
   // ── Graceful fallback chain on primary failure ────────
   if (!primary.rawResult) {
-    const chain = fallbackChain("claude", providersAttempted);
+    const chain = fallbackChain(primaryProvider, providersAttempted);
     let attempts = 0;
     for (const fallback of chain) {
       if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
@@ -2372,22 +2423,31 @@ export async function routeCarBotHybrid(
   let fallbackUsed = false;
 
   // ── PRIMARY: Gemini (with optional grounding) ──────────
-  const wantsGrounding = input.enableGrounding === true;
+  // CMD-HYBRID-LIVE-WEB-FIELD-EXTEND V18: opt-in Sonar swap mirrors
+  // ReconBot L1472 canonical pattern (with grounding mutual-exclusivity).
+  const liveWebActive =
+    input.enableLiveWeb === true &&
+    !!config.liveWebProvider &&
+    config.triggers.includes("live_web_needed");
+  const primaryProvider: ProviderName = liveWebActive
+    ? config.liveWebProvider!
+    : "gemini";
+  const wantsGrounding = input.enableGrounding === true && !liveWebActive;
   let primary: RawRunOutcome = await runRaw(
-    "gemini",
+    primaryProvider,
     input.vehiclePrompt,
     wantsGrounding,
   );
-  providersAttempted.push("gemini");
-  totalEstCost += estimateProviderCost("gemini");
+  providersAttempted.push(primaryProvider);
+  totalEstCost += estimateProviderCost(primaryProvider);
   if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
-  if (primary.rawResult) providersUsed.push("gemini");
+  if (primary.rawResult) providersUsed.push(primaryProvider);
 
   // ── Graceful fallback chain on primary failure ────────
   // Fallback providers do NOT inherit enableGrounding — only
   // Gemini supports it, and the others have no equivalent.
   if (!primary.rawResult) {
-    const chain = fallbackChain("gemini", providersAttempted);
+    const chain = fallbackChain(primaryProvider, providersAttempted);
     let attempts = 0;
     for (const fallback of chain) {
       if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
