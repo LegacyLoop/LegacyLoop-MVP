@@ -76,6 +76,9 @@ import type {
   // CMD-VIDEOBOT-CORE-A: Step 12 Round A
   VideoBotHybridInput,
   VideoBotHybridResult,
+  // CMD-ANALYZEBOT-HYBRID-INPUT-EXTEND V18: R16 P1 substrate
+  AnalyzeBotHybridInput,
+  AnalyzeBotHybridResult,
 } from "./types";
 
 // ─── Re-exports — public surface ───────────────────────────────
@@ -125,6 +128,9 @@ export type {
   // CMD-VIDEOBOT-CORE-A: Step 12 Round A
   VideoBotHybridInput,
   VideoBotHybridResult,
+  // CMD-ANALYZEBOT-HYBRID-INPUT-EXTEND V18: R16 P1 substrate
+  AnalyzeBotHybridInput,
+  AnalyzeBotHybridResult,
 } from "./types";
 
 // ─── Constants ──────────────────────────────────────────────────
@@ -1652,6 +1658,276 @@ export async function routeReconBotHybrid(
       // Logging must NEVER bubble up to the caller.
       console.warn(
         `[routeReconBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
+      );
+    }
+  }
+
+  return result;
+}
+
+// ─── Public: routeAnalyzeBotHybrid() ───────────────────────
+//
+// CMD-ANALYZEBOT-HYBRID-INPUT-EXTEND V18 (R16 P1 · 2026-05-06):
+// AnalyzeBot router entry point. OpenAI-primary for structured
+// item-identification. Gemini-secondary fires conditionally on
+// the low_confidence or high_value trigger when caller pre-
+// evaluates ambiguity. Optional Sonar pre-pass for live-web items
+// (antique · collectible · rare items needing market context).
+//
+// Pattern mirrors routeReconBotHybrid (proven d6b71b8 + R15 P2
+// 61cdbec) verbatim per BINDING #16 DOC-DELEGATE-TO-CANONICAL.
+// Substrate-only ship — runtime callers migrate in R17 P0
+// (CMD-ANALYZEBOT-CALLER-WIRE V18 · banked).
+//
+// Returns RAW JSON payload — caller is responsible for shape
+// preservation since AnalyzeBot's response schema may not be
+// AiAnalysis-compatible after R17 caller migration.
+//
+// IMPORTANT: this function NEVER throws to its caller. All
+// failures (provider errors, fallback exhaustion, log write
+// failures) are surfaced via the AnalyzeBotHybridResult shape
+// (degraded=true + error string).
+// ─────────────────────────────────────────────────────────
+
+export async function routeAnalyzeBotHybrid(
+  input: AnalyzeBotHybridInput,
+): Promise<AnalyzeBotHybridResult> {
+  const startedAt = Date.now();
+  const config = getBotConfig("analyzebot");
+  // Defense-in-depth: validate config.triggers contains the
+  // low_confidence trigger that R17 caller-wire pre-evaluates.
+  // Mirrors the Step 5 Round B specialty_item validator pattern.
+  if (!config.triggers.includes("low_confidence")) {
+    throw new Error(
+      "[routeAnalyzeBotHybrid] BOT_AI_CONFIG.analyzebot.triggers must " +
+      "include 'low_confidence' — got: " + JSON.stringify(config.triggers)
+    );
+  }
+  const demoMode = isDemoMode();
+
+  const photoArr = Array.isArray(input.photoPath) ? input.photoPath : [input.photoPath];
+  const absPath = photoArr[0];
+
+  // Local closure (not extracted) so the proven Step 3/Step 5/Step 6
+  // hybrid templates above stay byte-identical. Note: only Gemini
+  // supports grounding; primary (OpenAI) and fallbacks always run
+  // with grounding disabled because OpenAI/Claude/Grok don't support it.
+  type RawRunOutcome = ProviderRunResult & {
+    rawResult: any;
+    geminiWebSources?: Array<{ url: string; title: string }>;
+  };
+
+  const runRaw = async (
+    provider: ProviderName,
+    prompt: string,
+    enableGrounding: boolean,
+  ): Promise<RawRunOutcome> => {
+    const start = Date.now();
+    try {
+      const { text, tokens, geminiWebSources } = await callProviderRaw(
+        provider,
+        absPath,
+        prompt,
+        {
+          timeoutMs: HYBRID_DEFAULTS.TIMEOUT_MS,
+          maxTokens: HYBRID_DEFAULTS.MAX_TOKENS,
+          enableGrounding,
+        },
+      );
+      const rawResult = parseAnyLooseJson(text);
+      if (!rawResult) {
+        return {
+          provider,
+          result: null,
+          error: `${provider} returned unparseable JSON`,
+          durationMs: Date.now() - start,
+          tokens,
+          actualCostUsd: computeActualCost(provider, tokens),
+          rawResult: null,
+          geminiWebSources,
+        };
+      }
+      return {
+        provider,
+        result: null, // AnalyzeBot output is not AiAnalysis-shaped
+        error: null,
+        durationMs: Date.now() - start,
+        tokens,
+        actualCostUsd: computeActualCost(provider, tokens),
+        rawResult,
+        geminiWebSources,
+      };
+    } catch (e: any) {
+      return {
+        provider,
+        result: null,
+        error: e?.message ?? String(e),
+        durationMs: Date.now() - start,
+        rawResult: null,
+      };
+    }
+  };
+
+  const providersAttempted: ProviderName[] = [];
+  const providersUsed: ProviderName[] = [];
+  let totalEstCost = 0;
+  let totalActualCost = 0;
+  let fallbackUsed = false;
+
+  // ── PRIMARY: OpenAI (with optional Sonar swap) ─────────
+  // CMD-HYBRID-LIVE-WEB-FIELD-EXTEND V18: opt-in Sonar swap mirrors
+  // PriceBot L2660 + ReconBot L1472 canonical pattern. Sonar is
+  // mutually exclusive with grounding (Sonar IS live web — Gemini's
+  // google_search tool is suppressed when liveWebActive · also Gemini
+  // is secondary here so grounding only applies to secondary call).
+  const liveWebActive =
+    input.enableLiveWeb === true &&
+    !!config.liveWebProvider &&
+    config.triggers.includes("live_web_needed");
+  const primaryProvider: ProviderName = liveWebActive
+    ? config.liveWebProvider!
+    : "openai";
+  // Primary (OpenAI) doesn't support grounding · always false on primary call
+  let primary: RawRunOutcome = await runRaw(primaryProvider, input.analyzePrompt, false);
+  providersAttempted.push(primaryProvider);
+  totalEstCost += estimateProviderCost(primaryProvider);
+  if (primary.actualCostUsd != null) totalActualCost += primary.actualCostUsd;
+  if (primary.rawResult) providersUsed.push(primaryProvider);
+
+  // ── Graceful fallback chain on primary failure ────────
+  // Fallback providers do NOT inherit enableGrounding — only
+  // Gemini supports it, and the others have no equivalent.
+  if (!primary.rawResult) {
+    const chain = fallbackChain(primaryProvider, providersAttempted);
+    let attempts = 0;
+    for (const fallback of chain) {
+      if (attempts >= MAX_FALLBACK_ATTEMPTS) break;
+      attempts++;
+      fallbackUsed = true;
+      const fallbackOutcome = await runRaw(fallback, input.analyzePrompt, false);
+      providersAttempted.push(fallback);
+      totalEstCost += estimateProviderCost(fallback);
+      if (fallbackOutcome.actualCostUsd != null) {
+        totalActualCost += fallbackOutcome.actualCostUsd;
+      }
+      if (fallbackOutcome.rawResult) {
+        primary = fallbackOutcome;
+        providersUsed.push(fallback);
+        break;
+      }
+    }
+  }
+
+  // ── SECONDARY: Gemini (conditional, best-effort) ──────
+  // Only fires when:
+  //   1. caller pre-evaluated shouldRunSecondary === true
+  //   2. primary (or its fallback) succeeded
+  //   3. secondaryContext is present
+  // Gemini secondary supports grounding (when enableGrounding=true
+  // AND not already swapped to Sonar primary).
+  // Secondary failure does NOT mark the run degraded.
+  let secondary: RawRunOutcome | undefined;
+  const wantsSecondary =
+    input.shouldRunSecondary === true &&
+    !!primary.rawResult &&
+    typeof input.secondaryContext === "string" &&
+    input.secondaryContext.length > 0;
+
+  const wantsGroundingOnSecondary =
+    input.enableGrounding === true && !liveWebActive;
+
+  if (wantsSecondary) {
+    const secondaryOutcome = await runRaw(
+      "gemini",
+      input.secondaryContext as string,
+      wantsGroundingOnSecondary,
+    );
+    providersAttempted.push("gemini");
+    totalEstCost += estimateProviderCost("gemini");
+    if (secondaryOutcome.actualCostUsd != null) {
+      totalActualCost += secondaryOutcome.actualCostUsd;
+    }
+    if (secondaryOutcome.rawResult) {
+      secondary = secondaryOutcome;
+      providersUsed.push("gemini");
+    } else {
+      console.warn(
+        `[routeAnalyzeBotHybrid] Gemini secondary failed for item ${input.itemId}: ${secondaryOutcome.error ?? "unknown"}`,
+      );
+    }
+  }
+
+  const degraded = !primary.rawResult;
+
+  // Hoist grounding citations to top-level result. Only Gemini
+  // (when grounded + successful as secondary here) populates them.
+  const geminiWebSources: Array<{ url: string; title: string }> =
+    secondary?.provider === "gemini" && Array.isArray(secondary.geminiWebSources)
+      ? secondary.geminiWebSources
+      : [];
+
+  const result: AnalyzeBotHybridResult = {
+    primary,
+    secondary,
+    geminiWebSources,
+    costUsd: Number(totalEstCost.toFixed(5)),
+    actualCostUsd: Number(totalActualCost.toFixed(6)),
+    latencyMs: Date.now() - startedAt,
+    degraded,
+    error: degraded ? primary.error ?? "All providers failed" : undefined,
+  };
+
+  // ── Fire-and-forget routing log ──
+  if (!input.skipLogging) {
+    try {
+      const mergedStrategy: "primary_only" | "merged_consensus" | "degraded" =
+        degraded
+          ? "degraded"
+          : secondary
+            ? "merged_consensus"
+            : "primary_only";
+
+      void logRoutingDecision({
+        itemId: input.itemId,
+        payload: {
+          botName: "analyzebot",
+          primary: primary.provider, // actual provider used (may be a fallback)
+          secondary: secondary?.provider,
+          triggersFired: wantsSecondary ? ["low_confidence"] : [],
+          providersAttempted,
+          providersUsed,
+          costUsd: result.costUsd,
+          actualCostUsd: result.actualCostUsd,
+          ...(input.apifyCostUsd != null ? { apifyCostUsd: input.apifyCostUsd } : {}),
+          latencyMs: result.latencyMs,
+          fallbackUsed,
+          degraded,
+          confidence: null, // AnalyzeBot raw shape: caller computes confidence post-merge
+          mergedStrategy,
+          tokens: {
+            [primary.provider]: {
+              input: primary.tokens?.inputTokens ?? null,
+              output: primary.tokens?.outputTokens ?? null,
+              total: primary.tokens?.totalTokens ?? null,
+            },
+            ...(secondary?.tokens
+              ? {
+                  [secondary.provider]: {
+                    input: secondary.tokens.inputTokens,
+                    output: secondary.tokens.outputTokens,
+                    total: secondary.tokens.totalTokens,
+                  },
+                }
+              : {}),
+          },
+          demoMode,
+          error: result.error,
+          timestamp: new Date().toISOString(),
+        },
+      });
+    } catch (e: any) {
+      console.warn(
+        `[routeAnalyzeBotHybrid] log dispatch failed for item ${input.itemId}: ${e?.message ?? e}`,
       );
     }
   }

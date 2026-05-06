@@ -352,6 +352,90 @@ export interface ReconBotHybridResult {
   error?: string;
 }
 
+// ─── AnalyzeBot hybrid (R16 P1 substrate) ────────────────────────
+//
+// CMD-ANALYZEBOT-HYBRID-INPUT-EXTEND V18 (R16 P1 · 2026-05-06):
+// AnalyzeBot hybrid runner substrate. Mirrors ReconBotHybridInput
+// canonical pattern verbatim (types.ts:271-353) per BINDING #16
+// DOC-DELEGATE-TO-CANONICAL. Caller migration ships in R17 P0
+// (CMD-ANALYZEBOT-CALLER-WIRE V18 · banked).
+// AnalyzeBot config: primary=openai · secondary=gemini ·
+// liveWebProvider=perplexity (added by R16 P1 to analyzebot config).
+// Substrate-only ship — no callers until R17.
+// ──────────────────────────────────────────────────────────────────
+
+export interface AnalyzeBotHybridInput {
+  /** Item ID for EventLog correlation */
+  itemId: string;
+  /** Photo path(s) — accepts string or string[] for multi-photo */
+  photoPath: string | string[];
+  /** Raw system prompt for OpenAI primary (AnalyzeBot's full
+   *  assembled identification prompt + spec context + enrichment) */
+  analyzePrompt: string;
+  /** Optional secondary-context prompt — only used when
+   *  shouldRunSecondary=true. Typically the same as analyzePrompt
+   *  with an appended specialty-grounding refinement directive
+   *  for ambiguous antique/collectible/rare items. */
+  secondaryContext?: string;
+  /** Pre-evaluated by caller. When true, Gemini secondary fires
+   *  in parallel with OpenAI primary. Caller responsibility to
+   *  evaluate the low_confidence or high_value trigger. */
+  shouldRunSecondary: boolean;
+  /** Caller-tracked Apify scraper spend for this AnalyzeBot call.
+   *  Persisted in BOT_AI_ROUTING EventLog payload via the
+   *  apifyCostUsd field added in Step 4.8. */
+  apifyCostUsd?: number;
+  /** Enable Gemini's native Google Search grounding tool. Default
+   *  false — opt-in only. AnalyzeBot's secondary is Gemini, so
+   *  grounding applies on the secondary call (when fired). Mirrors
+   *  ReconBot/CarBot grounding pattern · OpenAI primary ignores. */
+  enableGrounding?: boolean;
+  /** CMD-ANALYZEBOT-HYBRID-INPUT-EXTEND V18: opt-in for Sonar
+   *  primary on live-web-needed items. When true AND
+   *  config.liveWebProvider is set AND config.triggers includes
+   *  "live_web_needed", primary is swapped from OpenAI to
+   *  Perplexity Sonar. Default false. Mutually exclusive with
+   *  enableGrounding when liveWebActive (Sonar IS live web).
+   *  Mirrors PriceBot L716 + ReconBot L302 canonical pattern. */
+  enableLiveWeb?: boolean;
+  /** Optional logging skip flag for tests. Default false. */
+  skipLogging?: boolean;
+}
+
+/**
+ * Output shape for routeAnalyzeBotHybrid().
+ * Returns RAW JSON results (NOT AiAnalysis-shaped) so AnalyzeBot's
+ * existing payload schema is preserved unchanged when consumed by
+ * the analyze route after R17 caller migration.
+ *
+ * geminiWebSources is populated when enableGrounding=true and
+ * Gemini secondary returned citation chunks. Empty array otherwise.
+ */
+export interface AnalyzeBotHybridResult {
+  /** OpenAI primary result with raw JSON payload */
+  primary: ProviderRunResult & { rawResult: any };
+  /** Gemini secondary result — only present when shouldRunSecondary
+   *  was true AND Gemini succeeded. Best-effort, may be undefined. */
+  secondary?: ProviderRunResult & { rawResult: any };
+  /** Real-time Google Search citations from Gemini grounding.
+   *  Only populated when enableGrounding=true on the input AND
+   *  secondary fired AND Gemini returned citations. Empty array
+   *  otherwise. */
+  geminiWebSources: Array<{ url: string; title: string }>;
+  /** Estimated USD cost for the run (sum of providers attempted) */
+  costUsd: number;
+  /** Actual USD cost from token metering (Step 3 carry-over) */
+  actualCostUsd: number;
+  /** Total wall-clock latency in milliseconds */
+  latencyMs: number;
+  /** True if all providers (primary + fallbacks + secondary)
+   *  failed. Caller should return a 422 error to the user when
+   *  degraded. */
+  degraded: boolean;
+  /** Last error message when degraded=true */
+  error?: string;
+}
+
 // ─── AntiqueBot hybrid (Step 7 Round A) ──────────────────────────
 //
 // CMD-ANTIQUEBOT-CORE-A

@@ -48,7 +48,12 @@ export const BOT_AI_CONFIG: Record<BotName, BotAIConfig> = {
   analyzebot: {
     primary: "openai",
     secondary: "gemini",
-    triggers: ["low_confidence", "high_value"],
+    // CMD-ANALYZEBOT-HYBRID-INPUT-EXTEND V18 (R16 P1 · 2026-05-06):
+    // Sonar opt-in for live-web items. Caller-wire ships R17 P0.
+    // Mirrors R15 P2 wire pattern across 5 bots · BuyerBot · ListBot ·
+    // AntiqueBot · CollectiblesBot · CarBot (commit 61cdbec).
+    liveWebProvider: "perplexity",
+    triggers: ["low_confidence", "high_value", "live_web_needed"],
     costTier: "budget",
   },
   pricebot: {
