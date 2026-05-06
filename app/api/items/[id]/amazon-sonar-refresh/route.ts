@@ -51,7 +51,7 @@ const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h · matches Wire A
 
 export async function POST(
   req: Request,
-  ctx: { params: Promise<{ itemId: string }> },
+  ctx: { params: Promise<{ id: string }> },
 ) {
   try {
     // ── Auth ──
@@ -61,7 +61,7 @@ export async function POST(
     }
 
     // ── Validate ──
-    const { itemId } = await ctx.params;
+    const { id: itemId } = await ctx.params;
     if (!itemId) {
       return NextResponse.json({ error: "itemId required" }, { status: 400 });
     }
