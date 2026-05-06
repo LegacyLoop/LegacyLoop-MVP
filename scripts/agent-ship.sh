@@ -12,9 +12,14 @@
 #   2. On a slot branch (agent-N-slot)
 #   3. Branch is fast-forwardable to origin/main
 #
-# Push order:
-#   git push origin <slot-branch>     (preview deploy on Vercel)
-#   git push origin HEAD:main         (FF-push · production deploy)
+# Push order (CMD-AGENT-SHIP-DEDUPE-VERCEL V18 · 2026-05-06):
+#   1. git push origin HEAD:main   (FF-push · canonical · production deploy)
+#   2. ON FAILURE ONLY: git push origin <slot-branch> (recovery snapshot)
+#
+# Eliminates duplicate Vercel builds (preview deploys on slot branches were
+# never used · production deploy is the canonical artifact). Slot-branch
+# push retained as recovery snapshot ONLY on FF-failure path so operator
+# has a remote ref capturing pre-rebase state if multi-step recovery needed.
 #
 # Errors loudly if FF-push fails (means main moved · agent must rebase).
 # Run from agent worktree (cwd = /Users/ryanhallee/legacy-loop-mvp-agent-N).
@@ -50,13 +55,18 @@ if [ "$MERGE_BASE" != "$REMOTE_HEAD" ]; then
   exit 1
 fi
 
-# Push slot branch (preview deploy)
-git push origin "$CURRENT_BRANCH"
-echo "✓ Pushed $CURRENT_BRANCH (preview deploy on Vercel)"
-
-# FF-push to main (production deploy · errors if not FF · NO --force)
-git push origin "HEAD:main"
-echo "✓ FF-pushed to origin/main"
+# Try FF-push to main FIRST (canonical · production deploy · NO --force)
+if git push origin "HEAD:main"; then
+  echo "✓ FF-pushed to origin/main (single production deploy)"
+else
+  echo "❌ FF-push to origin/main FAILED · origin/main moved during cylinder window"
+  echo "   Pushing slot branch as recovery snapshot..."
+  git push origin "$CURRENT_BRANCH"
+  echo "   ✓ slot-branch backup pushed to origin/$CURRENT_BRANCH"
+  echo ""
+  echo "   Recovery: git fetch origin && git rebase origin/main && bash scripts/agent-ship.sh"
+  exit 1
+fi
 
 NEW_HEAD="$(git rev-parse HEAD)"
 echo ""

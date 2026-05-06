@@ -85,13 +85,15 @@ Script enforces:
 2. On `agent-N-slot` branch (regex)
 3. Slot branch is fast-forwardable to `origin/main`
 
-Then:
+Then attempts (CMD-AGENT-SHIP-DEDUPE-VERCEL V18 · 2026-05-06):
 ```bash
-git push origin agent-N-slot       # preview deploy
-git push origin HEAD:main          # FF-push (production · NO --force)
+git push origin HEAD:main          # FF-push (production · NO --force) — try FIRST
 ```
 
-If FF-push fails (main moved between fetch and push) · agent rebases:
+On FF-success: single production deploy fires · script exits 0.
+On FF-failure (main moved during cylinder window): slot-branch push fires as recovery snapshot + rebase instructions emitted + script exits 1.
+
+If FF-push fails · agent rebases:
 ```bash
 git fetch origin && git rebase origin/main
 bash scripts/agent-ship.sh
