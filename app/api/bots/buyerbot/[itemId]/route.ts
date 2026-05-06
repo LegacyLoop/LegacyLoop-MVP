@@ -142,6 +142,79 @@ export async function GET(
 }
 
 /**
+ * CMD-BUYERBOT-V2-LLM-PERSIST V18 (Cyl 2E):
+ * Transform LLM 7-field hot_leads (per Cyl 2B schema · skill 01 real-person rule)
+ * into BuyerLead rows via field map from skill 10 (canonical SSOT). Idempotent
+ * via dedupe on (platform, buyerHandle, itemId). Graceful no-op if hotLeads is
+ * empty/invalid. Activates Investor Moat #1 (proprietary buyer-lead dataset).
+ */
+async function persistHotLeads(
+  hotLeads: any[] | undefined,
+  itemId: string,
+  botId: string,
+): Promise<{ inserted: number; skipped: number }> {
+  if (!Array.isArray(hotLeads) || hotLeads.length === 0) {
+    return { inserted: 0, skipped: 0 };
+  }
+
+  let inserted = 0;
+  let skipped = 0;
+
+  for (const lead of hotLeads) {
+    if (!lead || typeof lead !== "object") { skipped++; continue; }
+    const platform = typeof lead.platform === "string" && lead.platform.trim() ? lead.platform.trim() : null;
+    const buyerHandle = typeof lead.buyer_identifier === "string" && lead.buyer_identifier.trim() ? lead.buyer_identifier.trim() : null;
+    if (!platform || !buyerHandle) { skipped++; continue; } // skill 10 quality bar
+
+    const existing = await prisma.buyerLead.findFirst({
+      where: { itemId, platform, buyerHandle },
+      select: { id: true },
+    });
+    if (existing) { skipped++; continue; }
+
+    const recencyNote = typeof lead.recency === "string" && lead.recency.trim() ? ` · Signal: ${lead.recency.trim()}` : "";
+    const matchReason = `LLM-emitted via BuyerBot (real-person 7-field schema)${recencyNote}`;
+
+    const rawUrgency = typeof lead.urgency === "string" ? lead.urgency.toLowerCase() : "";
+    const urgency = rawUrgency.includes("now") ? "high"
+      : rawUrgency.includes("week") ? "medium"
+      : rawUrgency.includes("month") ? "low"
+      : ["low", "medium", "high"].includes(rawUrgency) ? rawUrgency
+      : "medium";
+
+    const priceCandidate = typeof lead.estimated_price_usd === "number"
+      ? lead.estimated_price_usd
+      : typeof lead.estimated_price_theyd_pay === "number"
+        ? lead.estimated_price_theyd_pay
+        : null;
+    const maxBudget = priceCandidate !== null && Number.isFinite(priceCandidate) ? priceCandidate : null;
+
+    try {
+      await prisma.buyerLead.create({
+        data: {
+          botId,
+          itemId,
+          platform,
+          buyerHandle,
+          buyerName: buyerHandle, // skill 10: identifier doubles as name when no separate name
+          searchingFor: typeof lead.intent_signal === "string" ? lead.intent_signal.slice(0, 500) : null,
+          sourceUrl: typeof lead.path_to_contact === "string" ? lead.path_to_contact.slice(0, 500) : null,
+          urgency,
+          maxBudget,
+          matchReason,
+        },
+      });
+      inserted++;
+    } catch (err) {
+      console.error("[buyerbot] persistHotLeads · row failed:", err instanceof Error ? err.message : err);
+      skipped++;
+    }
+  }
+
+  return { inserted, skipped };
+}
+
+/**
  * POST /api/bots/buyerbot/[itemId]
  * Run dedicated BuyerBot buyer-finding deep-dive
  */
@@ -797,6 +870,24 @@ Include a "web_sources" array in your response with {"url": "...", "title": "...
     (buyerbotResult as any).formulaOfferMin = formulaOfferMin;
     (buyerbotResult as any).pricingSource = pricingSource;
     (buyerbotResult as any).intelligenceAgeMs = intelligenceAnchor?.ageMs ?? null;
+
+    // CMD-BUYERBOT-V2-LLM-PERSIST V18 (Cyl 2E): persist LLM hot_leads to BuyerLead.
+    // Investor Moat #1 (proprietary buyer-lead dataset) compounds physically with
+    // every scan. Idempotent · graceful degradation · zero behavior change to UI.
+    let persistResult: { inserted: number; skipped: number } = { inserted: 0, skipped: 0 };
+    try {
+      let bot = await prisma.buyerBot.findFirst({ where: { itemId, isActive: true } });
+      if (!bot) {
+        bot = await prisma.buyerBot.create({
+          data: { itemId, isActive: true, isMegaBot: false, scansCompleted: 1, lastScanAt: new Date() },
+        });
+      }
+      persistResult = await persistHotLeads((buyerbotResult as any)?.hot_leads, itemId, bot.id);
+      console.log(`[buyerbot] persisted ${persistResult.inserted} leads · skipped ${persistResult.skipped}`);
+    } catch (err) {
+      console.error("[buyerbot] persistHotLeads top-level error:", err instanceof Error ? err.message : err);
+      // Non-fatal · response continues unchanged
+    }
 
     // Store in EventLog
     await prisma.eventLog.create({

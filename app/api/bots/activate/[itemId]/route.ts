@@ -332,13 +332,14 @@ export async function POST(_req: Request, { params }: { params: Params }) {
     },
   });
 
-  // In demo mode, use mock leads. In live mode, this would call real platform APIs.
-  // See lib/bot-mode.ts for live mode connection points.
+  // CMD-BUYERBOT-V2-LLM-PERSIST V18 (Cyl 2E): demo mode keeps MOCK for predictable
+  // demos · live mode skips MOCK · real LLM-emitted leads land via persistHotLeads()
+  // in app/api/bots/buyerbot/[itemId]/route.ts on every BuyerBot scan.
   const vehicleMake = aiObj?.vehicle_make || aiObj?.brand || "";
   const vehicleModel = aiObj?.vehicle_model || aiObj?.model || "";
   const leadData = isDemoMode()
     ? (isVehicle ? getVehicleLeads(vehicleMake, vehicleModel) : MOCK_LEADS)
-    : (isVehicle ? getVehicleLeads(vehicleMake, vehicleModel) : MOCK_LEADS); // TODO: Replace with real API calls when BOT_MODE=live
+    : []; // live mode: no MOCK · real leads come from BuyerBot scan
 
   const leads = await Promise.all(
     leadData.map((lead) =>
