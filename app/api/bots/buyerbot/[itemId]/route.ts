@@ -708,6 +708,7 @@ Include a "web_sources" array in your response with {"url": "...", "title": "...
           shouldRunSecondary,
           apifyCostUsd,
           skipLogging: false,
+          enableLiveWeb: true, // CMD-S35-PERPLEXITY-RE-ANCHORED V18: always-fire · live buyer-intent signals are live-web by definition
         });
 
         if (hybrid.degraded) {

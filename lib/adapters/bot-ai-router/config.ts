@@ -70,8 +70,12 @@ export const BOT_AI_CONFIG: Record<BotName, BotAIConfig> = {
   buyerbot: {
     primary: "grok",
     secondary: "claude",
-    triggers: ["specialty_item"],
+    triggers: ["specialty_item", "live_web_needed"],
     costTier: "balanced",
+    // CMD-S35-PERPLEXITY-RE-ANCHORED V18 (R15 P2 · 2026-05-06):
+    // Sonar live-web grounding for current-day buyer-intent signals.
+    // Closes R13 P2 deferral · advisor I3 · investor Moat #1+#8 compound.
+    liveWebProvider: "perplexity",
   },
   reconbot: {
     primary: "gemini",
@@ -86,26 +90,42 @@ export const BOT_AI_CONFIG: Record<BotName, BotAIConfig> = {
   listbot: {
     primary: "claude",
     secondary: "grok",
-    triggers: ["always"], // hybrid bot — both providers always run
+    triggers: ["always", "live_web_needed"], // hybrid bot — both providers always run
     costTier: "premium",
+    // CMD-S35-PERPLEXITY-RE-ANCHORED V18 (R15 P2 · 2026-05-06):
+    // Sonar live-web grounding for specialty marketplace tone (antiques ·
+    // collectibles · vehicles). Specialty-tone gate at caller-wire.
+    liveWebProvider: "perplexity",
   },
   antiquebot: {
     primary: "claude",
     secondary: "openai",
-    triggers: ["borderline_grading"],
+    triggers: ["borderline_grading", "live_web_needed"],
     costTier: "balanced",
+    // CMD-S35-PERPLEXITY-RE-ANCHORED V18 (R15 P2 · 2026-05-06):
+    // Sonar live-web grounding for auction-house intel + provenance
+    // currency. Always-fire on antique scans · advisor I3.
+    liveWebProvider: "perplexity",
   },
   collectiblesbot: {
     primary: "claude",
     secondary: "openai",
-    triggers: ["borderline_grading"],
+    triggers: ["borderline_grading", "live_web_needed"],
     costTier: "balanced",
+    // CMD-S35-PERPLEXITY-RE-ANCHORED V18 (R15 P2 · 2026-05-06):
+    // Sonar live-web grounding for graded collectible secondary market
+    // (PSA/BGS/CGC pricing currency). Always-fire on collectible scans.
+    liveWebProvider: "perplexity",
   },
   carbot: {
     primary: "gemini",
     secondary: "openai",
-    triggers: ["rare_vehicle"],
+    triggers: ["rare_vehicle", "live_web_needed"],
     costTier: "balanced",
+    // CMD-S35-PERPLEXITY-RE-ANCHORED V18 (R15 P2 · 2026-05-06):
+    // Sonar live-web grounding for daily-volatile vehicle markets
+    // (KBB/NADA/BAT recent comps). Always-fire on vehicle scans.
+    liveWebProvider: "perplexity",
   },
   // CMD-VIDEOBOT-CORE-A: Grok primary for viral content + social hooks.
   // OpenAI secondary on high_value items for structured script quality.

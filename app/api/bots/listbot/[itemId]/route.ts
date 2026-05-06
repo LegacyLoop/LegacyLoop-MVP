@@ -625,11 +625,18 @@ When an item has cosmetic or functional issues, frame them POSITIVELY:
         const marketplacePrompt = buildMarketplacePrompt(systemPrompt);
         const socialPrompt = buildSocialPrompt(systemPrompt);
 
+        // CMD-S35-PERPLEXITY-RE-ANCHORED V18: specialty-tone gate · live web
+        // when item is antique OR category indicates collectible/vehicle.
+        // (item.flags.* shape doesn't exist on Item · adapted per spec §8
+        // creative latitude using existing isAntique + category heuristic.)
+        const requiresLiveWeb = isAntique || /vehicle|car|auto|collectible|coin|stamp|trading.card|vintage/i.test(category);
+
         const hybrid = listbotHybridRun = await routeListBotHybrid({
           itemId,
           photoPath: photoUrls,
           marketplacePrompt,
           socialPrompt,
+          enableLiveWeb: requiresLiveWeb,
         });
 
         if (hybrid.degraded) {

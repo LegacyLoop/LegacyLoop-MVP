@@ -549,6 +549,10 @@ Be specific to the actual collectible category. All prices USD. Return ONLY JSON
           photoPath: photoUrls,
           gradingPrompt: systemPrompt,
           authConfidenceThreshold: 80,
+          // CMD-S35-PERPLEXITY-RE-ANCHORED V18: always-fire Sonar
+          // live-web · graded collectible secondary market currency
+          // (PSA/BGS/CGC pricing).
+          enableLiveWeb: true,
           // AntiqueBot parity — 90s + 16k tokens to give Claude room
           // for the 15-category specialty grading schema.
           timeoutMs: 90_000,

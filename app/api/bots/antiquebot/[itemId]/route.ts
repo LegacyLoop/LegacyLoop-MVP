@@ -449,6 +449,9 @@ IMPORTANT:
           photoPath: photoUrls,
           appraisalPrompt: systemPrompt,
           authConfidenceThreshold: 80,
+          // CMD-S35-PERPLEXITY-RE-ANCHORED V18: always-fire Sonar
+          // live-web · auction-house intel + provenance currency.
+          enableLiveWeb: true,
           // ListBot/BuyerBot/ReconBot use HYBRID_DEFAULTS (60s/16k);
           // AntiqueBot widens to 90s + 16k tokens to give Claude room
           // for the 12-section appraisal schema.

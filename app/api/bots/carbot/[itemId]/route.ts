@@ -486,6 +486,11 @@ IMPORTANT: All prices in USD. PRIVATE PARTY values only (not dealer retail). LOC
           // Vehicle market data is highly real-time — enable
           // Gemini native Google Search grounding on every scan.
           enableGrounding: true,
+          // CMD-S35-PERPLEXITY-RE-ANCHORED V18: always-fire Sonar
+          // live-web · daily-volatile vehicle markets demand current
+          // comps (KBB/NADA/BAT). Mutual-exclusivity with enableGrounding
+          // handled by dispatch gate per Cyl 2 6279f0b.
+          enableLiveWeb: true,
           // CarBot uses 90s / 16k like AntiqueBot for its dense
           // 10-section vehicle appraisal schema.
           timeoutMs: 90_000,
