@@ -683,7 +683,7 @@ This is not optional. Our primary users include seniors.
 ```
 # Database
 DATABASE_URL           — SQLite (dev) or PostgreSQL (prod)
-TURSO_DATABASE_URL     — Turso connection
+TURSO_CONNECTION_URL   — Turso connection (canonical · matches lib/db.ts L28+L38+L49 · drift fixed R21 P2 · CF-14 closure)
 TURSO_AUTH_TOKEN       — Turso auth
 
 # AI Providers

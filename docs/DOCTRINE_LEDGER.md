@@ -4,9 +4,10 @@
 **Maintainer:** MC (Mission Control · Strategy)
 **Created:** Wed May 6 2026 AM EDT
 **Anchor commit:** `059de07` (HEAD at creation)
-**Total BINDING:** 24 (verified by git history audit · 6 ratifications appended via CMD-DOCTRINE-LEDGER-APPEND V18 Thu 2026-05-07 EOD · CF-36 closure)
+**Total BINDING:** 26 (verified by git history audit · 8 ratifications appended via CMD-DOCTRINE-LEDGER-APPEND V18 + CMD-LEDGER-APPEND-SAGA V19 Thu 2026-05-07 LATE EOD · CF-36 + saga-class doctrines closure)
+**Updated:** Thu May 7 2026 LATE EOD EDT — appended **#25 DOC-VERCEL-BUDGET-CAP-20** (`941e3d7` · Thu EOD budget hardening · scraper-parse `*/15`→`0 *` -75% + scrape-pipeline-smoke `0 *`→`0 9 *` -96% · CEO discretionary BINDING per saga-class budget posture lesson · sub-doctrine of #22) · **#26 DOC-NATIVE-VS-CUSTOM-MONITORING-PREFER** (`5edf4c6` · Thu EOD CEO Spend Cap configuration · Vercel native 50/75/100 chosen over custom 90% webhook · CEO discretionary BINDING per saga-class platform-native preference · sub-doctrine of #22) · 3 NEW Day-2 EOD candidates banked: DOC-MCP-INTROSPECTION-FIRST · DOC-GITHUB-EMAIL-DEPLOY-FAILURE-CHECK · DOC-CEO-FRUSTRATION-DE-ESCALATION
 **Updated:** Thu May 7 2026 EOD EDT — appended #19 DOC-MALFORMED-ENV-VALUE-CANARY (`dd7aa96`) · #20 DOC-PER-AGENT-WORKTREE (`f7451de`) · #21 DOC-VERIFY-VERCEL-AFTER-COMMIT (`059de07` sentinel origin · 5-proof-point completion via Wed PM → Thu EOD §12 chain) · #22 DOC-MULTI-COMPONENT-CHAIN-GROUNDING (`4c156da` · 7-sibling sub-doctrine canopy) · **#23 DOC-VERCEL-PROJECT-LIVE-CHECK** (`cf242b1` · Thu EOD MCP `get_project.live:false` discovery · 4-day webhook saga root cause class · sub-doctrine of #22) · **#24 DOC-VERCEL-PLAN-LIMIT-VALIDATE** (`cf242b1` · Thu EOD Pro-plan saga resolution · Hobby plan silently rejected `*/15` cron schedules · sub-doctrine of #22)
-**Drift detected:** YES — Master Roadmap claimed 16, commit `512b6b9` claimed "→ 20 BINDING", commit `d6b71b8` claimed "17 + #18 = 18 total". Reconciled to 18 at ledger creation. **Now extended to 24 via documented append flow (Thu EOD CF-36 closure).**
+**Drift detected:** YES — Master Roadmap claimed 16, commit `512b6b9` claimed "→ 20 BINDING", commit `d6b71b8` claimed "17 + #18 = 18 total". Reconciled to 18 at ledger creation. **Now extended to 26 via documented append flow (Thu LATE EOD R21 P2 saga-class doctrine ratification).**
 
 ---
 
@@ -28,7 +29,7 @@
 
 ---
 
-## Canonical Ledger (24 BINDING)
+## Canonical Ledger (26 BINDING)
 
 | #  | Doctrine                                  | Ratified by commit | Date       | Notes |
 |----|-------------------------------------------|--------------------|------------|-------|
@@ -56,6 +57,8 @@
 | 22 | DOC-MULTI-COMPONENT-CHAIN-GROUNDING       | `4c156da`          | 2026-05-07 | "🎯 DOC-MULTI-COMPONENT-CHAIN-GROUNDING candidate ADVANCES 6/5 (parent doctrine · re-author IS the meta-fix in action · substrate types verbatim cited §0 BEFORE drafting consumer code · LIKELY RATIFIES BINDING on this clean fire · 5-proof-point ceiling exceeded with re-author quality bar)" · Devin meta-fix RATIFIES via R17 P0 PATH A re-author. The pattern works on its author. Parent doctrine canopy · 7 sibling sub-doctrines decompose surface into specific verification classes (substrate-types · audit-doc claims · env/config files · registry-vs-actual · worktree client · spec authoring · API capacity). Each sibling ratifies independently. |
 | 23 | DOC-VERCEL-PROJECT-LIVE-CHECK             | `cf242b1`          | 2026-05-07 | Thu EOD MCP discovery during 4-day webhook saga. `mcp__vercel__get_project` returned `"live": false` flag · Path 4 GitHub-integration disconnect+reconnect re-installed OAuth shell but did NOT flip `live` back to true · production aliases stay on last-good READY deployment while NEW deploys silently blocked. Sub-doctrine of #22. Discovery procedure: every Vercel-deploy debug session checks `get_project.live` flag FIRST before any noop-wake attempt · if false → diagnose pause OR plan-limit class before further action. Discretionary BINDING per CEO authority (single-occurrence canonical lesson · same precedent as #18 ratifying on 2nd repetition · saga-impact warrants formalization). |
 | 24 | DOC-VERCEL-PLAN-LIMIT-VALIDATE            | `cf242b1`          | 2026-05-07 | Thu EOD Pro-plan saga ROOT CAUSE. Hobby plan limits cron schedules to 1/day max (`0 X * * *` patterns only). `vercel.json` `*/15 * * * *` schedules from R15 P1 + R16 P2 + R19 P0 cron entries exceeded plan limit · Vercel REJECTED build creation pre-build-create at plan-validation layer · NO failed-deploy entry surfaced in Deployments tab · 4-day diagnostic saga investigated wrong layer (webhook delivery vs plan-tier rejection class). CEO Pro upgrade @ ~13:30 EDT removed `*/15` rate-cap · webhook fired immediately on next push (`cf242b160f46`) · build SUCCEEDED in 145s · 13 backlogged commits coalesced into single READY deploy. How to apply: before adding ANY cron schedule to vercel.json · validate against active plan tier (Hobby = 1/day max · Pro = `*/15 *` etc · Enterprise unlimited) · fail-fast in spec §0 grounding · NEVER assume plan supports schedule frequency. Sub-doctrine of #22. Discretionary BINDING per CEO authority (saga-impact + structural-class root cause warrants formalization). |
+| 25 | DOC-VERCEL-BUDGET-CAP-20                  | `941e3d7`          | 2026-05-07 | Thu LATE EOD CEO directive · Vercel monthly spend = $20/month hard cap · pause-on-overage configured · 50/75/100 native thresholds + 4 channels (SMS+Email+Push+Web) · scraper-parse `*/15`→`0 * * * *` -75% reduction (96/day → 24/day · function execution risk minimized) + scrape-pipeline-smoke `0 *`→`0 9 * * *` -96% reduction (720/month → 30/month) · 6 other crons unchanged (already daily/weekly/monthly · within budget) · CEO discretionary BINDING per saga-class budget posture lesson · sub-doctrine of #22 · operationalized via `scripts/cron-validate.sh` (R21 P1 · BINDING #24 first ratification proof point) · sibling of #24 (saga-class compound: #23 + #24 + #25 + #26 prevents recurrence). |
+| 26 | DOC-NATIVE-VS-CUSTOM-MONITORING-PREFER    | `5edf4c6`          | 2026-05-07 | Thu LATE EOD CEO Spend Cap configuration decision · Vercel native 50/75/100 thresholds + 4 channels (SMS+Email+Push+Web) accepted in lieu of custom 90% webhook · 75% threshold gives ~$5 buffer (~1-2 days at our scale) before 100% pause-on-overage · custom webhook adds complexity for marginal precision gain · discipline: prefer platform-native when 90%+ coverage achieved · CEO discretionary BINDING per saga-class platform-native preference lesson · sub-doctrine of #22 · sibling of #25 (paired budget-discipline decisions ratified same day). |
 
 ---
 
@@ -81,8 +84,9 @@
 | DOC-BAN-ENV-FILE-DUMP                      | `0f8a2e3` (May 3) | 5 applications | progressing |
 | DOC-BAN-BASH-X                             | `fa80793` (May 2) | 5 applications | progressing (Apr 29 transcript-leak origin) |
 | DOC-PROMPT-SCHEMA-SKILL-ALIGN              | (banked · pre-fire) | 2 proof points (Cyl 2B + 2C) | banked |
-| DOC-VERCEL-BUDGET-CAP-20                   | this commit (Thu 2026-05-07 EOD · CEO directive · pre-deploy hardening · scraper-parse `*/15`→`0 * * *` -75% + scrape-pipeline-smoke `0 *`→`0 9 *` -96% · sub-doctrine of #22) | First clean month-end Vercel close at $20 or below + 4 more spec-author cycles cite budget impact in §0 grounding | NEW · 1/5 · banks BINDING #25 candidate |
-| DOC-NATIVE-VS-CUSTOM-MONITORING-PREFER     | Thu 2026-05-07 EOD · CEO Spend Cap configuration decision · Vercel native 50/75/100 thresholds accepted in lieu of custom 90% webhook (complexity > marginal value at this stage · $5 buffer at 75% sufficient response window · sub-doctrine of #22) | First clean budget-conscious decision favoring platform-native monitoring over custom webhook (this fire counts as 1st proof) + 4 more spec-author cycles cite native-vs-custom tradeoff in §0 grounding | NEW · 1/5 · banks BINDING #26 candidate · CEO directive ratified inline |
+| DOC-MCP-INTROSPECTION-FIRST               | this commit (Thu LATE EOD R21 P2 · saga catalyst · 4-day saga investigated wrong layer when MCP `Vercel:get_project.live` would have ruled out webhook class instantly · codifies V19 §A7 BINDING #23 EXPANSION applies broadly to ANY platform debugging · sub-doctrine of #22) | After 4 more spec-author cycles cite MCP-first introspection in §0 grounding (across Slack · GitHub · Stripe · n8n etc) | NEW · 1/5 |
+| DOC-GITHUB-EMAIL-DEPLOY-FAILURE-CHECK     | this commit (Thu LATE EOD R21 P2 · saga teaching · Vercel sends deployment failure emails to commit author with subject pattern "Vercel deployment failure for legacy-loop-mvp" · would have surfaced plan-tier rejection within minutes vs 4 days of dashboard archaeology · short-circuits webhook-stall diagnostic class · sub-doctrine of #22) | After 4 more email-signal-caught failures (or first save vs no-email-check baseline) | NEW · 1/5 |
+| DOC-CEO-FRUSTRATION-DE-ESCALATION         | this commit (Thu LATE EOD R21 P2 · V19 §A10 codified Day 2 EOD pattern · cost of false-positive trivial vs false-negative compounding spiral · ONE concrete question OR ONE concrete action · drop emoji density · drop preamble · bullets only · drop praise openers · sub-doctrine of #22) | After 4 more spec-author cycles cite de-escalation discipline in voice/tone | NEW · 1/5 |
 | DOC-OWN-SCOPE-COMMIT-ISOLATION             | (May 6) | (was 5 proof points) | SUPERSEDED by BINDING #20 DOC-PER-AGENT-WORKTREE (Round 12 Incident #3 invalidated PRECHECK-only mechanism · structural fix replaces · `f7451de`) |
 
 ---
@@ -178,6 +182,8 @@ This ledger was created Wed May 6 2026 AM after CEO + MC + Devin discovered:
 
 | Date       | Doctrine                          | Commit    | BINDING# (canonical) |
 |------------|-----------------------------------|-----------|----------------------|
+| 2026-05-07 | DOC-NATIVE-VS-CUSTOM-MONITORING-PREFER | `5edf4c6` | 26              |
+| 2026-05-07 | DOC-VERCEL-BUDGET-CAP-20          | `941e3d7` | 25                   |
 | 2026-05-07 | DOC-VERCEL-PLAN-LIMIT-VALIDATE    | `cf242b1` | 24                   |
 | 2026-05-07 | DOC-VERCEL-PROJECT-LIVE-CHECK     | `cf242b1` | 23                   |
 | 2026-05-07 | DOC-MULTI-COMPONENT-CHAIN-GROUNDING | `4c156da` | 22                  |
@@ -308,6 +314,14 @@ These were ratified recently and remain under proof-point watch:
 
 Fail-fast in spec §0 grounding table. NEVER assume plan supports schedule frequency. R19 P2 cron registry parity audit doc gets Day 3 update annotating Pro plan tier requirement for `*/15` schedules. **Sub-doctrine of #22.**
 
+### #25 · DOC-VERCEL-BUDGET-CAP-20
+**Why it exists:** Thu LATE EOD CEO directive locks Vercel monthly spend at $20/month hard cap. Saga taught us once · doctrine prevents recurrence forever. Pre-deploy budget hardening (`941e3d7`) cut scraper-parse `*/15`→`0 *` (-75%) + scrape-pipeline-smoke `0 *`→`0 9 *` (-96%). Spend Cap configured pause-on-overage at 100% · native 50/75/100 thresholds + 4 channels (SMS+Email+Push+Web). Operationalized via `scripts/cron-validate.sh` (R21 P1 BINDING #24 first ratification).
+**How to apply:** ANY Vercel cron addition / route consumer / always-fire AI bot in spec authoring requires §0 grounding "Budget impact" row citing expected $/month delta. >5% monthly cap impact (>$1) → flag in §13 GAPS for CEO sign-off. 75% threshold = post Slack heads-up · suggest workload review. 100% threshold = pause-on-overage triggers (saga-class incident). Validate cron schedules against active plan tier BEFORE adding to vercel.json (paired with #24). **Sub-doctrine of #22.**
+
+### #26 · DOC-NATIVE-VS-CUSTOM-MONITORING-PREFER
+**Why it exists:** Thu LATE EOD CEO Spend Cap configuration decision. Vercel offers native 50/75/100% thresholds with 4 notification channels (SMS+Email+Push+Web). Custom 90% webhook would add complexity for marginal precision gain. 75% threshold = ~$5 buffer (~1-2 days at our scale) before 100% triggers · sufficient response window. Discipline: when platform-native monitoring covers 90%+ of need · prefer it over custom builds. Time saved > marginal precision.
+**How to apply:** Before building any custom monitoring webhook / dashboard / alert · check platform-native equivalent first. If native covers 90%+ of need · use native. Reserve custom builds for genuine gap cases (no native equivalent · or native materially insufficient). Cite native-vs-custom tradeoff in §0 grounding when decision arises. Sibling of #25 (paired budget-discipline · same CEO Spend Cap configuration decision). **Sub-doctrine of #22.**
+
 ---
 
 ## Glossary
@@ -329,6 +343,7 @@ Fail-fast in spec §0 grounding table. NEVER assume plan supports schedule frequ
 |------------|--------|----------------------------------------|---------|
 | 2026-05-06 | (initial) | Initial ledger created · drift reconciled to 18 BINDING | Devin (CMD-DOCTRINE-LEDGER-RECONCILE V18) |
 | 2026-05-07 | (this commit) | CMD-DOCTRINE-LEDGER-APPEND V18 · CF-36 OVERDUE closure · #19 DOC-MALFORMED-ENV-VALUE-CANARY (`dd7aa96`) + #20 DOC-PER-AGENT-WORKTREE (`f7451de`) + #21 DOC-VERIFY-VERCEL-AFTER-COMMIT (`059de07`) + #22 DOC-MULTI-COMPONENT-CHAIN-GROUNDING (`4c156da`) + **#23 DOC-VERCEL-PROJECT-LIVE-CHECK (`cf242b1` · Thu EOD `live:false` MCP discovery)** + **#24 DOC-VERCEL-PLAN-LIMIT-VALIDATE (`cf242b1` · Thu EOD Pro-plan saga root cause)** appended · 7-sibling sub-doctrine canopy under #22 added to Candidates · 2 NEW Day-2 candidates (DOC-PUSHBACK-WITH-REPLACEMENT · DOC-PARALLEL-IT-RATE-LIMIT-OBSERVATION) banked · DOC-OWN-SCOPE-COMMIT-ISOLATION marked SUPERSEDED by #20 · DOC-NEXTJS-DYNAMIC-ROUTE-PARAM-NAME marked SUPERSEDED by DOC-NEXTJS-DYNAMIC-SEGMENT-CONSISTENCY · Total BINDING 18 → 24 (6 ratifications in single closure cylinder · CEO discretionary BINDING for #23 + #24 saga-class lessons) | Devin (CMD-DOCTRINE-LEDGER-APPEND V18) |
+| 2026-05-07 | (this commit) | CMD-LEDGER-APPEND-SAGA V19 · R21 P2 · saga-class doctrine ratification · #25 DOC-VERCEL-BUDGET-CAP-20 (`941e3d7` · CEO discretionary BINDING per saga budget posture) + #26 DOC-NATIVE-VS-CUSTOM-MONITORING-PREFER (`5edf4c6` · CEO discretionary BINDING per platform-native preference) appended · 3 NEW Day-2 EOD candidates banked (DOC-MCP-INTROSPECTION-FIRST · DOC-GITHUB-EMAIL-DEPLOY-FAILURE-CHECK · DOC-CEO-FRUSTRATION-DE-ESCALATION) · CLAUDE.md L686 env-var name drift fixed (TURSO_DATABASE_URL → TURSO_CONNECTION_URL · canonical match to lib/db.ts L28+L38+L49 · CF-14 closure since R14 P2) · Total BINDING 24 → 26 | Devin (CMD-LEDGER-APPEND-SAGA V19) |
 
 ---
 
