@@ -1,6 +1,5 @@
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
-import { aiAdapter } from "@/lib/adapters/ai";
 import { pricingAdapter } from "@/lib/adapters/pricing";
 import { detectAntiqueFromAi } from "@/lib/antique-detect";
 import { calculatePricing } from "@/lib/pricing/calculate";
@@ -280,13 +279,31 @@ export async function POST(
     ? skillPack.systemPromptBlock + "\n\n"
     : "";
 
-  // Prepend skill pack to sellerContext so it feeds into aiAdapter.analyze()
+  // Prepend skill pack to sellerContext so it feeds into routeAnalyzeBotHybrid()
   const enrichedSellerContext = skillPackBlock + (sellerContext || "");
 
-  // 1) Vision analysis — CMD-ANALYZEBOT-ENGINE-V9 hybrid fallback
-  //    When primary confidence < 0.70, fire Claude Sonnet as secondary via
-  //    shared multi-ai helpers and reconcile via mergeConsensus. High-confidence
-  //    primary short-circuits the secondary call to save cost + latency.
+  // 1) Vision analysis — CMD-ANALYZEBOT-CALLER-WIRE V18 (R17 P0 · 2026-05-07):
+  //    consume R16 P1 substrate routeAnalyzeBotHybrid (cloned from
+  //    routeReconBotHybrid). 8th bot via bot-ai-router chokepoint ·
+  //    BINDING #16 honored · LiteLLM Gateway egress only · BINDING #10
+  //    preserved.
+  //
+  //    CALLER-SIDE MERGE: substrate returns RAW provider payloads
+  //    (primary.rawResult + optional secondary.rawResult) · we merge via
+  //    mergeConsensus/calcAgreement (KEPT direct imports from
+  //    multi-ai.ts · LOCKED file UNCHANGED · merge helpers are pure
+  //    functions · don't violate DOC-TELEMETRY-LOCK).
+  //
+  //    Sonar trigger: derive from item.category + item.title regex
+  //    (mirrors R15 P2 wire pattern across BuyerBot · ListBot ·
+  //    AntiqueBot · CollectiblesBot · CarBot at 61cdbec). Item-record
+  //    signal only · antique detector hasn't run yet at this point in
+  //    the analyze flow.
+  const requiresLiveWeb =
+    /vehicle|car|auto|collectible|coin|stamp|trading.card|vintage|antique/i.test(
+      `${item.category ?? ""} ${item.title ?? ""}`,
+    );
+
   let analysis: any;
   let analyzerSource: "primary" | "hybrid" = "primary";
   let primaryConfidence = 0;
@@ -296,51 +313,76 @@ export async function POST(
   let secondaryLatencyMs = 0;
 
   try {
-    const primaryStart = Date.now();
-    const primary = await aiAdapter.analyze(photoPaths, enrichedSellerContext || undefined);
-    primaryLatencyMs = Date.now() - primaryStart;
-    primaryConfidence = typeof primary?.confidence === "number" ? primary.confidence : 0;
-    analysis = primary;
+    const { routeAnalyzeBotHybrid } = await import("@/lib/adapters/bot-ai-router");
+    const { mergeConsensus, calcAgreement } = await import("@/lib/adapters/multi-ai");
 
-    if (primaryConfidence < 0.70) {
-      let secondary: any = null;
-      const secondaryStart = Date.now();
-      try {
-        const { analyzeWithClaude, mergeConsensus, calcAgreement } =
-          await import("@/lib/adapters/multi-ai");
-        const [firstPath, ...extraPaths] = photoPaths;
-        secondary = await analyzeWithClaude(firstPath, enrichedSellerContext || undefined, extraPaths);
-        secondaryLatencyMs = Date.now() - secondaryStart;
-        if (secondary) {
-          secondaryConfidence = typeof secondary.confidence === "number" ? secondary.confidence : null;
-          agreementScore = calcAgreement([primary, secondary]);
-          analysis = mergeConsensus([primary, secondary]) ?? primary;
-          analyzerSource = "hybrid";
-        }
-      } catch (secErr: any) {
-        console.error("[ANALYZEBOT_HYBRID] Secondary failed (falling back to primary):", secErr?.message ?? secErr);
-        secondaryLatencyMs = Date.now() - secondaryStart;
-        // analysis stays = primary
-      }
+    const result = await routeAnalyzeBotHybrid({
+      itemId: item.id,
+      photoPath: photoPaths,
+      analyzePrompt: enrichedSellerContext || "",
+      secondaryContext: enrichedSellerContext || "",
+      shouldRunSecondary: true,
+      enableLiveWeb: requiresLiveWeb,
+      enableGrounding: false,
+    });
 
-      prisma.eventLog.create({
+    if (result.degraded) {
+      return new Response(
+        `AI analysis failed: ${result.error ?? "all providers failed"}`,
+        { status: 422 },
+      );
+    }
+
+    // Caller-side merge of RAW provider payloads · matches existing
+    // pre-migration mergeConsensus pattern (zero downstream shape change).
+    const primaryRawResult = result.primary.rawResult;
+    const secondaryRawResult = result.secondary?.rawResult ?? null;
+    primaryLatencyMs = result.primary.durationMs;
+    secondaryLatencyMs = result.secondary?.durationMs ?? 0;
+    primaryConfidence =
+      typeof primaryRawResult?.confidence === "number" ? primaryRawResult.confidence : 0;
+
+    if (secondaryRawResult) {
+      secondaryConfidence =
+        typeof secondaryRawResult.confidence === "number" ? secondaryRawResult.confidence : null;
+      agreementScore = calcAgreement([primaryRawResult, secondaryRawResult]);
+      analysis = mergeConsensus([primaryRawResult, secondaryRawResult]) ?? primaryRawResult;
+      analyzerSource = "hybrid";
+    } else {
+      analysis = primaryRawResult;
+    }
+
+    // EventLog provenance · preserve event type · extend payload additively
+    // for R17 P0 caller-wire fields · BINDING #15 DOC-EMIT-WITH-PROVENANCE.
+    prisma.eventLog
+      .create({
         data: {
           itemId: item.id,
           eventType: "ANALYZEBOT_HYBRID_FIRED",
           payload: JSON.stringify({
             primaryConfidence,
             secondaryConfidence,
-            primaryCategory: primary?.category ?? null,
-            secondaryCategory: secondary?.category ?? null,
+            primaryCategory: primaryRawResult?.category ?? null,
+            secondaryCategory: secondaryRawResult?.category ?? null,
             agreementScore,
-            trigger: "low_confidence",
+            trigger:
+              result.primary.provider === "perplexity"
+                ? "live_web_needed"
+                : "low_confidence_or_high_value",
             primaryLatencyMs,
             secondaryLatencyMs,
             wasUsed: analyzerSource === "hybrid",
+            // NEW R17 P0 caller-wire fields
+            provider: result.primary.provider,
+            liveWebFired: result.primary.provider === "perplexity",
+            costUsd: result.costUsd,
+            actualCostUsd: result.actualCostUsd,
+            degraded: result.degraded,
+            geminiWebSourceCount: result.geminiWebSources.length,
           }),
         },
-      }).catch(() => null);
-    }
+      })
+      .catch(() => null);
   } catch (aiErr: any) {
     const msg = aiErr?.message ?? String(aiErr);
     return new Response(`AI analysis failed: ${msg}`, { status: 422 });
