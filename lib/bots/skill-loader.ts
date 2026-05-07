@@ -28,7 +28,49 @@ export interface SkillPack {
   lastUpdated: string;
 }
 
-const SKILLS_VERSION = "v1.0-2026-04-07";
+/**
+ * CMD-PHASE-3-SSA-FOUNDATION V18 (R17 P2 · 2026-05-06):
+ * Formal SSA (Skills System Architecture) contract.
+ * Mirrors Anthropic Agent Skills frontmatter schema · provider-agnostic.
+ *
+ * Existing loadSkillPack/loadSkillFolder/SkillPack APIs unchanged ·
+ * this fire ADDITIVE-ONLY · enables Phase 3.1 per-bot extraction
+ * audit (R18+ banked).
+ */
+
+export interface SkillFrontmatter {
+  name: string; // required · matches filename minus .md
+  description: string; // required · 1-line summary
+  keywords?: string[]; // optional · array of strings
+  version?: string; // optional · default "1.0"
+  surface?: "shared" | "bot-specific" | "platform"; // optional · classification
+}
+
+export interface LoadedSkill {
+  file: string; // filename (e.g. "01-pricing-strategy.md")
+  body: string; // skill content post-frontmatter strip
+  frontmatter: SkillFrontmatter | null; // null if absent or unparseable
+  charCount: number;
+}
+
+export interface SkillValidationResult {
+  botType: string;
+  totalSkills: number;
+  validSkills: number;
+  invalidSkills: Array<{
+    file: string;
+    issues: Array<
+      | "missing-name"
+      | "missing-description"
+      | "name-mismatch"
+      | "frontmatter-parse-error"
+    >;
+  }>;
+  warnings: string[]; // non-blocking · e.g. "skill missing optional 'keywords' field"
+  passes: boolean; // true if invalidSkills.length === 0
+}
+
+const SKILLS_VERSION = "v1.1-2026-05-06";
 const SKILLS_DIR = path.join(process.cwd(), "lib/bots/skills");
 const SHARED_DIR = path.join(SKILLS_DIR, "_shared");
 
@@ -212,4 +254,137 @@ export function loadSkillFolder(folderName: string): SkillPack {
  */
 export function _clearSkillCache(): void {
   cache.clear();
+  validationCache.clear(); // CMD-PHASE-3-SSA-FOUNDATION V18: matches existing cache discipline
+}
+
+// CMD-PHASE-3-SSA-FOUNDATION V18 (R17 P2):
+// Validation cache keyed by `${SKILLS_VERSION}::${botType}`.
+// Bumping SKILLS_VERSION cold-invalidates all entries.
+const validationCache = new Map<string, SkillValidationResult>();
+
+/**
+ * Parse YAML-ish frontmatter from a skill .md body. Returns null if
+ * frontmatter is absent or unparseable. Defensive minimal parser ·
+ * supports `key: value` lines + `[a, b, c]` array syntax + quoted
+ * strings. Sufficient for Anthropic SSA frontmatter schema.
+ */
+function parseFrontmatter(content: string): SkillFrontmatter | null {
+  const match = content.match(/^---\n([\s\S]+?)\n---/);
+  if (!match) return null;
+  try {
+    const body = match[1];
+    const frontmatter: Record<string, unknown> = {};
+    for (const line of body.split("\n")) {
+      const colonIdx = line.indexOf(":");
+      if (colonIdx === -1) continue;
+      const key = line.substring(0, colonIdx).trim();
+      let value: unknown = line.substring(colonIdx + 1).trim();
+      // strip surrounding quotes
+      if (typeof value === "string") {
+        value = value.replace(/^["'](.*)["']$/, "$1");
+      }
+      // parse simple inline arrays
+      if (typeof value === "string" && value.startsWith("[") && value.endsWith("]")) {
+        value = value
+          .slice(1, -1)
+          .split(",")
+          .map((s) => s.trim().replace(/^["'](.*)["']$/, "$1"))
+          .filter((s) => s.length > 0);
+      }
+      frontmatter[key] = value;
+    }
+    return frontmatter as unknown as SkillFrontmatter;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Validate skill pack for a given bot type against SSA contract.
+ *
+ * Returns SkillValidationResult with per-file frontmatter compliance.
+ * Cached per botType · invalidate via _clearSkillCache.
+ *
+ * Phase 3.1 audit (R18+ banked) consumes this for per-bot extraction
+ * prereq verification. Existing loadSkillPack runtime path UNCHANGED ·
+ * this is a separate diagnostic surface.
+ */
+export function validateSkillPack(botType: string): SkillValidationResult {
+  const cacheKey = `${SKILLS_VERSION}::${botType}`;
+  const cached = validationCache.get(cacheKey);
+  if (cached) return cached;
+
+  const dir =
+    botType === "_shared" ? SHARED_DIR : path.join(SKILLS_DIR, botType);
+
+  const result: SkillValidationResult = {
+    botType,
+    totalSkills: 0,
+    validSkills: 0,
+    invalidSkills: [],
+    warnings: [],
+    passes: true,
+  };
+
+  let files: string[] = [];
+  try {
+    files = fs
+      .readdirSync(dir)
+      .filter((f) => f.endsWith(".md"))
+      .sort();
+  } catch {
+    result.warnings.push(`Skill directory not found: ${dir}`);
+    result.passes = false;
+    validationCache.set(cacheKey, result);
+    return result;
+  }
+
+  result.totalSkills = files.length;
+
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    let content: string;
+    try {
+      content = fs.readFileSync(filePath, "utf8");
+    } catch {
+      result.invalidSkills.push({
+        file,
+        issues: ["frontmatter-parse-error"],
+      });
+      continue;
+    }
+
+    const frontmatter = parseFrontmatter(content);
+    const expectedName = file.replace(/\.md$/, "");
+    const issues: SkillValidationResult["invalidSkills"][number]["issues"] = [];
+
+    if (!frontmatter) {
+      // Legacy skill · no frontmatter · counts as valid + warns (not SSA-compliant
+      // but loadSkillPack continues to handle via stripFrontmatter defensively).
+      result.warnings.push(
+        `${file}: no frontmatter (legacy skill · acceptable but not SSA-compliant)`
+      );
+      result.validSkills++;
+      continue;
+    }
+
+    if (!frontmatter.name) issues.push("missing-name");
+    else if (frontmatter.name !== expectedName) issues.push("name-mismatch");
+
+    if (!frontmatter.description) issues.push("missing-description");
+
+    if (!frontmatter.keywords) {
+      result.warnings.push(`${file}: optional 'keywords' field missing`);
+    }
+
+    if (issues.length > 0) {
+      result.invalidSkills.push({ file, issues });
+    } else {
+      result.validSkills++;
+    }
+  }
+
+  result.passes = result.invalidSkills.length === 0;
+  validationCache.set(cacheKey, result);
+  return result;
 }
