@@ -9,6 +9,7 @@ import { storageAdapter } from "@/lib/adapters/storage";
 import { canUseBotOnTier, BOT_CREDIT_COSTS } from "@/lib/constants/pricing";
 import { isDemoMode } from "@/lib/bot-mode";
 import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
+import { loadSkillPack } from "@/lib/bots/skill-loader";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({
@@ -116,12 +117,20 @@ export async function POST(
     let vision: any = null;
     try {
       console.log("[photobot-edit] Step B: GPT-4o vision scan...", customPrompt ? `Custom: "${customPrompt}"` : "standard");
+      // CMD-PHASE-3.1-PHOTOBOT-EDIT-EXTRACT V18 (R18 P1 · 2026-05-07):
+      // PhotoBot skill pack adoption · matches sibling analyze/enhance
+      // route pattern · 3-of-3 PhotoBot routes Phase-3.1-compliant.
+      const skillPack = loadSkillPack("photobot");
+      const skillPackPrefix = skillPack.systemPromptBlock
+        ? skillPack.systemPromptBlock + "\n\n"
+        : "";
+
       const visionResp = await openai.responses.create({
         model: "gpt-4o",
         input: [
           {
             role: "system",
-            content: `You are a world-class product photography editor and computer vision specialist. You have a PERFECT eye for identifying:
+            content: `${skillPackPrefix}You are a world-class product photography editor and computer vision specialist. You have a PERFECT eye for identifying:
 1. The exact boundaries of the sale item (must be PROTECTED — never edited)
 2. Everything that is NOT the sale item (backgrounds, people, clutter, surfaces, walls, furniture, pets, cables, personal items)
 3. What specific edits would make this a professional, marketplace-ready listing photo
