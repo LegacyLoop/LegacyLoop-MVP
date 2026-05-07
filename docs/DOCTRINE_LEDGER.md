@@ -74,6 +74,7 @@
 | DOC-BAN-ENV-FILE-DUMP                      | `0f8a2e3` (May 3) | 5 applications | progressing |
 | DOC-BAN-BASH-X                             | `fa80793` (May 2) | 5 applications | progressing (Apr 29 transcript-leak origin) |
 | DOC-PROMPT-SCHEMA-SKILL-ALIGN              | (banked · pre-fire) | 2 proof points (Cyl 2B + 2C) | banked |
+| DOC-VERCEL-BUDGET-CAP-20                   | this commit (Thu 2026-05-07 EOD · CEO directive · pre-deploy hardening · scraper-parse `*/15`→`0 * * *` -75% + scrape-pipeline-smoke `0 *`→`0 9 *` -96% · sub-doctrine of #22) | First clean month-end Vercel close at $20 or below + 4 more spec-author cycles cite budget impact in §0 grounding | NEW · 1/5 · banks BINDING #25 candidate |
 
 ---
 
