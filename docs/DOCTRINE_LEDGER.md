@@ -4,8 +4,9 @@
 **Maintainer:** MC (Mission Control · Strategy)
 **Created:** Wed May 6 2026 AM EDT
 **Anchor commit:** `059de07` (HEAD at creation)
-**Total BINDING:** 18 (verified by git history audit)
-**Drift detected:** YES — Master Roadmap claimed 16, commit `512b6b9` claimed "→ 20 BINDING", commit `d6b71b8` claimed "17 + #18 = 18 total". This ledger reconciles to **18**.
+**Total BINDING:** 24 (verified by git history audit · 6 ratifications appended via CMD-DOCTRINE-LEDGER-APPEND V18 Thu 2026-05-07 EOD · CF-36 closure)
+**Updated:** Thu May 7 2026 EOD EDT — appended #19 DOC-MALFORMED-ENV-VALUE-CANARY (`dd7aa96`) · #20 DOC-PER-AGENT-WORKTREE (`f7451de`) · #21 DOC-VERIFY-VERCEL-AFTER-COMMIT (`059de07` sentinel origin · 5-proof-point completion via Wed PM → Thu EOD §12 chain) · #22 DOC-MULTI-COMPONENT-CHAIN-GROUNDING (`4c156da` · 7-sibling sub-doctrine canopy) · **#23 DOC-VERCEL-PROJECT-LIVE-CHECK** (`cf242b1` · Thu EOD MCP `get_project.live:false` discovery · 4-day webhook saga root cause class · sub-doctrine of #22) · **#24 DOC-VERCEL-PLAN-LIMIT-VALIDATE** (`cf242b1` · Thu EOD Pro-plan saga resolution · Hobby plan silently rejected `*/15` cron schedules · sub-doctrine of #22)
+**Drift detected:** YES — Master Roadmap claimed 16, commit `512b6b9` claimed "→ 20 BINDING", commit `d6b71b8` claimed "17 + #18 = 18 total". Reconciled to 18 at ledger creation. **Now extended to 24 via documented append flow (Thu EOD CF-36 closure).**
 
 ---
 
@@ -27,7 +28,7 @@
 
 ---
 
-## Canonical Ledger (18 BINDING)
+## Canonical Ledger (24 BINDING)
 
 | #  | Doctrine                                  | Ratified by commit | Date       | Notes |
 |----|-------------------------------------------|--------------------|------------|-------|
@@ -49,6 +50,12 @@
 | 16 | DOC-DELEGATE-TO-CANONICAL                 | `105c7d0`          | 2026-05-05 | Sylvia `triageAndRoute` canonical helper · zero re-implementation. Memory cites "BINDING #16 ratified May 5". |
 | 17 | DOC-AUDIT-FIRST-WIRE-PATTERN              | `d6b71b8`          | 2026-05-06 | "🎯 RATIFIES DOC-AUDIT-FIRST-WIRE-PATTERN BINDING #17 (8/8 audit §6 P0+P1 closure · 6 admin wires + 2 panel slots · audit IS the contract per CEO Wed AM scope decision)". Pattern proven 8 times across Wires A–H. |
 | 18 | DOC-BUILD-MEMORY-BUDGET-CHECK             | `fb02caa`          | 2026-05-05 | "ratifies by 2nd repetition" · local `next build` type-check sub-phase hangs under memory pressure → Fork B (commit + Vercel CI re-validates) is correct path. See `feedback_build_memory_budget_check.md`. |
+| 19 | DOC-MALFORMED-ENV-VALUE-CANARY            | `dd7aa96`          | 2026-05-06 | "ratifies DOC-MALFORMED-ENV-VALUE-CANARY 1st clean application" · LITELLM launcher hardening eval → declare -gx single-block defensive replace · `.env.local` provider key values containing backticks/$()/semicolons no longer eval-interpreted · same export semantics preserved · 1st clean application of canary class · ratification via single-fire post-incident #2 (multi-agent commit-label drift `20bf67a`/`e4cafdf` race window 53s). |
+| 20 | DOC-PER-AGENT-WORKTREE                    | `f7451de`          | 2026-05-06 | "banks NEW DOC-PER-AGENT-WORKTREE candidate (1/5 proof point) · BINDING after 5 clean parallel-cylinder fires post-RYAN-SIDE-setup" · structural fix supersedes DOC-OWN-SCOPE-COMMIT-ISOLATION (PRECHECK-only INVALIDATED by Round 12 Incident #3). 8+ clean parallel-worktree fires Wed PM → Thu EOD (R13 P1+P2+P3 · R14 P1+P2+P3 · R15 P1+P2 · R16 P0+P1+P2 · R17 P0+P1+P2 · R18 P1 · R19 P0+P1+P2). 5-proof-point ceiling exceeded with disjoint-surface guarantee. |
+| 21 | DOC-VERIFY-VERCEL-AFTER-COMMIT            | `059de07`          | 2026-05-06 | "banks NEW DOC-VERIFY-VERCEL-AFTER-COMMIT (verify Vercel deploy state via mcp__vercel__list_deployments before claiming Round closure · NOT relying on local tsc alone · 1st proof point this hotfix · ratifies BINDING after 5 clean Vercel verifies post-commit)" · sentinel origin at hotfix · `feedback_verify_vercel_after_commit.md` codifies the rule · 15+ commits Wed PM → Thu EOD cite sentinel verbatim in §12 boxes (READY + curl 200/200 OR honest deferral when webhook stalled · sentinel survives gap honestly). 5-proof-point completion via PARTIAL APPLY chain. |
+| 22 | DOC-MULTI-COMPONENT-CHAIN-GROUNDING       | `4c156da`          | 2026-05-07 | "🎯 DOC-MULTI-COMPONENT-CHAIN-GROUNDING candidate ADVANCES 6/5 (parent doctrine · re-author IS the meta-fix in action · substrate types verbatim cited §0 BEFORE drafting consumer code · LIKELY RATIFIES BINDING on this clean fire · 5-proof-point ceiling exceeded with re-author quality bar)" · Devin meta-fix RATIFIES via R17 P0 PATH A re-author. The pattern works on its author. Parent doctrine canopy · 7 sibling sub-doctrines decompose surface into specific verification classes (substrate-types · audit-doc claims · env/config files · registry-vs-actual · worktree client · spec authoring · API capacity). Each sibling ratifies independently. |
+| 23 | DOC-VERCEL-PROJECT-LIVE-CHECK             | `cf242b1`          | 2026-05-07 | Thu EOD MCP discovery during 4-day webhook saga. `mcp__vercel__get_project` returned `"live": false` flag · Path 4 GitHub-integration disconnect+reconnect re-installed OAuth shell but did NOT flip `live` back to true · production aliases stay on last-good READY deployment while NEW deploys silently blocked. Sub-doctrine of #22. Discovery procedure: every Vercel-deploy debug session checks `get_project.live` flag FIRST before any noop-wake attempt · if false → diagnose pause OR plan-limit class before further action. Discretionary BINDING per CEO authority (single-occurrence canonical lesson · same precedent as #18 ratifying on 2nd repetition · saga-impact warrants formalization). |
+| 24 | DOC-VERCEL-PLAN-LIMIT-VALIDATE            | `cf242b1`          | 2026-05-07 | Thu EOD Pro-plan saga ROOT CAUSE. Hobby plan limits cron schedules to 1/day max (`0 X * * *` patterns only). `vercel.json` `*/15 * * * *` schedules from R15 P1 + R16 P2 + R19 P0 cron entries exceeded plan limit · Vercel REJECTED build creation pre-build-create at plan-validation layer · NO failed-deploy entry surfaced in Deployments tab · 4-day diagnostic saga investigated wrong layer (webhook delivery vs plan-tier rejection class). CEO Pro upgrade @ ~13:30 EDT removed `*/15` rate-cap · webhook fired immediately on next push (`cf242b160f46`) · build SUCCEEDED in 145s · 13 backlogged commits coalesced into single READY deploy. How to apply: before adding ANY cron schedule to vercel.json · validate against active plan tier (Hobby = 1/day max · Pro = `*/15 *` etc · Enterprise unlimited) · fail-fast in spec §0 grounding · NEVER assume plan supports schedule frequency. Sub-doctrine of #22. Discretionary BINDING per CEO authority (saga-impact + structural-class root cause warrants formalization). |
 
 ---
 
@@ -56,8 +63,8 @@
 
 | Candidate                                  | First proof point | Required for BINDING | Status |
 |--------------------------------------------|-------------------|----------------------|--------|
-| DOC-VERIFY-VERCEL-AFTER-COMMIT             | `059de07` (May 6) | 5 clean Vercel-verified Round closures | NEW today (1st proof) |
-| DOC-NEXTJS-DYNAMIC-ROUTE-PARAM-NAME        | `059de07` (May 6) | 3 clone-pattern fires post-pattern-bind | NEW today (1st proof) |
+| DOC-NEXTJS-DYNAMIC-ROUTE-PARAM-NAME        | `059de07` (May 6) | 3 clone-pattern fires post-pattern-bind | SUPERSEDED by DOC-NEXTJS-DYNAMIC-SEGMENT-CONSISTENCY (wrong-layer hotfix `059de07` changed param TYPE when actual control was directory NAME · real fix `a969546` rename + `.next` purge) |
+| DOC-NEXTJS-DYNAMIC-SEGMENT-CONSISTENCY     | `a969546` (May 6) | 5 clean fires across cloned route handlers | NEW (1/5 proof · supersedes DOC-NEXTJS-DYNAMIC-ROUTE-PARAM-NAME) |
 | DOC-SLOT-VS-WIRE                           | `f2e4715` + `d6b71b8` (May 6) | 5 SLOT applications | 2/5 progressing |
 | DOC-EFFECTS-A11Y-COMPLETE                  | `08f67fc` (May 5) | 5 clean fires across effects components | 1/5 (GradientOrbs + NoiseOverlay) |
 | DOC-SMOKE-RESPECTS-UX-GATING               | `355d4be` (May 1) | 5 applications | banked |
@@ -75,6 +82,23 @@
 | DOC-BAN-BASH-X                             | `fa80793` (May 2) | 5 applications | progressing (Apr 29 transcript-leak origin) |
 | DOC-PROMPT-SCHEMA-SKILL-ALIGN              | (banked · pre-fire) | 2 proof points (Cyl 2B + 2C) | banked |
 | DOC-VERCEL-BUDGET-CAP-20                   | this commit (Thu 2026-05-07 EOD · CEO directive · pre-deploy hardening · scraper-parse `*/15`→`0 * * *` -75% + scrape-pipeline-smoke `0 *`→`0 9 *` -96% · sub-doctrine of #22) | First clean month-end Vercel close at $20 or below + 4 more spec-author cycles cite budget impact in §0 grounding | NEW · 1/5 · banks BINDING #25 candidate |
+| DOC-OWN-SCOPE-COMMIT-ISOLATION             | (May 6) | (was 5 proof points) | SUPERSEDED by BINDING #20 DOC-PER-AGENT-WORKTREE (Round 12 Incident #3 invalidated PRECHECK-only mechanism · structural fix replaces · `f7451de`) |
+
+---
+
+## Sub-doctrine canopy under BINDING #22 · DOC-MULTI-COMPONENT-CHAIN-GROUNDING (Devin meta-fix · 7 siblings)
+
+Parent BINDING #22 maps "code chain grounding" surface end-to-end. Sibling sub-doctrines decompose into specific verification classes. Each ratifies independently as proof points accumulate; all strengthen parent canopy.
+
+| Sub-doctrine                              | First proof point | Score | Surface |
+|-------------------------------------------|-------------------|-------|---------|
+| DOC-SUBSTRATE-RETURN-SHAPE-VERIFY         | `4c156da` (May 7 · PATH A re-author) | 2/5 | substrate types verbatim cited in §0 before drafting consumer code |
+| DOC-AUDIT-DOC-DRIFT-CATCH                 | `7e2976b` (May 7 · PhotoBot 16 vs 20) | 2/5 | audit-doc claims re-grep-verified at R+1 spec authoring |
+| DOC-WORKTREE-INFRA-PARITY-PRECHECK        | R15 P1 first-attempt HALT · `3c64fcf` (May 7 · CF-40 closure) | 2/5 | env/config file parity at worktree creation/reset |
+| DOC-CRON-REGISTRY-PARITY-VERIFY           | `1a0cd16` (May 6 · `recon-autoscan` orphan surfaced) · `29a9d9c` (May 7 · empirical 9-vs-8 drift) | 2/5 | registry-vs-actual cross-check (vercel.json crons · etc) |
+| DOC-PRISMA-GENERATE-POST-DB-PUSH          | `1a0cd16` (May 6 · stale Prisma client caught) | 1/5 | worktree client refresh after schema add |
+| DOC-PUSHBACK-WITH-REPLACEMENT (NEW · Day 2 AM) | R19 P2 `29a9d9c` (May 7 · CRON_REGISTRY_PARITY replaces PriceBot verify) | 1/5 | spec authoring · push-back ALWAYS authors substitute spec inline (CEO rule lock today AM via `feedback_pushback_means_replace.md`) |
+| DOC-PARALLEL-IT-RATE-LIMIT-OBSERVATION (NEW · Day 2 AM) | Day 2 AM (May 7 · Anthropic API throttle on parallel-fire of 3 IT agents) | 1/5 | API capacity awareness · sequential-fire fallback IS the mitigation |
 
 ---
 
@@ -153,6 +177,12 @@ This ledger was created Wed May 6 2026 AM after CEO + MC + Devin discovered:
 
 | Date       | Doctrine                          | Commit    | BINDING# (canonical) |
 |------------|-----------------------------------|-----------|----------------------|
+| 2026-05-07 | DOC-VERCEL-PLAN-LIMIT-VALIDATE    | `cf242b1` | 24                   |
+| 2026-05-07 | DOC-VERCEL-PROJECT-LIVE-CHECK     | `cf242b1` | 23                   |
+| 2026-05-07 | DOC-MULTI-COMPONENT-CHAIN-GROUNDING | `4c156da` | 22                  |
+| 2026-05-07 | DOC-VERIFY-VERCEL-AFTER-COMMIT    | `059de07` | 21                   |
+| 2026-05-07 | DOC-PER-AGENT-WORKTREE            | `f7451de` | 20                   |
+| 2026-05-07 | DOC-MALFORMED-ENV-VALUE-CANARY    | `dd7aa96` | 19                   |
 | 2026-05-06 | DOC-AUDIT-FIRST-WIRE-PATTERN      | `d6b71b8` | 17                   |
 | 2026-05-05 | DOC-BUILD-MEMORY-BUDGET-CHECK     | `fb02caa` | 18                   |
 | 2026-05-05 | DOC-DELEGATE-TO-CANONICAL         | `105c7d0` | 16                   |
@@ -248,6 +278,35 @@ These were ratified recently and remain under proof-point watch:
 **Why it exists:** Local `next build` type-check sub-phase hangs on this hardware under memory pressure. STOP-REVERT punishes IT for an environmental constraint, not a code defect.
 **How to apply:** When tsc=0 + compile PASS + free pages collapsed + code trivially safe → Fork B (commit + Vercel CI re-validates) is correct. Vercel build is the canonical gate per #18 + sentinel-pair `DOC-VERIFY-VERCEL-AFTER-COMMIT` (candidate).
 
+### #19 · DOC-MALFORMED-ENV-VALUE-CANARY
+**Why it exists:** Wed AM 2026-05-06 multi-agent commit-label drift incident #2 surfaced that LiteLLM launcher script's `eval "$(printf...)"` could interpret `.env.local` provider key values containing backticks, `$()`, or semicolons as shell commands. Class of side-channel risk where malformed env values become canary indicators of broader env-handling fragility.
+**How to apply:** Replace `eval` patterns with safer constructs (e.g., `while IFS='=' read -r KEY VALUE; do declare -gx "$KEY=$VALUE"; done <<< "$KEY_LINES"`) for env-var hydration. Same export semantics preserved. Future env-handling cylinders MUST audit for malformed-value canary class before shipping.
+
+### #20 · DOC-PER-AGENT-WORKTREE
+**Why it exists:** Two production multi-agent commit-label drift incidents in 5 days (Round 11 `ca0bbd7` 2026-05-06 AM Cyl 2C scooped Cyl 2B staged files + Round 12 #2 `20bf67a`/`e4cafdf`/`dd7aa96` 2026-05-06 11:11 EDT 53s race window with 3 parallel agents). PRECHECK alone (BINDING #12) detects foreign pre-staged paths but cannot prevent COMMIT-FIRE race. Structural fix needed.
+**How to apply:** Per-agent git worktrees (`/Users/ryanhallee/legacy-loop-mvp-agent-{1,2,3}/`) — each agent has its own `.git/index`. Race class permanently closed by structural isolation. Daemon QUARTET (Ollama · LiteLLM · Open WebUI · stay-awake) stays anchored to main worktree path. Helper scripts: `scripts/worktree-setup.sh` · `scripts/worktree-reset.sh N` · `scripts/agent-ship.sh` (FF-push only · NO `--force` class). 8+ clean parallel-cylinder fires Wed PM → Thu EOD ratify. SUPERSEDES candidate DOC-OWN-SCOPE-COMMIT-ISOLATION (PRECHECK-only mechanism INVALIDATED by Round 12 Incident #3).
+
+### #21 · DOC-VERIFY-VERCEL-AFTER-COMMIT
+**Why it exists:** May 6 production-red incident — local `tsc=0` + `git push` ≠ production deployed. Round 10 declared closed but Wire G `f2e4715` + Wire H `d6b71b8` were Vercel ERROR; production stayed on `08f67fc`. Root cause: cloned route handler kept stale param type `{itemId}` when destination path segment was `[id]` · Next.js typedRoutes RouteHandlerConfig is build-time-only · local tsc passes · Vercel build fails. Hotfix `059de07`.
+**How to apply:** Every §12 claiming production work landed MUST cite Vercel deploy state explicitly via `mcp__vercel__list_deployments` (or honest deferral when webhook stalled). Pattern: cite `dpl_<id>` READY + commit hash match + curl HTTP=200 against root + curl HTTP=200 against item-detail (for UI surfaces) OR honest deferral with backlog count. `feedback_verify_vercel_after_commit.md` codifies the rule. 15+ commits Wed PM → Thu EOD cite sentinel verbatim in §12 boxes (PARTIAL APPLY through deploy-deferred chain · sentinel survives webhook gap honestly).
+
+### #22 · DOC-MULTI-COMPONENT-CHAIN-GROUNDING
+**Why it exists:** Devin meta-fix banked from May 6 grounding-gap retrospective (R13 P2 + R14 P0 + R14 P3 + R17 P0 first-attempt HALTs all surfaced spec-author drift catching architectural assumptions BEYOND the entry point of the cited surface). The pattern caught its own author at R17 P0 first-attempt HALT (Wed EVE) where Devin drafted FIX 2 against a hypothetical merged result shape; actual substrate at `bot-ai-router/types.ts:367-437` returned RAW `{primary: {rawResult}, secondary?, geminiWebSources, costUsd, actualCostUsd, latencyMs, degraded, error?}` requiring caller-side `mergeConsensus`/`calcAgreement` from LOCKED `multi-ai.ts`.
+**How to apply:** Every spec touching existing surfaces grep-verifies the FULL chain end-to-end at HEAD · cites verbatim line numbers in §0 · never trusts audit-doc claims as canonical (DOC-AUDIT-DOC-DRIFT-CATCH). Read actual substrate input AND return-type interfaces verbatim before drafting consumer code (DOC-SUBSTRATE-RETURN-SHAPE-VERIFY). Verify infrastructure parity for env/config files at worktree creation/reset (DOC-WORKTREE-INFRA-PARITY-PRECHECK). Cross-check registry-vs-actual for vercel.json crons / CLAUDE.md LOCKED file lists / etc (DOC-CRON-REGISTRY-PARITY-VERIFY). Refresh worktree Prisma client after `prisma db push` (DOC-PRISMA-GENERATE-POST-DB-PUSH). On chain-grounding push-back, ALWAYS author substitute spec inline (DOC-PUSHBACK-WITH-REPLACEMENT). Watch for Anthropic API throttle on parallel-fire of 3+ IT agents · sequential-fire fallback IS the mitigation (DOC-PARALLEL-IT-RATE-LIMIT-OBSERVATION). **Verify Vercel project `live` flag during deploy debug (DOC-VERCEL-PROJECT-LIVE-CHECK · #23 · Day 2 EOD discovery). Validate cron schedules against active plan tier BEFORE adding to vercel.json (DOC-VERCEL-PLAN-LIMIT-VALIDATE · #24 · Day 2 EOD root cause).** RATIFIES via R17 P0 PATH A re-author `4c156da` — substrate types VERBATIM cited in §0 BEFORE drafting consumer code · pattern works on its author. **The canopy is the operational decomposition; #22 is the parent doctrine. #23 + #24 promote from sub-doctrine candidates to full BINDING per CEO authority on Day 2 EOD post-saga-resolution.**
+
+### #23 · DOC-VERCEL-PROJECT-LIVE-CHECK
+**Why it exists:** Day 2 EOD MCP-driven diagnostic discovery during 4-day webhook saga. Devin called `mcp__vercel__get_project` on prj_br8eXVFqKFbZLvKczG6JkvYgwVg2 and observed `"live": false` flag. CEO had run Path 4 (Disconnect+Reconnect GitHub integration from Vercel Settings → Git) but `live: false` survived the reconnect — re-installed OAuth shell but didn't flip the flag. Production aliases stayed on last-good READY deployment (`dpl_2KYcMtTED` for source `61cdbec`) while NEW pushes (noop wakes `04074b3` · `d726a33` · `1f21b3b` · `d447cbc`) created NO new deployment entries. The flag IS the diagnostic.
+**How to apply:** Every Vercel-deploy debug session begins with `mcp__vercel__get_project` → check `live` flag FIRST. If `live: false`: diagnose pause class OR plan-limit class BEFORE attempting noop-wake (which exhausts after 1 success and won't unlock the underlying state). Resolution paths: Dashboard Settings → General → Resume button OR `POST /v1/projects/{projectId}/unpause` API call OR plan upgrade if rate-cap is the cause. **Sub-doctrine of #22.**
+
+### #24 · DOC-VERCEL-PLAN-LIMIT-VALIDATE
+**Why it exists:** Day 2 EOD ROOT CAUSE of the 4-day webhook saga. Hobby plan limits Vercel cron schedules to **1/day maximum** (`0 X * * *` patterns only · zero `*/N` patterns accepted). Our `vercel.json` had `*/15 * * * *` (R15 P1 scraper-parse) + `0 * * * *` (R16 P2 scrape-pipeline-smoke hourly) + 6 other schedules accumulated through R14-R19 fires. Hobby silently REJECTED build creation at the plan-validation layer · NO failed-deploy entry surfaced in Deployments tab · diagnostics for 4 days investigated wrong layer (webhook delivery · GitHub integration health · `live: false` paused-state) when actual cause was plan-tier rejection-pre-build-create. CEO Pro upgrade @ ~13:30 EDT Thu removed the `*/15` rate-cap. First push post-upgrade (`cf242b160f46`) fired webhook → Vercel accepted → build SUCCEEDED in 145s → 13 backlogged commits coalesced into single READY deploy `dpl_7GidCK7wf6DihBgPDQ2gjDcpDNY6`. The diagnostic invisibility (rejected pre-create vs failed mid-build) IS the doctrine surface.
+**How to apply:** Before adding ANY cron schedule to `vercel.json` · validate the schedule against the active plan tier:
+- **Hobby:** 1/day max (`0 X * * *` only · NO `*/N`)
+- **Pro:** `*/15 *` and below acceptable
+- **Enterprise:** unlimited
+
+Fail-fast in spec §0 grounding table. NEVER assume plan supports schedule frequency. R19 P2 cron registry parity audit doc gets Day 3 update annotating Pro plan tier requirement for `*/15` schedules. **Sub-doctrine of #22.**
+
 ---
 
 ## Glossary
@@ -267,7 +326,8 @@ These were ratified recently and remain under proof-point watch:
 
 | Date       | Commit | Action                                 | By      |
 |------------|--------|----------------------------------------|---------|
-| 2026-05-06 | (this commit) | Initial ledger created · drift reconciled to 18 BINDING | Devin (CMD-DOCTRINE-LEDGER-RECONCILE V18) |
+| 2026-05-06 | (initial) | Initial ledger created · drift reconciled to 18 BINDING | Devin (CMD-DOCTRINE-LEDGER-RECONCILE V18) |
+| 2026-05-07 | (this commit) | CMD-DOCTRINE-LEDGER-APPEND V18 · CF-36 OVERDUE closure · #19 DOC-MALFORMED-ENV-VALUE-CANARY (`dd7aa96`) + #20 DOC-PER-AGENT-WORKTREE (`f7451de`) + #21 DOC-VERIFY-VERCEL-AFTER-COMMIT (`059de07`) + #22 DOC-MULTI-COMPONENT-CHAIN-GROUNDING (`4c156da`) + **#23 DOC-VERCEL-PROJECT-LIVE-CHECK (`cf242b1` · Thu EOD `live:false` MCP discovery)** + **#24 DOC-VERCEL-PLAN-LIMIT-VALIDATE (`cf242b1` · Thu EOD Pro-plan saga root cause)** appended · 7-sibling sub-doctrine canopy under #22 added to Candidates · 2 NEW Day-2 candidates (DOC-PUSHBACK-WITH-REPLACEMENT · DOC-PARALLEL-IT-RATE-LIMIT-OBSERVATION) banked · DOC-OWN-SCOPE-COMMIT-ISOLATION marked SUPERSEDED by #20 · DOC-NEXTJS-DYNAMIC-ROUTE-PARAM-NAME marked SUPERSEDED by DOC-NEXTJS-DYNAMIC-SEGMENT-CONSISTENCY · Total BINDING 18 → 24 (6 ratifications in single closure cylinder · CEO discretionary BINDING for #23 + #24 saga-class lessons) | Devin (CMD-DOCTRINE-LEDGER-APPEND V18) |
 
 ---
 
