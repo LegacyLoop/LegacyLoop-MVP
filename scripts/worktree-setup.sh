@@ -88,6 +88,17 @@ for N in $(seq 1 $AGENT_COUNT); do
     echo "  ✓ .env.local symlinked"
   fi
 
+  # CMD-WORKTREE-SETUP-DOTENV-SYMLINK V18 (R19 P0 · 2026-05-07):
+  # Symlink .env (single secret SOT in main worktree · Prisma reads
+  # DATABASE_URL from this file · NOT .env.local). Closes R15 P1
+  # first-attempt HALT gap class · DOC-WORKTREE-INFRA-PARITY-PRECHECK
+  # 1/5 → 2/5. Idempotent guard skips existing symlinks (PATH A
+  # 1-liner backfilled agent-1/2/3 yesterday EVE).
+  if [ ! -L "$WT_PATH/.env" ]; then
+    ln -s "$MAIN_REPO/.env" "$WT_PATH/.env"
+    echo "  ✓ .env symlinked"
+  fi
+
   # Run prisma generate + db push to create per-worktree dev.db (idempotent)
   (cd "$WT_PATH" && npx prisma generate >/dev/null 2>&1 || true)
   if [ ! -f "$WT_PATH/prisma/dev.db" ]; then
