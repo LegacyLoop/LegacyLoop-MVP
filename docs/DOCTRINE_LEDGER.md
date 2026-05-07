@@ -82,6 +82,7 @@
 | DOC-BAN-BASH-X                             | `fa80793` (May 2) | 5 applications | progressing (Apr 29 transcript-leak origin) |
 | DOC-PROMPT-SCHEMA-SKILL-ALIGN              | (banked · pre-fire) | 2 proof points (Cyl 2B + 2C) | banked |
 | DOC-VERCEL-BUDGET-CAP-20                   | this commit (Thu 2026-05-07 EOD · CEO directive · pre-deploy hardening · scraper-parse `*/15`→`0 * * *` -75% + scrape-pipeline-smoke `0 *`→`0 9 *` -96% · sub-doctrine of #22) | First clean month-end Vercel close at $20 or below + 4 more spec-author cycles cite budget impact in §0 grounding | NEW · 1/5 · banks BINDING #25 candidate |
+| DOC-NATIVE-VS-CUSTOM-MONITORING-PREFER     | Thu 2026-05-07 EOD · CEO Spend Cap configuration decision · Vercel native 50/75/100 thresholds accepted in lieu of custom 90% webhook (complexity > marginal value at this stage · $5 buffer at 75% sufficient response window · sub-doctrine of #22) | First clean budget-conscious decision favoring platform-native monitoring over custom webhook (this fire counts as 1st proof) + 4 more spec-author cycles cite native-vs-custom tradeoff in §0 grounding | NEW · 1/5 · banks BINDING #26 candidate · CEO directive ratified inline |
 | DOC-OWN-SCOPE-COMMIT-ISOLATION             | (May 6) | (was 5 proof points) | SUPERSEDED by BINDING #20 DOC-PER-AGENT-WORKTREE (Round 12 Incident #3 invalidated PRECHECK-only mechanism · structural fix replaces · `f7451de`) |
 
 ---
