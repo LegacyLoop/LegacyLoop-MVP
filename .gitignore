@@ -69,3 +69,6 @@ litellm.log
 
 # Scratch / working memory (cylinder verification artifacts)
 .scratch/
+
+# Sylvia AI · isolated data · NEVER commit
+sylvia-data/
