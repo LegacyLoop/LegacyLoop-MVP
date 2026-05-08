@@ -158,6 +158,23 @@ Provider liveness · ops dashboard · LegacyLoop status pages.
 
 `agreementScore` derived from semantic similarity across `perProvider[].answer` (TF-IDF cosine + answer-length penalty · NO LLM in the score function · cheap + deterministic).
 
+### §3.1 · Empirical validation (Anthropic Project Vend / employee marketplace · May 2026)
+
+**The Truth Gate moat is empirically validated by Anthropic's own internal experiment.** In May 2026, Anthropic ran a Slack-based marketplace where 69 employees let Claude agents represent them in real transactions. Results published:
+
+- 186 deals · ~$4,000 traded for real physical goods
+- Anthropic secretly assigned half the participants Opus, the other half Haiku (without telling them)
+- **Opus users completed ~2 more deals on average · extracted $2.68 more as sellers · paid $245 less as buyers** (same items)
+- **Haiku-using employees rated their deals nearly identical in fairness to Opus users** — they did NOT notice they were getting worse outcomes
+
+**Why this matters for Sylvia's Truth Gate:**
+
+1. **Cheap-model AI agents extract less value AND users can't tell.** Without a Truth Gate · weaker-model users in autonomous-selling contexts get systematically worse deals while believing they got fair ones. This is the silent failure mode the agreementScore + 4-AI dispatch + provenance discipline are built to prevent.
+2. **The 4-AI quartet (Anthropic + OpenAI + Gemini + xAI) prevents single-model bias** at the moment of valuation. If 3 of 4 say "this brooch is worth $50" and 1 says "$5,000", the agreementScore drops · the response shows partial-or-refused · the user is protected from a hallucinated price.
+3. **LegacyLoop's Phase 8 Manus autonomous selling moat is the productized version of Project Vend** — the SellingPipeline state machine (R23 P1 · `prisma/schema.prisma`) walks the same LIST → MONITORING → NEGOTIATING → ACCEPTED → SHIPPED → CLOSED arc Anthropic's agents walked manually. Truth Gate is the trust layer that makes it safe for senior estate sellers (our primary users) who can't verify the AI's judgment themselves.
+
+**Investor narrative anchor:** *"Anthropic ran the experiment that proves LegacyLoop's Phase 8 thesis. Weak models extract less value · users don't notice. Sylvia's Truth Gate is the structural fix — every high-stakes valuation cross-validated by four independent AI models before it reaches the seller."*
+
 ---
 
 ## §4 · Provenance shape (Moat 7)
