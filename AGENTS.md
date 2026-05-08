@@ -4,19 +4,16 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# ════════════════════════════════════════════════════════════════
 # LEGACYLOOP — SHARED ENGINEERING STANDARDS (AGENTS.md)
-# Applies to ALL LegacyLoop repositories.
-# Read by Claude Code automatically alongside CLAUDE.md.
-# ════════════════════════════════════════════════════════════════
+# Applies to ALL LegacyLoop repositories. Read alongside CLAUDE.md.
+# Verbose reference banked at docs/AGENTS_HISTORY.md.
 
 ## ENGINEERING PHILOSOPHY
 
-We build to a billion-dollar standard. Every line of code should be
-written as if a senior engineer at Stripe, Linear, or Apple will
-review it tomorrow. Clean. Typed. Tested. Documented.
+Build to a billion-dollar standard. Every line of code written as if a senior engineer at Stripe, Linear, or Apple will review it tomorrow. Clean. Typed. Tested. Documented.
 
 ### Core Principles
+
 1. **Ship working software.** Done > perfect. But never sloppy.
 2. **Preserve what works.** Never rewrite for style. Upgrade for function.
 3. **Read before you write.** Diagnostic first. Always.
@@ -26,141 +23,102 @@ review it tomorrow. Clean. Typed. Tested. Documented.
 
 ---
 
-## CODE QUALITY STANDARDS
+## CODE QUALITY — RULES
 
 ### TypeScript
-- Strict mode enabled. No exceptions.
+- Strict mode. No exceptions.
 - Prefer explicit types over inference for function signatures.
-- No `any` type. Use `unknown` + type guards if truly needed.
-- No `@ts-ignore` or `@ts-expect-error` without a comment explaining why.
-- No `as` type assertions unless provably safe with a comment.
+- No `any`. Use `unknown` + type guards if truly needed.
+- No `@ts-ignore` / `@ts-expect-error` without comment explaining why.
+- No `as` type assertions unless provably safe with comment.
 - Export types/interfaces alongside their implementations.
 
 ### React / Next.js
-- Server Components by default. 'use client' only when needed.
-- Async Server Components for data fetching (no useEffect for loads).
-- Error boundaries around dynamic content.
-- Loading states for all async operations.
-- Suspense boundaries where appropriate.
-- No useEffect for data fetching in client components — use SWR or server actions.
+- Server Components by default. `'use client'` only when needed.
+- Async Server Components for data fetching (no `useEffect` for loads).
+- Error boundaries around dynamic content. Loading states for all async ops.
+- No `useEffect` for data fetching in client components — use SWR or server actions.
 
 ### Naming Conventions
-- Components: PascalCase (ItemDetailPage, BotLoadingState)
-- Files: kebab-case for utilities, PascalCase.tsx for components
-- Functions: camelCase (getSession, calculatePrice)
-- Constants: UPPER_SNAKE_CASE (PROCESSING_FEE, SYSTEM_USER_ID)
-- Types/Interfaces: PascalCase with descriptive names (UserSession, ItemStatus)
+- Components: PascalCase (ItemDetailPage)
+- Utilities: kebab-case (.ts) · Components: PascalCase (.tsx)
+- Functions: camelCase (getSession) · Constants: UPPER_SNAKE_CASE (PROCESSING_FEE)
+- Types/Interfaces: PascalCase descriptive
 - API routes: kebab-case directories (/api/buyer-leads/route.ts)
-- CSS variables: kebab-case (--bg-primary, --accent-bright)
+- CSS variables: kebab-case (--bg-primary)
 
 ### File Organization
 - One component per file (unless tightly coupled helpers).
-- Co-locate tests with source files when tests are added.
-- Keep utilities in lib/ — never in app/.
-- Keep constants in lib/constants/ — single source of truth.
-- API types shared between client and server in lib/types/.
+- Co-locate tests with source files when added.
+- Utilities in `lib/` — never in `app/`.
+- Constants in `lib/constants/` — single source of truth.
+- API types shared between client and server in `lib/types/`.
 
 ---
 
-## ERROR HANDLING
+## ERROR HANDLING — RULES
 
-### General Rules
 - Every async operation wrapped in try/catch.
-- User-facing errors: friendly messages, never raw errors.
+- User-facing errors: friendly messages · never raw errors.
 - Developer errors: full context logged to console.
-- API errors: consistent format { error: string, status: number }.
-- Never swallow errors silently. Always log or surface them.
+- API errors: consistent format `{ error: string, status: number }`.
+- Never swallow errors silently — always log or surface.
 
-### API Route Pattern
-```typescript
-try {
-  // 1. Auth check
-  // 2. Input validation
-  // 3. Business logic
-  // 4. Return success
-} catch (error) {
-  console.error("[ROUTE_NAME]", error);
-  return NextResponse.json({ error: "..." }, { status: 500 });
-}
-```
+API route + client component error templates: `docs/AGENTS_HISTORY.md` §ERROR_PATTERNS.
 
 ---
 
-## TESTING STANDARDS (as we scale)
+## TESTING STANDARDS — pointer
 
-### Current State
-- Manual QA by Ryan (founder is the test suite right now)
-- tsc --noEmit = type checking on every change
-- npm run build = integration check on every change
+**Current state:** manual QA by Ryan · `tsc --noEmit` on every change · `npm run build` integration check.
 
-### Target State (post-seed hire)
-- Unit tests for business logic (pricing, bot routing, credit calc)
-- Integration tests for API routes (auth, payments, bot calls)
-- E2E tests for critical paths (signup → list item → sell → ship)
-- Visual regression for landing page animations
-- Lighthouse CI in deployment pipeline
+**Post-seed targets** (when team scales · banked): unit tests for business logic · integration tests for API routes · E2E for critical paths · visual regression for landing · Lighthouse CI.
 
-### What to Test First (priority order)
-1. Pricing calculations (commission, credits, subscriptions)
-2. Auth flows (signup, login, session, logout)
-3. Bot routing and skill loading
-4. Payment webhook handling
-5. Item lifecycle (DRAFT → COMPLETED)
+**Test priority order** (when team hires): pricing → auth → bot routing → payment webhooks → item lifecycle.
+
+Verbose strategy + testing doctrine: `docs/AGENTS_HISTORY.md` §TESTING_STANDARDS.
 
 ---
 
-## DOCUMENTATION STANDARDS
+## DOCUMENTATION — RULES
 
-### Code Comments
-- Comment the WHY, not the WHAT.
+- Comment the WHY · not the WHAT.
 - Document non-obvious business rules inline.
-- Mark temporary workarounds with `// TODO(ryan):` or `// HACK:`.
+- `// TODO(ryan):` or `// HACK:` for temporary workarounds.
 - JSDoc on exported functions used by multiple files.
 
-### V16 Report (required on EVERY command — see CLAUDE.md for format)
-- Serves as the engineering log for the entire company.
-- Ryan reviews these to understand what changed and why.
-- FLAGS section is where you surface risks, gaps, and ideas.
-- Never skip it. Even for small changes.
+**§12 V19 Report required on EVERY command.** See `CLAUDE.md` for the format. Engineering log · Ryan reviews every one. FLAGS section surfaces risks/gaps/ideas. Never skip — even small changes.
 
 ---
 
-## DEPLOYMENT RULES
+## DEPLOYMENT — RULES
 
-### Pre-Deploy Checklist
-1. tsc --noEmit = 0 errors
-2. npm run build = PASS
-3. No console.log with sensitive data
-4. No .env values hardcoded
-5. No TODO items that block the feature
-6. Git committed with proper CMD- prefix message
+**Pre-deploy checklist:**
+1. `tsc --noEmit` = 0 errors
+2. `npm run build` = PASS
+3. No `console.log` with sensitive data
+4. No `.env` values hardcoded
+5. No TODO items blocking the feature
+6. Git committed with `CMD-` prefix message
 
-### Vercel
-- Auto-deploys main branch to production.
-- Preview deploys on PRs.
-- Environment variables in Vercel dashboard — never in code.
-- Check Vercel build logs if deploy fails.
+**Vercel:** auto-deploys main · preview deploys on PRs · env vars in Vercel dashboard NEVER in code · check build logs if deploy fails.
 
-### Database (MVP only)
-- After schema changes: `npx prisma db push`
-- After push: `npx prisma generate`
-- Never delete models or fields without explicit approval.
-- Always additive. Migrations over deletions.
+**Database:** schema changes → `npx prisma db push` (dev only · libsql incompatibility for Turso prod · see CLAUDE.md BINDING #6) → `npx prisma generate`. Never delete models/fields without approval. Always additive.
 
 ---
 
 ## SECURITY — NON-NEGOTIABLE
 
-- Never commit secrets (.env, API keys, passwords).
-- Never log passwords, tokens, or full API keys.
+- Never commit secrets (`.env*` · API keys · passwords).
+- Never log passwords · tokens · or full API keys.
 - Never expose internal errors to users.
-- Validate all user input before database operations.
+- Validate all user input before DB ops.
 - Sanitize all user-generated content before rendering.
-- HTTPS everywhere (enforced by Vercel).
+- HTTPS everywhere (Vercel-enforced).
 - HttpOnly cookies for auth tokens.
 - CORS properly configured.
-- CSP headers set (next.config.ts).
-- Rate limiting on auth and payment endpoints.
+- CSP headers set (`next.config.ts`).
+- Rate limiting on auth + payment endpoints.
 
 ---
 
@@ -168,26 +126,18 @@ try {
 
 Build for today. Architect for tomorrow.
 
-- Write clean, modular code that a team can maintain.
-- Use consistent patterns so new devs onboard fast.
-- Document decisions in V16 reports (they are the engineering log).
-- Prefer composition over inheritance.
-- Keep components small and focused.
-- Extract shared logic into hooks or utilities.
-- Database queries: always think about N+1 and index usage.
-- API responses: return only what the client needs.
-- State management: server state > client state whenever possible.
+- Clean modular code · maintainable by team.
+- Consistent patterns so new devs onboard fast.
+- Decisions documented in §12 reports (engineering log).
+- Composition over inheritance · small focused components · shared logic in hooks/utilities.
+- DB queries: think N+1 + index usage. API responses: return only what client needs. State: server > client whenever possible.
+
+Verbose scaling architecture (post-seed targets · concurrency patterns): `docs/AGENTS_HISTORY.md` §SCALING_MINDSET_VERBOSE.
 
 ---
 
 ## THE STANDARD
 
-> "LegacyLoop is not a side project. It is a company being built
-> to a billion-dollar standard by a founder who cares about every
-> detail. Treat every line of code, every commit, every V16 report
-> as if it will be reviewed by the best engineers in the world.
-> Because eventually, it will be."
+> "LegacyLoop is not a side project. It is a company being built to a billion-dollar standard by a founder who cares about every detail. Treat every line of code, every commit, every §12 report as if it will be reviewed by the best engineers in the world. Because eventually, it will be."
 
-# ════════════════════════════════════════════════════════════════
-# END OF AGENTS.md
-# ════════════════════════════════════════════════════════════════
+# END OF AGENTS.md — RULES + GOTCHAS · ~120 lines · verbose ref at docs/AGENTS_HISTORY.md

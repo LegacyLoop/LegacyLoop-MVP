@@ -1,538 +1,221 @@
-# ════════════════════════════════════════════════════════════════
 # LEGACYLOOP — WORLD-CLASS STANDARDS
 # The canonical identity doc. Read every session. Non-negotiable.
-# Imported by CLAUDE.md in every repo. This IS how we build.
-# ════════════════════════════════════════════════════════════════
+# Imported by CLAUDE.md in every repo. Verbose reference banked at docs/WORLD_CLASS_STANDARDS_HISTORY.md.
 
 ## THE MISSION
 
-LegacyLoop exists to connect generations. We do that by building
-software that is simple enough for a 70-year-old estate seller AND
-premium enough to win Awwwards. Both at once. Every surface. Every
-interaction. Every line of code.
+LegacyLoop exists to connect generations. We do that by building software simple enough for a 70-year-old estate seller AND premium enough to win Awwwards. Both at once. Every surface. Every interaction. Every line of code.
 
-Standard: **Tesla center console meets Christie's auction house.**
-Premium. Intelligent. Dignified. Clear. Never fake. Never sloppy.
+Standard: **Tesla center console meets Christie's auction house.** Premium. Intelligent. Dignified. Clear. Never fake. Never sloppy.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 1 — THE SEVEN PILLARS
-## ═══════════════════════════════════════════
+## SECTION 1 · THE SEVEN PILLARS — RULES
 
-These are the traits every billion-dollar site shares. Memorize them.
 Every PR, every command, every commit is evaluated against these seven.
 
-### 01 / MOTION — Butter-smooth scroll
-Physics-based, weighted, cinematic. Native browser scroll feels cheap.
-Lenis 1.3.21 is the standard. duration 1.2, easing cubic ease-out.
-Landing has it. App target: CMD-LENIS-APP.
+1. **MOTION** — physics-based scroll. Lenis 1.3.21 (duration 1.2 · cubic ease-out). Native browser scroll feels cheap.
+2. **TYPE** — typography that moves. Per-char/word reveals tied to scroll. 18ms char stagger for headlines.
+3. **PURPOSE** — every motion has a reason. Restraint is the signal. Cut motions that don't earn frame-budget.
+4. **DEPTH** — layered parallax · blur · glow · noise (opacity 0.035) · ambient orbs (3-orb pattern · teal/deep-teal/amber).
+5. **MICRO** — magnetic buttons (35% pull · spring-back) · hover breathing · `navigator.vibrate` haptics.
+6. **STORY** — the page has an arc. Onboarding is a story. Item lifecycle is a story. Build for the arc.
+7. **CRAFT** — SVG fractalNoise · safe-area insets · `prefers-reduced-motion` · `forced-colors` · `translateZ(0)` iOS glass.
 
-### 02 / TYPE — Typography that moves
-Words reveal character-by-character. Opacity tied to scroll. The hero
-headline doesn't appear — it assembles itself. 18ms char stagger for
-headlines. Per-word 0.15 → 1.0 opacity for scroll-linked paragraphs.
-
-### 03 / PURPOSE — Every motion has a reason
-Nothing decorates. Everything communicates. Restraint is the signal.
-The best Awwwards sites know what NOT to animate. If a motion does not
-earn its frame-budget, cut it.
-
-### 04 / DEPTH — Depth on a flat screen
-Layered parallax. Blur. Glow. Ambient gradient orbs. Noise texture at
-opacity 0.035. Makes the dark background feel infinite, not empty.
-Three-orb pattern: teal top-center (12s), deep-teal right (16s), amber
-bottom-left (20s).
-
-### 05 / MICRO — Micro-interactions that feel alive
-Magnetic buttons (35% pull, cubic-bezier(0.23, 1, 0.32, 1) spring-back).
-Cards that breathe on hover. Haptics on tap (navigator.vibrate).
-Cursors that react. The difference between premium and generic.
-
-### 06 / STORY — The page has an arc
-You begin somewhere and arrive somewhere. Each section earns its place.
-Scroll is narrative, not navigation. Onboarding is a story. The item
-lifecycle (DRAFT → COMPLETED) is a story. Build for the arc.
-
-### 07 / CRAFT — The details no one asked for
-SVG fractalNoise at opacity 0.035. Safe-area insets on every fixed
-element. prefers-reduced-motion respected everywhere. forced-colors
-mode supported. translateZ(0) on iOS-flickering glass. The 1% that
-compounds into the difference.
+Verbose recipes for each pillar: `docs/WORLD_CLASS_STANDARDS_HISTORY.md` §SEVEN_PILLARS_VERBOSE.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 2 — THE 12 AWWWARDS EFFECTS
-## ═══════════════════════════════════════════
+## SECTION 2 · THE 12 AWWWARDS EFFECTS — pointer
 
-These are the effects that define 2024–2025 Awwwards winners.
-Source: LegacyLoop Awwwards Master Reference + Olivier Larose +
-Dennis Snellenberg + Lenis + GSAP.
+12 canonical effects defining 2024-2025 Awwwards winners. Match the source recipe · do not reinvent.
 
-Every effect below has a canonical implementation. When applying one,
-match the source recipe. Do not reinvent.
+1. Smooth Scroll (Lenis) · 2. Word-by-word scroll opacity reveal · 3. Magnetic button · 4. Staggered card reveal · 5. Character-by-character headline reveal · 6. Animated gradient orb background · 7. Noise texture overlay · 8. Horizontal scrolling marquee · 9. Glow card hover · 10. Animated counting stats · 11. Preloader/page entry · 12. Custom cursor (desktop)
 
-### 01 · Smooth Scroll (Lenis)
-- Source: lenis.darkroom.engineering
-- Config: duration 1.2, easing (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t))
-- Where: Landing (shipped). App (CMD-LENIS-APP pending).
-- Guard: prefers-reduced-motion disables.
-
-### 02 · Word-by-word scroll opacity reveal
-- Source: Olivier Larose blog · text-gradient-scroll-opacity-v2
-- Config: per-word opacity 0.15 → 1.0, translateY(8px) → 0, tied to IntersectionObserver progress.
-- Where: Landing (shipped). App: onboarding, item detail narrative, help hero.
-
-### 03 · Magnetic button
-- Source: Awwwards GSAP studios
-- Config: 35% pull on mouseMove, cubic-bezier(0.23, 1, 0.32, 1) spring-back on mouseLeave.
-- Where: Landing hero CTA (shipped). App: top-10 primary CTAs only. Restraint.
-
-### 04 · Staggered card reveal
-- Source: IntersectionObserver pattern
-- Config: index * 80ms stagger, opacity 0 → 1, translateY(32px) → 0, 0.6s cubic-bezier(0.23, 1, 0.32, 1).
-- Where: Landing (shipped). App: ItemCard grids, BotHub, TestimonialGrid, OfferHistoryTimeline.
-
-### 05 · Character-by-character headline reveal
-- Source: Dennis Snellenberg · Arc · Linear · Vercel
-- Config: per-char translateY(100%) → 0, 18ms stagger, 0.7s cubic-bezier(0.23, 1, 0.32, 1).
-- Where: Landing hero (shipped). App: login welcome, dashboard first-visit.
-
-### 06 · Animated gradient orb background
-- Source: Vercel · Neon · Trigger.dev · 2024 Awwwards hero standard
-- Config: 3 radial orbs, position:fixed, pointer-events:none, 12–20s ease-in-out infinite.
-- Colors: rgba(0,188,212,0.09) teal top-center, rgba(0,150,136,0.06) deep-teal right, rgba(212,160,23,0.04) amber bottom-left.
-- Where: Landing (shipped). App: auth, dashboard hero, bot detail.
-
-### 07 · Noise texture overlay
-- Source: Apple · Vercel standard
-- Config: position:fixed, inset:0, opacity 0.035, SVG fractalNoise base64 inline, backgroundSize 200px 200px.
-- Where: Landing (shipped). App: global root layout via CMD-NOISE-OVERLAY-APP.
-
-### 08 · Horizontal scrolling marquee
-- Source: Framer · Webflow · Linear
-- Config: 30s linear infinite, doubled items for seamless loop, pause on hover.
-- Where: Landing marketplace ticker (shipped). Landing-only.
-
-### 09 · Glow card hover
-- Source: Linear · Neon · Liveblocks
-- Config: border rgba(0,188,212,0.12) → rgba(0,188,212,0.5), box-shadow 0 0 30px rgba(0,188,212,0.12), translateY(-4px), 0.3s cubic-bezier(0.23, 1, 0.32, 1).
-- Where: Landing (shipped). App: glass system shipped (CMD-GLASSMORPHISM-SYSTEM), rollout mid-flight (CMD-CARD-ELEVATION).
-
-### 10 · Animated counting stats
-- Source: IntersectionObserver + requestAnimationFrame
-- Config: threshold 0.5, duration 2200ms, ease-out quart (1 - Math.pow(1 - progress, 4)).
-- Where: Landing (shipped). App: dashboard KPIs, credit balance, pricing tier numbers.
-
-### 11 · Preloader / page entry
-- Source: Awwwards standard entry sequence
-- Config: 800ms content visible → 0.6s fade → unmount at 1400ms. iOS failsafe to 4-5s. CSS nuclear fallback forces content visible if JS fails.
-- Where: Landing (shipped). App: first-load shell + PWA splash via CMD-APPLE-TOUCH-PWA.
-
-### 12 · Custom cursor (desktop)
-- Source: Dennis Snellenberg pattern
-- Config: pointer: fine media query gate, mix-blend-mode: difference.
-- Where: Landing (shipped). Landing-only — app is primarily touch.
+Recipe configs (timings · easings · sources · where shipped/pending): `docs/WORLD_CLASS_STANDARDS_HISTORY.md` §AWWWARDS_EFFECTS.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 3 — DESIGN TOKENS (LOCKED)
-## ═══════════════════════════════════════════
+## SECTION 3 · DESIGN TOKENS (LOCKED)
 
-These are the canonical color and surface values. Every agent, every
-command, every commit uses these. If a value is not listed here, it
-does not exist in the system. Do not invent tokens. Do not substitute.
+If a value is not listed here, it does not exist in the system. Do not invent.
 
-### Background
 ```
---bg-primary:     #0D1117  (dark) / #f8fafc  (light)
---bg-secondary:   #1A1F2E  (dark) / #ffffff  (light)
---bg-card-solid:  #16161e  (dark) / #ffffff  (light)
-```
-
-### Accent / Brand Teal
-```
---accent:         #00BCD4  — primary brand teal. Used everywhere.
+--accent:         #00BCD4   (brand teal · NEVER #0f766e)
 --accent-dim:     rgba(0,188,212,0.12)
 --accent-border:  rgba(0,188,212,0.3)
 --accent-glow:    rgba(0,188,212,0.35)
---accent-deep:    #009688  — deep accent for gradients and hover states
-```
-
-### Semantic Colors (CORRECT values — enforce these)
-```
---success:        #22c55e  — NOT #4caf50. Every instance of #4caf50 is wrong.
---warning:        #f59e0b  — NOT #ff9800. Every instance of #ff9800 is wrong.
---error:          #ef4444  — NOT #f44336. Every instance of #f44336 is wrong.
-```
-
-### Special / Premium
-```
---antique:        #D4AF37  — antique/premium gold. Antique Alert, rare items.
---estate-warm:    #D4A017  — estate sections ONLY. Warmer gold for estate flows.
---megabot:        #8B5CF6  — MegaBot purple.
-```
-
-### MegaBot Provider Colors
-```
-OpenAI:   #22c55e
-Claude:   #a78bfa
-Gemini:   #3b82f6
-Grok:     #f97316
-```
-
-### Text
-```
---text-primary:   #f1f5f9  (dark) / #0f172a  (light)
---text-secondary: #cbd5e1  (dark) / #475569  (light)
---text-muted:     #94a3b8  (both modes)
-```
-
-### Surfaces / Cards
-```
-Card background:  rgba(255,255,255,0.03) (dark) / #ffffff (light)
-Card border:      1px solid rgba(0,188,212,0.15)
-Card radius:      16px (primary cards) / 0.6rem (sub-cards/nested)
-Button radius:    0.75rem
-Pill radius:      9999px
-```
-
-### Ghost / Glass
-```
---ghost-bg:       rgba(255,255,255,0.07) (dark) / rgba(0,0,0,0.04) (light)
---border-default: rgba(255,255,255,0.12) (dark) / rgba(0,0,0,0.08) (light)
-```
-
-### Badge System
-```
+--accent-deep:    #009688
+--bg-primary:     #0D1117 (dark) / #f8fafc (light)
+--bg-secondary:   #1A1F2E (dark) / #ffffff (light)
+--bg-card-solid:  #16161e (dark) / #ffffff (light)
+--text-primary:   #f1f5f9 (dark) / #0f172a (light)
+--text-secondary: #cbd5e1 (dark) / #475569 (light)
+--text-muted:     #94a3b8 (both)
+--ghost-bg:       rgba(255,255,255,0.07) / rgba(0,0,0,0.04)
+--border-default: rgba(255,255,255,0.12) / rgba(0,0,0,0.08)
 --badge-bg:       rgba(0,188,212,0.14)
 --badge-border:   rgba(0,188,212,0.35)
 --purple-bg:      rgba(139,92,246,0.1)
 --purple-border:  rgba(139,92,246,0.25)
+
+Semantic (CORRECT — enforce):
+  --success: #22c55e   (NOT #4caf50)
+  --warning: #f59e0b   (NOT #ff9800)
+  --error:   #ef4444   (NOT #f44336)
+
+Special:
+  --antique:     #D4AF37   (premium gold · antique alerts)
+  --estate-warm: #D4A017   (estate sections ONLY)
+  --megabot:     #8B5CF6   (MegaBot purple)
+
+MegaBot providers: OpenAI=#22c55e | Claude=#a78bfa | Gemini=#3b82f6 | Grok=#f97316
+
+Always-dark panels (modals/bot consoles): hardcode #e2e8f0 text · rgba(255,255,255,0.05) bg · DO NOT use vars.
+Carrier brand colors (hardcode): USPS #333366 · UPS #351c15 · FedEx #4d148c
 ```
 
-### Always-Dark Panels (hardcode, do NOT use CSS vars)
-Modal overlays, bot consoles, print documents, shipping labels:
-- Text: #e2e8f0
-- Background: rgba(255,255,255,0.05)
-- These are CORRECT to hardcode. Do not convert to variables.
-
-### Carrier Brand Colors (hardcode, do NOT use CSS vars)
-```
-USPS:   #333366
-UPS:    #351c15
-FedEx:  #4d148c
-```
+Surface defaults: card bg `rgba(255,255,255,0.03)` · card border `1px solid rgba(0,188,212,0.15)` · card radius 16px (primary) / 0.6rem (sub) · button radius 0.75rem · pill radius 9999px.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 4 — TYPOGRAPHY STANDARDS (LOCKED)
-## ═══════════════════════════════════════════
+## SECTION 4 · TYPOGRAPHY (LOCKED)
 
-### Font Families (Google Fonts — loaded in layout.tsx)
 ```
-Headings:           Exo 2 (weights: 400, 500, 600, 700, 800)
-Body:               Plus Jakarta Sans (weights: 400, 500, 600, 700)
-Numbers/prices/     Barlow Condensed (weights: 300–800)
-stats/credits:
-```
+Headings: Exo 2 (400-800)        · letterSpacing -0.02em on H1-H3
+Body:     Plus Jakarta Sans (400-700) · lineHeight 1.6
+Numbers/prices/stats/credits: Barlow Condensed (300-800)
 
-### CSS Variables
-```
---font-heading: var(--exo2)
---font-body:    var(--plusJakarta)
---font-data:    var(--barlowCondensed)
+CSS vars:
+  --font-heading: var(--exo2)
+  --font-body:    var(--plusJakarta)
+  --font-data:    var(--barlowCondensed)
 ```
 
-### Rules
-- Barlow Condensed on EVERY number: prices, stats, credits, counts,
-  percentages, dates, weights, dimensions. No exceptions.
-- Headings: Exo 2. Always. letterSpacing: "-0.02em" on H1–H3.
-- Body: Plus Jakarta Sans. lineHeight: 1.6 for paragraphs.
-- Data labels: Plus Jakarta Sans 500. letterSpacing: "0.04em" uppercase.
-- Never mix fonts within a single data point (e.g., "$" and "49.99"
-  must both be Barlow Condensed).
+**Rules:**
+- Barlow Condensed on EVERY number (prices · stats · credits · counts · percentages · dates · weights · dimensions). No exceptions.
+- Never mix fonts within a data point (e.g., "$" and "49.99" must both be Barlow Condensed).
+- Data labels: Plus Jakarta Sans 500 · letterSpacing 0.04em uppercase.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 5 — SENIOR-FRIENDLY RULES (NON-NEGOTIABLE)
-## ═══════════════════════════════════════════
+## SECTION 5 · SENIOR-FRIENDLY (NON-NEGOTIABLE · A11Y > AESTHETIC)
 
-Our primary users include seniors. These rules are not optional.
-They override aesthetic preferences. Accessibility > style.
+Primary users include seniors. These override aesthetic preferences.
 
-### Touch Targets
-- Minimum 44px × 44px on ALL tappable elements (Apple HIG).
-- Includes: buttons, tabs, toggles, pills, links, icons, checkboxes.
-- If an element is tappable, it must be 44px. No exceptions.
+**Touch targets:** 44px × 44px minimum on ALL tappable elements (buttons · tabs · toggles · pills · links · icons · checkboxes). No exceptions.
 
-### Font Size Floors
+**Font size floors:**
 ```
-Body text:         never below 13px (0.8125rem)
-Buttons/CTAs:      never below 14px (0.875rem)
-Important data:    never below 15px (0.9375rem) — prices, status, counts
-Badge text:        minimum 10px (0.625rem) with fontWeight 700
-Label text:        minimum 11px (0.6875rem)
-Progress labels:   minimum 10px (0.625rem) with bold
+Body:     ≥13px (0.8125rem)
+Buttons:  ≥14px (0.875rem)
+Data:     ≥15px (0.9375rem · prices · status · counts)
+Badge:    ≥10px with fontWeight 700
+Label:    ≥11px (0.6875rem)
+Progress: ≥10px with bold
 ```
 
-### Contrast Ratios
-```
-Body text:         7:1 minimum against background
-Numbers/data:      9:1 minimum against background
-Interactive:       4.5:1 minimum (WCAG AA)
-Large text (18px+): 3:1 minimum (WCAG AA)
-```
+**Contrast:** body ≥7:1 · numbers ≥9:1 · interactive ≥4.5:1 (WCAG AA) · large text 18px+ ≥3:1.
 
-### Additional
-- Focus indicators: visible on ALL interactive elements.
-- Error states: NEVER color-only — always include text or icon.
-- Keyboard navigation: all features accessible without mouse.
-- Screen reader: semantic HTML, ARIA labels on icons/buttons.
-- Reduced motion: prefers-reduced-motion respected everywhere.
-- Zoom: test at 200% browser zoom. Nothing should break.
+**Additional:** focus indicators on all interactive · errors NEVER color-only (always include text/icon) · keyboard accessible · semantic HTML + ARIA · `prefers-reduced-motion` respected · 200% zoom must not break.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 6 — PER-SURFACE STANDARDS
-## ═══════════════════════════════════════════
+## SECTION 6 · PER-SURFACE BENCHMARKS — pointer
 
-Every major surface in LegacyLoop has a reference benchmark. When
-building or polishing a surface, it must feel like the reference.
-"Feel like" = interaction density, layout rhythm, information
-hierarchy, micro-interactions, and confidence level.
+Every major surface has a reference benchmark. When unsure: find it · screenshot · match density and rhythm.
 
-| Surface               | Must Feel Like                     |
-|-----------------------|------------------------------------|
-| Photo Upload          | Dropbox + Shopify                  |
-| Bot Results           | Perplexity + Grok                  |
-| Valuation Panel       | StockX + Robinhood                 |
-| Antique Alert         | Sotheby's                          |
-| Messaging             | Superhuman                         |
-| Shipping Center       | ShipStation                        |
-| Dashboard             | Stripe Dashboard                   |
-| Listing Generator     | Jasper AI                          |
-| Pricing Page          | Linear                             |
-| Onboarding            | Duolingo                           |
-| Item Detail           | Instagram Shop + Facebook Marketplace |
-| Bot Hub               | Linear command center              |
-| Marketplace           | Mercari + Facebook Marketplace     |
-| Estate Flows          | Warm, dignified, slower pace       |
+Quick highlights: Photo Upload = Dropbox+Shopify · Bot Results = Perplexity+Grok · Valuation = StockX+Robinhood · Antique Alert = Sotheby's · Messaging = Superhuman · Dashboard = Stripe · Item Detail = Instagram Shop+Facebook Marketplace · Marketplace = Mercari+Facebook Marketplace · Estate flows = warm/dignified/slower pace.
 
-When in doubt about a surface: find the reference, screenshot it,
-match the density and rhythm. Do not guess.
+Full surface→benchmark map: `docs/WORLD_CLASS_STANDARDS_HISTORY.md` §PER_SURFACE_BENCHMARKS.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 7 — THE 18 REFERENCE BENCHMARKS
-## ═══════════════════════════════════════════
+## SECTION 7 · 18 REFERENCE BENCHMARKS — pointer
 
-We measure against three tiers. Every UI decision routes into one of
-these tiers. When unsure, ask: "Would [reference] ship this?"
+Three tiers · 18 benchmark sites we measure against. When unsure, ask: *"Would [reference] ship this?"*
 
-### Tier 1 — AGENCY / ANIMATION (landing bar)
-- **Dennis Snellenberg** (Awwwards SOTY) — Character headline assembly.
-- **Olivier Larose** (tutorial source) — Scroll-gradient opacity. Copy the recipe.
-- **Lenis / Darkroom** (motion lab) — Physics-based scroll. Lenis IS the library.
-- **GSAP Studios** (animation ref) — Magnetic CTAs, spring-back easing.
-- **Arc Browser** (product art) — Hero as film. Zoom parallax + ambient orbs + noise.
-- **Vercel** (dark-mode bar) — Noise overlay discipline. opacity 0.035 globally.
+- **Tier 1 Agency/Animation:** Dennis Snellenberg · Olivier Larose · Lenis/Darkroom · GSAP Studios · Arc Browser · Vercel.
+- **Tier 2 Product/SaaS:** Stripe Dashboard · Linear · Notion · Apple (Wallet/Settings) · Manus · Shopify Admin.
+- **Tier 3 Consumer/Meta:** Instagram Stories · Facebook Marketplace · WhatsApp · Threads · Messenger · Instagram Shop.
 
-### Tier 2 — PRODUCT / SAAS (app bar)
-- **Stripe Dashboard** (data density) — Empty states + skeleton loaders. System-wide.
-- **Linear** (keyboard-first) — Command palette ⌘K. Every action one keystroke away.
-- **Notion** (offline-first) — Slash commands, block editing, optimistic sync.
-- **Apple (Wallet / Settings)** (haptics) — navigator.vibrate on every primary tap. Spring curves that feel physical.
-- **Manus** (AI UX) — Reasoning transparency. Show the AI thinking. Progressive disclosure.
-- **Shopify Admin** (commerce ops) — Action density without clutter.
-
-### Tier 3 — CONSUMER / META (scale bar)
-- **Instagram Stories** (photo physics) — Snap-scroll + rubber-band + progress dots + pinch-zoom. The carousel standard.
-- **Facebook Marketplace** (resale benchmark) — Photo-first flow, AI-autofill, category breadcrumbs.
-- **WhatsApp** (messaging) — Optimistic sends + typing indicators. Never block the user.
-- **Threads** (launch polish) — Clean, confident, restrained. Proof Meta ships clean when focused.
-- **Messenger** (micro + haptics) — Long-press reactions. Floating menu. Haptic spring.
-- **Instagram Shop** (commerce surface) — Product cards that breathe. Grid density + photo quality.
+Full benchmark descriptors (what each contributes): `docs/WORLD_CLASS_STANDARDS_HISTORY.md` §EIGHTEEN_BENCHMARKS.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 8 — ACCEPTANCE CRITERIA (8-point World Class Check)
-## ═══════════════════════════════════════════
+## SECTION 8 · 8-POINT WORLD CLASS CHECK — RULES
 
-Before marking ANY feature complete, it must pass all eight:
+Before marking ANY feature complete, must pass all eight:
 
-1. **Investor test** — Would an investor immediately understand this?
-2. **Senior test** — Would a 70-year-old estate seller use this without instruction?
-3. **Awwwards test** — Would this screenshot make it onto Awwwards.com?
-4. **Stripe test** — Would this ship in the Stripe Dashboard?
-5. **Apple test** — Does every tap have haptic feedback? Every curve feel physical?
-6. **Accessibility test** — WCAG 2.1 AA. Keyboard-only. Reduced-motion. Forced-colors. Screen reader.
-7. **Mobile test** — Zero clipping at 375px? Touch targets ≥ 44px?
-8. **Theme test** — Correct in both light and dark mode? CSS variables used?
+1. **Investor** — Would an investor immediately understand this?
+2. **Senior** — Would a 70-year-old estate seller use this without instruction?
+3. **Awwwards** — Would this screenshot make Awwwards.com?
+4. **Stripe** — Would this ship in the Stripe Dashboard?
+5. **Apple** — Every tap haptic? Every curve physical?
+6. **A11y** — WCAG 2.1 AA · keyboard-only · reduced-motion · forced-colors · screen reader.
+7. **Mobile** — Zero clipping at 375px? Touch targets ≥44px?
+8. **Theme** — Correct in light + dark? CSS vars used?
 
-If ANY of the eight fails, feature is not done. Open a gap in FLAGS.
+If ANY of the 8 fails · feature is not done. Open a gap in FLAGS.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 9 — COPY STANDARDS
-## ═══════════════════════════════════════════
+## SECTION 9 · COPY STANDARDS — RULES
 
-### The voice
-- Honest. Dignified. Grounded. Intelligent. Never hype.
-- Estate sections: warm, empathetic, human. Slower pace. More space.
-- Tech sections: precise, confident, no buzzwords.
-- Pre-revenue: "Join the first 100" / "Early Access" / "Pre-Launch Pricing".
-- Never claim traction we don't have. Integrity is a brand value.
+**Voice:** honest · dignified · grounded · intelligent. Never hype. Estate sections warm/empathetic/slower. Tech sections precise/confident/no buzzwords. Pre-revenue: "Join the first 100" / "Early Access" / "Pre-Launch Pricing." Never claim traction we don't have — integrity is a brand value.
 
-### The words we never misspell
-- **Connecting Generations** — our mission. Exact capitalization.
-- **LegacyLoop** — one word, camelCase. Not "Legacy Loop" or "legacyloop".
-- **MegaBot** — one word, camelCase. Not "Megabot" or "Mega Bot".
-- **legacy-loop.com** — kebab-case domain. Never "legacyloop.com".
+**Words we never misspell:**
+- **Connecting Generations** — our mission · exact capitalization
+- **LegacyLoop** — one word · camelCase · NOT "Legacy Loop" / "legacyloop"
+- **MegaBot** — one word · camelCase · NOT "Megabot" / "Mega Bot"
+- **legacy-loop.com** — kebab-case domain · NEVER "legacyloop.com"
 
-### The words we avoid
-- "revolutionary" · "game-changing" · "disrupting" · "synergy"
-- "just works" · "magical" · "effortless" (without proof)
-- Any phrase that a ChatGPT landing page would use
+**Words we avoid:** "revolutionary" · "game-changing" · "disrupting" · "synergy" · "just works" · "magical" · "effortless" (without proof) · any phrase a ChatGPT landing page would use.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 10 — THE 5 BUILD LAWS
-## ═══════════════════════════════════════════
+## SECTION 10 · THE 5 BUILD LAWS — RULES
 
-### Law 1 — Structural before cosmetic
-Fix broken-for-users before polishing. A beautiful status-bar-overlap
-is still broken. P0 fixes block P1 polish. Always.
-
-### Law 2 — Preserve what works
-Never rewrite working code for style. Upgrade for function. If a
-component renders correctly, do not touch it. CARD-ELEVATION upgrades
-visuals without rewriting logic — that's the pattern.
-
-### Law 3 — Additive over destructive
-New skill packs: add. Never delete. New tokens: extend globals.css.
-Never overwrite. New models: extend schema. Never drop fields without
-explicit approval.
-
-### Law 4 — One scope per command
-Stay focused. Log discoveries for later in V16 FLAGS. If you find a
-bug outside scope, BANK it as a future CMD. Do not fix uninvited.
-
-### Law 5 — The V16 report is law
-Every command ends with a V16 report. No exceptions. Even for small
-changes. It is the engineering log. Ryan reviews every one.
+1. **Structural before cosmetic.** Fix broken-for-users before polishing. P0 fixes block P1 polish.
+2. **Preserve what works.** Never rewrite working code for style. Upgrade for function only.
+3. **Additive over destructive.** New skills/tokens/models = add. Never delete or overwrite without explicit approval.
+4. **One scope per command.** Stay focused. Found a bug outside scope = bank for later, do not fix uninvited.
+5. **The §12 V19 report is law.** Every command ends with §12. No exceptions. Engineering log Ryan reviews.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 11 — THE COMMAND VOCABULARY
-## ═══════════════════════════════════════════
+## SECTION 11 · COMMAND VOCABULARY — pointer
 
-Standard CMD prefixes (use when proposing new commands):
+Standard CMD prefixes (when proposing new commands): `CMD-[FEATURE]` · `CMD-[BUG]-DIAGNOSTIC` · `CMD-[AREA]-AUDIT` · `CMD-[AREA]-POLISH` · `CMD-[AREA]-REFACTOR` · `CMD-[AREA]-V2`.
 
-- **CMD-[FEATURE]** — new feature build
-- **CMD-[BUG]-DIAGNOSTIC** — root-cause investigation before fix
-- **CMD-[AREA]-AUDIT** — comprehensive review (no code changes)
-- **CMD-[AREA]-POLISH** — visual/micro-interaction upgrades
-- **CMD-[AREA]-REFACTOR** — structural cleanup, no behavior change
-- **CMD-[AREA]-V2** — major version of an existing command
-
-### The active 12-CMD sequence (Spring 2026)
-1. ✅ CMD-HAMBURGER
-2. ✅ CMD-PHOTO-DISPLAY
-3. ✅ CMD-BOTTOM-NAV-POLISH
-4. ✅ CMD-GLASSMORPHISM-SYSTEM
-5. 🚧 CMD-CARD-ELEVATION (in flight)
-6. ⏳ CMD-TYPOGRAPHY
-7. ⏳ CMD-LOADING-SKELETONS
-8. ⏳ CMD-EMPTY-STATES
-9. ⏳ CMD-ANIMATION-MICRO
-10. ⏳ CMD-APPLE-TOUCH-PWA
-11. ⏳ CMD-ACCESSIBILITY-AUDIT
-12. ⏳ CMD-POLISH-MICRO
-
-### Banked P0 fixes (before P1 polish continues)
-- CMD-PHOTO-CAROUSEL-DIAGNOSTIC (Airbnb/Instagram-grade rewrite)
-- CMD-SAFE-AREA-GLOBAL-AUDIT (status bar overlap)
-- CMD-BOTTOM-NAV-FUNCTIONAL-AUDIT (routing, +, badges)
-- CMD-HAPTICS-V1 (navigator.vibrate standard)
-
-### Banked P2 differentiators (post-sequence)
-- CMD-LENIS-APP · CMD-COMMAND-PALETTE · CMD-AMBIENT-ORBS-APP
-- CMD-NOISE-OVERLAY-APP · CMD-SCROLL-NARRATIVE
-- CMD-MEGABOT-THEATRE · CMD-STORY-ARCS
+Active 12-CMD sequence + banked P0/P2 lists: `docs/WORLD_CLASS_STANDARDS_HISTORY.md` §COMMAND_VOCABULARY.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 12 — THE GAP (Landing vs App)
-## ═══════════════════════════════════════════
+## SECTION 12 · LANDING-VS-APP GAP — pointer
 
-Landing is at ~9/10 on 11 of 12 effects. App is at ~0–5/10 on 10 of 12.
-The mission of the 12-CMD sequence plus the banked P0/P2 commands is
-to close this gap. When a decision is unclear, ask:
+Landing ~9/10 on 11 of 12 effects. App ~0-5/10 on 10 of 12. The 12-CMD sequence + banked P0/P2 commands close this gap.
 
-> "If this were on the landing page, would it ship? If no, bring it up.
->  If yes, ship the same standard on the app."
+Decision rule: *"If this were on landing, would it ship? If no, bring it up. If yes, ship the same standard on app."*
+
+Full status detail: `docs/WORLD_CLASS_STANDARDS_HISTORY.md` §LANDING_VS_APP_GAP.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 13 — THE CANON REFERENCES
-## ═══════════════════════════════════════════
+## SECTION 13 · CANON REFERENCE FILES — pointer
 
-These files are the canonical reference material. Read before design
-decisions. Re-read during major command work.
-
-### In the landing repo
-- `public/LegacyLoop_Landing_Page_Master_Handoff.md` — 41KB design spec
-- `AGENTS.md` — shared engineering standards
-- `CLAUDE.md` — landing-specific law
-
-### In the MVP repo
-- `CLAUDE.md` — MVP-specific law (51 models, 181 routes, 201 skill packs)
-- `AGENTS.md` — shared engineering standards
-- `WORLD_CLASS_STANDARDS.md` — THIS FILE
-
-### In workspace (Cowork-accessible)
-- `LegacyLoop-Competitor-Audit.html` — 7 apps, 54 patterns
-- `LegacyLoop-WorldClass-Standards-Audit.html` — 12 effects, 18 benchmarks
-- `LEGACYLOOP_Awwwards_Landing_Master.md` — Ryan's reference playbook
-- `LEGACYLOOP_Complete_Master_Code.md` — 22 production-ready components
-- `LEGACYLOOP_Real_Source_Code.md` — verified source code for 10 effects
+Reference material lives across landing repo · MVP repo · workspace. Full pointer list: `docs/WORLD_CLASS_STANDARDS_HISTORY.md` §CANON_REFERENCES. Always read before major design decisions.
 
 ---
 
-## ═══════════════════════════════════════════
-## SECTION 14 — THE IDENTITY STATEMENT
-## ═══════════════════════════════════════════
+## SECTION 14 · THE IDENTITY STATEMENT
 
-We are building LegacyLoop to a billion-dollar standard from day one.
-Every surface must be world-class. Landing and app. Both. No excuses.
+We are building LegacyLoop to a billion-dollar standard from day one. Every surface must be world-class. Landing and app. Both. No excuses.
 
-The measure is not "good for a startup."
-The measure is: **would Stripe, Linear, Apple, or an Awwwards winner
-ship this?**
+The measure is not "good for a startup." The measure is: **would Stripe, Linear, Apple, or an Awwwards winner ship this?** If no — it is not done.
 
-If no — it is not done.
+This document is the law. It is imported into every repo's CLAUDE.md. Claude Code, Cowork Claude, and every future agent that touches this codebase operates from this standard.
 
-This document is the law. It is imported into every repo's CLAUDE.md.
-Claude Code, Cowork Claude, and every future agent that touches this
-codebase operates from this standard.
+**Connecting Generations.** Built in Maine. Serving America. World-class everywhere.
 
-**Connecting Generations.**
-Built in Maine. Serving America. World-class everywhere.
-
-# ════════════════════════════════════════════════════════════════
-# END OF WORLD_CLASS_STANDARDS.md
-# If you read this far, you understand the standard. Now ship it.
-# ════════════════════════════════════════════════════════════════
+# END OF WORLD_CLASS_STANDARDS.md — RULES + GOTCHAS · ~165 lines · verbose ref at docs/WORLD_CLASS_STANDARDS_HISTORY.md
