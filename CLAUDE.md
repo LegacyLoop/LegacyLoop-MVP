@@ -239,7 +239,7 @@ CSS Variables:
 ## ═══════════════════════════════════════════
 
 ### Schema: prisma/schema.prisma
-**51 models total.** Read the schema before touching any data layer.
+**53 models total.** Read the schema before touching any data layer.
 
 **Core Models:**
 User, Item, ItemPhoto, ItemDocument, Subscription, SubscriptionChange,
@@ -274,6 +274,13 @@ SaleMethod: LOCAL_PICKUP | ONLINE_SHIPPING | BOTH
 ### Schema Rules
 - Run ALL pending field additions at once — never partial migrations.
 - After ANY schema change: `npx prisma db push` to sync Turso.
+  - **Note: `prisma db push` is libsql-incompatible** (Prisma SQLite
+    provider rejects libsql:// URL · P1012 error). For Turso production
+    use `turso db shell` or `@libsql/client` + token-bypass pattern
+    (R22.5 OP-B substitute · `/tmp/run-turso-op-b.mjs` canonical).
+  - `prisma db push` works correctly against `dev.db` (SQLite). For
+    Turso prod, extract DDL from synced dev.db via `sqlite3 ".schema X"`
+    + apply IF NOT EXISTS guards via sed + execute through @libsql/client.
 - After push: `npx prisma generate` to regenerate client.
 - Report ALL schema changes in V17.1 FLAGS section.
 - Never delete a model or field without explicit approval.
@@ -813,7 +820,7 @@ lib/bots/disagreement.ts    — Multi-model disagreement handling
 
 ### Data Layer
 ```
-prisma/schema.prisma         — 51 models, all enums
+prisma/schema.prisma         — 53 models, all enums
 lib/db.ts                    — Prisma singleton (LOCKED)
 ```
 
