@@ -27,6 +27,8 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { triageAndRoute } from "@/lib/sylvia";
+import { appendAuditEntry, hashQuestion } from "@/lib/sylvia/memory";
+import type { AuditEntry } from "@/lib/sylvia/memory-types";
 import {
   verifySylviaInternalSecret,
   classifyStakes,
@@ -118,6 +120,20 @@ function defaultProvenance(): ProvenanceEntry[] {
   return [{ kind: "training", timestamp: new Date().toISOString() }];
 }
 
+/**
+ * Audit emission · BINDING: never fail the consensus response when
+ * audit-write fails. Wrap every appendAuditEntry call in this helper.
+ * R24 P1 wire (lib/sylvia/memory.ts appendAuditEntry).
+ */
+async function safeAppendAudit(entry: AuditEntry): Promise<void> {
+  try {
+    await appendAuditEntry(entry);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "unknown";
+    console.error(`[sylvia-consensus] audit write failed: ${msg}`);
+  }
+}
+
 export async function POST(req: NextRequest) {
   // Auth
   const auth = verifySylviaInternalSecret(req);
@@ -160,6 +176,15 @@ export async function POST(req: NextRequest) {
       if (!single.ok) {
         return errorEnvelope(502, "Single-agent dispatch failed");
       }
+      await safeAppendAudit({
+        timestamp: new Date().toISOString(),
+        questionHash: hashQuestion(question),
+        stakes: "low",
+        confidenceBand: 70,
+        providers: [single.provider],
+        costUsd: budget.getQuestionSpent(),
+        sessionId,
+      });
       return NextResponse.json({
         answer: single.answer,
         confidenceBand: 70,
@@ -193,8 +218,21 @@ export async function POST(req: NextRequest) {
     const agreement = computeAgreement(responses);
     const totalLatencyMs = Math.max(...responses.map(r => r.latencyMs), 0);
 
+    const respondedProviders = responses.filter(r => r.ok).map(r => r.provider);
+
     // Truth Gate
     if (agreement.score < 70) {
+      await safeAppendAudit({
+        timestamp: new Date().toISOString(),
+        questionHash: hashQuestion(question),
+        stakes: "high",
+        confidenceBand: agreement.score,
+        agreementScore: agreement.score,
+        providers: respondedProviders,
+        costUsd: budget.getQuestionSpent(),
+        refused: true,
+        sessionId,
+      });
       return NextResponse.json(
         {
           error: "Need more info",
@@ -211,6 +249,17 @@ export async function POST(req: NextRequest) {
 
     const verdict: "verified" | "partial" = agreement.score >= 85 ? "verified" : "partial";
     const confidenceBand = Math.min(99, agreement.score);
+
+    await safeAppendAudit({
+      timestamp: new Date().toISOString(),
+      questionHash: hashQuestion(question),
+      stakes: "high",
+      confidenceBand,
+      agreementScore: agreement.score,
+      providers: respondedProviders,
+      costUsd: budget.getQuestionSpent(),
+      sessionId,
+    });
 
     return NextResponse.json({
       answer: aggregateAnswer(responses),

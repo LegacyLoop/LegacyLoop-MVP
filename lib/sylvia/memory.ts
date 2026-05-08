@@ -202,3 +202,87 @@ export async function pruneOld(daysOld: number): Promise<{ deleted: number }> {
   });
   return { deleted: res.count };
 }
+
+// ─── R24 P1 additions (audit + query) ─────────────────────────────
+// CMD-SYLVIA-MEMORY-HOOK V19 · R24 P1 · 2026-05-08
+//
+// File-system audit writer + topic query shim. Forward-compat: R25+
+// swaps file-system audit for AgentDB writes (Ruflo full · Moat 5b)
+// and adds embedding[] surface to MemoryHit. Surface kept stable.
+//
+// Vercel ephemeral-filesystem note: lambda invocations have RW
+// access to /tmp and the cwd, but writes are NOT persisted between
+// invocations. v1 audit writes work locally + survive within a
+// single warm-lambda window. Production durable audit lands in
+// R25+ AgentDB cylinder. Banked carry-forward.
+
+import { promises as fs } from "node:fs";
+import { createHash } from "node:crypto";
+import { join } from "node:path";
+import type { AuditEntry, MemoryHit } from "./memory-types";
+
+const AUDIT_DIR = join(process.cwd(), "sylvia-data", "audit");
+const MEMORY_DIR = join(process.cwd(), "sylvia-data", "memory");
+
+/**
+ * Hash a raw question to a 16-char sha256 prefix. Used in AuditEntry
+ * to preserve PII while enabling de-dup + cross-session correlation.
+ * Same convention as triage-router.ts hashPrompt.
+ */
+export function hashQuestion(q: string): string {
+  return createHash("sha256").update(q).digest("hex").slice(0, 16);
+}
+
+/**
+ * Append one audit row to sylvia-data/audit/{YYYY-MM-DD}.jsonl.
+ * Idempotent re: directory creation. Caller wraps in try/catch —
+ * audit failure must NEVER fail the consumer's response.
+ */
+export async function appendAuditEntry(entry: AuditEntry): Promise<void> {
+  await fs.mkdir(AUDIT_DIR, { recursive: true });
+  const date = entry.timestamp.slice(0, 10); // YYYY-MM-DD
+  const path = join(AUDIT_DIR, `${date}.jsonl`);
+  await fs.appendFile(path, JSON.stringify(entry) + "\n", "utf8");
+}
+
+/**
+ * Lexical topic search over sylvia-data/memory/* files. v1 is a
+ * simple substring match (case-insensitive). R25+ swaps in vector
+ * similarity via embeddings (KbCorpusEntry.embedding consumed).
+ *
+ * Defaults: limit=10. Returns [] on any I/O error (graceful · no
+ * throw to caller).
+ */
+export async function queryMemoryByTopic(
+  topic: string,
+  limit: number = 10,
+): Promise<MemoryHit[]> {
+  try {
+    await fs.mkdir(MEMORY_DIR, { recursive: true });
+    const files = await fs.readdir(MEMORY_DIR);
+    const hits: MemoryHit[] = [];
+    const needle = topic.toLowerCase();
+    for (const file of files) {
+      if (hits.length >= limit) break;
+      const filePath = join(MEMORY_DIR, file);
+      const stat = await fs.stat(filePath);
+      if (!stat.isFile()) continue;
+      const content = await fs.readFile(filePath, "utf8");
+      if (content.toLowerCase().includes(needle)) {
+        hits.push({
+          content,
+          provenance: {
+            kind: "memory",
+            sourceUrl: file,
+            timestamp: stat.mtime.toISOString(),
+          },
+          ageMs: Date.now() - stat.mtimeMs,
+        });
+      }
+    }
+    return hits;
+  } catch (err) {
+    console.error("[sylvia/memory] queryMemoryByTopic error:", err);
+    return [];
+  }
+}
