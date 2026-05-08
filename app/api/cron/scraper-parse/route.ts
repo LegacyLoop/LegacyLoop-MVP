@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { processBatch } from "@/lib/scraper-parser/parser";
 import { persistScraperParsedItems } from "@/lib/scraper-comp/persist";
 import type { ParseInput } from "@/lib/scraper-parser/types";
+import { verifyCronSecret } from "@/lib/auth/cron-auth";
 
 export const maxDuration = 60;
 
@@ -37,26 +38,9 @@ const LIMIT_PER_FIRE = 8;
  * (architecturally correct on Vercel · Phase D opens hosted Gateway).
  */
 
-function authenticate(req: NextRequest): { ok: boolean; error?: string } {
-  const authHeader = req.headers.get("authorization");
-  const cronHeader = req.headers.get("x-cron-secret");
-  const querySecret = req.nextUrl.searchParams.get("secret");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret) {
-    console.error("[CRON-SCRAPER-PARSE] CRON_SECRET not configured");
-    return { ok: false, error: "Cron not configured" };
-  }
-
-  const providedSecret =
-    authHeader?.replace("Bearer ", "") || cronHeader || querySecret || "";
-  if (providedSecret !== cronSecret) {
-    console.warn("[CRON-SCRAPER-PARSE] Unauthorized attempt");
-    return { ok: false, error: "Unauthorized" };
-  }
-
-  return { ok: true };
-}
+// CMD-CRON-SECRET-CONSTANT-TIME-MIRROR V19 (R23 P2 · 2026-05-08):
+// Auth migrated from inline string-equality to lib/auth/cron-auth helper
+// (constant-time compare via crypto.timingSafeEqual). DOC-CRYPTO-CTC 4/5.
 
 async function processInputs(inputs: ParseInput[]): Promise<{
   parsed: number;
@@ -96,7 +80,7 @@ async function processInputs(inputs: ParseInput[]): Promise<{
  * Polls ScraperUsageLog · processes batch · marks parsedAt.
  */
 export async function GET(req: NextRequest) {
-  const auth = authenticate(req);
+  const auth = verifyCronSecret(req);
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: 401 });
   }
@@ -206,7 +190,7 @@ export async function GET(req: NextRequest) {
  * Cyl 7B original ship 0e4b64f for backward compat.
  */
 export async function POST(req: NextRequest) {
-  const auth = authenticate(req);
+  const auth = verifyCronSecret(req);
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: 401 });
   }

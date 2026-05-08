@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { TIER, MONTHLY_CREDITS } from "@/lib/constants/pricing";
+import { verifyCronSecret } from "@/lib/auth/cron-auth";
 
 export const maxDuration = 60;
 
@@ -14,22 +15,13 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
 
-  // ── Auth ──
-  const authHeader = req.headers.get("authorization");
-  const cronHeader = req.headers.get("x-cron-secret");
-  const querySecret = req.nextUrl.searchParams.get("secret");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret) {
-    console.error("[CRON-CREDITS] CRON_SECRET not configured");
-    return NextResponse.json({ error: "Cron not configured" }, { status: 500 });
-  }
-
-  const providedSecret =
-    authHeader?.replace("Bearer ", "") || cronHeader || querySecret || "";
-  if (providedSecret !== cronSecret) {
-    console.warn("[CRON-CREDITS] Unauthorized attempt");
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // CMD-CRON-SECRET-CONSTANT-TIME-MIRROR V19 (R23 P2): constant-time auth
+  const auth = verifyCronSecret(req);
+  if (!auth.ok) {
+    return NextResponse.json(
+      { error: auth.error },
+      { status: auth.error === "Cron not configured" ? 500 : 401 },
+    );
   }
 
   console.log("[CRON-CREDITS] Monthly credit allocation started", new Date().toISOString());
@@ -187,14 +179,9 @@ export async function POST(req: NextRequest) {
  * GET /api/cron/monthly-credits -- Health check. Shows last 10 cron runs.
  */
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  const cronHeader = req.headers.get("x-cron-secret");
-  const querySecret = req.nextUrl.searchParams.get("secret");
-  const cronSecret = process.env.CRON_SECRET;
-
-  const providedSecret =
-    authHeader?.replace("Bearer ", "") || cronHeader || querySecret || "";
-  if (!cronSecret || providedSecret !== cronSecret) {
+  // CMD-CRON-SECRET-CONSTANT-TIME-MIRROR V19 (R23 P2): constant-time auth
+  const auth = verifyCronSecret(req);
+  if (!auth.ok) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

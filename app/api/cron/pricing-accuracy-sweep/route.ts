@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { computePricingAccuracy } from "@/lib/pricing/feedback-loop";
 import { authAdapter } from "@/lib/adapters/auth";
 import { isAdmin } from "@/lib/constants/admin";
+import { verifyCronSecret } from "@/lib/auth/cron-auth";
 
 /**
  * POST /api/cron/pricing-accuracy-sweep
@@ -41,17 +42,13 @@ interface SweepSummary {
 export async function POST(req: NextRequest) {
   const startedAt = Date.now();
 
-  // Auth: CRON_SECRET OR admin session
-  const authHeader = req.headers.get("authorization");
-  const cronHeader = req.headers.get("x-cron-secret");
-  const querySecret = req.nextUrl.searchParams.get("secret");
-  const cronSecret = process.env.CRON_SECRET ?? "";
-  const providedSecret =
-    authHeader?.replace(/^Bearer\s+/i, "") || cronHeader || querySecret || "";
-  const isCronAuthorized = cronSecret.length > 0 && providedSecret === cronSecret;
-
+  // CMD-CRON-SECRET-CONSTANT-TIME-MIRROR V19 (R23 P2): constant-time auth
+  // BESPOKE: CRON_SECRET (constant-time helper) OR admin session fallback.
+  // Admin OR-bypass preserved verbatim · only the cron-secret compare is
+  // hardened from string-equality to crypto.timingSafeEqual.
+  const cronAuth = verifyCronSecret(req);
   let triggeredBy: "cron" | "admin" = "cron";
-  if (!isCronAuthorized) {
+  if (!cronAuth.ok) {
     const session = await authAdapter.getSession();
     if (!session || !isAdmin(session.email)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

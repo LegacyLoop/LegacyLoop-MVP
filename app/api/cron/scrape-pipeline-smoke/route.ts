@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { verifyCronSecret } from "@/lib/auth/cron-auth";
 
 export const maxDuration = 60;
 
@@ -27,26 +28,9 @@ export const maxDuration = 60;
 
 type ShapeIndicator = "ok" | "missing" | "down" | "error";
 
-function authenticate(req: NextRequest): { ok: boolean; error?: string } {
-  const authHeader = req.headers.get("authorization");
-  const cronHeader = req.headers.get("x-cron-secret");
-  const querySecret = req.nextUrl.searchParams.get("secret");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (!cronSecret) {
-    console.error("[CRON-PIPELINE-SHAPE] CRON_SECRET not configured");
-    return { ok: false, error: "Cron not configured" };
-  }
-
-  const providedSecret =
-    authHeader?.replace("Bearer ", "") || cronHeader || querySecret || "";
-  if (providedSecret !== cronSecret) {
-    console.warn("[CRON-PIPELINE-SHAPE] Unauthorized attempt");
-    return { ok: false, error: "Unauthorized" };
-  }
-
-  return { ok: true };
-}
+// CMD-CRON-SECRET-CONSTANT-TIME-MIRROR V19 (R23 P2 · 2026-05-08):
+// Auth migrated from inline string-equality to lib/auth/cron-auth helper
+// (constant-time compare via crypto.timingSafeEqual). DOC-CRYPTO-CTC 4/5.
 
 async function checkRoute(baseUrl: string, cronSecret: string): Promise<ShapeIndicator> {
   try {
@@ -117,7 +101,7 @@ async function checkCronRegistry(): Promise<ShapeIndicator> {
 }
 
 export async function GET(req: NextRequest) {
-  const auth = authenticate(req);
+  const auth = verifyCronSecret(req);
   if (!auth.ok) {
     return NextResponse.json({ error: auth.error }, { status: 401 });
   }
