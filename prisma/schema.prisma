@@ -499,6 +499,7 @@ model Item {
   offers            Offer[]
   listingPublishes  ListingPublish[]
   sylviaMemories    SylviaMemory[]
+  sellingPipelines  SellingPipeline[]
 
   user    User     @relation(fields: [userId], references: [id])
   project Project? @relation(fields: [projectId], references: [id])
@@ -1352,4 +1353,48 @@ model SylviaMemory {
   @@index([createdAt])
   @@index([sessionId, createdAt])
   @@map("sylvia_memory")
+}
+
+// ─────────────────────────────────────────────────────────────────
+// MANUS AUTONOMOUS SELLING (CMD-MANUS-M-SEED-1 · R23 P1 · 2026-05-08)
+// M Seed 1 plant · Phase 8 Manus state machine · purely additive ·
+// forward-compat optional fields per NB Seed 1 doctrine. Phase 8 wires
+// the action loop (LIST → MONITOR → NEGOTIATE → ACCEPT → SHIP → CLOSE).
+// ─────────────────────────────────────────────────────────────────
+
+enum SellingPipelineState {
+  LISTED
+  MONITORING
+  NEGOTIATING
+  ACCEPTED
+  SHIPPED
+  CLOSED
+  WITHDRAWN
+}
+
+model SellingPipeline {
+  id             String               @id @default(cuid())
+  itemId         String
+  item           Item                 @relation(fields: [itemId], references: [id])
+  state          SellingPipelineState @default(LISTED)
+  stateUpdatedAt DateTime             @default(now())
+
+  // Action history (Phase 8 consumes · forward-compat optional)
+  listingPlatform String? // "ebay" | "facebook" | "etsy" | "manus-direct"
+  listingUrl      String?
+  monitorPolicy   String? // JSON: cadence · price-drop rules
+  negotiationLog  String? // JSON: offer history · counter strategy
+
+  // Outcome ledger (M Seed 4 territory · stub fields now)
+  predictedPriceUsd Float?
+  actualPriceUsd    Float?
+  daysOnMarket      Int?
+  outcomeLabel      String? // "sold-at-asking" | "sold-below" | "withdrew" | "expired"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([itemId])
+  @@index([state])
+  @@index([stateUpdatedAt])
 }
