@@ -1,0 +1,1919 @@
+{
+  "nodes": [
+    {
+      "id": "g0",
+      "type": "group",
+      "label": "LiteLLM Triage Router",
+      "x": 0,
+      "y": 0,
+      "width": 1100,
+      "height": 920,
+      "color": "1"
+    },
+    {
+      "id": "n_sylvia_triage_router_alias_cost_per_1m_tokens_usd",
+      "type": "file",
+      "file": "ALIAS_COST_PER_1M_TOKENS_USD.md",
+      "x": 20,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_complexity_cascade",
+      "type": "file",
+      "file": "COMPLEXITY_CASCADE.md",
+      "x": 220,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_gatewayresponse",
+      "type": "file",
+      "file": "GatewayResponse.md",
+      "x": 420,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_types_modelalias",
+      "type": "file",
+      "file": "ModelAlias.md",
+      "x": 20,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_types_taskcomplexity",
+      "type": "file",
+      "file": "TaskComplexity.md",
+      "x": 220,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_types_triagedecision",
+      "type": "file",
+      "file": "TriageDecision.md",
+      "x": 420,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_types_triageresult",
+      "type": "file",
+      "file": "TriageResult.md",
+      "x": 20,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_types_triagetask",
+      "type": "file",
+      "file": "TriageTask.md",
+      "x": 220,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_types_triagetelemetry",
+      "type": "file",
+      "file": "TriageTelemetry.md",
+      "x": 420,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_getsessioncostusd",
+      "type": "file",
+      "file": "_getSessionCostUsd().md",
+      "x": 20,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_resetsessioncostmap",
+      "type": "file",
+      "file": "_resetSessionCostMap().md",
+      "x": 220,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_callgateway",
+      "type": "file",
+      "file": "callGateway().md",
+      "x": 420,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_consensus_route_callprovider",
+      "type": "file",
+      "file": "callProvider().md",
+      "x": 20,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_checkceilings",
+      "type": "file",
+      "file": "checkCeilings().md",
+      "x": 220,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_classifycomplexity",
+      "type": "file",
+      "file": "classifyComplexity().md",
+      "x": 420,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_decide",
+      "type": "file",
+      "file": "decide().md",
+      "x": 20,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_estimatecostusd",
+      "type": "file",
+      "file": "estimateCostUsd().md",
+      "x": 220,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_estimatetokens",
+      "type": "file",
+      "file": "estimateTokens().md",
+      "x": 420,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_hashprompt",
+      "type": "file",
+      "file": "hashPrompt().md",
+      "x": 20,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_sessioncostmap",
+      "type": "file",
+      "file": "sessionCostMap.md",
+      "x": 220,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_sylvia_triage_router_ts",
+      "type": "file",
+      "file": "triage-router.ts.md",
+      "x": 420,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_triageandroute",
+      "type": "file",
+      "file": "triageAndRoute().md",
+      "x": 20,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_sylvia_types_ts",
+      "type": "file",
+      "file": "types.ts.md",
+      "x": 220,
+      "y": 640,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g1",
+      "type": "group",
+      "label": "Consensus API Route",
+      "x": 1180,
+      "y": 0,
+      "width": 1100,
+      "height": 720,
+      "color": "2"
+    },
+    {
+      "id": "n_consensus_route_consensusrequest",
+      "type": "file",
+      "file": "ConsensusRequest.md",
+      "x": 1200,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_consensus_route_post",
+      "type": "file",
+      "file": "POST().md",
+      "x": 1400,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_consensus_route_provenanceentry",
+      "type": "file",
+      "file": "ProvenanceEntry.md",
+      "x": 1600,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_consensus_route_provideralias",
+      "type": "file",
+      "file": "ProviderAlias.md",
+      "x": 1200,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_consensus_route_quartet",
+      "type": "file",
+      "file": "QUARTET.md",
+      "x": 1400,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_auth_sylviaauthresult",
+      "type": "file",
+      "file": "SylviaAuthResult.md",
+      "x": 1600,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_consensus_route_aggregateanswer",
+      "type": "file",
+      "file": "aggregateAnswer().md",
+      "x": 1200,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_appendauditentry",
+      "type": "file",
+      "file": "appendAuditEntry().md",
+      "x": 1400,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_sylvia_dispatcher_auth_ts",
+      "type": "file",
+      "file": "auth.ts.md",
+      "x": 1600,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_auth_constanttimeequals",
+      "type": "file",
+      "file": "constantTimeEquals().md",
+      "x": 1200,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_consensus_route_defaultprovenance",
+      "type": "file",
+      "file": "defaultProvenance().md",
+      "x": 1400,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_consensus_route_errorenvelope",
+      "type": "file",
+      "file": "errorEnvelope().md",
+      "x": 1600,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_hashquestion",
+      "type": "file",
+      "file": "hashQuestion().md",
+      "x": 1200,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_sylvia_dispatcher_index_ts",
+      "type": "file",
+      "file": "index.ts_1.md",
+      "x": 1400,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_auth_resolveprovidedsecret",
+      "type": "file",
+      "file": "resolveProvidedSecret().md",
+      "x": 1600,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_app_api_sylvia_consensus_route_ts",
+      "type": "file",
+      "file": "route.ts.md",
+      "x": 1200,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_consensus_route_safeappendaudit",
+      "type": "file",
+      "file": "safeAppendAudit().md",
+      "x": 1400,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_auth_verifysylviainternalsecret",
+      "type": "file",
+      "file": "verifySylviaInternalSecret().md",
+      "x": 1600,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g2",
+      "type": "group",
+      "label": "Memory + Audit Store",
+      "x": 2360,
+      "y": 0,
+      "width": 880,
+      "height": 620,
+      "color": "3"
+    },
+    {
+      "id": "n_sylvia_memory_audit_dir",
+      "type": "file",
+      "file": "AUDIT_DIR.md",
+      "x": 2380,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_classification_map",
+      "type": "file",
+      "file": "CLASSIFICATION_MAP.md",
+      "x": 2580,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_memory_dir",
+      "type": "file",
+      "file": "MEMORY_DIR.md",
+      "x": 2780,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_recallsimilaropts",
+      "type": "file",
+      "file": "RecallSimilarOpts.md",
+      "x": 2380,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_recordtriageinput",
+      "type": "file",
+      "file": "RecordTriageInput.md",
+      "x": 2580,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_sylviamemoryclassificationliteral",
+      "type": "file",
+      "file": "SylviaMemoryClassificationLiteral.md",
+      "x": 2780,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_triage_router_emittelemetry",
+      "type": "file",
+      "file": "emitTelemetry().md",
+      "x": 2380,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_getsessionstats",
+      "type": "file",
+      "file": "getSessionStats().md",
+      "x": 2580,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_sylvia_memory_ts",
+      "type": "file",
+      "file": "memory.ts.md",
+      "x": 2780,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_pruneold",
+      "type": "file",
+      "file": "pruneOld().md",
+      "x": 2380,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_querymemorybytopic",
+      "type": "file",
+      "file": "queryMemoryByTopic().md",
+      "x": 2580,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_recallsimilar",
+      "type": "file",
+      "file": "recallSimilar().md",
+      "x": 2780,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_recordtriage",
+      "type": "file",
+      "file": "recordTriage().md",
+      "x": 2380,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_toenumclassification",
+      "type": "file",
+      "file": "toEnumClassification().md",
+      "x": 2580,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g3",
+      "type": "group",
+      "label": "KB + Memory Types",
+      "x": 0,
+      "y": 1000,
+      "width": 880,
+      "height": 520,
+      "color": "4"
+    },
+    {
+      "id": "n_sylvia_memory_types_auditentry",
+      "type": "file",
+      "file": "AuditEntry.md",
+      "x": 20,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_kb_types_kbcategory",
+      "type": "file",
+      "file": "KbCategory.md",
+      "x": 220,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_kb_types_kbcorpusentry",
+      "type": "file",
+      "file": "KbCorpusEntry.md",
+      "x": 420,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_kb_types_kbdocument",
+      "type": "file",
+      "file": "KbDocument.md",
+      "x": 20,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_kb_types_kbhit",
+      "type": "file",
+      "file": "KbHit.md",
+      "x": 220,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_kb_types_kbprovenance",
+      "type": "file",
+      "file": "KbProvenance.md",
+      "x": 420,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_kb_types_kbqueryrequest",
+      "type": "file",
+      "file": "KbQueryRequest.md",
+      "x": 20,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_kb_types_kbqueryresponse",
+      "type": "file",
+      "file": "KbQueryResponse.md",
+      "x": 220,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_kb_types_kbsource",
+      "type": "file",
+      "file": "KbSource.md",
+      "x": 420,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_sylvia_memory_types_memoryhit",
+      "type": "file",
+      "file": "MemoryHit.md",
+      "x": 20,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_sylvia_memory_types_ts",
+      "type": "file",
+      "file": "memory-types.ts.md",
+      "x": 220,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_sylvia_kb_types_ts",
+      "type": "file",
+      "file": "types.ts_1.md",
+      "x": 420,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g4",
+      "type": "group",
+      "label": "Agreement Scoring",
+      "x": 1180,
+      "y": 1000,
+      "width": 880,
+      "height": 520,
+      "color": "5"
+    },
+    {
+      "id": "n_dispatcher_agreement_agreementresult",
+      "type": "file",
+      "file": "AgreementResult.md",
+      "x": 1200,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_agreement_pairscore",
+      "type": "file",
+      "file": "PairScore.md",
+      "x": 1400,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_agreement_providerresponse",
+      "type": "file",
+      "file": "ProviderResponse.md",
+      "x": 1600,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_agreement_stopwords",
+      "type": "file",
+      "file": "STOPWORDS.md",
+      "x": 1200,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_sylvia_dispatcher_agreement_ts",
+      "type": "file",
+      "file": "agreement.ts.md",
+      "x": 1400,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_agreement_computeagreement",
+      "type": "file",
+      "file": "computeAgreement().md",
+      "x": 1600,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_agreement_extractnumeric",
+      "type": "file",
+      "file": "extractNumeric().md",
+      "x": 1200,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_agreement_jaccardsimilarity",
+      "type": "file",
+      "file": "jaccardSimilarity().md",
+      "x": 1400,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_agreement_numericsimilarity",
+      "type": "file",
+      "file": "numericSimilarity().md",
+      "x": 1600,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_agreement_pairwisescore",
+      "type": "file",
+      "file": "pairwiseScore().md",
+      "x": 1200,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_agreement_tokenize",
+      "type": "file",
+      "file": "tokenize().md",
+      "x": 1400,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g5",
+      "type": "group",
+      "label": "Budget Tracker",
+      "x": 2360,
+      "y": 1000,
+      "width": 880,
+      "height": 520,
+      "color": "6"
+    },
+    {
+      "id": "n_dispatcher_budget_budgettracker_constructor",
+      "type": "file",
+      "file": ".constructor().md",
+      "x": 2380,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_budget_budgettracker_getdailyspent",
+      "type": "file",
+      "file": ".getDailySpent().md",
+      "x": 2580,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_budget_budgettracker_getquestionspent",
+      "type": "file",
+      "file": ".getQuestionSpent().md",
+      "x": 2780,
+      "y": 1080,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_budget_budgettracker_record",
+      "type": "file",
+      "file": ".record().md",
+      "x": 2380,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_budget_budgettracker_reserve",
+      "type": "file",
+      "file": ".reserve().md",
+      "x": 2580,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_budget_budgetexceeded",
+      "type": "file",
+      "file": "BudgetExceeded.md",
+      "x": 2780,
+      "y": 1160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_budget_budgettracker",
+      "type": "file",
+      "file": "BudgetTracker.md",
+      "x": 2380,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_budget_default_daily_usd",
+      "type": "file",
+      "file": "DEFAULT_DAILY_USD.md",
+      "x": 2580,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_sylvia_dispatcher_budget_ts",
+      "type": "file",
+      "file": "budget.ts.md",
+      "x": 2780,
+      "y": 1240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_budget_dailywindowstart",
+      "type": "file",
+      "file": "dailyWindowStart.md",
+      "x": 2380,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_budget_rolloverifneeded",
+      "type": "file",
+      "file": "rolloverIfNeeded().md",
+      "x": 2580,
+      "y": 1320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g6",
+      "type": "group",
+      "label": "Dossier Schema",
+      "x": 0,
+      "y": 1600,
+      "width": 660,
+      "height": 420,
+      "color": "1"
+    },
+    {
+      "id": "n_dossier_types_dossieritem",
+      "type": "file",
+      "file": "DossierItem.md",
+      "x": 20,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dossier_types_dossieritemsummary",
+      "type": "file",
+      "file": "DossierItemSummary.md",
+      "x": 220,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dossier_types_dossiermetadata",
+      "type": "file",
+      "file": "DossierMetadata.md",
+      "x": 420,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dossier_types_dossiersection",
+      "type": "file",
+      "file": "DossierSection.md",
+      "x": 20,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dossier_types_dossierstatus",
+      "type": "file",
+      "file": "DossierStatus.md",
+      "x": 220,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dossier_types_dossierversion",
+      "type": "file",
+      "file": "DossierVersion.md",
+      "x": 420,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_dossier_render_stub_ts",
+      "type": "file",
+      "file": "render-stub.ts.md",
+      "x": 20,
+      "y": 1840,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dossier_render_stub_renderdossierstub",
+      "type": "file",
+      "file": "renderDossierStub().md",
+      "x": 220,
+      "y": 1840,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_dossier_types_ts",
+      "type": "file",
+      "file": "types.ts_2.md",
+      "x": 420,
+      "y": 1840,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g7",
+      "type": "group",
+      "label": "Stakes Classifier",
+      "x": 1180,
+      "y": 1600,
+      "width": 660,
+      "height": 400,
+      "color": "2"
+    },
+    {
+      "id": "n_dispatcher_classify_stakes",
+      "type": "file",
+      "file": "Stakes.md",
+      "x": 1200,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_sylvia_dispatcher_classify_ts",
+      "type": "file",
+      "file": "classify.ts.md",
+      "x": 1400,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_classify_classifystakes",
+      "type": "file",
+      "file": "classifyStakes().md",
+      "x": 1600,
+      "y": 1680,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_lib_sylvia_index_ts",
+      "type": "file",
+      "file": "index.ts.md",
+      "x": 1200,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dispatcher_classify_preflightstakes",
+      "type": "file",
+      "file": "preflightStakes().md",
+      "x": 1400,
+      "y": 1760,
+      "width": 180,
+      "height": 60
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_lib_sylvia_triage_router_ts_lib_sylvia_types_ts",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_lib_sylvia_types_ts",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_types_taskcomplexity",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_types_taskcomplexity",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_types_modelalias",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_types_modelalias",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_types_triagetask",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_types_triagetask",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_types_triagedecision",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_types_triagedecision",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_types_triageresult",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_types_triageresult",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_types_triagetelemetry",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_types_triagetelemetry",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_lib_sylvia_memory_ts",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_lib_sylvia_memory_ts",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_memory_recordtriage",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_memory_recordtriage",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_alias_cost_per_1m_tokens_usd",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_alias_cost_per_1m_tokens_usd",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_complexity_cascade",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_complexity_cascade",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_sessioncostmap",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_sessioncostmap",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_classifycomplexity",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_classifycomplexity",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_estimatetokens",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_estimatetokens",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_estimatecostusd",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_estimatecostusd",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_decide",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_decide",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_checkceilings",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_checkceilings",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_gatewayresponse",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_gatewayresponse",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_callgateway",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_callgateway",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_emittelemetry",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_emittelemetry",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_hashprompt",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_hashprompt",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_triageandroute",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_triageandroute",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_resetsessioncostmap",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_resetsessioncostmap",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_triage_router_ts_sylvia_triage_router_getsessioncostusd",
+      "fromNode": "n_lib_sylvia_triage_router_ts",
+      "toNode": "n_sylvia_triage_router_getsessioncostusd",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_classifycomplexity_sylvia_triage_router_decide",
+      "fromNode": "n_sylvia_triage_router_classifycomplexity",
+      "toNode": "n_sylvia_triage_router_decide",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_classifycomplexity_sylvia_triage_router_triageandroute",
+      "fromNode": "n_sylvia_triage_router_classifycomplexity",
+      "toNode": "n_sylvia_triage_router_triageandroute",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_estimatetokens_sylvia_triage_router_estimatecostusd",
+      "fromNode": "n_sylvia_triage_router_estimatetokens",
+      "toNode": "n_sylvia_triage_router_estimatecostusd",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_estimatetokens_sylvia_triage_router_triageandroute",
+      "fromNode": "n_sylvia_triage_router_estimatetokens",
+      "toNode": "n_sylvia_triage_router_triageandroute",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_estimatecostusd_sylvia_triage_router_decide",
+      "fromNode": "n_sylvia_triage_router_estimatecostusd",
+      "toNode": "n_sylvia_triage_router_decide",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_decide_sylvia_triage_router_triageandroute",
+      "fromNode": "n_sylvia_triage_router_decide",
+      "toNode": "n_sylvia_triage_router_triageandroute",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_checkceilings_sylvia_triage_router_triageandroute",
+      "fromNode": "n_sylvia_triage_router_checkceilings",
+      "toNode": "n_sylvia_triage_router_triageandroute",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_callgateway_sylvia_triage_router_triageandroute",
+      "fromNode": "n_sylvia_triage_router_callgateway",
+      "toNode": "n_sylvia_triage_router_triageandroute",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_emittelemetry_sylvia_triage_router_triageandroute",
+      "fromNode": "n_sylvia_triage_router_emittelemetry",
+      "toNode": "n_sylvia_triage_router_triageandroute",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_emittelemetry_sylvia_memory_recordtriage",
+      "fromNode": "n_sylvia_triage_router_emittelemetry",
+      "toNode": "n_sylvia_memory_recordtriage",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_hashprompt_sylvia_triage_router_triageandroute",
+      "fromNode": "n_sylvia_triage_router_hashprompt",
+      "toNode": "n_sylvia_triage_router_triageandroute",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_triageandroute_dispatcher_classify_classifystakes",
+      "fromNode": "n_sylvia_triage_router_triageandroute",
+      "toNode": "n_dispatcher_classify_classifystakes",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_sylvia_triage_router_triageandroute_consensus_route_callprovider",
+      "fromNode": "n_sylvia_triage_router_triageandroute",
+      "toNode": "n_consensus_route_callprovider",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_types_ts_lib_sylvia_kb_types_ts",
+      "fromNode": "n_lib_sylvia_memory_types_ts",
+      "toNode": "n_lib_sylvia_kb_types_ts",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_types_ts_sylvia_kb_types_kbprovenance",
+      "fromNode": "n_lib_sylvia_memory_types_ts",
+      "toNode": "n_sylvia_kb_types_kbprovenance",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_types_ts_sylvia_memory_types_auditentry",
+      "fromNode": "n_lib_sylvia_memory_types_ts",
+      "toNode": "n_sylvia_memory_types_auditentry",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_types_ts_sylvia_memory_types_memoryhit",
+      "fromNode": "n_lib_sylvia_memory_types_ts",
+      "toNode": "n_sylvia_memory_types_memoryhit",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_types_ts_lib_sylvia_memory_ts",
+      "fromNode": "n_lib_sylvia_memory_types_ts",
+      "toNode": "n_lib_sylvia_memory_ts",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_types_ts_app_api_sylvia_consensus_route_ts",
+      "fromNode": "n_lib_sylvia_memory_types_ts",
+      "toNode": "n_app_api_sylvia_consensus_route_ts",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_memory_types_auditentry_lib_sylvia_memory_ts",
+      "fromNode": "n_sylvia_memory_types_auditentry",
+      "toNode": "n_lib_sylvia_memory_ts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_memory_types_auditentry_app_api_sylvia_consensus_route_ts",
+      "fromNode": "n_sylvia_memory_types_auditentry",
+      "toNode": "n_app_api_sylvia_consensus_route_ts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_memory_types_memoryhit_lib_sylvia_memory_ts",
+      "fromNode": "n_sylvia_memory_types_memoryhit",
+      "toNode": "n_lib_sylvia_memory_ts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_types_ts_sylvia_types_taskcomplexity",
+      "fromNode": "n_lib_sylvia_types_ts",
+      "toNode": "n_sylvia_types_taskcomplexity",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_types_ts_sylvia_types_modelalias",
+      "fromNode": "n_lib_sylvia_types_ts",
+      "toNode": "n_sylvia_types_modelalias",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_types_ts_sylvia_types_triagetask",
+      "fromNode": "n_lib_sylvia_types_ts",
+      "toNode": "n_sylvia_types_triagetask",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_types_ts_sylvia_types_triagedecision",
+      "fromNode": "n_lib_sylvia_types_ts",
+      "toNode": "n_sylvia_types_triagedecision",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_types_ts_sylvia_types_triageresult",
+      "fromNode": "n_lib_sylvia_types_ts",
+      "toNode": "n_sylvia_types_triageresult",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_types_ts_sylvia_types_triagetelemetry",
+      "fromNode": "n_lib_sylvia_types_ts",
+      "toNode": "n_sylvia_types_triagetelemetry",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_types_ts_lib_sylvia_memory_ts",
+      "fromNode": "n_lib_sylvia_types_ts",
+      "toNode": "n_lib_sylvia_memory_ts",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_types_triagetelemetry_lib_sylvia_memory_ts",
+      "fromNode": "n_sylvia_types_triagetelemetry",
+      "toNode": "n_lib_sylvia_memory_ts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_recordtriageinput",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_recordtriageinput",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_recallsimilaropts",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_recallsimilaropts",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_classification_map",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_classification_map",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_sylviamemoryclassificationliteral",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_sylviamemoryclassificationliteral",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_toenumclassification",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_toenumclassification",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_recordtriage",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_recordtriage",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_recallsimilar",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_recallsimilar",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_getsessionstats",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_getsessionstats",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_pruneold",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_pruneold",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_audit_dir",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_audit_dir",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_memory_dir",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_memory_dir",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_hashquestion",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_hashquestion",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_appendauditentry",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_appendauditentry",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_sylvia_memory_querymemorybytopic",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_sylvia_memory_querymemorybytopic",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_memory_ts_app_api_sylvia_consensus_route_ts",
+      "fromNode": "n_lib_sylvia_memory_ts",
+      "toNode": "n_app_api_sylvia_consensus_route_ts",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_memory_toenumclassification_sylvia_memory_recordtriage",
+      "fromNode": "n_sylvia_memory_toenumclassification",
+      "toNode": "n_sylvia_memory_recordtriage",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_memory_hashquestion_app_api_sylvia_consensus_route_ts",
+      "fromNode": "n_sylvia_memory_hashquestion",
+      "toNode": "n_app_api_sylvia_consensus_route_ts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_memory_hashquestion_consensus_route_post",
+      "fromNode": "n_sylvia_memory_hashquestion",
+      "toNode": "n_consensus_route_post",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_memory_appendauditentry_app_api_sylvia_consensus_route_ts",
+      "fromNode": "n_sylvia_memory_appendauditentry",
+      "toNode": "n_app_api_sylvia_consensus_route_ts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_sylvia_memory_appendauditentry_consensus_route_safeappendaudit",
+      "fromNode": "n_sylvia_memory_appendauditentry",
+      "toNode": "n_consensus_route_safeappendaudit",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_index_ts_lib_sylvia_dispatcher_classify_ts",
+      "fromNode": "n_lib_sylvia_index_ts",
+      "toNode": "n_lib_sylvia_dispatcher_classify_ts",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_index_ts_app_api_sylvia_consensus_route_ts",
+      "fromNode": "n_lib_sylvia_index_ts",
+      "toNode": "n_app_api_sylvia_consensus_route_ts",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_classify_ts_dispatcher_classify_stakes",
+      "fromNode": "n_lib_sylvia_dispatcher_classify_ts",
+      "toNode": "n_dispatcher_classify_stakes",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_classify_ts_dispatcher_classify_preflightstakes",
+      "fromNode": "n_lib_sylvia_dispatcher_classify_ts",
+      "toNode": "n_dispatcher_classify_preflightstakes",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_classify_ts_dispatcher_classify_classifystakes",
+      "fromNode": "n_lib_sylvia_dispatcher_classify_ts",
+      "toNode": "n_dispatcher_classify_classifystakes",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_classify_preflightstakes_dispatcher_classify_classifystakes",
+      "fromNode": "n_dispatcher_classify_preflightstakes",
+      "toNode": "n_dispatcher_classify_classifystakes",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_classify_classifystakes_consensus_route_post",
+      "fromNode": "n_dispatcher_classify_classifystakes",
+      "toNode": "n_consensus_route_post",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_agreement_ts_dispatcher_agreement_providerresponse",
+      "fromNode": "n_lib_sylvia_dispatcher_agreement_ts",
+      "toNode": "n_dispatcher_agreement_providerresponse",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_agreement_ts_dispatcher_agreement_pairscore",
+      "fromNode": "n_lib_sylvia_dispatcher_agreement_ts",
+      "toNode": "n_dispatcher_agreement_pairscore",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_agreement_ts_dispatcher_agreement_agreementresult",
+      "fromNode": "n_lib_sylvia_dispatcher_agreement_ts",
+      "toNode": "n_dispatcher_agreement_agreementresult",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_agreement_ts_dispatcher_agreement_stopwords",
+      "fromNode": "n_lib_sylvia_dispatcher_agreement_ts",
+      "toNode": "n_dispatcher_agreement_stopwords",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_agreement_ts_dispatcher_agreement_extractnumeric",
+      "fromNode": "n_lib_sylvia_dispatcher_agreement_ts",
+      "toNode": "n_dispatcher_agreement_extractnumeric",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_agreement_ts_dispatcher_agreement_tokenize",
+      "fromNode": "n_lib_sylvia_dispatcher_agreement_ts",
+      "toNode": "n_dispatcher_agreement_tokenize",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_agreement_ts_dispatcher_agreement_numericsimilarity",
+      "fromNode": "n_lib_sylvia_dispatcher_agreement_ts",
+      "toNode": "n_dispatcher_agreement_numericsimilarity",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_agreement_ts_dispatcher_agreement_jaccardsimilarity",
+      "fromNode": "n_lib_sylvia_dispatcher_agreement_ts",
+      "toNode": "n_dispatcher_agreement_jaccardsimilarity",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_agreement_ts_dispatcher_agreement_pairwisescore",
+      "fromNode": "n_lib_sylvia_dispatcher_agreement_ts",
+      "toNode": "n_dispatcher_agreement_pairwisescore",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_agreement_ts_dispatcher_agreement_computeagreement",
+      "fromNode": "n_lib_sylvia_dispatcher_agreement_ts",
+      "toNode": "n_dispatcher_agreement_computeagreement",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_agreement_extractnumeric_dispatcher_agreement_pairwisescore",
+      "fromNode": "n_dispatcher_agreement_extractnumeric",
+      "toNode": "n_dispatcher_agreement_pairwisescore",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_agreement_tokenize_dispatcher_agreement_pairwisescore",
+      "fromNode": "n_dispatcher_agreement_tokenize",
+      "toNode": "n_dispatcher_agreement_pairwisescore",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_agreement_numericsimilarity_dispatcher_agreement_pairwisescore",
+      "fromNode": "n_dispatcher_agreement_numericsimilarity",
+      "toNode": "n_dispatcher_agreement_pairwisescore",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_agreement_jaccardsimilarity_dispatcher_agreement_pairwisescore",
+      "fromNode": "n_dispatcher_agreement_jaccardsimilarity",
+      "toNode": "n_dispatcher_agreement_pairwisescore",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_agreement_pairwisescore_dispatcher_agreement_computeagreement",
+      "fromNode": "n_dispatcher_agreement_pairwisescore",
+      "toNode": "n_dispatcher_agreement_computeagreement",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_agreement_computeagreement_consensus_route_post",
+      "fromNode": "n_dispatcher_agreement_computeagreement",
+      "toNode": "n_consensus_route_post",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_budget_ts_dispatcher_budget_default_daily_usd",
+      "fromNode": "n_lib_sylvia_dispatcher_budget_ts",
+      "toNode": "n_dispatcher_budget_default_daily_usd",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_budget_ts_dispatcher_budget_dailywindowstart",
+      "fromNode": "n_lib_sylvia_dispatcher_budget_ts",
+      "toNode": "n_dispatcher_budget_dailywindowstart",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_budget_ts_dispatcher_budget_rolloverifneeded",
+      "fromNode": "n_lib_sylvia_dispatcher_budget_ts",
+      "toNode": "n_dispatcher_budget_rolloverifneeded",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_budget_ts_dispatcher_budget_budgetexceeded",
+      "fromNode": "n_lib_sylvia_dispatcher_budget_ts",
+      "toNode": "n_dispatcher_budget_budgetexceeded",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_budget_ts_dispatcher_budget_budgettracker",
+      "fromNode": "n_lib_sylvia_dispatcher_budget_ts",
+      "toNode": "n_dispatcher_budget_budgettracker",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_budget_rolloverifneeded_dispatcher_budget_budgettracker_constructor",
+      "fromNode": "n_dispatcher_budget_rolloverifneeded",
+      "toNode": "n_dispatcher_budget_budgettracker_constructor",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_budget_rolloverifneeded_dispatcher_budget_budgettracker_reserve",
+      "fromNode": "n_dispatcher_budget_rolloverifneeded",
+      "toNode": "n_dispatcher_budget_budgettracker_reserve",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_budget_rolloverifneeded_dispatcher_budget_budgettracker_record",
+      "fromNode": "n_dispatcher_budget_rolloverifneeded",
+      "toNode": "n_dispatcher_budget_budgettracker_record",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_budget_rolloverifneeded_dispatcher_budget_budgettracker_getdailyspent",
+      "fromNode": "n_dispatcher_budget_rolloverifneeded",
+      "toNode": "n_dispatcher_budget_budgettracker_getdailyspent",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_budget_budgettracker_dispatcher_budget_budgettracker_constructor",
+      "fromNode": "n_dispatcher_budget_budgettracker",
+      "toNode": "n_dispatcher_budget_budgettracker_constructor",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_budget_budgettracker_dispatcher_budget_budgettracker_reserve",
+      "fromNode": "n_dispatcher_budget_budgettracker",
+      "toNode": "n_dispatcher_budget_budgettracker_reserve",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_budget_budgettracker_dispatcher_budget_budgettracker_record",
+      "fromNode": "n_dispatcher_budget_budgettracker",
+      "toNode": "n_dispatcher_budget_budgettracker_record",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_budget_budgettracker_dispatcher_budget_budgettracker_getquestionspent",
+      "fromNode": "n_dispatcher_budget_budgettracker",
+      "toNode": "n_dispatcher_budget_budgettracker_getquestionspent",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_budget_budgettracker_dispatcher_budget_budgettracker_getdailyspent",
+      "fromNode": "n_dispatcher_budget_budgettracker",
+      "toNode": "n_dispatcher_budget_budgettracker_getdailyspent",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_index_ts_app_api_sylvia_consensus_route_ts",
+      "fromNode": "n_lib_sylvia_dispatcher_index_ts",
+      "toNode": "n_app_api_sylvia_consensus_route_ts",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_auth_ts_dispatcher_auth_sylviaauthresult",
+      "fromNode": "n_lib_sylvia_dispatcher_auth_ts",
+      "toNode": "n_dispatcher_auth_sylviaauthresult",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_auth_ts_dispatcher_auth_resolveprovidedsecret",
+      "fromNode": "n_lib_sylvia_dispatcher_auth_ts",
+      "toNode": "n_dispatcher_auth_resolveprovidedsecret",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_auth_ts_dispatcher_auth_constanttimeequals",
+      "fromNode": "n_lib_sylvia_dispatcher_auth_ts",
+      "toNode": "n_dispatcher_auth_constanttimeequals",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_dispatcher_auth_ts_dispatcher_auth_verifysylviainternalsecret",
+      "fromNode": "n_lib_sylvia_dispatcher_auth_ts",
+      "toNode": "n_dispatcher_auth_verifysylviainternalsecret",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_auth_resolveprovidedsecret_dispatcher_auth_verifysylviainternalsecret",
+      "fromNode": "n_dispatcher_auth_resolveprovidedsecret",
+      "toNode": "n_dispatcher_auth_verifysylviainternalsecret",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_auth_constanttimeequals_dispatcher_auth_verifysylviainternalsecret",
+      "fromNode": "n_dispatcher_auth_constanttimeequals",
+      "toNode": "n_dispatcher_auth_verifysylviainternalsecret",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_dispatcher_auth_verifysylviainternalsecret_consensus_route_post",
+      "fromNode": "n_dispatcher_auth_verifysylviainternalsecret",
+      "toNode": "n_consensus_route_post",
+      "label": "calls [INFERRED]"
+    },
+    {
+      "id": "e_lib_sylvia_kb_types_ts_sylvia_kb_types_kbcategory",
+      "fromNode": "n_lib_sylvia_kb_types_ts",
+      "toNode": "n_sylvia_kb_types_kbcategory",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_kb_types_ts_sylvia_kb_types_kbsource",
+      "fromNode": "n_lib_sylvia_kb_types_ts",
+      "toNode": "n_sylvia_kb_types_kbsource",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_kb_types_ts_sylvia_kb_types_kbprovenance",
+      "fromNode": "n_lib_sylvia_kb_types_ts",
+      "toNode": "n_sylvia_kb_types_kbprovenance",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_kb_types_ts_sylvia_kb_types_kbdocument",
+      "fromNode": "n_lib_sylvia_kb_types_ts",
+      "toNode": "n_sylvia_kb_types_kbdocument",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_kb_types_ts_sylvia_kb_types_kbcorpusentry",
+      "fromNode": "n_lib_sylvia_kb_types_ts",
+      "toNode": "n_sylvia_kb_types_kbcorpusentry",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_kb_types_ts_sylvia_kb_types_kbqueryrequest",
+      "fromNode": "n_lib_sylvia_kb_types_ts",
+      "toNode": "n_sylvia_kb_types_kbqueryrequest",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_kb_types_ts_sylvia_kb_types_kbhit",
+      "fromNode": "n_lib_sylvia_kb_types_ts",
+      "toNode": "n_sylvia_kb_types_kbhit",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_sylvia_kb_types_ts_sylvia_kb_types_kbqueryresponse",
+      "fromNode": "n_lib_sylvia_kb_types_ts",
+      "toNode": "n_sylvia_kb_types_kbqueryresponse",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_dossier_types_ts_dossier_types_dossierversion",
+      "fromNode": "n_lib_dossier_types_ts",
+      "toNode": "n_dossier_types_dossierversion",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_dossier_types_ts_dossier_types_dossierstatus",
+      "fromNode": "n_lib_dossier_types_ts",
+      "toNode": "n_dossier_types_dossierstatus",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_dossier_types_ts_dossier_types_dossiermetadata",
+      "fromNode": "n_lib_dossier_types_ts",
+      "toNode": "n_dossier_types_dossiermetadata",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_dossier_types_ts_dossier_types_dossiersection",
+      "fromNode": "n_lib_dossier_types_ts",
+      "toNode": "n_dossier_types_dossiersection",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_dossier_types_ts_dossier_types_dossieritemsummary",
+      "fromNode": "n_lib_dossier_types_ts",
+      "toNode": "n_dossier_types_dossieritemsummary",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_dossier_types_ts_dossier_types_dossieritem",
+      "fromNode": "n_lib_dossier_types_ts",
+      "toNode": "n_dossier_types_dossieritem",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_dossier_types_ts_lib_dossier_render_stub_ts",
+      "fromNode": "n_lib_dossier_types_ts",
+      "toNode": "n_lib_dossier_render_stub_ts",
+      "label": "imports_from [EXTRACTED]"
+    },
+    {
+      "id": "e_dossier_types_dossieritem_lib_dossier_render_stub_ts",
+      "fromNode": "n_dossier_types_dossieritem",
+      "toNode": "n_lib_dossier_render_stub_ts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_lib_dossier_render_stub_ts_dossier_render_stub_renderdossierstub",
+      "fromNode": "n_lib_dossier_render_stub_ts",
+      "toNode": "n_dossier_render_stub_renderdossierstub",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_app_api_sylvia_consensus_route_ts_consensus_route_quartet",
+      "fromNode": "n_app_api_sylvia_consensus_route_ts",
+      "toNode": "n_consensus_route_quartet",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_app_api_sylvia_consensus_route_ts_consensus_route_provideralias",
+      "fromNode": "n_app_api_sylvia_consensus_route_ts",
+      "toNode": "n_consensus_route_provideralias",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_app_api_sylvia_consensus_route_ts_consensus_route_consensusrequest",
+      "fromNode": "n_app_api_sylvia_consensus_route_ts",
+      "toNode": "n_consensus_route_consensusrequest",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_app_api_sylvia_consensus_route_ts_consensus_route_provenanceentry",
+      "fromNode": "n_app_api_sylvia_consensus_route_ts",
+      "toNode": "n_consensus_route_provenanceentry",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_app_api_sylvia_consensus_route_ts_consensus_route_errorenvelope",
+      "fromNode": "n_app_api_sylvia_consensus_route_ts",
+      "toNode": "n_consensus_route_errorenvelope",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_app_api_sylvia_consensus_route_ts_consensus_route_callprovider",
+      "fromNode": "n_app_api_sylvia_consensus_route_ts",
+      "toNode": "n_consensus_route_callprovider",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_app_api_sylvia_consensus_route_ts_consensus_route_aggregateanswer",
+      "fromNode": "n_app_api_sylvia_consensus_route_ts",
+      "toNode": "n_consensus_route_aggregateanswer",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_app_api_sylvia_consensus_route_ts_consensus_route_defaultprovenance",
+      "fromNode": "n_app_api_sylvia_consensus_route_ts",
+      "toNode": "n_consensus_route_defaultprovenance",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_app_api_sylvia_consensus_route_ts_consensus_route_safeappendaudit",
+      "fromNode": "n_app_api_sylvia_consensus_route_ts",
+      "toNode": "n_consensus_route_safeappendaudit",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_app_api_sylvia_consensus_route_ts_consensus_route_post",
+      "fromNode": "n_app_api_sylvia_consensus_route_ts",
+      "toNode": "n_consensus_route_post",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_consensus_route_errorenvelope_consensus_route_post",
+      "fromNode": "n_consensus_route_errorenvelope",
+      "toNode": "n_consensus_route_post",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_consensus_route_callprovider_consensus_route_post",
+      "fromNode": "n_consensus_route_callprovider",
+      "toNode": "n_consensus_route_post",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_consensus_route_aggregateanswer_consensus_route_post",
+      "fromNode": "n_consensus_route_aggregateanswer",
+      "toNode": "n_consensus_route_post",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_consensus_route_defaultprovenance_consensus_route_post",
+      "fromNode": "n_consensus_route_defaultprovenance",
+      "toNode": "n_consensus_route_post",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_consensus_route_safeappendaudit_consensus_route_post",
+      "fromNode": "n_consensus_route_safeappendaudit",
+      "toNode": "n_consensus_route_post",
+      "label": "calls [EXTRACTED]"
+    }
+  ]
+}
