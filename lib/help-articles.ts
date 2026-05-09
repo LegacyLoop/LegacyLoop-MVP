@@ -1104,7 +1104,7 @@ Tip: If you find yourself buying credits for the same bot repeatedly, it might b
     categoryIcon: "🏠",
     summary:
       "Our team manages your entire estate sale from start to finish — photography, pricing, buyers, and shipping.",
-    content: `White-Glove is LegacyLoop's premium full-service option for estate sales. Our team comes to your home, photographs every item, runs AI analysis, sets prices, coordinates buyers, and handles all shipping. You sit back and receive payouts as items sell. Three tiers are available: Essentials (up to 50 items), Complete (up to 150 items), and Premium (unlimited items with dedicated project manager). Currently available in Maine with expansion planned. Request a quote at the /quote page.`,
+    content: `White-Glove is LegacyLoop's premium full-service option for estate sales. Our team comes to your home, photographs every item, runs AI analysis, sets prices, coordinates buyers, and handles all shipping. You sit back and receive payouts as items sell. Three tiers are available: Essentials (up to 100 items), Professional (up to 300 items), and Legacy (unlimited items with dedicated project manager). Currently available in Maine with expansion planned. Request a quote at the /quote page.`,
     lastUpdated: "2026-03-01",
   },
   {
