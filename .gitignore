@@ -72,3 +72,6 @@ litellm.log
 
 # Sylvia AI · isolated data · NEVER commit
 sylvia-data/
+
+# Graphify knowledge graph (regenerable · machine-specific · bb721d8 message-vs-diff drift fix)
+graphify-out/
