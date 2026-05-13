@@ -67,7 +67,7 @@ if [ -f .env.local ]; then
       # Strip surrounding double-quotes if present (matches export semantics)
       VALUE="${VALUE%\"}"
       VALUE="${VALUE#\"}"
-      declare -gx "$KEY=$VALUE"
+      export "$KEY=$VALUE"
     done <<< "$KEY_LINES"
   fi
 else
