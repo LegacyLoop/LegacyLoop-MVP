@@ -141,3 +141,16 @@ Rules:
 - IF graphify-out/wiki/index.md EXISTS, navigate it instead of reading raw files
 - For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+## long-running-agentic-pattern
+
+This project uses a long-running agentic pattern for cascades >2hrs OR >5 sub-cylinders (per docs/skills/LONG_RUNNING_AGENTIC_PATTERN.md).
+
+Rules:
+- Use plan mode (`--permission-mode plan`) for northstar formulation BEFORE any execution
+- Use PAUL `paul:plan` + `paul:apply` + `paul:resume` for structured execution
+- Cap LLM spend per session via `--max-budget-usd $20` (BINDING #25)
+- Emit §12 V19 at every sub-cylinder close
+- CEO authors northstar · Devin verifies feasibility · IT cascades · CEO confirms end-state
+
+`/goal` is NOT a built-in Claude Code command (per Devin §0 2026-05-13 push-back · CEO ref #26 corrected). Use the documented pattern instead.
