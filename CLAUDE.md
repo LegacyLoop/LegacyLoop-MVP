@@ -124,7 +124,7 @@ Devin authors V19 specs (§0 grounding through §12 emission shell). IT executes
 - **`WORLD_CLASS_STANDARDS.md`** — design tokens · 7 pillars · 12 effects · 18 benchmarks (auto @-imported)
 - **`AGENTS.md`** — engineering patterns shared across repos (auto @-imported)
 - **`docs/CLAUDE_HISTORY.md`** — full schema list · API directory tree · component inventory · env vars · scaling notes · V19 template verbose
-- **`docs/DOCTRINE_LEDGER.md`** — all 30 BINDING doctrines + candidates (#27 reserved for R25 P3 CRYPTO-CTC pending · #31 ratified 2026-05-14 DOC-PUSHBACK-WITH-REPLACEMENT)
+- **`docs/DOCTRINE_LEDGER.md`** — all 31 BINDING doctrines + candidates (#27 reserved for R25 P3 CRYPTO-CTC pending · #32 reserved for DOC-HARDWARE-CAPABILITY-VERIFY 3/5 progressing · #31 ratified 2026-05-14 DOC-PUSHBACK-WITH-REPLACEMENT · #33 ratified 2026-05-14 DOC-FLAG-RIDER-PER-CYLINDER)
 - **`docs/MULTI_AGENT_WORKTREE.md`** — worktree topology + helper script reference
 - **`docs/sylvia/{SYLVIA_FOLDER_ARCHITECTURE,SYLVIA_API_CONTRACT,SYLVIA_MIGRATION_PLAN}.md`** — Sylvia substrate canon
 - **`prisma/schema.prisma`** — 53 models (canonical · always read for data layer questions)

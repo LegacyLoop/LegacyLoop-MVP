@@ -3,9 +3,16 @@
 # Multi-Agent Worktree Reset · DEV ONLY · LegacyLoop
 # ═══════════════════════════════════════════════════════════════
 # CMD-MULTI-AGENT-WORKTREE-MIGRATE V18 · Round 13 P0
+# Last refreshed: 2026-05-14 (R29 P38 · CF-71 closure)
 #
 # Resets one slot worktree to current origin/main · preserves
 # node_modules · preserves .env.local symlink · preserves dev.db.
+#
+# Doctrine: BINDING #20 DOC-PER-AGENT-WORKTREE (R20 era · per-
+# agent git index isolation eliminates shared-index race window)
+# + BINDING #33 DOC-FLAG-RIDER-PER-CYLINDER (rider mechanic
+# powers Wave-N parallel-slot doctrine burndown).
+# Cross-ref: docs/MULTI_AGENT_WORKTREE.md · V19 template §5.5.
 #
 # Usage: bash scripts/worktree-reset.sh <agent-number>
 #   e.g. bash scripts/worktree-reset.sh 2
