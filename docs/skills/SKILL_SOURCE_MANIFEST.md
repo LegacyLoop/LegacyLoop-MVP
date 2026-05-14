@@ -43,7 +43,7 @@
 |---|---|---|---|---|---|
 | @agentmemory/agentmemory | https://www.npmjs.com/package/@agentmemory/agentmemory | MCP | ✅ INSTALLED + smoked P8 GREEN | `claude mcp add agent-memory npx -y @agentmemory/agentmemory mcp` | 2026-05-14 |
 | Cavemem | https://github.com/JuliusBrussee/cavemem | plugin | 🟡 BANKED | same as above | 2026-05-14 |
-| Claude-mem | ❓ Reference 11 says 60K-star · URL not cited in ideas file | unknown | 💡 UNKNOWN-URL | CEO surfaces URL | 2026-05-14 unresolved |
+| claude-mem (Ref #11) | https://github.com/thedotmack/claude-mem · npm `claude-mem` v13.2.0 | plugin (SessionStart hook · session compression) | ✅ INSTALLED 2026-05-14 R29 P44 · 75,749 ⭐ · canonical npm install · dual-pattern with agent-memory MCP (zero conflict) | `npm install -g claude-mem && claude-mem install --provider claude --no-auto-start` | 2026-05-14 |
 
 ## Code review + planning
 
@@ -169,7 +169,7 @@ These remain unresolved post-manifest · CEO surfaces canonical source · re-fir
 2. **Seed** — Reference 6 trio · YouTube creator comment-funnel
 3. **Design Extract** — Reference 7 · YouTube creator comment-funnel
 4. **PixArt** — Reference 2 · YouTube creator comment-funnel
-5. **Claude-mem** (60K-star) — Reference 11 · YouTube creator comment-funnel
+5. ~~**Claude-mem** (60K-star)~~ → ✅ RESOLVED 2026-05-14 R29 P44 · canonical = `thedotmack/claude-mem` 75,749 ⭐ · npm `claude-mem` v13.2.0 · INSTALLED
 6. **AirLLM** — Reference 10 · pip name likely `airllm` · IT verifies pre-install
 7. **Subq SSA** — Reference 9 · pre-release · monitor-only
 

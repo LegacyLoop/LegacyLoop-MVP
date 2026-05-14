@@ -19,7 +19,7 @@
 | Wave 3 Slot 2 | CMD-SEED-SKILL-INSTALL V19 (Last-ref-6) | npm OR git clone URL surfaced via manifest update | ~20-30 min |
 | Wave 3 Slot 3 | TBD flag-killer OR P21 Graphify-Obsidian-deep | CEO $1-3 spend GO for P21 | ~15-30 min |
 | Wave 4 | CMD-CODEBURN-INSTALL-REFIRE V19 | CEO surfaces canonical URL (YouTube creator funnel) | ~25-35 min |
-| Wave 5 | CMD-CLAUDE-MEM-INSTALL V19 OR skip | CEO routes activate (agent-memory winner installed) | ~30 min |
+| ~~Wave 5~~ → **W7 Slot 1** ✅ | CMD-CLAUDE-MEM-INSTALL V19 R29 P44 (2026-05-14 PM) | CLOSED · ACTIVATED · 75K-star · dual-pattern with agent-memory · zero conflict | ~30 min actual |
 | Wave 6 | CMD-5-GITHUB-SKILL-REPOS-CHERRY-PICK V19 | CodeBurn telemetry from Wave 4 | ~45-60 min |
 | Backfill close | scoreboard recomputes ≥85% Claude-side | post-Wave-6 §12 | — |
 | Bridge to Sylvia | CMD-SYLVIA-SYSTEM-PROMPT-ALLINCLUSIVE V19 (bridge · NOT in this epic per MC Correction 3) | post-backfill close | ~45-60 min |
@@ -48,10 +48,11 @@
 - No new sub-cyl spec needed (P21 already authored · just needs fire)
 
 ### Ref #11 · claude-mem 60K stars (alternate memory)
-- Status: BANKED LOW (agent-memory winner already installed via R28 P6)
-- Decision: skip OR activate as dual-memory pattern
-- CEO routes · no install cyl committed yet
-- If activate: CMD-CLAUDE-MEM-INSTALL V19 spec authored fresh
+- Status: ✅ CLOSED R29 P44 (2026-05-14 PM · CMD-CLAUDE-MEM-INSTALL V19 Wave 7 Slot 1)
+- Decision: ACTIVATED (Devin §0 pick · CEO default-proceed routing)
+- Canonical: `thedotmack/claude-mem` 75,749 ⭐ (grown from 60K cite) · npm `claude-mem` v13.2.0
+- Install: `npm install -g claude-mem && claude-mem install --provider claude --no-auto-start`
+- Dual-pattern: agent-memory MCP (structured ops · MCP tool calls) + claude-mem (SessionStart hook · session compression) · zero conflict · documented in SKILL_SOURCE_MANIFEST.md Memory layers
 
 ### Ref Last-ref-7 · CodeBurn re-fire
 - Status: pre-R29 install failed (81-skill metadata-budget hit)
