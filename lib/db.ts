@@ -84,4 +84,4 @@ function buildPrisma(): PrismaClient {
 
 export const prisma = globalForPrisma.prisma ?? buildPrisma();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+globalForPrisma.prisma = prisma;
