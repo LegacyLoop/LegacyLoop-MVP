@@ -4,6 +4,8 @@ import SearchClient from "./SearchClient";
 import { safeJson } from "@/lib/utils/json";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Browse Estate Sales · LegacyLoop",
   description: "Search thousands of AI-priced items from estate and garage sales near you. Antiques, collectibles, furniture, electronics and more.",
@@ -20,14 +22,14 @@ export default async function SearchPage() {
       status: { in: ["LISTED", "INTERESTED", "ANALYZED", "READY"] },
     },
     include: {
-      photos: { take: 1 },
-      valuation: true,
-      antiqueCheck: true,
-      aiResult: true,
-      user: { select: { id: true, email: true } },
+      photos: { take: 1, select: { filePath: true } },
+      valuation: { select: { low: true, high: true } },
+      antiqueCheck: { select: { isAntique: true } },
+      aiResult: { select: { rawJson: true } },
+      user: { select: { email: true } },
     },
     orderBy: { createdAt: "desc" },
-    take: 500,
+    take: 60,
   }).catch((e) => { console.error("[search] items query failed:", e); return []; });
 
   const publicItems = items.map((item) => {
