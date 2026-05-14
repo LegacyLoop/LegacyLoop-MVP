@@ -75,3 +75,8 @@ sylvia-data/
 
 # Graphify knowledge graph (regenerable · machine-specific · bb721d8 message-vs-diff drift fix)
 graphify-out/
+graphify-out-sylvia/
+
+# CMD-WORKING-TREE-CLEANUP V19 R29 P26 · prevent future .bak clutter
+# NOTE: .env*.bak* covered by .env* rule earlier · deliberate preserve for live-key fallback
+*.bak.*
