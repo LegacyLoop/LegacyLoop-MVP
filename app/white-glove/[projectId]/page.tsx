@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
 import WhiteGloveClient from "./WhiteGloveClient";
 
+export const dynamic = "force-dynamic";
+
 type Params = Promise<{ projectId: string }>;
 
 export default async function WhiteGloveProjectPage({ params }: { params: Params }) {

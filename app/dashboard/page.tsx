@@ -12,6 +12,8 @@ import { computeCollectiblesScore } from "@/lib/collectibles-score";
 import { detectCollectible } from "@/lib/collectible-detect";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Dashboard · LegacyLoop", description: "Your selling command center — items, analytics, and AI bot insights" };
 
 /** Check both AntiqueCheck table AND AI analysis rawJson for antique detection */

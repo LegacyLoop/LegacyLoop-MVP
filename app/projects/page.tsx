@@ -5,6 +5,8 @@ import type { Metadata } from "next";
 import ProjectsClient from "./ProjectsClient";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Projects · LegacyLoop" };
 
 export default async function ProjectsPage() {

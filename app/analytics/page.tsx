@@ -5,6 +5,8 @@ import type { Metadata } from "next";
 import { safeJson } from "@/lib/utils/json";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Analytics · LegacyLoop",
   description: "Estate sale performance analytics powered by AI",

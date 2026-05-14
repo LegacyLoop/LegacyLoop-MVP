@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import ProjectDetailClient from "./ProjectDetailClient";
 import { safeJson } from "@/lib/utils/json";
 
+export const dynamic = "force-dynamic";
+
 type Params = Promise<{ id: string }>;
 
 export default async function ProjectDetailPage({ params }: { params: Params }) {

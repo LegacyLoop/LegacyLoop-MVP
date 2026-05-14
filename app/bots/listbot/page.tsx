@@ -6,6 +6,8 @@ import { prisma } from "@/lib/db";
 import ListBotClient from "./ListBotClient";
 import PublishHubClient from "./PublishHubClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "ListBot — LegacyLoop" };
 
 function safeJson(s: string | null | undefined): any {

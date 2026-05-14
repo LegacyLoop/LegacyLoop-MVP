@@ -5,6 +5,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import BuyerBotClient from "./BuyerBotClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "BuyerBot — LegacyLoop" };
 
 export default async function BuyerBotPage() {

@@ -5,6 +5,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import ReconBotClient from "./ReconBotClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "ReconBot — LegacyLoop" };
 
 export default async function ReconBotPage() {

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import BundlePublicClient from "./BundlePublicClient";
 
+export const dynamic = "force-dynamic";
+
 /* ──────────────────────────────────────────────────────────────────────────────
    Public Bundle Page — Server Component
    /bundle/[slug]

@@ -8,6 +8,8 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import EmptyState from "@/app/components/EmptyState";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Messages · LegacyLoop", description: "Your inbox — buyer inquiries, offers, and conversations" };
 
 export default async function MessagesPage() {
