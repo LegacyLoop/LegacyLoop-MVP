@@ -71,6 +71,20 @@
 
 ## Candidates (NOT yet BINDING · awaiting proof points)
 
+### Probe Resolution · R29 P33 (2026-05-14) · CMD-DOCTRINE-CANDIDATE-PROBE V19
+
+Master Backlog §K Ambiguity #1 resolved · 5 floating 5/01 PM candidates classified:
+
+| Candidate (Master Backlog claim) | Class | Resolution |
+|---|---|---|
+| **DOC-COMPONENT-EXTRACT-BYTE-FIDELITY** | 🔴 NEVER-REGISTERED | Zero matches in ledger · zero memory file · zero template ref · zero Commands grep. Master Backlog §K claim NOT corroborated by ledger evidence. Premise CORRECTED. Banked as new candidate row below IF Devin/CEO wants to register fresh. |
+| **DOC-CONFIDENCE-SCALE-NORMALIZE** | 🟢 RATIFIED-CONFIRMED | Already **BINDING #14** in canonical table (L52 · `512b6b9` 2026-05-02). Not floating. Master Backlog §K stale read. |
+| **DOC-PRE-STAGE-NON-IDP-PREFETCH** | 🟢 RATIFIED-CONFIRMED | Already **BINDING #5** in canonical table (L43 · `f968ad3` 2026-05-01). Not floating. Master Backlog §K stale read. |
+| **DOC-SMOKE-FRESH-CACHE-VERIFY** | 🔴 NEVER-REGISTERED | Zero matches in ledger · zero memory file · zero template ref · zero Commands grep. Master Backlog §K claim NOT corroborated. Premise CORRECTED. Banked as new candidate row below IF Devin/CEO wants to register fresh. |
+| **DOC-SPEC-GROUNDING-VERIFY** | 🟢 RATIFIED-CONFIRMED | Already **BINDING #7** in canonical table (L45 · `f968ad3` 2026-05-01). Not floating. Master Backlog §K stale read. |
+
+**Verdict:** Master Backlog §K Ambiguity #1 drift class CLOSED · 3 of 5 already RATIFIED canonical BINDING (#5 · #7 · #14) · 2 of 5 NEVER-REGISTERED (no 5/01 evidence in ledger or memory · premise was incorrect read). Zero BINDING count change this cyl. Future spec citations of these 5 names MUST cross-ref canonical BINDING numbers · NEVER treat as floating candidates.
+
 | Candidate                                  | First proof point | Required for BINDING | Status |
 |--------------------------------------------|-------------------|----------------------|--------|
 | DOC-NEXTJS-DYNAMIC-ROUTE-PARAM-NAME        | `059de07` (May 6) | 3 clone-pattern fires post-pattern-bind | SUPERSEDED by DOC-NEXTJS-DYNAMIC-SEGMENT-CONSISTENCY (wrong-layer hotfix `059de07` changed param TYPE when actual control was directory NAME · real fix `a969546` rename + `.next` purge) |
