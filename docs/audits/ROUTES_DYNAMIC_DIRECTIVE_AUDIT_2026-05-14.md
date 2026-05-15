@@ -114,6 +114,7 @@ Next.js 16 auto-detects dynamic from cookies/searchParams/headers/auth. Directiv
 - ✅ **CMD-ROUTES-DYNAMIC-CONSISTENCY-SWEEP V19** — 33 SHOULD-ADD batch CLOSED R29 P46 Wave 8 Slot 2 (commit `2f71057`)
 - ✅ **CMD-NEXT-CONFIG-OUTPUT-DYNAMIC-DEFAULT V20** — investigation CLOSED R29 P51 Wave 9 Slot 3 · verdict 🔴 NOT-EXISTS · `output: dynamic` not a Next.js 16 config value · per-route directive remains canonical · see `NEXT_CONFIG_OUTPUT_DYNAMIC_AUDIT_2026-05-15.md`
 - ✅ **/messages + /projects query profile audit** R29 P53 Wave 10 Slot B · verdict cite → `MESSAGES_PROJECTS_QUERY_AUDIT_2026-05-15.md` · 🔴 1 MUST-ADD (/messages stats-split HIGH) · 🟡 1 SHOULD-ADD (/projects/[id] include-trim MED) · 🟢 1 CLEAN-WITH-CAVEAT (/projects future-scale LOW) · P50 §12 Opportunity flag CLOSED
+- ✅ **dashboard stats aggregate-split** R29 P52 Wave 10 Slot A · 11/13 stats refactored to groupBy/count/aggregate (Promise.all parallel) · 2 stats (antiqueItems · collectibleItems) kept .filter() per §0.7 PATH A · banked CMD-DASHBOARD-STATS-PRECOMPUTE-AI-CLASSIFICATION V20 MED schema-migration follow-on · unblocks future safe items pagination · P50 §12 STANDALONE flag CLOSED
 
 ---
 
