@@ -149,7 +149,7 @@ export default async function DashboardPage() {
         where: { itemId: { in: itemIds } },
         include: { item: { select: { id: true, title: true } } },
         orderBy: { createdAt: "desc" },
-        take: 50,
+        take: 25,
       });
     }
   } catch (e) {
