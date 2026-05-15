@@ -105,28 +105,37 @@ export default async function DashboardPage() {
     console.error("[dashboard] items query failed:", e);
   }
 
-  // ── Stats ──────────────────────────────────────────────────────────────────
-  const totalItems = items.length;
-  const analyzedItems = items.filter((i) => ["ANALYZED", "READY", "LISTED", "INTERESTED", "SOLD", "SHIPPED", "COMPLETED"].includes(i.status)).length;
+  // ── Stats (query-layer · 11/13 scope-split per P52 §0.7 PATH A) ────────────
+  // Query-layer batch · parallel via Promise.all · enables future safe items pagination
+  const [statusBuckets, megabotCount, revenueAgg, unreadCount, conversationCount] = await Promise.all([
+    prisma.item.groupBy({ by: ["status"], _count: { _all: true }, where: { userId: user.id } }),
+    prisma.item.count({ where: { userId: user.id, megabotUsed: true } }),
+    prisma.valuation.aggregate({ _sum: { high: true }, where: { item: { userId: user.id } } }),
+    prisma.message.count({ where: { sender: "buyer", isRead: false, conversation: { item: { userId: user.id } } } }),
+    prisma.conversation.count({ where: { item: { userId: user.id } } }),
+  ]);
+
+  const bucketMap: Record<string, number> = Object.fromEntries(
+    statusBuckets.map((b) => [b.status, b._count._all])
+  );
+  const totalItems = statusBuckets.reduce((s, b) => s + b._count._all, 0);
+  const analyzedItems = ["ANALYZED", "READY", "LISTED", "INTERESTED", "SOLD", "SHIPPED", "COMPLETED"]
+    .reduce((s, k) => s + (bucketMap[k] ?? 0), 0);
+  const soldItems = ["SOLD", "SHIPPED", "COMPLETED"].reduce((s, k) => s + (bucketMap[k] ?? 0), 0);
+  const interestedItems = bucketMap.INTERESTED ?? 0;
+  const listedItems = bucketMap.LISTED ?? 0;
+  const draftItems = bucketMap.DRAFT ?? 0;
+  const shippedItems = ["SOLD", "SHIPPED"].reduce((s, k) => s + (bucketMap[k] ?? 0), 0);
+  const megabotItems = megabotCount;
+  const estimatedRevenue = revenueAgg._sum.high ?? 0;
+  const totalUnread = unreadCount;
+  const totalConversations = conversationCount;
+
+  // KEEP .filter() for 2 stats · isAntiqueItem + isCollectibleItem helpers parse aiResult.rawJson
+  // (TS function · not portable to single Prisma where-clause · banked precompute-column cyl
+  // CMD-DASHBOARD-STATS-PRECOMPUTE-AI-CLASSIFICATION V20 MED · schema migration · CEO-approval-gated)
   const antiqueItems = items.filter(isAntiqueItem).length;
   const collectibleItems = items.filter(isCollectibleItem).length;
-  const megabotItems = items.filter((i) => i.megabotUsed).length;
-  const soldItems = items.filter((i) => ["SOLD", "SHIPPED", "COMPLETED"].includes(i.status)).length;
-  const interestedItems = items.filter((i) => i.status === "INTERESTED").length;
-  const listedItems = items.filter((i) => i.status === "LISTED").length;
-  const draftItems = items.filter((i) => i.status === "DRAFT").length;
-  const shippedItems = items.filter((i) => ["SOLD", "SHIPPED"].includes(i.status)).length;
-
-  const estimatedRevenue = items
-    .filter((i) => i.valuation)
-    .reduce((sum, i) => sum + (i.valuation?.high ?? 0), 0);
-
-  const totalUnread = items.reduce(
-    (sum, i) => sum + i.conversations.reduce((s, c) => s + c.messages.length, 0),
-    0
-  );
-
-  const totalConversations = items.reduce((sum, i) => sum + i.conversations.length, 0);
 
   // ── Earnings summary ───────────────────────────────────────────────────────
   let totalEarnings = 0;
