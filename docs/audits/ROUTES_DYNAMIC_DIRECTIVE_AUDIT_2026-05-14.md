@@ -111,7 +111,7 @@ Next.js 16 auto-detects dynamic from cookies/searchParams/headers/auth. Directiv
 
 ### Banked follow-ups
 
-- **CMD-ROUTES-DYNAMIC-CONSISTENCY-SWEEP V19 · MED** — 33 SHOULD-ADD batch · later wave · consistency win
+- ✅ **CMD-ROUTES-DYNAMIC-CONSISTENCY-SWEEP V19** — 33 SHOULD-ADD batch CLOSED R29 P46 Wave 8 Slot 2 (commit `2f71057`)
 - **CMD-NEXT-CONFIG-OUTPUT-DYNAMIC-DEFAULT V19 · LOW** — banked · investigate Next.js 16 global default if available
 
 ---
