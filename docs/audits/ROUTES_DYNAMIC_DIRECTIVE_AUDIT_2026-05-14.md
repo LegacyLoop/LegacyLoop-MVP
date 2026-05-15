@@ -112,7 +112,7 @@ Next.js 16 auto-detects dynamic from cookies/searchParams/headers/auth. Directiv
 ### Banked follow-ups
 
 - ✅ **CMD-ROUTES-DYNAMIC-CONSISTENCY-SWEEP V19** — 33 SHOULD-ADD batch CLOSED R29 P46 Wave 8 Slot 2 (commit `2f71057`)
-- **CMD-NEXT-CONFIG-OUTPUT-DYNAMIC-DEFAULT V19 · LOW** — banked · investigate Next.js 16 global default if available
+- ✅ **CMD-NEXT-CONFIG-OUTPUT-DYNAMIC-DEFAULT V20** — investigation CLOSED R29 P51 Wave 9 Slot 3 · verdict 🔴 NOT-EXISTS · `output: dynamic` not a Next.js 16 config value · per-route directive remains canonical · see `NEXT_CONFIG_OUTPUT_DYNAMIC_AUDIT_2026-05-15.md`
 
 ---
 
