@@ -4,7 +4,7 @@
 
 ## THE MISSION
 
-LegacyLoop exists to connect generations. We do that by building software simple enough for a 70-year-old estate seller AND premium enough to win Awwwards. Both at once. Every surface. Every interaction. Every line of code.
+Legacy-Loop exists to connect generations. We do that by building software simple enough for a 70-year-old estate seller AND premium enough to win Awwwards. Both at once. Every surface. Every interaction. Every line of code.
 
 Standard: **Tesla center console meets Christie's auction house.** Premium. Intelligent. Dignified. Clear. Never fake. Never sloppy.
 
@@ -166,7 +166,7 @@ If ANY of the 8 fails · feature is not done. Open a gap in FLAGS.
 
 **Words we never misspell:**
 - **Connecting Generations** — our mission · exact capitalization
-- **LegacyLoop** — one word · camelCase · NOT "Legacy Loop" / "legacyloop"
+- **Legacy-Loop** — hyphenated · NEVER "LegacyLoop" one-word · NEVER "Legacy Loop" space (CEO 2026-05-15 brand correction)
 - **MegaBot** — one word · camelCase · NOT "Megabot" / "Mega Bot"
 - **legacy-loop.com** — kebab-case domain · NEVER "legacyloop.com"
 
@@ -210,7 +210,7 @@ Reference material lives across landing repo · MVP repo · workspace. Full poin
 
 ## SECTION 14 · THE IDENTITY STATEMENT
 
-We are building LegacyLoop to a billion-dollar standard from day one. Every surface must be world-class. Landing and app. Both. No excuses.
+We are building Legacy-Loop to a billion-dollar standard from day one. Every surface must be world-class. Landing and app. Both. No excuses.
 
 The measure is not "good for a startup." The measure is: **would Stripe, Linear, Apple, or an Awwwards winner ship this?** If no — it is not done.
 

@@ -1,4 +1,4 @@
-# LegacyLoop Doctrine Ledger
+# Legacy-Loop Doctrine Ledger
 ## Canonical source of truth for BINDING doctrines
 
 **Maintainer:** MC (Mission Control · Strategy)

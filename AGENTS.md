@@ -5,7 +5,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- END:nextjs-agent-rules -->
 
 # LEGACYLOOP — SHARED ENGINEERING STANDARDS (AGENTS.md)
-# Applies to ALL LegacyLoop repositories. Read alongside CLAUDE.md.
+# Applies to ALL Legacy-Loop repositories. Read alongside CLAUDE.md.
 # Verbose reference banked at docs/AGENTS_HISTORY.md.
 
 ## ENGINEERING PHILOSOPHY
@@ -138,7 +138,7 @@ Verbose scaling architecture (post-seed targets · concurrency patterns): `docs/
 
 ## THE STANDARD
 
-> "LegacyLoop is not a side project. It is a company being built to a billion-dollar standard by a founder who cares about every detail. Treat every line of code, every commit, every §12 report as if it will be reviewed by the best engineers in the world. Because eventually, it will be."
+> "Legacy-Loop is not a side project. It is a company being built to a billion-dollar standard by a founder who cares about every detail. Treat every line of code, every commit, every §12 report as if it will be reviewed by the best engineers in the world. Because eventually, it will be."
 
 # END OF AGENTS.md — RULES + GOTCHAS · ~120 lines · verbose ref at docs/AGENTS_HISTORY.md
 

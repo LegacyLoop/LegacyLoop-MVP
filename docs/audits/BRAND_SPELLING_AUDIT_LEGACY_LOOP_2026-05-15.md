@@ -243,6 +243,11 @@ Skip lists (HARD GATE):
 
 **DOC-BRAND-CANONICAL-AUDIT-FIRST 1/5 NEW** · this cyl establishes audit-then-sweep pattern for brand-class drift. Reusable for future brand evolution (Sylvia branding · MegaBot · Connecting Generations cite · post-pivot rebrand if any). Sub-doctrine of #17 DOC-AUDIT-FIRST-WIRE-PATTERN.
 
+## §11 · Closure marks
+
+- ✅ **R29 P56 Wave 11 Slot 2 · Batch A CLOSED** · 4 canonical in-repo docs swept (CLAUDE.md 3 · AGENTS.md 2 · WORLD_CLASS_STANDARDS.md 2 + L169 line-rewrite · DOCTRINE_LEDGER.md 1) · PROTECTED skipped verbatim (CLAUDE.md L70 password · DOCTRINE_LEDGER L202 filename · WCS L169 NEVER-cite within new rule) · WCS L169 line-rewrite applied per spec
+- ⏳ **Batch B/C/D PARTIAL · §0.7 push-back invoked R29 P56** · empirical scope = 176 .ts/.tsx Batch B files (spec said ~27 · 550% drift · audit undercounted) · 19 are CLAUDE.md-LOCKED · 24 are server-only api routes · 37 are lib/ (most LOCKED) · many remaining are programmatic identifiers in lib/megabot/prompts.ts (`legacyloop` marketplace key · MUST stay) · context-budget exceeded for full per-file Edit + LOCKED-unlock audit per file · banked **CMD-BRAND-SPELLING-SWEEP-PHASE-2 V20 · MED** follow-on with per-file LOCKED-unlock audit pre-fire
+
 ---
 
 *Authored R29 P54 Wave 10 Slot C · 2026-05-15 · Track A · Legacy-Loop · agent-3 worktree · Devin L1 spec · IT execute*

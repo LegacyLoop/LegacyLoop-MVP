@@ -6,7 +6,7 @@
 
 ## WHO WE ARE
 
-LegacyLoop is an AI-powered resale automation platform. Mission: "Connecting Generations" (never alter spelling/case). Legacy-Loop Tech LLC · EIN 42-1834363. App: app.legacy-loop.com · Landing: legacy-loop.com. Founder Ryan Hallee = sole decision-maker + final QA. Standard: Awwwards-level / $1B product. Reference benchmarks: Linear · Stripe · Perplexity · Tesla · Apple · Manus (full set in `WORLD_CLASS_STANDARDS.md` §7).
+Legacy-Loop is an AI-powered resale automation platform. Mission: "Connecting Generations" (never alter spelling/case). Legacy-Loop Tech LLC · EIN 42-1834363. App: app.legacy-loop.com · Landing: legacy-loop.com. Founder Ryan Hallee = sole decision-maker + final QA. Standard: Awwwards-level / $1B product. Reference benchmarks: Linear · Stripe · Perplexity · Tesla · Apple · Manus (full set in `WORLD_CLASS_STANDARDS.md` §7).
 
 ## TEAM ROLES
 
@@ -54,7 +54,7 @@ public/images/logos/* — NEVER modify
 
 ## DESIGN SYSTEM GOTCHAS — non-derivable pain
 
-WCS holds the full token reference. These specific gotchas are LegacyLoop pain that cost rebuilds:
+WCS holds the full token reference. These specific gotchas are Legacy-Loop pain that cost rebuilds:
 
 - **All styles inline `style={{}}` only.** ZERO Tailwind. ZERO `className` for styling. (Exception: CSS @keyframes + media queries in globals.css.)
 - **`gridTemplateColumns` MUST use `minmax(0, 1fr)` — not plain `1fr`.** Plain `1fr` = `minmax(auto, 1fr)` = mobile clipping. Cost: 7 failed fix attempts.
@@ -104,7 +104,7 @@ Full ledger at `docs/DOCTRINE_LEDGER.md`. Top BINDINGS to honor every command:
 - **#16 DOC-DELEGATE-TO-CANONICAL.** Clone canonical patterns verbatim · do NOT reinvent abstractions.
 - **#17 DOC-AUDIT-FIRST-WIRE-PATTERN.** Read the actual file/substrate before any code-write action. No "imagined" file contents.
 - **#21 DOC-VERIFY-VERCEL-AFTER-COMMIT.** local tsc=0 ≠ deployed. Cite `dpl_<id>` READY + curl 200 in every §12 claiming production work landed.
-- **#25 DOC-VERCEL-BUDGET-CAP-20.** Sylvia spend isolated · daily $20 cap matches LegacyLoop production cap. Per-question $0.50 default.
+- **#25 DOC-VERCEL-BUDGET-CAP-20.** Sylvia spend isolated · daily $20 cap matches Legacy-Loop production cap. Per-question $0.50 default.
 
 ## COMMIT STANDARDS
 
