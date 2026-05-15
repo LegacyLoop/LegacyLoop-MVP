@@ -5,6 +5,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import PhotoBotClient from "./PhotoBotClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "PhotoBot — LegacyLoop" };
 
 export default async function PhotoBotPage() {

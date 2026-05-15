@@ -5,6 +5,8 @@ import ContractorsClient from "./ContractorsClient";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Contractors · LegacyLoop", description: "Local contractors for estate services and logistics" };
 
 export default async function ContractorsPage() {

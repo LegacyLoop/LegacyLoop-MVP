@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { WHITE_GLOVE, PROCESSING_FEE, calculateProcessingFee } from "@/lib/constants/pricing";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "White-Glove Services · LegacyLoop", description: "Full-service estate liquidation with dedicated managers" };
 
 const TIER_LABELS: Record<string, { label: string; color: string; bg: string }> = {

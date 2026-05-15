@@ -4,6 +4,8 @@ import StoreFront from "./StoreFront";
 import type { Metadata } from "next";
 import { safeJson } from "@/lib/utils/json";
 
+export const dynamic = "force-dynamic";
+
 type Params = Promise<{ userId: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {

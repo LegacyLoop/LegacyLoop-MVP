@@ -6,6 +6,8 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import type { Metadata } from "next";
 import { TIERS, TIER_NUMBER_TO_KEY, calculateTotalWithFee, calculateTierPrice, PROCESSING_FEE } from "@/lib/constants/pricing";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Billing · LegacyLoop",
   description: "Manage your subscription and billing",

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import EditItemForm from "./EditItemForm";
 
+export const dynamic = "force-dynamic";
+
 export default async function EditItemPage({
   params,
 }: {

@@ -12,6 +12,8 @@ import type {
 import type { PricingSourceName, PricingConsensus } from "@/lib/pricing/reconcile";
 import type { JuryVerdict } from "@/lib/pricing/jury";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Pricing Accuracy · Admin · LegacyLoop",
 };

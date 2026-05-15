@@ -5,6 +5,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import AnalyzeBotClient from "./AnalyzeBotClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "AnalyzeBot — LegacyLoop" };
 
 export default async function AnalyzeBotPage() {

@@ -6,6 +6,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import PriceBotClient from "./PriceBotClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "PriceBot — LegacyLoop" };
 
 export default async function PriceBotPage() {

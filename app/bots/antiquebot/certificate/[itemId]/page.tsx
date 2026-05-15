@@ -4,6 +4,8 @@ import { computeAuthenticityScore, getTierStyles } from "@/lib/antique-score";
 import Link from "next/link";
 import PrintButton from "../PrintButton";
 
+export const dynamic = "force-dynamic";
+
 type Params = Promise<{ itemId: string }>;
 
 function safeJsonParse(raw: string): any | null {

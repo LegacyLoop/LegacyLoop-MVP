@@ -19,6 +19,8 @@ import SoldPriceWidget from "./SoldPriceWidget";
 import SaleCongratsBar from "./SaleCongratsBar";
 import { enrichItemContext } from "@/lib/addons/enrich-item-context";
 
+export const dynamic = "force-dynamic";
+
 type Params = Promise<{ id: string }>;
 
 function safeJsonParse(raw: string): any | null {

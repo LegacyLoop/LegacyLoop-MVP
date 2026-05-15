@@ -5,6 +5,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import CarBotClient from "./CarBotClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "CarBot — LegacyLoop" };
 
 export default async function CarBotPage() {

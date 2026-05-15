@@ -9,6 +9,8 @@ import ChangePasswordSection from "./ChangePasswordSection";
 import DeleteAccountSection from "./DeleteAccountSection";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Settings · LegacyLoop", description: "Manage privacy, notifications, theme, and account preferences" };
 
 export default async function SettingsPage() {

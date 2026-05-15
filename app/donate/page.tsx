@@ -5,6 +5,8 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import DonateClient from "./DonateClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Donate Items · LegacyLoop", description: "Donate unsold items to local charities and support our mission" };
 
 export default async function DonatePage() {

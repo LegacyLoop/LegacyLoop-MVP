@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import IntegrationsClient from "./IntegrationsClient";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "Platform Integrations — LegacyLoop" };
 
 export default async function IntegrationsPage() {

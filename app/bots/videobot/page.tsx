@@ -5,6 +5,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import VideoBotClient from "./VideoBotClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "VideoBot — LegacyLoop" };
 
 export default async function VideoBotPage() {

@@ -6,6 +6,8 @@ import ArchivesClient from "./ArchivesClient";
 import { safeJson } from "@/lib/utils/json";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Legacy Archives · LegacyLoop",
   description: "Generate beautiful PDF reports, print books, and USB archives of your estate items",

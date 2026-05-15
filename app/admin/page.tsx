@@ -22,6 +22,8 @@ import { getTelemetryDropStats } from "@/lib/market-intelligence/telemetry-drop-
 // CMD-SCRAPER-ENRICHMENT-E: knowledge graph TTL config
 import { CATEGORY_TTLS_DAYS } from "@/lib/market-intelligence/enrichment-ttl";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const user = await authAdapter.getSession();
   if (!user) redirect("/auth/login");

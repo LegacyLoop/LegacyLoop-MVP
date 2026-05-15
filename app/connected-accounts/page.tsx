@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import ConnectedAccountsClient from "./ConnectedAccountsClient";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Connected Accounts · LegacyLoop", description: "Link your marketplace and social media accounts" };
 
 export default async function ConnectedAccountsPage() {

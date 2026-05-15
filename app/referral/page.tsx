@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import ReferralClient from "./ReferralClient";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "Referrals — LegacyLoop" };
 
 function generateCode(userId: string): string {

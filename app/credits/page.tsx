@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import CreditsClient from "./CreditsClient";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "Credits — LegacyLoop" };
 
 export default async function CreditsPage() {

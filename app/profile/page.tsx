@@ -6,6 +6,8 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { ChevronRight, Link2 } from "lucide-react";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "My Profile · LegacyLoop", description: "Your account overview and activity" };
 
 const TIER_NAMES: Record<number, string> = {

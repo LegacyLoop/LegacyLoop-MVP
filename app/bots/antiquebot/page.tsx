@@ -5,6 +5,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import AntiqueBotClient from "./AntiqueBotClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "AntiqueBot — LegacyLoop" };
 
 export default async function AntiqueBotPage() {

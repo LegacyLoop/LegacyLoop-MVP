@@ -8,6 +8,8 @@ import { Suspense } from "react";
 import { isAdmin } from "@/lib/constants/admin";
 import HeroReviewClient from "./HeroReviewClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Heroes Review · Admin · LegacyLoop" };
 
 export default async function AdminHeroesPage() {

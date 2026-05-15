@@ -5,6 +5,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import CollectiblesBotClient from "./CollectiblesBotClient";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "CollectiblesBot — LegacyLoop" };
 
 export default async function CollectiblesBotPage() {

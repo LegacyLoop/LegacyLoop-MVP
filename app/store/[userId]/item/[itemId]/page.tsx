@@ -9,6 +9,8 @@ import { safeJson } from "@/lib/utils/json";
 import TradeButton from "./TradeButton";
 import ItemPhotoStrip from "@/app/items/[id]/ItemPhotoStrip";
 
+export const dynamic = "force-dynamic";
+
 type Params = Promise<{ userId: string; itemId: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {

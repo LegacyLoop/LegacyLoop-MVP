@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = { title: "Bill of Lading — LegacyLoop" };
 
 function safeJson(s: string | null | undefined): any {

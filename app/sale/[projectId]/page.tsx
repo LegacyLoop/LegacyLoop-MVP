@@ -4,6 +4,8 @@ import Link from "next/link";
 import ShareButtons from "@/app/components/ShareButtons";
 import { safeJson } from "@/lib/utils/json";
 
+export const dynamic = "force-dynamic";
+
 type Params = Promise<{ projectId: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {

@@ -6,6 +6,8 @@ import type { Metadata } from "next";
 
 import { isAdmin } from "@/lib/constants/admin";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Estate Quotes · Admin · LegacyLoop" };
 
 function getThisWeekStart(): Date {
