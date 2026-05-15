@@ -113,6 +113,12 @@
 | AirLLM | (Reference 10 · run 70B models off SSD via layer-by-layer load · URL not in ideas file) | library | 💡 UNKNOWN-URL · banked-LOW · `pip install airllm` likely | research before install | 2026-05-14 unresolved |
 | Subq SSA | (Reference 9 · pre-launch · weight-list only · not yet released) | research | 🟡 BANKED · monitor-only | wait for public release | 2026-05-14 unresolved |
 
+## Voice Input
+
+| Skill | Source | Type | Status | Install | Verified |
+|---|---|---|---|---|---|
+| wispr-flow | https://wisprflow.ai | DMG (macOS · Apple Silicon + Intel) | EVAL · verdict pointer → docs/audits/WISPR_FLOW_EVAL_2026-05-14.md | DMG download (brew cask not surfaced as official) | 2026-05-14 P45 |
+
 ## Curated lists (meta-resources)
 
 | Skill | Source | Type | Status | Install | Verified |

@@ -20,6 +20,7 @@
 | Wave 3 Slot 3 | TBD flag-killer OR P21 Graphify-Obsidian-deep | CEO $1-3 spend GO for P21 | ~15-30 min |
 | Wave 4 | CMD-CODEBURN-INSTALL-REFIRE V19 | CEO surfaces canonical URL (YouTube creator funnel) | ~25-35 min |
 | ~~Wave 5~~ → **W7 Slot 1** ✅ | CMD-CLAUDE-MEM-INSTALL V19 R29 P44 (2026-05-14 PM) | CLOSED · ACTIVATED · 75K-star · dual-pattern with agent-memory · zero conflict | ~30 min actual |
+| **Wave 8 Slot 1** ✅ | CMD-WISPR-FLOW-EVAL V19 R29 P45 (Ref CEO-2026-05-14) | CLOSED · GREEN-with-NOTE ~94% accuracy · KEEP out-of-box free tier · audit doc shipped | ~25 min actual |
 | Wave 6 | CMD-5-GITHUB-SKILL-REPOS-CHERRY-PICK V19 | CodeBurn telemetry from Wave 4 | ~45-60 min |
 | Backfill close | scoreboard recomputes ≥85% Claude-side | post-Wave-6 §12 | — |
 | Bridge to Sylvia | CMD-SYLVIA-SYSTEM-PROMPT-ALLINCLUSIVE V19 (bridge · NOT in this epic per MC Correction 3) | post-backfill close | ~45-60 min |
@@ -59,6 +60,15 @@
 - Gate: CEO surfaces canonical URL via YouTube creator funnel
 - Sub-cyl: CMD-CODEBURN-INSTALL-REFIRE V19 (banked Wave 4)
 - Lessons applied: smaller install scope · skill metadata audit pre-install
+
+### Ref CEO-2026-05-14 · Wispr Flow voice transcription eval
+- Status: ✅ CLOSED R29 P45 (2026-05-14 PM · CMD-WISPR-FLOW-EVAL V19 Wave 8 Slot 1)
+- Decision: KEEP out-of-box (free tier 2,000 words/week) · GREEN-with-NOTE ~94% accuracy
+- Canonical: https://wisprflow.ai · DMG (macOS Apple Silicon + Intel) · Pro $12-15/mo (banked monitoring)
+- Typo classes captured: brand hyphen-loss (`Legacy-Loop` → `Legacy Loop` · voice-tool class · NOT Wispr-specific) · word drop (`Mission` lost from "Mission Connecting Generations") · numeral conversion (`Wave eight` → `Wave 8` · neutral)
+- Custom-vocab requirement: `Legacy-Loop` + brand terms must be added to Wispr Settings → Custom Vocabulary · Sylvia voice-layer wire B2-W4 inherits this requirement
+- Verdict pointer: `docs/audits/WISPR_FLOW_EVAL_2026-05-14.md`
+- Banked follow-ons: CMD-WISPR-FLOW-CLAUDE-CODE-WIRE V20 Branch β (TIER-DECIDE) · CMD-WISPR-FLOW-CUSTOM-VOCAB V20 · CMD-VOICE-ALT-EVAL-MACWHISPER V20 (Track B local-only candidate) · CMD-SYLVIA-VOICE-LAYER-WIRE V20 (Track B B2-W4)
 
 ### Ref Notes-last-session · 5 GitHub skill repos cherry-pick
 - Repos: Anthropic skills · Awesome Claude · Alleriza 230+ · Plugins+Skills 340 · Superpowers 20
