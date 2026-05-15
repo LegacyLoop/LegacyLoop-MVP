@@ -219,7 +219,7 @@ export async function pruneOld(daysOld: number): Promise<{ deleted: number }> {
 import { promises as fs } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
-import type { AuditEntry, MemoryHit } from "./memory-types";
+import type { AuditEntry, MemoryHit, ToolAuditEntry } from "./memory-types";
 
 const AUDIT_DIR = join(process.cwd(), "sylvia-data", "audit");
 const MEMORY_DIR = join(process.cwd(), "sylvia-data", "memory");
@@ -286,3 +286,24 @@ export async function queryMemoryByTopic(
     return [];
   }
 }
+
+// ─── R29 P63 additions (tool audit JSONL writer) ──────────────────
+// CMD-SYLVIA-TOOL-FILE-READ V20 v2.1 R29 P63 · 2026-05-15
+//
+// Clones appendAuditEntry pattern · separate filename prefix to
+// distinguish operational tool audits from consensus dispatch audits.
+// Same dir · same fs ephemeral-window caveat applies (R25+ AgentDB).
+
+/**
+ * Append one tool audit row to sylvia-data/audit/tool-{YYYY-MM-DD}.jsonl.
+ * Idempotent re: directory creation. Caller wraps in try/catch —
+ * audit failure must NEVER fail the consumer's response.
+ */
+export async function appendToolAuditEntry(entry: ToolAuditEntry): Promise<void> {
+  await fs.mkdir(AUDIT_DIR, { recursive: true });
+  const date = entry.timestamp.slice(0, 10); // YYYY-MM-DD
+  const path = join(AUDIT_DIR, `tool-${date}.jsonl`);
+  await fs.appendFile(path, JSON.stringify(entry) + "\n", "utf8");
+}
+
+export type { ToolAuditEntry, SylviaToolName, ToolOutcome } from "./memory-types";

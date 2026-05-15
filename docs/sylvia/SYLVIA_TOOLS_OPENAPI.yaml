@@ -1,0 +1,65 @@
+# SYLVIA_TOOLS_OPENAPI.yaml
+# CMD-SYLVIA-TOOL-FILE-READ V20 v2.1 R29 P63 · 2026-05-15
+#
+# OpenAPI 3.1 spec for Sylvia operational tools (v1 · file_read only).
+# Forward-compat: P64 adds /file-write · P65 adds /bash to paths block.
+# Register in Open WebUI Settings → Tools (paste this YAML or serve
+# from /api/sylvia/tools/openapi · separate cyl banked).
+
+openapi: 3.1.0
+info:
+  title: Sylvia Operational Tools
+  version: 1.0.0
+  description: HTTP-route operational tools for Sylvia AI agent (file_read v1)
+servers:
+  - url: http://host.docker.internal:3000
+    description: Local Next.js dev (Open WebUI Docker → host)
+  - url: https://app.legacy-loop.com
+    description: Production Vercel
+paths:
+  /api/sylvia/tools/file-read:
+    post:
+      operationId: file_read
+      summary: Read a file from the local filesystem (permission-gated)
+      description: |
+        Read a file content with credential-redaction and audit logging.
+        Permission gate: ENV allow-list + hard deny for .env*, secrets/, .git/, etc.
+        Default-deny if no allow-list match. Max 512 KB per call.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [path]
+              properties:
+                path:
+                  type: string
+                  description: Absolute or relative path
+                encoding:
+                  type: string
+                  enum: [utf-8, base64]
+                  default: utf-8
+      responses:
+        '200':
+          description: File read successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content: { type: string }
+                  bytesRead: { type: integer }
+                  credentialsRedacted: { type: integer }
+        '400': { description: Validation error }
+        '401': { description: Auth failure }
+        '403': { description: Permission denied }
+        '500': { description: Internal error }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: SYLVIA_API_INTERNAL_SECRET

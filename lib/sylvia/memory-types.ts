@@ -37,3 +37,35 @@ export interface MemoryHit {
   relevanceScore?: number; // 0-100 · R25+ vector similarity
   ageMs: number;
 }
+
+// ─── R29 P63 additions (operational tool audit shape) ─────────────
+// CMD-SYLVIA-TOOL-FILE-READ V20 v2.1 R29 P63 · 2026-05-15
+//
+// Tool audit shape · distinct from consensus AuditEntry which is
+// dispatch-specific. Operational tools (file_read · file_write · bash)
+// share this shape. Forward-compat: R25+ may merge to unified shape
+// via OperationalAuditEntry parent if patterns converge.
+
+export type SylviaToolName = "file_read" | "file_write" | "bash";
+
+export type ToolOutcome = "ok" | "deny" | "error" | "exists" | "timeout";
+
+export interface ToolAuditEntry {
+  timestamp: string; // ISO8601
+  tool: SylviaToolName;
+  caller: string; // session ID or "sylvia-open-webui-<id>"
+  request: Record<string, unknown>; // tool-specific request shape · JSON-serializable
+  permission: {
+    outcome: "allow" | "deny";
+    matchedAllow?: string | null;
+    matchedDeny?: string | null;
+    reason?: string;
+  };
+  result: {
+    outcome: ToolOutcome;
+    duration_ms: number;
+    bytes?: number;
+    credentialsRedacted?: number;
+    reason?: string;
+  };
+}
