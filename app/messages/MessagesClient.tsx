@@ -43,6 +43,7 @@ type NewConvForm = {
 type Props = {
   initialConversations: Conversation[];
   itemsForForm: { id: string; displayTitle: string }[];
+  stats: { total: number; botCount: number; humanCount: number; unreadCount: number };
 };
 
 type FilterMode = "all" | "unread" | "bot" | "byItem" | "hot" | "needs_reply" | "agent" | "closed";
@@ -118,7 +119,7 @@ const TEMPLATES = [
   { label: "Estate Closing", text: "This is a one-time estate sale, so quantities are limited and items are first-come, first-served. Would you like to come view it in person or proceed with a purchase?" },
 ];
 
-export default function MessagesClient({ initialConversations, itemsForForm }: Props) {
+export default function MessagesClient({ initialConversations, itemsForForm, stats }: Props) {
   const searchParams = useSearchParams();
   const initialItemId = searchParams.get("itemId") || "";
   const [convs, setConvs] = useState<Conversation[]>(initialConversations);
@@ -268,14 +269,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
   const unreadCount = (conv: Conversation) =>
     conv.messages.filter((m) => m.sender === "buyer" && !m.isRead).length;
 
-  const totalUnread = useMemo(
-    () => convs.reduce((sum, c) => sum + c.messages.filter((m) => m.sender === "buyer" && !m.isRead).length, 0),
-    [convs]
-  );
-  const totalBotFlagged = useMemo(
-    () => convs.filter((c) => c.botScore < 50).length,
-    [convs]
-  );
+  // PATH E BUILD-UP · server-passed stats props supersede client useMemo aggregates
 
   // ── Filtering Logic ───────────────────────────────────
   const filteredConvs = useMemo(() => {
@@ -551,7 +545,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
             }}
           >
             Unread
-            {totalUnread > 0 && (
+            {stats.unreadCount > 0 && (
               <span
                 style={{
                   display: "inline-flex",
@@ -567,7 +561,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                   color: "#fff",
                 }}
               >
-                {totalUnread}
+                {stats.unreadCount}
               </span>
             )}
           </button>
@@ -592,7 +586,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
             }}
           >
             Bot Flagged
-            {totalBotFlagged > 0 && (
+            {stats.botCount > 0 && (
               <span
                 style={{
                   display: "inline-flex",
@@ -608,7 +602,7 @@ export default function MessagesClient({ initialConversations, itemsForForm }: P
                   color: "#fff",
                 }}
               >
-                {totalBotFlagged}
+                {stats.botCount}
               </span>
             )}
           </button>

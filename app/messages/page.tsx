@@ -54,14 +54,22 @@ export default async function MessagesPage() {
     return { id: i.id, displayTitle: i.title || ai?.item_name || `Item #${i.id.slice(0, 8)}` };
   });
 
-  // Stats
-  const total = conversations.length;
-  const botCount = conversations.filter((c) => c.botScore < 50).length;
-  const humanCount = conversations.filter((c) => c.botScore >= 80).length;
-  const unreadCount = conversations.reduce(
-    (sum, c) => sum + c.messages.filter((m) => m.sender === "buyer" && !m.isRead).length,
-    0
-  );
+  // Stats (PATH E BUILD-UP · query-layer · Promise.all batched · kills O(N×M) reduce)
+  const convWhere = { itemId: { in: itemIds } };
+  const [total, botCount, humanCount, unreadCount] = itemIds.length
+    ? await Promise.all([
+        prisma.conversation.count({ where: convWhere }),
+        prisma.conversation.count({ where: { ...convWhere, botScore: { lt: 50 } } }),
+        prisma.conversation.count({ where: { ...convWhere, botScore: { gte: 80 } } }),
+        prisma.message.count({
+          where: {
+            sender: "buyer",
+            isRead: false,
+            conversation: { itemId: { in: itemIds } },
+          },
+        }),
+      ])
+    : [0, 0, 0, 0];
 
   // Serialize dates for client
   const serialized = conversations.map((c) => ({
@@ -96,7 +104,7 @@ export default async function MessagesPage() {
             />
           </div>
         ) : (
-          <MessagesClient initialConversations={serialized as any} itemsForForm={itemsForForm} />
+          <MessagesClient initialConversations={serialized as any} itemsForForm={itemsForForm} stats={{ total, botCount, humanCount, unreadCount }} />
         )}
       </div>
     </MessagesAgentWrapper>

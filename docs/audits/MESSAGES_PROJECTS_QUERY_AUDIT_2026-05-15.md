@@ -88,7 +88,7 @@ All 3 routes already have `export const dynamic = "force-dynamic"` (P42+P46 clos
 
 | Route | LOC | Class | Follow-on cyl banked |
 |---|---|---|---|
-| `/messages` | 104 | 🔴 **MUST-ADD** | **CMD-MESSAGES-STATS-AGGREGATE-SPLIT V20 · HIGH** |
+| `/messages` | 104 | ✅ **CLOSED** R29 P55 Wave 11 Slot 1 PATH E BUILD-UP · 4 stats refactored to `prisma.conversation.count` + `prisma.message.count` Promise.all-batched (kills O(N×M) reduce) · stats wired props to MessagesClient · client `useMemo` duplicates removed (L271-277) · /messages pulled out of demo mode | CMD-MESSAGES-STATS-AGGREGATE-SPLIT V20 · HIGH SHIPPED |
 | `/projects` | 89 | 🟢 CLEAN-WITH-CAVEAT | CMD-PROJECTS-FUTURE-SCALE-AUDIT V20 · LOW (cyclic) |
 | `/projects/[id]` | 96 | 🟡 SHOULD-ADD | **CMD-PROJECTS-DETAIL-INCLUDE-TRIM V20 · MED** |
 
