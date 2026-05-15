@@ -202,6 +202,7 @@ Cross-ref from `~/.claude/settings.json` `enabledPlugins` + local skill registry
 | RuFlow Notion guide | https://noocap.notion.site/RuFlow-Setup-Guide-Run-60-AI-Agents-Inside-Claude-Code-352508e99dda817d906deb0cd83e75d4 | 📚 META · Notion-rendered (WebFetch JS-blind) |
 | CEO ideas file | `~/Downloads/Claude Code & Sylvia AI Ideas (2).txt` (965 lines · 26+ references) | 12+ skills referenced |
 | Backfill Epic plan | `docs/skills/IDEAS_FILE_BACKFILL_EPIC.md` (R29 P31 Wave 2 Slot 2) | 7 BANKED HIGH refs sequenced |
+| Brand spelling audit | `docs/audits/BRAND_SPELLING_AUDIT_LEGACY_LOOP_2026-05-15.md` (R29 P54 Wave 10 Slot C · Track A) | 294 LegacyLoop occurrences classified · sweep follow-on banked HIGH |
 
 ---
 
