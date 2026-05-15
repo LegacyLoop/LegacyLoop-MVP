@@ -22,7 +22,7 @@ export default async function ProjectDetailPage({ params }: { params: Params }) 
           photos: { take: 1 },
           valuation: true,
           antiqueCheck: true,
-          aiResult: true,
+          aiResult: { select: { rawJson: true } },
           conversations: { select: { id: true } },
         },
         orderBy: { createdAt: "desc" },

@@ -64,6 +64,9 @@ All 3 routes already have `export const dynamic = "force-dynamic"` (P42+P46 clos
 
 ## §4 · /projects/[id]/page.tsx verdict · 🟡 SHOULD-ADD
 
+- ✅ **CLOSED R29 P57 Wave 11 Slot 3** · aiResult include narrowed to rawJson-only · ~4 dead scalar columns dropped per item (id · itemId · confidence · createdAt) · ProjectDetailClient props preserved · banked CMD-ITEM-CACHED-DISPLAY-NAME V20 MED schema follow-on (denormalize cachedItemName · obviate rawJson pull entirely)
+
+
 - **LOC:** 96
 - **force-dynamic:** L8 ✅
 - **Queries:**
