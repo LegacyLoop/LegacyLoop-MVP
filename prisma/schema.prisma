@@ -37,6 +37,7 @@ model User {
   heroVerified     Boolean  @default(false)
   heroCategory     String?
   googleId         String?  @unique
+  facebookId       String?  @unique
   displayName      String?
   avatarUrl        String?
   phoneNumber      String?  @unique

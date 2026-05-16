@@ -7,8 +7,9 @@ import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 type AuthPanel = "none" | "phone" | "magic";
 
 const URL_ERROR_MESSAGES: Record<string, string> = {
-  oauth_failed: "Google sign-in failed. Please try again or use another method.",
-  oauth_not_configured: "Google sign-in is not available right now. Please use email or phone instead.",
+  oauth_failed: "Social sign-in failed. Please try again or use another method.",
+  oauth_not_configured: "Social sign-in is not available right now. Please use email or phone instead.",
+  oauth_email_required: "We need your email to create your account. Please grant email permission or use another sign-in method.",
   expired: "That sign-in link has expired. Please request a new one below.",
 };
 
@@ -248,6 +249,12 @@ function LoginForm() {
     </svg>
   );
 
+  const FacebookLogo = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" style={{ flexShrink: 0 }}>
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/>
+    </svg>
+  );
+
   const PhoneIcon = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
       <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
@@ -303,7 +310,7 @@ function LoginForm() {
             margin: "0.4rem 0 0 0",
           }}
         >
-          Sign in to your LegacyLoop dashboard
+          Sign in to your Legacy-Loop dashboard
         </p>
       </div>
 
@@ -589,6 +596,42 @@ function LoginForm() {
         >
           <GoogleLogo />
           Continue with Google
+        </a>
+
+        {/* Facebook */}
+        <a
+          href="/api/auth/facebook/init"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "0.625rem",
+            height: 48,
+            width: "100%",
+            borderRadius: 12,
+            border: "1px solid rgba(255,255,255,0.1)",
+            background: "rgba(255,255,255,0.08)",
+            color: "#e2e8f0",
+            fontSize: "0.85rem",
+            fontWeight: 600,
+            textDecoration: "none",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+            boxShadow: "none",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.12)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+            (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
+            (e.currentTarget as HTMLElement).style.boxShadow = "none";
+            (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+          }}
+        >
+          <FacebookLogo />
+          Continue with Facebook
         </a>
 
         {/* Phone */}
