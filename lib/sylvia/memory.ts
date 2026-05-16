@@ -219,7 +219,7 @@ export async function pruneOld(daysOld: number): Promise<{ deleted: number }> {
 import { promises as fs } from "node:fs";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
-import type { AuditEntry, MemoryHit, ToolAuditEntry } from "./memory-types";
+import type { AuditEntry, MemoryHit, ToolAuditEntry, EpisodicEntry } from "./memory-types";
 
 const AUDIT_DIR = join(process.cwd(), "sylvia-data", "audit");
 const MEMORY_DIR = join(process.cwd(), "sylvia-data", "memory");
@@ -307,3 +307,51 @@ export async function appendToolAuditEntry(entry: ToolAuditEntry): Promise<void>
 }
 
 export type { ToolAuditEntry, SylviaToolName, ToolOutcome } from "./memory-types";
+
+// ─── R29 P72 additions (episodic memory writer) ───────────────────
+// CMD-SYLVIA-EPISODIC-MEMORY-UNIFY V20 v2.1 R29 P72 · 2026-05-16
+//
+// Clones appendToolAuditEntry pattern · writes to Prisma SylviaEpisodic
+// with JSONL fallback when Prisma unavailable (Vercel ephemeral resilience).
+
+/**
+ * Append one episodic row to Prisma SylviaEpisodic + JSONL fallback.
+ * Caller wraps in try/catch — episodic failure must NEVER fail consumer.
+ */
+export async function appendEpisodic(entry: EpisodicEntry): Promise<{ id?: string }> {
+  try {
+    const created = await prisma.sylviaEpisodic.create({
+      data: {
+        timestamp: new Date(entry.timestamp),
+        sessionId: entry.sessionId,
+        eventType: entry.eventType,
+        userId: entry.userId ?? null,
+        itemId: entry.itemId ?? null,
+        sylviaMemoryId: entry.sylviaMemoryId ?? null,
+        payload: JSON.stringify(entry.payload),
+        causedById: entry.causedById ?? null,
+        source: entry.source,
+      },
+      select: { id: true },
+    });
+    return { id: created.id };
+  } catch (prismaErr) {
+    try {
+      await fs.mkdir(AUDIT_DIR, { recursive: true });
+      const date = entry.timestamp.slice(0, 10);
+      const path = join(AUDIT_DIR, `episodic-${date}.jsonl`);
+      await fs.appendFile(path, JSON.stringify(entry) + "\n", "utf8");
+      console.warn(
+        `[sylvia-episodic] Prisma write failed · JSONL fallback used: ${prismaErr instanceof Error ? prismaErr.message : "unknown"}`,
+      );
+      return {};
+    } catch (fsErr) {
+      console.error(
+        `[sylvia-episodic] BOTH Prisma + JSONL failed: ${fsErr instanceof Error ? fsErr.message : "unknown"}`,
+      );
+      return {};
+    }
+  }
+}
+
+export type { EpisodicEntry, EpisodicEventType, EpisodicSource } from "./memory-types";

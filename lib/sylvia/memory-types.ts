@@ -69,3 +69,36 @@ export interface ToolAuditEntry {
     reason?: string;
   };
 }
+
+// ─── R29 P72 additions (episodic memory shape) ────────────────────
+// CMD-SYLVIA-EPISODIC-MEMORY-UNIFY V20 v2.1 R29 P72 · 2026-05-16
+//
+// Episodic memory entry shape · unifies EventLog + ScraperUsageLog +
+// audit JSONL into a single timeline contract. Forward-compat: R25+
+// AgentDB swap consumed via same shape.
+
+export type EpisodicEventType =
+  | "triage"
+  | "consensus"
+  | "tool_call"
+  | "chat_turn"
+  | "error"
+  | "human_route";
+
+export type EpisodicSource =
+  | "EventLog"
+  | "ScraperUsageLog"
+  | "audit-jsonl"
+  | "direct";
+
+export interface EpisodicEntry {
+  timestamp: string; // ISO8601
+  sessionId: string;
+  eventType: EpisodicEventType;
+  userId?: string;
+  itemId?: string;
+  sylviaMemoryId?: string;
+  payload: Record<string, unknown>;
+  causedById?: string;
+  source: EpisodicSource;
+}

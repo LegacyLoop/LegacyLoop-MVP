@@ -78,6 +78,7 @@ model User {
   userAddons            UserAddon[]
   listingPublishes      ListingPublish[]
   sylviaMemories        SylviaMemory[]
+  sylviaEpisodics       SylviaEpisodic[]
   budgetPreferences     BudgetPreferences?
 }
 
@@ -499,6 +500,7 @@ model Item {
   offers            Offer[]
   listingPublishes  ListingPublish[]
   sylviaMemories    SylviaMemory[]
+  sylviaEpisodics   SylviaEpisodic[]
   sellingPipelines  SellingPipeline[]
 
   user    User     @relation(fields: [userId], references: [id])
@@ -1344,6 +1346,8 @@ model SylviaMemory {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  sylviaEpisodics SylviaEpisodic[]
+
   @@index([sessionId])
   @@index([promptHash])
   @@index([agentName])
@@ -1353,6 +1357,49 @@ model SylviaMemory {
   @@index([createdAt])
   @@index([sessionId, createdAt])
   @@map("sylvia_memory")
+}
+
+// ─── R29 P72 · CMD-SYLVIA-EPISODIC-MEMORY-UNIFY V20 v2.1 · 2026-05-16 ──
+// Episodic memory primitive (Sylvia 7-memory framework §7).
+// Unifies EventLog + ScraperUsageLog + audit JSONL into single timeline.
+// Forward-compat: Phase 9.1 AgentDB swap consumed via same shape.
+
+model SylviaEpisodic {
+  id String @id @default(cuid())
+
+  // Event identity
+  timestamp DateTime @default(now())
+  sessionId String
+  eventType String // "triage" · "consensus" · "tool_call" · "chat_turn" · "error" · "human_route"
+
+  // Cross-references (nullable · SET NULL on parent delete · learnings outlive items)
+  userId         String?
+  itemId         String?
+  sylviaMemoryId String? // optional link to short-term memory row
+
+  // Event payload (JSON-encoded · forward-compat shape)
+  payload String // JSON.stringify of event-specific shape
+
+  // Cause-effect chain (banked Phase 9 expansion · v1 simple parent ref)
+  causedById String?
+  causes     SylviaEpisodic[] @relation("EpisodicCausation")
+  causedBy   SylviaEpisodic?  @relation("EpisodicCausation", fields: [causedById], references: [id], onDelete: SetNull)
+
+  // Provenance
+  source String // "EventLog" · "ScraperUsageLog" · "audit-jsonl" · "direct"
+
+  createdAt DateTime @default(now())
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  item         Item?         @relation(fields: [itemId], references: [id], onDelete: SetNull)
+  sylviaMemory SylviaMemory? @relation(fields: [sylviaMemoryId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId])
+  @@index([timestamp])
+  @@index([eventType])
+  @@index([userId])
+  @@index([causedById])
+  @@map("sylvia_episodic")
 }
 
 // ─────────────────────────────────────────────────────────────────
