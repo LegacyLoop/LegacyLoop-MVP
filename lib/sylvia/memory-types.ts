@@ -102,3 +102,30 @@ export interface EpisodicEntry {
   causedById?: string;
   source: EpisodicSource;
 }
+
+// ─── R29 P73 additions (semantic memory shape) ────────────────────
+// CMD-SYLVIA-SEMANTIC-MEMORY-BRIDGE V20 v2.1 R29 P73 · 2026-05-16
+//
+// Semantic memory entry shape · maps 239 skill packs + Phase 3 SSA
+// structure to routable knowledge graph. PATH A file-system-v1
+// shipped this fire · embeddings banked Phase 9.1 (BINDING #25 $0).
+
+export type SemanticEntityType =
+  | "skill"    // skill-pack file
+  | "bot"      // bot domain (BuyerBot · MegaBot · etc)
+  | "concept"  // extracted concept (entity · keyword · pattern)
+  | "doctrine" // BINDING reference
+  | "spec";    // CMD V20 spec reference
+
+export interface SemanticEntry {
+  id: string;
+  type: SemanticEntityType;
+  name: string;
+  path?: string;        // file path if file-backed
+  domain?: string;      // bot domain · doctrine class · etc
+  tags: string[];
+  related: string[];    // related entry IDs
+  body?: string;        // optional text content (skill .md body · etc)
+  embedding?: number[]; // optional vector (Phase 9.1 banked)
+  lastIndexed: string;  // ISO8601
+}
