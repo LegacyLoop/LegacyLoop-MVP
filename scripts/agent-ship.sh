@@ -55,6 +55,31 @@ if [ "$MERGE_BASE" != "$REMOTE_HEAD" ]; then
   exit 1
 fi
 
+# R29 P71 addition · Wave 14 Closure
+# Pre-flight 4: gate FF-push on LiteLLM gateway liveness when commit touches
+# lib/sylvia/* (prevents gateway-down deploys breaking Sylvia chat handler).
+# Override: SKIP_LITELLM_PREFLIGHT=1 bash scripts/agent-ship.sh (for intentional
+# gateway-down dev work · banked CY-N monitor).
+preflight_litellm_check() {
+  if [ "${SKIP_LITELLM_PREFLIGHT:-0}" = "1" ]; then
+    echo "⊙ LITELLM preflight skipped via SKIP_LITELLM_PREFLIGHT=1"
+    return 0
+  fi
+  if git diff --name-only HEAD~1..HEAD 2>/dev/null | grep -q "^lib/sylvia/"; then
+    echo "→ Sylvia substrate touched · LiteLLM gateway preflight"
+    local STATUS
+    STATUS="$(curl -sL --max-time 5 -o /dev/null -w "%{http_code}" http://localhost:8000/v1/models 2>/dev/null || echo "000")"
+    if [ "$STATUS" != "200" ]; then
+      echo "❌ LiteLLM gateway HTTP $STATUS · expected 200 · HALT FF-push" >&2
+      echo "   Remedy: launchctl kickstart -k gui/\$(id -u)/com.legacyloop.litellm" >&2
+      echo "   Override: SKIP_LITELLM_PREFLIGHT=1 bash scripts/agent-ship.sh" >&2
+      exit 3
+    fi
+    echo "✓ LiteLLM gateway 200 · proceed"
+  fi
+}
+preflight_litellm_check
+
 # Try FF-push to main FIRST (canonical · production deploy · NO --force)
 if git push origin "HEAD:main"; then
   echo "✓ FF-pushed to origin/main (single production deploy)"

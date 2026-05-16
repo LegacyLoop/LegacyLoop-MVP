@@ -99,6 +99,21 @@ for N in $(seq 1 $AGENT_COUNT); do
     echo "  ✓ .env symlinked"
   fi
 
+  # R29 P71 addition · Wave 14 Closure
+  # Provisions sylvia-data + .env.sylvia symlinks per agent worktree.
+  # Prevents Wave 14 Slot C P70 HALT recurrence (root cause 2026-05-16 AM:
+  # Sylvia hardwired chat handler needed sylvia-data/ + .env.sylvia in
+  # agent-3 worktree · they were absent · cyl HALTed pre-FIX-1).
+  # BINDING #5 honored: symlink not cat · zero value leak.
+  if [ ! -L "$WT_PATH/.env.sylvia" ] && [ ! -e "$WT_PATH/.env.sylvia" ]; then
+    ln -s "$MAIN_REPO/.env.sylvia" "$WT_PATH/.env.sylvia"
+    echo "  ✓ .env.sylvia symlinked"
+  fi
+  if [ ! -L "$WT_PATH/sylvia-data" ] && [ ! -e "$WT_PATH/sylvia-data" ]; then
+    ln -s "$MAIN_REPO/sylvia-data" "$WT_PATH/sylvia-data"
+    echo "  ✓ sylvia-data symlinked"
+  fi
+
   # Run prisma generate + db push to create per-worktree dev.db (idempotent)
   (cd "$WT_PATH" && npx prisma generate >/dev/null 2>&1 || true)
   if [ ! -f "$WT_PATH/prisma/dev.db" ]; then
