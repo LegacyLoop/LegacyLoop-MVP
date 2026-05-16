@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import type { MetadataRoute } from "next";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://legacyloop.com";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.legacy-loop.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const items = await prisma.item.findMany({
