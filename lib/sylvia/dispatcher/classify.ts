@@ -12,6 +12,8 @@
 // "high" routes to 4-AI consensus; "low" routes to single-agent path.
 
 import { triageAndRoute } from "@/lib/sylvia";
+import { recognizePattern } from "../pattern";
+import type { TaskComplexity } from "../types";
 
 export type Stakes = "low" | "high";
 
@@ -52,4 +54,37 @@ export async function classifyStakes(question: string, sessionId: string): Promi
   const verdict = result.responseText.trim().toUpperCase();
   const stakes: Stakes = verdict.startsWith("HIGH") ? "high" : "low";
   return { stakes, source: "llm", costUsd: result.actualCostUsd };
+}
+
+// ─── R29 P74 addition · pattern-aware complexity hint ────────────────
+// CMD-SYLVIA-PATTERN-ENGINE-CONSOLIDATE V20 v2.1 · 2026-05-16
+//
+// Additive · feature-flag gated · default OFF · zero existing-path mutation.
+// classifyStakes signature UNCHANGED. New exported function consumers
+// opt into via SYLVIA_PATTERN_HINT_ENABLED=1.
+// BINDING #16 honored: existing canonical untouched · NEW surface only.
+
+const PATTERN_HINT_ENABLED = process.env.SYLVIA_PATTERN_HINT_ENABLED === "1";
+
+/**
+ * Pre-classify pattern hint · consults recognizePattern() if env-enabled.
+ * Returns { hint?, confidence } for caller to fold into TriageTask.complexityHint.
+ * NEVER throws · NEVER blocks · safe to call at any classifier callsite.
+ */
+export async function preClassifyPatternHint(input: {
+  promptHash: string;
+  prompt: string;
+  sessionId: string;
+}): Promise<{ hint?: TaskComplexity; confidence: number }> {
+  if (!PATTERN_HINT_ENABLED) return { confidence: 0 };
+  try {
+    const result = await recognizePattern(input);
+    return {
+      hint: result.suggestedComplexity,
+      confidence: result.confidence,
+    };
+  } catch (err) {
+    console.error("[sylvia-classify] preClassifyPatternHint failed:", err);
+    return { confidence: 0 };
+  }
 }
