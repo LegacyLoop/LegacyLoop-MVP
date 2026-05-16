@@ -39,9 +39,10 @@ cd "$REPO_ROOT"
 
 echo "[litellm-dev] Repo: $REPO_ROOT"
 
-# 1. Kill any stale proxy processes
-echo "[litellm-dev] Killing stale proxy processes..."
-pkill -f 'litellm.*--config litellm_config.yaml' 2>/dev/null || true
+# 1. Kill any stale proxy processes (R29 P77 · timeout-bounded · chronic pkill hang fix 2026-05-16)
+echo "[litellm-dev] Killing stale proxy processes (timeout 3s)..."
+# Use perl-spawned timeout · macOS lacks GNU coreutils timeout by default
+perl -e 'alarm 3; exec @ARGV' pkill -f 'litellm.*--config litellm_config.yaml' 2>/dev/null || true
 sleep 1
 
 # 2. Surgical key export from .env.local — only the active cloud-provider keys.
