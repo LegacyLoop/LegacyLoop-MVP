@@ -80,3 +80,9 @@ graphify-out-sylvia/
 # CMD-WORKING-TREE-CLEANUP V19 R29 P26 · prevent future .bak clutter
 # NOTE: .env*.bak* covered by .env* rule earlier · deliberate preserve for live-key fallback
 *.bak.*
+
+# Session telemetry artifacts (added 2026-05-15 night-end · prevent reappearance)
+console-*.txt
+page-*.yaml
+page-*.yml
+.playwright-mcp/
