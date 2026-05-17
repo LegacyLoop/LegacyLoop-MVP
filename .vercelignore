@@ -1,0 +1,26 @@
+# Vercel deployment ignore · keeps function bundle under 250 MB limit
+# Dev-only artifacts that should never reach Vercel serverless functions.
+
+# Legacy local-storage uploads (replaced by Cloudinary in production)
+# See lib/adapters/storage.ts · /uploads/ path used only when SSTORAGE != 'cloudinary'
+public/uploads/
+
+# Local SQLite DBs (production uses Turso · BINDING #6)
+prisma/dev.db
+prisma/dev.db-journal
+prisma/prisma/
+
+# Local audit + ops logs
+*.log
+.legacyloop/
+
+# Backup files from sed sweeps
+*.backup-*
+*.bak.*
+
+# Skill packs · brand vault · graphify output (rebuilt on demand · not needed in function bundle)
+graphify-out/
+sylvia-data/
+
+# Vim swap files
+.*.swp
