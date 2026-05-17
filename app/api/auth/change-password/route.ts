@@ -67,7 +67,7 @@ export async function POST(req: Request) {
   const html = emailWrapper(`
     <h1 style="font-size:22px;font-weight:700;color:${TEXT_PRIMARY};margin:0 0 16px;text-align:center">Your password was changed</h1>
     <p style="font-size:15px;color:${TEXT_SECONDARY};line-height:1.7;margin:0 0 8px">
-      Your LegacyLoop password was changed on <strong style="color:${TEXT_PRIMARY}">${changedAt}</strong>.
+      Your Legacy-Loop password was changed on <strong style="color:${TEXT_PRIMARY}">${changedAt}</strong>.
       If this was you, no action is needed.
     </p>
     <p style="font-size:15px;color:${TEXT_SECONDARY};line-height:1.7;margin:0 0 28px">
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
 
   sendEmail({
     to: user.email,
-    subject: "Your LegacyLoop password was changed",
+    subject: "Your Legacy-Loop password was changed",
     html,
   });
 

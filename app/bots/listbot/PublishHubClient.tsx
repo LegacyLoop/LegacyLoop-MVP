@@ -99,7 +99,7 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
   const [launchStep, setLaunchStep] = useState(0);
 
   const hasListingData = !!listBotResult || !!megaBotResult;
-  const allPlatforms = [...PLATFORMS, { key: "legacyloop", name: "LegacyLoop Storefront", color: "#00bcd4", icon: "\ud83d\udd04", url: `/store/${userId}`, apiStatus: "live", category: "platform", tip: "Your personal LegacyLoop storefront \u2014 already live!" }];
+  const allPlatforms = [...PLATFORMS, { key: "legacyloop", name: "Legacy-Loop Storefront", color: "#00bcd4", icon: "\ud83d\udd04", url: `/store/${userId}`, apiStatus: "live", category: "platform", tip: "Your personal Legacy-Loop storefront \u2014 already live!" }];
   const filtered = filter === "all" ? allPlatforms : allPlatforms.filter((p) => p.category === filter);
 
   const copiedCount = Object.values(statuses).filter((s) => s === "COPIED" || s === "POSTED" || s === "LIVE").length;
@@ -138,7 +138,7 @@ export default function PublishHubClient({ itemId, itemTitle, itemPhoto, itemPri
   }, [itemId]);
 
   const copyAllPlatforms = useCallback(async () => {
-    const lines: string[] = [`\u2550\u2550\u2550 ${itemTitle} \u2014 LegacyLoop Publish Hub \u2550\u2550\u2550\n`];
+    const lines: string[] = [`\u2550\u2550\u2550 ${itemTitle} \u2014 Legacy-Loop Publish Hub \u2550\u2550\u2550\n`];
     for (const p of allPlatforms) {
       const listing = getPlatformListing(listBotResult, megaBotResult, p.key, { title: itemTitle, price: itemPrice });
       lines.push(`\u2500\u2500\u2500 ${p.name} \u2500\u2500\u2500`);

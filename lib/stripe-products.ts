@@ -1,5 +1,5 @@
 /**
- * Stripe Product + Price Configuration for LegacyLoop
+ * Stripe Product + Price Configuration for Legacy-Loop
  *
  * Prices are derived from lib/constants/pricing.ts (single source of truth).
  * Stripe Prices are created dynamically on first use via getOrCreateStripePrice().
@@ -49,7 +49,7 @@ export async function getOrCreateStripePrice(
       productId = products.data[0].id;
     } else {
       const product = await stripe.products.create({
-        name: `LegacyLoop ${tier.name}`,
+        name: `Legacy-Loop ${tier.name}`,
         metadata: { legacyloop_tier: tierKey.toLowerCase() },
       });
       productId = product.id;

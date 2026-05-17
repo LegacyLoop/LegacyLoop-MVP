@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { PROCESSING_FEE } from "@/lib/constants/pricing";
 
 export const metadata: Metadata = {
-  title: "Payment Successful · LegacyLoop",
+  title: "Payment Successful · Legacy-Loop",
 };
 
 type SearchParams = Promise<{

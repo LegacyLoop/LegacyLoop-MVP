@@ -120,7 +120,7 @@ export default function ReceiptPage() {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "18px", color: "#fff", fontWeight: 800,
                 }}>L</div>
-                <span style={{ fontSize: "17px", fontWeight: 800, color: "#1e293b", letterSpacing: "-0.02em" }}>LegacyLoop</span>
+                <span style={{ fontSize: "17px", fontWeight: 800, color: "#1e293b", letterSpacing: "-0.02em" }}>Legacy-Loop</span>
               </div>
               <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px", lineHeight: 1.5 }}>
                 AI-Powered Estate Resale Platform<br />
@@ -248,11 +248,11 @@ export default function ReceiptPage() {
             background: "#fafbfc", textAlign: "center",
           }}>
             <div style={{ fontSize: "11px", color: "#94a3b8", lineHeight: 1.6 }}>
-              Thank you for using LegacyLoop.<br />
+              Thank you for using Legacy-Loop.<br />
               Questions? Contact support@legacy-loop.com
             </div>
             <div style={{ fontSize: "9px", color: "#cbd5e1", marginTop: "8px" }}>
-              LegacyLoop Tech LLC &middot; legacy-loop.com &middot; Receipt {rn}
+              Legacy-Loop Tech LLC &middot; legacy-loop.com &middot; Receipt {rn}
             </div>
           </div>
         </div>

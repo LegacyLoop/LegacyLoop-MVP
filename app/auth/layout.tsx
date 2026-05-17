@@ -83,7 +83,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         />
         <Image
           src="/images/logos/logo-stacked.png"
-          alt="LegacyLoop"
+          alt="Legacy-Loop"
           width={425}
           height={268}
           priority

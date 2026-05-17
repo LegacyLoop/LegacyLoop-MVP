@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Bill of Lading — LegacyLoop" };
+export const metadata = { title: "Bill of Lading — Legacy-Loop" };
 
 function safeJson(s: string | null | undefined): any {
   if (!s) return null;
@@ -148,7 +148,7 @@ export default async function BolPage({ params }: { params: Promise<{ itemId: st
       <div style={bolStyle.header}>
         <div>
           <div style={bolStyle.title}>Bill of Lading</div>
-          <div style={bolStyle.subtitle}>LegacyLoop Freight Shipment Document</div>
+          <div style={bolStyle.subtitle}>Legacy-Loop Freight Shipment Document</div>
           <div style={{ fontSize: "8pt", marginTop: "4px" }}>
             Date: {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
           </div>
@@ -301,7 +301,7 @@ export default async function BolPage({ params }: { params: Promise<{ itemId: st
 
       {/* Footer */}
       <div style={bolStyle.footer}>
-        <div>LegacyLoop — AI Estate Resale Platform · legacyloopmaine.com</div>
+        <div>Legacy-Loop — AI Estate Resale Platform · legacyloopmaine.com</div>
         <div style={{ marginTop: "2px" }}>
           BOL# {item.ltlBolNumber} · Generated {new Date().toISOString().slice(0, 10)} · This document must accompany the shipment
         </div>

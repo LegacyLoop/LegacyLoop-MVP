@@ -7,7 +7,7 @@ import ShipBotClient from "./ShipBotClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "ShipBot — LegacyLoop" };
+export const metadata = { title: "ShipBot — Legacy-Loop" };
 
 export default async function ShipBotPage() {
   const user = await authAdapter.getSession();

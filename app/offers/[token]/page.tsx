@@ -167,7 +167,7 @@ export default function BuyerOfferPage() {
 
         {/* Brand */}
         <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-          <span style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--accent)" }}>LegacyLoop</span>
+          <span style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--accent)" }}>Legacy-Loop</span>
         </div>
 
         {/* Item card */}
@@ -369,7 +369,7 @@ export default function BuyerOfferPage() {
 
         {/* Footer */}
         <div style={{ textAlign: "center", marginTop: "2rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-          Powered by LegacyLoop — AI Estate Resale
+          Powered by Legacy-Loop — AI Estate Resale
         </div>
       </div>
     </div>

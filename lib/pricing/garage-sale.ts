@@ -1,5 +1,5 @@
 /**
- * Garage Sale Pricing Engine V2 — LegacyLoop
+ * Garage Sale Pricing Engine V2 — Legacy-Loop
  *
  * Post-processing calculation layer. Reads the market price from bots,
  * applies category-specific Garage Sale Discount Factors (GDF),

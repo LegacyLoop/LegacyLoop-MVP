@@ -7,7 +7,7 @@ import VideoBotClient from "./VideoBotClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "VideoBot — LegacyLoop" };
+export const metadata = { title: "VideoBot — Legacy-Loop" };
 
 export default async function VideoBotPage() {
   const user = await authAdapter.getSession();

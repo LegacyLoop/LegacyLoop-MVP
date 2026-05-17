@@ -8,7 +8,7 @@ import { isAdmin } from "@/lib/constants/admin";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Estate Quotes · Admin · LegacyLoop" };
+export const metadata: Metadata = { title: "Estate Quotes · Admin · Legacy-Loop" };
 
 function getThisWeekStart(): Date {
   const now = new Date();

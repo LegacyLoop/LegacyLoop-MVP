@@ -6,7 +6,7 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Platform Integrations — LegacyLoop" };
+export const metadata = { title: "Platform Integrations — Legacy-Loop" };
 
 export default async function IntegrationsPage() {
   const user = await authAdapter.getSession();

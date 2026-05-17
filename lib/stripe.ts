@@ -17,7 +17,7 @@ const stripe = isConfigured
 export { stripe, isConfigured };
 
 /**
- * Get or create a Stripe Customer for a LegacyLoop user.
+ * Get or create a Stripe Customer for a Legacy-Loop user.
  * Returns the Stripe customer ID. Persists to User.stripeCustomerId.
  * Requires Stripe to be configured — caller must guard with isConfigured.
  */
@@ -47,7 +47,7 @@ export async function getOrCreateStripeCustomer(
 }
 
 /**
- * Create a Stripe Subscription for a LegacyLoop user.
+ * Create a Stripe Subscription for a Legacy-Loop user.
  * Uses payment_behavior: 'default_incomplete' so the first invoice
  * creates a PaymentIntent that the frontend must confirm.
  * Returns the Subscription including latest_invoice.payment_intent.client_secret.

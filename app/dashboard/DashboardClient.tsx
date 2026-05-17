@@ -379,7 +379,7 @@ export default function DashboardClient({ items, stats, events, onboardingUser }
       {/* CMD-EMAIL-VERIFICATION: Verified toast */}
       {showVerifiedToast && (
         <div style={{ position: "fixed", top: "80px", left: "50%", transform: "translateX(-50%)", zIndex: 9998, padding: "0.75rem 1.5rem", background: "rgba(22,163,74,0.95)", color: "#fff", borderRadius: "0.75rem", fontSize: "0.9rem", fontWeight: 600, boxShadow: "0 4px 20px rgba(0,0,0,0.3)", animation: "fadeSlideUp 0.3s ease forwards" }}>
-          ✅ Email verified! Welcome to LegacyLoop.
+          ✅ Email verified! Welcome to Legacy-Loop.
         </div>
       )}
 

@@ -162,7 +162,7 @@ function CheckoutForm({
             )}
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text-primary)" }}>{itemTitle}</div>
-              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>LegacyLoop Estate Sale</div>
+              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>Legacy-Loop Estate Sale</div>
             </div>
           </div>
 

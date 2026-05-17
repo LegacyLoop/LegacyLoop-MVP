@@ -4,8 +4,8 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import { API_TIERS } from "@/lib/constants/pricing";
 
 export const metadata: Metadata = {
-  title: "API Access & Licensing · LegacyLoop",
-  description: "Integrate LegacyLoop's AI estate analysis, antique detection, and pricing intelligence into your own platform.",
+  title: "API Access & Licensing · Legacy-Loop",
+  description: "Integrate Legacy-Loop's AI estate analysis, antique detection, and pricing intelligence into your own platform.",
 };
 
 const PLANS = [
@@ -165,7 +165,7 @@ const USE_CASES = [
   {
     icon: "📦",
     title: "Moving Companies",
-    description: "Offer estate sale services as part of your moving package. Integrate LegacyLoop valuation into your customer app.",
+    description: "Offer estate sale services as part of your moving package. Integrate Legacy-Loop valuation into your customer app.",
   },
   {
     icon: "🏥",
@@ -201,7 +201,7 @@ export default function ApiAccessPage() {
           🔌 API Access & Licensing
         </div>
         <h1 style={{ fontSize: "2.5rem", fontWeight: 900, lineHeight: 1.2, marginBottom: "1rem" }}>
-          LegacyLoop Intelligence<br />in Your Platform
+          Legacy-Loop Intelligence<br />in Your Platform
         </h1>
         <p style={{ color: "var(--text-primary)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
           Integrate our AI estate analysis, antique detection, MegaBot pricing, and buyer matching

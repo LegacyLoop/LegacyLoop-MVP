@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function NotFound() {
   return (
     <div style={{ textAlign: "center", padding: "4rem 1.5rem", maxWidth: "500px", margin: "0 auto" }}>
-      <img src="/images/logos/logo-icon.png" alt="LegacyLoop" style={{ height: "48px", width: "48px", objectFit: "contain", margin: "0 auto 1rem", display: "block" }} />
+      <img src="/images/logos/logo-icon.png" alt="Legacy-Loop" style={{ height: "48px", width: "48px", objectFit: "contain", margin: "0 auto 1rem", display: "block" }} />
       <div style={{
         fontSize: "6rem", fontWeight: 900, color: "var(--accent)",
         lineHeight: 1, letterSpacing: "-0.05em", marginBottom: "1rem",

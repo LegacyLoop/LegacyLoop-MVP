@@ -3,10 +3,10 @@ import Link from "next/link";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Roadmap & Marketplace Ecosystem · LegacyLoop",
-  description: "The complete LegacyLoop roadmap: 18+ marketplace connectors, API platform, and AI bots that work across every platform you sell on.",
+  title: "Roadmap & Marketplace Ecosystem · Legacy-Loop",
+  description: "The complete Legacy-Loop roadmap: 18+ marketplace connectors, API platform, and AI bots that work across every platform you sell on.",
   openGraph: {
-    title: "LegacyLoop Roadmap — The Operating System for Estate Resale",
+    title: "Legacy-Loop Roadmap — The Operating System for Estate Resale",
     description: "Marketplace connectors for eBay, Facebook, Etsy, Shopify, Amazon, and more. AI bots that work everywhere you sell.",
   },
 };
@@ -84,7 +84,7 @@ const PHASES = [
       { icon: "🔌", title: "Marketplace Connector SDK", desc: "The foundational API layer powering all marketplace integrations. REST endpoints, webhook delivery, and OAuth2 flows.", status: "In Development" },
       { icon: "📣", title: "Auto-Post to Platforms", desc: "One-click cross-posting to Facebook Marketplace, eBay, Craigslist, OfferUp, and 9 more platforms.", status: "In Development" },
       { icon: "🚚", title: "Advanced Shipping TMS", desc: "Full transportation management with LTL freight, white-glove delivery, and real-time tracking across all carriers.", status: "Beta" },
-      { icon: "🤖", title: "Cross-Platform Bot Intelligence", desc: "PriceBot, ListBot, BuyerBot, and ReconBot extend to every connected marketplace — not just LegacyLoop.", status: "In Development" },
+      { icon: "🤖", title: "Cross-Platform Bot Intelligence", desc: "PriceBot, ListBot, BuyerBot, and ReconBot extend to every connected marketplace — not just Legacy-Loop.", status: "In Development" },
     ],
   },
   {
@@ -187,7 +187,7 @@ export default function ComingSoonPage() {
           <span style={{ color: "#00bcd4" }}>for Estate Resale</span>
         </h1>
         <p style={{ fontSize: "1rem", color: "var(--text-secondary)", lineHeight: 1.65, maxWidth: "640px", margin: "0 auto" }}>
-          LegacyLoop isn&apos;t just a platform — it&apos;s the engine that connects your inventory to every marketplace, every buyer, everywhere.
+          Legacy-Loop isn&apos;t just a platform — it&apos;s the engine that connects your inventory to every marketplace, every buyer, everywhere.
           Our AI bots don&apos;t just work here. They work on <strong style={{ color: "var(--text-primary)" }}>every platform you sell on</strong>.
         </p>
 
@@ -217,7 +217,7 @@ export default function ComingSoonPage() {
             Marketplace Connector Ecosystem
           </h2>
           <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", maxWidth: "560px", margin: "0 auto", lineHeight: 1.55 }}>
-            List once on LegacyLoop. Publish everywhere. Every connector syncs your inventory, pricing, photos, and buyer inquiries automatically.
+            List once on Legacy-Loop. Publish everywhere. Every connector syncs your inventory, pricing, photos, and buyer inquiries automatically.
           </p>
         </div>
 
@@ -265,7 +265,7 @@ export default function ComingSoonPage() {
             AI Bots That Work on Every Platform
           </h2>
           <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", maxWidth: "560px", margin: "0 auto", lineHeight: 1.55 }}>
-            Your LegacyLoop bots don&apos;t just work here — they extend into every connected marketplace. One intelligence engine powering all your sales channels.
+            Your Legacy-Loop bots don&apos;t just work here — they extend into every connected marketplace. One intelligence engine powering all your sales channels.
           </p>
         </div>
 
@@ -294,7 +294,7 @@ export default function ComingSoonPage() {
             Developer API Platform
           </h2>
           <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", maxWidth: "560px", margin: "0 auto", lineHeight: 1.55 }}>
-            Build on top of LegacyLoop. Our API-first architecture means every feature is accessible programmatically — from item analysis to bot deployment.
+            Build on top of Legacy-Loop. Our API-first architecture means every feature is accessible programmatically — from item analysis to bot deployment.
           </p>
         </div>
 
@@ -394,11 +394,11 @@ export default function ComingSoonPage() {
         </h2>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
           {[
-            { step: "1", title: "Upload Once", desc: "Add your item to LegacyLoop. Our AI bots analyze, price, and optimize your listing automatically." },
+            { step: "1", title: "Upload Once", desc: "Add your item to Legacy-Loop. Our AI bots analyze, price, and optimize your listing automatically." },
             { step: "2", title: "Connect Your Platforms", desc: "Link your eBay, Facebook, Etsy, Shopify, Amazon, and POS accounts through our secure OAuth2 integration." },
             { step: "3", title: "Publish Everywhere", desc: "One click sends your listing to every connected marketplace. ListBot tailors each listing to the platform's format and algorithm." },
             { step: "4", title: "Bots Work 24/7", desc: "PriceBot monitors competitors. BuyerBot finds interested buyers. ReconBot alerts you to opportunities. All across every platform." },
-            { step: "5", title: "Sell Faster", desc: "Orders, offers, and inquiries from all platforms funnel into your LegacyLoop dashboard. One place to manage everything." },
+            { step: "5", title: "Sell Faster", desc: "Orders, offers, and inquiries from all platforms funnel into your Legacy-Loop dashboard. One place to manage everything." },
           ].map((s) => (
             <div key={s.step} style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
               <div style={{
@@ -451,7 +451,7 @@ export default function ComingSoonPage() {
 
       {/* ── Footer note ───────────────────────────────────────── */}
       <div style={{ textAlign: "center", marginTop: "2rem", fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
-        <p>LegacyLoop is updated daily. Features may ship in a different order based on demand.</p>
+        <p>Legacy-Loop is updated daily. Features may ship in a different order based on demand.</p>
         <p style={{ marginTop: "0.25rem" }}>
           Have a marketplace you want connected?{" "}
           <a href="mailto:partnerships@legacy-loop.com" style={{ color: "#00bcd4", textDecoration: "none" }}>partnerships@legacy-loop.com</a>

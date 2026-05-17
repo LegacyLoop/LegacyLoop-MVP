@@ -54,7 +54,7 @@ const EARN_WAYS = [
   { icon: "🎉", label: "Sign up bonus",        amount: 10,  desc: "Just for creating your account" },
   { icon: "🔐", label: "Data consent",          amount: 100, desc: "Opt into anonymized market insights" },
   { icon: "🎁", label: "Refer a friend",        amount: 50,  desc: "When they list their first item" },
-  { icon: "🏷️", label: "First sale",            amount: 25,  desc: "Complete your first sale on LegacyLoop" },
+  { icon: "🏷️", label: "First sale",            amount: 25,  desc: "Complete your first sale on Legacy-Loop" },
 ];
 
 /* ── Auto-Reload Section ─────────────────────────────────────────── */
@@ -964,7 +964,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
               {[
                 "Credits never expire — use them whenever you need",
                 "Spend credits on AI analysis, storytelling, expert services, and more",
-                "Earn bonus credits when you sell items through LegacyLoop",
+                "Earn bonus credits when you sell items through Legacy-Loop",
                 "Volume packages give you more credits per dollar spent",
                 "Refunds available within 7 days if a service isn't delivered",
               ].map((point, i) => (
@@ -984,7 +984,7 @@ export default function CreditsClient({ initialBalance, lifetime, spent, transac
           {/* Hero */}
           <div style={{ background: "linear-gradient(135deg, rgba(0,188,212,0.08), rgba(0,188,212,0.02))", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: 20, padding: "24px 28px", marginBottom: 24, position: "relative", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
             <div style={{ position: "absolute", top: -30, right: -30, width: 140, height: 140, background: "radial-gradient(circle, rgba(0,188,212,0.1) 0%, transparent 70%)", pointerEvents: "none" }} />
-            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)" }}>🚀 LegacyLoop Add-On Store</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text-primary)" }}>🚀 Legacy-Loop Add-On Store</div>
             <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 6, lineHeight: 1.5 }}>Premium AI tools powered by 4 engines working in parallel. MegaBot-level power on every add-on.</div>
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               {["16 Add-Ons", "4 AI Engines", "All Parallel"].map((s, i) => (

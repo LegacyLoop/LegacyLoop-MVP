@@ -688,7 +688,7 @@ export async function POST() {
 
   // ── Connected Platforms ───────────────────────────────────────────────────
   const platformsToSeed = [
-    { platform: "facebook",    platformUsername: "LegacyLoop Estate Sales",  daysAgo: 21 },
+    { platform: "facebook",    platformUsername: "Legacy-Loop Estate Sales",  daysAgo: 21 },
     { platform: "ebay",        platformUsername: "legacyloop_maine",          daysAgo: 14 },
     { platform: "craigslist",  platformUsername: null,                        daysAgo: 7  },
   ];
@@ -973,7 +973,7 @@ export async function POST() {
     {
       buyerName: "Margaret T. (Waterville, ME)",
       rating: 5,
-      text: "I was overwhelmed after Mom passed. LegacyLoop's AI priced everything in her china cabinet in 20 minutes. The MegaBot found a collector in Boston who paid $340 for a tea set I would have donated. The whole process felt respectful and easy.",
+      text: "I was overwhelmed after Mom passed. Legacy-Loop's AI priced everything in her china cabinet in 20 minutes. The MegaBot found a collector in Boston who paid $340 for a tea set I would have donated. The whole process felt respectful and easy.",
       itemTitle: "Royal Albert Tea Service",
       isApproved: true,
       isDemo: true,

@@ -2,7 +2,7 @@
  * BLOCKED ACTORS REGISTRY — DO NOT EDIT WITHOUT EXPLICIT APPROVAL
  *
  * These Apify actors are PERMANENTLY BLOCKED from running in any
- * LegacyLoop production code path. Any attempt to fire them will
+ * Legacy-Loop production code path. Any attempt to fire them will
  * be intercepted by the kill switch in scraper-killswitch.ts and
  * return an empty result with a console warning.
  *

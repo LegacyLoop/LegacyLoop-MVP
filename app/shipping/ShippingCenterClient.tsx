@@ -666,7 +666,7 @@ function ShippingLabel({
               FROM
             </div>
             <div style={{ fontSize: "0.82rem", fontWeight: 600, lineHeight: 1.5 }}>
-              LegacyLoop Seller<br />
+              Legacy-Loop Seller<br />
               Portland, ME {fromZip}
             </div>
           </div>
@@ -4436,7 +4436,7 @@ function FreightTab({ items }: { items: any[] }) {
   const [bolGenerated, setBolGenerated] = useState<any>(null);
   const [bolForm, setBolForm] = useState({
     // Shipper
-    shipperName: "LegacyLoop Seller",
+    shipperName: "Legacy-Loop Seller",
     shipperStreet: "",
     shipperCity: "Portland",
     shipperState: "ME",
@@ -5235,7 +5235,7 @@ function FreightTab({ items }: { items: any[] }) {
               <div>
                 <strong>Shipper:</strong>
                 <br />
-                LegacyLoop Seller
+                Legacy-Loop Seller
                 <br />
                 {form.fromZip}, ME
               </div>

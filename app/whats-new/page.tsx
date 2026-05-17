@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 
-export const metadata: Metadata = { title: "What's New · LegacyLoop", description: "Latest features and improvements" };
+export const metadata: Metadata = { title: "What's New · Legacy-Loop", description: "Latest features and improvements" };
 
 export default function WhatsNewPage() {
   const updates = [
-    { date: "Apr 2, 2026", badge: "NEW", title: "🌐 Marketplace Ecosystem Roadmap", desc: "Published the full LegacyLoop API ecosystem vision: 18+ marketplace connectors (eBay, Facebook, Etsy, Shopify, Amazon, and more), cross-platform bot intelligence, developer API with SDKs, and the 5-step ecosystem workflow. Your bots work on every platform you sell on." },
+    { date: "Apr 2, 2026", badge: "NEW", title: "🌐 Marketplace Ecosystem Roadmap", desc: "Published the full Legacy-Loop API ecosystem vision: 18+ marketplace connectors (eBay, Facebook, Etsy, Shopify, Amazon, and more), cross-platform bot intelligence, developer API with SDKs, and the 5-step ecosystem workflow. Your bots work on every platform you sell on." },
     { date: "Apr 2, 2026", badge: null, title: "🏪 POS/Catalog Export Architecture", desc: "Built the Stripe Catalog mapping layer, batch sync API (up to 50 items), and demo-mode export pipeline. Categories, pricing (dollars-to-cents conversion), and photos map automatically. Stripe connector architecture defined." },
     { date: "Apr 2, 2026", badge: null, title: "🛍️ Storefront & Sale Page Overhaul", desc: "Full theme audit across all public buyer-facing pages. Category grouping on sale pages, sort and filter on storefronts, mobile responsive bundle layouts, breadcrumb navigation, and lazy-loaded images. Zero hardcoded colors remain." },
     { date: "Apr 2, 2026", badge: null, title: "📦 Department Bundle System", desc: "Sell entire departments at bulk discounts. Smart discount calculation (10-30% based on item count), department grouping by AI category, and integrated sale management from project detail." },
@@ -35,7 +35,7 @@ export default function WhatsNewPage() {
     { date: "Mar 2, 2026", badge: null, title: "🌙 Theme System", desc: "Light, dark, and auto theme with zero flash. Tesla-inspired design system." },
     { date: "Mar 2, 2026", badge: null, title: "📸 Enhanced Photo Upload", desc: "Camera capture, drag-to-reorder, rotate, client-side compression, and multi-source upload." },
     { date: "Mar 1, 2026", badge: null, title: "🤖 MegaBot Multi-AI", desc: "Four AI models analyze items simultaneously for consensus pricing with higher confidence." },
-    { date: "Mar 1, 2026", badge: null, title: "🚀 Platform Launch", desc: "LegacyLoop MVP goes live with 11 AI bots, messaging, shipping, credits, subscriptions, and storefront." },
+    { date: "Mar 1, 2026", badge: null, title: "🚀 Platform Launch", desc: "Legacy-Loop MVP goes live with 11 AI bots, messaging, shipping, credits, subscriptions, and storefront." },
   ];
 
   return (
@@ -43,7 +43,7 @@ export default function WhatsNewPage() {
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
         <div style={{ fontSize: "0.75rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent, #00bcd4)", marginBottom: "0.5rem" }}>Updates</div>
         <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--text-primary)" }}>What&apos;s New</h1>
-        <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", marginTop: "0.5rem" }}>Recent features and improvements to LegacyLoop.</p>
+        <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", marginTop: "0.5rem" }}>Recent features and improvements to Legacy-Loop.</p>
       </div>
 
       <div>
@@ -74,7 +74,7 @@ export default function WhatsNewPage() {
       </div>
 
       <div style={{ textAlign: "center", marginTop: "1rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
-        LegacyLoop is updated daily. Follow us for the latest.
+        Legacy-Loop is updated daily. Follow us for the latest.
       </div>
     </div>
   );

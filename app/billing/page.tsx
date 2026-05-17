@@ -9,7 +9,7 @@ import { TIERS, TIER_NUMBER_TO_KEY, calculateTotalWithFee, calculateTierPrice, P
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Billing · LegacyLoop",
+  title: "Billing · Legacy-Loop",
   description: "Manage your subscription and billing",
 };
 

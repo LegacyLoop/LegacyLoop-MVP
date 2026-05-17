@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "LegacyLoop — AI-Powered Estate Sales";
+export const alt = "Legacy-Loop — AI-Powered Estate Sales";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -39,7 +39,7 @@ export default function OgImage() {
           >
             LL
           </div>
-          <span style={{ color: "white", fontWeight: 700, fontSize: 36 }}>LegacyLoop</span>
+          <span style={{ color: "white", fontWeight: 700, fontSize: 36 }}>Legacy-Loop</span>
         </div>
 
         {/* Headline */}

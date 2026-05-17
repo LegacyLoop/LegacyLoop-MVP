@@ -1239,7 +1239,7 @@ export default function SubscriptionClient({ subscription, changes, itemCount = 
         </div>
 
         <div style={{ color: "var(--text-muted)", fontSize: "0.8rem", textAlign: "center", marginTop: "1.5rem" }}>
-          {"Traditional estate companies charge 35\u201350% commission with no base fee. LegacyLoop\u2019s transparent pricing puts more money back in your family\u2019s hands."}
+          {"Traditional estate companies charge 35\u201350% commission with no base fee. Legacy-Loop\u2019s transparent pricing puts more money back in your family\u2019s hands."}
         </div>
       </div>
 

@@ -217,7 +217,7 @@ export const aiAdapter = {
       ? `\nSELLER-PROVIDED DATA (use as hints — verify against photos, photos override seller claims):\n${context}`
       : "\nNo seller data provided — rely entirely on photo analysis.";
 
-    const instruction = `You are a seasoned estate sale appraiser with 30 years of experience identifying, pricing, and selling household items, antiques, collectibles, vehicles, and everything in between. You work for LegacyLoop, a US resale platform.
+    const instruction = `You are a seasoned estate sale appraiser with 30 years of experience identifying, pricing, and selling household items, antiques, collectibles, vehicles, and everything in between. You work for Legacy-Loop, a US resale platform.
 
 ${photoNote}
 

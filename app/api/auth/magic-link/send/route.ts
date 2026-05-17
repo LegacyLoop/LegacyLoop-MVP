@@ -56,14 +56,14 @@ export async function POST(req: NextRequest) {
 
     await sendEmail({
       to: email,
-      subject: "Your LegacyLoop sign-in link",
+      subject: "Your Legacy-Loop sign-in link",
       html: emailWrapper(`
-        <h1 style="font-size:22px;font-weight:700;color:${TEXT_PRIMARY};margin:0 0 12px;text-align:center">Sign in to LegacyLoop</h1>
+        <h1 style="font-size:22px;font-weight:700;color:${TEXT_PRIMARY};margin:0 0 12px;text-align:center">Sign in to Legacy-Loop</h1>
         <p style="font-size:15px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 28px;text-align:center">
           Click the button below to sign in &mdash; no password needed.
         </p>
         <div style="text-align:center;margin:0 0 28px">
-          ${ctaButton("Sign In to LegacyLoop", verifyUrl)}
+          ${ctaButton("Sign In to Legacy-Loop", verifyUrl)}
         </div>
         <p style="font-size:13px;color:${TEXT_MUTED};margin:0 0 8px">Or copy this link:</p>
         <p style="font-size:13px;color:${ACCENT};word-break:break-all;background:rgba(0,188,212,0.06);border:1px solid rgba(0,188,212,0.2);border-radius:8px;padding:10px 14px;margin:0 0 24px">

@@ -1,6 +1,6 @@
 /**
  * Email Templates — Unified Dark Premium Theme
- * Matches the LegacyLoop app design system exactly.
+ * Matches the Legacy-Loop app design system exactly.
  */
 
 const ACCENT = "#00bcd4";
@@ -25,7 +25,7 @@ function wrapper(content: string): string {
   <tr><td style="padding:28px 32px 16px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06)">
     <div style="display:inline-flex;align-items:center;gap:10px">
       <div style="width:36px;height:36px;background:${ACCENT};border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:16px">LL</div>
-      <span style="font-size:22px;font-weight:800;color:${TEXT_PRIMARY};letter-spacing:-0.5px">LegacyLoop</span>
+      <span style="font-size:22px;font-weight:800;color:${TEXT_PRIMARY};letter-spacing:-0.5px">Legacy-Loop</span>
     </div>
   </td></tr>
   <tr><td style="padding:32px">${content}</td></tr>
@@ -33,7 +33,7 @@ function wrapper(content: string): string {
     <div style="font-size:12px;color:${TEXT_MUTED};line-height:1.8">
       <a href="${APP_URL}/privacy" style="color:${ACCENT};text-decoration:none">Privacy Policy</a> &middot;
       <a href="${APP_URL}/terms" style="color:${ACCENT};text-decoration:none">Terms of Service</a><br>
-      LegacyLoop &middot; support@legacy-loop.com<br>
+      Legacy-Loop &middot; support@legacy-loop.com<br>
       <a href="${APP_URL}/settings" style="color:${ACCENT};text-decoration:none">Manage Preferences</a>
     </div>
   </td></tr>
@@ -46,7 +46,7 @@ function wrapper(content: string): string {
 
 export function welcomeEmail(name: string): { subject: string; html: string } {
   return {
-    subject: "Welcome to LegacyLoop! Let's get started",
+    subject: "Welcome to Legacy-Loop! Let's get started",
     html: wrapper(`
       <h1 style="font-size:24px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 16px">Welcome, ${name}!</h1>
       <p style="font-size:16px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
@@ -75,17 +75,17 @@ export function welcomeEmail(name: string): { subject: string; html: string } {
 
 export function verificationEmail(firstName: string, verifyUrl: string): { subject: string; html: string } {
   return {
-    subject: "Verify your LegacyLoop email",
+    subject: "Verify your Legacy-Loop email",
     html: wrapper(`
       <h1 style="font-size:24px;font-weight:800;color:${TEXT_PRIMARY};margin:0 0 16px">Confirm your email address</h1>
       <p style="font-size:16px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 24px">
-        Hi ${firstName}, thanks for joining LegacyLoop! Click the button below to verify your email and unlock all features.
+        Hi ${firstName}, thanks for joining Legacy-Loop! Click the button below to verify your email and unlock all features.
       </p>
       <div style="text-align:center;margin:32px 0 24px">
         ${ctaButton("Verify My Email \u2192", verifyUrl)}
       </div>
       <p style="font-size:13px;color:${TEXT_MUTED};text-align:center;line-height:1.5;margin:0">
-        This link expires in 24 hours. If you didn\u2019t create a LegacyLoop account, you can safely ignore this email.
+        This link expires in 24 hours. If you didn\u2019t create a Legacy-Loop account, you can safely ignore this email.
       </p>
     `),
   };
@@ -258,7 +258,7 @@ export function tradeDeclinedEmail(itemTitle: string): string {
   return wrapper(`
     <h2 style="color:${TEXT_PRIMARY};font-size:22px;margin:0 0 8px">Trade Proposal Declined</h2>
     <p style="color:${TEXT_SECONDARY};font-size:15px;line-height:1.6;margin:0 0 20px">Your trade proposal for <strong style="color:${TEXT_PRIMARY}">${itemTitle}</strong> was declined by the seller.</p>
-    <p style="color:${TEXT_SECONDARY};font-size:14px;line-height:1.5;margin:0 0 24px">You can submit a new offer or browse other items on LegacyLoop.</p>
+    <p style="color:${TEXT_SECONDARY};font-size:14px;line-height:1.5;margin:0 0 24px">You can submit a new offer or browse other items on Legacy-Loop.</p>
     ${ctaButton("Browse Items", `${APP_URL}/search`)}
   `);
 }
@@ -345,7 +345,7 @@ export function newBuyerMessageEmail(
         ${ctaButton("Reply Now", conversationUrl)}
       </div>
       <p style="font-size:12px;color:${TEXT_MUTED};text-align:center">
-        You're receiving this because a buyer messaged you on LegacyLoop.
+        You're receiving this because a buyer messaged you on Legacy-Loop.
       </p>
     `),
   };
@@ -374,7 +374,7 @@ export function sellerRepliedEmail(
         ${ctaButton("View Listing", itemUrl)}
       </div>
       <p style="font-size:12px;color:${TEXT_MUTED};text-align:center">
-        You're receiving this because you inquired about an item on LegacyLoop.
+        You're receiving this because you inquired about an item on Legacy-Loop.
       </p>
     `),
   };
@@ -392,7 +392,7 @@ export function buyerOutreachEmail(message: string, itemName: string, itemUrl: s
       ${ctaButton("View Item Details", itemUrl)}
     </div>
     <p style="color:${TEXT_MUTED};font-size:12px;margin-top:20px">
-      Sent via LegacyLoop — AI-powered estate resale platform
+      Sent via Legacy-Loop — AI-powered estate resale platform
     </p>
   `);
 }
@@ -405,7 +405,7 @@ export function whiteGloveBookingConfirmEmail(
   name: string, tier: string, depositAmount: number, balanceAmount: number, totalAmount: number, scheduledDate?: string
 ): { subject: string; html: string } {
   return {
-    subject: "Your LegacyLoop White Glove Service — Booking Confirmed",
+    subject: "Your Legacy-Loop White Glove Service — Booking Confirmed",
     html: wrapper(`
       <div style="text-align:center;margin-bottom:24px">
         <div style="display:inline-block;width:48px;height:48px;border-radius:50%;background:${GOLD};color:#fff;font-size:22px;line-height:48px;font-weight:800">✦</div>
@@ -449,8 +449,8 @@ export function whiteGloveBookingConfirmEmail(
         <a href="mailto:ryan@legacy-loop.com" style="color:${GOLD};text-decoration:none;font-weight:600">ryan@legacy-loop.com</a>.
       </p>
       <p style="font-size:14px;color:${TEXT_MUTED};font-style:italic;margin:0">
-        Thank you for trusting LegacyLoop with your family's legacy.<br>
-        — The LegacyLoop Estate Team
+        Thank you for trusting Legacy-Loop with your family's legacy.<br>
+        — The Legacy-Loop Estate Team
       </p>
     `),
   };
@@ -464,7 +464,7 @@ export function whiteGloveBalanceDueEmail(
     : "";
 
   return {
-    subject: "LegacyLoop Estate Service Complete — Balance Due",
+    subject: "Legacy-Loop Estate Service Complete — Balance Due",
     html: wrapper(`
       <div style="text-align:center;margin-bottom:24px">
         <div style="display:inline-block;width:48px;height:48px;border-radius:50%;background:${GOLD};color:#fff;font-size:22px;line-height:48px;font-weight:800">✦</div>
@@ -490,8 +490,8 @@ export function whiteGloveBalanceDueEmail(
         </div>
       </div>
       <p style="font-size:14px;color:${TEXT_MUTED};font-style:italic;margin:0">
-        Thank you for trusting LegacyLoop with your family's legacy.<br>
-        — The LegacyLoop Estate Team
+        Thank you for trusting Legacy-Loop with your family's legacy.<br>
+        — The Legacy-Loop Estate Team
       </p>
     `),
   };

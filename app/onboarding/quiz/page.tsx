@@ -538,7 +538,7 @@ export default function OnboardingQuiz() {
           LL
         </div>
         <span style={{ fontWeight: 700, fontSize: "1.1rem", color: "var(--text-primary)" }}>
-          LegacyLoop
+          Legacy-Loop
         </span>
       </Link>
 

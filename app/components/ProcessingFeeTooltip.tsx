@@ -79,11 +79,11 @@ export default function ProcessingFeeTooltip({ amount, style, compact, showSplit
           </div>
           <p style={{ margin: 0 }}>
             {showSplit ? (
-              <>LegacyLoop applies a {pctLabel} payment processing fee on all transactions,
+              <>Legacy-Loop applies a {pctLabel} payment processing fee on all transactions,
               split evenly {"\u2014"} {PROCESSING_FEE.buyerDisplay} added to buyer{"\u2019"}s total,{" "}
               <strong style={{ color: "var(--accent)" }}>{PROCESSING_FEE.sellerDisplay} deducted from seller{"\u2019"}s earnings</strong>.</>
             ) : (
-              <>LegacyLoop applies a {pctLabel} payment processing fee on all transactions, split evenly between buyer and seller.</>
+              <>Legacy-Loop applies a {pctLabel} payment processing fee on all transactions, split evenly between buyer and seller.</>
             )}
           </p>
           {feeAmount != null && amount != null && (

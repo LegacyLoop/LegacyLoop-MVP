@@ -9,7 +9,7 @@ interface EmailMessage {
 }
 
 const DEFAULT_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "support@legacy-loop.com";
-const DEFAULT_FROM_NAME = process.env.SENDGRID_FROM_NAME || "LegacyLoop";
+const DEFAULT_FROM_NAME = process.env.SENDGRID_FROM_NAME || "Legacy-Loop";
 
 /**
  * Send an email via SendGrid.

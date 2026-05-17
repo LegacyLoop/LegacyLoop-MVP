@@ -92,7 +92,7 @@ export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", alignItems: "flex-start" }}>
             <ShareButtons
               url={storeUrl}
-              title={`${ownerName}'s Estate Sale on LegacyLoop`}
+              title={`${ownerName}'s Estate Sale on Legacy-Loop`}
               description={`Browse ${items.length} items from ${ownerName}'s estate sale. AI-priced and verified.`}
             />
             {isOwner && (
@@ -383,7 +383,7 @@ export default function StoreFront({ ownerName, items, userId, isOwner, storeUrl
 
       {/* Footer hint */}
       <div style={{ marginTop: "3rem", textAlign: "center", color: "var(--text-muted)", fontSize: "0.8rem" }}>
-        <p>Powered by <strong style={{ color: "var(--accent)" }}>LegacyLoop</strong> · AI-powered estate sale platform</p>
+        <p>Powered by <strong style={{ color: "var(--accent)" }}>Legacy-Loop</strong> · AI-powered estate sale platform</p>
       </div>
     </div>
   );

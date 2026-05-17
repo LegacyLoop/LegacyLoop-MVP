@@ -55,7 +55,7 @@ export const metadata = {
     ],
     apple: "/images/logos/apple-touch-icon-180.png",
   },
-  title: "LegacyLoop — AI-Powered Estate Sales",
+  title: "Legacy-Loop — AI-Powered Estate Sales",
   description:
     "Turn your family's belongings into meaningful income. AI pricing, buyer matching, and white-glove service for estate sales in Maine and beyond.",
   keywords: [
@@ -67,16 +67,16 @@ export const metadata = {
     "family belongings",
   ],
   openGraph: {
-    title: "LegacyLoop — AI-Powered Estate Sales",
+    title: "Legacy-Loop — AI-Powered Estate Sales",
     description:
       "Turn your family's belongings into meaningful income — with expert AI pricing, buyer matching, and white-glove service.",
-    siteName: "LegacyLoop",
+    siteName: "Legacy-Loop",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "LegacyLoop — AI-Powered Estate Sales",
+    title: "Legacy-Loop — AI-Powered Estate Sales",
     description:
       "Turn your family's belongings into meaningful income — with expert AI pricing, buyer matching, and white-glove service.",
   },
@@ -152,7 +152,7 @@ export default async function RootLayout({
         `}} />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="LegacyLoop" />
+        <meta name="apple-mobile-web-app-title" content="Legacy-Loop" />
         <meta name="theme-color" content="#00bcd4" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" type="image/png" href="/images/logos/favicon-teal.png" media="(prefers-color-scheme: light)" sizes="454x451" />

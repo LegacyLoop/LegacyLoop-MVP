@@ -21,7 +21,7 @@ import {
 } from "@/lib/adapters/bot-ai-router/listbot-prompts";
 // STEP 4.6: pre-pass OpenAI web search enrichment
 import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
-// CMD-SKILLS-INFRA-A: LegacyLoop Skill Pack loader (markdown
+// CMD-SKILLS-INFRA-A: Legacy-Loop Skill Pack loader (markdown
 // playbooks prepended to the system prompt before any item context).
 import { loadSkillPack } from "@/lib/bots/skill-loader";
 // CMD-LISTBOT-MEGA-C: Bot Constitution wiring (gap closure).
@@ -400,7 +400,7 @@ Study these titles and pricing for your Poshmark-specific listing copy. Mirror s
 
     // ── LISTBOT PROMPT ──
     // CMD-SKILLS-INFRA-A: skillPack injected at the very TOP of the
-    // system prompt so the agent sees LegacyLoop's epistemic standard
+    // system prompt so the agent sees Legacy-Loop's epistemic standard
     // before any item context.
     // CMD-LISTBOT-MEGA-C: specContext.promptBlock now prepended
     // AFTER the skill pack but BEFORE the enrichmentPrefix — Bot

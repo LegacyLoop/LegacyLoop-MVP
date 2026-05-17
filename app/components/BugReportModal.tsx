@@ -200,7 +200,7 @@ export default function BugReportModal({ open, onClose }: Props) {
                 Bug Report Submitted
               </div>
               <div style={{ fontSize: "0.85rem", color: "var(--text-secondary, #8b949e)", lineHeight: 1.6, marginBottom: "1.5rem" }}>
-                Thank you for helping us improve LegacyLoop. Our team will review your report.
+                Thank you for helping us improve Legacy-Loop. Our team will review your report.
               </div>
               <button
                 onClick={onClose}

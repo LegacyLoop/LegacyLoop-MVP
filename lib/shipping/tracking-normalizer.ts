@@ -1,6 +1,6 @@
 /**
  * Tracking Status Normalizer
- * Maps raw carrier API responses to LegacyLoop's 5-status state machine.
+ * Maps raw carrier API responses to Legacy-Loop's 5-status state machine.
  *
  * Statuses: CREATED → PICKED_UP → IN_TRANSIT → OUT_FOR_DELIVERY → DELIVERED
  *

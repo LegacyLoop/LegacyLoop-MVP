@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
         amount: Math.round(finalBalance * 100),
         currency: "usd",
         ...(stripeCustomerId ? { customer: stripeCustomerId, receipt_email: fullUser?.email } : {}),
-        description: `LegacyLoop White Glove ${booking.tier} — Balance Due`,
+        description: `Legacy-Loop White Glove ${booking.tier} — Balance Due`,
         metadata: {
           type: "white_glove_balance",
           userId: booking.userId,

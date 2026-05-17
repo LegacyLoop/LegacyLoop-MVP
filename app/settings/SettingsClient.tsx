@@ -107,7 +107,7 @@ export default function SettingsClient({ userId, email, consent }: Props) {
             {
               key: "dataCollection",
               label: "Data Collection",
-              desc: "Allow LegacyLoop to collect usage analytics to improve the product.",
+              desc: "Allow Legacy-Loop to collect usage analytics to improve the product.",
             },
             {
               key: "aiTraining",

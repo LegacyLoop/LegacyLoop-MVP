@@ -8,7 +8,7 @@ import PublishHubClient from "./PublishHubClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "ListBot — LegacyLoop" };
+export const metadata = { title: "ListBot — Legacy-Loop" };
 
 function safeJson(s: string | null | undefined): any {
   if (!s) return null;

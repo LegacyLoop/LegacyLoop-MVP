@@ -34,7 +34,7 @@ const UNCLEHENRYS_FEED_URL =
   || "https://www.unclehenrys.com/ad_stream/feed";
 
 const USER_AGENT =
-  "LegacyLoop/1.0 (+https://legacy-loop.com; contact: support@legacy-loop.com)";
+  "Legacy-Loop/1.0 (+https://legacy-loop.com; contact: support@legacy-loop.com)";
 
 const REQUEST_TIMEOUT_MS = 10_000;
 const RATE_LIMIT_MS = 500;   // 2 req/sec per MC memo

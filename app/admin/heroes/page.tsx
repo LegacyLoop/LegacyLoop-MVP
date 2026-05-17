@@ -10,7 +10,7 @@ import HeroReviewClient from "./HeroReviewClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Heroes Review · Admin · LegacyLoop" };
+export const metadata: Metadata = { title: "Heroes Review · Admin · Legacy-Loop" };
 
 export default async function AdminHeroesPage() {
   const user = await authAdapter.getSession();

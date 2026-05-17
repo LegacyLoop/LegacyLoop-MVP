@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
     // ── Build Slack message ──
     const today = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
     const slackMessage = [
-      `\ud83d\udcbe *LegacyLoop Daily Cache Report*`,
+      `\ud83d\udcbe *Legacy-Loop Daily Cache Report*`,
       `\ud83d\udcc5 ${today}`,
       `\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`,
       `*Claude Prompt Cache (30 days)*`,

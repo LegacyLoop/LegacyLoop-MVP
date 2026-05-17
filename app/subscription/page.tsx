@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Subscription Plans · LegacyLoop", description: "Manage your plan, upgrade, or view billing history" };
+export const metadata: Metadata = { title: "Subscription Plans · Legacy-Loop", description: "Manage your plan, upgrade, or view billing history" };
 
 export default async function SubscriptionPage() {
   const user = await authAdapter.getSession();

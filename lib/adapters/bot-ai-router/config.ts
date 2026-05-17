@@ -3,7 +3,7 @@
  * ─────────────────────────────────────────────────────────────────
  * BOT_AI_CONFIG — the central mapping of bot → best-fit AI.
  *
- * Source of truth: LegacyLoop bot-to-AI assignment doc (April 2026).
+ * Source of truth: Legacy-Loop bot-to-AI assignment doc (April 2026).
  * Each entry pairs a bot with its strongest specialist provider, an
  * optional secondary, the conditions that promote the secondary, and
  * a cost tier that bounds maximum spend per call.

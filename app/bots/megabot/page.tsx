@@ -8,7 +8,7 @@ import MegaBotClient from "./MegaBotClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "MegaBot — LegacyLoop" };
+export const metadata = { title: "MegaBot — Legacy-Loop" };
 
 export default async function MegaBotPage() {
   const user = await authAdapter.getSession();

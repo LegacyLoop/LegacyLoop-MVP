@@ -7,8 +7,8 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Home · LegacyLoop",
-  description: "Your personalized LegacyLoop welcome dashboard",
+  title: "Home · Legacy-Loop",
+  description: "Your personalized Legacy-Loop welcome dashboard",
 };
 
 export default async function HomePage() {
@@ -50,7 +50,7 @@ export default async function HomePage() {
   ];
 
   const suggestions: string[] = [];
-  if (itemCount === 0) suggestions.push("Welcome to LegacyLoop! Add your first item to get started.");
+  if (itemCount === 0) suggestions.push("Welcome to Legacy-Loop! Add your first item to get started.");
   if (draftCount > 0) suggestions.push(`You have ${draftCount} item${draftCount > 1 ? "s" : ""} in DRAFT — run AI analysis to unlock pricing.`);
   if (interestedCount > 0) suggestions.push(`${interestedCount} item${interestedCount > 1 ? "s" : ""} have buyer interest — check your messages.`);
   if (creditBalance < 5 && itemCount > 0) suggestions.push("Running low on credits — top up for uninterrupted AI access.");
@@ -74,7 +74,7 @@ export default async function HomePage() {
         <h1 style={{ fontSize: "1.75rem", fontWeight: 800, letterSpacing: "-0.02em", backgroundImage: "linear-gradient(135deg, var(--text-primary), #00bcd4)", backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
           {greeting}, {displayName} 👋
         </h1>
-        <p style={{ fontSize: "0.92rem", color: "var(--text-secondary)", marginTop: "0.35rem" }}>Here&apos;s your LegacyLoop at a glance</p>
+        <p style={{ fontSize: "0.92rem", color: "var(--text-secondary)", marginTop: "0.35rem" }}>Here&apos;s your Legacy-Loop at a glance</p>
       </div>
 
       {/* Stats */}

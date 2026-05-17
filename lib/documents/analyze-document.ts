@@ -66,7 +66,7 @@ function buildDocPrompt(docType: string, textContent?: string): string {
     ? `\n\nDOCUMENT TEXT CONTENT (extracted):\n${textContent}`
     : "";
 
-  return `${skillContext}You are an expert document analyst for a luxury resale and estate sale platform called LegacyLoop. You are analyzing a ${docType} document.
+  return `${skillContext}You are an expert document analyst for a luxury resale and estate sale platform called Legacy-Loop. You are analyzing a ${docType} document.
 
 Your job: Extract EVERY piece of useful information from this document with precision.
 

@@ -4,7 +4,7 @@ import VoiceListeningClient from "./VoiceListeningClient";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata = {
-  title: "Buyer Intent Scanner — LegacyLoop",
+  title: "Buyer Intent Scanner — Legacy-Loop",
   description: "AI scans public posts and classifieds to find buyers searching for your items. Fully opt-in, transparent, and revocable.",
 };
 

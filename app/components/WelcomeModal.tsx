@@ -62,7 +62,7 @@ export default function WelcomeModal({ user, onClose }: Props) {
       className="glass-backdrop"
       role="dialog"
       aria-modal="true"
-      aria-label="Welcome to LegacyLoop"
+      aria-label="Welcome to Legacy-Loop"
       style={{
         zIndex: 9999,
         display: "flex",
@@ -103,7 +103,7 @@ export default function WelcomeModal({ user, onClose }: Props) {
             lineHeight: 1.25,
           }}
         >
-          Welcome to LegacyLoop{user.firstName ? `, ${user.firstName}` : ""}!
+          Welcome to Legacy-Loop{user.firstName ? `, ${user.firstName}` : ""}!
         </h2>
 
         {/* Subtitle */}

@@ -1,7 +1,7 @@
 /**
  * PER-BOT SCRAPER ALLOWLIST — SINGLE SOURCE OF TRUTH
  *
- * Each of LegacyLoop's 10 specialist bots declares exactly which
+ * Each of Legacy-Loop's 10 specialist bots declares exactly which
  * scrapers it is permitted to call. There is no category routing
  * fallback. If a slug is not in a bot's allowlist here, that bot
  * can never fire it.

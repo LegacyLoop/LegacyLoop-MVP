@@ -141,7 +141,7 @@ export async function POST(req: NextRequest) {
     if (!item) return NextResponse.json({ error: "Item not found" }, { status: 404 });
     if (item.userId !== user.id && !isDemoMode()) return NextResponse.json({ error: "Not your item" }, { status: 403 });
 
-    // Enrich with full LegacyLoop data signals
+    // Enrich with full Legacy-Loop data signals
     const { enrichItemContext } = await import("@/lib/addons/enrich-item-context");
     const enriched = await enrichItemContext(itemId, item.listingPrice).catch(() => null);
 

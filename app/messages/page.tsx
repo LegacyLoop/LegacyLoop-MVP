@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Messages · LegacyLoop", description: "Your inbox — buyer inquiries, offers, and conversations" };
+export const metadata: Metadata = { title: "Messages · Legacy-Loop", description: "Your inbox — buyer inquiries, offers, and conversations" };
 
 export default async function MessagesPage() {
   const user = await authAdapter.getSession();

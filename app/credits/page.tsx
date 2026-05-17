@@ -6,7 +6,7 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Credits — LegacyLoop" };
+export const metadata = { title: "Credits — Legacy-Loop" };
 
 export default async function CreditsPage() {
   const user = await authAdapter.getSession();

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "About LegacyLoop — Mission & Vision",
+  title: "About Legacy-Loop — Mission & Vision",
   description: "AI-powered resale platform built with faith, grit, and a calling to serve families, seniors, veterans, and those in need.",
 };
 
@@ -30,7 +30,7 @@ export default function AboutPage() {
       <div style={{ textAlign: "center", marginBottom: "3rem", position: "relative" }}>
         <div style={{ position: "absolute", top: "-80px", left: "50%", transform: "translateX(-50%)", width: "400px", height: "250px", background: "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(0,188,212,0.1), transparent 70%)", pointerEvents: "none" }} />
         <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #00bcd4, #009688)", borderRadius: 2, margin: "0 auto 1rem auto" }} />
-        <h1 style={{ fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.02em", backgroundImage: "linear-gradient(135deg, var(--text-primary), #00bcd4)", backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: "0.75rem" }}>About LegacyLoop</h1>
+        <h1 style={{ fontSize: "2rem", fontWeight: 800, letterSpacing: "-0.02em", backgroundImage: "linear-gradient(135deg, var(--text-primary), #00bcd4)", backgroundClip: "text", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: "0.75rem" }}>About Legacy-Loop</h1>
         <p style={{ fontSize: "1.05rem", color: "var(--text-secondary)", lineHeight: 1.6, maxWidth: "600px", margin: "0 auto" }}>
           An AI-powered resale platform built with faith, grit, and a calling to serve families, seniors, veterans, and those in need.
         </p>
@@ -42,7 +42,7 @@ export default function AboutPage() {
         <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: "radial-gradient(circle, rgba(0,188,212,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#00bcd4", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem" }}>Our Mission</div>
         <p style={{ fontSize: "1.05rem", color: "var(--text-primary)", lineHeight: 1.7, fontStyle: "italic", fontWeight: 500 }}>
-          &ldquo;At LegacyLoop, we are driven by faith and purpose to connect generations and uplift communities. Our AI-powered resale platform empowers families and seniors during life&apos;s transitions, while supporting veterans, the elderly, and those in need. Through every sale, donation, and partnership, we aim to provide dignity, resources, and hope &mdash; building a brighter future with integrity, compassion, and stewardship.&rdquo;
+          &ldquo;At Legacy-Loop, we are driven by faith and purpose to connect generations and uplift communities. Our AI-powered resale platform empowers families and seniors during life&apos;s transitions, while supporting veterans, the elderly, and those in need. Through every sale, donation, and partnership, we aim to provide dignity, resources, and hope &mdash; building a brighter future with integrity, compassion, and stewardship.&rdquo;
         </p>
       </div>
 
@@ -94,7 +94,7 @@ export default function AboutPage() {
       {/* Our Heart */}
       <div style={{ marginBottom: "2.5rem", textAlign: "center", padding: "0 1.5rem" }}>
         <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", lineHeight: 1.8, maxWidth: "600px", margin: "0 auto", fontStyle: "italic" }}>
-          LegacyLoop was built on the belief that every person has value, every item has a story, and every transition deserves dignity. Our founder started this company in Maine with nothing but faith, grit, and a laptop &mdash; driven by a calling to serve. That calling hasn&apos;t changed. As we grow, so does our commitment to giving back. We collect unsold items for donation to families in need, and a portion of our success will fund affordable living programs for veterans and community initiatives in central Maine.
+          Legacy-Loop was built on the belief that every person has value, every item has a story, and every transition deserves dignity. Our founder started this company in Maine with nothing but faith, grit, and a laptop &mdash; driven by a calling to serve. That calling hasn&apos;t changed. As we grow, so does our commitment to giving back. We collect unsold items for donation to families in need, and a portion of our success will fund affordable living programs for veterans and community initiatives in central Maine.
         </p>
       </div>
 

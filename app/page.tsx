@@ -5,16 +5,16 @@ import { getFoundingMemberStats } from "@/lib/founding-members";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "LegacyLoop — AI-Powered Estate & Garage Sale Platform",
+  title: "Legacy-Loop — AI-Powered Estate & Garage Sale Platform",
   description: "Upload a photo and get instant AI pricing. Sell to real buyers with smart bots, easy shipping, and white-glove estate services. Start free.",
   openGraph: {
-    title: "LegacyLoop — AI-Powered Estate & Garage Sale Platform",
+    title: "Legacy-Loop — AI-Powered Estate & Garage Sale Platform",
     description: "Upload a photo and get instant AI pricing. Sell to real buyers with smart bots, easy shipping, and white-glove estate services.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "LegacyLoop — AI-Powered Estate & Garage Sale Platform",
+    title: "Legacy-Loop — AI-Powered Estate & Garage Sale Platform",
     description: "Upload a photo and get instant AI pricing. Sell to real buyers with smart bots, easy shipping, and white-glove estate services.",
   },
 };
@@ -53,7 +53,7 @@ const STEPS = [
 ];
 
 const TESTIMONIALS = [
-  { name: "Margaret T.", location: "Waterville, ME", text: "I had no idea Grandma's tea set was worth $340. LegacyLoop's AI nailed it, and it sold in 3 days.", rating: 5 },
+  { name: "Margaret T.", location: "Waterville, ME", text: "I had no idea Grandma's tea set was worth $340. Legacy-Loop's AI nailed it, and it sold in 3 days.", rating: 5 },
   { name: "Jason K.", location: "Portland, ME", text: "The MegaBot pricing gave us confidence to price Dad's workshop tools. Made over $2,000 in a week.", rating: 5 },
   { name: "Robert D.", location: "Augusta, ME", text: "As a veteran, the 25% discount meant a lot. The team handled everything with respect.", rating: 5 },
 ];
@@ -325,7 +325,7 @@ export default async function HomePage() {
           Ready to sell smarter?
         </h2>
         <p style={{ fontSize: "1rem", color: "var(--text-muted)", marginBottom: "2rem" }}>
-          Join the LegacyLoop community and sell your belongings with care and confidence.
+          Join the Legacy-Loop community and sell your belongings with care and confidence.
         </p>
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
           <Link href="/auth/signup" className="btn-primary" style={{
@@ -355,7 +355,7 @@ export default async function HomePage() {
           marginBottom: "2rem",
         }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--accent)", marginBottom: "0.75rem" }}>LegacyLoop</div>
+            <div style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--accent)", marginBottom: "0.75rem" }}>Legacy-Loop</div>
             <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
               AI-powered estate and garage sale platform. Honoring memories while creating value.
             </p>
@@ -389,7 +389,7 @@ export default async function HomePage() {
           </div>
         </div>
         <div style={{ textAlign: "center", paddingTop: "1.5rem", borderTop: "1px solid var(--border-default)", fontSize: "0.72rem", color: "var(--text-muted)" }}>
-          © 2026 LegacyLoop Tech LLC. All rights reserved. · v0.1.0-beta
+          © 2026 Legacy-Loop Tech LLC. All rights reserved. · v0.1.0-beta
         </div>
       </section>
     </div>

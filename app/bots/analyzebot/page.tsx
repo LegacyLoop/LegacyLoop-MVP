@@ -7,7 +7,7 @@ import AnalyzeBotClient from "./AnalyzeBotClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "AnalyzeBot — LegacyLoop" };
+export const metadata = { title: "AnalyzeBot — Legacy-Loop" };
 
 export default async function AnalyzeBotPage() {
   const user = await authAdapter.getSession();

@@ -143,7 +143,7 @@ Return JSON with these exact keys:
     "reverb": { "title": "...", "description": "Musician-focused, gear specs", "price": 0, "tags": ["..."], "posting_tip": "...", "hook_line": "..." },
     "pinterest": { "title": "...", "description": "Inspirational, visual pin text", "price": 0, "tags": ["..."], "posting_tip": "...", "hook_line": "..." },
     "amazon": { "title": "...", "description": "Product-focused, keyword-rich", "price": 0, "tags": ["..."], "posting_tip": "...", "hook_line": "..." },
-    "legacyloop": { "title": "...", "description": "Warm, story-driven for LegacyLoop storefront", "price": 0, "tags": ["..."], "posting_tip": "...", "hook_line": "..." }
+    "legacyloop": { "title": "...", "description": "Warm, story-driven for Legacy-Loop storefront", "price": 0, "tags": ["..."], "posting_tip": "...", "hook_line": "..." }
   },
   "best_title_overall": "The single best title across all platforms",
   "best_description_hook": "The single best opening line",
@@ -166,7 +166,7 @@ Return JSON with these exact keys:
 CRITICAL RULES:
 - Write REAL listing content — titles buyers will click, descriptions that sell.
 - Descriptions: 2-4 sentences MAX per platform. Compelling, not generic.
-- Match each platform's tone: eBay=professional, Facebook=casual, Instagram=storytelling, Etsy=artisan, Craigslist=direct, TikTok=viral, OfferUp=concise, Mercari=clean, Poshmark=fashion, Reverb=gear-specs, Pinterest=visual, Amazon=SEO, LegacyLoop=warm.
+- Match each platform's tone: eBay=professional, Facebook=casual, Instagram=storytelling, Etsy=artisan, Craigslist=direct, TikTok=viral, OfferUp=concise, Mercari=clean, Poshmark=fashion, Reverb=gear-specs, Pinterest=visual, Amazon=SEO, Legacy-Loop=warm.
 - Skip platforms that are a poor fit (e.g., Reverb for non-musical items) — still include the key but with a note like "Not recommended for this item type".
 - Keep your entire JSON response under 6,000 tokens. Shorter punchier listings beat long ones.
 - Return ONLY JSON. Start with {. No markdown fences.
@@ -267,7 +267,7 @@ Return ALL standard vehicle fields PLUS these enhanced fields in your JSON.`;
 const MEGA_COLLECTIBLES = `
 
 MEGABOT PREMIUM 4-AGENT COLLECTIBLES DEEP DIVE:
-You are a panel of the world's top collectibles experts conducting a premium paid analysis for LegacyLoop. The seller paid 5 credits for this — they expect dramatically better information than a free search could provide.
+You are a panel of the world's top collectibles experts conducting a premium paid analysis for Legacy-Loop. The seller paid 5 credits for this — they expect dramatically better information than a free search could provide.
 
 RULES THAT CANNOT BE BROKEN:
 1. Every value you state must be supported by real market data or clearly marked as estimated
@@ -482,7 +482,7 @@ export function getAnalyzeBotPrompt(ctx: PromptContext): string {
     ? `\nSELLER-PROVIDED DATA:\nTitle: ${ctx.title || "none"}\nDescription: ${ctx.description || "none"}\nCondition: ${ctx.conditionLabel}`
     : "\nNo seller data provided.";
 
-  return `You are a seasoned estate sale appraiser with 30 years of experience identifying, pricing, and selling household items, antiques, collectibles, vehicles, and everything in between. You work for LegacyLoop, a US resale platform.
+  return `You are a seasoned estate sale appraiser with 30 years of experience identifying, pricing, and selling household items, antiques, collectibles, vehicles, and everything in between. You work for Legacy-Loop, a US resale platform.
 
 Analyze the image(s) carefully and return a JSON object with these fields.
 

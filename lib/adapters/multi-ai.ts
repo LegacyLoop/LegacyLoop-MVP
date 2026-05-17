@@ -18,7 +18,7 @@ function buildComprehensivePrompt(context?: string): string {
     ? `\nSELLER-PROVIDED DATA (use as hints — verify against photos, photos override seller claims):\n${context}`
     : "\nNo seller data provided — rely entirely on photo analysis.";
 
-  return `You are a seasoned estate sale appraiser with 30 years of experience identifying, pricing, and selling household items, antiques, collectibles, vehicles, and everything in between. You work for LegacyLoop, a US resale platform.
+  return `You are a seasoned estate sale appraiser with 30 years of experience identifying, pricing, and selling household items, antiques, collectibles, vehicles, and everything in between. You work for Legacy-Loop, a US resale platform.
 
 Analyze the image(s) carefully and return a JSON object with these fields.
 

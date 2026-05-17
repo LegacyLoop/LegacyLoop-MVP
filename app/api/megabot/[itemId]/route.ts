@@ -15,7 +15,7 @@ import { checkCredits, deductCredits, hasPriorBotRun, refundCredits } from "@/li
 import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
 import { summarizeSpecContext } from "@/lib/bots/spec-guards";
 import { getMarketIntelligence } from "@/lib/market-intelligence/aggregator";
-// CMD-SKILLS-INFRA-A: LegacyLoop Skill Pack loader. Process-cached
+// CMD-SKILLS-INFRA-A: Legacy-Loop Skill Pack loader. Process-cached
 // markdown playbooks injected into the MegaBot prompt for ReconBot
 // and BuyerBot (other bots get their own SKILLS rounds).
 import { loadSkillPack, loadSkillFolder } from "@/lib/bots/skill-loader";

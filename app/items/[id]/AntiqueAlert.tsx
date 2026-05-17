@@ -122,7 +122,7 @@ export default function AntiqueAlert({ reason, auctionLow, auctionHigh, itemId }
             </div>
             <div>
               <div style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#c2410c", marginBottom: "0.15rem" }}>
-                LegacyLoop AI Detection
+                Legacy-Loop AI Detection
               </div>
               <div style={{ fontSize: "1.5rem", fontWeight: 800, letterSpacing: "-0.02em", background: "linear-gradient(90deg, #c2410c, #b45309)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", lineHeight: 1.2 }}>
                 ANTIQUE ALERT

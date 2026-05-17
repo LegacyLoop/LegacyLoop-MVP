@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
     sendEmail({
       to: "support@legacy-loop.com",
       from: "support@legacy-loop.com",
-      fromName: "LegacyLoop Shipping",
+      fromName: "Legacy-Loop Shipping",
       ...quoteEmail,
     }).catch(() => {});
 

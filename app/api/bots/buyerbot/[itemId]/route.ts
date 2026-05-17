@@ -22,7 +22,7 @@ import { routeBuyerBotHybrid, getBotConfig } from "@/lib/adapters/bot-ai-router"
 import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
 import { summarizeSpecContext } from "@/lib/bots/spec-guards";
 import { runWebSearchPrepass } from "@/lib/bots/web-search-prepass";
-// CMD-SKILLS-INFRA-A: LegacyLoop Skill Pack loader (markdown
+// CMD-SKILLS-INFRA-A: Legacy-Loop Skill Pack loader (markdown
 // playbooks prepended to the system prompt before any item context).
 import { loadSkillPack } from "@/lib/bots/skill-loader";
 
@@ -552,7 +552,7 @@ ${fbPages.sellers.slice(0, 5).map((s: any) => `${s.name} (${s.followers.toLocale
     // ── BUYERBOT PROMPT ──
     // CMD-SKILLS-INFRA-A: skillPack injected at the very TOP of the
     // system prompt (BEFORE specCtx.promptBlock) so the agent sees
-    // LegacyLoop's epistemic standard before any item context.
+    // Legacy-Loop's epistemic standard before any item context.
     // CMD-BUYERBOT-API-B: specCtx.promptBlock prepended FRONT,
     // webEnrichment appended right before the template literal.
     const skillPack = loadSkillPack("buyerbot");

@@ -61,7 +61,7 @@ export default function InstallPrompt() {
           await fetch("/api/notifications", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ type: "PWA_INSTALL", title: "App installed", message: "LegacyLoop was added to home screen" }),
+            body: JSON.stringify({ type: "PWA_INSTALL", title: "App installed", message: "Legacy-Loop was added to home screen" }),
           });
         } catch { /* non-critical */ }
       }
@@ -116,7 +116,7 @@ export default function InstallPrompt() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/images/logos/icon-192.png"
-          alt="LegacyLoop"
+          alt="Legacy-Loop"
           style={{
             width: "44px",
             height: "44px",
@@ -136,7 +136,7 @@ export default function InstallPrompt() {
               lineHeight: 1.3,
             }}
           >
-            Get the LegacyLoop App
+            Get the Legacy-Loop App
           </div>
           <div
             style={{

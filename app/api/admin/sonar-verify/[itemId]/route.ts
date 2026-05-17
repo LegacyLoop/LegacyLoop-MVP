@@ -32,7 +32,7 @@ import { routePriceBotHybrid } from "@/lib/adapters/bot-ai-router";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h cache · revisit per cyl §11
 
 const ADMIN_VERIFY_PROMPT = `You are a Sonar deep-research price verifier
-for LegacyLoop's admin team. Use live-web evidence to estimate the
+for Legacy-Loop's admin team. Use live-web evidence to estimate the
 current fair-market price of the provided item. Return JSON with the
 following shape:
 

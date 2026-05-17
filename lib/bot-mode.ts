@@ -34,11 +34,11 @@
 export function isDemoMode(): boolean {
   if (typeof process === "undefined") return false;
   if (process.env.BOT_MODE === "demo") {
-    console.warn("[LegacyLoop] Running in DEMO mode (BOT_MODE=demo). No charges or limits enforced.");
+    console.warn("[Legacy-Loop] Running in DEMO mode (BOT_MODE=demo). No charges or limits enforced.");
     return true;
   }
   if (process.env.DEMO_MODE === "true" || process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
-    console.warn("[LegacyLoop] Running in DEMO mode (DEMO_MODE/NEXT_PUBLIC_DEMO_MODE=true). No charges or limits enforced.");
+    console.warn("[Legacy-Loop] Running in DEMO mode (DEMO_MODE/NEXT_PUBLIC_DEMO_MODE=true). No charges or limits enforced.");
     return true;
   }
   return false;

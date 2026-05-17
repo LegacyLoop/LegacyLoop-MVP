@@ -148,7 +148,7 @@ async function logCacheMiss(itemId: string): Promise<void> {
 
 // ── Prompt + parser ─────────────────────────────────────────────────
 
-const SYSTEM_PROMPT = `You are LegacyLoop's Pricing Jury.
+const SYSTEM_PROMPT = `You are Legacy-Loop's Pricing Jury.
 Role: Resolve disagreements between multiple pricing sources by reasoning about which source's methodology is most credible FOR THIS SPECIFIC ITEM.
 
 Inputs: one item context + N source opinions with their prices and confidence.

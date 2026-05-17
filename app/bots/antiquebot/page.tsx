@@ -7,7 +7,7 @@ import AntiqueBotClient from "./AntiqueBotClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "AntiqueBot — LegacyLoop" };
+export const metadata = { title: "AntiqueBot — Legacy-Loop" };
 
 export default async function AntiqueBotPage() {
   const user = await authAdapter.getSession();

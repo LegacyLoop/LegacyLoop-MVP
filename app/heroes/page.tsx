@@ -3,7 +3,7 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Heroes Discount Program · LegacyLoop",
+  title: "Heroes Discount Program · Legacy-Loop",
   description: "25% discount for military, law enforcement, fire, and EMS families. Honoring those who serve our communities.",
 };
 
@@ -101,19 +101,19 @@ const TESTIMONIALS = [
   {
     icon: "\uD83C\uDF96\uFE0F",
     name: "James K., Army Veteran (Vietnam)",
-    quote: "LegacyLoop helped me find the right home for my father's WWII medals and uniform. They connected us with a military museum that will display them permanently. The 25% discount and storytelling service meant the world to our family.",
+    quote: "Legacy-Loop helped me find the right home for my father's WWII medals and uniform. They connected us with a military museum that will display them permanently. The 25% discount and storytelling service meant the world to our family.",
     stars: 5,
   },
   {
     icon: "\uD83D\uDE94",
     name: "Chief Sandra M., Retired Police (Portland PD)",
-    quote: "After 32 years on the force I had decades of memorabilia and equipment. LegacyLoop treated each piece with respect — my badge collection found a buyer who truly appreciated the history. The hero discount made it an easy choice.",
+    quote: "After 32 years on the force I had decades of memorabilia and equipment. Legacy-Loop treated each piece with respect — my badge collection found a buyer who truly appreciated the history. The hero discount made it an easy choice.",
     stars: 5,
   },
   {
     icon: "\uD83D\uDE92",
     name: "Captain Doug R., Waterville Fire Dept.",
-    quote: "Retired firefighters end up with a lot of gear. LegacyLoop catalogued everything, helped me write the stories behind each piece, and found buyers who understood their significance. Amazing service.",
+    quote: "Retired firefighters end up with a lot of gear. Legacy-Loop catalogued everything, helped me write the stories behind each piece, and found buyers who understood their significance. Amazing service.",
     stars: 5,
   },
 ];
@@ -145,7 +145,7 @@ export default function HeroesPage() {
         </h1>
         <p style={{ color: "var(--text-primary)", maxWidth: "620px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
           Military veterans, law enforcement, firefighters, and EMS personnel dedicate their lives to service.
-          LegacyLoop honors that commitment with exclusive pricing, dedicated support, and a platform
+          Legacy-Loop honors that commitment with exclusive pricing, dedicated support, and a platform
           that preserves your legacy the way it deserves.
         </p>
 

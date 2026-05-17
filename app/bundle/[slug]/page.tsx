@@ -104,14 +104,14 @@ async function getBundleData(slug: string) {
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
   const bundle = await getBundleData(slug);
-  if (!bundle) return { title: "Bundle Not Found - LegacyLoop" };
+  if (!bundle) return { title: "Bundle Not Found - Legacy-Loop" };
 
   const itemCount = bundle.items.length;
   const individualTotal = bundle.items.reduce((s: number, i: any) => s + (i.price || 0), 0);
   const discountPct = individualTotal > 0 ? Math.round(((individualTotal - bundle.bundlePrice) / individualTotal) * 100) : 0;
 
   return {
-    title: `${bundle.title} - LegacyLoop Bundle Sale`,
+    title: `${bundle.title} - Legacy-Loop Bundle Sale`,
     description: `${itemCount} items for $${bundle.bundlePrice.toLocaleString()} (${discountPct}% off). ${bundle.description || "Browse and buy this curated bundle."}`,
     openGraph: {
       title: bundle.title,

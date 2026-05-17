@@ -188,7 +188,7 @@ function BookingFormInner({ tier, tierLabel, totalAmount, depositAmount, balance
               </div>
 
               <div style={{ fontSize: "0.75rem", color: "rgba(207,216,220,0.5)", fontStyle: "italic", marginBottom: "1.25rem" }}>
-                Thank you for trusting LegacyLoop with your family{"'"}s legacy.
+                Thank you for trusting Legacy-Loop with your family{"'"}s legacy.
               </div>
 
               <button onClick={() => onSuccess(bookingId || "")} style={{

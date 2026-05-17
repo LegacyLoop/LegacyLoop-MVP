@@ -44,7 +44,7 @@ export default function ReturnRequestClient({ token }: { token: string }) {
         <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
           <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>📦</div>
           <div style={{ fontSize: "1.1rem", fontWeight: 800, color: "#e2e8f0" }}>Return Request</div>
-          <div style={{ fontSize: "0.72rem", color: "#8b949e", marginTop: "0.25rem" }}>LegacyLoop Buyer Protection</div>
+          <div style={{ fontSize: "0.72rem", color: "#8b949e", marginTop: "0.25rem" }}>Legacy-Loop Buyer Protection</div>
         </div>
 
         {/* Item Card */}
@@ -119,7 +119,7 @@ export default function ReturnRequestClient({ token }: { token: string }) {
         {/* Footer */}
         <div style={{ textAlign: "center", fontSize: "0.62rem", color: "#484f58", lineHeight: 1.5 }}>
           14-day return window · Processing fee non-refundable · Seller responds within 48 hours
-          <br />LegacyLoop.com
+          <br />Legacy-Loop.com
         </div>
       </div>
       <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>

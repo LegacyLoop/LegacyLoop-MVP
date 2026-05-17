@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Admin Portal · LegacyLoop",
-  description: "Internal admin dashboard for LegacyLoop operations.",
+  title: "Admin Portal · Legacy-Loop",
+  description: "Internal admin dashboard for Legacy-Loop operations.",
 };
 
 import { isAdmin } from "@/lib/constants/admin";
@@ -33,7 +33,7 @@ export default async function AdminPage() {
       <div className="mx-auto max-w-md mt-20 text-center">
         <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🔒</div>
         <h1 className="h2 mb-2">Admin Access Required</h1>
-        <p className="muted">This area is restricted to LegacyLoop staff. If you believe this is an error, contact your administrator.</p>
+        <p className="muted">This area is restricted to Legacy-Loop staff. If you believe this is an error, contact your administrator.</p>
       </div>
     );
   }
@@ -499,7 +499,7 @@ export default async function AdminPage() {
         <div>
           <div className="section-title">Internal</div>
           <h1 className="h2 mt-1">Admin Portal</h1>
-          <p className="muted mt-1">LegacyLoop operations dashboard · Logged in as <strong>{user.email}</strong></p>
+          <p className="muted mt-1">Legacy-Loop operations dashboard · Logged in as <strong>{user.email}</strong></p>
         </div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <span style={{ padding: "0.3rem 0.75rem", background: "#fee2e2", color: "#dc2626", borderRadius: "9999px", fontSize: "0.72rem", fontWeight: 700 }}>

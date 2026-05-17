@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "White-Glove Services · LegacyLoop", description: "Full-service estate liquidation with dedicated managers" };
+export const metadata: Metadata = { title: "White-Glove Services · Legacy-Loop", description: "Full-service estate liquidation with dedicated managers" };
 
 const TIER_LABELS: Record<string, { label: string; color: string; bg: string }> = {
   ESSENTIALS:    { label: "Essentials",    color: "#92400e", bg: "#fef3c7" },

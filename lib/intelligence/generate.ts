@@ -130,7 +130,7 @@ function buildPrompt(
     saleZip?: string | null;
   }
 ): string {
-  return `You are the Senior Intelligence Analyst for LegacyLoop, an AI-powered resale platform. Your job is to synthesize ALL available data about a seller's item into clear, actionable intelligence.
+  return `You are the Senior Intelligence Analyst for Legacy-Loop, an AI-powered resale platform. Your job is to synthesize ALL available data about a seller's item into clear, actionable intelligence.
 
 You are analyzing a REAL item for a REAL person. Be practical, specific, and honest. Speak like a knowledgeable friend helping them sell — no jargon, no fluff.
 

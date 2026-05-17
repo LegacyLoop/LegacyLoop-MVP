@@ -8,7 +8,7 @@
  * model alias via LiteLLM Gateway. Cost ceiling enforcement and
  * structured telemetry baked in.
  *
- * RooFlow-inspired · LegacyLoop custom build. NO LangChain. NO direct
+ * RooFlow-inspired · Legacy-Loop custom build. NO LangChain. NO direct
  * provider SDKs. Gateway is the single egress point per
  * DOC-TELEMETRY-LOCK.
  *

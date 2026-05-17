@@ -758,7 +758,7 @@ export const TIERS: Record<string, DigitalTierDef> = {
       "Email support",
     ],
     restrictions: [
-      "LegacyLoop branding required",
+      "Legacy-Loop branding required",
       "No analytics dashboard",
       "No Buyer Finder",
       "No MegaBot",

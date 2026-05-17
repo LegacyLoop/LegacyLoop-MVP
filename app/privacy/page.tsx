@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy · LegacyLoop",
+  title: "Privacy Policy · Legacy-Loop",
   description:
-    "How LegacyLoop collects, uses, and protects your personal information. GDPR, CCPA, and Meta Platform compliant.",
+    "How Legacy-Loop collects, uses, and protects your personal information. GDPR, CCPA, and Meta Platform compliant.",
 };
 
 export default function PrivacyPage() {
@@ -76,8 +76,8 @@ export default function PrivacyPage() {
             marginBottom: "0.75rem",
           }}
         >
-          LegacyLoop (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;)
-          operates the LegacyLoop platform accessible at legacy-loop.com (the
+          Legacy-Loop (&ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;)
+          operates the Legacy-Loop platform accessible at legacy-loop.com (the
           &ldquo;Service&rdquo;). We are committed to protecting your personal
           information and your right to privacy.
         </p>
@@ -307,7 +307,7 @@ export default function PrivacyPage() {
             marginBottom: "0.5rem",
           }}
         >
-          LegacyLoop offers an <strong>optional</strong> data sharing program
+          Legacy-Loop offers an <strong>optional</strong> data sharing program
           that helps improve AI accuracy and market pricing for all users. This
           program is:
         </p>
@@ -351,7 +351,7 @@ export default function PrivacyPage() {
           }}
         >
           We <strong>never sell</strong> your data. Shared data is used solely to
-          improve LegacyLoop pricing algorithms, market trend analysis, and AI
+          improve Legacy-Loop pricing algorithms, market trend analysis, and AI
           identification accuracy.
         </p>
       </div>
@@ -386,7 +386,7 @@ export default function PrivacyPage() {
             marginBottom: "0.5rem",
           }}
         >
-          LegacyLoop offers a Buyer Intent Scanner feature that analyzes{" "}
+          Legacy-Loop offers a Buyer Intent Scanner feature that analyzes{" "}
           <strong>publicly visible</strong> social media posts, classified ads,
           and buy/sell boards to match buyer intent with your inventory. This
           feature:
@@ -577,7 +577,7 @@ export default function PrivacyPage() {
             marginBottom: "0.5rem",
           }}
         >
-          LegacyLoop uses the following types of cookies:
+          Legacy-Loop uses the following types of cookies:
         </p>
         <ul
           style={{
@@ -643,7 +643,7 @@ export default function PrivacyPage() {
             marginBottom: "0.75rem",
           }}
         >
-          If you connect your Facebook or Instagram account to LegacyLoop, we
+          If you connect your Facebook or Instagram account to Legacy-Loop, we
           access only the permissions you explicitly grant.
         </p>
         <p
@@ -679,7 +679,7 @@ export default function PrivacyPage() {
             We do not access your personal messages or friends list
           </li>
           <li>
-            You can revoke LegacyLoop&apos;s access at any time via Facebook
+            You can revoke Legacy-Loop&apos;s access at any time via Facebook
             Settings &rarr; Apps and Websites
           </li>
         </ul>
@@ -760,10 +760,10 @@ export default function PrivacyPage() {
         >
           To exercise any of these rights, contact us at{" "}
           <a
-            href="mailto:hello@legacy-loop.com"
+            href="mailto:support@legacy-loop.com"
             style={{ color: "var(--accent)", textDecoration: "none" }}
           >
-            hello@legacy-loop.com
+            support@legacy-loop.com
           </a>
           .
         </p>
@@ -813,10 +813,10 @@ export default function PrivacyPage() {
           <li>
             Send an email to{" "}
             <a
-              href="mailto:hello@legacy-loop.com"
+              href="mailto:support@legacy-loop.com"
               style={{ color: "var(--accent)", textDecoration: "none" }}
             >
-              hello@legacy-loop.com
+              support@legacy-loop.com
             </a>{" "}
             with the subject &ldquo;Data Deletion Request&rdquo;
           </li>
@@ -877,10 +877,10 @@ export default function PrivacyPage() {
           you become aware that a child has provided us with personal data,
           please contact us immediately at{" "}
           <a
-            href="mailto:hello@legacy-loop.com"
+            href="mailto:support@legacy-loop.com"
             style={{ color: "var(--accent)", textDecoration: "none" }}
           >
-            hello@legacy-loop.com
+            support@legacy-loop.com
           </a>{" "}
           and we will take steps to delete such information.
         </p>
@@ -990,10 +990,10 @@ export default function PrivacyPage() {
         >
           Email:{" "}
           <a
-            href="mailto:hello@legacy-loop.com"
+            href="mailto:support@legacy-loop.com"
             style={{ color: "var(--accent)", textDecoration: "none" }}
           >
-            hello@legacy-loop.com
+            support@legacy-loop.com
           </a>{" "}
           /{" "}
           <a
@@ -1026,7 +1026,7 @@ export default function PrivacyPage() {
             lineHeight: 1.7,
           }}
         >
-          Mailing: LegacyLoop, Maine, USA
+          Mailing: Legacy-Loop, Maine, USA
         </p>
       </div>
     </div>

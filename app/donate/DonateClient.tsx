@@ -445,7 +445,7 @@ export default function DonateClient({ items }: Props) {
         <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, background: "radial-gradient(circle, rgba(184,134,11,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ fontSize: "0.72rem", fontWeight: 700, color: "#b8860b", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.5rem" }}>Support Our Mission</div>
         <p style={{ fontSize: "0.92rem", color: "var(--text-primary)", lineHeight: 1.7, marginBottom: "1rem" }}>
-          LegacyLoop is more than a platform &mdash; it&apos;s a mission to serve families, seniors, veterans, and communities in need.
+          Legacy-Loop is more than a platform &mdash; it&apos;s a mission to serve families, seniors, veterans, and communities in need.
         </p>
         <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: "1rem" }}>
           A portion of every transaction funds:
@@ -462,7 +462,7 @@ export default function DonateClient({ items }: Props) {
             { label: "💛 Support the Mission", amount: "$25", color: "#b8860b" },
             { label: "🚀 Fuel the Future", amount: "$100", color: "#b8860b" },
           ].map(opt => (
-            <a key={opt.amount} href={`mailto:support@legacy-loop.com?subject=Supporting LegacyLoop (${opt.amount})&body=I'd like to support LegacyLoop's mission with a ${opt.amount} contribution.`} style={{
+            <a key={opt.amount} href={`mailto:support@legacy-loop.com?subject=Supporting Legacy-Loop (${opt.amount})&body=I'd like to support Legacy-Loop's mission with a ${opt.amount} contribution.`} style={{
               padding: "0.6rem 1.25rem", borderRadius: "10px",
               border: `1px solid ${opt.color}40`, background: `${opt.color}10`,
               color: opt.color, fontWeight: 700, fontSize: "0.82rem",

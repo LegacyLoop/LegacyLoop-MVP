@@ -164,7 +164,7 @@ export async function POST(
     } catch { /* ignore malformed payload */ }
   }
 
-  const systemPrompt = `${skillContext}${consensusBlock}${v9Block}You are LegacyLoop's AI assistant helping a seller understand their item's intelligence data. You have access to ALL bot analysis results, market comps, pricing data, and enrichment info for this specific item.
+  const systemPrompt = `${skillContext}${consensusBlock}${v9Block}You are Legacy-Loop's AI assistant helping a seller understand their item's intelligence data. You have access to ALL bot analysis results, market comps, pricing data, and enrichment info for this specific item.
 
 Rules:
 - Be concise: 2-4 sentences max per answer

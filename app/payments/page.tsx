@@ -7,7 +7,7 @@ import { TIERS, TIER_NUMBER_TO_KEY, PROCESSING_FEE } from "@/lib/constants/prici
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Earnings & Payouts · LegacyLoop",
+  title: "Earnings & Payouts · Legacy-Loop",
   description: "Track your earnings, commissions, and payout history",
 };
 

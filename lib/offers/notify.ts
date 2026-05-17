@@ -129,7 +129,7 @@ export async function notifyBuyerAccepted(opts: {
           <div style="font-size: 14px; color: #888; margin-bottom: 4px;">Accepted Price</div>
           <div style="font-size: 32px; font-weight: 700; color: #22c55e;">$${priceInDollars}</div>
         </div>
-        <p style="font-size: 14px; color: #ccc;">Complete your purchase to secure the item. Payment is processed securely through LegacyLoop.</p>
+        <p style="font-size: 14px; color: #ccc;">Complete your purchase to secure the item. Payment is processed securely through Legacy-Loop.</p>
         <div style="text-align: center;">
           ${ctaButton("Complete Purchase", `${APP_URL}/store/${sellerId}/item/${item.id}?offeredPrice=${priceInDollars}`)}
         </div>

@@ -31,9 +31,9 @@ export default function HelpClient({ categories, articles }: HelpClientProps) {
 
   const faqItems = useMemo(() => [
     { q: "How do I list my first item?", a: "Go to your Dashboard and click 'Add New Item'. Upload photos, add a description, and click 'Analyze'. Our AI will identify the item, estimate its value, and generate ready-to-post listings." },
-    { q: "How much does LegacyLoop cost?", a: "We have 4 plans: Free (3 items), DIY Seller ($10/mo, 25 items), Power Seller ($25/mo, 100 items), and Estate Manager ($75/mo, unlimited). Visit /pricing for full details." },
+    { q: "How much does Legacy-Loop cost?", a: "We have 4 plans: Free (3 items), DIY Seller ($10/mo, 25 items), Power Seller ($25/mo, 100 items), and Estate Manager ($75/mo, unlimited). Visit /pricing for full details." },
     { q: "How does AI pricing work?", a: "Our PriceBot scans 42 marketplace platforms including eBay sold listings, Facebook Marketplace, Craigslist, and more to find real comparable sales. It gives you a price range based on actual market data." },
-    { q: "Can I sell vehicles on LegacyLoop?", a: "Yes! Upload photos of your vehicle and our CarBot will evaluate it with NHTSA safety data, VIN decoding, and real market comparables from AutoTrader, Cars.com, and eBay Motors." },
+    { q: "Can I sell vehicles on Legacy-Loop?", a: "Yes! Upload photos of your vehicle and our CarBot will evaluate it with NHTSA safety data, VIN decoding, and real market comparables from AutoTrader, Cars.com, and eBay Motors." },
     { q: "How do I ship an item?", a: "Go to your item page and scroll to the Shipping section. ShipBot will suggest the right box size, packaging materials, and compare carrier rates. For large items, we offer freight shipping quotes." },
     { q: "What is MegaBot?", a: "MegaBot runs 4 AI engines simultaneously (OpenAI, Claude, Gemini, and Grok) and builds a consensus from all four. It's like getting 4 expert opinions at once." },
     { q: "How do I get the 25% hero discount?", a: "Military, law enforcement, and fire/EMS personnel qualify. Go to /heroes and submit your verification. Once approved, the discount applies to all plans automatically." },
@@ -49,7 +49,7 @@ export default function HelpClient({ categories, articles }: HelpClientProps) {
       {/* AI Chat Section */}
       <div style={{ marginBottom: "1.5rem" }}>
         <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>🤖 Ask Our AI Assistant</div>
-        <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>Get instant answers to any question about LegacyLoop.</div>
+        <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>Get instant answers to any question about Legacy-Loop.</div>
         <HelpChatWidget />
       </div>
 

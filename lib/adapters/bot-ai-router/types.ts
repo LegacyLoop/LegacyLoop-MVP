@@ -16,7 +16,7 @@ import type { AiAnalysis } from "@/lib/types";
 
 // ─── Core enums ──────────────────────────────────────────────────
 
-/** All 10 LegacyLoop bots that can route through this layer. */
+/** All 10 Legacy-Loop bots that can route through this layer. */
 export type BotName =
   | "analyzebot"
   | "pricebot"

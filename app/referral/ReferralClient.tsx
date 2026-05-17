@@ -26,9 +26,9 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
   }
 
   function handleEmail() {
-    const subject = encodeURIComponent("Join me on LegacyLoop — AI estate sales");
+    const subject = encodeURIComponent("Join me on Legacy-Loop — AI estate sales");
     const body = encodeURIComponent(
-      `Hey!\n\nI've been using LegacyLoop to sell estate items with AI — it's been amazing.\n\nUse my referral link to sign up and we both get 50 free credits:\n${shareUrl}\n\nCode: ${code}`
+      `Hey!\n\nI've been using Legacy-Loop to sell estate items with AI — it's been amazing.\n\nUse my referral link to sign up and we both get 50 free credits:\n${shareUrl}\n\nCode: ${code}`
     );
     window.open(`mailto:?subject=${subject}&body=${body}`);
   }
@@ -44,7 +44,7 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
           <div style={{ fontSize: "2.5rem" }}>🎁</div>
           <h2 style={{ fontSize: "1.75rem", fontWeight: 800, marginTop: "0.5rem", color: "var(--text-primary)" }}>Earn 💎 50 Credits Per Referral</h2>
           <p style={{ color: "var(--text-muted)", marginTop: "0.5rem", fontSize: "0.95rem" }}>
-            Share LegacyLoop with friends and family. When they sign up, you both get 50 credits.
+            Share Legacy-Loop with friends and family. When they sign up, you both get 50 credits.
           </p>
         </div>
       </div>
@@ -105,7 +105,7 @@ export default function ReferralClient({ code, shareUrl, referrals }: Props) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { step: "1", icon: "🔗", title: "Share Your Link", desc: "Send your unique referral link to friends, family, or anyone who needs to sell estate items." },
-            { step: "2", icon: "✅", title: "They Sign Up", desc: "Your friend creates their LegacyLoop account using your referral link or code." },
+            { step: "2", icon: "✅", title: "They Sign Up", desc: "Your friend creates their Legacy-Loop account using your referral link or code." },
             { step: "3", icon: "💎", title: "Both Get Credits", desc: "You receive 50 credits. Your friend also gets 50 bonus credits to use on AI analysis, bots, and more." },
           ].map((s) => (
             <div key={s.step} style={{ background: "var(--bg-card-solid)", borderRadius: "0.75rem", padding: "1.25rem", textAlign: "center" }}>

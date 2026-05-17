@@ -222,7 +222,7 @@ export default function Footer() {
               Company
             </div>
             {[
-              { label: "About LegacyLoop", href: "/about" },
+              { label: "About Legacy-Loop", href: "/about" },
               { label: "Privacy Policy", href: "/privacy" },
               { label: "Terms of Service", href: "/terms" },
               { label: "Data Deletion", href: "/data-deletion" },
@@ -260,8 +260,8 @@ export default function Footer() {
           }}
         >
           <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-            <img src="/images/logos/logo-icon.png" alt="LegacyLoop" style={{ height: "24px", width: "24px", objectFit: "contain" }} />
-            &copy; {year} LegacyLoop Tech LLC &middot; Waterville, Maine &middot; All rights reserved.
+            <img src="/images/logos/logo-icon.png" alt="Legacy-Loop" style={{ height: "24px", width: "24px", objectFit: "contain" }} />
+            &copy; {year} Legacy-Loop Tech LLC &middot; Waterville, Maine &middot; All rights reserved.
           </span>
           <span
             style={{

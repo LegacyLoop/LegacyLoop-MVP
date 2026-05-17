@@ -168,7 +168,7 @@ function buildDefaultPrompt(context?: string): string {
   const sellerBlock = context
     ? `\nSELLER-PROVIDED DATA (use as hints — verify against photos):\n${context}`
     : "\nNo seller data provided — rely entirely on photo analysis.";
-  return `You are a seasoned estate sale appraiser working for LegacyLoop.
+  return `You are a seasoned estate sale appraiser working for Legacy-Loop.
 Analyze the image(s) and return a JSON object with item_name, category, brand,
 model, maker, material, era, style, keywords[], condition_guess, condition_score,
 condition_cosmetic, condition_functional, estimated_value_low/mid/high, is_antique,

@@ -24,7 +24,7 @@ export const helpArticles: HelpArticle[] = [
     categoryIcon: "🚀",
     summary:
       "A step-by-step guide to uploading your first photo, getting an AI price estimate, and publishing your listing.",
-    content: `Listing your first item on LegacyLoop takes about two minutes. Our AI handles the hard part — identifying what you have, estimating its value, and suggesting the best way to sell it. Here is how to get started.
+    content: `Listing your first item on Legacy-Loop takes about two minutes. Our AI handles the hard part — identifying what you have, estimating its value, and suggesting the best way to sell it. Here is how to get started.
 
 1. Go to your Dashboard and click the "+ New Item" button in the top-right corner. You will be taken to the upload page.
 
@@ -53,10 +53,10 @@ export const helpArticles: HelpArticle[] = [
     category: "Getting Started",
     categoryIcon: "🚀",
     summary:
-      "A friendly walkthrough for creating your LegacyLoop account and getting everything ready to start selling.",
-    content: `Welcome to LegacyLoop! Creating your account is quick and easy. In just a few minutes you will be ready to start turning your treasured items into cash. Here is how to get set up.
+      "A friendly walkthrough for creating your Legacy-Loop account and getting everything ready to start selling.",
+    content: `Welcome to Legacy-Loop! Creating your account is quick and easy. In just a few minutes you will be ready to start turning your treasured items into cash. Here is how to get set up.
 
-1. Visit the LegacyLoop homepage and click "Sign Up" in the top-right corner. You can also go directly to the /signup page.
+1. Visit the Legacy-Loop homepage and click "Sign Up" in the top-right corner. You can also go directly to the /signup page.
 
 2. Enter your name, email address, and choose a password. Your password should be at least 8 characters. Click "Create Account" to continue.
 
@@ -64,13 +64,13 @@ export const helpArticles: HelpArticle[] = [
 
 4. After the quiz, you will see your personalized plan recommendation on the results page. You can choose that plan or pick a different one from the pricing page. Every new account starts with 25 free credits to try out our AI services.
 
-5. Once you are logged in, take a moment to complete your profile. Click on your avatar in the top-right corner and select "Settings." Add your zip code — this is important because LegacyLoop uses your location to calculate local market demand and shipping estimates.
+5. Once you are logged in, take a moment to complete your profile. Click on your avatar in the top-right corner and select "Settings." Add your zip code — this is important because Legacy-Loop uses your location to calculate local market demand and shipping estimates.
 
 6. If you plan to sell on other platforms too, visit the Integrations page to connect your Facebook, eBay, Craigslist, or other marketplace accounts. This lets you cross-post listings with one click.
 
 7. You are all set! Head to your Dashboard and click "+ New Item" to list your first item. Our AI will handle the identification and pricing for you.
 
-Tip: Bookmark your Dashboard page so you can get back to it easily. If you ever get lost, click the LegacyLoop logo in the top-left corner to return home.`,
+Tip: Bookmark your Dashboard page so you can get back to it easily. If you ever get lost, click the Legacy-Loop logo in the top-left corner to return home.`,
     lastUpdated: "2026-03-30",
   },
   {
@@ -79,8 +79,8 @@ Tip: Bookmark your Dashboard page so you can get back to it easily. If you ever 
     category: "Getting Started",
     categoryIcon: "🚀",
     summary:
-      "Learn how our 6-question quiz recommends the perfect plan and personalizes your LegacyLoop experience.",
-    content: `When you first create your LegacyLoop account, we ask you six quick questions. This quiz is not a test — there are no wrong answers. It simply helps us understand your situation so we can recommend the right plan and set up your experience. Here is what each question covers and why it matters.
+      "Learn how our 6-question quiz recommends the perfect plan and personalizes your Legacy-Loop experience.",
+    content: `When you first create your Legacy-Loop account, we ask you six quick questions. This quiz is not a test — there are no wrong answers. It simply helps us understand your situation so we can recommend the right plan and set up your experience. Here is what each question covers and why it matters.
 
 Question 1 asks about your selling situation. Are you handling an estate? Downsizing? Just cleaning out? This helps us know whether to suggest project-based tools or single-item features.
 
@@ -108,7 +108,7 @@ Tip: The quiz takes about 60 seconds. It is the fastest way to make sure you are
     categoryIcon: "🚀",
     summary:
       "A complete guide to your Dashboard — stats, item cards, projects, alerts, and quick actions.",
-    content: `Your Dashboard is home base on LegacyLoop. Everything you need is right here. Let us walk through each section so you know exactly where to find things.
+    content: `Your Dashboard is home base on Legacy-Loop. Everything you need is right here. Let us walk through each section so you know exactly where to find things.
 
 At the top of the Dashboard, you will see your Stats Bar. This shows four key numbers at a glance: Total Items (everything you have uploaded), Analyzed Items (items the AI has processed), Antique Count (items flagged as potential antiques), and Portfolio Value (the total estimated value of all your items). These numbers update in real time as you add and analyze items.
 
@@ -134,14 +134,14 @@ Tip: Check your Dashboard daily when you have active listings. The alerts and ac
     category: "AI Pricing",
     categoryIcon: "🤖",
     summary:
-      "Learn how LegacyLoop calculates local vs. national pricing, confidence scores, and how MegaBot consensus works.",
-    content: `Every item you analyze on LegacyLoop receives a detailed pricing breakdown powered by AI and real market data. Here is what each part means and how to use it.
+      "Learn how Legacy-Loop calculates local vs. national pricing, confidence scores, and how MegaBot consensus works.",
+    content: `Every item you analyze on Legacy-Loop receives a detailed pricing breakdown powered by AI and real market data. Here is what each part means and how to use it.
 
 Local Pickup Price: This is what your item is likely to sell for to someone in your area. It factors in your zip code's market demand. High-demand areas like Portland, Boston, or New York see higher local prices, while rural areas may see a discount of 10-30 percent compared to the national average.
 
 Ship Nationwide Price: This is the price you can expect when selling to buyers anywhere in the country via shipping. It removes the local demand factor and reflects the full national market. Shipping nationwide almost always gets you a higher price, though you need to subtract shipping costs and our 10 percent platform fee.
 
-Best Market: LegacyLoop identifies the metro area where your item would fetch the highest price. For example, mid-century furniture sells best in Brooklyn and San Francisco, while vintage tools do well in the Midwest.
+Best Market: Legacy-Loop identifies the metro area where your item would fetch the highest price. For example, mid-century furniture sells best in Brooklyn and San Francisco, while vintage tools do well in the Midwest.
 
 Confidence Score: Every estimate includes a confidence percentage from 1 to 100. Scores above 75 mean the AI found strong comparable sales data. Scores below 50 mean the item is unusual and you may want additional analysis. Confidence is based on how many similar items have recently sold at known prices.
 
@@ -160,13 +160,13 @@ Tip: If the confidence score is low, add more photos showing labels, markings, o
     categoryIcon: "📦",
     summary:
       "No printer? No problem. Use our QR code option to get your label printed at the post office.",
-    content: `You do not need a printer to ship items on LegacyLoop. We offer a QR code delivery method that lets you walk into the post office with just your phone. Here is how it works step by step.
+    content: `You do not need a printer to ship items on Legacy-Loop. We offer a QR code delivery method that lets you walk into the post office with just your phone. Here is how it works step by step.
 
 1. Sell your item. Once a buyer confirms the purchase and payment is processed, the item status changes to "Sold." You will see a green congratulations banner on the item page with a "Ship Now" button.
 
 2. Click "Ship Now" to open the Shipping Panel. It appears right on your item page in a step-by-step wizard format.
 
-3. In Step 1, confirm your package details. LegacyLoop uses AI to suggest the right box size and weight based on what the item is. Adjust if needed — especially the weight, since carriers charge by weight.
+3. In Step 1, confirm your package details. Legacy-Loop uses AI to suggest the right box size and weight based on what the item is. Adjust if needed — especially the weight, since carriers charge by weight.
 
 4. In Step 2, enter or confirm the buyer's shipping address. If the buyer provided it during checkout, it will be pre-filled.
 
@@ -178,9 +178,9 @@ Tip: If the confidence score is low, add more photos showing labels, markings, o
 
 8. Take your packaged item to any USPS location (or the relevant carrier). Show the QR code on your phone screen to the clerk. They will scan it, print the label on the spot, and attach it to your package.
 
-9. Once the package is scanned in, tracking updates automatically appear on your LegacyLoop item page. Both you and the buyer can follow the shipment through our 5-step tracking timeline: Label Created, Picked Up, In Transit, Out for Delivery, and Delivered.
+9. Once the package is scanned in, tracking updates automatically appear on your Legacy-Loop item page. Both you and the buyer can follow the shipment through our 5-step tracking timeline: Label Created, Picked Up, In Transit, Out for Delivery, and Delivered.
 
-10. When the item is delivered, LegacyLoop confirms delivery and your payout becomes available within 3-5 business days.
+10. When the item is delivered, Legacy-Loop confirms delivery and your payout becomes available within 3-5 business days.
 
 Tip: USPS is usually the most affordable option for items under 5 pounds. For heavier or fragile items, UPS and FedEx often provide better handling.`,
     lastUpdated: "2026-03-02",
@@ -192,9 +192,9 @@ Tip: USPS is usually the most affordable option for items under 5 pounds. For he
     categoryIcon: "📦",
     summary:
       "Everything you need to know about shipping options — small parcels, large freight items, and local pickup coordination.",
-    content: `LegacyLoop supports three ways to get items to buyers: standard parcel shipping, freight shipping for large items, and local pickup. Here is a comprehensive guide to each option.
+    content: `Legacy-Loop supports three ways to get items to buyers: standard parcel shipping, freight shipping for large items, and local pickup. Here is a comprehensive guide to each option.
 
-Standard Parcel Shipping is best for items that fit in a box and weigh under 70 pounds. This covers the vast majority of items people sell — dishes, books, collectibles, small furniture, electronics, and more. LegacyLoop compares rates from USPS, UPS, and FedEx in real time so you always get the best price. Our AI suggests the right box size and whether the item needs fragile handling.
+Standard Parcel Shipping is best for items that fit in a box and weigh under 70 pounds. This covers the vast majority of items people sell — dishes, books, collectibles, small furniture, electronics, and more. Legacy-Loop compares rates from USPS, UPS, and FedEx in real time so you always get the best price. Our AI suggests the right box size and whether the item needs fragile handling.
 
 1. After your item sells, click "Ship Now" on the item page.
 2. Confirm or adjust the package dimensions and weight. Our AI pre-fills these based on the item category.
@@ -202,13 +202,13 @@ Standard Parcel Shipping is best for items that fit in a box and weigh under 70 
 4. Compare carrier rates and delivery times side by side.
 5. Choose "Print Label" or "QR Code" and you are done.
 
-Freight Shipping is for large, heavy items like furniture, pianos, or appliances that cannot go through standard carriers. LegacyLoop partners with freight carriers for items over 70 pounds or larger than 108 inches combined length and girth. Freight shipments include liftgate service and inside delivery options.
+Freight Shipping is for large, heavy items like furniture, pianos, or appliances that cannot go through standard carriers. Legacy-Loop partners with freight carriers for items over 70 pounds or larger than 108 inches combined length and girth. Freight shipments include liftgate service and inside delivery options.
 
 Local Pickup is the simplest option. The buyer comes to you. When you mark an item as "Local Pickup," buyers see your general area (city, not exact address) on the listing. Once a buyer is confirmed, you coordinate a meeting time through the messaging system. We recommend meeting in a public, well-lit location for safety.
 
-Packaging Tips: For fragile items like china, glassware, or ceramics, use double-boxing with at least 2 inches of cushioning on all sides. Wrap each piece individually in bubble wrap. LegacyLoop's ShipBot flags items that likely need fragile handling and suggests appropriate packaging.
+Packaging Tips: For fragile items like china, glassware, or ceramics, use double-boxing with at least 2 inches of cushioning on all sides. Wrap each piece individually in bubble wrap. Legacy-Loop's ShipBot flags items that likely need fragile handling and suggests appropriate packaging.
 
-Shipping Costs: The buyer pays shipping on top of the item price. Your listing price is what you receive (minus the platform fee). LegacyLoop shows buyers estimated shipping costs before they purchase so there are no surprises.
+Shipping Costs: The buyer pays shipping on top of the item price. Your listing price is what you receive (minus the platform fee). Legacy-Loop shows buyers estimated shipping costs before they purchase so there are no surprises.
 
 Tip: If you are not sure whether to offer shipping or local pickup, choose "Both." This gives you the widest pool of buyers while still allowing someone local to save on shipping.`,
     lastUpdated: "2026-03-30",
@@ -220,7 +220,7 @@ Tip: If you are not sure whether to offer shipping or local pickup, choose "Both
     categoryIcon: "📦",
     summary:
       "A walkthrough of the Shipping Center where you manage all your labels, tracking, and shipment history.",
-    content: `The Shipping Center is your one-stop dashboard for managing every shipment on LegacyLoop. You can find it by clicking the shipping icon in your navigation bar or by visiting any sold item's page. Here is what you will find.
+    content: `The Shipping Center is your one-stop dashboard for managing every shipment on Legacy-Loop. You can find it by clicking the shipping icon in your navigation bar or by visiting any sold item's page. Here is what you will find.
 
 Active Shipments: At the top of the Shipping Center, you will see all shipments currently in transit. Each one shows the item name, carrier, tracking number, current status, and estimated delivery date. Click any shipment to see the full tracking timeline with all status updates.
 
@@ -228,7 +228,7 @@ Pending Shipments: Below that, you will see items that have been sold but not ye
 
 Completed Shipments: A history of all delivered shipments with delivery confirmation dates. This is useful for your records and for resolving any disputes.
 
-The Shipping Panel on each item page walks you through four steps: confirm package details, enter the buyer's address, choose a carrier, and create the label. LegacyLoop's AI pre-fills the package dimensions and weight based on the item category, so you usually just need to verify and click through.
+The Shipping Panel on each item page walks you through four steps: confirm package details, enter the buyer's address, choose a carrier, and create the label. Legacy-Loop's AI pre-fills the package dimensions and weight based on the item category, so you usually just need to verify and click through.
 
 Tracking Timeline: Every shipment gets a visual 5-step timeline — Label Created, Picked Up, In Transit, Out for Delivery, and Delivered. The current step pulses with a gentle animation so you can see the status at a glance. Both you and the buyer can view this timeline.
 
@@ -244,19 +244,19 @@ Tip: Ship within 2 business days of the sale for the best buyer experience. Quic
     categoryIcon: "📦",
     summary:
       "How to follow your shipment from label creation to delivery using the tracking timeline.",
-    content: `Once you create a shipping label on LegacyLoop, tracking is automatic. You and your buyer can follow every step of the journey. Here is how to use the tracking system.
+    content: `Once you create a shipping label on Legacy-Loop, tracking is automatic. You and your buyer can follow every step of the journey. Here is how to use the tracking system.
 
 1. After you create a label (either by printing it or generating a QR code), the item status changes to "Shipped." A tracking timeline appears on the item page.
 
 2. The timeline has five steps: Label Created, Picked Up, In Transit, Out for Delivery, and Delivered. The current step is highlighted with a pulsing animation so you can spot it instantly.
 
-3. You do not need to do anything to update the tracking. LegacyLoop automatically checks for status changes and updates the timeline for you. The carrier provides the updates and we display them in real time.
+3. You do not need to do anything to update the tracking. Legacy-Loop automatically checks for status changes and updates the timeline for you. The carrier provides the updates and we display them in real time.
 
 4. Both you and the buyer receive notifications when the status changes. Look for the bell icon in the top-right corner of the navigation bar. Click it to see all recent notifications, including shipping updates.
 
 5. If a shipment seems stuck or has not updated in a while, you can click the tracking number to view the full carrier tracking page directly. Sometimes carriers have a slight delay in updating their systems.
 
-6. When the carrier confirms delivery, LegacyLoop marks the item as "Completed." The buyer has a 24-hour window to confirm receipt or report any issues. After that window closes, your payout is released.
+6. When the carrier confirms delivery, Legacy-Loop marks the item as "Completed." The buyer has a 24-hour window to confirm receipt or report any issues. After that window closes, your payout is released.
 
 7. You can view the complete tracking history for any shipment by visiting the item page. The timeline shows timestamps for each status change, so you have a full record.
 
@@ -278,15 +278,15 @@ Tip: If you drop off a package at a carrier location and the status does not cha
     categoryIcon: "👤",
     summary:
       "Everything you need to know about payouts — timing, methods, and how to track your earnings.",
-    content: `Getting paid on LegacyLoop is straightforward. We hold funds in escrow during the transaction to protect both you and the buyer, then release your earnings once everything is confirmed. Here is the full process.
+    content: `Getting paid on Legacy-Loop is straightforward. We hold funds in escrow during the transaction to protect both you and the buyer, then release your earnings once everything is confirmed. Here is the full process.
 
 1. Sale Confirmed: When a buyer purchases your item, the payment is captured and held securely. You will receive a notification and the item status changes to "Sold."
 
-2. Ship the Item: Package and ship the item using our shipping wizard. You can print a label at home or use the QR code method at the post office. LegacyLoop tracks the shipment automatically.
+2. Ship the Item: Package and ship the item using our shipping wizard. You can print a label at home or use the QR code method at the post office. Legacy-Loop tracks the shipment automatically.
 
-3. Delivery Verified: Once the carrier confirms delivery, LegacyLoop marks the item as "Completed." The buyer has a 24-hour window to report any issues. If no issues are raised, your payout is released.
+3. Delivery Verified: Once the carrier confirms delivery, Legacy-Loop marks the item as "Completed." The buyer has a 24-hour window to report any issues. If no issues are raised, your payout is released.
 
-4. Payout Available: Your earnings appear in your Payments dashboard under "Available Balance." LegacyLoop deducts a 10 percent platform fee from the sale price. Shipping costs are paid by the buyer separately and do not reduce your payout.
+4. Payout Available: Your earnings appear in your Payments dashboard under "Available Balance." Legacy-Loop deducts a 10 percent platform fee from the sale price. Shipping costs are paid by the buyer separately and do not reduce your payout.
 
 5. Withdrawal Options: You can withdraw your balance using three methods. Direct Deposit (ACH) transfers funds to your bank account in 3-5 business days. PayPal transfers arrive within 1-2 business days. Check by mail takes 7-10 business days.
 
@@ -294,9 +294,9 @@ Tip: If you drop off a package at a carrier location and the status does not cha
 
 7. Payout Schedule: You can request a payout at any time once your balance reaches the minimum. There is no automatic withdrawal schedule — you control when you get paid.
 
-8. Tax Reporting: If you earn more than $600 in a calendar year, LegacyLoop will issue a 1099-K form for tax purposes. You can view your annual earnings summary in the Payments section.
+8. Tax Reporting: If you earn more than $600 in a calendar year, Legacy-Loop will issue a 1099-K form for tax purposes. You can view your annual earnings summary in the Payments section.
 
-For local pickup sales, the buyer pays you directly at the time of pickup. LegacyLoop does not handle payment for in-person transactions, but we still track the sale in your account for your records.
+For local pickup sales, the buyer pays you directly at the time of pickup. Legacy-Loop does not handle payment for in-person transactions, but we still track the sale in your account for your records.
 
 Tip: Set up direct deposit in your account settings ahead of time so your first payout is ready to go as soon as you make a sale.`,
     lastUpdated: "2026-03-01",
@@ -308,7 +308,7 @@ Tip: Set up direct deposit in your account settings ahead of time so your first 
     categoryIcon: "👤",
     summary:
       "Credits let you buy add-on services like MegaBot analysis, story capture, and professional appraisals.",
-    content: `Credits are LegacyLoop's flexible currency for purchasing add-on services without upgrading your subscription. Think of them like tokens at an arcade — buy a pack and spend them on the services you need, when you need them.
+    content: `Credits are Legacy-Loop's flexible currency for purchasing add-on services without upgrading your subscription. Think of them like tokens at an arcade — buy a pack and spend them on the services you need, when you need them.
 
 How Credits Work:
 Each credit is worth a fixed amount and can be spent on any service in our Add-On Marketplace. Your credit balance is shown in the navigation bar and on your Credits page. Credits never expire.
@@ -343,8 +343,8 @@ Tip: The 200-credit pack ($25) is the most popular choice. It covers about 40 Me
     category: "Account & Billing",
     categoryIcon: "👤",
     summary:
-      "How to upgrade, downgrade, or cancel your LegacyLoop subscription, and what happens when you change plans.",
-    content: `LegacyLoop offers four subscription tiers: Free, Starter, Plus, and Pro. You can change your plan at any time from the Pricing page or your account settings. Here is how it all works.
+      "How to upgrade, downgrade, or cancel your Legacy-Loop subscription, and what happens when you change plans.",
+    content: `Legacy-Loop offers four subscription tiers: Free, Starter, Plus, and Pro. You can change your plan at any time from the Pricing page or your account settings. Here is how it all works.
 
 To View Your Current Plan: Click your avatar in the top-right corner of the navigation bar and go to Settings. Your current plan name and renewal date are shown at the top of the page.
 
@@ -353,7 +353,7 @@ To Upgrade Your Plan:
 1. Visit the /pricing page by clicking "Pricing" in the navigation bar or going directly to the URL.
 2. Compare the four tiers side by side. Each tier shows the monthly price, item limits, photo limits, which bots are available, and special features.
 3. Click "Choose Plan" on the tier you want.
-4. Enter your payment information if you have not already. LegacyLoop processes payments through Stripe.
+4. Enter your payment information if you have not already. Legacy-Loop processes payments through Stripe.
 5. Your upgrade takes effect immediately. You get instant access to all the new features and higher limits.
 
 When you upgrade mid-billing-cycle, you are charged a prorated amount for the remainder of the current period. So if you upgrade halfway through the month, you only pay half the difference.
@@ -374,19 +374,19 @@ Tip: Not sure which plan is right? Take the onboarding quiz at /onboarding/quiz 
     categoryIcon: "👤",
     summary:
       "How to link Facebook, eBay, Craigslist, and other platforms for cross-platform listing and lead tracking.",
-    content: `LegacyLoop connects to 10 popular selling platforms so you can manage everything from one place. When you connect a platform, you can cross-post listings and track leads coming from that platform. Here is how to set it up.
+    content: `Legacy-Loop connects to 10 popular selling platforms so you can manage everything from one place. When you connect a platform, you can cross-post listings and track leads coming from that platform. Here is how to set it up.
 
 1. Go to the Integrations page by clicking "Integrations" in the navigation bar or visiting /integrations directly.
 
 2. You will see cards for each supported platform: Facebook Marketplace, Instagram, eBay, Craigslist, Uncle Henry's, OfferUp, Mercari, Poshmark, Etsy, and Nextdoor.
 
-3. Click "Connect" on any platform you use. For platforms that support direct integration (like eBay), you will be redirected to log in and authorize LegacyLoop. For platforms without APIs (like Craigslist), you will enter your account details manually.
+3. Click "Connect" on any platform you use. For platforms that support direct integration (like eBay), you will be redirected to log in and authorize Legacy-Loop. For platforms without APIs (like Craigslist), you will enter your account details manually.
 
 4. Once connected, a green checkmark appears on the platform card. You can toggle cross-platform publishing on or off for each connected platform.
 
-5. When cross-posting is enabled, creating a listing on LegacyLoop automatically generates ready-to-post content for each connected platform. The listing text, pricing, and photos are optimized for each platform's format.
+5. When cross-posting is enabled, creating a listing on Legacy-Loop automatically generates ready-to-post content for each connected platform. The listing text, pricing, and photos are optimized for each platform's format.
 
-6. Buyer leads from connected platforms are tracked in LegacyLoop. When someone messages you on Facebook Marketplace about an item you listed through LegacyLoop, that lead appears in your Buyer Leads section.
+6. Buyer leads from connected platforms are tracked in Legacy-Loop. When someone messages you on Facebook Marketplace about an item you listed through Legacy-Loop, that lead appears in your Buyer Leads section.
 
 To Disconnect a Platform: Click the "Disconnect" button on any connected platform card. This removes the connection but does not delete any listings you already posted on that platform.
 
@@ -406,7 +406,7 @@ Tip: Connect at least 2-3 platforms to maximize your buyer reach. Items listed o
 
 Overview Stats: At the top, you will see your key numbers — total items listed, total views across all items, total revenue earned, and average sale price. These are computed from your actual item and transaction data.
 
-Views and Engagement: Each item on LegacyLoop tracks how many times it has been viewed, how many buyer inquiries it has received, and how many bot-generated leads have been created. The analytics page shows these in aggregate so you can see which items are getting the most attention.
+Views and Engagement: Each item on Legacy-Loop tracks how many times it has been viewed, how many buyer inquiries it has received, and how many bot-generated leads have been created. The analytics page shows these in aggregate so you can see which items are getting the most attention.
 
 Revenue Breakdown: If you have made sales, you will see a breakdown of your earnings. This shows the total sale prices, platform fees deducted, shipping costs (paid by buyers), and your net earnings. This helps you understand exactly how much you are taking home.
 
@@ -429,7 +429,7 @@ Tip: Check analytics once a week to stay on top of your listings. Small adjustme
     categoryIcon: "👤",
     summary:
       "How to share your referral link, earn bonus credits, and track your referral history.",
-    content: `LegacyLoop's referral program rewards you with free credits every time someone you refer signs up and starts selling. It is one of the best ways to keep your credit balance topped up without spending a dime. Here is how it works.
+    content: `Legacy-Loop's referral program rewards you with free credits every time someone you refer signs up and starts selling. It is one of the best ways to keep your credit balance topped up without spending a dime. Here is how it works.
 
 1. Find Your Referral Code: Visit the /referral page by clicking "Refer" in the navigation bar. Your unique referral code is displayed at the top of the page. It is a short, easy-to-share code tied to your account.
 
@@ -444,7 +444,7 @@ Tip: Check analytics once a week to stay on top of your listings. Small adjustme
 
 There is no limit to how many people you can refer. If you refer 10 people who each list an item, that is 250 free credits — enough for 50 MegaBot analyses.
 
-Who Should You Refer? Think about friends and family who are downsizing, cleaning out a garage, handling an estate, or just have things around the house they no longer need. LegacyLoop works great for anyone with items to sell, regardless of their tech experience.
+Who Should You Refer? Think about friends and family who are downsizing, cleaning out a garage, handling an estate, or just have things around the house they no longer need. Legacy-Loop works great for anyone with items to sell, regardless of their tech experience.
 
 Tip: Share your referral link in local community groups (Facebook neighborhood groups, Nextdoor, church groups) where people often ask about selling household items. You will earn credits and help your neighbors discover an easier way to sell.`,
     lastUpdated: "2026-03-30",
@@ -457,7 +457,7 @@ Tip: Share your referral link in local community groups (Facebook neighborhood g
     categoryIcon: "💰",
     summary:
       "Our MegaBuying Bots scan multiple platforms to find interested buyers and deliver leads directly to your dashboard.",
-    content: `LegacyLoop's MegaBuying Bot system automatically searches for potential buyers across multiple online platforms so you don't have to. When activated, bots scan Facebook Marketplace, Craigslist, eBay, and other sites for people looking for items like yours. Matching leads appear on your item page with contact info and a compatibility score. You can review each lead, mark them as contacted, and track responses — all from one place. Activate a bot from any listed item page for free on most plans.`,
+    content: `Legacy-Loop's MegaBuying Bot system automatically searches for potential buyers across multiple online platforms so you don't have to. When activated, bots scan Facebook Marketplace, Craigslist, eBay, and other sites for people looking for items like yours. Matching leads appear on your item page with contact info and a compatibility score. You can review each lead, mark them as contacted, and track responses — all from one place. Activate a bot from any listed item page for free on most plans.`,
     lastUpdated: "2026-03-01",
   },
   {
@@ -467,7 +467,7 @@ Tip: Share your referral link in local community groups (Facebook neighborhood g
     categoryIcon: "💰",
     summary:
       "How to edit photos, descriptions, prices, and status for your items after they are created.",
-    content: `After you create an item on LegacyLoop, you can edit every detail at any time. Here is how to manage your items effectively.
+    content: `After you create an item on Legacy-Loop, you can edit every detail at any time. Here is how to manage your items effectively.
 
 To Edit an Item:
 
@@ -499,7 +499,7 @@ Tip: After editing, consider re-running the AI analysis if you added significant
     categoryIcon: "💰",
     summary:
       "What each status means — from Draft to Completed — and how items flow through the selling process.",
-    content: `Every item on LegacyLoop has a status that tells you and your buyers where it is in the selling process. Here is what each status means and when to use it.
+    content: `Every item on Legacy-Loop has a status that tells you and your buyers where it is in the selling process. Here is what each status means and when to use it.
 
 Draft: This is where every item starts when you first create it. Draft items are only visible to you. Use this status while you are still adding photos and details before running the AI analysis.
 
@@ -529,7 +529,7 @@ Tip: Keep your statuses up to date. Accurate statuses help your Buyer Bots and R
     categoryIcon: "💰",
     summary:
       "How to group related items into bundles to sell them together at a discount.",
-    content: `Bundling is a smart way to sell multiple related items together. Buyers love bundles because they get a discount, and you love bundles because you move more items at once with less shipping hassle. Here is how to use bundles on LegacyLoop.
+    content: `Bundling is a smart way to sell multiple related items together. Buyers love bundles because they get a discount, and you love bundles because you move more items at once with less shipping hassle. Here is how to use bundles on Legacy-Loop.
 
 What is a Bundle? A bundle groups two or more items into a single listing. For example, you might bundle a set of vintage teacups with their saucers, or a collection of books by the same author. The buyer purchases everything at once for a single price.
 
@@ -539,7 +539,7 @@ How to Create a Bundle:
 
 2. On any item page, look for the "Add to Bundle" option. Select the other items you want to include.
 
-3. Set a bundle price. LegacyLoop suggests a bundle discount of 10-15 percent off the combined individual prices. You can adjust this to whatever you think is fair.
+3. Set a bundle price. Legacy-Loop suggests a bundle discount of 10-15 percent off the combined individual prices. You can adjust this to whatever you think is fair.
 
 4. The bundle appears as a single listing on your storefront. Buyers see all the items included with individual photos and descriptions, plus the bundle savings.
 
@@ -561,7 +561,7 @@ Tip: Bundles work especially well for local pickup. Buyers are more willing to d
     categoryIcon: "💰",
     summary:
       "How the offer flow works — receiving offers, making counter-offers, and accepting or declining.",
-    content: `When a buyer is interested in your item, they can send you an offer through LegacyLoop's messaging system. Here is how the offer process works from start to finish.
+    content: `When a buyer is interested in your item, they can send you an offer through Legacy-Loop's messaging system. Here is how the offer process works from start to finish.
 
 Receiving an Offer: When a buyer makes an offer, you will see it in your Message Center (accessible from the navigation bar or at /messages). The offer shows the buyer's proposed price alongside your listing price. You also get a notification via the bell icon.
 
@@ -579,7 +579,7 @@ Counter-Offer Tips:
 - Consider the item's time on market. If an item has been listed for weeks with no other interest, a lower offer might be worth accepting.
 - Factor in your costs. Remember the 10 percent platform fee and any shipping costs when evaluating offers.
 
-Quick Replies: LegacyLoop provides quick reply templates for common responses like "Thanks for your offer, but I am firm on the price" or "I can do [amount] — does that work for you?" These save time when you are managing multiple conversations.
+Quick Replies: Legacy-Loop provides quick reply templates for common responses like "Thanks for your offer, but I am firm on the price" or "I can do [amount] — does that work for you?" These save time when you are managing multiple conversations.
 
 Offer History: All offers and counter-offers are logged in the conversation thread so you have a complete record of the negotiation.
 
@@ -592,8 +592,8 @@ Tip: Respond to offers within 24 hours. Quick responses show buyers you are seri
     category: "Selling & Buyers",
     categoryIcon: "💰",
     summary:
-      "How trades work on LegacyLoop — cash plus items, trade-only, and how to evaluate trade offers.",
-    content: `LegacyLoop supports trades in addition to traditional cash sales. If you are open to receiving other items as part of a deal, you can enable trades on any listing. Here is how it works.
+      "How trades work on Legacy-Loop — cash plus items, trade-only, and how to evaluate trade offers.",
+    content: `Legacy-Loop supports trades in addition to traditional cash sales. If you are open to receiving other items as part of a deal, you can enable trades on any listing. Here is how it works.
 
 Enabling Trades: When you create or edit an item, look for the "Open to Trades" toggle. Turn it on and your listing will display a trade icon that lets buyers know you will consider trade offers.
 
@@ -605,7 +605,7 @@ Types of Trades:
 Receiving a Trade Offer: When a buyer proposes a trade through the messaging system, they describe what they are offering (and ideally include photos). You can then:
 
 1. Review their item description and photos carefully.
-2. Check if the offered item has been analyzed on LegacyLoop — if so, you can see its AI-estimated value.
+2. Check if the offered item has been analyzed on Legacy-Loop — if so, you can see its AI-estimated value.
 3. Accept, decline, or counter with your terms (for example, "I would accept your item plus $20 cash").
 
 Evaluating Trade Offers: Consider these factors:
@@ -613,7 +613,7 @@ Evaluating Trade Offers: Consider these factors:
 - Does the AI valuation of both items support a fair trade?
 - Would you be better off selling your item for cash and buying what you want separately?
 
-Safety with Trades: For trade exchanges, always meet in a public location. Both parties should inspect the items before finalizing. LegacyLoop logs the trade agreement in your transaction history for your records.
+Safety with Trades: For trade exchanges, always meet in a public location. Both parties should inspect the items before finalizing. Legacy-Loop logs the trade agreement in your transaction history for your records.
 
 Tip: Trades work best for items in similar categories. A collector offering to trade one antique for another is a natural fit. Be cautious about trades where the values are hard to compare.`,
     lastUpdated: "2026-03-30",
@@ -625,21 +625,21 @@ Tip: Trades work best for items in similar categories. A collector offering to t
     categoryIcon: "💰",
     summary:
       "How to list your items on Facebook, eBay, Craigslist, and 7 other platforms from one place.",
-    content: `One of LegacyLoop's most powerful features is the ability to list your items across multiple selling platforms without creating separate listings on each one. Here is how cross-platform listing works.
+    content: `One of Legacy-Loop's most powerful features is the ability to list your items across multiple selling platforms without creating separate listings on each one. Here is how cross-platform listing works.
 
-Setting Up: First, connect your marketplace accounts on the Integrations page (/integrations). LegacyLoop supports 10 platforms: Facebook Marketplace, Instagram, eBay, Craigslist, Uncle Henry's, OfferUp, Mercari, Poshmark, Etsy, and Nextdoor.
+Setting Up: First, connect your marketplace accounts on the Integrations page (/integrations). Legacy-Loop supports 10 platforms: Facebook Marketplace, Instagram, eBay, Craigslist, Uncle Henry's, OfferUp, Mercari, Poshmark, Etsy, and Nextdoor.
 
 How Cross-Posting Works:
 
-1. Create your item on LegacyLoop as normal — upload photos, add a description, run the AI analysis, and set your price.
+1. Create your item on Legacy-Loop as normal — upload photos, add a description, run the AI analysis, and set your price.
 
-2. When you change the status to "Listed," LegacyLoop automatically generates optimized listing content for each connected platform. Each platform has different requirements (title length, description format, category tags), and we handle all of that for you.
+2. When you change the status to "Listed," Legacy-Loop automatically generates optimized listing content for each connected platform. Each platform has different requirements (title length, description format, category tags), and we handle all of that for you.
 
-3. For platforms with direct API integration (like eBay), the listing is posted automatically. For other platforms, LegacyLoop gives you ready-to-paste content that you copy into the platform's posting form.
+3. For platforms with direct API integration (like eBay), the listing is posted automatically. For other platforms, Legacy-Loop gives you ready-to-paste content that you copy into the platform's posting form.
 
-4. When a buyer contacts you on any connected platform, the inquiry is tracked in LegacyLoop's Buyer Leads section. This means you can see all your buyer activity in one place regardless of which platform it came from.
+4. When a buyer contacts you on any connected platform, the inquiry is tracked in Legacy-Loop's Buyer Leads section. This means you can see all your buyer activity in one place regardless of which platform it came from.
 
-Managing Cross-Platform Listings: When you sell an item on one platform, remember to update or remove the listing on other platforms. Changing the status to "Sold" on LegacyLoop will prompt you to delist from connected platforms.
+Managing Cross-Platform Listings: When you sell an item on one platform, remember to update or remove the listing on other platforms. Changing the status to "Sold" on Legacy-Loop will prompt you to delist from connected platforms.
 
 Platform-Specific Tips:
 - Facebook Marketplace: Best for furniture, home goods, and local sales. Use all 10 photo slots.
@@ -658,8 +658,8 @@ Tip: You do not need to connect all 10 platforms. Start with the 2-3 where your 
     category: "AI & Bots",
     categoryIcon: "🤖",
     summary:
-      "An overview of all 11 LegacyLoop bots and how they work together to help you sell smarter and faster.",
-    content: `Bot Hub is LegacyLoop's command center for all 11 AI-powered bots that work together to help you sell. Think of it as your personal team of specialists — each one handles a different part of the selling process so you do not have to. Here is a quick introduction to each bot.
+      "An overview of all 11 Legacy-Loop bots and how they work together to help you sell smarter and faster.",
+    content: `Bot Hub is Legacy-Loop's command center for all 11 AI-powered bots that work together to help you sell. Think of it as your personal team of specialists — each one handles a different part of the selling process so you do not have to. Here is a quick introduction to each bot.
 
 AnalyzeBot: Looks at your photos and identifies what the item is — maker, material, era, style, condition, and markings. This is the first bot that runs when you click "Analyze with AI."
 
@@ -752,7 +752,7 @@ Three Price Points: PriceBot gives you three different estimates:
 
 Confidence Score: Every estimate comes with a confidence score from 1 to 100. High confidence (75+) means PriceBot found many recent comparable sales at consistent prices. Low confidence (below 50) means the item is unusual or has limited sales data. For low-confidence items, we recommend running MegaBot for a second opinion.
 
-Location Intelligence: PriceBot uses a sophisticated zip-code-based market multiplier system. It knows that a Tiffany lamp sells for 35 percent more in New York than the national average, while vintage farm equipment sells better in rural agricultural areas. This location awareness makes LegacyLoop pricing significantly more accurate than one-size-fits-all estimates.
+Location Intelligence: PriceBot uses a sophisticated zip-code-based market multiplier system. It knows that a Tiffany lamp sells for 35 percent more in New York than the national average, while vintage farm equipment sells better in rural agricultural areas. This location awareness makes Legacy-Loop pricing significantly more accurate than one-size-fits-all estimates.
 
 Tip: If PriceBot's confidence is below 50, add more photos showing labels and markings, then re-run the analysis. Better identification leads to better pricing data.`,
     lastUpdated: "2026-03-30",
@@ -873,7 +873,7 @@ Tip: Always weigh your item on a kitchen or bathroom scale before shipping. Ship
     categoryIcon: "🤖",
     summary:
       "Vehicle evaluation using NHTSA safety data, VIN decoding, and market pricing for cars, trucks, and more.",
-    content: `CarBot is LegacyLoop's specialist for vehicles — cars, trucks, motorcycles, ATVs, boats, and recreational vehicles. It goes beyond standard photo analysis by pulling official data from government and industry databases. Here is how it works.
+    content: `CarBot is Legacy-Loop's specialist for vehicles — cars, trucks, motorcycles, ATVs, boats, and recreational vehicles. It goes beyond standard photo analysis by pulling official data from government and industry databases. Here is how it works.
 
 What CarBot Analyzes: Upload photos of your vehicle and CarBot identifies the make, model, year, and trim level. If you provide the VIN (Vehicle Identification Number), CarBot decodes it to get exact specifications including engine type, transmission, factory options, and original MSRP.
 
@@ -903,7 +903,7 @@ Tip: Including the VIN dramatically improves CarBot's accuracy. A VIN decode giv
     categoryIcon: "🤖",
     summary:
       "Antique detection using 78 signals, auction valuation, and appraisal recommendations.",
-    content: `AntiqueBot is LegacyLoop's antique authentication specialist. It uses 78 different signals to determine whether an item might be a valuable antique and estimates what it could fetch at auction. Here is how it works and what to look for.
+    content: `AntiqueBot is Legacy-Loop's antique authentication specialist. It uses 78 different signals to determine whether an item might be a valuable antique and estimates what it could fetch at auction. Here is how it works and what to look for.
 
 How Detection Works: AntiqueBot runs automatically as part of every AI analysis. It evaluates your item across three categories of signals:
 
@@ -1009,7 +1009,7 @@ Tip: ReconBot is most valuable for items that have been listed for more than a w
     categoryIcon: "🤖",
     summary:
       "The multi-AI engine that sends your item to four AI models simultaneously for the most reliable estimate.",
-    content: `MegaBot is LegacyLoop's most powerful analysis tool. Instead of relying on a single AI model, it sends your item to four different AI engines simultaneously and compares their results. This consensus approach dramatically increases accuracy. Here is how it works.
+    content: `MegaBot is Legacy-Loop's most powerful analysis tool. Instead of relying on a single AI model, it sends your item to four different AI engines simultaneously and compares their results. This consensus approach dramatically increases accuracy. Here is how it works.
 
 The Four AI Models: MegaBot queries these four engines in parallel:
 
@@ -1104,7 +1104,7 @@ Tip: If you find yourself buying credits for the same bot repeatedly, it might b
     categoryIcon: "🏠",
     summary:
       "Our team manages your entire estate sale from start to finish — photography, pricing, buyers, and shipping.",
-    content: `White-Glove is LegacyLoop's premium full-service option for estate sales. Our team comes to your home, photographs every item, runs AI analysis, sets prices, coordinates buyers, and handles all shipping. You sit back and receive payouts as items sell. Three tiers are available: Essentials (up to 100 items), Professional (up to 300 items), and Legacy (unlimited items with dedicated project manager). Currently available in Maine with expansion planned. Request a quote at the /quote page.`,
+    content: `White-Glove is Legacy-Loop's premium full-service option for estate sales. Our team comes to your home, photographs every item, runs AI analysis, sets prices, coordinates buyers, and handles all shipping. You sit back and receive payouts as items sell. Three tiers are available: Essentials (up to 100 items), Professional (up to 300 items), and Legacy (unlimited items with dedicated project manager). Currently available in Maine with expansion planned. Request a quote at the /quote page.`,
     lastUpdated: "2026-03-01",
   },
   {
@@ -1114,13 +1114,13 @@ Tip: If you find yourself buying credits for the same bot repeatedly, it might b
     categoryIcon: "🏠",
     summary:
       "Compare the three White-Glove service levels — what is included, pricing, and which one is right for you.",
-    content: `LegacyLoop offers three tiers of White-Glove estate service. Each tier is designed for a different scale of project. Here is a detailed comparison to help you choose the right one.
+    content: `Legacy-Loop offers three tiers of White-Glove estate service. Each tier is designed for a different scale of project. Here is a detailed comparison to help you choose the right one.
 
 Essentials ($1,750):
 This tier is perfect for smaller estates, single-room cleanouts, or curated collections of up to 50 items. Here is what is included:
 - Professional photography of every item (up to 6 photos each)
 - AI analysis and pricing for all items
-- Listing on your LegacyLoop storefront
+- Listing on your Legacy-Loop storefront
 - Cross-posting to 3 marketplace platforms
 - Buyer communication management for 30 days
 - Basic shipping coordination
@@ -1153,7 +1153,7 @@ Our comprehensive service for large estates, multi-room properties, or high-valu
 
 How to Get Started:
 
-1. Visit the White-Glove section of the LegacyLoop website or talk to our team through the Help Widget (bottom-right corner of any page).
+1. Visit the White-Glove section of the Legacy-Loop website or talk to our team through the Help Widget (bottom-right corner of any page).
 
 2. Tell us about your project — how many items, what type, your timeline, and your location.
 
@@ -1172,7 +1172,7 @@ Tip: If you are not sure which tier you need, start with a phone consultation. W
     categoryIcon: "🔒",
     summary:
       "Best practices for meeting buyers in person, choosing safe locations, and handling cash transactions.",
-    content: `Local pickup is a great way to sell without shipping hassles, but safety comes first. Always meet in a public, well-lit location like a police station lobby or busy coffee shop. Bring a friend if possible. Accept cash or verified digital payments only — never accept personal checks. Share your meeting details with someone you trust. LegacyLoop logs all buyer conversations so you have a record of every interaction. If a buyer pressures you or something feels off, trust your instincts and cancel the meeting.`,
+    content: `Local pickup is a great way to sell without shipping hassles, but safety comes first. Always meet in a public, well-lit location like a police station lobby or busy coffee shop. Bring a friend if possible. Accept cash or verified digital payments only — never accept personal checks. Share your meeting details with someone you trust. Legacy-Loop logs all buyer conversations so you have a record of every interaction. If a buyer pressures you or something feels off, trust your instincts and cancel the meeting.`,
     lastUpdated: "2026-03-01",
   },
   {
@@ -1182,30 +1182,30 @@ Tip: If you are not sure which tier you need, start with a phone consultation. W
     categoryIcon: "🔒",
     summary:
       "How to avoid scams, verify buyers, and keep your personal information secure when selling online.",
-    content: `Selling online is safe when you follow a few important guidelines. LegacyLoop builds in protections, but being aware of common risks keeps you even safer. Here is what you need to know.
+    content: `Selling online is safe when you follow a few important guidelines. Legacy-Loop builds in protections, but being aware of common risks keeps you even safer. Here is what you need to know.
 
-Use LegacyLoop's Payment System: When a buyer purchases through LegacyLoop, payment is processed securely by Stripe and held in escrow until delivery is confirmed. This protects you from fake payments and protects the buyer from non-delivery. Never accept payment outside the platform for shipped items.
+Use Legacy-Loop's Payment System: When a buyer purchases through Legacy-Loop, payment is processed securely by Stripe and held in escrow until delivery is confirmed. This protects you from fake payments and protects the buyer from non-delivery. Never accept payment outside the platform for shipped items.
 
 Watch for Common Scams:
 - Overpayment scams: A buyer sends more than the asking price and asks you to refund the difference. This is always a scam. Decline and report the buyer.
-- Fake payment confirmations: Someone sends a screenshot or email claiming they paid, but no payment appears in your LegacyLoop account. Always verify payment in your actual account dashboard before shipping.
-- Shipping address changes: A buyer asks you to ship to a different address after payment. Contact LegacyLoop support before proceeding — this can be a sign of fraud.
+- Fake payment confirmations: Someone sends a screenshot or email claiming they paid, but no payment appears in your Legacy-Loop account. Always verify payment in your actual account dashboard before shipping.
+- Shipping address changes: A buyer asks you to ship to a different address after payment. Contact Legacy-Loop support before proceeding — this can be a sign of fraud.
 - Too-good-to-be-true offers: A buyer immediately offers full price on a newly listed item without any questions. While this can be legitimate, proceed carefully.
 
 Protect Your Personal Information:
 - Never share your home address with buyers unless they are picking up locally and you are comfortable.
-- Use LegacyLoop's messaging system for all communications. Avoid giving out your personal phone number or email.
-- LegacyLoop shows buyers your city, not your exact address, on listings.
+- Use Legacy-Loop's messaging system for all communications. Avoid giving out your personal phone number or email.
+- Legacy-Loop shows buyers your city, not your exact address, on listings.
 
 Verify Before You Ship:
-1. Confirm payment has been received in your LegacyLoop account (not just an email notification).
-2. Ship only to the address provided through the LegacyLoop system.
+1. Confirm payment has been received in your Legacy-Loop account (not just an email notification).
+2. Ship only to the address provided through the Legacy-Loop system.
 3. Always use tracked shipping so you have proof of delivery.
 4. Take photos of the packaged item before shipping, including the label and the item inside the box.
 
-Reporting Suspicious Activity: If something does not feel right, use the "Report" button on any conversation or buyer profile. LegacyLoop's trust and safety team reviews all reports within 24 hours.
+Reporting Suspicious Activity: If something does not feel right, use the "Report" button on any conversation or buyer profile. Legacy-Loop's trust and safety team reviews all reports within 24 hours.
 
-Tip: Trust your instincts. If a buyer is pressuring you to act quickly, skip normal procedures, or communicate outside LegacyLoop, those are red flags. It is always better to lose a sale than to lose your item and money to a scam.`,
+Tip: Trust your instincts. If a buyer is pressuring you to act quickly, skip normal procedures, or communicate outside Legacy-Loop, those are red flags. It is always better to lose a sale than to lose your item and money to a scam.`,
     lastUpdated: "2026-03-30",
   },
   {
@@ -1214,8 +1214,8 @@ Tip: Trust your instincts. If a buyer is pressuring you to act quickly, skip nor
     category: "Safety & Trust",
     categoryIcon: "🔒",
     summary:
-      "How LegacyLoop handles return requests, the refund process, and protections for both buyers and sellers.",
-    content: `LegacyLoop has a fair return and refund policy that protects both buyers and sellers. Here is how the process works.
+      "How Legacy-Loop handles return requests, the refund process, and protections for both buyers and sellers.",
+    content: `Legacy-Loop has a fair return and refund policy that protects both buyers and sellers. Here is how the process works.
 
 Buyer Protection Window: After an item is marked as delivered, the buyer has 24 hours to inspect the item and report any issues. If the item matches the listing description, no further action is needed and your payout is released.
 
@@ -1233,19 +1233,19 @@ When a Return is NOT Eligible:
 
 The Return Process:
 
-1. The buyer files a return request through LegacyLoop within the protection window.
+1. The buyer files a return request through Legacy-Loop within the protection window.
 
-2. LegacyLoop reviews the request and may ask the buyer for photos showing the issue.
+2. Legacy-Loop reviews the request and may ask the buyer for photos showing the issue.
 
-3. If the return is approved, the buyer ships the item back to you using a prepaid return label provided by LegacyLoop.
+3. If the return is approved, the buyer ships the item back to you using a prepaid return label provided by Legacy-Loop.
 
 4. Once you receive the returned item and confirm it is in the same condition as when you shipped it, the buyer receives a full refund.
 
-5. If the item was damaged in shipping, LegacyLoop files a carrier insurance claim on your behalf. You are not out of pocket for shipping damage.
+5. If the item was damaged in shipping, Legacy-Loop files a carrier insurance claim on your behalf. You are not out of pocket for shipping damage.
 
-Seller Protection: LegacyLoop protects sellers from fraudulent return requests. If a buyer consistently files return requests or the evidence does not support their claim, LegacyLoop's trust team investigates and may deny the request.
+Seller Protection: Legacy-Loop protects sellers from fraudulent return requests. If a buyer consistently files return requests or the evidence does not support their claim, Legacy-Loop's trust team investigates and may deny the request.
 
-For Local Pickup Sales: Returns are handled directly between buyer and seller. LegacyLoop does not mediate local pickup transactions, but we recommend agreeing on a return policy before the sale.
+For Local Pickup Sales: Returns are handled directly between buyer and seller. Legacy-Loop does not mediate local pickup transactions, but we recommend agreeing on a return policy before the sale.
 
 Tip: The best way to avoid returns is accurate listings. Photograph any flaws clearly, describe condition honestly, and set realistic expectations. Honest listings build trust and lead to happy buyers who come back for more.`,
     lastUpdated: "2026-03-30",
@@ -1257,8 +1257,8 @@ Tip: The best way to avoid returns is accurate listings. Photograph any flaws cl
     category: "Veterans & Heroes",
     categoryIcon: "🏅",
     summary:
-      "Military veterans, law enforcement, and first responders receive 25% off all LegacyLoop plans.",
-    content: `LegacyLoop proudly offers a 25 percent discount on all subscription plans and credit packages for military veterans, active-duty service members, law enforcement officers, firefighters, and EMTs. To activate your discount, visit the /heroes page and verify your status through our partner verification service. Once verified, the discount applies automatically to all future purchases. The discount stacks with pre-launch founding member pricing for maximum savings. Thank you for your service.`,
+      "Military veterans, law enforcement, and first responders receive 25% off all Legacy-Loop plans.",
+    content: `Legacy-Loop proudly offers a 25 percent discount on all subscription plans and credit packages for military veterans, active-duty service members, law enforcement officers, firefighters, and EMTs. To activate your discount, visit the /heroes page and verify your status through our partner verification service. Once verified, the discount applies automatically to all future purchases. The discount stacks with pre-launch founding member pricing for maximum savings. Thank you for your service.`,
     lastUpdated: "2026-03-02",
   },
   {
@@ -1268,7 +1268,7 @@ Tip: The best way to avoid returns is accurate listings. Photograph any flaws cl
     categoryIcon: "🏅",
     summary:
       "Step-by-step instructions for verifying your military, law enforcement, or first responder status to get 25% off.",
-    content: `The Heroes Discount gives military veterans, active-duty service members, law enforcement officers, firefighters, and EMTs a 25 percent discount on all LegacyLoop subscription plans and credit packages. Here is how to apply.
+    content: `The Heroes Discount gives military veterans, active-duty service members, law enforcement officers, firefighters, and EMTs a 25 percent discount on all Legacy-Loop subscription plans and credit packages. Here is how to apply.
 
 Who Qualifies:
 - Active-duty military (all branches: Army, Navy, Air Force, Marines, Coast Guard, Space Force)
@@ -1367,7 +1367,7 @@ What Buyers See: When someone visits your public sale page, they see:
 - A contact form to ask questions or make offers
 - Your general location (city, not exact address)
 
-Buyers do not need a LegacyLoop account to browse your sale page. They can view items, see prices, and reach out to you directly through the contact form.
+Buyers do not need a Legacy-Loop account to browse your sale page. They can view items, see prices, and reach out to you directly through the contact form.
 
 Optimizing Your Sale Page:
 
@@ -1389,7 +1389,7 @@ Tip: Create your public sale page a few days before you want to start selling an
     categoryIcon: "📋",
     summary:
       "How to organize a neighborhood-wide sale with 2-8 families using the Neighborhood Bundle discount.",
-    content: `The Neighborhood Bundle is a special LegacyLoop offering that lets 2 to 8 families in the same neighborhood coordinate a group sale. You save money with discounted service pricing, and buyers love the convenience of shopping multiple families in one stop. Here is how it works.
+    content: `The Neighborhood Bundle is a special Legacy-Loop offering that lets 2 to 8 families in the same neighborhood coordinate a group sale. You save money with discounted service pricing, and buyers love the convenience of shopping multiple families in one stop. Here is how it works.
 
 What is a Neighborhood Bundle? Instead of each family running their own sale independently, you team up with neighbors. Each family creates their own items and project, but all the projects are linked under one Neighborhood Bundle. Buyers see a single sale page with items from all participating families, organized by household.
 
@@ -1401,9 +1401,9 @@ How to Set Up a Neighborhood Bundle:
 
 3. One person acts as the bundle organizer. They create the bundle and invite the other families by email.
 
-4. Each family creates their own LegacyLoop account (if they do not have one), uploads their items, and assigns them to the neighborhood bundle project.
+4. Each family creates their own Legacy-Loop account (if they do not have one), uploads their items, and assigns them to the neighborhood bundle project.
 
-5. LegacyLoop generates a shared public sale page that shows all items from all families, with clear labels showing which household each item belongs to.
+5. Legacy-Loop generates a shared public sale page that shows all items from all families, with clear labels showing which household each item belongs to.
 
 Pricing: The Neighborhood Bundle includes discounted White-Glove or self-service rates:
 - 2 families: 15 percent discount off regular pricing
@@ -1469,7 +1469,7 @@ Tip: Check the marketplace regularly. We add new services often, and seasonal pr
     categoryIcon: "🛒",
     summary:
       "Text, audio, and video story capture options that document the history and memories behind your items.",
-    content: `Every item has a story. Grandmother's rocking chair, Uncle Bill's fishing rod, the kitchen table where the family gathered for fifty Thanksgivings. LegacyLoop's Story Capture services help you preserve those memories, whether you are selling the item or keeping it in the family. Here is how each option works.
+    content: `Every item has a story. Grandmother's rocking chair, Uncle Bill's fishing rod, the kitchen table where the family gathered for fifty Thanksgivings. Legacy-Loop's Story Capture services help you preserve those memories, whether you are selling the item or keeping it in the family. Here is how each option works.
 
 AI Text Story Capture (5 credits): Share a few details about the item — who owned it, how long they had it, any special memories — and our AI crafts a beautifully written narrative. The story is attached to the item's listing, making it more compelling to buyers who value provenance. It is also saved in your personal archive for family records.
 
@@ -1483,7 +1483,7 @@ Audio Story Recording: For items with rich family history, record yourself (or a
 
 Video Story Capture: Record a short video showing the item and telling its story. Perfect for items with interesting features that are hard to describe in text, or for capturing a family member sharing memories on camera.
 
-Digital Archive: All captured stories — text, audio, and video — are stored in your LegacyLoop archive. You can access them anytime from the /archives page. Stories can be exported as PDFs, included on a USB keepsake drive, or printed as a family history booklet.
+Digital Archive: All captured stories — text, audio, and video — are stored in your Legacy-Loop archive. You can access them anytime from the /archives page. Stories can be exported as PDFs, included on a USB keepsake drive, or printed as a family history booklet.
 
 Why Stories Matter for Selling: Listings with stories sell for 15-25 percent more than identical items without stories. Buyers, especially collectors and antique enthusiasts, value provenance — knowing where an item came from and what it meant to someone. A story transforms an object from "used dish set" into "a family heirloom from 1960s Maine."
 
@@ -1497,7 +1497,7 @@ Tip: If you are handling an estate sale, sit down with family members and record
     categoryIcon: "🛒",
     summary:
       "How to request professional appraisals, generate inventory reports, and use them for insurance or estates.",
-    content: `Sometimes you need more than an AI estimate. LegacyLoop connects you with certified appraisers and generates professional reports for insurance, estates, donations, and legal purposes. Here is what is available.
+    content: `Sometimes you need more than an AI estimate. Legacy-Loop connects you with certified appraisers and generates professional reports for insurance, estates, donations, and legal purposes. Here is what is available.
 
 Professional Appraisal (15 credits):
 
@@ -1543,7 +1543,7 @@ Tip: If you are settling an estate with items valued over $500 each, professiona
     categoryIcon: "🏪",
     summary:
       "How to create, customize, and share your public storefront where buyers browse your listings.",
-    content: `Every LegacyLoop seller gets a free public storefront — a web page where all your listed items are displayed for buyers to browse. Here is how to set it up and make it look great.
+    content: `Every Legacy-Loop seller gets a free public storefront — a web page where all your listed items are displayed for buyers to browse. Here is how to set it up and make it look great.
 
 Your Storefront URL: Your storefront is automatically created when you sign up. It lives at legacyloop.com/store/your-user-id. You can find the link by clicking "Public Storefront" in the navigation or visiting /store while logged in.
 
@@ -1569,7 +1569,7 @@ Sharing Your Storefront:
 - Include the link in your profiles on other selling platforms to build your brand.
 - Generate a QR code that links to your storefront — great for printouts and flyers.
 
-Buyer Experience: Buyers do not need a LegacyLoop account to browse your storefront. They can view all items, see prices, and send you messages through the contact form. If they want to make a purchase, they will be guided through the process.
+Buyer Experience: Buyers do not need a Legacy-Loop account to browse your storefront. They can view all items, see prices, and send you messages through the contact form. If they want to make a purchase, they will be guided through the process.
 
 Tip: Share your storefront link in local community groups when you add new items. A simple "Just listed 5 new items on my shop" with the link drives traffic and sales.`,
     lastUpdated: "2026-03-30",
@@ -1597,7 +1597,7 @@ Sending Messages:
 2. Type your message in the text field at the bottom.
 3. Click "Send" or press Enter.
 
-Quick Replies: LegacyLoop provides pre-written quick reply templates for common situations. Click the "Quick Replies" button to see options like:
+Quick Replies: Legacy-Loop provides pre-written quick reply templates for common situations. Click the "Quick Replies" button to see options like:
 - "Thanks for your interest! The item is still available."
 - "I can do [price] — does that work for you?"
 - "Happy to send more photos. What angles would you like?"

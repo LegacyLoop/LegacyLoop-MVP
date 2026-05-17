@@ -17,7 +17,7 @@ import { checkCredits, deductCredits, hasPriorBotRun } from "@/lib/credits";
 import { routeReconBotHybrid } from "@/lib/adapters/bot-ai-router";
 import { buildItemSpecContext } from "@/lib/bots/item-spec-context";
 import { summarizeSpecContext } from "@/lib/bots/spec-guards";
-// CMD-SKILLS-INFRA-A: LegacyLoop Skill Pack loader (markdown
+// CMD-SKILLS-INFRA-A: Legacy-Loop Skill Pack loader (markdown
 // playbooks prepended to the system prompt before any item context).
 import { loadSkillPack } from "@/lib/bots/skill-loader";
 
@@ -261,7 +261,7 @@ CRITICAL: These are REAL listings scraped from actual marketplaces. Use them as 
     // ── RECONBOT PROMPT ──
     // CMD-SKILLS-INFRA-A: skillPack injected at the very TOP of the
     // system prompt (BEFORE specContext.promptBlock) so the agent
-    // sees LegacyLoop's epistemic standard before any item context.
+    // sees Legacy-Loop's epistemic standard before any item context.
     // CMD-RECONBOT-API-B: specContext.promptBlock prepended FRONT
     // (Bot Constitution — seller location/shippability constraints)
     // so the AI honors freight-only / local-only items in its

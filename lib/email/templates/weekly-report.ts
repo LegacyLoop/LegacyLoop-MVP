@@ -15,7 +15,7 @@ interface WeeklyReportEmailData {
 }
 
 export function weeklyReportEmail(data: WeeklyReportEmailData): { subject: string; html: string } {
-  const subject = `📊 Your Weekly LegacyLoop Report — Week of ${data.weekOf}`;
+  const subject = `📊 Your Weekly Legacy-Loop Report — Week of ${data.weekOf}`;
 
   const attentionRows = data.itemsNeedingAttention.length > 0
     ? data.itemsNeedingAttention.map((item) =>
@@ -104,7 +104,7 @@ export function weeklyReportEmail(data: WeeklyReportEmailData): { subject: strin
       <p style="color:#475569;font-size:12px;margin:0 0 4px;">
         <a href="https://app.legacy-loop.com/settings" style="color:#00bcd4;text-decoration:none;">Manage email preferences</a>
       </p>
-      <p style="color:#334155;font-size:11px;margin:0;">LegacyLoop — Connecting Generations</p>
+      <p style="color:#334155;font-size:11px;margin:0;">Legacy-Loop — Connecting Generations</p>
     </div>
 
   </div>

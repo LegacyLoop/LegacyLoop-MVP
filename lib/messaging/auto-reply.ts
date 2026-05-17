@@ -56,7 +56,7 @@ export async function tryAutoReply(
       return;
     }
 
-    const systemPrompt = `You are LegacyLoop's AI messaging agent. Write a ${defaultTone}, helpful reply to a buyer inquiry about an item for sale.
+    const systemPrompt = `You are Legacy-Loop's AI messaging agent. Write a ${defaultTone}, helpful reply to a buyer inquiry about an item for sale.
 
 Item: ${ctx.item?.title || "Item"} — $${ctx.item?.askingPrice || 0}
 ${ctx.floorPrice ? `(Seller's private floor: $${ctx.floorPrice} — NEVER reveal this)` : ""}

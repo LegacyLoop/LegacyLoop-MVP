@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
             data: { userId: newUser.id, balance: DISCOUNTS.signup.credits, lifetime: DISCOUNTS.signup.credits, spent: 0 },
           });
           await prisma.creditTransaction.create({
-            data: { userCreditsId: uc.id, type: "bonus", amount: DISCOUNTS.signup.credits, balance: DISCOUNTS.signup.credits, description: "Welcome bonus — thanks for joining LegacyLoop!" },
+            data: { userCreditsId: uc.id, type: "bonus", amount: DISCOUNTS.signup.credits, balance: DISCOUNTS.signup.credits, description: "Welcome bonus — thanks for joining Legacy-Loop!" },
           });
         }
       }

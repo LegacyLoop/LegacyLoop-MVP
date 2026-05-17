@@ -45,7 +45,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ slu
     return NextResponse.json({
       bundle,
       items: itemsWithPhotos,
-      seller: { name: seller?.displayName || "LegacyLoop Seller", memberSince: seller?.createdAt },
+      seller: { name: seller?.displayName || "Legacy-Loop Seller", memberSince: seller?.createdAt },
     });
   } catch (err: unknown) {
     return NextResponse.json({ error: "Failed to fetch bundle" }, { status: 500 });

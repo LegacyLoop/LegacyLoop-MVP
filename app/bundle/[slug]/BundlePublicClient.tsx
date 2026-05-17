@@ -802,7 +802,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
                   <div style={{ fontSize: 13, fontWeight: 600, color: TEXT_PRIMARY }}>
                     {bundle.seller.name}
                   </div>
-                  <div style={{ fontSize: 11, color: TEXT_MUTED }}>Seller on LegacyLoop</div>
+                  <div style={{ fontSize: 11, color: TEXT_MUTED }}>Seller on Legacy-Loop</div>
                 </div>
                 <Link
                   href={`/store/${bundle.seller.id}`}
@@ -1181,7 +1181,7 @@ export default function BundlePublicClient({ bundle }: { bundle: BundleData }) {
         }}
       >
         <div style={{ fontSize: 11, color: TEXT_MUTED }}>
-          Powered by LegacyLoop &middot; AI-Verified Estate Sales &middot; Secure Transactions
+          Powered by Legacy-Loop &middot; AI-Verified Estate Sales &middot; Secure Transactions
         </div>
       </div>
     </div>

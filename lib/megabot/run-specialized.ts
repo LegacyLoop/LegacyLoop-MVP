@@ -74,7 +74,7 @@ export interface RunSpecializedMegaBotOpts {
   enableGrounding?: boolean;
   /** Prior valuation midpoint for downstream high_disagreement analytics */
   priorValuationMid?: number | null;
-  /** CMD-SKILLS-INFRA-A: pre-loaded LegacyLoop Skill Pack block.
+  /** CMD-SKILLS-INFRA-A: pre-loaded Legacy-Loop Skill Pack block.
    *  Caller assembles via lib/bots/skill-loader.ts loadSkillPack().
    *  Prepended to enrichedPrompt BEFORE specPromptBlock so the
    *  agents see the epistemic standard before any item context. */

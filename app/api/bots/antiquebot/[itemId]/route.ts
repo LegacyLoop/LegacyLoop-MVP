@@ -863,7 +863,7 @@ function generateDemoResult(
     },
     provenance_chain: [
       { owner: "Original purchaser (unknown)", period: era !== "Unknown" ? era : "Mid-20th Century", evidence: "Period-appropriate construction and materials", confidence: "Medium" },
-      { owner: "Estate collection", period: "Recent", evidence: "Submitted through LegacyLoop estate intake", confidence: "High" },
+      { owner: "Estate collection", period: "Recent", evidence: "Submitted through Legacy-Loop estate intake", confidence: "High" },
     ],
     exhibition_potential: {
       museum_interest: revisedHigh > 5000 ? "Moderate" : revisedHigh > 1000 ? "Low" : "None",

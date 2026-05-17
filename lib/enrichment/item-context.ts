@@ -1,5 +1,5 @@
 /**
- * LegacyLoop Cross-Bot Enrichment System
+ * Legacy-Loop Cross-Bot Enrichment System
  *
  * Reads all available bot results for an item and produces
  * a structured context block injected into every bot prompt.

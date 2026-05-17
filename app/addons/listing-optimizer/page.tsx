@@ -14,7 +14,7 @@ const PLATFORMS = [
   { key: "offerup", name: "OfferUp", color: "#34a853", icon: "💚" },
   { key: "mercari", name: "Mercari", color: "#d5001c", icon: "🏪" },
   { key: "poshmark", name: "Poshmark", color: "#cc2f5c", icon: "👗" },
-  { key: "legacyloop", name: "LegacyLoop", color: "#00bcd4", icon: "🔄" },
+  { key: "legacyloop", name: "Legacy-Loop", color: "#00bcd4", icon: "🔄" },
 ];
 
 const AI_ENGINES = [

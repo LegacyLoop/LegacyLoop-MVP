@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   try {
     const seQuotes = await getShipEngineRateEstimate({
       ship_from: {
-        company_name: "LegacyLoop Seller",
+        company_name: "Legacy-Loop Seller",
         address_line1: "123 Main St",
         city_locality: "Portland",
         state_province: "ME",

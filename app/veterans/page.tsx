@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Veteran Legacy Program · LegacyLoop",
+  title: "Veteran Legacy Program · Legacy-Loop",
   description: "Special pricing and legacy storytelling for veterans and military families. Honoring those who served.",
 };
 
@@ -48,17 +48,17 @@ const BENEFITS = [
 const TESTIMONIALS = [
   {
     name: "James K., Army Veteran (Vietnam)",
-    quote: "LegacyLoop helped me find the right home for my father's WWII medals and uniform. They connected us with a military museum that will display them permanently. The storytelling service captured his service in a way our family will cherish forever.",
+    quote: "Legacy-Loop helped me find the right home for my father's WWII medals and uniform. They connected us with a military museum that will display them permanently. The storytelling service captured his service in a way our family will cherish forever.",
     stars: 5,
   },
   {
     name: "Patricia M., Gold Star Family",
-    quote: "After losing my husband, I had no idea what to do with his military gear and personal items. LegacyLoop treated every item with incredible respect and helped me decide what to keep, sell, and donate. The 25% discount was meaningful but the care they showed was priceless.",
+    quote: "After losing my husband, I had no idea what to do with his military gear and personal items. Legacy-Loop treated every item with incredible respect and helped me decide what to keep, sell, and donate. The 25% discount was meaningful but the care they showed was priceless.",
     stars: 5,
   },
   {
     name: "Robert & Linda Chen, Military Family",
-    quote: "Retiring after 30 years means a house full of memories. LegacyLoop organized everything — from deployments to family photos — into a beautiful digital archive our grandchildren can access forever.",
+    quote: "Retiring after 30 years means a house full of memories. Legacy-Loop organized everything — from deployments to family photos — into a beautiful digital archive our grandchildren can access forever.",
     stars: 5,
   },
 ];
@@ -98,7 +98,7 @@ export default function VeteransPage() {
         </h1>
         <p style={{ color: "var(--text-primary)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
           Military service creates a lifetime of meaningful items — uniforms, medals, equipment, letters, photos.
-          LegacyLoop helps veteran families preserve, document, and responsibly transition these treasures
+          Legacy-Loop helps veteran families preserve, document, and responsibly transition these treasures
           with special pricing and dedicated support.
         </p>
 

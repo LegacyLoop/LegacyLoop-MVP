@@ -157,7 +157,7 @@ export default function ForgotPasswordPage() {
           >
             <li>Open your email inbox</li>
             <li>
-              Look for an email from <strong style={{ color: "var(--text-secondary)" }}>LegacyLoop</strong>
+              Look for an email from <strong style={{ color: "var(--text-secondary)" }}>Legacy-Loop</strong>
             </li>
             <li>
               Click the &quot;Reset My Password&quot; button

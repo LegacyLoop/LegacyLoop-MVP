@@ -19,11 +19,11 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     where: { id: itemId },
     include: { photos: true, aiResult: true },
   }).catch(() => null);
-  if (!item) return { title: "Item Not Found · LegacyLoop" };
+  if (!item) return { title: "Item Not Found · Legacy-Loop" };
   const ai = safeJson(item.aiResult?.rawJson);
   const title = item.title || ai?.item_name || "Estate Sale Item";
   return {
-    title: `${title} · LegacyLoop Estate Sale`,
+    title: `${title} · Legacy-Loop Estate Sale`,
     description: item.description || ai?.notes || `${title} for sale. AI-priced and verified.`,
     openGraph: {
       title,
@@ -81,7 +81,7 @@ export default async function PublicItemPage({ params }: { params: Params }) {
     "@context": "https://schema.org/",
     "@type": "Product",
     name: title,
-    description: item.description || ai?.notes || `${title} for sale on LegacyLoop`,
+    description: item.description || ai?.notes || `${title} for sale on Legacy-Loop`,
     image: photos.map((p) => p.filePath),
     brand: ai?.brand ? { "@type": "Brand", name: ai.brand } : undefined,
     ...(price != null
@@ -234,14 +234,14 @@ export default async function PublicItemPage({ params }: { params: Params }) {
         <ShareButtons
           url={itemUrl}
           title={`${title}${price != null ? ` — $${price}` : ""}`}
-          description={item.description || `${title} for sale on LegacyLoop estate sale platform.`}
+          description={item.description || `${title} for sale on Legacy-Loop estate sale platform.`}
         />
       </div>
 
-      {/* Powered by LegacyLoop */}
+      {/* Powered by Legacy-Loop */}
       <div style={{ marginTop: "2rem", textAlign: "center", padding: "2rem", background: "var(--bg-card-hover)", borderRadius: "1rem" }}>
         <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-          Sold via <strong style={{ color: "var(--accent)" }}>LegacyLoop</strong> · AI-powered estate sale platform
+          Sold via <strong style={{ color: "var(--accent)" }}>Legacy-Loop</strong> · AI-powered estate sale platform
         </div>
         <Link href="/pricing" style={{ fontSize: "0.8rem", color: "var(--accent)", textDecoration: "none", marginTop: "0.25rem", display: "inline-block" }}>
           Sell your own items →

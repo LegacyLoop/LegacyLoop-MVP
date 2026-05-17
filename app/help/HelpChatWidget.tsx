@@ -47,7 +47,7 @@ export default function HelpChatWidget({ compact }: { compact?: boolean }) {
       <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: compact ? "8px" : "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
         {messages.length === 0 && !compact && (
           <div style={{ textAlign: "center", padding: "16px 8px" }}>
-            <div style={{ fontSize: "14px", color: "var(--text-secondary, #8b949e)", marginBottom: "12px" }}>Ask me anything about LegacyLoop!</div>
+            <div style={{ fontSize: "14px", color: "var(--text-secondary, #8b949e)", marginBottom: "12px" }}>Ask me anything about Legacy-Loop!</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "center" }}>
               {suggestions.map(s => (
                 <button key={s} onClick={() => { setInput(s); }} style={{ padding: "6px 12px", borderRadius: "16px", border: "1px solid rgba(0,188,212,0.2)", background: "rgba(0,188,212,0.06)", color: "var(--accent, #00bcd4)", fontSize: "12px", cursor: "pointer" }}>{s}</button>
@@ -74,7 +74,7 @@ export default function HelpChatWidget({ compact }: { compact?: boolean }) {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && send()}
-          placeholder="Ask anything about LegacyLoop..."
+          placeholder="Ask anything about Legacy-Loop..."
           style={{ flex: 1, padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-default, rgba(0,188,212,0.15))", background: "var(--bg-card, rgba(255,255,255,0.05))", color: "var(--text-primary, #e2e8f0)", fontSize: "13px", outline: "none", minHeight: "44px" }}
         />
         <button onClick={send} disabled={loading || !input.trim()} style={{ padding: "10px 16px", borderRadius: "8px", border: "none", background: loading ? "rgba(0,188,212,0.3)" : "#00bcd4", color: "#fff", fontWeight: 700, fontSize: "13px", cursor: loading ? "default" : "pointer", minHeight: "44px", minWidth: "44px" }}>

@@ -20,7 +20,7 @@ export default function ThemeSettings() {
         Appearance
       </div>
       <div style={{ color: "var(--muted-card)", fontSize: "0.85rem", marginBottom: "1.25rem" }}>
-        Choose how LegacyLoop looks to you. Currently using <strong>{resolved}</strong> mode.
+        Choose how Legacy-Loop looks to you. Currently using <strong>{resolved}</strong> mode.
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "0.75rem" }}>

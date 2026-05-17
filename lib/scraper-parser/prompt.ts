@@ -4,7 +4,7 @@
  * V2 banked: migrate to lib/bots/skills/scraper_parser/ skill packs.
  */
 
-export const SYSTEM_PROMPT = `You are a scraper-output parser for LegacyLoop, a US resale platform.
+export const SYSTEM_PROMPT = `You are a scraper-output parser for Legacy-Loop, a US resale platform.
 Your job is to take raw scraper output (HTML or pre-parsed fields from Apify)
 and produce a single clean JSON object describing the item plus an array of
 comparable sales found in the scrape.

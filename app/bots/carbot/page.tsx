@@ -7,7 +7,7 @@ import CarBotClient from "./CarBotClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "CarBot — LegacyLoop" };
+export const metadata = { title: "CarBot — Legacy-Loop" };
 
 export default async function CarBotPage() {
   const user = await authAdapter.getSession();

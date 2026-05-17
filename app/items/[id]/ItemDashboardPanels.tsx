@@ -5987,7 +5987,7 @@ const LISTING_PLATFORMS = [
   { key: "reverb", icon: "🎸", name: "Reverb", color: "#298dff", url: "https://reverb.com/sell/listings/new" },
   { key: "pinterest", icon: "📌", name: "Pinterest", color: "#e60023", url: "https://pinterest.com/pin/create/button" },
   { key: "amazon", icon: "📦", name: "Amazon", color: "#ff9900", url: "https://sellercentral.amazon.com" },
-  { key: "legacyloop", icon: "🔄", name: "LegacyLoop", color: "#00bcd4", url: "/store" },
+  { key: "legacyloop", icon: "🔄", name: "Legacy-Loop", color: "#00bcd4", url: "/store" },
 ];
 
 function ListingCommandCenter({ listings, listBotResult, boostResult, itemId, getFullText, copiedPlatform, setCopiedPlatform, copyPlatform, getTitle, getPrice, platformCount }: {

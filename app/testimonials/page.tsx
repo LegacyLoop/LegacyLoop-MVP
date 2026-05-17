@@ -4,9 +4,9 @@ import TestimonialGrid from "@/app/components/TestimonialGrid";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "What Our Customers Say \u00b7 LegacyLoop",
+  title: "What Our Customers Say \u00b7 Legacy-Loop",
   description:
-    "Read real stories from families who trusted LegacyLoop to price, list, and sell their estate items with AI-powered tools.",
+    "Read real stories from families who trusted Legacy-Loop to price, list, and sell their estate items with AI-powered tools.",
 };
 
 export default function TestimonialsPage() {
@@ -23,7 +23,7 @@ export default function TestimonialsPage() {
           className="muted mt-2"
           style={{ maxWidth: "600px", margin: "0.5rem auto 0" }}
         >
-          Real stories from families across Maine who used LegacyLoop to honor
+          Real stories from families across Maine who used Legacy-Loop to honor
           their loved ones&apos; belongings while getting fair value.
         </p>
       </div>
@@ -59,7 +59,7 @@ export default function TestimonialsPage() {
             margin: "0 auto 1.25rem",
           }}
         >
-          If you&apos;ve sold items through LegacyLoop, we&apos;d love to hear
+          If you&apos;ve sold items through Legacy-Loop, we&apos;d love to hear
           about your experience. Reviews appear after a quick approval.
         </p>
         <Link

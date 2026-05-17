@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
 }
 
 function buildSystemPrompt(ctx: ReturnType<typeof buildAgentContext> extends Promise<infer T> ? T : never, tone: string): string {
-  return `You are the LegacyLoop AI Messaging Agent — an expert resale negotiation coach and professional communication assistant. You have full context of this conversation, the item being sold, and the seller's preferences.
+  return `You are the Legacy-Loop AI Messaging Agent — an expert resale negotiation coach and professional communication assistant. You have full context of this conversation, the item being sold, and the seller's preferences.
 
 Your responses must be:
 - Concise and ready to use immediately

@@ -1,7 +1,7 @@
 /**
  * Item → Square CatalogObject Mapper
  * Pure TypeScript mapping layer — no API calls, no DB access.
- * Maps LegacyLoop Item fields to Square Catalog API schema.
+ * Maps Legacy-Loop Item fields to Square Catalog API schema.
  */
 
 import type { Item, ItemPhoto, AiResult, Valuation, AntiqueCheck, Project } from "@prisma/client";

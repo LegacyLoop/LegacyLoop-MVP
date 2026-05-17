@@ -21,7 +21,7 @@ const FALLBACK_TESTIMONIALS: Omit<Testimonial, "id" | "createdAt">[] = [
   {
     buyerName: "Margaret T. (Waterville, ME)",
     rating: 5,
-    text: "I was overwhelmed after Mom passed. LegacyLoop's AI priced everything in her china cabinet in 20 minutes. The MegaBot found a collector in Boston who paid $340 for a tea set I would have donated. The whole process felt respectful and easy.",
+    text: "I was overwhelmed after Mom passed. Legacy-Loop's AI priced everything in her china cabinet in 20 minutes. The MegaBot found a collector in Boston who paid $340 for a tea set I would have donated. The whole process felt respectful and easy.",
     itemTitle: "Royal Albert Tea Service",
     isFeatured: true,
   },
@@ -143,7 +143,7 @@ export default function TestimonialGrid({ maxItems = 6, showTitle = false }: Pro
           <div className="section-title" style={{ display: "inline-block" }}>Testimonials</div>
           <h2 className="h2 mt-2">What Our Customers Say</h2>
           <p className="muted mt-2" style={{ maxWidth: "600px", margin: "0.5rem auto 0" }}>
-            Real stories from families who trusted LegacyLoop with their treasured belongings.
+            Real stories from families who trusted Legacy-Loop with their treasured belongings.
           </p>
         </div>
       )}

@@ -11,7 +11,7 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Settings · LegacyLoop", description: "Manage privacy, notifications, theme, and account preferences" };
+export const metadata: Metadata = { title: "Settings · Legacy-Loop", description: "Manage privacy, notifications, theme, and account preferences" };
 
 export default async function SettingsPage() {
   const user = await authAdapter.getSession();

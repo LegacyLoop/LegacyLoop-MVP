@@ -7,7 +7,7 @@ import BuyerBotClient from "./BuyerBotClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "BuyerBot — LegacyLoop" };
+export const metadata = { title: "BuyerBot — Legacy-Loop" };
 
 export default async function BuyerBotPage() {
   const user = await authAdapter.getSession();

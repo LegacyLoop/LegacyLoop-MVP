@@ -484,7 +484,7 @@ export default function ProjectDetailClient({ project, items, availableItems }: 
               <ShareButtons
                 url={project.publicUrl}
                 title={project.name}
-                description={project.description || `${project.name} \u2014 sale on LegacyLoop`}
+                description={project.description || `${project.name} \u2014 sale on Legacy-Loop`}
               />
             </div>
           </>

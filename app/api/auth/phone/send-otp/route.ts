@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       const formBody = new URLSearchParams({
         From: fromPhone,
         To: normalized,
-        Body: `Your LegacyLoop code: ${code}. Expires in 10 minutes.`,
+        Body: `Your Legacy-Loop code: ${code}. Expires in 10 minutes.`,
       });
 
       const twilioRes = await fetch(url, {

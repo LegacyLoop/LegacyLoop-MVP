@@ -8,7 +8,7 @@ import PriceBotClient from "./PriceBotClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "PriceBot — LegacyLoop" };
+export const metadata = { title: "PriceBot — Legacy-Loop" };
 
 export default async function PriceBotPage() {
   const user = await authAdapter.getSession();

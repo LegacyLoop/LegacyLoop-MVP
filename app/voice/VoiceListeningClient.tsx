@@ -193,7 +193,7 @@ export default function BuyerIntentScanner() {
               fontSize: "0.88rem",
               lineHeight: 1.6,
             }}>
-              LegacyLoop scans <strong>publicly visible</strong> social posts, buy/sell boards, and classified ads to find buyers already searching for items like yours.
+              Legacy-Loop scans <strong>publicly visible</strong> social posts, buy/sell boards, and classified ads to find buyers already searching for items like yours.
             </p>
           </div>
 

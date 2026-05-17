@@ -7,7 +7,7 @@ import ReconBotClient from "./ReconBotClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "ReconBot — LegacyLoop" };
+export const metadata = { title: "ReconBot — Legacy-Loop" };
 
 export default async function ReconBotPage() {
   const user = await authAdapter.getSession();

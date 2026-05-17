@@ -1,7 +1,7 @@
 /**
  * APIFY SCRAPER KILL SWITCH
  *
- * The kill switch is the LegacyLoop emergency safety net for the
+ * The kill switch is the Legacy-Loop emergency safety net for the
  * Apify scraper layer. It provides two protections:
  *
  *   1. GLOBAL kill switch (env var APIFY_KILL_SWITCH=true)

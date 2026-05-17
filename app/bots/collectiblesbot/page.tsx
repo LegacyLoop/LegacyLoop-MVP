@@ -7,7 +7,7 @@ import CollectiblesBotClient from "./CollectiblesBotClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "CollectiblesBot — LegacyLoop" };
+export const metadata = { title: "CollectiblesBot — Legacy-Loop" };
 
 export default async function CollectiblesBotPage() {
   const user = await authAdapter.getSession();

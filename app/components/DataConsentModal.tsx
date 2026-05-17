@@ -190,7 +190,7 @@ export default function DataConsentModal({ show }: Props) {
                 🔒
               </div>
               <div style={{ fontWeight: 800, fontSize: "1.15rem", color: "var(--text-primary, #1c1917)" }}>
-                Help Us Improve LegacyLoop
+                Help Us Improve Legacy-Loop
               </div>
               <div style={{ fontSize: "0.82rem", color: "var(--text-muted, #78716c)", marginTop: "0.35rem", lineHeight: 1.5 }}>
                 Choose which anonymized data you're comfortable sharing. Every toggle is independent — enable what you want, skip what you don't.

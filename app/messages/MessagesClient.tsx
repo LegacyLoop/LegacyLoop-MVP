@@ -114,7 +114,7 @@ const TEMPLATES = [
   { label: "Shipping Info", text: "Hi! I can ship this item. Once I have your ZIP code I can calculate the exact rate. Interested?" },
   { label: "Ask a Question", text: "Thanks for reaching out! Do you have any questions about the item that I can answer?" },
   { label: "Bulk Discount", text: "Great news -- if you're interested in purchasing multiple items, I can offer a package deal! Let me know what else catches your eye and I'll put together a bundle price." },
-  { label: "Payment Methods", text: "I accept payment through LegacyLoop's secure checkout, as well as cash for local pickup. Which works best for you?" },
+  { label: "Payment Methods", text: "I accept payment through Legacy-Loop's secure checkout, as well as cash for local pickup. Which works best for you?" },
   { label: "Pickup Windows", text: "I'm generally available for pickup Thursday through Saturday, 9am-4pm. Which day and time works best for you?" },
   { label: "Estate Closing", text: "This is a one-time estate sale, so quantities are limited and items are first-come, first-served. Would you like to come view it in person or proceed with a purchase?" },
 ];

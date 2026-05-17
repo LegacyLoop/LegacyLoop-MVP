@@ -2,7 +2,7 @@
  * Arta API Client — White-Glove Shipping for High-Value Items
  *
  * Arta provides museum-grade shipping services used by Christie's,
- * Sotheby's, and major galleries. LegacyLoop integrates Arta for
+ * Sotheby's, and major galleries. Legacy-Loop integrates Arta for
  * premium, antique, and high-value items.
  *
  * API: https://api.arta.io

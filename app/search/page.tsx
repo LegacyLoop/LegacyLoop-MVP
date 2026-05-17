@@ -7,10 +7,10 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Browse Estate Sales · LegacyLoop",
+  title: "Browse Estate Sales · Legacy-Loop",
   description: "Search thousands of AI-priced items from estate and garage sales near you. Antiques, collectibles, furniture, electronics and more.",
   openGraph: {
-    title: "Browse Estate Sales · LegacyLoop",
+    title: "Browse Estate Sales · Legacy-Loop",
     description: "AI-priced items from estate sales. Find antiques, collectibles, furniture, and more.",
     type: "website",
   },

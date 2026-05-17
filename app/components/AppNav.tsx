@@ -308,18 +308,18 @@ export default function AppNav({ user, alertCount = 0, unreadCount = 0, creditBa
         <div className="container-app" style={{ height: "100%", display: "flex", alignItems: "center", gap: "1.25rem" }}>
 
           {/* LEFT: Logo */}
-          <Link href={user ? "/dashboard" : "/"} style={{ display: "flex", alignItems: "center", flexShrink: 0, textDecoration: "none" }} aria-label="LegacyLoop home">
+          <Link href={user ? "/dashboard" : "/"} style={{ display: "flex", alignItems: "center", flexShrink: 0, textDecoration: "none" }} aria-label="Legacy-Loop home">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/logos/legacyloop-logo.png"
-              alt="LegacyLoop"
+              alt="Legacy-Loop"
               style={{ height: "48px", width: "auto", objectFit: "contain" }}
               className="hidden lg:block"
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/images/logos/logo-icon.png"
-              alt="LegacyLoop"
+              alt="Legacy-Loop"
               style={{ height: "44px", width: "44px", objectFit: "contain" }}
               className="lg:hidden"
             />

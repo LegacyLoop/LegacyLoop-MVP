@@ -1,6 +1,6 @@
 import type { ScraperResult } from "../types";
 
-const DISCOGS_UA = "LegacyLoop/1.0 (+https://legacyloop.com)";
+const DISCOGS_UA = "Legacy-Loop/1.0 (+https://legacyloop.com)";
 
 // Rate limiter for Discogs (60 req/min)
 let lastDiscogsReq = 0;

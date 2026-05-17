@@ -53,7 +53,7 @@ const TESTIMONIALS = [
   {
     name: "Margaret & Doris, Brunswick, ME",
     role: "Neighbors (32 years)",
-    quote: "We cleared out both our houses at the same time. LegacyLoop's neighborhood bundle let our buyers see both collections at once — we had a buyer drive up from Boston who bought $4,200 worth of furniture from both of us the same weekend.",
+    quote: "We cleared out both our houses at the same time. Legacy-Loop's neighborhood bundle let our buyers see both collections at once — we had a buyer drive up from Boston who bought $4,200 worth of furniture from both of us the same weekend.",
     value: "$12,400 sold together",
   },
   {
@@ -97,7 +97,7 @@ export default function NeighborhoodBundlePage() {
         </h1>
         <p style={{ color: "var(--text-primary)", maxWidth: "600px", lineHeight: 1.7, marginBottom: "1.75rem", fontSize: "1.05rem" }}>
           When neighbors or family members sell together, buyers come from farther away, marketing costs are shared,
-          and everyone gets a better deal. LegacyLoop's Neighborhood Bundle makes it easy.
+          and everyone gets a better deal. Legacy-Loop's Neighborhood Bundle makes it easy.
         </p>
 
         <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>

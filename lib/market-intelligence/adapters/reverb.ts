@@ -14,7 +14,7 @@ export async function scrapeReverb(query: string): Promise<ScraperResult> {
       headers: {
         "Accept": "application/hal+json",
         "Accept-Version": "3.0",
-        "User-Agent": "LegacyLoop/1.0",
+        "User-Agent": "Legacy-Loop/1.0",
       },
       signal: controller.signal,
     });

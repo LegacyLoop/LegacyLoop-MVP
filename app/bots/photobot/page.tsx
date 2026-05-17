@@ -7,7 +7,7 @@ import PhotoBotClient from "./PhotoBotClient";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "PhotoBot — LegacyLoop" };
+export const metadata = { title: "PhotoBot — Legacy-Loop" };
 
 export default async function PhotoBotPage() {
   const user = await authAdapter.getSession();

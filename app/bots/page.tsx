@@ -4,7 +4,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
-export const metadata = { title: "Bot Hub \u2014 LegacyLoop" };
+export const metadata = { title: "Bot Hub \u2014 Legacy-Loop" };
 
 // ── Bot definitions ──────────────────────────────────────────────────────────
 

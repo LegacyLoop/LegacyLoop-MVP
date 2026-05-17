@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Data Deletion — LegacyLoop",
-  description: "Request deletion of your personal data from LegacyLoop. GDPR, CCPA, and Meta Platform Policy compliant.",
+  title: "Data Deletion — Legacy-Loop",
+  description: "Request deletion of your personal data from Legacy-Loop. GDPR, CCPA, and Meta Platform Policy compliant.",
 };
 
 export default function DataDeletionPage() {
@@ -25,7 +25,7 @@ export default function DataDeletionPage() {
       <div style={{ background: "var(--bg-card)", backdropFilter: "blur(16px)", border: "1px solid var(--border-default)", borderRadius: "16px", padding: "1.5rem", marginBottom: "1rem", boxShadow: "0 4px 16px rgba(0,0,0,0.06)" }}>
         <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.75rem" }}>Your Right to Deletion</h2>
         <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-          LegacyLoop respects your right to have your personal data deleted. This right is protected under the General Data Protection Regulation (GDPR), the California Consumer Privacy Act (CCPA), and Meta Platform Policy. You can request complete deletion of your account and all associated data at any time.
+          Legacy-Loop respects your right to have your personal data deleted. This right is protected under the General Data Protection Regulation (GDPR), the California Consumer Privacy Act (CCPA), and Meta Platform Policy. You can request complete deletion of your account and all associated data at any time.
         </p>
       </div>
 
@@ -38,7 +38,7 @@ export default function DataDeletionPage() {
           <ol style={{ paddingLeft: "1.25rem", fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: 1.8 }}>
             <li>Send an email to <a href="mailto:support@legacy-loop.com" style={{ color: "#00bcd4", textDecoration: "none" }}>support@legacy-loop.com</a></li>
             <li>Subject line: &ldquo;Data Deletion Request&rdquo;</li>
-            <li>Include the email address associated with your LegacyLoop account</li>
+            <li>Include the email address associated with your Legacy-Loop account</li>
             <li>Include any specific data you want deleted (or request full account deletion)</li>
             <li>We will confirm receipt within 5 business days</li>
           </ol>
@@ -47,7 +47,7 @@ export default function DataDeletionPage() {
         <div>
           <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: "#00bcd4", marginBottom: "0.5rem" }}>Option 2: Account Settings</h3>
           <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
-            Log in to your LegacyLoop account, go to <strong>Settings</strong>, and select <strong>Delete My Account</strong>. Follow the confirmation steps. This initiates immediate deletion of your account and all associated data.
+            Log in to your Legacy-Loop account, go to <strong>Settings</strong>, and select <strong>Delete My Account</strong>. Follow the confirmation steps. This initiates immediate deletion of your account and all associated data.
           </p>
         </div>
       </div>
@@ -87,10 +87,10 @@ export default function DataDeletionPage() {
       {/* Section 5: Facebook and Instagram Data */}
       <div style={{ background: "var(--bg-card)", backdropFilter: "blur(16px)", border: "1px solid var(--border-default)", borderRadius: "16px", padding: "1.5rem", marginBottom: "1rem", boxShadow: "0 4px 16px rgba(0,0,0,0.06)" }}>
         <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.75rem" }}>Facebook and Instagram Data</h2>
-        <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: "0.5rem" }}>If you connected your Facebook or Instagram account to LegacyLoop, we will remove all data obtained through those connections within 30 days of your deletion request. You can also remove LegacyLoop&apos;s access directly:</p>
+        <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: 1.7, marginBottom: "0.5rem" }}>If you connected your Facebook or Instagram account to Legacy-Loop, we will remove all data obtained through those connections within 30 days of your deletion request. You can also remove Legacy-Loop&apos;s access directly:</p>
         <ol style={{ paddingLeft: "1.25rem", fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: 1.8 }}>
           <li>Go to Facebook Settings → Apps and Websites</li>
-          <li>Find &ldquo;LegacyLoop&rdquo; in the list</li>
+          <li>Find &ldquo;Legacy-Loop&rdquo; in the list</li>
           <li>Click &ldquo;Remove&rdquo; to revoke access</li>
         </ol>
       </div>

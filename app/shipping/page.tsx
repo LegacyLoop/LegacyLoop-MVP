@@ -3,7 +3,7 @@ import { authAdapter } from "@/lib/adapters/auth";
 import ShippingCenterClient from "./ShippingCenterClient";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
-export const metadata = { title: "Shipping Center \u2014 LegacyLoop" };
+export const metadata = { title: "Shipping Center \u2014 Legacy-Loop" };
 
 export default async function ShippingPage() {
   const user = await authAdapter.getSession();

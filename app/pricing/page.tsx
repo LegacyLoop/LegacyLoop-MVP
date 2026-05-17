@@ -3,7 +3,7 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 import PricingClient from "./PricingClient";
 
 export const metadata: Metadata = {
-  title: "Pricing · LegacyLoop",
+  title: "Pricing · Legacy-Loop",
   description: "Digital self-service plans from $0/month or full white-glove estate management in Maine. AI-powered estate sales made simple.",
 };
 

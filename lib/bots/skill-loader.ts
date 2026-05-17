@@ -1,5 +1,5 @@
 /**
- * LegacyLoop Skill Pack Loader
+ * Legacy-Loop Skill Pack Loader
  *
  * First-party "Skills" tech inspired by Anthropic SDK Skills but
  * provider-agnostic. Loads markdown playbooks from

@@ -102,7 +102,7 @@ const CONTACT_OPTIONS = [
 ];
 
 const PAYMENT_OPTIONS = [
-  { key: "legacyloop", icon: "💳", label: "Through LegacyLoop", desc: "Secure buyer protection", recommended: true },
+  { key: "legacyloop", icon: "💳", label: "Through Legacy-Loop", desc: "Secure buyer protection", recommended: true },
   { key: "cash", icon: "💵", label: "Cash at meetup", desc: "No buyer protection" },
   { key: "venmo", icon: "💳", label: "Venmo/Zelle at meetup", desc: "Direct transfer" },
   { key: "decide_later", icon: "🤝", label: "Decide when we meet", desc: "Discuss at pickup" },
@@ -491,7 +491,7 @@ export default function LocalPickupPanel({
                       </div>
                     </div>
                   </div>
-                  {["✓ Identity verified — both parties are LegacyLoop users", "✓ Messages logged for dispute resolution", "✓ No personal info shared until both confirm", "✓ Notifications via app and email", "✓ Message history saved with your transaction"].map(f => (
+                  {["✓ Identity verified — both parties are Legacy-Loop users", "✓ Messages logged for dispute resolution", "✓ No personal info shared until both confirm", "✓ Notifications via app and email", "✓ Message history saved with your transaction"].map(f => (
                     <div key={f} style={{ color: "var(--text-secondary)", fontSize: "0.72rem" }}>{f}</div>
                   ))}
                   <div>
@@ -513,7 +513,7 @@ export default function LocalPickupPanel({
                   </div>
                   <div style={{ background: "rgba(16,185,129,0.08)", borderRadius: "8px", padding: "0.55rem" }}>
                     <div style={{ color: "#10b981", fontSize: "0.72rem", fontWeight: 700, marginBottom: "0.35rem" }}>🔒 How we protect your number</div>
-                    {["Your number is masked until both parties confirm the meetup", "Buyer sees only the last 4 digits until confirmation", "Full number revealed only after mutual confirmation", "Number is never stored in buyer's LegacyLoop profile"].map(s => (
+                    {["Your number is masked until both parties confirm the meetup", "Buyer sees only the last 4 digits until confirmation", "Full number revealed only after mutual confirmation", "Number is never stored in buyer's Legacy-Loop profile"].map(s => (
                       <div key={s} style={{ color: "var(--text-secondary)", fontSize: "0.7rem", marginBottom: "0.15rem" }}>• {s}</div>
                     ))}
                   </div>
@@ -592,7 +592,7 @@ export default function LocalPickupPanel({
               </label>
               {paymentMethod === "legacyloop" && opt.key === "legacyloop" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.05)", border: "1px solid rgba(0,188,212,0.2)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-                  <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.85rem" }}>💳 How LegacyLoop Escrow Works</div>
+                  <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.85rem" }}>💳 How Legacy-Loop Escrow Works</div>
                   {[{ step: "1", text: "Buyer pays at checkout — funds held securely" }, { step: "2", text: "You meet and complete the handoff" }, { step: "3", text: "Both confirm handoff in app" }, { step: "4", text: "Funds released to your account within 24hrs" }].map(s => (
                     <div key={s.step} style={{ display: "flex", alignItems: "center", gap: "0.55rem" }}>
                       <div style={{ width: "1.3rem", height: "1.3rem", background: "rgba(0,188,212,0.15)", border: "1px solid rgba(0,188,212,0.3)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#00bcd4", fontSize: "0.68rem", fontWeight: 800, flexShrink: 0 }}>{s.step}</div>
@@ -668,13 +668,13 @@ export default function LocalPickupPanel({
                       ))}
                     </div>
                   </div>
-                  <div style={{ color: "rgba(139,92,246,0.6)", fontSize: "0.7rem" }}>⚠️ Limited dispute protection — LegacyLoop escrow recommended for added security</div>
+                  <div style={{ color: "rgba(139,92,246,0.6)", fontSize: "0.7rem" }}>⚠️ Limited dispute protection — Legacy-Loop escrow recommended for added security</div>
                 </div>
               )}
               {paymentMethod === "decide_later" && opt.key === "decide_later" && (
                 <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "var(--bg-card)", border: "1px solid var(--border-default)", borderRadius: "10px" }}>
                   <div style={{ color: "var(--text-secondary)", fontSize: "0.75rem", marginBottom: "0.4rem" }}>💬 You&apos;ll discuss payment when you meet. The buyer knows payment hasn&apos;t been decided yet.</div>
-                  <div style={{ color: "var(--text-muted)", fontSize: "0.7rem" }}>Tip: Decide before you meet to avoid awkward conversations — LegacyLoop escrow is the easiest option.</div>
+                  <div style={{ color: "var(--text-muted)", fontSize: "0.7rem" }}>Tip: Decide before you meet to avoid awkward conversations — Legacy-Loop escrow is the easiest option.</div>
                 </div>
               )}
             </div>
@@ -798,7 +798,7 @@ export default function LocalPickupPanel({
             ))}
           </div>
           <p style={{ fontSize: "0.58rem", color: "var(--text-muted)", margin: "0.35rem 0 0", fontStyle: "italic" }}>
-            Transport is arranged and paid by the buyer. LegacyLoop does not handle vehicle shipping directly.
+            Transport is arranged and paid by the buyer. Legacy-Loop does not handle vehicle shipping directly.
           </p>
         </div>
       )}

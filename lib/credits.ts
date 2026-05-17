@@ -1,5 +1,5 @@
 /**
- * Credit management engine for LegacyLoop.
+ * Credit management engine for Legacy-Loop.
  * Handles balance checks, deductions, and free tier logic.
  */
 
@@ -274,7 +274,7 @@ async function triggerAutoReload(userId: string, uc: { id: string; autoReloadPac
 
     if (!paymentMethods.data.length) {
       await prisma.userCredits.update({ where: { id: uc.id }, data: { autoReloadEnabled: false, autoReloadFailedAt: new Date() } });
-      n8nSmsAlert(`LegacyLoop: Auto-reload failed for ${user.email} — no payment method.`);
+      n8nSmsAlert(`Legacy-Loop: Auto-reload failed for ${user.email} — no payment method.`);
       return;
     }
 
@@ -286,7 +286,7 @@ async function triggerAutoReload(userId: string, uc: { id: string; autoReloadPac
       payment_method: paymentMethods.data[0].id,
       confirm: true,
       off_session: true,
-      description: `LegacyLoop Auto-Reload — ${pack.label}`,
+      description: `Legacy-Loop Auto-Reload — ${pack.label}`,
       receipt_email: user.email,
       metadata: { type: "auto_reload", userId, packId: uc.autoReloadPackId, creditsAdded: String(totalCredits) },
     });
@@ -299,12 +299,12 @@ async function triggerAutoReload(userId: string, uc: { id: string; autoReloadPac
       });
 
       const cardLast4 = paymentMethods.data[0].card?.last4 ?? "****";
-      n8nSmsAlert(`LegacyLoop: Auto-reload complete. ${totalCredits} credits added. $${pack.price} charged to card ending ${cardLast4}.`);
+      n8nSmsAlert(`Legacy-Loop: Auto-reload complete. ${totalCredits} credits added. $${pack.price} charged to card ending ${cardLast4}.`);
 
       // Email notification (fire-and-forget)
       sendEmail({
         to: user.email,
-        subject: `LegacyLoop — Auto-Reload: ${totalCredits} Credits Added`,
+        subject: `Legacy-Loop — Auto-Reload: ${totalCredits} Credits Added`,
         html: `<p>Hi ${user.displayName?.split(" ")[0] ?? "there"},</p><p>Your credit balance was low, so we auto-reloaded <strong>${totalCredits} credits</strong> ($${pack.price}) to your account.</p><p>New balance: <strong>${newBalance} credits</strong></p><p>Card charged: ending ${cardLast4}</p><p>You can manage auto-reload in your <a href="https://app.legacy-loop.com/credits">Credits Settings</a>.</p>`,
       });
     }
@@ -312,10 +312,10 @@ async function triggerAutoReload(userId: string, uc: { id: string; autoReloadPac
     console.error("[auto-reload] Charge failed:", chargeErr);
     await prisma.userCredits.update({ where: { id: uc.id }, data: { autoReloadEnabled: false, autoReloadFailedAt: new Date() } });
 
-    n8nSmsAlert(`LegacyLoop: Auto-reload failed for ${user.email}. Please update payment method.`);
+    n8nSmsAlert(`Legacy-Loop: Auto-reload failed for ${user.email}. Please update payment method.`);
     sendEmail({
       to: user.email,
-      subject: "LegacyLoop — Auto-Reload Failed",
+      subject: "Legacy-Loop — Auto-Reload Failed",
       html: `<p>Hi ${user.displayName?.split(" ")[0] ?? "there"},</p><p>Your auto-reload payment failed. We've paused auto-reload on your account.</p><p>Please <a href="https://app.legacy-loop.com/credits">update your payment method</a> and re-enable auto-reload.</p>`,
     });
   }

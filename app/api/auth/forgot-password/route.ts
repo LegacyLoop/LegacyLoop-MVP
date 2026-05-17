@@ -7,11 +7,11 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 async function sendResetEmail(toEmail: string, resetUrl: string): Promise<void> {
   await sendEmail({
     to: toEmail,
-    subject: "Reset your LegacyLoop password",
+    subject: "Reset your Legacy-Loop password",
     html: emailWrapper(`
       <h1 style="font-size:22px;font-weight:700;color:${TEXT_PRIMARY};margin:0 0 16px;text-align:center">Reset your password</h1>
       <p style="font-size:15px;color:${TEXT_SECONDARY};line-height:1.7;margin:0 0 24px">
-        We received a request to reset the password for your LegacyLoop account.
+        We received a request to reset the password for your Legacy-Loop account.
         Click the button below to choose a new password.
       </p>
       <div style="text-align:center;margin:28px 0">

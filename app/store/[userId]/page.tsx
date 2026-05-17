@@ -11,12 +11,12 @@ type Params = Promise<{ userId: string }>;
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { userId } = await params;
   const owner = await prisma.user.findUnique({ where: { id: userId } }).catch(() => null);
-  if (!owner) return { title: "Store Not Found · LegacyLoop" };
+  if (!owner) return { title: "Store Not Found · Legacy-Loop" };
   const name = owner.email.split("@")[0];
   const itemCount = await prisma.item.count({ where: { userId, status: { in: ["LISTED", "INTERESTED", "ANALYZED", "READY"] } } }).catch(() => 0);
   return {
-    title: `${name}'s Estate Sale · LegacyLoop`,
-    description: `Browse ${itemCount} item${itemCount !== 1 ? "s" : ""} from ${name}'s estate sale on LegacyLoop. Antiques, collectibles, furniture, electronics and more.`,
+    title: `${name}'s Estate Sale · Legacy-Loop`,
+    description: `Browse ${itemCount} item${itemCount !== 1 ? "s" : ""} from ${name}'s estate sale on Legacy-Loop. Antiques, collectibles, furniture, electronics and more.`,
     openGraph: {
       title: `${name}'s Estate Sale`,
       description: `${itemCount} item${itemCount !== 1 ? "s" : ""} available · AI-priced · Contact seller directly`,

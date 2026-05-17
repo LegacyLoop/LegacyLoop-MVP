@@ -1,5 +1,5 @@
 /**
- * Garage Sale Auto-Recalculation — LegacyLoop
+ * Garage Sale Auto-Recalculation — Legacy-Loop
  *
  * Fetches all enrichment data for an item, builds GarageSaleOptions,
  * calls the V2 engine, saves prices, and logs for audit.

@@ -1006,7 +1006,7 @@ function PackingChecklist({ label, isFragile, deliveryMethod }: { label: Shipmen
         }}>
           <div style={{ position: "absolute", top: "0.4rem", right: "0.6rem", fontSize: "0.6rem", fontWeight: 700, color: "#eab308", textTransform: "uppercase", letterSpacing: "0.1em" }}>DEMO</div>
           <div style={{ textAlign: "center", marginBottom: "0.75rem" }}>
-            <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em" }}>LegacyLoop Shipping Label</div>
+            <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.12em" }}>Legacy-Loop Shipping Label</div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", fontSize: "0.78rem" }}>
             <div>
@@ -1605,7 +1605,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                   {/* in_app expand */}
                   {key === "in_app" && invContact === "in_app" && (
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(0,188,212,0.04)", border: "1px solid rgba(0,188,212,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                      <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", marginBottom: "0.1rem" }}>Messages stay in LegacyLoop &mdash; no personal info shared.</div>
+                      <div style={{ color: "var(--text-secondary)", fontSize: "0.72rem", marginBottom: "0.1rem" }}>Messages stay in Legacy-Loop &mdash; no personal info shared.</div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                         <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
                           <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", minWidth: "1rem" }}>💬</span>
@@ -1643,7 +1643,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                       <div>
                         <label style={{ color: "var(--text-secondary)", fontSize: "0.75rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>📱 Your phone number</label>
                         <input type="tel" placeholder="(207) 555-1234" value={invContactPhone} onChange={e => setInvContactPhone(e.target.value)} style={{ width: "100%", background: "var(--ghost-bg)", border: "1px solid var(--border-default)", borderRadius: "8px", padding: "0.55rem 0.75rem", color: "var(--text-primary)", fontSize: "0.78rem", outline: "none", boxSizing: "border-box" as const }} />
-                        <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Your number is masked &mdash; buyer texts a LegacyLoop relay number</div>
+                        <div style={{ color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>🔒 Your number is masked &mdash; buyer texts a Legacy-Loop relay number</div>
                       </div>
                       <div>
                         <div style={{ color: "var(--text-muted)", fontSize: "0.7rem", marginBottom: "0.35rem" }}>Best time for texts:</div>
@@ -1665,7 +1665,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                   {/* email expand */}
                   {key === "email" && invContact === "email" && (
                     <div style={{ marginTop: "0.5rem", padding: "0.85rem", background: "rgba(139,92,246,0.04)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "0.65rem" }}>
-                      <div style={{ color: "var(--text-muted)", fontSize: "0.68rem" }}>🔒 Your email is masked &mdash; buyer emails a LegacyLoop relay address</div>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.68rem" }}>🔒 Your email is masked &mdash; buyer emails a Legacy-Loop relay address</div>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         <input type="checkbox" checked={invUseDiffEmail} onChange={e => setInvUseDiffEmail(e.target.checked)} style={{ accentColor: "#8b5cf6" }} />
                         <span style={{ color: "var(--text-secondary)", fontSize: "0.72rem" }}>Use a different email than my account email</span>
@@ -1701,7 +1701,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
           <div>
             <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.35rem" }}>Payment Method</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-              {([["legacyloop", "💳", "Through LegacyLoop"], ["cash", "💵", "Cash at meetup"], ["venmo", "📱", "Venmo/Zelle"], ["decide_later", "🤝", "Decide at meetup"]] as const).map(([key, icon, label]) => (
+              {([["legacyloop", "💳", "Through Legacy-Loop"], ["cash", "💵", "Cash at meetup"], ["venmo", "📱", "Venmo/Zelle"], ["decide_later", "🤝", "Decide at meetup"]] as const).map(([key, icon, label]) => (
                 <div key={key}>
                   <label style={{
                     display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.3rem 0.5rem",
@@ -1720,7 +1720,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                       <div style={{ color: "#00bcd4", fontWeight: 700, fontSize: "0.72rem", marginBottom: "0.1rem" }}>Secure Escrow Flow</div>
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                         {[
-                          ["1️⃣", "Buyer pays into LegacyLoop escrow"],
+                          ["1️⃣", "Buyer pays into Legacy-Loop escrow"],
                           ["2️⃣", "You meet and hand off the item"],
                           ["3️⃣", "Buyer confirms receipt"],
                           ["4️⃣", "Funds released to your account"],
@@ -1867,7 +1867,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
                 <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Radius</span><span style={{ fontWeight: 500, color: "var(--text-primary)" }}>Within {invRadius} mi of {sellerZip || "your location"}</span></div>
                 {invSlots.length > 0 && <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Times</span><span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{invSlots.join(", ")}</span></div>}
                 <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Contact</span><span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{invContact === "in_app" ? "In-app message" : invContact === "text" ? "Text message" : "Email"}</span></div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Payment</span><span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{invPayment === "legacyloop" ? "Through LegacyLoop" : invPayment === "cash" ? "Cash" : invPayment === "venmo" ? "Venmo/Zelle" : "Decide at meetup"}</span></div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "var(--text-muted)" }}>Payment</span><span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{invPayment === "legacyloop" ? "Through Legacy-Loop" : invPayment === "cash" ? "Cash" : invPayment === "venmo" ? "Venmo/Zelle" : "Decide at meetup"}</span></div>
                 {invNotes && <div style={{ marginTop: "0.2rem", padding: "0.3rem 0.5rem", borderRadius: "6px", background: "var(--bg-card)", color: "var(--text-secondary)", fontSize: "0.75rem" }}>{invNotes}</div>}
               </div>
               <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.6rem" }}>
@@ -2164,7 +2164,7 @@ function PickupCompletionFlow({ itemId, saleRadius, fromZip, itemValue }: {
             ...(completedAt ? [{ label: "Completed", value: new Date(completedAt).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" }) }] : []),
             { label: "Fulfilled via", value: "Pickup Handoff" },
             { label: "Location", value: `${LOCATION_MAP[locType]?.icon ?? ""} ${LOCATION_MAP[locType]?.label ?? "Meetup"}` },
-            { label: "Payment", value: paymentMethod === "legacyloop" ? "LegacyLoop Escrow" : paymentMethod === "cash" ? "Cash" : paymentMethod === "venmo" ? "Venmo/Zelle" : "At meetup" },
+            { label: "Payment", value: paymentMethod === "legacyloop" ? "Legacy-Loop Escrow" : paymentMethod === "cash" ? "Cash" : paymentMethod === "venmo" ? "Venmo/Zelle" : "At meetup" },
           ]}
         />
       )}

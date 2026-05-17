@@ -2,7 +2,7 @@
  * SCRAPER TIER REGISTRY — SINGLE SOURCE OF TRUTH
  *
  * Every active Apify actor and built-in scraper available to
- * LegacyLoop's market intelligence layer is cataloged here with
+ * Legacy-Loop's market intelligence layer is cataloged here with
  * its tier, cost, and operational status.
  *
  * Tiers (locked by CMD-SCRAPER-TIERS-B):

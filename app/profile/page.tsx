@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "My Profile · LegacyLoop", description: "Your account overview and activity" };
+export const metadata: Metadata = { title: "My Profile · Legacy-Loop", description: "Your account overview and activity" };
 
 const TIER_NAMES: Record<number, string> = {
   1: "Free",

@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
         amount: Math.round(depositAmount * 100),
         currency: "usd",
         ...(stripeCustomerId ? { customer: stripeCustomerId, receipt_email: user.email } : {}),
-        description: `LegacyLoop White Glove ${tier.charAt(0).toUpperCase() + tier.slice(1)} — Booking Deposit (60%)`,
+        description: `Legacy-Loop White Glove ${tier.charAt(0).toUpperCase() + tier.slice(1)} — Booking Deposit (60%)`,
         metadata: {
           type: "white_glove_deposit",
           userId: user.id,

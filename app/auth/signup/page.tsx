@@ -124,7 +124,7 @@ export default function SignupPage() {
             margin: 0,
           }}
         >
-          Welcome to LegacyLoop!
+          Welcome to Legacy-Loop!
         </h1>
 
         <p

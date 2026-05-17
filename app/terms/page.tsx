@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Terms of Service · LegacyLoop",
+  title: "Terms of Service · Legacy-Loop",
   description:
-    "Terms and conditions for using the LegacyLoop AI-powered estate resale platform.",
+    "Terms and conditions for using the Legacy-Loop AI-powered estate resale platform.",
 };
 
 export default function TermsPage() {
@@ -75,11 +75,11 @@ export default function TermsPage() {
             lineHeight: 1.7,
           }}
         >
-          By accessing or using the LegacyLoop platform (&ldquo;Service&rdquo;),
+          By accessing or using the Legacy-Loop platform (&ldquo;Service&rdquo;),
           you agree to be bound by these Terms of Service
           (&ldquo;Terms&rdquo;). If you do not agree to all of these Terms,
           please do not use our Service. These Terms constitute a legally binding
-          agreement between you and LegacyLoop (&ldquo;we,&rdquo;
+          agreement between you and Legacy-Loop (&ldquo;we,&rdquo;
           &ldquo;us,&rdquo; or &ldquo;our&rdquo;).
         </p>
       </div>
@@ -114,7 +114,7 @@ export default function TermsPage() {
             marginBottom: "0.5rem",
           }}
         >
-          LegacyLoop is an AI-powered estate resale platform that provides:
+          Legacy-Loop is an AI-powered estate resale platform that provides:
         </p>
         <ul
           style={{
@@ -305,7 +305,7 @@ export default function TermsPage() {
             and other content you upload to the platform.
           </li>
           <li>
-            By uploading content, you grant LegacyLoop a non-exclusive,
+            By uploading content, you grant Legacy-Loop a non-exclusive,
             worldwide, royalty-free license to use, display, reproduce, and
             process your content for the purpose of providing the Service,
             including AI analysis and marketplace display.
@@ -528,22 +528,22 @@ export default function TermsPage() {
           }}
         >
           <li>
-            The LegacyLoop platform, including its design, code, AI models,
+            The Legacy-Loop platform, including its design, code, AI models,
             analysis algorithms, branding, and all related intellectual property,
-            is owned by LegacyLoop and protected by applicable copyright,
+            is owned by Legacy-Loop and protected by applicable copyright,
             trademark, and other intellectual property laws.
           </li>
           <li>
             AI-generated analysis outputs, pricing estimates, and market reports
-            produced by the platform are the property of LegacyLoop.
+            produced by the platform are the property of Legacy-Loop.
           </li>
           <li>
             You may not copy, modify, distribute, sell, or lease any part of our
             Service or its content without our written consent.
           </li>
           <li>
-            The LegacyLoop name, logo, and all related names, logos, and
-            slogans are trademarks of LegacyLoop.
+            The Legacy-Loop name, logo, and all related names, logos, and
+            slogans are trademarks of Legacy-Loop.
           </li>
         </ul>
       </div>
@@ -600,14 +600,14 @@ export default function TermsPage() {
             buyer offers, or disputes between buyers and sellers.
           </li>
           <li>
-            To the maximum extent permitted by law, LegacyLoop shall not be
+            To the maximum extent permitted by law, Legacy-Loop shall not be
             liable for any indirect, incidental, special, consequential, or
             punitive damages arising from or related to your use of the Service.
           </li>
           <li>
             Our total liability for any claims arising from or related to these
             Terms or the Service shall not exceed the total fees you have paid to
-            LegacyLoop in the twelve (12) months preceding the claim.
+            Legacy-Loop in the twelve (12) months preceding the claim.
           </li>
         </ul>
       </div>
@@ -641,7 +641,7 @@ export default function TermsPage() {
             lineHeight: 1.7,
           }}
         >
-          You agree to indemnify, defend, and hold harmless LegacyLoop, its
+          You agree to indemnify, defend, and hold harmless Legacy-Loop, its
           officers, directors, employees, and agents from and against any and all
           claims, liabilities, damages, losses, costs, and expenses (including
           reasonable attorneys&apos; fees) arising from or related to: (a) your
@@ -814,10 +814,10 @@ export default function TermsPage() {
         >
           Email:{" "}
           <a
-            href="mailto:hello@legacy-loop.com"
+            href="mailto:support@legacy-loop.com"
             style={{ color: "var(--accent)", textDecoration: "none" }}
           >
-            hello@legacy-loop.com
+            support@legacy-loop.com
           </a>{" "}
           /{" "}
           <a
@@ -850,7 +850,7 @@ export default function TermsPage() {
             lineHeight: 1.7,
           }}
         >
-          Mailing: LegacyLoop, Maine, USA
+          Mailing: Legacy-Loop, Maine, USA
         </p>
       </div>
     </div>

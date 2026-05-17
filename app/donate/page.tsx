@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Donate Items · LegacyLoop", description: "Donate unsold items to local charities and support our mission" };
+export const metadata: Metadata = { title: "Donate Items · Legacy-Loop", description: "Donate unsold items to local charities and support our mission" };
 
 export default async function DonatePage() {
   const user = await authAdapter.getSession();

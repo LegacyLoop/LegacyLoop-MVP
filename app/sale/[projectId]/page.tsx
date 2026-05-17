@@ -12,12 +12,12 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const { projectId } = await params;
   const project = await prisma.project.findUnique({ where: { id: projectId } })
     .catch(() => null);
-  if (!project) return { title: "Sale Not Found · LegacyLoop" };
+  if (!project) return { title: "Sale Not Found · Legacy-Loop" };
   const typeLabel = project.type === "ESTATE_SALE" ? "Estate Sale" : "Garage Sale";
   return {
-    title: `${project.name} · LegacyLoop ${typeLabel}`,
+    title: `${project.name} · Legacy-Loop ${typeLabel}`,
     description: project.description || `Browse items from ${project.name}. AI-priced estate sale items available.`,
-    openGraph: { title: project.name, description: project.description ?? `${typeLabel} on LegacyLoop`, type: "website" },
+    openGraph: { title: project.name, description: project.description ?? `${typeLabel} on Legacy-Loop`, type: "website" },
   };
 }
 
@@ -99,7 +99,7 @@ export default async function PublicSalePage({ params }: { params: Params }) {
           <ShareButtons
             url={saleUrl}
             title={project.name}
-            description={project.description || `${project.name} — ${typeLabel} on LegacyLoop`}
+            description={project.description || `${project.name} — ${typeLabel} on Legacy-Loop`}
           />
         </div>
       </div>
@@ -225,7 +225,7 @@ export default async function PublicSalePage({ params }: { params: Params }) {
       {/* Footer */}
       <div style={{ marginTop: "3rem", textAlign: "center", padding: "2rem", background: "var(--bg-secondary)", borderRadius: "1rem" }}>
         <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-          Organized by <strong>{ownerName}</strong> via <strong style={{ color: "var(--accent)" }}>LegacyLoop</strong> · AI-powered estate sales
+          Organized by <strong>{ownerName}</strong> via <strong style={{ color: "var(--accent)" }}>Legacy-Loop</strong> · AI-powered estate sales
         </div>
         <Link href="/pricing" style={{ fontSize: "0.8rem", color: "var(--accent)", textDecoration: "none", marginTop: "0.25rem", display: "inline-block" }}>
           Sell your own items →

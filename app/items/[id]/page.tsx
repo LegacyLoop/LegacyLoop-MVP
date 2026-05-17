@@ -554,7 +554,7 @@ export default async function ItemPage({ params }: { params: Params }) {
           <ShareDropdown
             url={shareUrl}
             title={displayTitle}
-            description={item.description || "Check out this item on LegacyLoop"}
+            description={item.description || "Check out this item on Legacy-Loop"}
           />
         </div>
       </div>

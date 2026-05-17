@@ -36,7 +36,7 @@ const DIGITAL_TIERS = [
       { text: "Analytics dashboard", enabled: false },
       { text: "Buyer Finder", enabled: false },
       { text: "MegaBot (multi-AI consensus)", enabled: false },
-      { text: "Remove LegacyLoop branding", enabled: false },
+      { text: "Remove Legacy-Loop branding", enabled: false },
     ],
     limits: { items: TIER_LIMITS[TIER.FREE].maxActiveItems, photos: TIER_LIMITS[TIER.FREE].maxPhotosPerItem },
   },
@@ -63,7 +63,7 @@ const DIGITAL_TIERS = [
       { text: `${TIER_LIMITS[TIER.DIY_SELLER].maxPhotosPerItem} photos per item`, enabled: true },
       { text: "BuyerBot matching", enabled: true },
       { text: "20 credits/month included", enabled: true },
-      { text: "Remove LegacyLoop branding", enabled: true },
+      { text: "Remove Legacy-Loop branding", enabled: true },
       { text: "Priority email support", enabled: true },
       { text: "MegaBot (credit-based)", enabled: true },
       { text: "Specialty bots (ReconBot, AntiqueBot)", enabled: false },
@@ -261,9 +261,9 @@ const HOW_IT_WORKS = [
 ];
 
 const WG_TESTIMONIALS = [
-  { quote: "The LegacyLoop team treated my mother's estate with such care and respect. They got 40% more than we expected and created a beautiful memory book that our whole family treasures.", name: "Sarah M.", location: "Portland, ME", service: "Estate Professional — 3BR home" },
+  { quote: "The Legacy-Loop team treated my mother's estate with such care and respect. They got 40% more than we expected and created a beautiful memory book that our whole family treasures.", name: "Sarah M.", location: "Portland, ME", service: "Estate Professional — 3BR home" },
   { quote: "Worth every penny. They handled everything while I was out of state. Regular updates, professional service, and incredible attention to detail. I never felt out of the loop.", name: "James T.", location: "Augusta, ME", service: "Estate Legacy — 5BR historic home" },
-  { quote: "As the estate executor I had no idea where to start. LegacyLoop walked me through every step, kept the family informed, and sold over $22,000 in items I would have donated.", name: "Patricia K.", location: "Waterville, ME", service: "Estate Professional — 4BR home" },
+  { quote: "As the estate executor I had no idea where to start. Legacy-Loop walked me through every step, kept the family informed, and sold over $22,000 in items I would have donated.", name: "Patricia K.", location: "Waterville, ME", service: "Estate Professional — 4BR home" },
 ];
 
 const COMPARISON_ROWS = [
@@ -439,7 +439,7 @@ export default function PricingClient() {
       {/* Hero */}
       <div className="text-center mb-10">
         <div className="section-title">Pricing</div>
-        <h1 className="h1 mt-2">Choose Your LegacyLoop Experience</h1>
+        <h1 className="h1 mt-2">Choose Your Legacy-Loop Experience</h1>
         <p className="muted mt-3 max-w-xl mx-auto">
           From self-service AI tools to full white-glove estate management. Every plan includes our antique detection, MegaBot pricing, and buyer messaging.
         </p>

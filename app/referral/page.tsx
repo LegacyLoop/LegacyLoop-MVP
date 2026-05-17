@@ -6,7 +6,7 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = { title: "Referrals — LegacyLoop" };
+export const metadata = { title: "Referrals — Legacy-Loop" };
 
 function generateCode(userId: string): string {
   return Buffer.from(userId).toString("base64").slice(0, 8).toUpperCase();

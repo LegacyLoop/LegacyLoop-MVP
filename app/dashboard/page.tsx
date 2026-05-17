@@ -14,7 +14,7 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Dashboard · LegacyLoop", description: "Your selling command center — items, analytics, and AI bot insights" };
+export const metadata: Metadata = { title: "Dashboard · Legacy-Loop", description: "Your selling command center — items, analytics, and AI bot insights" };
 
 /** Check both AntiqueCheck table AND AI analysis rawJson for antique detection */
 function isAntiqueItem(item: { antiqueCheck?: { isAntique: boolean } | null; aiResult?: { rawJson: string | null } | null }): boolean {

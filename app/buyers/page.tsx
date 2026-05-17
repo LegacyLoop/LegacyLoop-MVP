@@ -5,7 +5,7 @@ import BuyerFinderClient from "./BuyerFinderClient";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "Buyer Finder · LegacyLoop",
+  title: "Buyer Finder · Legacy-Loop",
   description: "AI-powered buyer discovery across Facebook, eBay, Craigslist, and Reddit",
 };
 

@@ -8,7 +8,7 @@ import Breadcrumbs from "@/app/components/Breadcrumbs";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Analytics · LegacyLoop",
+  title: "Analytics · Legacy-Loop",
   description: "Estate sale performance analytics powered by AI",
 };
 
@@ -1255,7 +1255,7 @@ export default async function AnalyticsPage({
         </div>
         <div style={{ marginTop: "1rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
           Values derived from listing price (sold items) or AI valuation midpoint (unsold items).
-          LegacyLoop handles everything from $5 garage sale finds to $5,000+ estate pieces.
+          Legacy-Loop handles everything from $5 garage sale finds to $5,000+ estate pieces.
         </div>
       </div>
 

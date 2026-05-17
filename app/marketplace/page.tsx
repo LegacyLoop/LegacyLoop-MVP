@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
 import MarketplaceClient from "./MarketplaceClient";
 
-export const metadata = { title: "Add-On Marketplace — LegacyLoop" };
+export const metadata = { title: "Add-On Marketplace — Legacy-Loop" };
 
 export default async function MarketplacePage() {
   const user = await authAdapter.getSession();
