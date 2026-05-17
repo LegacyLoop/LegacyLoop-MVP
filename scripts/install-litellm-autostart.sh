@@ -98,7 +98,7 @@ cat > "$PLIST_PATH" <<EOF
     <string>/tmp/litellm-launchd.err</string>
 
     <key>ProcessType</key>
-    <string>Background</string>
+    <string>Interactive</string>
 </dict>
 </plist>
 EOF
