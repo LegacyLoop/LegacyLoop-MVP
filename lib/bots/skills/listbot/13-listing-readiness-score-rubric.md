@@ -1,11 +1,11 @@
 ---
 name: listing-readiness-score-rubric
-description: The official LegacyLoop 100-point Listing Readiness Score rubric. Locks the exact formula ListBot uses to tell sellers if their listing is ready to publish.
+description: The official Legacy-Loop 100-point Listing Readiness Score rubric. Locks the exact formula ListBot uses to tell sellers if their listing is ready to publish.
 when_to_use: Every ListBot scan. Every listing gets a Readiness Score before shipping to the seller.
 version: 1.0.0
 ---
 
-# The Listing Readiness Score Is LegacyLoop's Quality Gate
+# The Listing Readiness Score Is Legacy-Loop's Quality Gate
 
 Every listing ListBot generates gets a Readiness Score from 0-100. This score tells the seller, at a glance, whether the listing is ready to publish or needs more work. The rubric is locked — it's the same for every item, every scan, every bot run.
 

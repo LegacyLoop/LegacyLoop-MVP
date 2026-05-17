@@ -3,7 +3,7 @@ name: garage-sale-document-context
 description: How documents serve differently at garage sales versus online marketplaces. Practical guidance for in-person selling.
 when_to_use: When item is being prepared for garage sale or in-person selling context.
 version: 1.0.0
-cost: FREE — absorbed by LegacyLoop
+cost: FREE — absorbed by Legacy-Loop
 ---
 
 # Documents in Garage Sale Context

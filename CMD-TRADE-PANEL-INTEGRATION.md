@@ -287,6 +287,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   agent-settings-toggle, inbox-filter-change, inbox-filter-reset
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Trade Panel Integration
+Command Template v9 | Legacy-Loop | Trade Panel Integration
 Updated March 19, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -47,7 +47,7 @@ that the code needs.
 ### Steps
 
 1. In SendGrid: Settings → API Keys → Create API Key
-2. Name: **LegacyLoop Production March 2026**
+2. Name: **Legacy-Loop Production March 2026**
 3. Permissions — set EXACTLY:
    - Mail Send: **Full Access**
    - Template Engine: **Full Access**
@@ -74,32 +74,32 @@ that the code needs.
 Go to: Settings → Sender Authentication → Verify Single Sender
 
 **Sender 1 — Primary Platform:**
-- From Name: LegacyLoop
+- From Name: Legacy-Loop
 - From Email: hello@legacy-loop.com
 - Reply To: support@legacy-loop.com
-- Company: LegacyLoop LLC
+- Company: Legacy-Loop LLC
 - Click Create → Check hello@ inbox for verification email → Click Verify
 
 **Sender 2 — Support:**
-- From Name: LegacyLoop Support
+- From Name: Legacy-Loop Support
 - From Email: support@legacy-loop.com
 - Reply To: support@legacy-loop.com
 - Click Create → Check support@ inbox → Click Verify
 
 **Sender 3 — Shipping:**
-- From Name: LegacyLoop Shipping
+- From Name: Legacy-Loop Shipping
 - From Email: shipping@legacy-loop.com
 - Reply To: shipping@legacy-loop.com
 - Click Create → Check shipping@ inbox → Click Verify
 
 **Sender 4 — Estate Services:**
-- From Name: LegacyLoop Estates
+- From Name: Legacy-Loop Estates
 - From Email: estates@legacy-loop.com
 - Reply To: estates@legacy-loop.com
 - Click Create → Check estates@ inbox → Click Verify
 
 **Sender 5 — System/No-Reply:**
-- From Name: LegacyLoop
+- From Name: Legacy-Loop
 - From Email: noreply@legacy-loop.com
 - Reply To: support@legacy-loop.com
 - Click Create → Check support@ inbox (noreply forwards to support) → Click Verify
@@ -186,7 +186,7 @@ Go to: Settings → Sender Authentication → Verify Single Sender
 ### Steps
 
 1. Go to https://vercel.com
-2. Login → Select LegacyLoop project
+2. Login → Select Legacy-Loop project
 3. Settings → Environment Variables
 4. Update or add these variables:
 
@@ -198,7 +198,7 @@ SENDGRID_API_KEY = [new key from Task 2]
 **Add new:**
 ```
 SENDGRID_FROM_EMAIL = hello@legacy-loop.com
-SENDGRID_FROM_NAME = LegacyLoop
+SENDGRID_FROM_NAME = Legacy-Loop
 N8N_WEBHOOK_URL = [your n8n instance URL - add after n8n setup]
 N8N_WEBHOOK_SECRET = [generate a random 32-char string]
 ```
@@ -241,52 +241,52 @@ For the n8n webhook endpoint security:
 
 **Credential 1 — SendGrid:**
 - Type: SendGrid
-- Name: LegacyLoop SendGrid
+- Name: Legacy-Loop SendGrid
 - API Key: [key from Task 2]
 - Test connection → should show green checkmark
 
 **Credential 2 — Gmail (for support@legacy-loop.com):**
 - Type: Gmail OAuth2
-- Name: LegacyLoop Support Gmail
+- Name: Legacy-Loop Support Gmail
 - OAuth2 flow — login with support@legacy-loop.com Google Workspace account
 - Grant: Read, Send, Modify permissions
 - Note: May need to configure OAuth consent screen in Google Cloud Console first
 
 **Credential 3 — Gmail (for hello@legacy-loop.com):**
 - Type: Gmail OAuth2
-- Name: LegacyLoop Hello Gmail
+- Name: Legacy-Loop Hello Gmail
 - Same OAuth2 flow with hello@legacy-loop.com
 
 **Credential 4 — Gmail (for estates@legacy-loop.com):**
 - Type: Gmail OAuth2
-- Name: LegacyLoop Estates Gmail
+- Name: Legacy-Loop Estates Gmail
 - Same OAuth2 flow with estates@legacy-loop.com
 
 **Credential 5 — Google Sheets:**
 - Type: Google Sheets OAuth2
-- Name: LegacyLoop Google Sheets
+- Name: Legacy-Loop Google Sheets
 - OAuth2 flow — login with ryan@legacy-loop.com
 - Grant: Read/Write access to Google Sheets
 
 **Credential 6 — Google Drive:**
 - Type: Google Drive OAuth2
-- Name: LegacyLoop Google Drive
+- Name: Legacy-Loop Google Drive
 - OAuth2 flow — login with ryan@legacy-loop.com
 - Grant: Read/Write access
 
 **Credential 7 — Google Calendar:**
 - Type: Google Calendar OAuth2
-- Name: LegacyLoop Calendar
+- Name: Legacy-Loop Calendar
 - OAuth2 flow — login with ryan@legacy-loop.com
 
 **Credential 8 — OpenAI:**
 - Type: OpenAI
-- Name: LegacyLoop OpenAI
+- Name: Legacy-Loop OpenAI
 - API Key: [your OpenAI API key from .env]
 
-**Credential 9 — HTTP Request (for LegacyLoop API):**
+**Credential 9 — HTTP Request (for Legacy-Loop API):**
 - Type: Header Auth
-- Name: LegacyLoop API
+- Name: Legacy-Loop API
 - Header Name: x-webhook-secret
 - Header Value: [N8N_WEBHOOK_SECRET from Task 7]
 

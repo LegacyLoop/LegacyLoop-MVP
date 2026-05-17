@@ -33,7 +33,7 @@ Most production AI systems compress 7 distinct human memory systems into 1–2 (
 - Apply learned skills (procedural)
 - Recognize patterns and auto-update beliefs (pattern engine + introspection)
 
-LegacyLoop's autonomous-selling thesis (Phase 8 Manus · n8n + Playwright closes the loop) requires all 7. This doc maps each.
+Legacy-Loop's autonomous-selling thesis (Phase 8 Manus · n8n + Playwright closes the loop) requires all 7. This doc maps each.
 
 ## §3 · Current State vs Target State Per System
 
@@ -79,7 +79,7 @@ LegacyLoop's autonomous-selling thesis (Phase 8 Manus · n8n + Playwright closes
 
 **Substrate:** NEW Prisma model `LongTermMemory` (Appendix C draft).
 
-**Brain analog:** cortex post-consolidation storage. Sleep consolidation maps to nightly ETL — biologically the cortex receives consolidated patterns from hippocampus during slow-wave sleep · LegacyLoop's analog is a Vercel cron / Phase D hosted Gateway tick that consolidates SylviaMemory rows older than 24h into LongTermMemory rows.
+**Brain analog:** cortex post-consolidation storage. Sleep consolidation maps to nightly ETL — biologically the cortex receives consolidated patterns from hippocampus during slow-wave sleep · Legacy-Loop's analog is a Vercel cron / Phase D hosted Gateway tick that consolidates SylviaMemory rows older than 24h into LongTermMemory rows.
 
 **Current state:** ❌ does not exist. No persistence beyond SylviaMemory rows · no pattern crystallization layer.
 
@@ -122,7 +122,7 @@ LegacyLoop's autonomous-selling thesis (Phase 8 Manus · n8n + Playwright closes
 - `SemanticRelation` rows: this-IS-that · this-CAUSES-that · this-WORTH-that-IN-context · this-SOLD-IN-platform
 - Confidence scores per relationship (extracted from MegaBot 4-AI consensus disagreement signals — when 4 models agree, confidence high; when they disagree, confidence reflects the variance)
 - Phase 5 Cyl 7D scrape pipeline activation feeds the data flywheel · ScraperComp rows ingest into SemanticEntity over time
-- Investor moat: "LegacyLoop knows that 1980s Le Creuset is worth $X in Maine but $Y in Boston · because we have the graph and the provenance"
+- Investor moat: "Legacy-Loop knows that 1980s Le Creuset is worth $X in Maine but $Y in Boston · because we have the graph and the provenance"
 
 **Cylinder anchors:** 9.5 SEMANTIC-FOUNDATION → 9.6 SEMANTIC-INGEST-FROM-SCRAPERCOMP (gates on Phase 5 7D close).
 
@@ -192,7 +192,7 @@ This is Phase 3 work · separate from Phase 9. Phase 9 inherits the structure po
 
 (Drafted · Pam refines for Round 14+ exec summary):
 
-> LegacyLoop's bot architecture mirrors the canonical pattern Anthropic uses internally for agent skills (SSA · Phase 3 anchor doc shipped at `66ace5c`). Sylvia's cognitive architecture goes further: 7 brain memory systems modeled explicitly · STM/LTM consolidation via nightly ETL · semantic knowledge graph · pattern engine · self-introspection loop. Pure file-system + Prisma schema · zero LangChain · zero vendor lock-in · zero direct AI provider SDK dependency (LiteLLM Gateway egress per BINDING #10 DOC-TELEMETRY-LOCK). The moat compounds physically with every interaction · every scan · every consolidation tick. Brain-modeled AI · billion-dollar destination.
+> Legacy-Loop's bot architecture mirrors the canonical pattern Anthropic uses internally for agent skills (SSA · Phase 3 anchor doc shipped at `66ace5c`). Sylvia's cognitive architecture goes further: 7 brain memory systems modeled explicitly · STM/LTM consolidation via nightly ETL · semantic knowledge graph · pattern engine · self-introspection loop. Pure file-system + Prisma schema · zero LangChain · zero vendor lock-in · zero direct AI provider SDK dependency (LiteLLM Gateway egress per BINDING #10 DOC-TELEMETRY-LOCK). The moat compounds physically with every interaction · every scan · every consolidation tick. Brain-modeled AI · billion-dollar destination.
 
 **Compounding angle:** every new SylviaMemory row consolidates into LongTermMemory · every EventLog row chains into EpisodicEvent · every ScraperComp row ingests into SemanticEntity. Three persistent compounding loops. Competitors can replicate the LLM · they cannot replicate the moat without running our flywheel for the same time we have.
 
@@ -241,9 +241,9 @@ These are the load-bearing citations for the framework. Doc body cites informall
 | OpenAI GPT-4 + Memory feature | context window | "Memory" feature (recent · per-thread) | none persistent | none persistent | training corpus | training corpus | training-time only |
 | Google Gemini Long Context | context window (1M+) | none persistent | none persistent | none persistent | training corpus | training corpus | training-time only |
 | Anthropic Agent Skills (SSA) | per-call context | none | none | none | (skill content semantic-adjacent) | ✅ SKILL.md per skill | none |
-| **LegacyLoop Sylvia (target)** | ✅ Brain Stem session-scoped | ✅ SylviaMemory TTL+attention | ✅ NEW · nightly consolidation | ✅ NEW · cause-effect chains | ✅ NEW · knowledge graph | ✅ Phase 3 SSA-formalized | ✅ NEW · continuous + introspection |
+| **Legacy-Loop Sylvia (target)** | ✅ Brain Stem session-scoped | ✅ SylviaMemory TTL+attention | ✅ NEW · nightly consolidation | ✅ NEW · cause-effect chains | ✅ NEW · knowledge graph | ✅ Phase 3 SSA-formalized | ✅ NEW · continuous + introspection |
 
-**LegacyLoop's differentiator:** 7-of-7 systems modeled explicitly · runtime-mutable · provenance-tracked · investor moat compounds with usage. Public LLM systems retrain to update; LegacyLoop updates continuously without retraining.
+**Legacy-Loop's differentiator:** 7-of-7 systems modeled explicitly · runtime-mutable · provenance-tracked · investor moat compounds with usage. Public LLM systems retrain to update; Legacy-Loop updates continuously without retraining.
 
 ## Appendix C · Prisma Schema Drafts
 

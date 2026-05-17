@@ -145,7 +145,7 @@ PASS 4 LOCKED (March 18, 2026):
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 Every feature must answer:
   - Does this collect signal we learn from?
@@ -175,7 +175,7 @@ SECTION 7 — PLATFORM CONTEXT
 
 PHASE 1 (NOW): Demo-ready. PHASE 2: Direct publish per platform.
 
-LegacyLoop serves two audiences:
+Legacy-Loop serves two audiences:
   1. ESTATE SIDE — seniors, families, estate transitions, inherited belongings
   2. GARAGE/YARD SALE SIDE — families, movers, declutterers, casual sellers
 
@@ -260,7 +260,7 @@ A) THEME SUPPORT (both files):
 
 B) WARMER TONE (quiz/page.tsx):
   The quiz currently asks clinical questions. Make them warmer:
-  - Q1: "What brings you to LegacyLoop?" → "What's happening in your life right now?"
+  - Q1: "What brings you to Legacy-Loop?" → "What's happening in your life right now?"
     Add subtitle: "We're here to help — no matter the situation."
   - Q4: "How much help do you want?" → "How would you like us to help?"
     Subtitle: "There's no wrong answer. We meet you where you are."
@@ -306,7 +306,7 @@ G) VISUAL POLISH (both files):
   - Selected option: teal border glow + checkmark icon
   - Hover states on all interactive elements
   - Card shadow and border radius matching the app design system
-  - LegacyLoop logo at top should link back to "/"
+  - Legacy-Loop logo at top should link back to "/"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -422,6 +422,6 @@ CHECKPOINT after: [pass / issue]
 IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v8 | LegacyLoop | Onboarding Quiz Upgrade
+Command Template v8 | Legacy-Loop | Onboarding Quiz Upgrade
 Approved: March 18, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

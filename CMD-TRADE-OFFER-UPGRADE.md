@@ -152,7 +152,7 @@ and trade proposal API all work. We are upgrading the FRONTEND only.
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 For this command: Trade proposals and offers are already tracked in the
 database (Offer, OfferEvent, EventLog models). No new data collection needed.
@@ -223,7 +223,7 @@ SECTION 9 — DEMO MODE + ADMIN BYPASS
   shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
 
   TEST ACCOUNTS:
-  annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+  annalyse07@gmail.com / Legacy-Loop123! — Tier 4 Estate Manager
   ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
   SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
 
@@ -477,7 +477,7 @@ to an offer. Visual upgrades:
      - Optional message field
      - "Send Counter" button
 
-  5. OVERALL — This is the BUYER'S first impression of LegacyLoop.
+  5. OVERALL — This is the BUYER'S first impression of Legacy-Loop.
      It must feel trustworthy, clear, and premium.
      The item photo should be prominent.
      The price and expiry should be immediately visible.
@@ -596,6 +596,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   inbox-filter-reset            Messages → InboxCmd        Tab bar clicked — reset sidebar
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Trade + Offer System Upgrade (Items 13+14)
+Command Template v9 | Legacy-Loop | Trade + Offer System Upgrade (Items 13+14)
 Updated March 19, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

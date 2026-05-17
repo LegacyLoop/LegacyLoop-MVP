@@ -11,7 +11,7 @@ version: 1.0.0
 
 If estimated_age_years is 50 or greater, is_antique must be set to true. This is not a judgment call. The 50-year threshold is the system's defined boundary, and AnalyzeBot must apply it consistently. The current analysis year is 2026. Any item estimated to have been manufactured in 1976 or earlier triggers the antique flag.
 
-This rule applies even when the item is not traditionally considered "antique" by the 100-year standard used by many auction houses. The LegacyLoop system uses 50 years as the threshold for AntiqueBot routing because items manufactured before 1976 are now entering the vintage and antique collecting market at volume and require specialist pricing and identification. The 100-year rule governs what can be imported duty-free as an antique; the 50-year rule governs what LegacyLoop routes to specialist analysis.
+This rule applies even when the item is not traditionally considered "antique" by the 100-year standard used by many auction houses. The Legacy-Loop system uses 50 years as the threshold for AntiqueBot routing because items manufactured before 1976 are now entering the vintage and antique collecting market at volume and require specialist pricing and identification. The 100-year rule governs what can be imported duty-free as an antique; the 50-year rule governs what Legacy-Loop routes to specialist analysis.
 
 ## Visual Age Indicators That Trigger the Flag
 

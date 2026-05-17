@@ -59,7 +59,7 @@
 
 **What's missing to wire graphify INTO Sylvia (vs onto Claude Code):**
 1. **MCP exposure flag never run.** `/graphify <path> --mcp` would start stdio MCP server exposing `query_graph`, `get_node`, `get_neighbors`, `shortest_path` etc. Sylvia's Open WebUI needs MCP config block pointed at `~/.graphify` graph.
-2. **Repo-wide graph never built.** Only Sylvia substrate (14 files) indexed. Full LegacyLoop = 287 routes + 53 models + ~9000 LOC `ItemDashboardPanels.tsx` + landing repo + downloads/skills corpus. Estimated 800-2000 nodes.
+2. **Repo-wide graph never built.** Only Sylvia substrate (14 files) indexed. Full Legacy-Loop = 287 routes + 53 models + ~9000 LOC `ItemDashboardPanels.tsx` + landing repo + downloads/skills corpus. Estimated 800-2000 nodes.
 3. **No git-commit hook installed.** `graphify hook install` would auto-rebuild on every commit. Currently rebuilds on-demand only.
 4. **No CLAUDE.md auto-on integration.** `graphify claude install` would inject persistent "/graphify check the graph before answering codebase questions" instruction.
 5. **No cross-repo merge run.** Landing repo at `~/Desktop/legacy-loop-landing` is a separate corpus. `graphify merge-graphs` would unify.
@@ -228,7 +228,7 @@ If any of those fail → fall back to Option B (custom build, R26+ epic).
 
 **Quick win:** Playwright is already on disk — just needs enable in `~/.claude/settings.json`. Adds zero install time.
 
-**Already-routed-via-Sylvia (per `Claude_Setup_Patterns_for_Sylvia_2026-05-08.md` §12):** Stripe · SendGrid · Shippo · ShipStation · Cloudinary · n8n droplet — these are LegacyLoop production integrations, accessible from Sylvia via the existing API surface (not separate MCPs).
+**Already-routed-via-Sylvia (per `Claude_Setup_Patterns_for_Sylvia_2026-05-08.md` §12):** Stripe · SendGrid · Shippo · ShipStation · Cloudinary · n8n droplet — these are Legacy-Loop production integrations, accessible from Sylvia via the existing API surface (not separate MCPs).
 
 ### 3C · GStack (CEO/Designer/EM/QA Roles)
 
@@ -594,4 +594,4 @@ Original §6 had 7 decisions. Deep scan adds 3 more · changes 2:
 ---
 
 *End of SUPER_BRAIN_STATE.md · Devin L1 audit · deep-scan addenda appended 2026-05-12 17:50 EDT · awaiting CEO greenlight on §6 (revised) + §9M decisions before any install.*
-*Connecting Generations · LegacyLoop Tech LLC · Confidential.*
+*Connecting Generations · Legacy-Loop Tech LLC · Confidential.*

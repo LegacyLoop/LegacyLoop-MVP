@@ -362,7 +362,7 @@ Per advisor S2 ruling Apr 30: Tier 1 Sylvia tools BANKED until Cyl 7 ships propr
 |---|---|
 | Current Sonar wiring | NONE |
 | Recommended Sonar alias | `sonar-deep-research` |
-| Why it fits | Investor-facing research questions ("how does LegacyLoop compare to Mercari?") — multi-source synthesis with citations. |
+| Why it fits | Investor-facing research questions ("how does Legacy-Loop compare to Mercari?") — multi-source synthesis with citations. |
 | Effort | M (~1 hr · post-Cyl-7) |
 | Priority | P2 |
 | Banked cylinder name | CMD-SYLVIA-DEEP-RESEARCH-SONAR-WIRE |

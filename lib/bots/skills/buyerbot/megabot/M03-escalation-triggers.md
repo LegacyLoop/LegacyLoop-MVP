@@ -204,7 +204,7 @@ Third, a realistic timeline with milestones. Sellers who agree to a ninety-day
 auction consignment without understanding what that means become difficult to
 work with at the sixty-day mark. Set expectations at the start.
 
-Fourth, what the seller needs to do next and what LegacyLoop will do on their
+Fourth, what the seller needs to do next and what Legacy-Loop will do on their
 behalf. Escalation should feel like service elevation, not service abandonment.
 The seller should end the escalation conversation feeling that more resources
 are being applied to their situation, not fewer.

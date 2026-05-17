@@ -99,7 +99,7 @@ Per `feedback_pushback_means_replace.md`: substitute identification surfaced bef
 | Requires | Node ≥22.13 + GitHub Copilot CLI/SDK auth |
 | Tools | CLI + TS SDK only · no MCP |
 | Privacy | no redaction documented |
-| Verdict | Ideologically closest to Sean Facer ideaverse 3-layer (ideas ref #19) but Copilot-SDK lock-in disqualifies for LegacyLoop multi-AI stack |
+| Verdict | Ideologically closest to Sean Facer ideaverse 3-layer (ideas ref #19) but Copilot-SDK lock-in disqualifies for Legacy-Loop multi-AI stack |
 
 ### P4 · `claude-mem` (thedotmack) — BANKED R27 DEFER
 
@@ -193,7 +193,7 @@ Phase B1 Sylvia memory upgrade clones the 4-tier shape · interop with `@agentme
 |---|---|---|
 | P0 redaction patterns undocumented | MEDIUM | Verify on install by reading `src/privacy/*` · refuse adoption if regex-only naive filter |
 | P0 `cargo install iii-engine --force` on upgrade | LOW | Rust toolchain dependency · check `rustc` present pre-install |
-| P0 REST endpoint at 3111 + viewer at 3113 port conflict | LOW | Confirm vs LegacyLoop dev ports (3000 Next.js · QUARTET range) |
+| P0 REST endpoint at 3111 + viewer at 3113 port conflict | LOW | Confirm vs Legacy-Loop dev ports (3000 Next.js · QUARTET range) |
 | BINDING #10 telemetry-lock interaction | MEDIUM | P0 makes ANTHROPIC/OPENAI/GEMINI calls if compression enabled — must route through `lib/sylvia/triage-router.ts` or disable compression |
 | Sylvia QW B6.1a memory bridge | INFO | Winner pattern feeds bridge design · cross-link |
 

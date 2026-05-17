@@ -269,6 +269,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   agent-settings-toggle, inbox-filter-change, inbox-filter-reset
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Shipping Center Sync + Upgrade (Item 17)
+Command Template v9 | Legacy-Loop | Shipping Center Sync + Upgrade (Item 17)
 Updated March 19, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

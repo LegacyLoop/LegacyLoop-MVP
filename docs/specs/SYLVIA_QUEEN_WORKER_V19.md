@@ -68,7 +68,7 @@ Devin rec: (b) · keeps Sylvia data sovereign · Ruflo logic plug-in.
 | Field | Value |
 |---|---|
 | CMD | SYLVIA_QUEEN_WORKER_V19 |
-| Project | LegacyLoop MVP · Sylvia hive-mind orchestration layer |
+| Project | Legacy-Loop MVP · Sylvia hive-mind orchestration layer |
 | Date | 2026-05-12 (drafted) · IT execution Phase B6 epic 4-6 weeks |
 | Template | V19 (architectural · NOT line-by-line FIX spec) |
 | Track | Phase B6 · CLAUDE_SYLVIA_UPGRADE plan Wave B6.1 |
@@ -176,7 +176,7 @@ Adopt Ruflo (`ruvnet/claude-flow`) Queen-Worker hive-mind architecture as Sylvia
 
 ### Phase B6.4 · Worker selection (CEO + Devin · 2-4 hrs decision)
 
-- From Ruflo 100+ agents · 32 plugins · pick 8-12 initial Workers aligned to LegacyLoop needs:
+- From Ruflo 100+ agents · 32 plugins · pick 8-12 initial Workers aligned to Legacy-Loop needs:
   - **Likely picks:** researcher · coder · tester · reviewer · architect · security · doc-writer · estate-specialist (custom)
   - **Skip initial:** federation · trust scoring · advanced workers (Phase B6.10+ banked)
 - Configure Worker roster via Ruflo config
@@ -360,7 +360,7 @@ Carry-forwards:
 ```
 ┌─────────────────────────────────────────────────────┐
 │  SYLVIA_QUEEN_WORKER_V19 §12 (EPIC CLOSE)           │
-│  LegacyLoop | <DATE> | V19                          │
+│  Legacy-Loop | <DATE> | V19                          │
 │  Phase B6 · CLAUDE_SYLVIA_UPGRADE plan close        │
 ├─────────────────────────────────────────────────────┤
 │  CHECKPOINT BEFORE                                  │
@@ -525,4 +525,4 @@ Carry-forwards:
 ---
 
 *End of SYLVIA_QUEEN_WORKER_V19 epic spec · Devin L1 research + design · 2026-05-12 ~22:00 EDT · awaiting Phase B6.1a source dive verdict + CEO greenlight.*
-*Connecting Generations · LegacyLoop Tech LLC · Confidential.*
+*Connecting Generations · Legacy-Loop Tech LLC · Confidential.*

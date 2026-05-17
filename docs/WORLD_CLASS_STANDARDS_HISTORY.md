@@ -1,4 +1,4 @@
-# LegacyLoop · WORLD_CLASS_STANDARDS.md History — Banked Reference
+# Legacy-Loop · WORLD_CLASS_STANDARDS.md History — Banked Reference
 
 This file holds verbose reference content that used to live in `WORLD_CLASS_STANDARDS.md`. Banked here on 2026-05-08 PM as part of the WCS+AGENTS trim cylinder (538 → ~165 lines · saves ~17K tokens per API call · captures the remaining 10-20% of CodeBurn's $46K/call savings target).
 
@@ -42,7 +42,7 @@ SVG fractalNoise at opacity 0.035. Safe-area insets on every fixed element. pref
 
 ## §AWWWARDS_EFFECTS · 12 canonical recipes
 
-These are the effects that define 2024–2025 Awwwards winners. Source: LegacyLoop Awwwards Master Reference + Olivier Larose + Dennis Snellenberg + Lenis + GSAP. Every effect has a canonical implementation. When applying one, match the source recipe. Do not reinvent.
+These are the effects that define 2024–2025 Awwwards winners. Source: Legacy-Loop Awwwards Master Reference + Olivier Larose + Dennis Snellenberg + Lenis + GSAP. Every effect has a canonical implementation. When applying one, match the source recipe. Do not reinvent.
 
 ### 01 · Smooth Scroll (Lenis)
 - Source: lenis.darkroom.engineering
@@ -110,7 +110,7 @@ These are the effects that define 2024–2025 Awwwards winners. Source: LegacyLo
 
 ## §PER_SURFACE_BENCHMARKS
 
-Every major surface in LegacyLoop has a reference benchmark. When building or polishing a surface, it must feel like the reference. "Feel like" = interaction density, layout rhythm, information hierarchy, micro-interactions, and confidence level.
+Every major surface in Legacy-Loop has a reference benchmark. When building or polishing a surface, it must feel like the reference. "Feel like" = interaction density, layout rhythm, information hierarchy, micro-interactions, and confidence level.
 
 | Surface               | Must Feel Like                     |
 |-----------------------|------------------------------------|

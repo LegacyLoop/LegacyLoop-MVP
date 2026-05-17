@@ -1,4 +1,4 @@
-# LegacyLoop · AGENTS.md History — Banked Reference
+# Legacy-Loop · AGENTS.md History — Banked Reference
 
 This file holds verbose reference content that used to live in `AGENTS.md`. Banked here on 2026-05-08 PM as part of the WCS+AGENTS trim cylinder (193 → ~120 lines · saves ~5K tokens per API call).
 

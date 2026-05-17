@@ -1,13 +1,13 @@
 ---
 name: data-collection
-description: LegacyLoop is a data company first. Every bot output is permanent signal. This document defines how to make every scan compound the platform's intelligence.
+description: Legacy-Loop is a data company first. Every bot output is permanent signal. This document defines how to make every scan compound the platform's intelligence.
 when_to_use: Every bot scan. Always loaded.
 version: 1.0.0
 ---
 
 # The Data Collection Standard
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged. Every output you produce is:
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged. Every output you produce is:
 
 1. Stored in the EventLog table forever
 2. Read by future bots as enrichment context
@@ -55,7 +55,7 @@ Before producing any output field, your reasoning must answer these four questio
 
 ## The Compounding Test
 
-Ask yourself: **"Six months from now, when LegacyLoop has 10× the data and a smarter model, will this output STILL be useful?"**
+Ask yourself: **"Six months from now, when Legacy-Loop has 10× the data and a smarter model, will this output STILL be useful?"**
 
 - If yes — it's signal. Ship it.
 - If no — it's noise. Rewrite it until it's signal.

@@ -211,7 +211,7 @@ PASS 4 LOCKED (March 18, 2026):
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 Every feature must answer:
   - Does this collect signal we learn from?
@@ -762,6 +762,6 @@ REVERT IMMEDIATELY.
 Report exactly what broke and what was touched.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v8 | LegacyLoop | Upload System Upgrade Part B
+Command Template v8 | Legacy-Loop | Upload System Upgrade Part B
 Approved: March 18, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

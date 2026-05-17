@@ -9,7 +9,7 @@ version: 1.0.0
 
 ## The Multi-Bot Architecture and PriceBot's Role
 
-LegacyLoop's MegaBot system routes items through multiple specialist bots in parallel. When an item is categorized as an antique, collectible, or vehicle, one or more specialist bots (AntiqueBot, CollectiblesBot, CarBot) run their analysis and write their findings to the enrichment context before PriceBot executes.
+Legacy-Loop's MegaBot system routes items through multiple specialist bots in parallel. When an item is categorized as an antique, collectible, or vehicle, one or more specialist bots (AntiqueBot, CollectiblesBot, CarBot) run their analysis and write their findings to the enrichment context before PriceBot executes.
 
 PriceBot's role in specialty items is additive, not redundant. The specialist bots answer: what is this item worth in its specialty market? PriceBot answers: where should this item be sold, at what price, and what will the seller net after fees? These are different questions. Both answers are necessary for the seller to act.
 
@@ -55,7 +55,7 @@ PriceBot integration steps for CarBot results:
 
 Step 1: Read all three CarBot valuation tiers. Private party, dealer retail, and trade-in are distinct markets and the seller needs to understand which applies to their selling method.
 
-Private party: the price a private seller achieves selling directly to a private buyer. This is the closest analog to what a LegacyLoop user selling their car would expect.
+Private party: the price a private seller achieves selling directly to a private buyer. This is the closest analog to what a Legacy-Loop user selling their car would expect.
 
 Dealer retail: what a dealership would price the vehicle at on their lot. This is never achievable for a private seller and should not be presented as a target.
 

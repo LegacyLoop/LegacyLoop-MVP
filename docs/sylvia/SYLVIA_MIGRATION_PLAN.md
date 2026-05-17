@@ -1,4 +1,4 @@
-# Sylvia AI · Migration Plan (LegacyLoop machine → Dedicated AI box)
+# Sylvia AI · Migration Plan (Legacy-Loop machine → Dedicated AI box)
 
 **Date:** 2026-05-08 · R22.6 · activates post-seed when CEO purchases dedicated hardware
 **Status:** Playbook · NOT a fire spec · post-Phase-2 (R24) prerequisite chain documented
@@ -8,7 +8,7 @@
 ## §1 · Current state (Phase 1 + Phase 2)
 
 **Phase 1 (today · LIVE at HEAD `2d9ff63`):**
-- Sylvia substrate: `lib/sylvia/*` 793 LOC · imported in-process by LegacyLoop
+- Sylvia substrate: `lib/sylvia/*` 793 LOC · imported in-process by Legacy-Loop
 - Memory: `sylvia-data/memory/` (gitignored)
 - Corpus: `sylvia-data/corpus/` (gitignored · scrape ingest)
 - Vector store: `sylvia-data/vector-store/` (gitignored · embedding cache)
@@ -17,15 +17,15 @@
 
 **Phase 2 (GATED on R24 brain wire):**
 - HTTP boundary: `app/api/sylvia/{ask,consensus,corpus,health}/route.ts`
-- LegacyLoop calls Sylvia via `fetch("/api/sylvia/...")` instead of in-process import
+- Legacy-Loop calls Sylvia via `fetch("/api/sylvia/...")` instead of in-process import
 - Same machine · same Vercel function pool · same disk
 
 **Cross-cutting concerns at end of Phase 2:**
-- Shared CPU with LegacyLoop UI/API workload
+- Shared CPU with Legacy-Loop UI/API workload
 - Shared memory (Node heap pressure during consensus dispatches)
 - Shared disk (sylvia-data + dev.db on same volume)
-- Shared LegacyLoop Vercel cap (`$20/month` per BINDING #25)
-- Spike load on Sylvia consensus = function-execution-time pressure on LegacyLoop
+- Shared Legacy-Loop Vercel cap (`$20/month` per BINDING #25)
+- Spike load on Sylvia consensus = function-execution-time pressure on Legacy-Loop
 
 ---
 
@@ -34,17 +34,17 @@
 **Sylvia runs on dedicated machine** (Mac Studio · Threadripper workstation · Hetzner dedicated · etc.)
 
 **Independent everything:**
-- Independent CPU (consensus burst doesn't slow LegacyLoop checkout flow)
+- Independent CPU (consensus burst doesn't slow Legacy-Loop checkout flow)
 - Independent disk (sylvia-data on dedicated volume · scaling decoupled)
-- Independent budget (Sylvia daily cap separate from LegacyLoop Vercel cap)
-- Independent uptime (Sylvia outage = graceful degradation in LegacyLoop · in-process fallback if seam preserved)
+- Independent budget (Sylvia daily cap separate from Legacy-Loop Vercel cap)
+- Independent uptime (Sylvia outage = graceful degradation in Legacy-Loop · in-process fallback if seam preserved)
 
-**LegacyLoop → Sylvia via HTTPS** at `SYLVIA_BASE_URL` env var:
+**Legacy-Loop → Sylvia via HTTPS** at `SYLVIA_BASE_URL` env var:
 ```bash
 SYLVIA_BASE_URL=https://sylvia.legacy-loop.com
 ```
 
-**Zero risk to LegacyLoop production from Sylvia spike load.** Investor moat #5b (hive-mind · Queen→Worker dispatch) and Moat 11 (domain corpus retrieval) become independently scalable.
+**Zero risk to Legacy-Loop production from Sylvia spike load.** Investor moat #5b (hive-mind · Queen→Worker dispatch) and Moat 11 (domain corpus retrieval) become independently scalable.
 
 ---
 
@@ -58,7 +58,7 @@ SYLVIA_BASE_URL=https://sylvia.legacy-loop.com
 □ Dedicated box has static IP OR Tailscale tunnel (private network) established
 □ TLS cert obtained (Let's Encrypt OR Tailscale MagicDNS HTTPS · HSTS-ready)
 □ DNS A record (sylvia.legacy-loop.com) updated · TTL 60s pre-cut for fast rollback
-□ LegacyLoop SYLVIA_BASE_URL env var staged in Vercel preview deploy (NOT production yet)
+□ Legacy-Loop SYLVIA_BASE_URL env var staged in Vercel preview deploy (NOT production yet)
 ```
 
 If any box unchecked → DO NOT CUT · resolve gap first.
@@ -68,13 +68,13 @@ If any box unchecked → DO NOT CUT · resolve gap first.
 ## §4 · Migration playbook (step-by-step)
 
 ### Step 1 · Provision dedicated box
-- Install Node 20.18.0 · npm 10.8.2 (match LegacyLoop versions exactly to avoid heap behavior drift)
+- Install Node 20.18.0 · npm 10.8.2 (match Legacy-Loop versions exactly to avoid heap behavior drift)
 - Install build tooling (gcc · make for native deps · sharp · etc.)
-- Verify `which node && node --version` matches LegacyLoop Vercel runtime
+- Verify `which node && node --version` matches Legacy-Loop Vercel runtime
 
-### Step 2 · Clone LegacyLoop repo (read-only consumer)
+### Step 2 · Clone Legacy-Loop repo (read-only consumer)
 ```bash
-git clone https://github.com/LegacyLoop/LegacyLoop-MVP.git ~/legacy-loop-mvp
+git clone https://github.com/Legacy-Loop/Legacy-Loop-MVP.git ~/legacy-loop-mvp
 cd ~/legacy-loop-mvp
 npm install
 ```
@@ -128,7 +128,7 @@ curl -sL -H "Authorization: Bearer $SECRET" -H "Content-Type: application/json" 
 - TTL set to 60s (24h before cut · already pre-staged per checklist Step 7)
 - OR: Tailscale MagicDNS · `sylvia.tailnet.ts.net` resolves automatically
 
-### Step 7 · LegacyLoop Vercel env var
+### Step 7 · Legacy-Loop Vercel env var
 - Set `SYLVIA_BASE_URL=https://sylvia.legacy-loop.com` in Vercel project settings
 - Set `SYLVIA_API_INTERNAL_SECRET=<value>` (same value as dedicated box `.env.sylvia`)
 - Trigger preview deploy (NOT production yet)
@@ -160,7 +160,7 @@ curl -sL https://sylvia.legacy-loop.com/api/sylvia/health \
   -H "Authorization: Bearer $SECRET"
 # Expected: 200 + providersOk all true
 
-# LegacyLoop dashboard renders item dossier (Phase 7 dovetail · NB Seed 1)
+# Legacy-Loop dashboard renders item dossier (Phase 7 dovetail · NB Seed 1)
 curl -sL https://app.legacy-loop.com/items/<test-item-id>/dossier
 # Expected: 200 · dossier renders with Sylvia-provided context
 
@@ -183,11 +183,11 @@ If migration fails post-cut:
 SYLVIA_BASE_URL=  # empty string OR remove entirely
 ```
 
-LegacyLoop falls back to in-process `lib/sylvia/*` import (graceful degradation preserved by design · the seam is migration-safe in **both directions**).
+Legacy-Loop falls back to in-process `lib/sylvia/*` import (graceful degradation preserved by design · the seam is migration-safe in **both directions**).
 
 **DNS rollback** (if TTL respected):
 - Revert A record OR
-- Remove DNS entry · LegacyLoop never resolves `sylvia.legacy-loop.com` · falls through to in-process
+- Remove DNS entry · Legacy-Loop never resolves `sylvia.legacy-loop.com` · falls through to in-process
 
 **Audit log preserved** on dedicated box even after rollback. CEO can investigate failure cause without rush.
 
@@ -197,11 +197,11 @@ LegacyLoop falls back to in-process `lib/sylvia/*` import (graceful degradation 
 
 | Metric | Pre-migration (Phase 2) | Post-migration (Phase 3) |
 |---|---|---|
-| Sylvia consensus burst | Drains LegacyLoop Vercel function-execution-time budget | Dedicated box CPU only · zero LegacyLoop impact |
-| `sylvia-data/*` growth | Drains LegacyLoop Vercel build size | Dedicated box disk only · independent scaling |
-| Provider API calls | Counted toward LegacyLoop $20/mo cap | Sylvia separate $20/mo cap · isolated |
+| Sylvia consensus burst | Drains Legacy-Loop Vercel function-execution-time budget | Dedicated box CPU only · zero Legacy-Loop impact |
+| `sylvia-data/*` growth | Drains Legacy-Loop Vercel build size | Dedicated box disk only · independent scaling |
+| Provider API calls | Counted toward Legacy-Loop $20/mo cap | Sylvia separate $20/mo cap · isolated |
 | Cold start latency | Vercel cold start adds 200-800ms | Dedicated box always-warm · sub-50ms typical |
-| Outage blast radius | Sylvia outage = LegacyLoop function timeout cascade | Sylvia outage = graceful degradation · in-process fallback if env var unset |
+| Outage blast radius | Sylvia outage = Legacy-Loop function timeout cascade | Sylvia outage = graceful degradation · in-process fallback if env var unset |
 
 CEO directive · clean isolation · no cross-bleed.
 
@@ -210,10 +210,10 @@ CEO directive · clean isolation · no cross-bleed.
 ## §8 · Reference: V2 12-moat doc
 
 Maps to `Claude_Setup_Patterns_for_Sylvia_2026-05-08.md` V2:
-- **M5b** (Hive-mind dispatch) · independently scalable post-Phase-3 · burst load doesn't degrade LegacyLoop UI
+- **M5b** (Hive-mind dispatch) · independently scalable post-Phase-3 · burst load doesn't degrade Legacy-Loop UI
 - **M10** (Truth Gate) · 5-provider consensus on dedicated CPU · faster + cheaper at scale
 - **M11** (Domain Corpus) · `sylvia-data/corpus/` grows on dedicated disk · scaling decoupled
-- **M12** (Outreach · Phase 8 Manus autonomous) · gates on Phase 3 isolation · runs without polling LegacyLoop
+- **M12** (Outreach · Phase 8 Manus autonomous) · gates on Phase 3 isolation · runs without polling Legacy-Loop
 
 ---
 

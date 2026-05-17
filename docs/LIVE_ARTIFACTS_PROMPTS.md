@@ -1,8 +1,8 @@
-# LegacyLoop · Claude Live Artifacts · Paste-Ready Prompt Pack
+# Legacy-Loop · Claude Live Artifacts · Paste-Ready Prompt Pack
 
 **Anthropic dropped Live Artifacts in early May 2026** · live-updating dashboards INSIDE Claude that pull from connected MCPs (Gmail · Calendar · Stripe · etc.) and refresh in real-time. Each artifact takes ~2 minutes to set up.
 
-This file holds 5 paste-ready prompts tuned for LegacyLoop daily ops + investor demos.
+This file holds 5 paste-ready prompts tuned for Legacy-Loop daily ops + investor demos.
 
 **How to use:** open `claude.ai` (the web app · NOT Claude Code) → start a new chat → paste one of the prompts below → confirm MCP connections it requests → Claude generates the live dashboard. Pin the artifact in the chat or save to your library. Refresh = re-run the prompt or click the artifact's refresh button.
 
@@ -17,7 +17,7 @@ This file holds 5 paste-ready prompts tuned for LegacyLoop daily ops + investor 
 **Paste this:**
 
 ```
-Build a Live Artifact "LegacyLoop Morning Command Center" that shows everything I need at the start of my day in one clean dashboard. Use the Apple Swiss visual language: warm off-white background (#fafafa), white cards with subtle box-shadow, system-ui fonts, generous whitespace, accent colors only for status (red urgent · orange attention · blue info · green good).
+Build a Live Artifact "Legacy-Loop Morning Command Center" that shows everything I need at the start of my day in one clean dashboard. Use the Apple Swiss visual language: warm off-white background (#fafafa), white cards with subtle box-shadow, system-ui fonts, generous whitespace, accent colors only for status (red urgent · orange attention · blue info · green good).
 
 Pull live data from these MCPs:
 - Google Calendar: today's meetings + free blocks (chronological)
@@ -29,7 +29,7 @@ Then synthesize and display:
 2. Calendar overview (timeline format · flag back-to-back gaps)
 3. Inbox triage: urgent (suggest 1-line replies) · needs response · FYI · count of skipped
 4. Slack pulse: recent agent activity · open §12 reports · any HALT/blocker flags
-5. LegacyLoop ops bar: production HEAD short-hash · last Vercel deploy state · cron health · Turso schema sync flag
+5. Legacy-Loop ops bar: production HEAD short-hash · last Vercel deploy state · cron health · Turso schema sync flag
 
 Keep the page clean · 5 sections max · readable in 60 seconds. Update timestamp at top.
 ```
@@ -45,9 +45,9 @@ Keep the page clean · 5 sections max · readable in 60 seconds. Update timestam
 **Paste this:**
 
 ```
-Build a Live Artifact "LegacyLoop Stripe Revenue Tracker" pulling live from the Stripe MCP.
+Build a Live Artifact "Legacy-Loop Stripe Revenue Tracker" pulling live from the Stripe MCP.
 
-Layout the Apple Swiss visual language. Accent: teal (#00BCD4) for headline numbers (LegacyLoop brand · Barlow Condensed font for all numerics).
+Layout the Apple Swiss visual language. Accent: teal (#00BCD4) for headline numbers (Legacy-Loop brand · Barlow Condensed font for all numerics).
 
 Data to surface:
 1. MRR right now (subscriptions only · annualized) + 7-day trend sparkline
@@ -58,7 +58,7 @@ Data to surface:
 6. Recent failed payments (last 30 days · with retry status)
 7. Refunds last 30 days
 
-Use status colors: green for collected, orange for pending, red for failed. Show currency in USD. Footer: "Last refreshed: {timestamp} · LegacyLoop Tech LLC · EIN 42-1834363".
+Use status colors: green for collected, orange for pending, red for failed. Show currency in USD. Footer: "Last refreshed: {timestamp} · Legacy-Loop Tech LLC · EIN 42-1834363".
 
 If no Stripe live data yet (pre-launch), display a graceful empty state: "Stripe live keys pending bank account confirmation. Test-mode metrics will populate here once we go live."
 ```
@@ -85,7 +85,7 @@ Pull from Slack search: any mentions of attendees in #all-legacyloop or other ch
 Synthesize:
 1. WHO is in the meeting (name · role · last interaction · what they care about)
 2. AGENDA (from calendar invite · or inferred from email thread)
-3. 3 TALKING POINTS Ryan should hit (specific to this audience · cite recent LegacyLoop wins from Slack)
+3. 3 TALKING POINTS Ryan should hit (specific to this audience · cite recent Legacy-Loop wins from Slack)
 4. OPEN COMMITMENTS (what Ryan promised them · what they promised Ryan · any overdue)
 5. PROBABLE OBJECTIONS + 1-line counters (for investor calls especially)
 6. ASK (specific thing Ryan wants from this meeting · suggest one if not obvious)
@@ -104,7 +104,7 @@ Visual language: Apple Swiss · clean cards · accent teal for headers · max 1 
 **Paste this:**
 
 ```
-Build a Live Artifact "LegacyLoop Competitor Tracker" that surfaces what's happening in the resale automation space today.
+Build a Live Artifact "Legacy-Loop Competitor Tracker" that surfaces what's happening in the resale automation space today.
 
 Sources to pull (use available MCPs · web fetch where MCPs unavailable):
 - Apify scrapes from connected Apify workflows: any new listings/features from Mercari · Facebook Marketplace · Poshmark · TheRealReal · WhatNot · eBay · LiveAuctioneers
@@ -115,7 +115,7 @@ Surface in dashboard:
 1. NEW competitor moves in last 24 hours (max 5 · with link · 1-line summary)
 2. PRICING signals: any competitor changed prices · added tiers · ran promos
 3. FEATURE drops: anything our 14 AI systems should react to
-4. CONTENT hooks: 3 angles LegacyLoop's CMO/marketing could use today (riff on competitor moves · differentiate on Truth Gate / domain corpus / senior-friendly)
+4. CONTENT hooks: 3 angles Legacy-Loop's CMO/marketing could use today (riff on competitor moves · differentiate on Truth Gate / domain corpus / senior-friendly)
 5. THREAT bar: rate today 0-10 on existential-threat scale · 1-line why
 
 Visual language: Apple Swiss · max 1 page · accent red for threats · accent green for opportunities.
@@ -132,7 +132,7 @@ Visual language: Apple Swiss · max 1 page · accent red for threats · accent g
 **Paste this:**
 
 ```
-Build a Live Artifact "LegacyLoop Skills + Cylinder Dashboard" showing the operational state of the multi-agent build system.
+Build a Live Artifact "Legacy-Loop Skills + Cylinder Dashboard" showing the operational state of the multi-agent build system.
 
 Pull from Slack #all-legacyloop (last 7 days):
 - Most recent §12 V19 reports (cylinder name · HEAD · PASS/HALT/BANKED)
@@ -187,4 +187,4 @@ Before any Dr. Clark / Austin / advisor call:
 
 ## §7 · Provenance
 
-Pattern source: Anthropic Live Artifacts release · early May 2026 · YouTube reference index #15 in Ryan's morning ops backlog. Banked into LegacyLoop ops doctrine on 2026-05-08 PM as part of the WCS+AGENTS trim cylinder follow-up batch.
+Pattern source: Anthropic Live Artifacts release · early May 2026 · YouTube reference index #15 in Ryan's morning ops backlog. Banked into Legacy-Loop ops doctrine on 2026-05-08 PM as part of the WCS+AGENTS trim cylinder follow-up batch.

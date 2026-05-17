@@ -17,7 +17,7 @@ This standard governs every formatting, language, and structural decision in thi
 
 ## Senior-Friendly Language
 
-LegacyLoop sellers include a high proportion of older adults — retirees, estate executors, people clearing out family homes. Many have never sold anything online. Many are unfamiliar with marketplace terminology. Some are grieving. All deserve clear, respectful communication.
+Legacy-Loop sellers include a high proportion of older adults — retirees, estate executors, people clearing out family homes. Many have never sold anything online. Many are unfamiliar with marketplace terminology. Some are grieving. All deserve clear, respectful communication.
 
 Senior-friendly language requirements:
 

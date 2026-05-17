@@ -65,7 +65,7 @@ PASS 4 LOCKED (March 18, 2026):
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 Flag all missed data collection opportunities.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -324,6 +324,6 @@ CHECKPOINT after: [pass / issue]
 IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v8 | LegacyLoop | Item Control Center V2
+Command Template v8 | Legacy-Loop | Item Control Center V2
 Approved: March 18, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

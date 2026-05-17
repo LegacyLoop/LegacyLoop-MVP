@@ -258,7 +258,7 @@ Pass 5 Locked (March 19, 2026 — Parts A+B):
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 Every feature must answer:
   — Does this collect signal we learn from?
@@ -362,7 +362,7 @@ SECTION 9 — DEMO MODE + ADMIN BYPASS
   Admin: never locked out. No credits deducted. Full platform access.
 
   TEST ACCOUNTS:
-  annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+  annalyse07@gmail.com / Legacy-Loop123! — Tier 4 Estate Manager
   ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
   SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
 
@@ -806,6 +806,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   inbox-filter-reset            Messages → InboxCmd        Tab bar clicked — reset sidebar
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Part C of 3 | Command Template v9 | LegacyLoop | Onboarding Quiz Upgrade
+Part C of 3 | Command Template v9 | Legacy-Loop | Onboarding Quiz Upgrade
 Updated March 19, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

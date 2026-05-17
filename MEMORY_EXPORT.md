@@ -1,4 +1,4 @@
-# LegacyLoop MVP Memory
+# Legacy-Loop MVP Memory
 
 ## Project
 AI estate resale platform. Next.js 16.1.6 / React 19 / Tailwind 4 / Prisma 6 SQLite / OpenAI Vision.

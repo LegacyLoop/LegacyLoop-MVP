@@ -127,7 +127,7 @@ Any known imperfections shown directly. A rust spot acknowledged on camera is le
 
 ## LOCAL PICKUP ONLY CTA Requirement
 
-Every vehicle video script must include "LOCAL PICKUP ONLY" in the call to action. This is a platform-level requirement for vehicle sales content across all LegacyLoop video outputs.
+Every vehicle video script must include "LOCAL PICKUP ONLY" in the call to action. This is a platform-level requirement for vehicle sales content across all Legacy-Loop video outputs.
 
 Vehicle sales involve physical inspection, test drives, title transfer, and transaction logistics that are not compatible with remote purchase and shipping in most cases. Setting this expectation in the video prevents wasted inquiry from buyers who are not in the region.
 

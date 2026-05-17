@@ -13,7 +13,7 @@ autonomous: false · checkpoints REQUIRED at every wave gate
 <objective>
 
 ## Goal
-Two-phase upgrade. **Phase A:** harden Claude Code locally (memory · token discipline · skill cherry-pick · MCP gaps · Obsidian 3-layer). **Phase B:** mirror Phase A learnings into Sylvia AI custom build using prebuilt LegacyLoop substrate (4-AI Truth Gate · 239 skill files · daemon QUARTET · `sylvia-data/vector-store/` reserved slot).
+Two-phase upgrade. **Phase A:** harden Claude Code locally (memory · token discipline · skill cherry-pick · MCP gaps · Obsidian 3-layer). **Phase B:** mirror Phase A learnings into Sylvia AI custom build using prebuilt Legacy-Loop substrate (4-AI Truth Gate · 239 skill files · daemon QUARTET · `sylvia-data/vector-store/` reserved slot).
 
 ## Purpose
 1. CEO's Claude usage "through the roof" — memory loss + token waste root cause
@@ -81,7 +81,7 @@ And SessionStart hook auto-loads relevant compressed observations
 ## AC-3 · Repo-wide graphify graph indexed
 ```gherkin
 Given Phase A2 ships repo-wide /graphify run
-When CEO asks "how does <X> connect to <Y>?" about LegacyLoop architecture
+When CEO asks "how does <X> connect to <Y>?" about Legacy-Loop architecture
 Then Claude consults `graphify-out/graph.json` (1500-2500 nodes expected)
 And answer cites god-node + community + edge type · NOT free-form file-traversal
 ```
@@ -154,21 +154,21 @@ And provenance tag (real-time / memory / training / inferred) per Moat #7
 </task>
 
 <task type="checkpoint:decision" gate="blocking">
-  <decision>Install claude-mem or build LegacyLoop-native equivalent?</decision>
+  <decision>Install claude-mem or build Legacy-Loop-native equivalent?</decision>
   <context>claude-mem (`thedotmack/claude-mem` · 60K+ stars per ideas ref #11) is upstream. CEO must decide install-vs-build before Devin authors V19 spec.</context>
   <options>
     <option id="option-a">
-      <name>Install upstream claude-mem · local-only · zero LegacyLoop schema impact</name>
+      <name>Install upstream claude-mem · local-only · zero Legacy-Loop schema impact</name>
       <pros>Battle-tested · 60K stars · 2-command install · runs locally · "free + no data leaves machine" per ref #11 · Phase A scope ONLY</pros>
       <cons>Foreign tool · may not honor §12 V19 report shape · own memory format ≠ Sylvia 7-memory-system canon · Sylvia mirror in Phase B = adapter work</cons>
     </option>
     <option id="option-b">
-      <name>Build LegacyLoop-native compressor that writes to `~/.claude/projects/.../memory/` index + topic files using observation schema cloned from claude-mem</name>
+      <name>Build Legacy-Loop-native compressor that writes to `~/.claude/projects/.../memory/` index + topic files using observation schema cloned from claude-mem</name>
       <pros>Honors V19 + §12 + 28 BINDING from day 1 · Phase B Sylvia mirror is trivial (same code) · zero foreign-tool surface</pros>
       <cons>2-4 weeks build · CEO suffers token waste in interim · re-invents proven pattern · violates BINDING #16 DOC-DELEGATE-TO-CANONICAL spirit</cons>
     </option>
     <option id="option-c">
-      <name>Install claude-mem NOW for fast win · wrap in LegacyLoop adapter in Phase B</name>
+      <name>Install claude-mem NOW for fast win · wrap in Legacy-Loop adapter in Phase B</name>
       <pros>CEO gets memory fix this week · Sylvia mirror leverages proven patterns · BINDING #16 honored · zero re-invention</pros>
       <cons>2 systems running in parallel for ~4 weeks · adapter overhead ~4 hrs</cons>
     </option>
@@ -884,4 +884,4 @@ Before any IT fire, CEO must answer:
 ---
 
 *End of CLAUDE_SYLVIA_UPGRADE_2026-05-12 plan · Devin L1 authoring · audit-first · awaiting CEO §6 decisions before any Wave A1 fire.*
-*Connecting Generations · LegacyLoop Tech LLC · Confidential.*
+*Connecting Generations · Legacy-Loop Tech LLC · Confidential.*

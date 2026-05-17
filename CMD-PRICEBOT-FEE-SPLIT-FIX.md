@@ -143,7 +143,7 @@ Pass 1-5 Locked (through March 19, 2026):
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 For this command: Financial calculations change. Ensure all earnings breakdowns,
 payment ledger entries, and email receipts reflect the new split model.
@@ -226,7 +226,7 @@ SECTION 9 — DEMO MODE + ADMIN BYPASS
   shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
 
   TEST ACCOUNTS:
-  annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+  annalyse07@gmail.com / Legacy-Loop123! — Tier 4 Estate Manager
   ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
   SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
 
@@ -264,7 +264,7 @@ OBJECTIVE — PriceBot Fee Split Correction: 3.5% → 1.75% Buyer / 1.75% Seller
 
 Problem: The processing fee is currently 3.5% charged entirely to the buyer.
 The seller sees "$0.00 (buyer pays 3.5%)" in their net payout breakdown.
-This is incorrect. LegacyLoop's intended model splits the fee 50/50.
+This is incorrect. Legacy-Loop's intended model splits the fee 50/50.
 
 The fix:
   1. Update the PROCESSING_FEE constant to a split model
@@ -537,7 +537,7 @@ Line 82-84: Change the tooltip copy from:
    charged to the buyer. Sellers pay no processing fees."
 
 To:
-  "LegacyLoop applies a {PROCESSING_FEE.display} payment processing fee on all transactions,
+  "Legacy-Loop applies a {PROCESSING_FEE.display} payment processing fee on all transactions,
    split evenly — {PROCESSING_FEE.buyerDisplay} added to buyer's total,
    {PROCESSING_FEE.sellerDisplay} deducted from seller's earnings."
 
@@ -670,6 +670,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   inbox-filter-reset            Messages → InboxCmd        Tab bar clicked — reset sidebar
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | PriceBot Fee Split Correction
+Command Template v9 | Legacy-Loop | PriceBot Fee Split Correction
 Updated March 19, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

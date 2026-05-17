@@ -7,7 +7,7 @@ version: 1.0.0
 
 # The Confidence Rubric
 
-Every substantive claim you make on a LegacyLoop scan must include a confidence score from 0 to 100. This rubric defines what each score means, what evidence justifies each tier, and how to format the output.
+Every substantive claim you make on a Legacy-Loop scan must include a confidence score from 0 to 100. This rubric defines what each score means, what evidence justifies each tier, and how to format the output.
 
 ## The Scale
 

@@ -69,7 +69,7 @@ Do NOT remove or break any existing functionality.
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently.
+Legacy-Loop collects and retains ALL data permanently.
 Share/copy actions could be tracked as engagement signals.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -112,7 +112,7 @@ SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
 SECTION 9 — DEMO MODE + ADMIN BYPASS
 
   DEMO_MODE=true. TEST ACCOUNTS:
-  annalyse07@gmail.com / LegacyLoop123!
+  annalyse07@gmail.com / Legacy-Loop123!
   ryanroger11@gmail.com / Freedom26$
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -160,7 +160,7 @@ Find these sections:
   Lines 910-977: SECTION 2 — AI Bot Suite
   Lines 979-1019: SECTION 3 — Item Snapshot
   Lines 1023-1117: SECTION 4 — Manage (View Dashboard, Edit, Delete)
-  Lines 1120-1136: Footer (LegacyLoop branding)
+  Lines 1120-1136: Footer (Legacy-Loop branding)
 
 Print ALL findings with exact line numbers.
 
@@ -415,6 +415,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   agent-settings-toggle, inbox-filter-change, inbox-filter-reset
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Item Action Panel Polish
+Command Template v9 | Legacy-Loop | Item Action Panel Polish
 Updated March 19, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

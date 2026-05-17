@@ -1,4 +1,4 @@
-# LegacyLoop — Scraper Agent Architecture Plan
+# Legacy-Loop — Scraper Agent Architecture Plan
 
 ## Why
 Current pricing relies on AI hallucination when eBay API fails.

@@ -3,7 +3,7 @@ name: document-value-intelligence
 description: How different document types affect item value across selling contexts. Value multipliers and price impact guidance.
 when_to_use: When analyzing document impact on item pricing and listing strategy.
 version: 1.0.0
-cost: FREE — absorbed by LegacyLoop
+cost: FREE — absorbed by Legacy-Loop
 ---
 
 # How Documents Affect Item Value

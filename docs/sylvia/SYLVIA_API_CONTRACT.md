@@ -125,7 +125,7 @@ Domain corpus retrieval (Moat 11) · backed by `sylvia-data/corpus/` + `sylvia-d
 
 ### 2.4 · `GET /api/sylvia/health`
 
-Provider liveness · ops dashboard · LegacyLoop status pages.
+Provider liveness · ops dashboard · Legacy-Loop status pages.
 
 **Response (200):**
 ```json
@@ -171,9 +171,9 @@ Provider liveness · ops dashboard · LegacyLoop status pages.
 
 1. **Cheap-model AI agents extract less value AND users can't tell.** Without a Truth Gate · weaker-model users in autonomous-selling contexts get systematically worse deals while believing they got fair ones. This is the silent failure mode the agreementScore + 4-AI dispatch + provenance discipline are built to prevent.
 2. **The 4-AI quartet (Anthropic + OpenAI + Gemini + xAI) prevents single-model bias** at the moment of valuation. If 3 of 4 say "this brooch is worth $50" and 1 says "$5,000", the agreementScore drops · the response shows partial-or-refused · the user is protected from a hallucinated price.
-3. **LegacyLoop's Phase 8 Manus autonomous selling moat is the productized version of Project Vend** — the SellingPipeline state machine (R23 P1 · `prisma/schema.prisma`) walks the same LIST → MONITORING → NEGOTIATING → ACCEPTED → SHIPPED → CLOSED arc Anthropic's agents walked manually. Truth Gate is the trust layer that makes it safe for senior estate sellers (our primary users) who can't verify the AI's judgment themselves.
+3. **Legacy-Loop's Phase 8 Manus autonomous selling moat is the productized version of Project Vend** — the SellingPipeline state machine (R23 P1 · `prisma/schema.prisma`) walks the same LIST → MONITORING → NEGOTIATING → ACCEPTED → SHIPPED → CLOSED arc Anthropic's agents walked manually. Truth Gate is the trust layer that makes it safe for senior estate sellers (our primary users) who can't verify the AI's judgment themselves.
 
-**Investor narrative anchor:** *"Anthropic ran the experiment that proves LegacyLoop's Phase 8 thesis. Weak models extract less value · users don't notice. Sylvia's Truth Gate is the structural fix — every high-stakes valuation cross-validated by four independent AI models before it reaches the seller."*
+**Investor narrative anchor:** *"Anthropic ran the experiment that proves Legacy-Loop's Phase 8 thesis. Weak models extract less value · users don't notice. Sylvia's Truth Gate is the structural fix — every high-stakes valuation cross-validated by four independent AI models before it reaches the seller."*
 
 ---
 
@@ -209,9 +209,9 @@ type ProvenanceEntry =
 
 **Per-question budget cap:** default `$0.50` · returns 429 if `consensus` dispatch exceeds mid-flight (cancels remaining provider calls).
 
-**Daily budget cap:** default `$20/day` · matches LegacyLoop Vercel cap per BINDING #25 DOC-VERCEL-BUDGET-CAP-20.
+**Daily budget cap:** default `$20/day` · matches Legacy-Loop Vercel cap per BINDING #25 DOC-VERCEL-BUDGET-CAP-20.
 
-**Sylvia budget ISOLATED from LegacyLoop production cap.** Dedicated `.env.sylvia` per-key daily caps. Zero cross-bleed: a Sylvia burst cannot exhaust LegacyLoop's Vercel allowance.
+**Sylvia budget ISOLATED from Legacy-Loop production cap.** Dedicated `.env.sylvia` per-key daily caps. Zero cross-bleed: a Sylvia burst cannot exhaust Legacy-Loop's Vercel allowance.
 
 **Provider rate limits** enforced via `.env.sylvia` per-key budgets. Hit a provider rate limit mid-consensus = drop that provider from the response, mark `agreementScore` as N-1 denominator, log to `sylvia-data/audit/`.
 
@@ -246,7 +246,7 @@ SYLVIA_BASE_URL=http://localhost:3000
 SYLVIA_BASE_URL=https://sylvia.legacy-loop.com
 ```
 
-LegacyLoop callsites use the env var verbatim:
+Legacy-Loop callsites use the env var verbatim:
 ```ts
 const res = await fetch(`${process.env.SYLVIA_BASE_URL}/api/sylvia/consensus`, {
   method: "POST",

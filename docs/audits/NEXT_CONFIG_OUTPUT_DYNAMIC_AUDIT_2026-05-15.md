@@ -89,7 +89,7 @@ Next.js 16 does **NOT** support `output: dynamic` as a documented global config.
 
 **Alternative discovered:** `cacheComponents: true` is the Next.js 16 canonical opt-in to Partial Prerendering / Cache Components model. This is NOT equivalent to "all routes dynamic" — it's the dynamic-at-Suspense-boundary model with explicit `'use cache'` directives for static caching. Different mental model · different ergonomics · NOT a drop-in replacement for per-route `export const dynamic = "force-dynamic"`.
 
-Per-route `export const dynamic = "force-dynamic"` remains the canonical pattern for LegacyLoop's current rendering model (Pages Router-style Server Components without Cache Components opt-in). The 45 directives shipped by P36 + P42 + P46 are the correct canonical pattern · no structural alternative exists in Next.js 16.1.6 / 16.2.6.
+Per-route `export const dynamic = "force-dynamic"` remains the canonical pattern for Legacy-Loop's current rendering model (Pages Router-style Server Components without Cache Components opt-in). The 45 directives shipped by P36 + P42 + P46 are the correct canonical pattern · no structural alternative exists in Next.js 16.1.6 / 16.2.6.
 
 ---
 
@@ -103,7 +103,7 @@ Per-route `export const dynamic = "force-dynamic"` remains the canonical pattern
 
 **Doctrine candidate:** `DOC-PER-ROUTE-DYNAMIC-DIRECTIVE-CANONICAL` 1/5 NEW · per-route directive is the canonical Next.js 16 pattern for non-Cache-Components projects · empirically verified via official docs at this cyl.
 
-**Cyclic flag:** `CY-N quarterly Next.js config audit` · re-investigate if Next.js feature graduates `output: dynamic` OR Cache Components migration becomes viable for LegacyLoop.
+**Cyclic flag:** `CY-N quarterly Next.js config audit` · re-investigate if Next.js feature graduates `output: dynamic` OR Cache Components migration becomes viable for Legacy-Loop.
 
 ---
 

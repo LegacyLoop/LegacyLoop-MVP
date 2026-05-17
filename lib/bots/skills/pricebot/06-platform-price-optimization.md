@@ -144,7 +144,7 @@ Median sell time:
 - 30 to 180 days for correctly priced items.
 - Items on 1stDibs are not expected to sell quickly. The platform is for patient sellers seeking maximum price.
 
-When to recommend 1stDibs: High-quality antiques, significant mid-century designer pieces (Eames, Nakashima, Bertoia, Prouve), important paintings, fine silver and jewelry. Not appropriate for items under $500 or items without documented quality and provenance. For LegacyLoop sellers, note that 1stDibs requires a dealer account and may not be accessible for individual listings — recommend Chairish or EBTH as accessible alternatives with similar buyer profiles.
+When to recommend 1stDibs: High-quality antiques, significant mid-century designer pieces (Eames, Nakashima, Bertoia, Prouve), important paintings, fine silver and jewelry. Not appropriate for items under $500 or items without documented quality and provenance. For Legacy-Loop sellers, note that 1stDibs requires a dealer account and may not be accessible for individual listings — recommend Chairish or EBTH as accessible alternatives with similar buyer profiles.
 
 ## Ruby Lane
 

@@ -139,7 +139,7 @@ PASS 4 LOCKED (March 18, 2026):
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 Every feature must answer:
   - Does this collect signal we learn from?
@@ -224,7 +224,7 @@ OBJECTIVE — Fix Light Mode Visibility: Round 2 — All Bot Pages
 
 Round 1 fixed 600 instances across 22 core files (navigation, dashboard, item views).
 Round 2 fixes the bot pages — 18 files with ~495 instances. These pages are where
-the AI power of LegacyLoop is showcased. They must look stunning in both modes.
+the AI power of Legacy-Loop is showcased. They must look stunning in both modes.
 
 THE REPLACEMENT RULES (same as Round 1):
 
@@ -392,6 +392,6 @@ REVERT IMMEDIATELY.
 Report exactly what broke and what was touched.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v8 | LegacyLoop | Light Mode Fix Round 2 — Bot Pages
+Command Template v8 | Legacy-Loop | Light Mode Fix Round 2 — Bot Pages
 Approved: March 18, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

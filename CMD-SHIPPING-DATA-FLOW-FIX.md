@@ -335,6 +335,6 @@ SECTION 13 — REQUIRED REPORT FORMAT
   IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Shipping Data Flow Fix
+Command Template v9 | Legacy-Loop | Shipping Data Flow Fix
 Updated March 19, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

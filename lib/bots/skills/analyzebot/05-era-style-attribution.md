@@ -9,7 +9,7 @@ version: 1.0.0
 
 ## The Purpose of Era Attribution
 
-Era attribution establishes the manufacturing period and thereby determines whether an item qualifies as antique (age 100 years or more by traditional auction house standard, or 50 years for LegacyLoop's antique flagging threshold), a vintage item (20-100 years), or a contemporary piece. It also anchors market comparables to the correct collector category and informs pricing expectations.
+Era attribution establishes the manufacturing period and thereby determines whether an item qualifies as antique (age 100 years or more by traditional auction house standard, or 50 years for Legacy-Loop's antique flagging threshold), a vintage item (20-100 years), or a contemporary piece. It also anchors market comparables to the correct collector category and informs pricing expectations.
 
 Era attribution combines style movement identification with construction technique dating and hardware analysis. All three must be assessed. When they agree, confidence is high. When they conflict, a more complex story is indicated: a revival piece, a reproduction, a later restoration with period-inappropriate materials, or an outright fake.
 
@@ -61,7 +61,7 @@ Tapered, angled legs (a defining visual indicator). Teak, walnut, and rosewood a
 
 ### Post-Modern and Contemporary, 1975-present
 
-Items falling in this period are not antique by LegacyLoop's 50-year threshold. They may qualify for collectible status if by significant designers or manufacturers.
+Items falling in this period are not antique by Legacy-Loop's 50-year threshold. They may qualify for collectible status if by significant designers or manufacturers.
 
 ## Construction Technique Dating
 

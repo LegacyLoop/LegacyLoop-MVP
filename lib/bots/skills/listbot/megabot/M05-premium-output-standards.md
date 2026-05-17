@@ -173,7 +173,7 @@ a common object for size), or original packaging if present.
 
 MegaBot delivers the recommended photo sequence as a numbered list with a
 brief note on what each photo should capture. For items with existing photos
-already uploaded to the LegacyLoop system, MegaBot maps existing photos to
+already uploaded to the Legacy-Loop system, MegaBot maps existing photos to
 sequence positions and identifies gaps.
 
 ---

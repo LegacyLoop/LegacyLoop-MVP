@@ -59,7 +59,7 @@ Response format: `JSON.parse` + shape validation. Reject (return null) on:
 
 - **Cost:** ~$0.003–0.005 per MI fire (Sonnet input ~5k tokens cache-hit-eligible, output ~200 tokens).
 - **Latency:** ~1.5–3s on the MI call. Runs serially after the merge but before MI / pricing parallel block — so it extends total AnalyzeBot latency on MI items only.
-- **Volume:** Musical Instruments is a low-frequency category in LegacyLoop inventory. Expect < 10% of analyses fire this pass. Blended cost impact: < $0.0005 per average analysis.
+- **Volume:** Musical Instruments is a low-frequency category in Legacy-Loop inventory. Expect < 10% of analyses fire this pass. Blended cost impact: < $0.0005 per average analysis.
 
 If latency exceeds 5s p95 on MI items, shorten the prompt. If cost exceeds $0.01 per fire, reduce max_tokens. STOP rules per the command spec.
 

@@ -1,6 +1,6 @@
 # Cyl 7 Epic Close-Out · Data Flywheel Foundation
 
-**LegacyLoop MVP · Sat 2026-05-02 · Production GREEN · 19 BINDING doctrines**
+**Legacy-Loop MVP · Sat 2026-05-02 · Production GREEN · 19 BINDING doctrines**
 
 ---
 
@@ -121,4 +121,4 @@ Path forward:
 
 ---
 
-*End of Cyl 7 Epic Close-Out · Sat 2026-05-02 · LegacyLoop Tech LLC · Confidential — Engineering Audit Artifact*
+*End of Cyl 7 Epic Close-Out · Sat 2026-05-02 · Legacy-Loop Tech LLC · Confidential — Engineering Audit Artifact*

@@ -149,7 +149,7 @@ PASS 4 LOCKED (March 18, 2026):
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 Every feature must answer:
   - Does this collect signal we learn from?
@@ -182,7 +182,7 @@ SECTION 7 — PLATFORM CONTEXT
 
 PHASE 1 (NOW): Demo-ready. PHASE 2: Direct publish per platform.
 
-LegacyLoop serves two audiences through one ecosystem:
+Legacy-Loop serves two audiences through one ecosystem:
   1. ESTATE SIDE — seniors, families, estate transitions, inherited belongings
   2. GARAGE/YARD SALE SIDE — families, movers, declutterers, casual sellers
 
@@ -334,7 +334,7 @@ B) WARMER TONE (quiz/page.tsx):
   The quiz currently asks clinical questions. Make them warmer:
 
   Q1 (situation):
-    Old: "What brings you to LegacyLoop?"
+    Old: "What brings you to Legacy-Loop?"
     New: "What's happening in your life right now?"
     Subtitle: "We're here to help — no matter the situation."
 
@@ -755,6 +755,6 @@ CHECKPOINT after: [pass / issue]
 IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Onboarding Quiz Upgrade
+Command Template v9 | Legacy-Loop | Onboarding Quiz Upgrade
 Approved: March 19, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

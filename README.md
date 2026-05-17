@@ -1,4 +1,4 @@
-# LegacyLoop — AI-Powered Estate & Garage Sale Platform
+# Legacy-Loop — AI-Powered Estate & Garage Sale Platform
 
 Snap a photo, get an instant AI price, and sell to real buyers. Built for estate cleanouts, garage sales, and everyday resellers.
 
@@ -9,7 +9,7 @@ Snap a photo, get an instant AI price, and sell to real buyers. Built for estate
 - **Framework:** Next.js 16.1.6 (App Router), React 19, TypeScript 5
 - **Styling:** Inline `style={{}}` discipline + CSS custom properties for theme tokens (light/dark) in `app/globals.css`. Tailwind CSS 4 is a dev-dependency for build infrastructure only — not the app styling system.
 - **Database:** Prisma 6 with SQLite (`file:./dev.db`) for dev / Turso (LibSQL edge) for production via `@prisma/adapter-libsql`. `lib/db.ts` enforces a 3-rail DEV/PROD isolation guard (post-R2 doctrine).
-- **Payments:** Stripe (sandbox + production). LegacyLoop Tech LLC formed April 10 2026.
+- **Payments:** Stripe (sandbox + production). Legacy-Loop Tech LLC formed April 10 2026.
 - **AI (MegaBot 4-AI consensus):** OpenAI · Anthropic Claude · Google Gemini · xAI Grok — all routed via LiteLLM Gateway (`localhost:8000` in DEV) for telemetry lock. 3 Ollama local aliases (`llama-3.2-local` · `qwen-coder-2.5-local` · `deepseek-r1-local`) + 4 Sonar aliases via the same Gateway. ~198 skill packs across 13 specialist bots.
 - **Shipping:** Multi-carrier — Shippo + ShipEngine + EasyPost + FedEx + ARTA (white-glove fine art / freight).
 - **Comps:** eBay API + Rainforest API.

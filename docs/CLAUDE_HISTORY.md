@@ -1,4 +1,4 @@
-# LegacyLoop · CLAUDE.md History — Banked Reference
+# Legacy-Loop · CLAUDE.md History — Banked Reference
 
 This file holds the verbose reference content that used to live in `CLAUDE.md`. Banked here on 2026-05-08 as part of the CLAUDE.md trim cylinder (1025 lines → ~150 lines · saves ~46K tokens per API call · CodeBurn-validated).
 
@@ -120,7 +120,7 @@ logout()                        — delete auth-token cookie
 
 Architecture: JWT HS256 via jose · HttpOnly cookie `auth-token` · 7-day default · 30-day with remember · bcryptjs · NO `middleware.ts` · per-route check via `getSession()` · magic link + OTP + Google OAuth flows configured.
 
-Test accounts: `annalyse07@gmail.com / LegacyLoop123!` (Tier 4 Estate Manager). `ryanroger11@gmail.com` may not be seeded in dev DB.
+Test accounts: `annalyse07@gmail.com / Legacy-Loop123!` (Tier 4 Estate Manager). `ryanroger11@gmail.com` may not be seeded in dev DB.
 
 ---
 
@@ -266,7 +266,7 @@ DATABASE_URL                        — SQLite (dev) or PostgreSQL (prod)
 TURSO_CONNECTION_URL                — Turso (canonical · matches lib/db.ts L28+L38+L49)
 TURSO_AUTH_TOKEN                    — Turso auth
 
-# AI Providers (LegacyLoop)
+# AI Providers (Legacy-Loop)
 OPENAI_API_KEY                      — GPT-4o-mini
 ANTHROPIC_API_KEY                   — Claude
 GEMINI_API_KEY                      — Gemini 1.5 Flash
@@ -361,7 +361,7 @@ CRON_SECRET                          — cron auth · constant-time compare via 
 - Vehicle intelligence: VIN decode · market value · condition grading
 - PWA-installable
 
-> "LegacyLoop is not just a resale site. It is a full resale automation engine that connects generations."
+> "Legacy-Loop is not just a resale site. It is a full resale automation engine that connects generations."
 
 ---
 
@@ -371,7 +371,7 @@ CRON_SECRET                          — cron auth · constant-time compare via 
 
 ```
 CMD-[NAME]
-LegacyLoop | [Date] | V19
+Legacy-Loop | [Date] | V19
 
 OBJECTIVE:
 [1-3 sentences. What problem is solved. Why now.]

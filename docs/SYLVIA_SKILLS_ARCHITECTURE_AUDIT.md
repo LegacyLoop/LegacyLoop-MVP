@@ -97,7 +97,7 @@ Sylvia surface inventory at HEAD (4 files · 793 LOC total):
 
 ## §4 · Anthropic Agent Skills (SSA) Pattern Fit Assessment
 
-LegacyLoop's `skill-loader.ts:3-8` self-describes the lineage: *"First-party 'Skills' tech inspired by Anthropic SDK Skills but provider-agnostic. Loads markdown playbooks from `lib/bots/skills/_shared/` + `lib/bots/skills/{botType}/` at runtime and concatenates them into a single systemPromptBlock."*
+Legacy-Loop's `skill-loader.ts:3-8` self-describes the lineage: *"First-party 'Skills' tech inspired by Anthropic SDK Skills but provider-agnostic. Loads markdown playbooks from `lib/bots/skills/_shared/` + `lib/bots/skills/{botType}/` at runtime and concatenates them into a single systemPromptBlock."*
 
 **SSA structure per skill folder (per Anthropic public docs · Agent Skills · 2025-2026 era):**
 ```
@@ -107,7 +107,7 @@ data/             (optional · reference data · CSV/JSON/etc)
 examples/         (optional · few-shot demonstrations)
 ```
 
-**LegacyLoop current structure per bot folder:**
+**Legacy-Loop current structure per bot folder:**
 ```
 lib/bots/skills/<bot>/
   ├── 01-<topic>.md
@@ -118,7 +118,7 @@ lib/bots/skills/<bot>/
 
 **Fit assessment:**
 - ✅ `.md` per skill matches SSA's `SKILL.md` (with optional frontmatter via `stripFrontmatter()` defense)
-- ⚠️ Multiple skills per bot folder (LegacyLoop) vs one skill = one folder (SSA) · LegacyLoop pattern is "skill PACK" (multiple .md aggregated into one `systemPromptBlock`)
+- ⚠️ Multiple skills per bot folder (Legacy-Loop) vs one skill = one folder (SSA) · Legacy-Loop pattern is "skill PACK" (multiple .md aggregated into one `systemPromptBlock`)
 - ⚠️ No `script.py` equivalent · no `data/` · no `examples/` · pure prompt fragments
 - ✅ `loadSkillPack` parallels SSA auto-loading via name-match (`_shared` is always-load · per-bot is intent-bound by route call)
 - ✅ Frontmatter parsing defense already exists (`skill-loader.ts:43`) · gives partial SSA `SKILL.md` compat
@@ -213,7 +213,7 @@ Total: **14 cylinders** · ~13-15 hours wall-clock if sequential · ~6-8 hours i
 
 **Draft (Pam refines for investor docs · Round 14+ exec summary update):**
 
-> "LegacyLoop's bot architecture mirrors the canonical pattern Anthropic uses internally for agent skills (SSA). Each bot is a structured skill set with a self-describing `SKILL.md` contract — enabling auto-discovery, few-shot examples, and structured data injection. Zero new infrastructure (pure file-system structure), zero vendor lock-in (provider-agnostic loader), zero direct AI provider SDK dependency (LiteLLM Gateway egress per BINDING #10 DOC-TELEMETRY-LOCK). The same discipline that powers Anthropic's own agent ecosystem now powers LegacyLoop's resale automation — 14 bots, 239 skill files, 2.5MB of curated domain expertise, all routed through a single Brain Stem (Sylvia · 4 files · 793 LOC) that delegates to canonical helpers (BINDING #16). This is not a wrapper around someone else's framework. This is the same pattern, built first-party, owned end-to-end."
+> "Legacy-Loop's bot architecture mirrors the canonical pattern Anthropic uses internally for agent skills (SSA). Each bot is a structured skill set with a self-describing `SKILL.md` contract — enabling auto-discovery, few-shot examples, and structured data injection. Zero new infrastructure (pure file-system structure), zero vendor lock-in (provider-agnostic loader), zero direct AI provider SDK dependency (LiteLLM Gateway egress per BINDING #10 DOC-TELEMETRY-LOCK). The same discipline that powers Anthropic's own agent ecosystem now powers Legacy-Loop's resale automation — 14 bots, 239 skill files, 2.5MB of curated domain expertise, all routed through a single Brain Stem (Sylvia · 4 files · 793 LOC) that delegates to canonical helpers (BINDING #16). This is not a wrapper around someone else's framework. This is the same pattern, built first-party, owned end-to-end."
 
 **Compounding angle:** every new skill .md added to a bot folder is a permanent capability upgrade — additive per CLAUDE.md §7 · no rewrites · no provider migrations · no vendor risk. Investor-facing: "the moat compounds physically with every skill file authored."
 
@@ -294,18 +294,18 @@ Largest packs by on-disk size · informs Phase 3 cylinder ordering (largest = hi
 
 ## Appendix B · SSA spec comparison table
 
-Side-by-side LegacyLoop ↔ Anthropic SSA pattern comparison.
+Side-by-side Legacy-Loop ↔ Anthropic SSA pattern comparison.
 
-| Feature | LegacyLoop today | Anthropic SSA | Migration delta |
+| Feature | Legacy-Loop today | Anthropic SSA | Migration delta |
 |---|---|---|---|
-| Skill file format | `*.md` (numbered prefix `01-` `02-`) | `SKILL.md` (single per folder) | LegacyLoop is "skill PACK" (multi-file aggregate) — additive divergence preserved |
+| Skill file format | `*.md` (numbered prefix `01-` `02-`) | `SKILL.md` (single per folder) | Legacy-Loop is "skill PACK" (multi-file aggregate) — additive divergence preserved |
 | Frontmatter | optional · stripped via `stripFrontmatter()` (skill-loader.ts:43) | required · structured schema | Phase 3.1 formalizes schema |
 | Auto-discovery | name-match (`loadSkillPack(botType)`) | intent-match (model decides) | Phase 3 retains name-match, banks intent-match for V2 |
 | Reference data | none | `data/` folder (CSV/JSON) | additive in Phase 3.8 (CarBot VIN data) + 3.6 (AntiqueBot eras) |
 | Few-shot examples | none | `examples/` folder | additive · banked per-bot in Phase 3.x |
 | Helper code | none | `script.py` (Python) | proposed `helper.ts` for TypeScript parity (Phase 3.10 AnalyzeBot dimensions) |
 | Versioning | `SKILLS_VERSION` constant + `lastUpdated` ISO timestamp | per-skill semver in frontmatter | Phase 3.1 adds frontmatter `version` field |
-| Caching | process-level Map (skill-loader.ts cache) | runtime-managed | LegacyLoop cache strategy preserved (serverless-warm-friendly) |
+| Caching | process-level Map (skill-loader.ts cache) | runtime-managed | Legacy-Loop cache strategy preserved (serverless-warm-friendly) |
 | Loader location | `lib/bots/skill-loader.ts` (215 lines) | Anthropic SDK internal | Phase 3.1 adds `lib/sylvia/skill-loader.ts` wrapper · BINDING #16 |
 
 ## Appendix C · Phase 3 prereq checklist (for Cyl 3.1 fire authorization)

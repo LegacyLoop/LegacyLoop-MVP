@@ -7,7 +7,7 @@
 ## What it does
 
 The Apify scraper killswitch is a two-layer money safety net for
-LegacyLoop's market intelligence layer. It prevents accidental
+Legacy-Loop's market intelligence layer. It prevents accidental
 spend on dangerous Apify actors that cost $500-$3,500 per 1,000
 results or require monthly subscriptions ($15-$47/month).
 
@@ -21,7 +21,7 @@ level. Defined in `lib/market-intelligence/blocked-actors.ts`.
 - 5 dangerous high-cost actors (Sotheby's, AI Video Ads,
   AI Voiceover, Social Trends 6-in-1, AI Ad Music Factory)
 
-These cannot fire from any LegacyLoop code path. Period.
+These cannot fire from any Legacy-Loop code path. Period.
 
 ### Layer 2 — Global kill switch (operator-flippable)
 
@@ -43,7 +43,7 @@ Flip `APIFY_KILL_SWITCH=true` immediately if you observe ANY of:
 
 ## How to flip it (Vercel)
 
-1. Vercel Dashboard → LegacyLoop project → Settings → Environment
+1. Vercel Dashboard → Legacy-Loop project → Settings → Environment
    Variables
 2. Find `APIFY_KILL_SWITCH` (or add it if missing)
 3. Set value to `true`

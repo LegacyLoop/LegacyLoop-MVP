@@ -112,7 +112,7 @@ If a buyer offers $1,800 directly, you can accept knowing you hit your floor. If
 | Standard negotiation | Floor × 1.20 | 10-15% below |
 | Aggressive negotiation | Floor × 1.30 | 15-25% below |
 
-Most LegacyLoop sellers should use **standard negotiation (Floor × 1.20)** for most items. Firm pricing only works for rare items with proven demand.
+Most Legacy-Loop sellers should use **standard negotiation (Floor × 1.20)** for most items. Firm pricing only works for rare items with proven demand.
 
 ## The "Priced to Sell" Trap
 

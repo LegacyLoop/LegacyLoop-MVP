@@ -73,7 +73,7 @@ Profile with 5+ category posts in 6 months = much stronger lead.
 Facebook Marketplace = passive browsing bargain hunters.
 Facebook Groups = active hobby buyers at fair prices.
 
-For LegacyLoop sellers, GROUPS usually fit better unless item is common (Marketplace scale) or bulky/cheap (Marketplace reach).
+For Legacy-Loop sellers, GROUPS usually fit better unless item is common (Marketplace scale) or bulky/cheap (Marketplace reach).
 
 ## Output
 

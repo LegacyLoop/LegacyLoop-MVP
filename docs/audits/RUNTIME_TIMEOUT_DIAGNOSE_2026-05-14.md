@@ -100,7 +100,7 @@ ZERO `functions` block · ZERO `maxDuration` · ZERO memory tune.
 - Default function execution timeout: **300s on all plans** (per Vercel knowledge update note).
 - BUT proxy-layer / HTTPS-layer timeout differs · 504 Gateway Timeout returns to client at edge-layer well before function 300s exec timeout.
 - Hobby plan edge timeout: ~10s. Pro plan: ~30s. Enterprise: configurable.
-- LegacyLoop is on Pro per BINDING #24 saga.
+- Legacy-Loop is on Pro per BINDING #24 saga.
 
 **Observed:** 504 patterns hit at ~15s mark consistently. Pro plan edge default should be ~30s · so OBSERVED 15s is anomalously short. Possible:
 - Vercel project has implicit lower timeout configured

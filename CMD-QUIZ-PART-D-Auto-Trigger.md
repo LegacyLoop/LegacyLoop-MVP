@@ -219,7 +219,7 @@ Pass 5 Locked (March 19, 2026 — Parts A+B+C):
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 Every feature must answer:
   — Does this collect signal we learn from?
@@ -297,7 +297,7 @@ SECTION 9 — DEMO MODE + ADMIN BYPASS
   Admin: never locked out. No credits deducted. Full platform access.
 
   TEST ACCOUNTS:
-  annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+  annalyse07@gmail.com / Legacy-Loop123! — Tier 4 Estate Manager
   ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
   SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
 
@@ -402,13 +402,13 @@ PART B — SIGNUP PAGE: ROUTE NEW USERS TO QUIZ
 File: app/auth/signup/page.tsx
 
 Find the success screen (lines 84-147). Currently after signup it shows:
-  "Welcome to LegacyLoop!"
+  "Welcome to Legacy-Loop!"
   "Your account is ready. Let's start selling."
   Button: "Go to Dashboard" → router.push("/dashboard")
 
 CHANGE TO:
 
-  Keep the checkmark icon and "Welcome to LegacyLoop!" heading.
+  Keep the checkmark icon and "Welcome to Legacy-Loop!" heading.
 
   Update the subtitle to:
     "Your account is ready. Let's find the perfect plan for you."
@@ -735,6 +735,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   inbox-filter-reset            Messages → InboxCmd        Tab bar clicked — reset sidebar
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Part D | Command Template v9 | LegacyLoop | Quiz Auto-Trigger + Persistence
+Part D | Command Template v9 | Legacy-Loop | Quiz Auto-Trigger + Persistence
 Updated March 19, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

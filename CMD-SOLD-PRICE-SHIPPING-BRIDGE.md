@@ -279,6 +279,6 @@ SECTION 13 — REQUIRED REPORT FORMAT
   IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Sold Price Fix + Shipping Bridge (Command 1 of 2)
+Command Template v9 | Legacy-Loop | Sold Price Fix + Shipping Bridge (Command 1 of 2)
 Updated March 19, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

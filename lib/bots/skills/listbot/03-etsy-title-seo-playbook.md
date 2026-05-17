@@ -76,7 +76,7 @@ Title Case signals professionalism.
 
 ## The Seller Tier Impact on Search
 
-Etsy's search algorithm also considers seller history — newer sellers need BETTER SEO to compete with established shops. For LegacyLoop sellers (typically new to Etsy), the title alone has to carry the weight.
+Etsy's search algorithm also considers seller history — newer sellers need BETTER SEO to compete with established shops. For Legacy-Loop sellers (typically new to Etsy), the title alone has to carry the weight.
 
 ## Output Format
 

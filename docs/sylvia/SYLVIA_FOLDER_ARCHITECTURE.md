@@ -73,7 +73,7 @@ docs/sylvia/                   (this directory · architecture canon)
 
 Three phases · one migration-safe seam:
 
-| Phase | Sylvia runs as | LegacyLoop calls via | Status |
+| Phase | Sylvia runs as | Legacy-Loop calls via | Status |
 |---|---|---|---|
 | 1 (today) | In-process import from `lib/sylvia/*` | `import { triageAndRoute } from "@/lib/sylvia"` | LIVE at HEAD 2d9ff63 |
 | 2 (R24) | localhost HTTP via `app/api/sylvia/*` | `fetch("http://localhost:3000/api/sylvia/...")` | GATED on R24 brain wire |
@@ -89,16 +89,16 @@ Three phases · one migration-safe seam:
 - Author `app/api/sylvia/{ask,consensus,corpus,health}/route.ts`
 - Each route imports from `lib/sylvia/*` (zero rewrite of substrate)
 - Auth gate: `X-Sylvia-Internal-Secret` header per `feedback_pushback_means_replace.md` (reuse pattern from R22 P0 `app/api/internal/scraper-comp-count/route.ts` · constant-time compare cloned from R16 P0)
-- LegacyLoop callsites swap from in-process import → `fetch("/api/sylvia/...")`
+- Legacy-Loop callsites swap from in-process import → `fetch("/api/sylvia/...")`
 
 **Phase 2 → Phase 3 transition (post-seed migration):**
 - Provision dedicated machine (Mac Studio · Threadripper · etc.)
-- `git clone` LegacyLoop repo (read-only consumer of `lib/sylvia/*`)
+- `git clone` Legacy-Loop repo (read-only consumer of `lib/sylvia/*`)
 - Stand up `app/api/sylvia/*` server on dedicated box port 3001
 - DNS: `sylvia.legacy-loop.com` A-record to dedicated box
 - TLS: Let's Encrypt or Tailscale MagicDNS
-- LegacyLoop Vercel: set `SYLVIA_BASE_URL=https://sylvia.legacy-loop.com`
-- Zero LegacyLoop source code changes (only env var)
+- Legacy-Loop Vercel: set `SYLVIA_BASE_URL=https://sylvia.legacy-loop.com`
+- Zero Legacy-Loop source code changes (only env var)
 
 ---
 

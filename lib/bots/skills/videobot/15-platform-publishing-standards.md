@@ -67,7 +67,7 @@ The video itself does not change. The thumbnail may need adjustment for YouTube 
 
 ## Future Social Publishing API Integration
 
-When the following APIs are wired into LegacyLoop's backend, VideoBot will auto-publish from the seller's account on their behalf:
+When the following APIs are wired into Legacy-Loop's backend, VideoBot will auto-publish from the seller's account on their behalf:
 
 TikTok for Developers (TikTok Content Posting API): Supports direct video upload and post creation. Requires user OAuth authentication. Rate limits apply. Supports caption, hashtags, and privacy setting.
 

@@ -4,7 +4,7 @@
 > **Track:** A · A3 Tooling+Backfill (Claude completion measure correction)
 > **Status:** AUDIT-DOC · doc-only · zero-commit · read-only · zero production touch
 > **Authored:** 2026-05-15 PM · main worktree · IT-autonomous · Devin L2 spec · IT execute
-> **Source:** `~/Downloads/skills/Ideas/LegacyLoop_Master_Ideas_v1_2026-05-15.md` (734 LOC · SHA `33389b1f7e0cb49508c0a41b21f8be8b67afc3731b0999d759432dd7c6ce28fd` · verified match)
+> **Source:** `~/Downloads/skills/Ideas/Legacy-Loop_Master_Ideas_v1_2026-05-15.md` (734 LOC · SHA `33389b1f7e0cb49508c0a41b21f8be8b67afc3731b0999d759432dd7c6ce28fd` · verified match)
 > **Cross-source:** `~/Downloads/Claude Code & Sylvia AI Ideas (2).txt` (965 LOC · raw CEO)
 > **Substrate anchors:** `docs/audits/SYLVIA_SUBSTRATE_DEEP_DIVE_2026-05-15.md` · `docs/audits/ELEVENLABS_PRODUCT_AUDIT_2026-05-15.md`
 > **Production state at fire:** main HEAD `bc41ac6` (P57 · NOTE: spec cited 5ec136e P63 · my main worktree NOT yet FF-pulled · informational drift cited §B reconcile)
@@ -356,7 +356,7 @@ POST-Sylvia-hands B2-W5+ Sylvia capability cyls MAY carry Track A riders IF surf
 
 ## §J · Cross-references
 
-- **Master ideas file:** `~/Downloads/skills/Ideas/LegacyLoop_Master_Ideas_v1_2026-05-15.md` (734 LOC · SHA `33389b1f7e0cb49508c0a41b21f8be8b67afc3731b0999d759432dd7c6ce28fd`)
+- **Master ideas file:** `~/Downloads/skills/Ideas/Legacy-Loop_Master_Ideas_v1_2026-05-15.md` (734 LOC · SHA `33389b1f7e0cb49508c0a41b21f8be8b67afc3731b0999d759432dd7c6ce28fd`)
 - **Raw CEO source:** `~/Downloads/Claude Code & Sylvia AI Ideas (2).txt` (965 LOC)
 - **Master Flag Backlog:** `~/Downloads/skills/Flags/MASTER_FLAG_BACKLOG_2026-05-14.md` (48 KB)
 - **Sylvia Substrate Deep-Dive:** `docs/audits/SYLVIA_SUBSTRATE_DEEP_DIVE_2026-05-15.md`

@@ -144,7 +144,7 @@ Last locked: Credit & Subscription Final Polish — March 16, 2026
 SECTION 5 — DATA COLLECTION STANDARD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 Every feature must answer:
 * Does this collect signal we learn from?
@@ -187,7 +187,7 @@ Email system context:
 - n8n handles drip sequences externally via webhook triggers
 - n8n has 13 days left on cloud trial — will self-host after
 
-LegacyLoop email addresses (all on Google Workspace):
+Legacy-Loop email addresses (all on Google Workspace):
 - hello@legacy-loop.com — primary platform emails
 - support@legacy-loop.com — customer support
 - shipping@legacy-loop.com — shipping notifications
@@ -403,16 +403,16 @@ SHARED wrapper(content):
 - DOCTYPE html, meta charset, meta viewport
 - Body: BG_DARK background, system font stack
 - Table: 600px max-width, BG_CARD background, 12px radius, BORDER border
-- Header row: 36px teal square with "LL" + "LegacyLoop" text, centered
+- Header row: 36px teal square with "LL" + "Legacy-Loop" text, centered
 - Content row: 32px padding, receives content parameter
-- Footer row: Privacy Policy link | Terms of Service link, "LegacyLoop · support@legacy-loop.com", Manage Preferences link
+- Footer row: Privacy Policy link | Terms of Service link, "Legacy-Loop · support@legacy-loop.com", Manage Preferences link
 - All links use APP_URL, all text uses correct legacy-loop.com domain
 - NO old gmail address, NO old phone numbers, NO legacyloop.com (no hyphen)
 
 EXISTING FUNCTIONS (keep exact same signatures — no breaking changes):
 
 1. welcomeEmail(name: string): { subject: string; html: string }
-   Subject: "Welcome to LegacyLoop! Let's get started"
+   Subject: "Welcome to Legacy-Loop! Let's get started"
    Content: Welcome greeting, 3-step guide (upload → AI prices → sell), "Upload Your First Item" CTA button to APP_URL/items/new, "Questions? Email support@legacy-loop.com"
 
 2. itemSoldEmail(sellerName, itemTitle, saleAmount, commission, netEarnings, itemId): { subject; html }
@@ -459,7 +459,7 @@ Interface EmailMessage:
 
 Constants:
 - DEFAULT_FROM_EMAIL from process.env.SENDGRID_FROM_EMAIL with fallback "hello@legacy-loop.com"
-- DEFAULT_FROM_NAME from process.env.SENDGRID_FROM_NAME with fallback "LegacyLoop"
+- DEFAULT_FROM_NAME from process.env.SENDGRID_FROM_NAME with fallback "Legacy-Loop"
 
 Function sendEmail(msg: EmailMessage): Promise<boolean>:
 - Uses msg.from || DEFAULT_FROM_EMAIL as fromEmail
@@ -510,7 +510,7 @@ Do NOT touch: bcrypt, prisma update, session handling, changedAt formatting
 F3. File: app/api/auth/magic-link/send/route.ts
 Add import: { emailWrapper, ctaButton, ACCENT, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED } from "@/lib/email/templates"
 Replace: the entire inline HTML (lines 59-125) with emailWrapper() call ending with .trim()
-Content: "Sign in to LegacyLoop" heading, ctaButton("Sign In to LegacyLoop", verifyUrl), copy-paste link, 1-hour expiry note
+Content: "Sign in to Legacy-Loop" heading, ctaButton("Sign In to Legacy-Loop", verifyUrl), copy-paste link, 1-hour expiry note
 Do NOT touch: rate limiting, token generation, prisma magicLink create, verifyUrl construction
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -589,7 +589,7 @@ Replace the TODO comment on lines 103-104 with:
     sendEmail({
       to: "shipping@legacy-loop.com",
       from: "shipping@legacy-loop.com",
-      fromName: "LegacyLoop Shipping",
+      fromName: "Legacy-Loop Shipping",
       ...quoteEmail,
     }).catch(() => {});
 
@@ -636,7 +636,7 @@ TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
 TWILIO_MESSAGING_SERVICE_SID=your_messaging_service_sid_here
 SENDGRID_API_KEY=your_sendgrid_api_key_here
 SENDGRID_FROM_EMAIL=hello@legacy-loop.com
-SENDGRID_FROM_NAME=LegacyLoop
+SENDGRID_FROM_NAME=Legacy-Loop
 GOOGLE_CLIENT_ID=your_google_client_id_here
 GOOGLE_CLIENT_SECRET=your_google_client_secret_here
 NEXTAUTH_SECRET=generate_with_openssl_rand_base64_32
@@ -758,6 +758,6 @@ Dev server: [localhost:3000]
 IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY. Report exactly what broke and what was touched.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v8 | LegacyLoop | Email System Update + Upgrade + Code Fix
+Command Template v8 | Legacy-Loop | Email System Update + Upgrade + Code Fix
 Approved: March 17, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

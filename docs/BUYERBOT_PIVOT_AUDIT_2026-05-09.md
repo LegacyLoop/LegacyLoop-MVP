@@ -236,7 +236,7 @@ CLAUDE.md current claim *"Proprietary buyer-lead dataset (ACTIVATED May 6 via Cy
 
 Investor narrative reinforcement:
 - *"Every live-mode BuyerBot scan compounds the BuyerLead table with real-person leads cited via platform + buyer_identifier + intent_signal + recency + path_to_contact"* (Cyl 2E commit body verbatim)
-- Cyl 2F added *"competitors cannot replicate this dataset by running the same LLM · LegacyLoop captures + dedupes + persists every real-person buyer signal across the user base · moat compounds physically with every scan"*
+- Cyl 2F added *"competitors cannot replicate this dataset by running the same LLM · Legacy-Loop captures + dedupes + persists every real-person buyer signal across the user base · moat compounds physically with every scan"*
 - UI surface live: scan-summary card shows `📥 N new buyer(s) persisted · M skipped (already in dataset) · X total compounding` (BuyerBotClient L734)
 - Header on `app/items/[id]/MegaBuyingBotPanel.tsx` L384: `Qualified Buyers (N · compounding)` with title attribute *"Cumulative buyer-lead dataset · compounds with every BuyerBot scan · Moat #1 evidence"*
 

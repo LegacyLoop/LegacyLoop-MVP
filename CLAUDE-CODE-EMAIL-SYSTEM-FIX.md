@@ -132,7 +132,7 @@ Last locked: Credit & Subscription Final Polish — March 16, 2026
 SECTION 5 — DATA COLLECTION STANDARD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 Every feature must answer:
 * Does this collect signal we learn from?
@@ -331,7 +331,7 @@ interface EmailMessage {
 }
 
 const DEFAULT_FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "hello@legacy-loop.com";
-const DEFAULT_FROM_NAME = process.env.SENDGRID_FROM_NAME || "LegacyLoop";
+const DEFAULT_FROM_NAME = process.env.SENDGRID_FROM_NAME || "Legacy-Loop";
 
 /**
  * Send an email via SendGrid API.
@@ -414,7 +414,7 @@ Shared wrapper() structure:
 - Max width: 600px
 - Border radius: 12px
 - Border: 1px solid BORDER
-- Header: LL logo box (teal square) + "LegacyLoop" text
+- Header: LL logo box (teal square) + "Legacy-Loop" text
 - Footer: Privacy | Terms links, support@legacy-loop.com, Manage Preferences
 
 Shared ctaButton() structure:
@@ -482,7 +482,7 @@ Replace the sendResetEmail() function's inline HTML template (the entire value s
 emailWrapper(`
   <h1 style="font-size:22px;font-weight:700;color:${TEXT_PRIMARY};margin:0 0 16px;text-align:center">Reset your password</h1>
   <p style="font-size:15px;color:${TEXT_SECONDARY};line-height:1.7;margin:0 0 24px">
-    We received a request to reset the password for your LegacyLoop account. Click the button below to choose a new password.
+    We received a request to reset the password for your Legacy-Loop account. Click the button below to choose a new password.
   </p>
   <div style="text-align:center;margin:28px 0">
     ${ctaButton("Reset My Password", resetUrl)}
@@ -512,7 +512,7 @@ Replace the inline HTML template (lines 52-84) with:
 const html = emailWrapper(`
   <h1 style="font-size:22px;font-weight:700;color:${TEXT_PRIMARY};margin:0 0 16px;text-align:center">Your password was changed</h1>
   <p style="font-size:15px;color:${TEXT_SECONDARY};line-height:1.7;margin:0 0 8px">
-    Your LegacyLoop password was changed on <strong style="color:${TEXT_PRIMARY}">${changedAt}</strong>. If this was you, no action is needed.
+    Your Legacy-Loop password was changed on <strong style="color:${TEXT_PRIMARY}">${changedAt}</strong>. If this was you, no action is needed.
   </p>
   <p style="font-size:15px;color:${TEXT_SECONDARY};line-height:1.7;margin:0 0 28px">
     If you didn't make this change, contact us immediately.
@@ -534,12 +534,12 @@ import { emailWrapper, ctaButton, ACCENT, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUT
 Replace the inline HTML template (lines 59-125) with:
 
 const html = emailWrapper(`
-  <h1 style="font-size:22px;font-weight:700;color:${TEXT_PRIMARY};margin:0 0 12px">Sign in to LegacyLoop</h1>
+  <h1 style="font-size:22px;font-weight:700;color:${TEXT_PRIMARY};margin:0 0 12px">Sign in to Legacy-Loop</h1>
   <p style="font-size:15px;color:${TEXT_SECONDARY};line-height:1.6;margin:0 0 28px">
     Click the button below to sign in — no password needed.
   </p>
   <div style="text-align:center;margin:0 0 28px">
-    ${ctaButton("Sign In to LegacyLoop", verifyUrl)}
+    ${ctaButton("Sign In to Legacy-Loop", verifyUrl)}
   </div>
   <p style="font-size:13px;color:${TEXT_MUTED};margin:0 0 8px">Or copy this link:</p>
   <p style="font-size:13px;color:${ACCENT};word-break:break-all;margin:0 0 24px">${verifyUrl}</p>
@@ -654,7 +654,7 @@ Replace the TODO comment (lines 103-104) with:
     sendEmail({
       to: "shipping@legacy-loop.com",
       from: "shipping@legacy-loop.com",
-      fromName: "LegacyLoop Shipping",
+      fromName: "Legacy-Loop Shipping",
       ...quoteEmail,
     }).catch(() => {});
 
@@ -707,7 +707,7 @@ CRON_SECRET=your_cron_secret_here
 
 Add these NEW variables:
 SENDGRID_FROM_EMAIL=hello@legacy-loop.com
-SENDGRID_FROM_NAME=LegacyLoop
+SENDGRID_FROM_NAME=Legacy-Loop
 N8N_WEBHOOK_URL=https://your-n8n-instance.com
 N8N_WEBHOOK_SECRET=your_webhook_secret_here
 
@@ -801,6 +801,6 @@ Dev server: [localhost:3000]
 IF POST-CHECKPOINT FAILS: REVERT IMMEDIATELY. Report exactly what broke and what was touched.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v8 | LegacyLoop | Email System Complete Fix
+Command Template v8 | Legacy-Loop | Email System Complete Fix
 Approved: March 17, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

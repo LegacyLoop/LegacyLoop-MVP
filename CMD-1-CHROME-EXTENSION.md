@@ -6,7 +6,7 @@ March 17, 2026
 CONTEXT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Company: LegacyLoop
+Company: Legacy-Loop
 Founder: Ryan Hallee
 Domain: legacy-loop.com
 Email accounts: Google Workspace on legacy-loop.com
@@ -17,7 +17,7 @@ Ryan has Twilio console open now — fresh trial account with $15.50.
 Ryan has n8n open with 13 days left on trial — old SendGrid key needs replacing.
 
 The goal: Get all new credentials created and placed into:
-1. The LegacyLoop .env file
+1. The Legacy-Loop .env file
 2. Vercel environment variables
 3. n8n credential store
 
@@ -73,13 +73,13 @@ TASK 4 — TWILIO: CONFIGURE MESSAGING SERVICE
 
 Step 1: In left sidebar click "Messaging" → "Services"
 Step 2: Click "Create Messaging Service"
-Step 3: Service name: LegacyLoop
+Step 3: Service name: Legacy-Loop
 Step 4: Use case: "Notifications"
 Step 5: Click "Create"
 Step 6: Add your phone number from Task 2 as a sender
 Step 7: Complete the setup wizard
 
-This messaging service is what LegacyLoop uses for:
+This messaging service is what Legacy-Loop uses for:
 - OTP verification codes
 - SMS login
 - Shipping notifications
@@ -92,7 +92,7 @@ Step 1: Go to https://app.sendgrid.com
 Step 2: Login with ryan@legacy-loop.com
 Step 3: Navigate: Settings → API Keys
 Step 4: Click "Create API Key"
-Step 5: Name: LegacyLoop Production March 2026
+Step 5: Name: Legacy-Loop Production March 2026
 Step 6: Set permissions:
    Mail Send: Full Access
    Template Engine: Full Access
@@ -130,31 +130,31 @@ Settings → Sender Authentication → Verify Single Sender
 Create and verify EACH of these 5 senders:
 
 Sender 1:
-   From Name: LegacyLoop
+   From Name: Legacy-Loop
    From Email: hello@legacy-loop.com
    Reply To: support@legacy-loop.com
    → Create → Check hello@ inbox → Click verify link
 
 Sender 2:
-   From Name: LegacyLoop Support
+   From Name: Legacy-Loop Support
    From Email: support@legacy-loop.com
    Reply To: support@legacy-loop.com
    → Create → Check support@ inbox → Click verify link
 
 Sender 3:
-   From Name: LegacyLoop Shipping
+   From Name: Legacy-Loop Shipping
    From Email: shipping@legacy-loop.com
    Reply To: shipping@legacy-loop.com
    → Create → Check shipping@ inbox → Click verify link
 
 Sender 4:
-   From Name: LegacyLoop Estates
+   From Name: Legacy-Loop Estates
    From Email: estates@legacy-loop.com
    Reply To: estates@legacy-loop.com
    → Create → Check estates@ inbox → Click verify link
 
 Sender 5:
-   From Name: LegacyLoop
+   From Name: Legacy-Loop
    From Email: noreply@legacy-loop.com
    Reply To: support@legacy-loop.com
    → Create → Check support@ inbox → Click verify link
@@ -193,7 +193,7 @@ TASK 9 — VERCEL: UPDATE ENVIRONMENT VARIABLES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Step 1: Go to https://vercel.com
-Step 2: Login → Select LegacyLoop project
+Step 2: Login → Select Legacy-Loop project
 Step 3: Settings → Environment Variables
 
 REPLACE these (delete old, add new):
@@ -206,7 +206,7 @@ UPDATE this:
    SENDGRID_FROM_EMAIL = hello@legacy-loop.com
 
 ADD these new:
-   SENDGRID_FROM_NAME = LegacyLoop
+   SENDGRID_FROM_NAME = Legacy-Loop
    N8N_WEBHOOK_URL = [Ryan's n8n instance URL]
    N8N_WEBHOOK_SECRET = [generate: openssl rand -base64 32]
 
@@ -236,44 +236,44 @@ Go to n8n Settings → Credentials → Add Credential
 
 Credential 1 — Gmail (support@legacy-loop.com):
    Type: Gmail OAuth2
-   Name: LegacyLoop Support Gmail
+   Name: Legacy-Loop Support Gmail
    OAuth2 login with support@legacy-loop.com
    Permissions: Read, Send, Modify
 
 Credential 2 — Gmail (hello@legacy-loop.com):
    Type: Gmail OAuth2
-   Name: LegacyLoop Hello Gmail
+   Name: Legacy-Loop Hello Gmail
    OAuth2 login with hello@legacy-loop.com
 
 Credential 3 — Gmail (estates@legacy-loop.com):
    Type: Gmail OAuth2
-   Name: LegacyLoop Estates Gmail
+   Name: Legacy-Loop Estates Gmail
    OAuth2 login with estates@legacy-loop.com
 
 Credential 4 — Google Sheets:
    Type: Google Sheets OAuth2
-   Name: LegacyLoop Sheets
+   Name: Legacy-Loop Sheets
    OAuth2 login with ryan@legacy-loop.com
    Permissions: Read/Write
 
 Credential 5 — Google Drive:
    Type: Google Drive OAuth2
-   Name: LegacyLoop Drive
+   Name: Legacy-Loop Drive
    OAuth2 login with ryan@legacy-loop.com
 
 Credential 6 — Google Calendar:
    Type: Google Calendar OAuth2
-   Name: LegacyLoop Calendar
+   Name: Legacy-Loop Calendar
    OAuth2 login with ryan@legacy-loop.com
 
 Credential 7 — OpenAI:
    Type: OpenAI
-   Name: LegacyLoop OpenAI
+   Name: Legacy-Loop OpenAI
    API Key: [OpenAI key from .env]
 
-Credential 8 — HTTP Header Auth (for LegacyLoop API callbacks):
+Credential 8 — HTTP Header Auth (for Legacy-Loop API callbacks):
    Type: Header Auth
-   Name: LegacyLoop Webhook Auth
+   Name: Legacy-Loop Webhook Auth
    Header Name: x-webhook-secret
    Header Value: [same N8N_WEBHOOK_SECRET from Task 9]
 
@@ -315,6 +315,6 @@ the .env update (CMD-2).
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Chrome Extension Command v1
-LegacyLoop | March 17, 2026
+Legacy-Loop | March 17, 2026
 Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

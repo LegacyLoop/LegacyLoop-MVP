@@ -33,7 +33,7 @@ This audit maps every tier-namespace usage across `lib/`, `app/`, `prisma/` and 
 | 2 | `ESSENTIALS\|PROFESSIONAL\|LEGACY` | 48 | Mostly clean white-glove. Drift candidate at `lib/help-articles.ts:1107`. |
 | 3 | `DIY\|POWER\|ESTATE` | 41 | **No standalone DIY/POWER/ESTATE tier namespace in code.** All hits = subscription-tier display labels ("DIY Seller" / "Power Seller" / "Estate Manager") OR estate-service CMD prefixes OR collectibles category strings. |
 | 4 | `\btier\b` identifier | 665 | Domain saturation; verifies tier is a first-class concept across both `lib/` and `app/`. |
-| 5 | Stripe product-name patterns | 1 real | `lib/stripe-products.ts:52` `name: \`LegacyLoop ${tier.name}\`` derives Stripe product name from `PLANS.X.name` (lowercase-keyed via TIERS). |
+| 5 | Stripe product-name patterns | 1 real | `lib/stripe-products.ts:52` `name: \`Legacy-Loop ${tier.name}\`` derives Stripe product name from `PLANS.X.name` (lowercase-keyed via TIERS). |
 
 Verbatim wave outputs in **Appendix A**.
 
@@ -151,7 +151,7 @@ If demo materials phrase #3 as "DIY / POWER / ESTATE 3-tier garage-sale engine,"
 - 🟢 Schema clean: 3 tier columns map cleanly to 3 distinct namespaces (subscription Int + subscription String mirror + white-glove String × 2 models same value space). ScraperUsageLog.tier Int is internal-only.
 - 🟢 Cross-namespace runtime collisions: ZERO.
 - 🟡 SSOT carries two parallel shapes (PLANS display-keyed vs TIERS generic-keyed) for the same 4 subscription tiers. Documented backward-compat. Architecturally inconsistent but functionally correct.
-- 🟡 Stripe product naming derives from `PLANS.X.name` ("LegacyLoop DIY Seller" etc.) but Subscription.tier persists generic uppercase ("STARTER"). Bridge wired; no defect.
+- 🟡 Stripe product naming derives from `PLANS.X.name` ("Legacy-Loop DIY Seller" etc.) but Subscription.tier persists generic uppercase ("STARTER"). Bridge wired; no defect.
 - 🟠 `lib/help-articles.ts:1107` customer-facing white-glove paragraph misnames tiers as **Essentials/Complete/Premium** (canonical: Essentials/Professional/Legacy) and misstates item caps (50/150/unlimited vs canonical 100/300/unlimited).
 - 🟢 Investor-narrative DIY/POWER/ESTATE "garage-sale engine" is shorthand, not a missing namespace. Real engine = `lib/pricing/garage-sale.ts` returning 3 price points.
 
@@ -211,7 +211,7 @@ Pick SHAPE A (display-keyed) OR SHAPE B (generic-keyed) for subscription tier an
 
 ### Talking points if Dr. Clark asks "what tiers do you sell?"
 
-> *"LegacyLoop has two pricing dimensions:*
+> *"Legacy-Loop has two pricing dimensions:*
 >
 > *1. **Four subscription tiers** for individual sellers — Free, DIY Seller at $20/mo, Power Seller at $49/mo, and Estate Manager at $99/mo. Lower tiers carry higher commission rates that decline as you upgrade. Pre-launch beta pricing is roughly half.*
 >
@@ -394,7 +394,7 @@ Domain saturation. `tier` appears across 25+ files in `lib/` and `app/` plus all
 lib/stripe-products.ts:14:// In-memory cache of created Stripe Price IDs (tier:period → price_id)
 lib/stripe-products.ts:32:    const tier = TIERS[tierKey.toLowerCase()];
 lib/stripe-products.ts:43:      query: `metadata["legacyloop_tier"]:"${tierKey.toLowerCase()}"`,
-lib/stripe-products.ts:52:        name: `LegacyLoop ${tier.name}`,     [→ "LegacyLoop DIY Seller" etc.]
+lib/stripe-products.ts:52:        name: `Legacy-Loop ${tier.name}`,     [→ "Legacy-Loop DIY Seller" etc.]
 lib/stripe-products.ts:53:        metadata: { legacyloop_tier: tierKey.toLowerCase() },
 lib/stripe-products.ts:81:        metadata: { legacyloop_tier: tierKey.toLowerCase(), billing_period: ... }
 ```

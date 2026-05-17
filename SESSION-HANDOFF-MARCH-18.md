@@ -1,4 +1,4 @@
-# LegacyLoop — Session Handoff
+# Legacy-Loop — Session Handoff
 ## March 18, 2026 | Pass 4 Progress
 
 ## COMPLETED THIS SESSION

@@ -9,7 +9,7 @@ version: 1.0.0
 
 ## Relationship to the Shared Rubric
 
-This pack extends _shared/03-confidence-rubric.md with VideoBot-specific calibration. The shared rubric defines the general confidence scoring framework across LegacyLoop's AI bot system. This pack applies that framework to video script quality assessment specifically.
+This pack extends _shared/03-confidence-rubric.md with VideoBot-specific calibration. The shared rubric defines the general confidence scoring framework across Legacy-Loop's AI bot system. This pack applies that framework to video script quality assessment specifically.
 
 All VideoBot confidence scores are generated on a 0-100 scale. The score reflects script quality and readiness for publication, not item value or identification confidence. A low-value item can have a GOLD confidence script. A high-value item can have a NOT_READY script if insufficient item data was available to build a compelling narrative.
 

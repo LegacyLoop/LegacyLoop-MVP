@@ -33,7 +33,7 @@ Every output must answer these seven questions. Partial answers flag for re-run.
 
 Online buyers decide to click or scroll in under two seconds. The hero photo IS the listing. A $10,000 antique with a dark, blurry, cluttered hero photo will get scrolled past by the exact buyer who would have paid full price — because they never clicked.
 
-PhotoBot's hero photo recommendation is the single highest-ROI action in the entire LegacyLoop platform. Getting the right photo into the hero position can increase click-through rate by 200-400 percent on eBay and Facebook Marketplace. This is not exaggeration — A/B testing across millions of listings proves this consistently.
+PhotoBot's hero photo recommendation is the single highest-ROI action in the entire Legacy-Loop platform. Getting the right photo into the hero position can increase click-through rate by 200-400 percent on eBay and Facebook Marketplace. This is not exaggeration — A/B testing across millions of listings proves this consistently.
 
 ## The Iron Rule — Condition Authenticity
 

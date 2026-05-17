@@ -66,7 +66,7 @@ We are NOT rebuilding any of that. We are CONNECTING it.
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently.
+Legacy-Loop collects and retains ALL data permanently.
 For this command: When a user creates an item from a sale context,
 that signal tells us they're actively working on a sale — valuable for
 engagement tracking.
@@ -118,7 +118,7 @@ SECTION 9 — DEMO MODE + ADMIN BYPASS
 
   DEMO_MODE=true in .env — active now.
   TEST ACCOUNTS:
-  annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+  annalyse07@gmail.com / Legacy-Loop123! — Tier 4 Estate Manager
   ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -416,6 +416,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   inbox-filter-reset            Messages → InboxCmd        Tab bar clicked — reset sidebar
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Add New Item From Sale Dashboard
+Command Template v9 | Legacy-Loop | Add New Item From Sale Dashboard
 Updated March 19, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

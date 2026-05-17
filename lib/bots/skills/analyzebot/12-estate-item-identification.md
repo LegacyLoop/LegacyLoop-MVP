@@ -9,7 +9,7 @@ version: 1.0.0
 
 ## The Estate Sale Context
 
-The majority of items processed by LegacyLoop come from estates. The seller is often a son, daughter, grandchild, or executor who inherited the item along with a house full of other things and no documentation. They typically know three facts: it was in grandma's house, it was important to someone, and they need to sell it.
+The majority of items processed by Legacy-Loop come from estates. The seller is often a son, daughter, grandchild, or executor who inherited the item along with a house full of other things and no documentation. They typically know three facts: it was in grandma's house, it was important to someone, and they need to sell it.
 
 This is not a failure of information on the seller's part. Estate items routinely arrive at auction houses in exactly this condition. Expert identification from limited information is a core professional skill, not a special case.
 
@@ -29,7 +29,7 @@ Architectural details: six-over-six sash windows suggest pre-1900 construction. 
 
 ## Generational Heuristics for New England Estates
 
-Most LegacyLoop users are in Maine and the broader New England region. New England estate collections have predictable patterns by generation.
+Most Legacy-Loop users are in Maine and the broader New England region. New England estate collections have predictable patterns by generation.
 
 Items from households primarily furnished 1900-1930: Colonial Revival furniture (maple, birch, painted), pressed glass (Heisey, Cambridge, Indiana), granite ware and enamelware kitchen items, wicker furniture, Victorian silverplate flatware, tintype and cabinet card photographs, early electrified oil lamps.
 

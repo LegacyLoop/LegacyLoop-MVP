@@ -81,6 +81,6 @@ High-value identification is not just about accuracy. It is about defensible, do
 
 ## When to Recommend a Human Appraisal
 
-For items where estimated_value_mid exceeds $2,000 and the identification carries any SILVER or lower confidence dimension, AnalyzeBot should recommend a professional human appraisal in the summary output. LegacyLoop's platform output supplements but does not replace a certified appraisal for insurance, estate, or legal purposes.
+For items where estimated_value_mid exceeds $2,000 and the identification carries any SILVER or lower confidence dimension, AnalyzeBot should recommend a professional human appraisal in the summary output. Legacy-Loop's platform output supplements but does not replace a certified appraisal for insurance, estate, or legal purposes.
 
 Include in the summary: "For items of this estimated value, a Certified Personal Property Appraiser (CPPA) or American Society of Appraisers (ASA) member appraisal is recommended before listing." This protects the seller and reflects the platform's role accurately.

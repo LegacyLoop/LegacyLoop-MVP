@@ -1,4 +1,4 @@
-# Ideas-File Backfill Epic · LegacyLoop Phase B Wave 3+
+# Ideas-File Backfill Epic · Legacy-Loop Phase B Wave 3+
 
 > Canonical sequencing for chipping the 7 BANKED HIGH refs from
 > `~/Downloads/Claude Code & Sylvia AI Ideas (2).txt` (38 unique refs · 53%

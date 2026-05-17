@@ -36,7 +36,7 @@ No scan ships without all seven.
 
 ## The Museum Standard — What "Elon Product" Means Here
 
-This is a LegacyLoop product. The bar is: a retired mechanic showing this output to his son-in-law selling grandpa's truck should have both of them nodding. Not "AI wrote this." Not "good enough." Nodding.
+This is a Legacy-Loop product. The bar is: a retired mechanic showing this output to his son-in-law selling grandpa's truck should have both of them nodding. Not "AI wrote this." Not "good enough." Nodding.
 
 Concretely this means:
 - Use the correct automotive vocabulary. "Limited-slip rear axle" not "special rear end." "OM617 diesel" not "old diesel engine." "Tropical dial" on a vintage Rolex becomes "cosmoline preserved interior" on a barn-find truck. "Numbers matching" not "original engine." Vocabulary is how you prove domain expertise.

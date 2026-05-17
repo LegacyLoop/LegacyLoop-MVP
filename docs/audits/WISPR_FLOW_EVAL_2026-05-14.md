@@ -21,7 +21,7 @@
 
 **Sample sentence dictated (verbatim):**
 
-> "LegacyLoop is an AI-powered resale automation platform. Mission Connecting Generations. We are testing Wispr Flow voice transcription for Phase B Wave eight evaluation cylinder. End of test."
+> "Legacy-Loop is an AI-powered resale automation platform. Mission Connecting Generations. We are testing Wispr Flow voice transcription for Phase B Wave eight evaluation cylinder. End of test."
 
 **Transcription output (CEO eyeballed · verbatim typo classes):**
 
@@ -36,7 +36,7 @@
 **Notes:**
 - Brand hyphen loss is canonical voice-tool behavior · not Wispr-specific. Custom dictionary entry needed in Wispr Settings → Custom Vocabulary for `Legacy-Loop` to survive transcription. Sylvia voice-layer wire (Track B B2-W4) MUST inherit this requirement.
 - "Mission" word drop is real miss · may have been spoken too softly or as homonym pair with "Connecting". Banked monitoring · re-dictate test post-vocab-config.
-- Numeral conversion "eight" → "8" is consistent · acceptable for technical contexts · matches LegacyLoop V19 cyl-numbering convention.
+- Numeral conversion "eight" → "8" is consistent · acceptable for technical contexts · matches Legacy-Loop V19 cyl-numbering convention.
 - Punctuation handling intact (periods · capitalization · sentence boundaries preserved).
 
 ## §3 Build-vs-out-of-box decision (Devin recommendation)
@@ -53,7 +53,7 @@
 - **Required Sylvia surface (banked):**
   - Text-input substitute on Open WebUI surface (Wispr inserts at cursor · standard hotkey UX)
   - Push-to-talk handler via Wispr hotkey (canonical · zero Sylvia code needed)
-  - Sylvia custom-vocab dictionary entry: `Legacy-Loop` · `Sylvia` · `MegaBot` · `BuyerBot` · `PriceBot` · `RotoBot` · `LegacyLoop` (one-word brand variant)
+  - Sylvia custom-vocab dictionary entry: `Legacy-Loop` · `Sylvia` · `MegaBot` · `BuyerBot` · `PriceBot` · `RotoBot` · `Legacy-Loop` (one-word brand variant)
 - **Privacy posture:**
   - Wispr Flow sends audio to cloud (vendor-managed transcription)
   - Track B may require LOCAL-ONLY substitute per CEO Sylvia local+autonomous directive (2026-05-14) · flag for B2-W4 spec

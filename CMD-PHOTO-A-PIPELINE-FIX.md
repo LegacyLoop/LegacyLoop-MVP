@@ -102,7 +102,7 @@ CMD-MKT-A: Market Intelligence Engine — LOCKED.
 
 ## SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 Every feature must answer: Does this collect signal we learn from?
 Does it make the next AI prediction better?
 Does it create data nobody else has? Does it compound over time?
@@ -149,7 +149,7 @@ DEMO_MODE=true in .env — active now.
 shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
 
 TEST ACCOUNTS:
-- annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+- annalyse07@gmail.com / Legacy-Loop123! — Tier 4 Estate Manager
 - ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
 
 SYSTEM_USER_ID = cmmqpoljs0000pkwpl1uygvkz
@@ -434,4 +434,4 @@ Do NOT proceed until clean.
 
 ---
 
-**Command CMD-PHOTO-A | LegacyLoop | March 27, 2026 | Ryan Hallee**
+**Command CMD-PHOTO-A | Legacy-Loop | March 27, 2026 | Ryan Hallee**

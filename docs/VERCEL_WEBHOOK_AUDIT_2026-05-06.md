@@ -158,7 +158,7 @@ Five hypotheses for the stall, ordered by likelihood given the evidence:
 **Audit access:** CEO scope. Devin/IT does not have the credentials to inspect GitHub repo Settings → Webhooks delivery history.
 
 **CEO inspection target:**
-- GitHub repo: `LegacyLoop/LegacyLoop-MVP`
+- GitHub repo: `Legacy-Loop/Legacy-Loop-MVP`
 - Path: Repo → Settings → Webhooks → look for Vercel webhook (typically `vercel.com/api/git/...`)
 - Check: Recent Deliveries tab. Show last 20 delivery attempts. Note any non-2xx response codes.
 

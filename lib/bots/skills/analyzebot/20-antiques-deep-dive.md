@@ -71,7 +71,7 @@ Unlike musical instruments (where era + maker are often visually obvious), antiq
 
 - **Cost:** ~$0.003–0.005 per Antiques fire (Sonnet input ~6k tokens cache-hit-eligible after first call, output ~200 tokens).
 - **Latency:** ~1.5–3s on the specialty call. Runs serially after the merge + validations, before MI / pricing parallel block — so it extends total AnalyzeBot latency on antique items only.
-- **Volume:** Antiques are a medium-frequency category in LegacyLoop inventory (estate-customer segment). Expect ~15-25% of analyses fire this pass. Blended cost impact: < $0.001 per average analysis.
+- **Volume:** Antiques are a medium-frequency category in Legacy-Loop inventory (estate-customer segment). Expect ~15-25% of analyses fire this pass. Blended cost impact: < $0.001 per average analysis.
 
 If latency exceeds 5s p95 on antique items, shorten the prompt. If cost exceeds $0.01 per fire, reduce max_tokens.
 

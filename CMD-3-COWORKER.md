@@ -76,7 +76,7 @@ Workflows to document:
 9. Content Approval Pipeline
 10. Uptime and Error Monitor
 
-Use real API endpoints from the LegacyLoop codebase.
+Use real API endpoints from the Legacy-Loop codebase.
 Use real variable names from the code audit.
 Reference the actual Google Sheets from Task 1.
 
@@ -120,7 +120,7 @@ File: SendGrid Capacity Plan — March 2026
 
 Calculate daily email volume at 50, 100, 200, 500 users.
 Per active user per day: 1 notification + 0.5 transactional + 0.2 marketing.
-When does LegacyLoop hit 100/day free tier limit?
+When does Legacy-Loop hit 100/day free tier limit?
 What does Essentials plan cost?
 When should Ryan budget for it?
 
@@ -129,7 +129,7 @@ TASK 6 — EMAIL AUDIT REPORT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Save to Google Drive: 04 — Product / Tech Architecture
-File: LegacyLoop Email Audit — March 2026
+File: Legacy-Loop Email Audit — March 2026
 
 Complete Phase 1 findings in professional format:
 - Every email integration point mapped
@@ -148,6 +148,6 @@ Saved to correct Google Drive folder with correct naming.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Coworker Command v1
-LegacyLoop | March 17, 2026
+Legacy-Loop | March 17, 2026
 Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

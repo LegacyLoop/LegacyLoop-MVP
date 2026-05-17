@@ -1,4 +1,4 @@
-# Long-Running Agentic Pattern (LegacyLoop · 2026-05-13)
+# Long-Running Agentic Pattern (Legacy-Loop · 2026-05-13)
 
 ## Empirical state
 Per Devin §0 deep-dive 2026-05-13: `/goal` is NOT a built-in Claude Code slash command (confirmed via `claude --help` + Anthropic claude-code README + `~/.claude/commands/` enumeration). CEO ref #26 wake-up assumption was push-back-corrected to document the PATTERN using available primitives.

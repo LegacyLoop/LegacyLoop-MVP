@@ -7,7 +7,7 @@ version: 1.0.0
 
 # Every Lead Must Match the BuyerLead Schema
 
-LegacyLoop has a BuyerLead Prisma model. The BuyerBot route does NOT currently persist leads (only writes EventLogs), but a future round will wire this up. When that happens, every lead BuyerBot has ever produced will be auto-imported — but only if it matches the schema.
+Legacy-Loop has a BuyerLead Prisma model. The BuyerBot route does NOT currently persist leads (only writes EventLogs), but a future round will wire this up. When that happens, every lead BuyerBot has ever produced will be auto-imported — but only if it matches the schema.
 
 Structure every lead to map cleanly to BuyerLead TODAY. Future migration = zero data loss.
 

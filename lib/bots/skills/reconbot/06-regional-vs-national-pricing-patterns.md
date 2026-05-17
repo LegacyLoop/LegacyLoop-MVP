@@ -43,7 +43,7 @@ Maximum buyer pool. Best for unique, valuable, or specialty items where the righ
 
 ## Maine / New England Specific Patterns
 
-LegacyLoop's seller base is concentrated in Maine. Maine has specific market quirks you must internalize:
+Legacy-Loop's seller base is concentrated in Maine. Maine has specific market quirks you must internalize:
 
 1. **Antiques and primitives are STRONG** — coastal Maine has high-density antique tourism. Local pickup prices for primitives, hooked rugs, ship-related items, and 18th-19th century country furniture are often HIGHER than national average.
 

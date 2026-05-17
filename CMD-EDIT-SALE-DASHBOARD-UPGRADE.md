@@ -188,7 +188,7 @@ IMPORTANT — API ALREADY SUPPORTS EDITING:
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 Every feature must answer:
   — Does this collect signal we learn from?
@@ -277,7 +277,7 @@ SECTION 9 — DEMO MODE + ADMIN BYPASS
   shouldBypassGates(user.role) checks isDemoMode() || isAdminUser(role)
 
   TEST ACCOUNTS:
-  annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+  annalyse07@gmail.com / Legacy-Loop123! — Tier 4 Estate Manager
   ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
   SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
 
@@ -638,6 +638,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   inbox-filter-reset            Messages → InboxCmd        Tab bar clicked — reset sidebar
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Edit Sale + Dashboard Item Assignment
+Command Template v9 | Legacy-Loop | Edit Sale + Dashboard Item Assignment
 Updated March 19, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

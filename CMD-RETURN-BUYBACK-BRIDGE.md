@@ -81,7 +81,7 @@ IMPORTANT — EXISTING REFUND API:
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently.
+Legacy-Loop collects and retains ALL data permanently.
 Relist actions, refund requests, and refund decisions are already
 logged as EventLog entries by the API.
 
@@ -137,7 +137,7 @@ SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
 SECTION 9 — DEMO MODE + ADMIN BYPASS
 
   DEMO_MODE=true. TEST ACCOUNTS:
-  annalyse07@gmail.com / LegacyLoop123!
+  annalyse07@gmail.com / Legacy-Loop123!
   ryanroger11@gmail.com / Freedom26$
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -440,6 +440,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   agent-settings-toggle, inbox-filter-change, inbox-filter-reset
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Return + Buyback Bridge (Item 15)
+Command Template v9 | Legacy-Loop | Return + Buyback Bridge (Item 15)
 Updated March 19, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

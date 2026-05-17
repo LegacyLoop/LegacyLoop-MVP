@@ -3,7 +3,7 @@ name: shipping-cost-intelligence
 description: Shipping cost benchmarks, profitability analysis, and the local pickup recommendation trigger logic.
 when_to_use: When calculating shipping options and comparing ship-vs-local profitability.
 version: 1.0.0
-cost: FREE — absorbed by LegacyLoop
+cost: FREE — absorbed by Legacy-Loop
 ---
 
 # Shipping Cost vs Value Analysis

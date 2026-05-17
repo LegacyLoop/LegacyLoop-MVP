@@ -220,6 +220,6 @@ documents the vehicle's condition and history before listing is in a fundamental
 stronger negotiating position than one who waits for buyer discovery to drive the
 conversation.
 
-The honest handoff acknowledges that LegacyLoop's CarBot MegaBot provides the
+The honest handoff acknowledges that Legacy-Loop's CarBot MegaBot provides the
 best remote assessment available, and that the next level of certainty requires
 a qualified human with the vehicle in hand.

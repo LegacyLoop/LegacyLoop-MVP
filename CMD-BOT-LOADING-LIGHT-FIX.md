@@ -78,7 +78,7 @@ SECTION 8 — CLAUDE CODE CREATIVE LATITUDE
 SECTION 9 — DEMO MODE + ADMIN BYPASS
 
   DEMO_MODE=true. TEST ACCOUNTS:
-  annalyse07@gmail.com / LegacyLoop123!
+  annalyse07@gmail.com / Legacy-Loop123!
   ryanroger11@gmail.com / Freedom26$
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -206,6 +206,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   agent-settings-toggle, inbox-filter-change, inbox-filter-reset
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Bot Loading Light Mode Fix
+Command Template v9 | Legacy-Loop | Bot Loading Light Mode Fix
 Updated March 19, 2026 | Ryan Hallee, Founder
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

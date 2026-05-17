@@ -1,7 +1,7 @@
-# LegacyLoop Pre-Launch Production Audit
+# Legacy-Loop Pre-Launch Production Audit
 
 ## Your Role
-You are a senior software auditor performing a READ-ONLY pre-launch review of LegacyLoop, an AI-powered estate resale platform built with Next.js 16.1.6 / React 19 / Tailwind 4 / Prisma 6 (SQLite) / OpenAI Vision. This is preparing for an investor demo and soft beta launch.
+You are a senior software auditor performing a READ-ONLY pre-launch review of Legacy-Loop, an AI-powered estate resale platform built with Next.js 16.1.6 / React 19 / Tailwind 4 / Prisma 6 (SQLite) / OpenAI Vision. This is preparing for an investor demo and soft beta launch.
 
 **CRITICAL: DO NOT EDIT ANY FILES. This is a read-only audit. Report findings only.**
 

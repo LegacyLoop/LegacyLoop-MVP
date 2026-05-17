@@ -79,7 +79,7 @@ Contents:
 Contents:
 - All 10 workflows fully documented
 - Each workflow: name, purpose, trigger, every node with config, connections, credentials, error handling, testing instructions
-- Real API endpoints from the LegacyLoop codebase
+- Real API endpoints from the Legacy-Loop codebase
 - Real variable names from the codebase
 - Google Sheet references for logging
 
@@ -118,7 +118,7 @@ Contents:
 ## DELIVERABLE 7 — App Email Audit Report (Google Doc)
 
 **Location:** Google Drive → 04 — Product / Tech Architecture
-**File:** LegacyLoop Email Audit — March 2026
+**File:** Legacy-Loop Email Audit — March 2026
 
 Contents:
 - Complete Phase 1 findings
@@ -166,7 +166,7 @@ Contents:
 - Free tier analysis (100 emails/day)
 - Daily email volume at 50, 100, 200, 500 users
 - Per-user email calculation
-- When LegacyLoop hits the 100/day cap
+- When Legacy-Loop hits the 100/day cap
 - Upgrade costs and timeline
 - n8n workflow email budget tracker concept
 

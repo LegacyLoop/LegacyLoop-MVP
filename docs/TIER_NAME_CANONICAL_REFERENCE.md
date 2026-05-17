@@ -1,13 +1,13 @@
-# Tier-Name Canonical Reference · LegacyLoop
+# Tier-Name Canonical Reference · Legacy-Loop
 
 > **Status:** Reconciliation map · doc-only · zero schema edit
 > **Source:** `docs/TIER_NAME_DRIFT_AUDIT_2026-05-09.md` (R25 audit · YELLOW MINOR DRIFT verdict)
 > **Resolves:** Master Backlog §G P1-Y1 (carryover R25→R28→R29)
 > **Anchor:** R29 P35 Wave 3 Slot 3 rider per DOC-FLAG-RIDER-PER-CYLINDER 5/5
 
-## 3 distinct tier namespaces in LegacyLoop
+## 3 distinct tier namespaces in Legacy-Loop
 
-LegacyLoop has THREE separate tier systems with NO semantic overlap. Drift class: investor narratives sometimes conflate the three. This doc is canonical cross-reference to prevent re-occurrence.
+Legacy-Loop has THREE separate tier systems with NO semantic overlap. Drift class: investor narratives sometimes conflate the three. This doc is canonical cross-reference to prevent re-occurrence.
 
 ### 1. User subscription tier (Stripe-backed billing)
 

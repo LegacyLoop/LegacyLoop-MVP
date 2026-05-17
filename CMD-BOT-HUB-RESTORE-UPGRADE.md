@@ -224,7 +224,7 @@ Pass 5 Locked (March 19, 2026):
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 Every feature must answer:
   — Does this collect signal we learn from?
@@ -257,7 +257,7 @@ PHASE 2: Direct publish as OAuth is approved per platform.
 DEMO_MODE=true — admin accounts bypass all gates and credit deductions.
 Both test accounts are Tier 4 Estate Manager with full access.
 
-COMPLETE BOT ROSTER (what LegacyLoop has built):
+COMPLETE BOT ROSTER (what Legacy-Loop has built):
 
   LIVE BOTS (have full pages at /bots/{id}):
     1. MegaBot — 4-engine consensus power-up (OpenAI + Claude + Gemini + Grok)
@@ -323,7 +323,7 @@ SECTION 9 — DEMO MODE + ADMIN BYPASS
   Admin: never locked out. No credits deducted. Full platform access.
 
   TEST ACCOUNTS:
-  annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+  annalyse07@gmail.com / Legacy-Loop123! — Tier 4 Estate Manager
   ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
   SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
 
@@ -670,6 +670,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   inbox-filter-reset            Messages → InboxCmd        Tab bar clicked — reset sidebar
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Bot Hub Restore + Upgrade
+Command Template v9 | Legacy-Loop | Bot Hub Restore + Upgrade
 Updated March 19, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

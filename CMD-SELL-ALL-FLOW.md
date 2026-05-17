@@ -153,7 +153,7 @@ IMPORTANT — EXISTING API HANDLERS TO PRESERVE:
 
 SECTION 5 — DATA COLLECTION STANDARD
 
-LegacyLoop collects and retains ALL data permanently. Nothing is purged.
+Legacy-Loop collects and retains ALL data permanently. Nothing is purged.
 
 For this command: Track when a "Sell All" offer is created — the discount
 percentage, total value, items included. This data helps us understand
@@ -185,7 +185,7 @@ THE "SELL ALL" CONCEPT:
     - Think: "Everything in this estate sale for $5,000 (40% off estimated value)"
 
   This is common in estate sales and moving sales. A buyer comes in and
-  says "I'll take everything for one price." LegacyLoop should make this
+  says "I'll take everything for one price." Legacy-Loop should make this
   easy, premium, and clear.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -219,7 +219,7 @@ SECTION 9 — DEMO MODE + ADMIN BYPASS
   Admin account bypasses ALL tier gates and credit deductions.
 
   TEST ACCOUNTS:
-  annalyse07@gmail.com / LegacyLoop123! — Tier 4 Estate Manager
+  annalyse07@gmail.com / Legacy-Loop123! — Tier 4 Estate Manager
   ryanroger11@gmail.com / Freedom26$ — Tier 4 Estate Manager
   SYSTEM_USER_ID=cmmqpoljs0000pkwpl1uygvkz
 
@@ -596,6 +596,6 @@ QUICK REFERENCE — CUSTOMEVENTS IN USE
   inbox-filter-reset            Messages → InboxCmd        Tab bar clicked — reset sidebar
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Command Template v9 | LegacyLoop | Sell All Flow
+Command Template v9 | Legacy-Loop | Sell All Flow
 Updated March 19, 2026 | Ryan Hallee, Founder | Use for EVERY Claude Code command
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

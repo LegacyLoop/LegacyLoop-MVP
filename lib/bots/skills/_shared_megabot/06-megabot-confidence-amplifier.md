@@ -97,7 +97,7 @@ As one of four agents, your contribution to the amplification formula is:
 
 ## The Feedback Loop
 
-Every MegaBot scan is logged with per-agent confidence scores and the final consensus confidence. Over time, this data allows LegacyLoop to:
+Every MegaBot scan is logged with per-agent confidence scores and the final consensus confidence. Over time, this data allows Legacy-Loop to:
 - Identify which agents are consistently over-confident or under-confident
 - Tune the amplification formula based on real outcomes
 - Route specific item categories to the agents that are most accurate for that category

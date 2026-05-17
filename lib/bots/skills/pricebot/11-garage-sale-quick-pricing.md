@@ -89,7 +89,7 @@ The upper limit for bundle pricing: do not bundle items over $20 each unless the
 
 ## Mobile-Friendly Quick Price Output
 
-Sellers using LegacyLoop at an active garage sale are on a phone. The output for Bracket 1 and Bracket 2 items must be designed for mobile reading — specifically, for someone holding a phone with one hand while managing a yard sale table with the other.
+Sellers using Legacy-Loop at an active garage sale are on a phone. The output for Bracket 1 and Bracket 2 items must be designed for mobile reading — specifically, for someone holding a phone with one hand while managing a yard sale table with the other.
 
 Mobile output requirements:
 - Recommended price in large text at the top, before any rationale
