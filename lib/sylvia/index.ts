@@ -59,3 +59,7 @@ export * as obsidian from "./obsidian";
 // CMD-SYLVIA-GRAPHIFY-SELF-INTROSPECTION V20 · Wave 20 Phase 6 · 2026-05-18
 // Self-introspecting graph + Phase C/D/E foundation hooks · feature-flag SYLVIA_GRAPHIFY_ENABLED default OFF.
 export * as graphify from "./graphify";
+
+// CMD-SYLVIA-15-AGENT-TOPOLOGY-ACTIVATE V20 · Wave 20 Phase 7 · 2026-05-18
+// Autonomous swarm activation + 3 NEW Phase D/E hooks · feature-flag SYLVIA_SWARM_ACTIVATE_ENABLED default OFF.
+export * as swarmActivate from "./swarm-activate";
