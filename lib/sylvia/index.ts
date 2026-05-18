@@ -55,3 +55,7 @@ export * as hybrid from "./hybrid";
 // CMD-SYLVIA-OBSIDIAN-BIDIRECTIONAL-SYNC V20 · Wave 20 Phase 5 · 2026-05-18
 // Brain externalization · vault sync · feature-flag SYLVIA_OBSIDIAN_ENABLED default OFF.
 export * as obsidian from "./obsidian";
+
+// CMD-SYLVIA-GRAPHIFY-SELF-INTROSPECTION V20 · Wave 20 Phase 6 · 2026-05-18
+// Self-introspecting graph + Phase C/D/E foundation hooks · feature-flag SYLVIA_GRAPHIFY_ENABLED default OFF.
+export * as graphify from "./graphify";
