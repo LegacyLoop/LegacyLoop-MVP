@@ -51,3 +51,7 @@ export * as vector from "./vector";
 // CMD-SYLVIA-HYBRID-MEMORY-INTEGRATION V20 · Wave 20 Phase 4 · 2026-05-18
 // Hybrid recall decision engine · feature-flag SYLVIA_HYBRID_MEMORY_ENABLED default OFF.
 export * as hybrid from "./hybrid";
+
+// CMD-SYLVIA-OBSIDIAN-BIDIRECTIONAL-SYNC V20 · Wave 20 Phase 5 · 2026-05-18
+// Brain externalization · vault sync · feature-flag SYLVIA_OBSIDIAN_ENABLED default OFF.
+export * as obsidian from "./obsidian";
