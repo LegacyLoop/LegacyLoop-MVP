@@ -43,3 +43,7 @@ export type { RecordTriageInput, RecallSimilarOpts } from "./memory";
 // CMD-RUFLO-CONCEPT-EXTRACT V20 · Wave 20 Phase 2 · 2026-05-18
 // Swarm orchestration substrate · feature-flag SYLVIA_SWARM_ENABLED default OFF.
 export * as swarm from "./swarm";
+
+// CMD-SYLVIA-RUVECTOR-HNSW-SUBSTRATE V20 · Wave 20 Phase 3 · 2026-05-18
+// HNSW vector RECALL ENGINE substrate · feature-flag SYLVIA_VECTOR_ENABLED default OFF.
+export * as vector from "./vector";
