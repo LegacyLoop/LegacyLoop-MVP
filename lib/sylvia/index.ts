@@ -47,3 +47,7 @@ export * as swarm from "./swarm";
 // CMD-SYLVIA-RUVECTOR-HNSW-SUBSTRATE V20 · Wave 20 Phase 3 · 2026-05-18
 // HNSW vector RECALL ENGINE substrate · feature-flag SYLVIA_VECTOR_ENABLED default OFF.
 export * as vector from "./vector";
+
+// CMD-SYLVIA-HYBRID-MEMORY-INTEGRATION V20 · Wave 20 Phase 4 · 2026-05-18
+// Hybrid recall decision engine · feature-flag SYLVIA_HYBRID_MEMORY_ENABLED default OFF.
+export * as hybrid from "./hybrid";
