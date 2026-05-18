@@ -15,6 +15,8 @@
 //   BINDING #17 · audit-first-wire honored · §0.3 verbatim cites
 
 import { getSylviaToolSchema, executeToolBridge } from "./tools-bridge";
+import { routeTask } from "../router";
+import type { RouteTask } from "../router-types";
 import type {
   SylviaChatMessage,
   SylviaChatStreamChunk,
@@ -282,7 +284,28 @@ function buildInitialMessages(incoming: SylviaChatMessage[]): SylviaChatMessage[
 
 async function* fetchGatewayStream(
   messages: SylviaChatMessage[],
+  sessionId?: string,
 ): AsyncGenerator<GatewayChunk, void, unknown> {
+  // Phase 9.5 BEHAVIORAL · router-gated model selection (BINDING #16 additive)
+  // Streaming + tool_calls preserved · routeTask classifies only · falls back to PRIMARY_MODEL when flag OFF or on error.
+  let resolvedModel: string = PRIMARY_MODEL;
+  if (process.env.SYLVIA_ROUTER_ENABLED === "1") {
+    try {
+      const lastUser = messages.filter((m) => m.role === "user").pop();
+      const promptText = typeof lastUser?.content === "string" ? lastUser.content : "";
+      const routeTaskInput: RouteTask = { prompt: promptText, sessionId };
+      const decision = await routeTask(routeTaskInput);
+      resolvedModel = decision.chosenAlias;
+      console.log(
+        `[sylvia-chat] router=v1 tier=${decision.tier} alias=${decision.chosenAlias} classifier=${decision.classifier}`,
+      );
+    } catch (err) {
+      console.warn(
+        `[sylvia-chat] routeTask failed · falling back to PRIMARY_MODEL: ${err instanceof Error ? err.message : "unknown"}`,
+      );
+    }
+  }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), PER_GATEWAY_TIMEOUT_MS);
 
@@ -292,7 +315,7 @@ async function* fetchGatewayStream(
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        model: PRIMARY_MODEL,
+        model: resolvedModel,
         messages,
         tools: getSylviaToolSchema(),
         tool_choice: "auto",
@@ -376,7 +399,7 @@ export async function* handleSylviaChatStream(
     let finishReason: string | undefined;
 
     try {
-      for await (const chunk of fetchGatewayStream(conversation)) {
+      for await (const chunk of fetchGatewayStream(conversation, ctx.sessionId)) {
         const choice = chunk.choices?.[0];
         if (!choice) continue;
         if (choice.delta?.content) {
