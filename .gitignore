@@ -86,3 +86,11 @@ console-*.txt
 page-*.yaml
 page-*.yml
 .playwright-mcp/
+
+# Claude Code RuFlo MCP daemon runtime byproducts (added 2026-05-18 Wave 20 close)
+# Wrote to cwd when mcp__ruflo__system_health called from Sylvia repo · NOT customer code
+# BINDING #41 LAW hygiene fence · Sylvia brain is custom-port at lib/sylvia/* · zero overlap
+# CMD-GITIGNORE-RUFLO-RUNTIME-ARTIFACTS V20 LOW
+.swarm/
+.claude-flow/
+ruvector.db
