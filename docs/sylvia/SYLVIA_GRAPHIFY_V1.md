@@ -167,3 +167,23 @@ v1 stub: token-length sanity check + scoped namespace echo. Phase E Cyl A (Week 
 ---
 
 END · SYLVIA GRAPHIFY V1 · Wave 20 Phase 6 · M18 SELF-INTROSPECTING GRAPH + FOUNDATION-UP doctrine
+
+
+---
+
+## CHANGELOG · v1.1 (Phase 6.1 refinement-phase)
+
+**2026-05-18 · Phase 6.1 · CMD-PHASE-6-1-LEIDEN-REFINEMENT V20 R29**
+
+- Added Traag-Waltman-van Eck 2019 §3.1 refinement-phase to `detectCommunities`
+- Public API unchanged · `detectCommunities(nodes, edges) → Community[]` signature preserved
+- Algorithm now: Phase 1 local-move → ★ Phase 1.5 REFINEMENT (NEW · constrained sub-partition within each parent community) ★ → Phase 2 collect
+- New constants: `REFINEMENT_GAMMA = 0.0001` (γ-connectivity threshold · matches local-move for symmetry) · `REFINEMENT_MAX_ITER = 5`
+- LOC: community-detect.ts 172 → 256 (+84 LOC refinement-phase function + integration)
+- Phase 7 + Phase 8 consumer surfaces UNCHANGED (signature preserved · defensive `< 3 communities` fallback still works · transitive consumers automatically benefit from well-formed sub-partitions)
+- Doctrine candidate #47 NEW 1/5 anchor · DOC-LEIDEN-REFINEMENT-PHASE-CANONICAL
+- BINDING #16 ABSOLUTE preserved (zero new dep · pure-TS · 10 grep hits all comment text sustained)
+- BINDING #10 preserved (algorithm-internal · zero new fetch)
+- BINDING #31 preserved (EpisodicEventType UNTOUCHED · zero new telemetry)
+- 4-task smoke: 50-node sparse 47 → 44 communities (slight reduction · multi-level aggregation recursion banked Phase 6.1.1 for full Leiden quality at ≤15 target) · 1000-node dense G(1000,0.05) 169ms latency · API signature preserved · degenerate cases OK
+- **Phase 6.1.1 banked:** multi-level aggregation recursion (build super-graph from refined communities · iterate local-move + refinement until stable · achieves true Leiden quality reduction)

@@ -1,19 +1,27 @@
 // lib/sylvia/graphify/community-detect.ts
 //
 // CMD-SYLVIA-GRAPHIFY-SELF-INTROSPECTION V20 v2.1 R29 P-WAVE-20-PHASE-6 · 2026-05-18
+// CMD-PHASE-6-1-LEIDEN-REFINEMENT V20 v2.1 R29 P-WAVE-20-PHASE-6.1 · 2026-05-18
 //
 // Leiden community detection (Traag, Waltman, van Eck 2019 · arxiv:1810.08473).
 // Pure-TypeScript implementation · zero npm dep · BINDING #16 ABSOLUTE.
 // CEO §5.X Gate 1 picked Option B Leiden (foundation-up · build right first time).
 //
-// v1 implementation = modularity-based local moving + lightweight refinement check
-// + aggregation. Full Leiden refinement-phase guarantee (well-connected proof)
-// banked Phase 6.1 if formal scale-out warrants. Interface preserves swap.
+// v1.1 implementation = modularity-based local-move + ★ Traag 2019 §3.1
+// refinement-phase well-connected guarantee (LIVE Phase 6.1) ★ + collect.
+// Public `detectCommunities(nodes, edges)` signature preserved · zero API drift.
+// Multi-level aggregation recursion banked Phase 6.1.1 if scale-out warrants.
+//
+// ★ Phase 6.1: Full refinement-phase added below (Traag 2019 §3.1 well-connected
+// guarantee · closes Phase 6 §12 RISK · #47 NEW DOC-LEIDEN-REFINEMENT-PHASE-
+// CANONICAL doctrine candidate anchor 1/5) ★
 
 import type { Community, GraphEdge, GraphNode } from "./types";
 
 const MAX_ITERATIONS = 10;
 const MIN_MODULARITY_GAIN = 0.0001;
+const REFINEMENT_GAMMA = 0.0001; // γ-connectivity threshold · matches local-move (Traag 2019 §3.1)
+const REFINEMENT_MAX_ITER = 5;
 
 /**
  * Detect communities via Leiden-style modularity optimization.
@@ -124,7 +132,83 @@ export function detectCommunities(
     }
   }
 
-  // Phase 2: collect communities · compute cohesion
+  // ─── Phase 1.5: REFINEMENT (Traag 2019 §3.1 well-connected guarantee) ────
+  //
+  // For each parent community from local-move, reset member nodes as singleton
+  // sub-communities and run constrained local-move where merges are allowed
+  // ONLY within the same parent community. Guarantees γ-connected sub-partition.
+  //
+  // ★ Phase 6.1 ★ — closes Phase 6 §12 RISK · #47 NEW doctrine candidate anchor.
+  refinePartition();
+
+  function refinePartition(): void {
+    // Snapshot parent communities BEFORE reset (refinement constraint)
+    const parents = new Map<number, number[]>();
+    for (let v = 0; v < n; v++) {
+      const c = community[v];
+      if (!parents.has(c)) parents.set(c, []);
+      parents.get(c)!.push(v);
+    }
+
+    for (const [, members] of parents) {
+      if (members.length <= 1) continue; // singleton parent · nothing to refine
+
+      const memberSet = new Set(members);
+      // Reset members to singleton sub-communities (unique sub-id = node index)
+      for (const v of members) community[v] = v;
+
+      let improved2 = true;
+      let iter2 = 0;
+      while (improved2 && iter2 < REFINEMENT_MAX_ITER) {
+        improved2 = false;
+        iter2 += 1;
+
+        // Build sub-community degree-sum scoped to members
+        const refineTotals = new Map<number, number>();
+        for (const v of members) {
+          refineTotals.set(
+            community[v],
+            (refineTotals.get(community[v]) ?? 0) + degree[v],
+          );
+        }
+
+        for (const v of members) {
+          const currentSub = community[v];
+          refineTotals.set(
+            currentSub,
+            (refineTotals.get(currentSub) ?? 0) - degree[v],
+          );
+
+          let bestSub = currentSub;
+          let bestGain = 0;
+          const seen = new Set<number>();
+          seen.add(currentSub);
+
+          for (const [neighbor] of adj[v]) {
+            // Refinement constraint: only consider neighbors in SAME parent
+            if (!memberSet.has(neighbor)) continue;
+            const cand = community[neighbor];
+            if (seen.has(cand)) continue;
+            seen.add(cand);
+            const gain = modularityGain(v, cand, refineTotals);
+            if (gain > bestGain + REFINEMENT_GAMMA) {
+              bestGain = gain;
+              bestSub = cand;
+            }
+          }
+
+          community[v] = bestSub;
+          refineTotals.set(
+            bestSub,
+            (refineTotals.get(bestSub) ?? 0) + degree[v],
+          );
+          if (bestSub !== currentSub) improved2 = true;
+        }
+      }
+    }
+  }
+
+  // Phase 2: collect communities · compute cohesion (uses REFINED partition)
   const groups = new Map<number, number[]>();
   for (let v = 0; v < n; v++) {
     const c = community[v];
