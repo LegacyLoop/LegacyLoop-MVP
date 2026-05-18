@@ -63,3 +63,7 @@ export * as graphify from "./graphify";
 // CMD-SYLVIA-15-AGENT-TOPOLOGY-ACTIVATE V20 · Wave 20 Phase 7 · 2026-05-18
 // Autonomous swarm activation + 3 NEW Phase D/E hooks · feature-flag SYLVIA_SWARM_ACTIVATE_ENABLED default OFF.
 export * as swarmActivate from "./swarm-activate";
+
+// CMD-SYLVIA-TRUTH-GATE-CROSSVALIDATE V20 · Wave 20 Phase 8 of 8 · FINAL · 2026-05-18
+// ★ M20 cross-validation + 4 Phase C/D/E hooks · feature-flag SYLVIA_TRUTH_CROSSVAL_ENABLED default OFF ★
+export * as truthCrossval from "./truth-crossval";
