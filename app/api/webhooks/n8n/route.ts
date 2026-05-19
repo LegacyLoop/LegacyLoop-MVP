@@ -1,6 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
+import { graphIngestExternalCorpus } from "@/lib/sylvia/graphify";
+import {
+  crossValidate,
+  validateExternalCorpus,
+} from "@/lib/sylvia/truth-crossval";
+import { appendEpisodic } from "@/lib/sylvia/memory";
+
+// CMD-WEBHOOK-PHASE-C-INGEST-HANDLER V20 LOW · 2026-05-18:
+// Phase C V1-V12 + Wave 2 V13-V16 corpus ingest payload shape.
+// Inbound n8n batch from authored workflow JSONs · Source URLs Code-node
+// N-items pattern · x-webhook-secret shared-secret auth (matches Cyl 7A).
+interface PhaseCIngestEntry {
+  id: string;
+  title: string;
+  body: string;
+  metadata: {
+    source: string;
+    sourceUrl: string;
+    sourceTier: string;
+    verticalId: string;
+    corpusId: string;
+    domain: string;
+    [k: string]: unknown;
+  };
+}
+
+interface PhaseCIngestPayload {
+  entries: PhaseCIngestEntry[];
+  corpusId?: string;
+  verticalId?: string;
+  domain?: string;
+  sourceTier?: string;
+  batchSize?: number;
+  emittedAt?: string;
+}
 
 // CMD-CYLINDER-7A-N8N-WEBHOOK V18: payload shape for scraper.catch action.
 // Mirrors lib/market-intelligence/types.ts MarketComp + ScraperResult so
@@ -140,6 +175,178 @@ export async function POST(req: NextRequest) {
         { received: true, dedupe: false, scraperId: payload.scraperId },
         { status: 200 }
       );
+    }
+
+    // CMD-WEBHOOK-PHASE-C-INGEST-HANDLER V20 LOW · 2026-05-18:
+    // Phase C V1-V12 + Wave 2 V13-V16 corpus ingest pipeline.
+    // Receives n8n workflow batch · cross-validates via Phase 8 crossValidate
+    // (synthetic NextRequest → M10 chokepoint · BINDING #46 anchor) · routes
+    // per agreementScore (≥70 accepted · 40-69 quarantined · <40 discarded
+    // with audit log) · ingests via Phase 6 graphIngestExternalCorpus.
+    // BINDING #10 chokepoint preserved · BINDING #16 clone scraper.catch shape ·
+    // BINDING #31 EpisodicEventType UNTOUCHED · payload.phase_c_ingest="v1"
+    // sentinel. Reusable across all 16 verticals · zero per-cyl handler edit.
+    if (action === "phase_c_ingest") {
+      const payload = data as PhaseCIngestPayload | null;
+
+      if (
+        !payload?.entries ||
+        !Array.isArray(payload.entries) ||
+        payload.entries.length === 0
+      ) {
+        return NextResponse.json(
+          { error: "Invalid payload · entries array required" },
+          { status: 400 }
+        );
+      }
+
+      const corpusId =
+        payload.corpusId ||
+        `phase-c-${payload.verticalId || "unknown"}-${Date.now()}`;
+      const domain = payload.domain || "unknown";
+      const verticalId = payload.verticalId || "unknown";
+      const sourceTier = payload.sourceTier || "T5";
+      let accepted = 0;
+      let quarantined = 0;
+      let discarded = 0;
+      let totalCostUsd = 0;
+      const sessionId = `phase-c-${verticalId}-${Date.now()}`;
+
+      for (const entry of payload.entries) {
+        const entrySource =
+          (typeof entry.metadata?.source === "string"
+            ? entry.metadata.source
+            : null) || "unknown";
+        let agreementScore = 0;
+        let auditId = "";
+
+        try {
+          const crossval = await crossValidate({
+            prompt: `Validate factual claims in this ${domain} corpus excerpt: ${entry.body.slice(0, 2000)}`,
+            context: { namespace: `skill:domain-${domain}-${entrySource}` },
+            sources: ["consensus"],
+            stakes: "high",
+            maxBudgetUsd: 0.5,
+          });
+          if (crossval) {
+            agreementScore = crossval.agreementScore;
+            auditId = crossval.auditId;
+            totalCostUsd += crossval.totalCostUsd;
+          } else {
+            const stub = await validateExternalCorpus({
+              corpus: entry.body,
+              criteria: "factual",
+              sourceUrl:
+                typeof entry.metadata?.sourceUrl === "string"
+                  ? entry.metadata.sourceUrl
+                  : "",
+              maxBudgetUsd: 0.5,
+            });
+            agreementScore = stub.agreementScore;
+            auditId = stub.auditId;
+          }
+        } catch (err) {
+          console.error(
+            `[N8N WEBHOOK · phase_c_ingest] crossval failed · entry=${entry.id}`,
+            err
+          );
+          discarded += 1;
+          await appendEpisodic({
+            timestamp: new Date().toISOString(),
+            sessionId,
+            eventType: "error",
+            payload: {
+              phase_c_ingest: "v1",
+              decision: "discard-crossval-error",
+              verticalId,
+              domain,
+              source: entrySource,
+              entryId: entry.id,
+              error: err instanceof Error ? err.message : "unknown",
+            },
+            source: "direct",
+          }).catch(() => undefined);
+          continue;
+        }
+
+        let decision: "accept" | "quarantine" | "discard";
+        let targetCorpusId = corpusId;
+        if (agreementScore >= 70) {
+          decision = "accept";
+          accepted += 1;
+        } else if (agreementScore >= 40) {
+          decision = "quarantine";
+          targetCorpusId = `quarantine-${corpusId}`;
+          quarantined += 1;
+        } else {
+          decision = "discard";
+          discarded += 1;
+        }
+
+        if (decision !== "discard") {
+          try {
+            await graphIngestExternalCorpus({
+              source: "n8n-workflow",
+              corpusId: targetCorpusId,
+              domain,
+              entries: [
+                {
+                  id: entry.id,
+                  title: entry.title,
+                  body: entry.body,
+                  metadata: {
+                    ...entry.metadata,
+                    agreementScore,
+                    auditId,
+                    decision,
+                    validatedAt: new Date().toISOString(),
+                  },
+                },
+              ],
+            });
+          } catch (err) {
+            console.error(
+              `[N8N WEBHOOK · phase_c_ingest] graphify failed · entry=${entry.id}`,
+              err
+            );
+          }
+        }
+
+        await appendEpisodic({
+          timestamp: new Date().toISOString(),
+          sessionId,
+          eventType: "consensus",
+          payload: {
+            phase_c_ingest: "v1",
+            decision,
+            verticalId,
+            domain,
+            source: entrySource,
+            sourceTier,
+            agreementScore,
+            auditId,
+            entryId: entry.id,
+            corpusId: targetCorpusId,
+          },
+          source: "direct",
+        }).catch(() => undefined);
+      }
+
+      console.log(
+        `[N8N WEBHOOK · phase_c_ingest] vertical=${verticalId} domain=${domain} accepted=${accepted} quarantined=${quarantined} discarded=${discarded} costUsd=${totalCostUsd.toFixed(4)}`
+      );
+
+      return NextResponse.json({
+        ok: true,
+        received: action,
+        verticalId,
+        domain,
+        processed: payload.entries.length,
+        accepted,
+        quarantined,
+        discarded,
+        totalCostUsd,
+      });
     }
 
     return NextResponse.json({ ok: true, received: action });
