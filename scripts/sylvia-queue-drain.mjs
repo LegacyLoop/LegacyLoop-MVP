@@ -4,11 +4,10 @@
 // Sylvia-Local-Execution doctrine · zero Vercel serverless filesystem write.
 // Demo-Retirement absolute · calls existing lib/sylvia/graphify primitives unchanged.
 
-import { PrismaClient } from "@prisma/client";
-import { graphIngestExternalCorpus } from "../lib/sylvia/graphify/index.js";
-import { appendEpisodic } from "../lib/sylvia/memory.js";
+import { prisma } from "../lib/db.ts";
+import { graphIngestExternalCorpus } from "../lib/sylvia/graphify/index.ts";
+import { appendEpisodic } from "../lib/sylvia/memory.ts";
 
-const prisma = new PrismaClient();
 const WORKER_ID = process.env.WORKER_ID || `mac-drain-${process.pid}`;
 const BATCH_SIZE = Number(process.env.SYLVIA_QUEUE_BATCH_SIZE || 10);
 const MAX_ATTEMPTS = Number(process.env.SYLVIA_QUEUE_MAX_ATTEMPTS || 3);

@@ -8,9 +8,13 @@
   <key>ProgramArguments</key>
   <array>
     <string>/usr/local/bin/node</string>
-    <string>--env-file=/Users/ryanhallee/legacy-loop-mvp/.env</string>
+    <string>--import</string>
+    <string>tsx</string>
+    <string>--env-file=/Users/ryanhallee/legacy-loop-mvp/.env.drain</string>
     <string>/Users/ryanhallee/legacy-loop-mvp/scripts/sylvia-queue-drain.mjs</string>
   </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/ryanhallee/legacy-loop-mvp</string>
   <key>StartInterval</key>
   <integer>60</integer>
   <key>RunAtLoad</key>
