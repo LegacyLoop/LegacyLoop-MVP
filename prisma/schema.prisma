@@ -1428,12 +1428,14 @@ model SylviaCorpusQueue {
   status        SylviaCorpusQueueStatus  @default(PENDING)
   attemptCount  Int                      @default(0)
   claimedAt     DateTime?
+  claimedBy     String?
   completedAt   DateTime?
   lastError     String?
   createdAt     DateTime                 @default(now())
   updatedAt     DateTime                 @updatedAt
 
   @@index([status, createdAt])
+  @@index([status, claimedAt])
   @@map("sylvia_corpus_queue")
 }
 

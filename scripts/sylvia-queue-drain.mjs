@@ -11,31 +11,55 @@ import { appendEpisodic } from "../lib/sylvia/memory.ts";
 const WORKER_ID = process.env.WORKER_ID || `mac-drain-${process.pid}`;
 const BATCH_SIZE = Number(process.env.SYLVIA_QUEUE_BATCH_SIZE || 10);
 const MAX_ATTEMPTS = Number(process.env.SYLVIA_QUEUE_MAX_ATTEMPTS || 3);
+const STALE_CLAIM_THRESHOLD_MS = Number(
+  process.env.SYLVIA_QUEUE_STALE_MS || 5 * 60 * 1000,
+);
 
 async function drainBatch() {
-  const claimedAt = new Date();
-
-  // Atomic claim · flips PENDING rows under attempt cap to CLAIMED with timestamp
-  const batch = await prisma.sylviaCorpusQueue.updateMany({
+  // STEP 1 · Reclaim stale CLAIMED rows · reset to PENDING for re-claim
+  // CMD-PHASE-C-DRAIN-CLAIM-TIMEOUT-FIX V20 LOW · 2026-05-20
+  // Fixes orphaned-claim class (V8 burst Wave 21 PM · Agent B audit anchor).
+  const staleBefore = new Date(Date.now() - STALE_CLAIM_THRESHOLD_MS);
+  const reclaimed = await prisma.sylviaCorpusQueue.updateMany({
     where: {
-      status: "PENDING",
-      attemptCount: { lt: MAX_ATTEMPTS },
+      status: "CLAIMED",
+      claimedAt: { lt: staleBefore },
     },
     data: {
-      status: "CLAIMED",
-      claimedAt,
+      status: "PENDING",
+      claimedAt: null,
+      claimedBy: null,
     },
   });
+  if (reclaimed.count > 0) {
+    console.log(
+      `[sylvia-queue-drain] worker=${WORKER_ID} reclaimed=${reclaimed.count}`,
+    );
+  }
 
-  if (batch.count === 0) return 0;
+  // STEP 2 · Bounded claim · take only BATCH_SIZE rows (not all PENDING)
+  // Replaces over-claim pattern that stranded 40+ rows per burst.
+  // Raw SQL because Prisma updateMany has no LIMIT for SQLite/libsql.
+  const claimedAt = new Date();
+  const claimResult = await prisma.$executeRaw`
+    UPDATE sylvia_corpus_queue
+    SET status = 'CLAIMED', claimedAt = ${claimedAt}, claimedBy = ${WORKER_ID}
+    WHERE id IN (
+      SELECT id FROM sylvia_corpus_queue
+      WHERE status = 'PENDING' AND attemptCount < ${MAX_ATTEMPTS}
+      ORDER BY createdAt ASC
+      LIMIT ${BATCH_SIZE}
+    )
+  `;
+  if (claimResult === 0) return { drained: 0, reclaimed: reclaimed.count };
 
-  // Read claimed rows (limit BATCH_SIZE · oldest first)
+  // STEP 3 · Read claimed rows for this worker (matches claimedAt + claimedBy)
   const rows = await prisma.sylviaCorpusQueue.findMany({
-    where: { status: "CLAIMED", claimedAt },
+    where: { status: "CLAIMED", claimedAt, claimedBy: WORKER_ID },
     orderBy: { createdAt: "asc" },
-    take: BATCH_SIZE,
   });
 
+  // STEP 4 · Process (existing flow · unchanged below)
   for (const row of rows) {
     try {
       const payload = JSON.parse(row.payload);
@@ -56,7 +80,11 @@ async function drainBatch() {
       });
       await prisma.sylviaCorpusQueue.update({
         where: { id: row.id },
-        data: { status: "COMPLETED", completedAt: new Date() },
+        data: {
+          status: "COMPLETED",
+          completedAt: new Date(),
+          claimedBy: null,
+        },
       });
     } catch (err) {
       const errCause = err instanceof Error ? err.message : String(err);
@@ -68,6 +96,7 @@ async function drainBatch() {
           attemptCount: { increment: 1 },
           lastError: errCause,
           claimedAt: null,
+          claimedBy: null,
         },
       });
       console.error(
@@ -75,13 +104,15 @@ async function drainBatch() {
       );
     }
   }
-  return rows.length;
+  return { drained: rows.length, reclaimed: reclaimed.count };
 }
 
 async function main() {
   console.log(`[sylvia-queue-drain] worker=${WORKER_ID} started`);
-  const drained = await drainBatch();
-  console.log(`[sylvia-queue-drain] worker=${WORKER_ID} drained=${drained}`);
+  const { drained, reclaimed } = await drainBatch();
+  console.log(
+    `[sylvia-queue-drain] worker=${WORKER_ID} drained=${drained} reclaimed=${reclaimed}`,
+  );
   await prisma.$disconnect();
 }
 
