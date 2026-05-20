@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.legacyloop.sylvia-queue-drain</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/node</string>
+    <string>--env-file=/Users/ryanhallee/legacy-loop-mvp/.env</string>
+    <string>/Users/ryanhallee/legacy-loop-mvp/scripts/sylvia-queue-drain.mjs</string>
+  </array>
+  <key>StartInterval</key>
+  <integer>60</integer>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/ryanhallee/Library/Logs/sylvia-queue-drain.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/ryanhallee/Library/Logs/sylvia-queue-drain.error.log</string>
+</dict>
+</plist>

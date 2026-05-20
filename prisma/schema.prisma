@@ -1404,6 +1404,40 @@ model SylviaEpisodic {
 }
 
 // ─────────────────────────────────────────────────────────────────
+// SYLVIA CORPUS QUEUE · Phase C V11 Layer 3 substrate router
+// (CMD-SYLVIA-SUBSTRATE-ROUTER-PATTERN V20 MEDIUM · 2026-05-19)
+// Vercel-serverless handler enqueues phase_c_ingest payloads here ·
+// local Mac drain worker reads + writes vault filesystem locally ·
+// preserves Sylvia-Local-Execution doctrine + Vercel-RO-fs constraint.
+// Demo-Retirement absolute · graphify substrate UNCHANGED · router only.
+// ─────────────────────────────────────────────────────────────────
+
+enum SylviaCorpusQueueStatus {
+  PENDING
+  CLAIMED
+  COMPLETED
+  FAILED
+}
+
+model SylviaCorpusQueue {
+  id            String                   @id @default(cuid())
+  sessionId     String
+  verticalId    String
+  domain        String
+  payload       String // JSON.stringify(PhaseCIngestPayload)
+  status        SylviaCorpusQueueStatus  @default(PENDING)
+  attemptCount  Int                      @default(0)
+  claimedAt     DateTime?
+  completedAt   DateTime?
+  lastError     String?
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  @@index([status, createdAt])
+  @@map("sylvia_corpus_queue")
+}
+
+// ─────────────────────────────────────────────────────────────────
 // MANUS AUTONOMOUS SELLING (CMD-MANUS-M-SEED-1 · R23 P1 · 2026-05-08)
 // M Seed 1 plant · Phase 8 Manus state machine · purely additive ·
 // forward-compat optional fields per NB Seed 1 doctrine. Phase 8 wires

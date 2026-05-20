@@ -209,7 +209,7 @@ export async function POST(req: NextRequest) {
       let accepted = 0;
       let quarantined = 0;
       let discarded = 0;
-      let graphifyFailedCount = 0;
+      let enqueueFailedCount = 0;
       let totalCostUsd = 0;
       const sessionId = `phase-c-${verticalId}-${Date.now()}`;
 
@@ -286,46 +286,46 @@ export async function POST(req: NextRequest) {
 
         if (decision !== "discard") {
           try {
-            await graphIngestExternalCorpus({
-              source: "n8n-workflow",
-              corpusId: targetCorpusId,
-              domain,
-              entries: [
-                {
-                  id: entry.id,
-                  title: entry.title,
-                  body: entry.body,
-                  metadata: {
-                    ...entry.metadata,
-                    agreementScore,
-                    auditId,
-                    decision,
-                    validatedAt: new Date().toISOString(),
-                  },
-                },
-              ],
+            // CMD-SYLVIA-SUBSTRATE-ROUTER-PATTERN V20 MEDIUM · 2026-05-19:
+            // Vercel serverless cannot write filesystem (/var/task RO) ·
+            // enqueue corpus entry to sylvia_corpus_queue · local Mac drain
+            // worker reads queue + executes existing graphify primitives
+            // unchanged. Sylvia-Local-Execution doctrine preserved.
+            await prisma.sylviaCorpusQueue.create({
+              data: {
+                sessionId,
+                verticalId,
+                domain,
+                payload: JSON.stringify({
+                  source: "n8n-workflow",
+                  corpusId: targetCorpusId,
+                  domain,
+                  entries: [
+                    {
+                      id: entry.id,
+                      title: entry.title,
+                      body: entry.body,
+                      metadata: {
+                        ...entry.metadata,
+                        agreementScore,
+                        auditId,
+                        decision,
+                        validatedAt: new Date().toISOString(),
+                      },
+                    },
+                  ],
+                }),
+              },
             });
           } catch (err) {
-            // CMD-WEBHOOK-PHASE-C-INGEST-HANDLER-METRIC-INTEGRITY V20 LOW
-            // graphify-throw rolls accepted/quarantined back to discarded so
-            // response payload + summary log + downstream observability stay
-            // truthful. err-class classify (fs-read-only · schema-drift ·
-            // graphify-throw) feeds CYL 2 substrate-router routing.
             const errCause = err instanceof Error ? err.message : String(err);
-            const errClass =
-              errCause.includes("EROFS") || errCause.includes("read-only")
-                ? "fs-read-only"
-                : errCause.includes("sylvia_episodic") ||
-                    errCause.includes("table")
-                  ? "schema-drift"
-                  : "graphify-throw";
             console.error(
-              `[N8N WEBHOOK · phase_c_ingest] graphify-throw · entry=${entry.id} class=${errClass} cause=${errCause}`
+              `[N8N WEBHOOK · phase_c_ingest] enqueue-failed · entry=${entry.id} cause=${errCause}`
             );
             if (decision === "accept") accepted -= 1;
             else if (decision === "quarantine") quarantined -= 1;
             discarded += 1;
-            graphifyFailedCount += 1;
+            enqueueFailedCount += 1;
           }
         }
 
@@ -350,7 +350,7 @@ export async function POST(req: NextRequest) {
       }
 
       console.log(
-        `[N8N WEBHOOK · phase_c_ingest] vertical=${verticalId} domain=${domain} accepted=${accepted} quarantined=${quarantined} discarded=${discarded} graphifyFailed=${graphifyFailedCount} costUsd=${totalCostUsd.toFixed(4)}`
+        `[N8N WEBHOOK · phase_c_ingest] vertical=${verticalId} domain=${domain} accepted=${accepted} quarantined=${quarantined} discarded=${discarded} enqueueFailed=${enqueueFailedCount} costUsd=${totalCostUsd.toFixed(4)}`
       );
 
       return NextResponse.json({
@@ -362,7 +362,7 @@ export async function POST(req: NextRequest) {
         accepted,
         quarantined,
         discarded,
-        graphifyFailed: graphifyFailedCount,
+        enqueueFailed: enqueueFailedCount,
         totalCostUsd,
       });
     }
