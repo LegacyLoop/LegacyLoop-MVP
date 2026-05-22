@@ -510,3 +510,19 @@ Empirical: Per-WF hardcoded Build Payload literals canonical pattern. 7+ proofs:
 - Cyl 1 audit empirical 22 of 22 BP canonical post-Cyl-2a
 
 LAW: BP literals MUST be per-WF hardcoded (verticalId/domain/sourceTier/corpusId). NO generic fallback. Cluster variance class (V11/V1/V3 OLDER Extract strips FLAT meta) defeated empirical.
+
+---
+
+## BINDING #28 STRIKETHROUGH · Wave 22E P1 Phase A close (additive · 2026-05-22 EOD)
+
+Cumulative drift catches: 88× → **89×** (Wave 22E P1 ceremony additive · NO modification existing entries).
+
+Three Wave 22C+D+E catches surface as strikethrough citations (additive · drift class neutralized):
+
+- ~~**Option A path** (Wave 22C P4 Lane 1 Topology Diagnostic)~~ → **RETIRED CLASS** empirical · Cyl 1 audit 22-of-22 BP canonical post-Cyl-2a confirmed Option C native_aggregate fully retires Option A partial-yield path · PERMANENT LAW #12 ratified (DOC-PARTIAL-YIELD-CROSS-CLASS-RETIRE-FIXED).
+- ~~**Cyl 6 V1 app-side Apify duplicate**~~ → **RETRACTED** (CEO catch 2026-05-22 AM · paper-only · zero code damage) · Devin authored redundant app-side `lib/apify/guards.ts` duplicating live `lib/market-intelligence/` SoT (LIVE 48 days · 20+ adapters · killswitch · block list · tiers · cost-ceiling) · CEO ground-truth caught before any IT execution · Cyl 6 V3 ratified BINDING #48 DOC-SYLVIA-APIFY-N8N-DIRECT-CANONICAL (n8n-credential canonical · app SoT preserved absolute) + 4 companion ratchets (DOC-DEVIN-REPO-AUDIT-BEFORE-INFRA-SPEC · DOC-CEO-CATCH-PREVENTS-APP-VIOLATION · DOC-MC-INFRA-REFERENCES-REQUIRE-REPO-VERIFY · DOC-APP-UNTOUCHABLE-ABSOLUTE-UNTIL-PHASE-D).
+- ~~**Cyl 7 fired out of order**~~ → **PHASE 3 drift catch** · Phase B auto-cron (Cyl 7) executed before Wave 22E ceremony close · 23/23 WFs PUT+activate=200 verified · no functional harm (cron first fire Sat 2026-05-23 03:00 EDT respects post-ceremony timeline) · drift class neutralized inline · documents fire-order discipline gap caught by CEO+MC during ceremony retrospective.
+
+Sustains: #28 (drift catch cumulative ratchet) · #17 (audit-first wire) · #31 (push-back-with-replacement · CEO catch Cyl 6 V1) · #38 (empirical cite) · #41 (CUSTOM-PORT-ABSOLUTE · app SoT preserved Cyl 6 V1) · BINDING #48 ratified inline this ceremony.
+
+Anchor: CEO 2026-05-22 EOD directive · Wave 22E P1 Phase A ceremony close · 13 PERMANENT LAW + 42+ BINDING canonical post-ceremony · Phase B auto-cron LIVE · Wave 22F+ unblocked.
