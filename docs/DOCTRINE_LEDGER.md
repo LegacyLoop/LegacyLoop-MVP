@@ -444,3 +444,69 @@ Fail-fast in spec §0 grounding table. NEVER assume plan supports schedule frequ
 
 **End of DOCTRINE_LEDGER.md**
 *Maintained by MC. Future appends via CMD-DOCTRINE-LEDGER-APPEND V18 (template banked).*
+
+---
+
+## BINDING #47 · DOC-N8N-BP-DATA-WRAPPER-CANONICAL-CONTRACT (LAW · ratified 2026-05-21 EOD · Wave 22E P1)
+
+Empirical: Webhook handler `app/api/webhooks/n8n/route.ts` reads `payload.data.entries`. WF30 Met canonical Build Payload nests entries+meta under `data:` key. 22 of 22 BP-bearing WFs LIVE canonical post Cyl 2a fix. Lane 3 RED RC #1 (WF45 NADA→KBB · spec §2 missed wrapper) closed Cyl 2a · 4-of-4 yield earned post-fix.
+
+LAW: Every n8n Build Payload node MUST emit `{action: 'phase_c_ingest', data: {entries, corpusId, verticalId, domain, sourceTier, batchSize, emittedAt}}`. NO top-level entries. Spec §2 examples MUST cite canonical shape. V20 v2.4 template enforces.
+
+Sustains: #28 drift catch · #38 empirical-cite · #46 Extract jsCode UNCHANGED.
+
+---
+
+## PERMANENT LAW #11 · DOC-N8N-SOURCE-URLS-FLAT-SHAPE-CANONICAL (ratified 2026-05-21 EOD · Wave 22E P1)
+
+Empirical: 17+ cumulative FLAT shape proofs across V11 (4) + V2 (3) + V15 (4) + V3 (3) + V8 (5 + KBB) + V1 (1) + V12 (1) + V7 (1) = 22 of 22 BP-bearing WFs emit Source URLs FLAT shape (top-level verticalId/domain/sourceTier/corpusId/sourceUrl per item).
+
+LAW: Every Phase C scraper Source URLs node MUST emit FLAT shape. NO nested wrappers at Source URLs layer. Phase 1 per-WF hardcoded BP doctrine inherits FLAT context.
+
+Earned proofs: WF23/24/25/26 (V11 · Phase 1 hardcoded) · WF27 (V1) · WF28/37/39 (V2) · WF30/31/32/33 (V15) · WF29/36/40/41/42/45 (V8) · WF34/35/38 (V3) · WF43 (V12) · WF44 (V7).
+
+---
+
+## PERMANENT LAW #12 · DOC-PARTIAL-YIELD-CROSS-CLASS-RETIRE-FIXED (ratified 2026-05-21 EOD · Wave 22E P1)
+
+Empirical: Option C native_aggregate topology empirically RETIRES partial-yield class. Cascade proofs:
+- Wave 22D Lane 3 V2+V15 GREEN (7-WF batch · 4-of-4 yield)
+- Wave 22D-FIX Phase 2 Lane 1 V8 GREEN (4-of-5 · NHTSA banked)
+- Wave 22D-FIX Phase 2 Lane 2 V11+V1 GREEN (4 WFs · zero unknown leak)
+- Wave 22D-FIX Phase 2 Lane 4 V3+V12 GREEN (V3 4-of-4 · V12 single-yield original)
+- Wave 22D-FIX Phase 3 Cyl 2a WF45 GREEN (4-of-4 KBB)
+
+LAW: Option C native_aggregate canonical. Cross-class partial-yield NOT a risk post Wave 22C P6 propagation. Future scraper authoring uses Option C topology (v2.4 template).
+
+---
+
+## BINDING #48 · DOC-SYLVIA-APIFY-N8N-DIRECT-CANONICAL (LAW · ratified 2026-05-22 AM · Wave 22E P1 · V2 scope-expand)
+
+Empirical: Sylvia Phase C n8n WFs reach Apify via n8n credential + HTTP node · ZERO app touch. App `lib/market-intelligence/` SoT (LIVE 48 days · 20+ adapters + scraper-killswitch + blocked-actors + scraper-tiers + cost-ceiling) preserved absolute. Catch instance: Cyl 6 V1 retracted (Devin authored redundant app-side duplicate · CEO caught · BINDING #28 88× sustained · 4 audit-grade doctrine ratchets earned).
+
+Cyl 6 V3 §12 GREEN: n8n credential "Apify API · Sylvia Phase C" LIVE · canonical pattern doc at `~/Downloads/skills/Standards/N8N_APIFY_CANONICAL_PATTERN_2026-05-22.md` · 5-step n8n HTTP flow (kick run · poll status · fetch items · Native Aggregate · BP+webhook) · n8n-native safety primitives (kill switch via active=false · block list via WF actor hardcode · rate limit · cost via Apify dashboard).
+
+LAW: Sylvia Phase C Apify integration MUST be n8n-direct via n8n credential. NEVER through `lib/market-intelligence/` (app SoT preserved). Wave 22F+ NEW scrapers (KBB→Cars.com pivot · V13 BrickLink · V14 DocumentBot · custom Sylvia actors) MUST inherit canonical pattern from Standards file. V20 v2.4 template §B enforces.
+
+Sustains: #16 (clone-not-modify-shape · canonical pattern) · #17 (audit-first wire) · #28 (drift catch) · #38 (empirical) · #42 (Single-Egress analog · separate Sylvia path from app path) · #46 (Extract UNCHANGED) · #47 (BP `data:` wrapper canonical).
+
+Companion ratchets earned (Cleanup Action 1 audit-grade discipline):
+- DOC-DEVIN-REPO-AUDIT-BEFORE-INFRA-SPEC · 1/5 NEW EARNED (audit cadence MUST run pre-infra-spec)
+- DOC-CEO-CATCH-PREVENTS-APP-VIOLATION · 1/5 NEW EARNED (CEO ground-truth catch process)
+- DOC-MC-INFRA-REFERENCES-REQUIRE-REPO-VERIFY · 1/5 NEW EARNED (MC ratifications cite repo-verified state)
+- DOC-APP-UNTOUCHABLE-ABSOLUTE-UNTIL-PHASE-D · 1/5 NEW EARNED (CEO directive #1 absolute)
+
+---
+
+## PERMANENT LAW #13 · DOC-BUILD-PAYLOAD-META-RECOVERY-CANONICAL (ratified 2026-05-21 EOD · Wave 22E P1)
+
+Empirical: Per-WF hardcoded Build Payload literals canonical pattern. 7+ proofs:
+- Wave 22D-FIX Phase 1 20-PUT cascade (canary WF23 V11 5→13 tagged correctly)
+- Phase 2 Lane 1 V8 +12 correctly tagged
+- Phase 2 Lane 2 V11 +22 · V1 +4 (zero unknown leak)
+- Phase 2 Lane 4 V3 +12 · V12 +1 (zero unknown leak)
+- Phase 3 Cyl 2a WF45 V8 KBB +4 (post BP wrapper fix)
+- Phase 3 Cyl 2b WF29 NHTSA BP override LIVE (Extract upstream blocker per #46 LAW · banked Cyl 5)
+- Cyl 1 audit empirical 22 of 22 BP canonical post-Cyl-2a
+
+LAW: BP literals MUST be per-WF hardcoded (verticalId/domain/sourceTier/corpusId). NO generic fallback. Cluster variance class (V11/V1/V3 OLDER Extract strips FLAT meta) defeated empirical.
