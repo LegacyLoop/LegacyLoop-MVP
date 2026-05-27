@@ -1,10 +1,11 @@
-# n8n Split URLs Loop Early-Terminate Diagnostic · 2026-05-27 · Wave 6 W6-1
+# n8n Split URLs Loop Early-Terminate Diagnostic · 2026-05-27 · Wave 6 W6-1 → Wave 8 W8-1 VERIFIED
 
-> **Status:** Diagnostic-only · audit-doc · ZERO n8n substrate write · ZERO repo source change
-> **Anchor:** HEAD `95c26f4` · Wave 5 W5-2 V14 WF66 Phase 4 PARTIAL (3-of-5 yield)
+> **Status:** ROOT CAUSE CONFIRMED + FIX DEPLOYED + VERIFIED · BINDING #50 RATIFIED
+> **Anchor:** HEAD `50dc80f` · Wave 8 close · fix deployed via sentinel passthrough pattern
 > **Verdict:** **Empty-pipeline loop-back starvation** — Extract+Format returns `[]` on failed fetch → `splitInBatches` receives zero items on loop-back → halts iteration prematurely
-> **Blast radius:** 42 of 50 workflows use `splitInBatches` — all vulnerable to same bug class
-> **Doctrine yield:** DOC-N8N-SPLIT-URLS-LOOP-EARLY-TERMINATE-OBSERVABILITY 1/5 → 2/5
+> **Fix:** Sentinel `_loopPassthrough` item returned on zero-yield → loop continues → Build Payload filters sentinels
+> **Blast radius:** 46 of 54 workflows use `splitInBatches` — 6 patched (Wave 8) · **40 still vulnerable**
+> **Doctrine yield:** DOC-N8N-SPLIT-URLS-LOOP-EARLY-TERMINATE-OBSERVABILITY 4/5 SUSTAINED → BINDING #50 RATIFIED
 
 ---
 
@@ -196,8 +197,78 @@ splitInBatches: typeVersion 3 · batchSize 1 · options {}
 executionOrder: v1 (both WFs)
 ```
 
-## Appendix B · Banked Carry-Forwards
+## §7 · Wave 8 Fix Verification (Agent B · 2026-05-27 PM)
 
-1. **CMD-WF66-SPLIT-URLS-PATCH V20 LOW** — apply sentinel passthrough fix to WF66 + RE-FIRE
-2. **CMD-N8N-FLEET-AUDIT-SPLIT-URLS V20 LOW** — audit WF54 + WF65 + fleet for same-class vulnerability
+### Fix deployed: Sentinel passthrough pattern (BINDING #50)
+
+Extract+Format Code node now returns sentinel item instead of `[]`:
+
+```javascript
+if (!html) return [{
+    json: {
+      _loopPassthrough: true,
+      _zeroYieldSource: (_splitMeta?.url || _splitMeta?.source || 'unknown'),
+      _zeroYieldReason: 'empty-html-from-fetch',
+      _zeroYieldTs: new Date().toISOString(),
+      _wf: 'WF66'
+    }
+  }];
+```
+
+Build Payload filters sentinels:
+```javascript
+const entries = _rawEntries.filter(e => !e._loopPassthrough);
+```
+
+### Exec 1743 verification (post-fix · 2026-05-27T16:00:30Z)
+
+| Node | Runs | Items |
+|------|------|-------|
+| Source URLs | 1 | 5 URLs |
+| Split URLs | **6** (5 items + done) | ✅ ALL processed |
+| Fetch HTML | 5 | body: 37243, 69689, **0**, 64614, 66745 |
+| Extract+Format | **5** | 1, 1, **1 (sentinel)**, 1, 1 |
+| Aggregate | 5 | 5 entries (4 real + 1 sentinel) |
+| Build Payload | 5 | 4 real + 1 skip |
+| Webhook | 5 | 4 delivered + 1 skip (99ms) |
+
+**Result:** 4-of-5 real yield (FDA+EPA+OPM+NIH). State.gov still returns empty body (persistent WAF/IP block on n8n droplet). Sentinel kept loop alive — **OPM and NIH recovered** (were lost in exec 1694).
+
+### Exec comparison
+
+| Exec ID | Mode | Duration | Split iters | Real yield | Status |
+|---------|------|----------|-------------|------------|--------|
+| 1694 | manual | 4s | 3/5 | 2 (FDA+EPA) | ❌ early-terminate |
+| 1713 | cron | 75s | 3/5 | 2 (FDA+EPA) | ❌ early-terminate |
+| 1740 | manual | 3s | — | error | ❌ error |
+| 1741 | manual | 8s | — | — | unclear |
+| **1743** | **manual** | **7.4s** | **5/5** | **4 (FDA+EPA+OPM+NIH)** | **✅ sentinel fix working** |
+
+### Fleet sentinel audit (fresh scan 2026-05-27 PM)
+
+**PATCHED (6/46):**
+- ✓ WF43, WF57, WF64, WF66, WF69, WF70
+
+**UNPATCHED (40/46):**
+- ✗ WF23-WF42 (original fleet, 18 WFs)
+- ✗ WF44-WF55 (mid-range, 10 WFs)
+- ✗ WF56(×2), WF58, WF60-WF63, WF65, WF67, WF68 (12 WFs)
+
+### Risk assessment
+
+40 WFs remain vulnerable. Bug is **latent** — only manifests when ANY source URL returns empty/error during a loop iteration. Given:
+- State.gov consistently empty from n8n droplet
+- OPM.gov returns 403 anti-bot
+- Any .gov site may WAF-block the droplet IP at any time
+
+**Probability of silent data loss on any given cron fire: HIGH for multi-source WFs, LOW for single-source WFs.**
+
+---
+
+## Appendix B · Banked Carry-Forwards (updated)
+
+1. ~~**CMD-WF66-SPLIT-URLS-PATCH V20 LOW**~~ — ✅ DONE (Wave 8 W8-1 sentinel deployed)
+2. **CMD-N8N-FLEET-SENTINEL-OBSERVABILITY-ROLLOUT V20 MEDIUM** — apply sentinel to remaining 40 WFs (Wave 9 W9-1 candidate · 60-90 min)
 3. **CMD-N8N-OBSERVABILITY-LAYER V20 MEDIUM** — Prometheus per-node executionTime histogram + alert on iter < expected count
+4. **CMD-N8N-STATE-GOV-HEADLESS V20 LOW** — investigate headless browser approach for State.gov (persistent WAF block)
+5. **CMD-N8N-OPM-RSS-PIVOT V20 LOW** — replace OPM direct fetch with RSS/sitemap alternative (403 anti-bot)
