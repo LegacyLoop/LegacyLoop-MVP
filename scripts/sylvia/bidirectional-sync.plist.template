@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.legacyloop.sylvia-bidirectional-sync</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-c</string>
+    <string>cd $HOME/legacy-loop-mvp &amp;&amp; /Users/ryanhallee/.nvm/versions/node/v20.18.0/bin/vercel env pull /tmp/.env.bidir-sync --environment=production --yes &amp;&amp; /usr/local/bin/node --env-file=/tmp/.env.bidir-sync scripts/sylvia/bidirectional-sync-app-data.mjs &gt;&gt; $HOME/Library/Logs/sylvia-bidir-sync.log 2&gt;&amp;1 ; shred -u /tmp/.env.bidir-sync 2&gt;/dev/null</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/ryanhallee/legacy-loop-mvp</string>
+  <key>StartInterval</key>
+  <integer>3600</integer>
+  <key>RunAtLoad</key>
+  <false/>
+  <key>StandardOutPath</key>
+  <string>/Users/ryanhallee/Library/Logs/sylvia-bidir-sync.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/ryanhallee/Library/Logs/sylvia-bidir-sync.error.log</string>
+</dict>
+</plist>
