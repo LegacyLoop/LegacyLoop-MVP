@@ -78,16 +78,38 @@ GET with Legacy-Loop UA + `Accept: application/json` + 30s timeout + `responseFo
 
 ---
 
-## §4 · Execution Status
+## §4 · Execution Status — VERIFIED ✓
 
-**Awaiting CEO Manual Execute G2** from n8n UI (`https://n8n.legacy-loop.com`).
+**exec_id 1849 · success · 33s · manual · 2026-05-28T21:42:29Z → 21:43:02Z**
 
-n8n REST API has no `/run` endpoint (W11+W13+W14+W15 lesson). CEO Manual Execute → IT pulls exec_id + per-subject yield post-ship.
+### Per-subject yield
 
-Expected:
-- Ceiling: 300 entries (10 × 30 cap)
-- Realistic: 250-300 (IA has dense corpus · all 10 queries should return ≥30 docs based on §0 probe `numFound=11202` for "antiques")
-- V15 baseline: 364 → expected post-Execute: **~600-700** (V15 +250-300)
+| # | Subject | Items | Cap status |
+|---|---|---|---|
+| 1 | antiques | 30 | cap hit |
+| 2 | numismatic | 30 | cap hit |
+| 3 | photography | 30 | cap hit |
+| 4 | postal | 30 | cap hit |
+| 5 | memorabilia | 30 | cap hit |
+| 6 | provenance | 30 | cap hit |
+| 7 | auction-catalogs | 30 | cap hit |
+| 8 | pottery | 19 | partial |
+| 9 | hallmarks | 14 | partial |
+| 10 | trade-catalogs | 2 | partial |
+
+**TOTAL: 245 real V15 entries delivered to Turso · ZERO sentinel skips · 10/10 subjects productive**
+
+### Yield analysis
+
+- Ceiling: 300 (10 × 30 cap)
+- Achieved: 245 (82% of ceiling)
+- 7-of-10 subjects hit cap (headroom signal · raise to 100 W17)
+- 3 partial-yield subjects (pottery 19 · hallmarks 14 · trade-catalogs 2) · IA corpus thinner for these queries
+- Sentinel design preserved · BINDING #50 sustained (zero sentinel emits needed · all subjects yielded)
+
+V15 baseline: 364 → post-Execute: **~609** (V15 +245)
+
+"Connecting Generations" provenance keystone delivered.
 
 ---
 
