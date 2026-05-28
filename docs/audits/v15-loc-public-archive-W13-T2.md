@@ -81,9 +81,26 @@ Timeline: startedAt=2026-05-28T13:39:50Z · stoppedAt=2026-05-28T13:40:41Z (51 s
 
 **Yield delta**: 0 LOC items pre-patch · ~600 items/cron projected post-patch · awaiting next exec.
 
-## §5b · NEXT EXEC RECOMMENDATION
+## §5b · POST-PATCH EXEC=1830 (2026-05-28 13:47 UTC · CEO Manual Execute)
 
-CEO Manual Execute WF78 again post-patch to confirm ~600-item yield · OR wait for cron 7:30 AM 2026-05-29 next fire.
+**STATUS: 🟢 GREEN · 600 real items extracted · ZERO sentinels.**
+
+| Query | Yield | Sample title |
+|-------|-------|--------------|
+| furniture | 100 | Photographs of furniture, furniture groupings... |
+| silver | 100 | Silver Spring & Silver Spring Run, Fla. |
+| pottery | 100 | The pottery & glass salesman |
+| porcelain | 100 | Chinese export porcelain in private Brazilian coll... |
+| coin | 100 | Coining press |
+| antique | 100 | Questers antique shop. Antique secretary |
+
+- Runtime: 28.9 sec (vs 51 sec pre-patch · faster JSON parse)
+- Webhook callbacks: 6 (1 per query)
+- Real items: 600 (matches projection exactly)
+- Sentinels: 0
+- Status: success · finished=true
+
+V15 "Connecting Generations" anchor LIVE. Phase C Legal Compendium §V15 verbatim sustained.
 
 ## §5c · Doctrine note
 
