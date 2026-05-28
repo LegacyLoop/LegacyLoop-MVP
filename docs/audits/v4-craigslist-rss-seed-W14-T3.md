@@ -116,9 +116,34 @@ WF57 (HTML search endpoint) still works: exec 1822 returned 440-500KB bodies per
 
 Sentinel architecture proved value: 6 dormant metros caught without crash. Pivot inline preserves V4 close goal.
 
-### Awaiting CEO Re-Execute (post-pivot)
+### Post-pivot exec 1836 · VERIFIED ✓ · V4 MISSING vertical CLOSED
 
-WF82 still LIVE (`cLuij2hYYDQa5F89` · active=true). CEO Re-Execute WF82 → cite new exec_id + per-metro HTML listing yield. Expected: per-metro 25-50 listings parsed from CL HTML search pages.
+**exec 1836 · success · 30s · manual · 2026-05-28T14:38:56Z → 14:39:26Z**
+
+| Metro | Fetch body | Extracted items | BP yield |
+|---|---|---|---|
+| Maine | 21KB | 27 | 27 ✓ |
+| New York | 67KB | 50 (cap hit) | 50 ✓ |
+| Boston | 35KB | 50 (cap hit) | 50 ✓ |
+| Philadelphia | 42KB | 50 (cap hit) | 50 ✓ |
+| Chicago | 66KB | 50 (cap hit) | 50 ✓ |
+| Los Angeles | 66KB | 50 (cap hit) | 50 ✓ |
+
+**TOTAL: 277 real V4 entries delivered to Turso · ZERO sentinel skips · 6-of-6 metros productive**
+
+V4 baseline: 0 → 277 · **MISSING vertical CLOSE confirmed**
+
+### Pivot validation
+
+§0.7 pivot fully vindicated:
+- RSS endpoint (exec 1832): 0 yield · all blocked
+- HTML endpoint (exec 1836): 277 yield · 0 blocked
+- CL HTML listing regex (Pattern A `<a href="...html">`) matched correctly across all 6 metros
+- Cap hit on 5-of-6 metros (cap=50/metro) · headroom exists to raise cap if appetite
+
+### Lesson banked
+
+CL blocks RSS path · permits HTML search path · droplet IP-specific block on `?format=rss`. Future V4/V3 CL work: use HTML endpoint pattern (WF57 + WF82 proven) · NOT RSS endpoint.
 
 ---
 
