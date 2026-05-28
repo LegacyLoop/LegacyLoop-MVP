@@ -100,17 +100,31 @@ WF88 `ICc2MriOInnTG8O9` · deactivate→PUT→activate cycle complete.
 
 ## §5 · CEO G2 RESULTS · Empirical Yield (post-fire)
 
-### WF88 cap-raise · **G2 RE-FIRE DROVE EMPIRICAL BUG**
-- Exec 1853 (CEO retry · 23:36 UTC · status=success · mode=manual)
-- **★ EMPIRICAL: 245 items · SAME as pre-patch 1849**
-- Per-iter: 30/14/19/30/30/2/30/30/30/30 = 245 (identical to 30-cap baseline)
-- **★ ROOT CAUSE FOUND:** WF88 Extract node had hardcoded `docs.slice(0, 30)` cap
-  - Source URLs URL `rows=100` correctly raised IA query · IA returned 100 docs
-  - But Extract sliced to 30 regardless · cap-raise effectively ignored
-  - Same bug across all 10 subjects · explains identical 245
-- **FIX APPLIED (post-1853):** WF88 Extract patched to `docs.slice(0, _splitMeta.rowsCap || 30)` · dynamic cap pulls from Source URLs `rowsCap` field
-  - deactivate→PUT→activate cycle complete · WF88 active
-- **DISPOSITION:** CEO Manual Execute WF88 ONE MORE TIME · expect 7×100 + 14+19+2 = ~735 items (vs 245)
+### WF88 cap-raise · **G2 SUCCESS post-Extract-fix** · exec 1854 · **696 V15 items**
+
+**Empirical timeline:**
+- exec 1849 (R3-L3 pre-patch · 21:42 UTC): 245 items @ 30-cap baseline
+- exec 1853 (post-URL-patch · 23:36 UTC): 245 items SAME · ROOT CAUSE Extract hardcoded `docs.slice(0, 30)`
+- **★ FIX:** Extract patched `docs.slice(0, _splitMeta.rowsCap || 30)` · dynamic cap
+- exec 1854 (post-Extract-fix · 23:40 UTC): **696 items** ✓
+
+**Per-iter yield (exec 1854):**
+
+| iter | subject | items | cap | notes |
+|------|---------|-------|-----|-------|
+| 0 | antiques | **61** | 100 | IA corpus returned 61 only (thinner than expected · honest empirical) |
+| 1 | hallmarks | 14 | 30 | partial sustained · returned 14 |
+| 2 | pottery | 19 | 30 | partial sustained · returned 19 |
+| 3 | auction-catalogs | **100** | 100 | ✓ cap-hit MAX |
+| 4 | provenance | **100** | 100 | ✓ cap-hit MAX |
+| 5 | trade-catalogs | 2 | 30 | partial sustained · returned 2 |
+| 6 | memorabilia | **100** | 100 | ✓ cap-hit MAX |
+| 7 | postal | **100** | 100 | ✓ cap-hit MAX |
+| 8 | photography | **100** | 100 | ✓ cap-hit MAX |
+| 9 | numismatic | **100** | 100 | ✓ cap-hit MAX |
+
+**V15 delta: +451 rows** (696 vs prior 245 baseline · 6-of-7 cap-hit maxed · 1 antiques IA corpus thin)
+**Projection alignment: +400-490 projected · +451 actual = 92% of mid-projection ✓**
 
 ### WF93 OpenLibrary · **G2 SUCCESS** · exec=1852 · 190 V15 records
 - 8 subjects fan-out · all extracted
@@ -130,14 +144,17 @@ WF88 `ICc2MriOInnTG8O9` · deactivate→PUT→activate cycle complete.
 - **★ CRITICAL BUG:** Same metadata propagation bug as WF93 (`source=unknown`) · prevents NSF API JSON branch detection · all routes fell through to HTML regex
 - V14 delta: **+7 rows** (vs projected 150-300 · ~5% of low-bound · §0.7 PB triggered · banked W18 refinement)
 
-### Combined Empirical (vs Projected)
+### Combined Empirical (FINAL · post WF88 exec 1854)
 
-| Vertical | Projected | Actual | Delta vs low-bound |
+| Vertical | Projected | Actual | % vs mid-projection |
 |----------|-----------|--------|---------------------|
-| V15 (cap-raise) | +400-490 | 0 (WF88 not fired) | **0%** (pending CEO retry) |
-| V15 (OpenLibrary) | +200-240 | **+190** | 95% ✓ |
-| V14 (P8 USGS+NSF) | +150-300 | **+7** | 5% (extract bug) |
-| **Combined** | +750-1,030 | **+197** | 26% (pending WF88) |
+| V15 (cap-raise) | +400-490 | **+451** | 92% ✓ |
+| V15 (OpenLibrary) | +200-240 | **+190** | 86% ✓ |
+| V14 (P8 USGS+NSF) | +150-300 | **+7** | 3% (bug · §0.7 PB banked) |
+| **Combined** | +750-1,030 | **+648** | **73% mid · 86% low-bound** |
+
+**V15 combined: +641** (cap-raise +451 · OpenLibrary +190) · strong win
+**V14 standalone: +7** · W18 banked for NSF JSON routing fix · honest under-cite
 
 ---
 
