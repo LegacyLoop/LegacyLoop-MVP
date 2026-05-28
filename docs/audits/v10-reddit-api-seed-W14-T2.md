@@ -81,9 +81,49 @@ W14-T2 Extract pre-baked the JSON.parse pattern up-front to avoid 0-yield first 
 
 **Yield delta**: 0 posts pre-patch · ~600 posts/exec projected post-patch · awaiting next exec.
 
-## §5b · NEXT EXEC RECOMMENDATION
+## §5b · POST-PATCH exec=1835 (2026-05-28 14:38 UTC) · STILL 0 YIELD · ASN DISCRIMINATION confirmed
 
-CEO Manual Execute WF81 again to confirm post-patch yield · OR wait for cron 7:34 AM 2026-05-29.
+**Status: success · 0 real posts · ALL 6 subs HTML response · 190KB identical · runtime 9.2 sec.**
+
+**Diagnostic verification (Accept patch DID persist)**:
+- WF81 Fetch headers GET confirms `Accept: application/json` is set
+- Mac probe with IDENTICAL headers (UA + Accept: application/json) → JSON 200 ✓
+- Droplet probe with same headers → HTML 200 (190KB new-Reddit UI page)
+
+**Root cause: REDDIT ASN/IP DISCRIMINATION on `www.reddit.com`**. Same Accept/UA · different source IP = different content. Reddit serves HTML to datacenter ASN regardless of headers. Same pattern as State.gov W10-T2 (407) and KBB W11-T2 (403).
+
+**Mac hostname comparison probe (all JSON 200)**:
+- www.reddit.com ✓
+- api.reddit.com ✓
+- old.reddit.com ✓
+- oauth.reddit.com ✓ (likely 401 without token)
+- pushshift.io 403 (DEAD)
+
+## §5c · LIVE PATCH ATTEMPT 2: old.reddit.com swap
+
+Patch applied (deactivate→PUT→activate · 14:42 UTC):
+- Source URLs `www.reddit.com` → `old.reddit.com` (legacy infra · separate frontend pool)
+- All other config preserved
+
+Pending CEO Manual Execute WF81 (third attempt) to test if `old.reddit.com` bypasses ASN block.
+
+## §5d · W15 banked alternatives (fallback ladder)
+
+If old.reddit.com STILL serves HTML to droplet:
+1. **CMD-W15-V10-REDDIT-API-HOST-SWAP V20 LOW** — try `api.reddit.com` next
+2. **CMD-W15-V10-REDDIT-OAUTH-UPGRADE V20 LOW** — CEO registers script-app · OAuth via `oauth.reddit.com` (may bypass since OAuth flow validates client auth differently)
+3. **CMD-W15-V10-PROXY-RESIDENTIAL V20 MEDIUM** — Smartproxy or Bright Data ($ tier · last resort)
+4. **CMD-W15-V10-YOUTUBE-DATA-API V20 LOW** — alternate V10 source · skip Reddit if ASN-fully-blocked
+5. **CMD-W15-V10-TWITTER-X-RESALE V20 LOW** — alternate V10 source
+
+## §5e · Doctrine note
+
+**DOC-REDDIT-ASN-DROPLET-DISCRIMINATION-EMPIRICAL** mapped W14-T2:
+- Mac+UA+Accept=JSON · Droplet+same headers=HTML new-UI page
+- Identical 190KB across 6 subs = generic block page (not real listings)
+- Add to ASN-discrimination pattern fleet (State.gov 407 · KBB 403 · Reddit HTML-instead-of-401)
+
+ZERO new doctrines codified (CEO rule). Empirical-cite logged for future cumulative ratify.
 
 ## §5c · Doctrine note
 
