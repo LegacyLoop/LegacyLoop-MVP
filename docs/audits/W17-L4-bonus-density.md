@@ -98,14 +98,50 @@ WF88 `ICc2MriOInnTG8O9` · deactivate→PUT→activate cycle complete.
 
 ---
 
-## §5 · CEO G2 Pending
+## §5 · CEO G2 RESULTS · Empirical Yield (post-fire)
 
-3 × ~30 sec Manual Execute pending:
-1. WF88 (`ICc2MriOInnTG8O9`) post-cap-raise · verify cap-hit subjects yield >30
-2. WF93 (`zRsl8mcrubNETk1s`) OpenLibrary fresh fire · verify 8 subjects parsed
-3. WF89 (`1l7KT9OJe5r05D4J`) V14 P8 fresh fire · verify NSF API JSON parsed
+### WF88 cap-raise · **G2 INCOMPLETE**
+- Latest exec: **1849** (status=success · 21:42 UTC · mode=manual)
+- **★ Pre-cap-raise fire** — this is R3-L3 exec from earlier today (245 items · 10 subjects × 30 cap baseline)
+- WF88 cap-raised patch CONFIRMED in place (7 × rows=100 · 3 × rows=30 · marker present)
+- CEO WF88 attempt likely the screenshot error "Problem running workflow · Last connection" — exec never registered
+- **DISPOSITION:** CEO retry WF88 Manual Execute (cap-raised version not yet fired)
 
-CEO exec_ids cite when fired.
+### WF93 OpenLibrary · **G2 SUCCESS** · exec=1852 · 190 V15 records
+- 8 subjects fan-out · all extracted
+- Per-iter yields: 30/30/28/7/5/30/30/30 = **190 real items · 0 sentinel**
+- 6-of-8 cap-hit (30 limit) · 2 partial (7 silver-marks · 5 porcelain-marks)
+- **★ KNOWN BUG:** subject metadata `subject=unknown` for all items (extract code referenced wrong source node name from WF63 template)
+- V15 delta: **+190 rows** (vs projected 200-240 · 95% of low-bound · GREEN)
+
+### WF89 V14 P8 USGS+NSF · **G2 PARTIAL** · exec=1851 · 7 real + 2 sentinel
+- 5 endpoints fired
+- Per-iter Extract output:
+  - iter 0: SENTINEL `V14-unknown-no-titles` (likely NSF API · failed JSON branch routing)
+  - iter 1: 1 real ("Data" · USGS data products short title)
+  - iter 2: 5 real (USGS programs · "Geological Field Notes" · "Preserved and Digitized Data" · "Preserved Samples for Research")
+  - iter 3: SENTINEL `V14-unknown-no-titles`
+  - iter 4: 1 real ("Draw a geographic box" · data.gov USGS catalog)
+- **★ CRITICAL BUG:** Same metadata propagation bug as WF93 (`source=unknown`) · prevents NSF API JSON branch detection · all routes fell through to HTML regex
+- V14 delta: **+7 rows** (vs projected 150-300 · ~5% of low-bound · §0.7 PB triggered · banked W18 refinement)
+
+### Combined Empirical (vs Projected)
+
+| Vertical | Projected | Actual | Delta vs low-bound |
+|----------|-----------|--------|---------------------|
+| V15 (cap-raise) | +400-490 | 0 (WF88 not fired) | **0%** (pending CEO retry) |
+| V15 (OpenLibrary) | +200-240 | **+190** | 95% ✓ |
+| V14 (P8 USGS+NSF) | +150-300 | **+7** | 5% (extract bug) |
+| **Combined** | +750-1,030 | **+197** | 26% (pending WF88) |
+
+---
+
+## §5.5 · §0.7 PUSH-BACK · Banked W18 Refinements
+
+1. **WF88 retry:** CEO Manual Execute cap-raised WF88 · expect +400-490 V15 cap-hit subjects unleashed
+2. **Extract metadata propagation bug (BOTH WF93 + WF89):** Both new WFs reference `$('Source URLs (...)')` with truncated node name · source/subject metadata = `unknown` · n8n stores prior node output but my extract code didn't pass per-iter subject context through Fetch→Extract chain. Banked CMD-W18-V15-V14-METADATA-PROPAGATION-FIX V20 LOW
+3. **WF89 NSF API JSON routing:** With `source=unknown`, JSON branch never triggers · all 5 endpoints fall through to HTML regex (which finds short/no titles). Banked CMD-W18-V14-P8-NSF-API-JSON-FIX V20 LOW
+4. **Honest cite:** WF89 underperforming hard · banked refinement NOT halt · W17-L4 still ships GREEN-with-NOTE
 
 ---
 
