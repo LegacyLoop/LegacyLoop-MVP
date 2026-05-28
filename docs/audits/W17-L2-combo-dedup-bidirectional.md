@@ -12,10 +12,48 @@ Part B (write-only Sylvia): bidirectional sync script + LaunchAgent template · 
 
 **LAW #38 HARD GUARD attested both parts.** Read-only Turso SELECT queries for Part A · write-only Sylvia INSERT for Part B (deferred until LaunchAgent load).
 
-## §1 · Part A · Dedup + Provenance Verify
+## §1 · Part A · Dedup + Provenance Verify · POST-L1 STABLE RE-EMIT
 
 **Flag doc:** `~/Downloads/skills/Flags/W17_L2a_DEDUP_PROVENANCE_VERIFY.md`
-**SHA:** `db8924bc8953f0a7735f76ea37b12f4e7e44cfe7f2e8aff02b9e1e85a7d38bde`
+**SHA (re-emit · empirical post-L1):** `8344f5c91dc38a74c35d01bde5a04e911e21b04fc9afba6ea39d5284d7cef74d`
+**Pre-L1 SHA (deferred audit):** `db8924bc8953f0a7735f76ea37b12f4e7e44cfe7f2e8aff02b9e1e85a7d38bde`
+
+**Anchor:** post-W17-L1 ship `dba9d9e` (CEO cite · 2185 rows inserted).
+**Probe state:** PENDING stable at 3056 for 2+ min · drain idle · queue stable for audit.
+
+### §1.1 · Empirical Verification (ALL PASS)
+
+| Check | Result |
+|-------|--------|
+| L1 row count (CEO cite vs probe) | 2185 / 2185 ✓ EXACT MATCH |
+| Per-vertical V9 | 1799 ✓ (CEO projection match) |
+| Per-vertical V8 | 386 ✓ (CEO projection match) |
+| Dedup integrity (distinct id PK) | 2185 / 2185 ✓ PASS (zero dups) |
+| PII safety scan | 0/6 patterns leak ✓ PASS |
+| Schema correctness | ✓ L1 uses real columns (id PK + payload JSON) |
+
+### §1.2 · Per-Table Breakdown
+
+| Table | Rows |
+|-------|------|
+| Item | 28 |
+| MarketComp | 72 |
+| AiResult | 27 |
+| Valuation | 27 |
+| EventLog | 2013 |
+| BuyerLead | 10 |
+| ScraperUsageLog | 8 |
+| **TOTAL** | **2185** |
+
+### §1.3 · L1 id Format Empirical
+
+L1 uses `w17-l1-{Table}-{appRowId}` (e.g. `w17-l1-ScraperUsageLog-cmp0a4q7o0001l204cec9gp65`).
+Part B alignment applied (§2.4).
+
+### §1.4 · Banked
+
+- V9 FAILED=80 (4.4% drain failure rate) · banked investigation via `lastError` column
+- Drain pipeline idle (PENDING stalled at 3056) · banked LaunchAgent state check
 
 ### §1.1 · Schema Drift Catch (BINDING #28 · ★ critical finding)
 
@@ -75,9 +113,13 @@ VALUES
 | MarketComp | V9 | app-data-marketcomp | — |
 | EventLog | V9 / V8 | app-data-event | PRICING\*/BUYERBOT\*/MEGABOT\*/DEMAND\*/GARAGE_SALE\*/AGENT_AI\*/ANALYZ\* → V9 · SHIPPING_QUOTED → V8 |
 
-### §2.4 · Smoke Run Status
+### §2.4 · id Format Alignment to L1 (Post-Empirical Refinement)
 
-**SKIPPED per auto-mode discipline.** Live execution would write to production Turso · spec says "scaffold" with LaunchAgent NOT loaded. Syntax verified via `node --check` (passed). First real run triggered by CEO `launchctl load`.
+After Part A empirical surfaced L1 id format `w17-l1-{Table}-{id}`, Part B PK format updated from `app-{Table}-{id}` → `w17-l1-{Table}-{id}` to prevent dup-insert if L2b first-run sees rows L1 already absorbed. Cross-cyl PK dedup now guaranteed.
+
+### §2.5 · Smoke Run Status
+
+**SKIPPED per auto-mode discipline.** Live execution would write to production Turso · spec says "scaffold" with LaunchAgent NOT loaded. Syntax verified via `node --check` (passed both initial + post-alignment edits). First real run triggered by CEO `launchctl load`.
 
 ## §3 · LaunchAgent Load (CEO 1-Line · Banked)
 
@@ -94,15 +136,15 @@ tail -f ~/Library/Logs/sylvia-bidir-sync.log
 
 Cadence: hourly (3600s). Cite CEO ratify post-load for cadence tuning if too fast/slow.
 
-## §4 · W17 Trio Status
+## §4 · W17 Trio Status · CLOSED
 
 | Lane | Status |
 |------|--------|
-| L1 transform-ingest | ⚠ NOT YET SHIPPED · stub schema mismatch caught by L2 audit |
-| L2a dedup verify | ✓ deferred audit shipped (this cyl Part A) |
-| L2b bidir-sync scaffold | ✓ shipped + LaunchAgent template banked (this cyl Part B) |
+| L1 transform-ingest | ✅ SHIPPED (`dba9d9e` per CEO cite · 2185 rows · schema-correct) |
+| L2a dedup verify | ✅ COMPLETE · empirical post-stable re-emit (`8344f5c91dc3...`) · ALL gates PASS |
+| L2b bidir-sync scaffold | ✅ SHIPPED · id format aligned to L1 · LaunchAgent template banked |
 
-**W17 trio close BLOCKED on L1 ship.** L1 spec requires refactor to use real `sylvia_corpus_queue` schema (id PK + payload JSON + status). L2 outputs ready to validate L1 immediately after ship.
+**W17 trio CLOSED.** L1 ingest verified (2185/2185 dedup ✓ · 0/6 PII ✓ · V9 1799 · V8 386 exact match CEO projection). L2b ready for CEO 1-line `launchctl load` to activate ongoing hourly sync.
 
 ## §5 · Doctrine Sustained (ZERO NEW)
 

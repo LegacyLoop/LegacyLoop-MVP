@@ -70,7 +70,7 @@ try {
   })).rows
   for (const it of newItems) {
     counters.read++
-    const pk = `app-Item-${it.id}`
+    const pk = `w17-l1-Item-${it.id}`
     if (await existsByPK(pk)) { counters.skipped_dedup++; continue }
     try {
       await insertSylviaRow({
@@ -105,7 +105,7 @@ try {
   })).rows
   for (const mc of newComps) {
     counters.read++
-    const pk = `app-MarketComp-${mc.id}`
+    const pk = `w17-l1-MarketComp-${mc.id}`
     if (await existsByPK(pk)) { counters.skipped_dedup++; continue }
     try {
       await insertSylviaRow({
@@ -140,7 +140,7 @@ try {
   })).rows
   for (const ev of newEvents) {
     counters.read++
-    const pk = `app-EventLog-${ev.id}`
+    const pk = `w17-l1-EventLog-${ev.id}`
     if (await existsByPK(pk)) { counters.skipped_dedup++; continue }
     if (!ev.eventType || /^(STATUS_CHANGE|ITEM_UPDATED|BOT_SEQUENCE|LISTBOT_RUN)$/.test(ev.eventType)) continue
     const vid = /^PRICING|^BUYERBOT|^MEGABOT|^DEMAND|GARAGE_SALE|^AGENT_AI|^ANALYZ/.test(ev.eventType)
