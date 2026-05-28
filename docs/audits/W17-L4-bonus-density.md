@@ -100,12 +100,17 @@ WF88 `ICc2MriOInnTG8O9` · deactivate→PUT→activate cycle complete.
 
 ## §5 · CEO G2 RESULTS · Empirical Yield (post-fire)
 
-### WF88 cap-raise · **G2 INCOMPLETE**
-- Latest exec: **1849** (status=success · 21:42 UTC · mode=manual)
-- **★ Pre-cap-raise fire** — this is R3-L3 exec from earlier today (245 items · 10 subjects × 30 cap baseline)
-- WF88 cap-raised patch CONFIRMED in place (7 × rows=100 · 3 × rows=30 · marker present)
-- CEO WF88 attempt likely the screenshot error "Problem running workflow · Last connection" — exec never registered
-- **DISPOSITION:** CEO retry WF88 Manual Execute (cap-raised version not yet fired)
+### WF88 cap-raise · **G2 RE-FIRE DROVE EMPIRICAL BUG**
+- Exec 1853 (CEO retry · 23:36 UTC · status=success · mode=manual)
+- **★ EMPIRICAL: 245 items · SAME as pre-patch 1849**
+- Per-iter: 30/14/19/30/30/2/30/30/30/30 = 245 (identical to 30-cap baseline)
+- **★ ROOT CAUSE FOUND:** WF88 Extract node had hardcoded `docs.slice(0, 30)` cap
+  - Source URLs URL `rows=100` correctly raised IA query · IA returned 100 docs
+  - But Extract sliced to 30 regardless · cap-raise effectively ignored
+  - Same bug across all 10 subjects · explains identical 245
+- **FIX APPLIED (post-1853):** WF88 Extract patched to `docs.slice(0, _splitMeta.rowsCap || 30)` · dynamic cap pulls from Source URLs `rowsCap` field
+  - deactivate→PUT→activate cycle complete · WF88 active
+- **DISPOSITION:** CEO Manual Execute WF88 ONE MORE TIME · expect 7×100 + 14+19+2 = ~735 items (vs 245)
 
 ### WF93 OpenLibrary · **G2 SUCCESS** · exec=1852 · 190 V15 records
 - 8 subjects fan-out · all extracted
