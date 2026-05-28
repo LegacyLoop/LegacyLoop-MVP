@@ -62,12 +62,36 @@ Per W13-T2 LOC post-exec discovery: WF63 inherited `responseFormat: "text"` wrap
 
 W14-T2 Extract pre-baked the JSON.parse pattern up-front to avoid 0-yield first execution. Doctrine candidate **DOC-N8N-HTTP-RESPONSE-FORMAT-TEXT-WRAPPER** (1/5 NEW · banked).
 
-## §5 · CEO Manual Execute
+## §5 · CEO Manual Execute exec=1831 (2026-05-28 14:31 UTC) · YIELD=0 · Accept header bug
 
-PENDING — n8n API does not support remote execution trigger. CEO execute via n8n UI.
-WF81 fires automatically on cron at 7:34 AM EDT daily.
+**STATUS: post-exec diagnostic found Accept header bug · patch applied · re-execute pending.**
 
-Yield projection: ~600 posts/exec (6 subs × 100 posts).
+- Status: success · finished=true · runtime 8.9 sec
+- Split URLs: 6 items ✓
+- Fetch HTML: 6 runs · response 190KB IDENTICAL across subs (HTML new-Reddit UI page)
+- Extract: 6 sentinels · reason `json-parse-fail: Unexpected token '<', "<body clas...`
+- Webhook fires: 6 (sentinel payload)
+- Real Reddit posts: **0**
+
+**Root cause (post-exec diagnostic)**: WF63 inherited Fetch node `Accept: text/html,application/xhtml+xml`. Reddit honors Accept header and serves the new-UI HTML page (190KB · `<body class=theme-beta>`) instead of JSON, EVEN with `.json` URL suffix. Mac curl worked because curl defaults `Accept: */*`.
+
+**Fix applied (post-exec patch · deactivate→PUT→activate)**:
+- Fetch HTML Accept header: `text/html,application/xhtml+xml` → `application/json`
+- All other headers preserved (UA Reddit ToS · Accept-Language)
+
+**Yield delta**: 0 posts pre-patch · ~600 posts/exec projected post-patch · awaiting next exec.
+
+## §5b · NEXT EXEC RECOMMENDATION
+
+CEO Manual Execute WF81 again to confirm post-patch yield · OR wait for cron 7:34 AM 2026-05-29.
+
+## §5c · Doctrine note
+
+**DOC-N8N-CLONE-ACCEPT-HEADER-CONTENT-TYPE-PATCH** caught empirically · WF63 canonical clone source pattern uses `Accept: text/html` for HTML extraction · JSON API sources cloned from WF63 MUST override Accept header to `application/json` (in addition to W13-T2 `JSON.parse(inputJson.data)` Extract patch). Both clone-from-HTML-canonical bugs now mapped:
+1. responseFormat=text → JSON.parse in Extract (W13-T2)
+2. Accept: text/html → Accept: application/json in Fetch (W14-T2 NEW)
+
+Banked candidate for ratify cycle (cumulative · do not codify here per CEO ZERO new doctrines rule).
 
 ## §6 · Banked
 
