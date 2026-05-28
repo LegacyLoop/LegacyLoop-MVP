@@ -72,13 +72,33 @@ Stage-2 implemented inline inside Extract Code node via `this.helpers.httpReques
 
 ---
 
-## §2 · Execution Status
+## §2 · Execution Status — VERIFIED ✓
 
-**Awaiting CEO Manual Execute** from n8n UI (`https://n8n.legacy-loop.com`).
+**CEO Manual Execute: exec_id 1826 · success · 72s · 2026-05-28T13:32:44Z → 13:33:56Z**
 
-n8n REST API has no `/run` endpoint (confirmed W11-T3 lesson). CEO must click "Execute Workflow" in WF79 editor → cite exec_id for 17th LAW.
+### Per-query yield
 
-Expected yield: up to 300 items (6 queries × 50 IDs cap). Sentinel catches any per-query zero-yield.
+| Query | Stage-1 IDs returned | Stage-2 items extracted | Webhook delivered |
+|---|---|---|---|
+| furniture | 50 (cap hit) | 49 | ✓ 3,332ms |
+| silver | 50 (cap hit) | 44 | ✓ 3,002ms |
+| pottery | 0 or stage-2 failed | 0 | sentinel skip (90ms) |
+| porcelain | 0 or stage-2 failed | 0 | sentinel skip (73ms) |
+| coin | 0 or stage-2 failed | 0 | sentinel skip (253ms) |
+| vase | 0 or stage-2 failed | 0 | sentinel skip (111ms) |
+
+**TOTAL: 93 real V15 entries delivered to Turso** (furniture 49 + silver 44)
+**4 sentinel skips** (NO crash · sentinel pattern working as designed · BINDING #50 sustained)
+
+### Sentinel architecture verified
+
+4 of 6 queries returned sentinel passthrough item from Extract → BP filtered correctly → webhook fired `{skip: true, reason: 'no-entries-extracted'}` instead of crashing → loop continued to next query. Without sentinel: workflow would have early-terminated after first 0-item query, losing furniture + silver yield.
+
+### Yield analysis
+
+Expected ceiling: 300 items (6 queries × 50 cap)
+Achieved: 93 items (31% of ceiling · 2 of 6 queries productive)
+Banked W14: investigate pottery/porcelain/coin/vase search params (may need `medium=` filter or department-scoped search instead of generic `q=`)
 
 ---
 
