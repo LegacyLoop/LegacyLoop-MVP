@@ -87,13 +87,38 @@ Per-item metadata: `id · title · body · sourceUrl · metro · metroSlug · ca
 
 ## §5 · Execution Status
 
-**Awaiting CEO Manual Execute** from n8n UI (`https://n8n.legacy-loop.com`).
+### First exec (RSS endpoint) · exec 1832 · 2026-05-28T14:32:05Z
 
-n8n REST API has no `/run` endpoint (W11-T3 + W13-T3 lesson). CEO must click "Execute Workflow" in WF82 editor → cite exec_id for 17th LAW.
+| Metric | Value |
+|---|---|
+| Status | success (8s runtime) |
+| Per-metro Fetch body_len | 248 bytes × 6 (ALL "blocked" HTML) |
+| Per-metro Extract | sentinel passthrough × 6 |
+| Per-metro BP | skip{reason: 'no-entries-extracted'} × 6 |
+| Real V4 entries delivered | **0** |
+| Sentinel skip | 6 |
 
-Expected yield: up to 300 items (6 metros × 50 cap). Sentinel catches per-metro zero-yield without crashing.
+### Critical empirical finding
 
-V4 baseline: 0 rows → expected post-Execute: ~150-300 V4 entries (MISSING vertical CLOSE).
+Craigslist RSS endpoint (`?format=rss`) is **IP-blocked from n8n droplet** too — same 248-byte "blocked" HTML response as my local IP. RSS endpoint blocked even with proven WF57 UA.
+
+WF57 (HTML search endpoint) still works: exec 1822 returned 440-500KB bodies per metro. **CL blocks RSS specifically · HTML search OK.**
+
+### §0.7 PIVOT APPLIED (post-exec 1832)
+
+| Field | Before | After |
+|---|---|---|
+| URL pattern | `{metro}.craigslist.org/search/gms?format=rss` | `{metro}.craigslist.org/search/gms` (no RSS) |
+| Extract logic | RSS XML regex (`<item>`/`<entry>`) | CL HTML listing regex (`cl-search-result`/`result-row`/`<a href="...html">`) |
+| Accept header | `application/rss+xml,...` | `text/html,application/xhtml+xml,*/*` |
+| extractionMode | `rss-xml-regex-parse` | `cl-html-listing-regex-parse` |
+| Sentinel | inherited | preserved + adapted for HTML failure modes |
+
+Sentinel architecture proved value: 6 dormant metros caught without crash. Pivot inline preserves V4 close goal.
+
+### Awaiting CEO Re-Execute (post-pivot)
+
+WF82 still LIVE (`cLuij2hYYDQa5F89` · active=true). CEO Re-Execute WF82 → cite new exec_id + per-metro HTML listing yield. Expected: per-metro 25-50 listings parsed from CL HTML search pages.
 
 ---
 
