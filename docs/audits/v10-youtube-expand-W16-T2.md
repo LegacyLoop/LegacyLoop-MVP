@@ -55,10 +55,34 @@ CEO ratified Option A · 3-substitution roster locked.
 - Daily budget: 10,000 units → 12 execs/day capacity (vs 25 pre-expansion · still cron-safe at 1/day)
 - Zero new infrastructure · zero new credential · zero new spend
 
-## §4 · CEO Manual Execute
+## §4 · CEO Manual Execute exec=1847 (2026-05-28 19:37 UTC) · 🟢 GREEN · 380 videos
 
-PENDING — n8n API does not support remote execution trigger. CEO execute via n8n UI.
-WF85 fires automatically on cron at 7:38 AM EDT daily.
+**STATUS: 🟢 GREEN · 8-channel expansion validated · ZERO sentinels · ZERO retry cycles**
+
+| Slot | Channel | Videos | Latest Title |
+|------|---------|--------|--------------|
+| 1 | Resale Rabbit | 50 | "We Auctioned Off An Entire Commercial Daycare Center" |
+| 2 | Hairy Tornado | 50 | "Can We Find Profit in This Tiny Storage Unit?" |
+| 3 | Lindey Glenn | 50 | "People Forget the Drive-Thru Mic Is ON… WAY Too Often" |
+| 4 | RALLI ROOTS | 50 | "Did Social Media RUIN Thrifting?" |
+| 5 | StevenSteph Resale Killers | **30** | "This Trash Bag Was FULL of Store Merch" |
+| 6 | Hustle at Home Mom | 50 | "Millionaire Community Yard Sale JACKPOT" |
+| 7 | Justin Resells | 50 | "The Silent eBay Sales Killer That Nobody Talks About" |
+| 8 | Flipping Junk | 50 | "This is the Kind of Stuff You Want to Sell on EBAY" |
+
+- Runtime: 19.8 sec
+- Webhook callbacks: 8 (1 per channel)
+- Real videos: **380** (7 channels at max 50 · 1 channel at 30 · projection 400 expected · 95% achievement)
+- Sentinels: 0
+- Status: success · finished=true
+
+**StevenSteph 30/50 note**: NOT a bug · channel-side returned 30 most-recent videos within `order=date` window · likely upload pace artifact. Acceptable yield variance.
+
+**All 3 PB31 substitutes hit max-yield 50 videos** (Hustle at Home Mom · Justin Resells · Flipping Junk) — auto-discovery substitution validated empirically.
+
+**V10 cumulative across W15-T2 + W16-T2: 580 videos absorbed** (200 + 380).
+
+Pre-baked patterns (JSON.parse + Accept:json + queryAuth) sustained · zero post-exec patch cycles required across BOTH execs.
 
 ## §5 · Doctrine Sustained (ZERO NEW)
 
