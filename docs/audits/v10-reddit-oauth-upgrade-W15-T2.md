@@ -61,12 +61,27 @@
 
 Created `YouTube-Data-API-Key` (type `httpQueryAuth` · id `UQl3q5f8dP0rEQxM`) via n8n API · key value NEVER pasted to file/log/transcript. Credential auto-injects `key={VALUE}` query param on every Fetch.
 
-## §5 · CEO Manual Execute
+## §5 · CEO Manual Execute exec=1844 (2026-05-28 16:05 UTC) · 🟢 GREEN · 200 videos
 
-PENDING — n8n API does not support remote execution trigger. CEO execute via n8n UI.
-WF85 fires automatically on cron at 7:38 AM EDT daily.
+**STATUS: 🟢 GREEN · first-execution success · zero sentinels · zero retry cycles**
 
-**Yield projection**: 4 channels × ~50 videos = **~200 videos/exec** (within Phase C §V10 target).
+| Channel | Videos | Latest Title |
+|---------|--------|--------------|
+| Resale Rabbit | 50 | "We Auctioned Off An Entire Commercial Daycare Center" |
+| Hairy Tornado | 50 | "Goodwill Flip: New Balance Shoes & Giant Turtle!" |
+| Lindey Glenn | 50 | "People Forget the Drive-Thru Mic Is ON… WAY Too Often" |
+| RALLI ROOTS | 50 | "Did Social Media RUIN Thrifting?" |
+
+- Runtime: 11.8 sec
+- Webhook callbacks: 4 (1 per channel)
+- Real videos: **200** (exact projection match · 4 × 50)
+- Sentinels: 0
+- Status: success · finished=true
+
+**W13-T2 + W14-T2 lessons paid off:** JSON.parse pre-baked + Accept: application/json pre-baked + queryAuth credential pre-bound = zero post-exec patch cycles required. Substrate engineering done right first time.
+
+**V10 MISSING vertical CLOSED** · "Social Resale Culture" anchor LIVE.
+Phase C 4-MISSING → 3-MISSING (V10 closed via YouTube alt path).
 
 YouTube Data API v3 quota: 100 units per `search.list` call · 4 calls = 400 units/exec · daily budget 10,000 units → ~25 execs/day capacity (1 cron = sustainable).
 
