@@ -61,10 +61,33 @@ response.results[0]:
 LOC public archive ~17M items · 6 queries × 100 rows = ~600 items/cron expected.
 LOC schema yields title + id + url + date + subject + image_url (rich metadata for V15 provenance).
 
-## §5 · CEO Manual Execute
+## §5 · CEO Manual Execute exec=1828 (2026-05-28)
 
-PENDING — n8n API does not support remote execution trigger. CEO execute via n8n UI.
-WF78 fires automatically on cron at 7:30 AM EDT daily.
+CEO Manual Execute fired · status=success · finished=true · mode=manual.
+Timeline: startedAt=2026-05-28T13:39:50Z · stoppedAt=2026-05-28T13:40:41Z (51 sec runtime).
+
+**Node yield breakdown:**
+- Split URLs: 6 items emitted (1 per LOC query)
+- Fetch HTML: 6 runs · response body ~730KB each (real LOC JSON · ZERO WAF block confirmed)
+- Extract: 6 runs · all returned sentinel `_loopPassthrough=true` reason=`no-results-in-response`
+- Aggregate/BP/Webhook: 6 runs each · sentinel chain propagated downstream
+
+**Root cause (post-exec diagnostic)**: Fetch node inherited WF63 `responseFormat: "text"` (HTML scraping legacy). LOC JSON response body landed as STRING at `inputJson.data`. Original Extract read `inputJson.results` at root → always empty → sentinel chain.
+
+**Fix applied (post-exec patch · deactivate→PUT→activate)**: Extract rewritten:
+- `JSON.parse(inputJson.data)` to unwrap text response body
+- `$('Split URLs').item.json.sourceName/query/url` to recover lost context lost across Fetch
+- Sentinel passthrough preserved (reason cite improved: `json-parse-fail` vs `no-results`)
+
+**Yield delta**: 0 LOC items pre-patch · ~600 items/cron projected post-patch · awaiting next exec.
+
+## §5b · NEXT EXEC RECOMMENDATION
+
+CEO Manual Execute WF78 again post-patch to confirm ~600-item yield · OR wait for cron 7:30 AM 2026-05-29 next fire.
+
+## §5c · Doctrine note
+
+DOC-N8N-HTTP-RESPONSE-FORMAT-TEXT-WRAPPER caught empirically · WF63 canonical clone source pattern uses `responseFormat=text` for HTML extraction · JSON API sources cloned from WF63 MUST `JSON.parse(inputJson.data)` in Extract. Banked candidate for ratify cycle (cite cumulative 1/5 NEW · do not codify here per CEO ZERO new doctrines rule).
 
 ## §6 · Banked
 
