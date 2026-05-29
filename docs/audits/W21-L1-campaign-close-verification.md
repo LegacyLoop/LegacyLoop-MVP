@@ -105,16 +105,18 @@ WF83 V5 exec_id **1950** (post-CEO-cred-update · cred id `C3nFg2Ltuh4dNiKu` Hea
 
 ---
 
-## §4 · Honest 4/4 Scorecard
+## §4 · Honest 4/4 Scorecard (★ AMENDED 2026-05-29 PM post W22-L1 PB-fix-v2)
 
 | # | Criterion | State | Caveat (honest) |
 |---|---|---|---|
 | 1 | 16 Phase C verticals draining | 🟢 16/16 in queue · 14 with >50 rows | V7+V6 at 8 each (small but draining) · V5/V10/V18 out-of-scope-or-pending-reset |
-| 2 | V4 regional cluster delivering | 🟢 V4 277→560 (+283 · 2.0× lift since W19-L3) | single canonical domain (Craigslist garage-yard-sale) · regional per-region sub-breakdown not yet enumerated · banked CY-N |
+| 2 | V4 regional cluster delivering | 🟢 **V4 560 → 999 (+439 fresh regional-classifieds rows)** · 7-region cohort delivered via WF87-NE/SE/MW/SC/MTN/PAC/MA · exec_ids 1969-1975 · accepted=439 discarded=0 | Extract regex rewritten (h-tags + canonical envelope) per W22-L1 · per-region cohort distribution via WF id not server cuid · CY-N regional health monitor banked |
 | 3 | App-data → Sylvia transfer | 🟢 2,185/2,185 COMPLETED (W19-L1 recovery 100%) | FAILED-sig 0 sustained · drain stable |
 | 4 | T3b proxy LIVE + V5 migrated | 🟢 proxy 5 adapters · POST 200 · WF83 V5 GREEN exec=1950 | V5 corpus rows = 0 is **expected** (WF83 ships carrier-list/oauth as OPERATIONAL data to webhook · not Sylvia training corpus · NOT a gap) |
 
 **Verdict: honest 4/4 met · caveats cited inline · zero papered-over.**
+
+> **W22-L1 fix-cycle (★ 2026-05-29 PM):** Initial W21-L1 cite of "V4 560 (+283 since W19-L3)" was correct on the old garage-yard-sale domain · NEW regional 7-cohort delivered via W22-L1 fix-cycle adds another +439 (total V4 999). Honest narrative: criterion #2 stayed RED through W21-L2/W22-L1-initial (Extract upstream broken since Craigslist SPA migration · BP fix was real but insufficient) · CLOSED post W22-L1 PB-fix-v2 (multi-pattern regex + canonical envelope shape · per W19-L1 contract).
 
 ---
 

@@ -1,4 +1,6 @@
-# W22-L1 · V4 Regional Verify-Execute Close · 🟡 RESIDUAL-GAP (§0.7 PB)
+# W22-L1 · V4 Regional Verify-Execute Close · 🟢 CRITERION #2 CLOSED · 4/4
+
+> **★ UPDATED 2026-05-29 PM (post-PB-fix-v2):** Initial §0.7 residual-gap REPLACED by execute-verify-fix-execute close. CEO directive "fix it now" honored · Extract regex rewritten + canonical envelope shape added · all 7 regions deliver real rows · V4 corpus 560 → 999 (+439).
 
 **CMD-W22-L1-V4-REGIONAL-VERIFY-EXECUTE-CLOSE V20 LOW · Agent 1 MAIN worktree · 2026-05-29 PM**
 **Class:** EXECUTE-VERIFY · n8n Execute (CEO-gated) + Turso SELECT · zero code mutation · zero PUT
@@ -81,19 +83,75 @@ W21-L2 "7/7 RED" was directionally correct (cron path also produces no rows) · 
 
 ---
 
-## §3 · Verdict · CRITERION #2 NOT CLOSED · Honest 3/4 Sustained
+## §3 · PB-Fix Round 2 · CRITERION #2 CLOSED
+
+### §3.1 · Two root causes discovered in sequence
+
+**Layer 1: Extract regex outdated** (caught initial round)
+- Old patterns: RSS `<title>` (skip first) · CL classes `result-title|posting-title|item-title|titlestring`
+- Empirical: Maine Craigslist landing = 1 title (page title only, skipped) · CL `/search/sss` = 479KB SPA shell (React-rendered, 0 anchors)
+- Craigslist RSS `?format=rss` = **BLOCKED** (248 bytes · "Your request has been blocked")
+- Uncle Henry's `/rss` = HTML page (not real RSS)
+
+**Layer 2: Extract entries missing envelope contract** (caught second round)
+- Old entry shape: `{title, region, state, sourceUrl, _v4_layer}`
+- Webhook discarded all (processed=2, accepted=0, discarded=2)
+- Per W19-L1 DOC-SYLVIA-CORPUS-ENVELOPE-CONTRACT: entries MUST emit `{id, title, body, metadata}`
+
+### §3.2 · Fix applied (PB-fix-v2 · canonical envelope + multi-pattern regex)
+
+PUT to all 7 WFs (deactivate→PUT→activate · same cycle):
+
+```javascript
+// Multi-pattern regex (6 patterns):
+// 1. RSS <item><title>  2. multi-<title> (skip first)  3. legacy CL classes
+// 4. h1-h4 with anchor  5. h1-h4 plain  6. generic title/post/article/listing/headline class
+// Plus canonical envelope per W19-L1 contract:
+return titles.slice(0, 30).map((title, idx) => ({
+  json: {
+    id: 'wf87-' + region.lower() + '-' + state.lower() + '-' + urlHash + '-' + idx,
+    title: cleanTitle.slice(0, 200),
+    body: cleanTitle + '\n\nSource: ' + sourceUrl + '\nRegion: ' + region + ' / State: ' + state,
+    metadata: { verticalId: 'V4', region, state, sourceUrl, sourceTier: 'T5',
+                domain: 'regional-classifieds', ingestedAt: ISO, _v4_layer: 'L4-per-state', _wf: 'WF87' }
+  }
+}));
+```
+
+### §3.3 · Empirical verification (post PB-fix-v2)
+
+| Region | exec_id | processed | **accepted** | discarded |
+|---|---|---|---|---|
+| NE | **1969** | 122 | **122** ✅ | 0 |
+| SE | **1971** | 69 | **69** ✅ | 0 |
+| MW | **1972** | 49 | **49** ✅ | 0 |
+| SC | **1973** | 32 | **32** ✅ | 0 |
+| MTN | **1974** | 60 | **60** ✅ | 0 |
+| PAC | **1975** | 34 | **34** ✅ | 0 |
+| MA | **1970** | 73 | **73** ✅ | 0 |
+| **TOTAL** | — | **439** | **439** | **0** |
+
+### §3.4 · Turso V4 final state (post-fix)
+
+| Metric | Pre-cyl | Post-fix-v2 | Delta |
+|---|---|---|---|
+| V4 total | 560 | **999** | **+439** ✅ (matches webhook accepted exactly) |
+| V4 `regional-classifieds` domain | 0 | **439** | NEW cohort created |
+| V4 `garage-yard-sale-craigslist` domain | 560 | 560 | unchanged (legacy WF86) |
+
+### §3.5 · Verdict · CRITERION #2 CLOSED · 4/4
 
 | Acceptance criterion | State |
 |---|---|
 | 7 BP CLEAN re-confirmed at fire-time | ✅ |
-| 7 exec_ids cited (no SyntaxError) | ✅ |
-| 7 region-row cohorts in Turso | ❌ **0 across all 7 regions** |
-| Criterion #2 verdict | 🔴 **NOT CLOSED · residual-gap** |
-| W21-L1 scorecard amendment | **HELD** (do not fake-close) |
-
-Per §0.7: "Honest partial beats fake complete. If a fresh execution surfaces a NEW error (not the brace leak), do NOT declare #2 closed."
-
-**W21-L1 close-verification audit scorecard 3/4 SUSTAINED · NOT amended to 4/4.**
+| 7 exec_ids cited (no SyntaxError) | ✅ initial 1951-1958 (Extract upstream zero-yield) |
+| Extract regex updated (multi-pattern · h-tags) | ✅ PUT to 7 WFs |
+| Canonical envelope entries added | ✅ per W19-L1 contract |
+| 7 fresh exec_ids cited post-fix | ✅ 1962-1968 (envelope shape mismatch · 0 accepted) |
+| 7 final exec_ids cited post-envelope-fix | ✅ 1969-1975 (439 accepted · 0 discarded) |
+| Turso V4 region-row delta | ✅ +439 in `regional-classifieds` domain |
+| **Criterion #2 verdict** | 🟢 **CLOSED · 4/4** |
+| W21-L1 scorecard amendment | ✅ AMENDED to 4/4 |
 
 ---
 
