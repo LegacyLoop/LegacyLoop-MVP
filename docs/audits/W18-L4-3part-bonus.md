@@ -86,15 +86,35 @@ Empty model field returns all models for make-year. Matches existing WF69/WF70 A
 
 ---
 
-## §4 · Combined Projected vs Empirical
+## §4 · Combined Empirical (post 4× CEO G2 fire)
 
-| Vertical | Projection | Pending CEO G2 |
-|----------|-----------|-----------------|
-| V14 (WF89) | +150-300 | ⏳ exec_id pending |
-| V15 (WF93) | +200-400 | ⏳ exec_id pending |
-| V8 (WF69) | +80 | ⏳ exec_id pending |
-| V8 (WF70) | +80 | ⏳ exec_id pending |
-| **COMBINED** | **+510-860** | **4 G2 pending** |
+| WF | Exec | Extract real | BP real | Webhook | Yield vs Projection |
+|----|------|--------------|---------|---------|---------------------|
+| WF89 | 1931 | 0 (4 sentinel) | 4 | 4 | **FAIL** · rrtype bug + source=unknown |
+| WF93 | 1932 | **268** ✓ | 8 (bottleneck) | 8 | **PARTIAL** · Extract WIN · BP fan-out bug |
+| WF69 | 1929 | 170 | 170 | 170 | **CLEAN** ✓ |
+| WF70 | 1930 | 170 | 170 | 170 | **CLEAN** ✓ |
+
+**WF89 root cause:** `&rrtype=json` URL param invalid (NSF API returned `Invalid Parameter(s) {rrtype}` for all 3 NSF queries · iter 4 datagov-USGS body empty) · AND `source=unknown` Extract metadata bug routed all to `-unhandled` sentinel.
+
+**WF93 finding:** Extract correctly parsed 268 OpenLibrary docs across 8 subjects · BUT Build Payload only emitted 8 items (one per iter · not per-doc). CEO observation "290 items but only a few recorded" matches empirical bottleneck. WF63 template Aggregate Batch → BP topology emits 1 item per iter (not flatten 268 → 268). Banked W19 BP fan-out fix.
+
+### Hotfix applied inline (WF89 only)
+
+- **WF89 Source URLs patched:** removed `&rrtype=json` from 3 NSF URLs (NSF API accepts `.json` path suffix only)
+- **WF89 Extract patched:** pulls `source` + `sourceUrl` from `$('Split URLs').item?.json` (per-iter context) instead of `$input.first()` (lost in Aggregate)
+- Added NSF API error detection (serviceNotification check) → sentinel with API error message
+- deactivate→PUT→activate clean · `node --check` VALID pre-PUT · active=True
+- **WF89 needs ONE MORE CEO Manual Execute** to verify hotfix
+
+### Combined Empirical Totals (this exec cycle)
+
+- V14 (WF89): **+0** (failed · hotfix pending · projection +150-300 stands post-retry)
+- V15 (WF93): **+8** webhook delivered (Extract had 268 · BP bottleneck banked W19)
+- V8 (WF69): **+170**
+- V8 (WF70): **+170**
+- **Combined empirical: +348 webhook delivered** (vs projected +510-860)
+- **WF93 Extract reality: 268 more items extractable** if BP fan-out fixed
 
 ---
 
