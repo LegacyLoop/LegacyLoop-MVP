@@ -59,11 +59,21 @@ async function drainBatch() {
     orderBy: { createdAt: "asc" },
   });
 
-  // STEP 4 · Process (existing flow · unchanged below)
+  // STEP 4 · Process (existing flow · unchanged claim/batch logic)
+  // W19-L2 ADDITIVE METRIC · entries-written-vs-attempted · silent-loss canary
+  let sumIngested = 0;
+  let rowsWithIngested = 0;
   for (const row of rows) {
     try {
       const payload = JSON.parse(row.payload);
-      await graphIngestExternalCorpus(payload);
+      const ingestResult = await graphIngestExternalCorpus(payload);
+      const ingested = ingestResult?.ingested ?? 0;
+      sumIngested += ingested;
+      if (ingested > 0) rowsWithIngested += 1;
+      else
+        console.warn(
+          `[sylvia-queue-drain] row=${row.id} ingested=0 (entries empty?)`,
+        );
       await appendEpisodic({
         timestamp: new Date().toISOString(),
         sessionId: row.sessionId,
@@ -75,6 +85,7 @@ async function drainBatch() {
           domain: row.domain,
           queueRowId: row.id,
           drainedBy: WORKER_ID,
+          entriesWritten: ingested,
         },
         source: "queue-drain",
       });
@@ -83,9 +94,12 @@ async function drainBatch() {
         data: {
           status: "COMPLETED",
           completedAt: new Date(),
-          claimedBy: null,
+          claimedBy: WORKER_ID,
         },
       });
+      console.log(
+        `[sylvia-queue-drain] row=${row.id} entries-written=${ingested}`,
+      );
     } catch (err) {
       const errCause = err instanceof Error ? err.message : String(err);
       const nextAttempt = row.attemptCount + 1;
@@ -104,15 +118,28 @@ async function drainBatch() {
       );
     }
   }
-  return { drained: rows.length, reclaimed: reclaimed.count };
+  const mismatch = rows.length - rowsWithIngested;
+  return {
+    drained: rows.length,
+    reclaimed: reclaimed.count,
+    sumIngested,
+    rowsWithIngested,
+    mismatch,
+  };
 }
 
 async function main() {
   console.log(`[sylvia-queue-drain] worker=${WORKER_ID} started`);
-  const { drained, reclaimed } = await drainBatch();
+  const { drained, reclaimed, sumIngested, rowsWithIngested, mismatch } =
+    await drainBatch();
   console.log(
-    `[sylvia-queue-drain] worker=${WORKER_ID} drained=${drained} reclaimed=${reclaimed}`,
+    `[sylvia-queue-drain] worker=${WORKER_ID} drained=${drained} reclaimed=${reclaimed} written=${sumIngested} rowsWithIngested=${rowsWithIngested} mismatch=${mismatch}`,
   );
+  if (mismatch > 0) {
+    console.warn(
+      `[sylvia-queue-drain] worker=${WORKER_ID} ★ SILENT-LOSS CANARY · mismatch=${mismatch} of drained=${drained} rows wrote 0 entries`,
+    );
+  }
   await prisma.$disconnect();
 }
 
