@@ -73,16 +73,41 @@ Per-entry shape: `{id, title, body, metadata}` · entry.body = JSON-stringified 
 | BP · canonical envelope (W19 contract) | ✓ |
 | Cron · 53 7 * * * | ✓ |
 
-## §5 · Validation Run (Pending CEO Manual Execute)
+## §5 · Validation Run exec=1940 (2026-05-29 17:06 UTC) · 🟡 SENTINEL · env-access block
 
-CEO Manual Execute WF90 in n8n UI · cite exec_id + calls used + credits_remaining cited.
-WF90 cron fires automatically 7:53 AM EDT daily.
+**STATUS: 🟡 GREEN-with-NOTE · execution successful · sentinel-skipped · zero Rainforest calls burned**
 
-Expected:
-- 1 Rainforest search call burned
-- `meta.credits_remaining` parsed and cited
-- Sylvia queue row inserted with V9 envelope
-- Drain processes row to COMPLETED with `entries-written>0` (W19-L2 silent-loss canary live)
+| Field | Value |
+|-------|-------|
+| exec_id | 1940 |
+| status | success · finished=true · mode=manual |
+| runtime | 1.5 sec |
+| search term used | "antique silver hallmark" (day-rotation idx 1) |
+| Fetch response | empty (length=0) |
+| Extract | 1 sentinel · reason `proxy-error: "access to env vars denied"` |
+| Webhook fires | 1 (sentinel payload · drained to skip) |
+| **Rainforest calls burned** | **0** (proxy never reached Rainforest · auth failed first) |
+| credits_remaining | N/A (proxy blocked pre-Rainforest) |
+
+### §5.1 · Root Cause: n8n env access blocked
+
+n8n droplet has `N8N_BLOCK_ENV_ACCESS_IN_NODE=true` (security default) · blocks `$env.X` reads in expressions. Header `X-Scraper-Proxy-Token: ={{ $env.SCRAPER_PROXY_SECRET }}` evaluated to empty string · proxy received unauthenticated request · returned `"access to env vars denied"` error.
+
+**Zero burn:** sentinel chain caught the proxy error · zero Rainforest credits consumed. CEO Rule 8 (BURN FREE 100) preserved.
+
+### §5.2 · Recovery Options
+
+| Option | Path |
+|---|---|
+| **A** | CEO creates n8n credential `Scraper-Proxy-Token` (type `httpHeaderAuth`) via n8n UI · sets name=`X-Scraper-Proxy-Token` value=`<secret>` · I patch WF90 Fetch to use credential auth instead of `$env` |
+| **B** | CEO sets `N8N_BLOCK_ENV_ACCESS_IN_NODE=false` on droplet (less secure · fleet-wide impact) + restarts n8n · WF90 works as-is |
+| **C** | CEO provides secret value via secure channel · I create credential via n8n API + patch WF90 |
+
+Recommendation: **A** (preserves env-access security · WF90 still droplet-safe · standard n8n credential pattern).
+
+### §5.3 · WF91 Sibling Status
+
+WF91 V10 Apify (W20-R4-L3) has ZERO executions — same env-access pattern, same root cause expected. WF91 will also hit `"access to env vars denied"` at first Manual Execute. Fix applies to both WF90 + WF91 (and any future proxy-pattern WF).
 
 ## §6 · LOCKED Diff Verify
 
