@@ -99,7 +99,29 @@ Empty model field returns all models for make-year. Matches existing WF69/WF70 A
 
 **WF93 finding:** Extract correctly parsed 268 OpenLibrary docs across 8 subjects · BUT Build Payload only emitted 8 items (one per iter · not per-doc). CEO observation "290 items but only a few recorded" matches empirical bottleneck. WF63 template Aggregate Batch → BP topology emits 1 item per iter (not flatten 268 → 268). Banked W19 BP fan-out fix.
 
-### Hotfix applied inline (WF89 only)
+### Hotfix iter 2 · WF89 verified post-rrtype-fix · BP bottleneck CAUGHT + PATCHED
+
+**WF89 exec 1933 (post-rrtype hotfix):** Extract yielded **76 V14 items** (75 real + 1 sentinel) ✓
+- BUT BP only emitted 4 (one per iter · same bottleneck as WF93)
+- CEO observation: "76 items only few recorded" matches empirical
+
+**Root cause confirmed (shared WF63 template bug):**
+- Aggregate Batch uses `aggregateAllItemData` mode + `destinationFieldName: "entries"`
+- Per-iter: bundles N Extract items into 1 object with `entries: [...items]`
+- Original BP: `$input.all().map(item => ...)` runs once on the wrapper · ignores `entries`
+- Result: 1 BP output per iter (not N per doc)
+
+**Inline fix (both WF89 + WF93):**
+```js
+const iters = $input.all();
+const allDocs = iters.flatMap(iter => iter.json.entries || []);
+return allDocs.map(item => ({...}));  // fans out per-doc
+```
+
+- Both PUT 200 · active=True · `node --check` VALID
+- CEO retry WF89 + WF93 to verify fan-out
+
+### Hotfix iter 1 · WF89 only
 
 - **WF89 Source URLs patched:** removed `&rrtype=json` from 3 NSF URLs (NSF API accepts `.json` path suffix only)
 - **WF89 Extract patched:** pulls `source` + `sourceUrl` from `$('Split URLs').item?.json` (per-iter context) instead of `$input.first()` (lost in Aggregate)
