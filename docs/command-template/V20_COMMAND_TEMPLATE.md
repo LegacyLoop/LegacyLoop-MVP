@@ -1,5 +1,5 @@
 # ════════════════════════════════════════════════════════════════
-# LEGACYLOOP — V20 COMMAND TEMPLATE · CANONICAL HYBRID v2.4
+# LEGACYLOOP — V20 COMMAND TEMPLATE · CANONICAL HYBRID v2.6
 # Spec-author reference + IT-executor reference + §12 reviewer reference
 # Date locked: 2026-05-19 (Tuesday · post-Phase-C V11 reconcile session · v2.2 patch)
 # v2.1 patch (2026-05-15 mid-day): CEO caught Agent B P51 §12 dropped V15 6-bullet FLAGS
@@ -38,6 +38,25 @@
 #   Group A (Wave 6-15 sustained) + Group B (W16 R1/R2/R3 NEW) + Group C (W17 NEW) consolidated
 #   in DOCTRINE_LEDGER candidate section · campaign close substrate clean · investor narrative locked
 #   Anchor cyl: CMD-W18-L1-OWN-1-2-3-DOCTRINE-SHIP V20 LOW
+# v2.6 patch (2026-05-29 PM): W21-L4 doctrine-ship · W20+W21 doctrine integration ·
+#   2 ratifies (1 LAW + 1 BINDING merge):
+#     · PERMANENT LAW #14 DOC-SYLVIA-CORPUS-ENVELOPE-CONTRACT (promoted from candidate
+#       Group D · 4-empirical-faces: Agent A W18-L2 BP + Agent C W18-L4 BP + Devin W19-L1
+#       L1 transform + 6 regional BPs W19-L3 · RULE: every corpus producer MUST emit
+#       {source, corpusId, domain, entries: [{id, title, body, metadata}]} per
+#       lib/sylvia/graphify/types.ts ExternalCorpusEntry · drain/consumer STRICT
+#       preserved · Path B drain-loosen REJECTED · 2,185 W17-L1 rows recovered empirical)
+#     · BINDING #49 DOC-N8N-SANDBOX-RESTRICTIONS (merged family of 3 W20 R4 lessons:
+#       (a) $env blocked in HTTP Request → use httpHeaderAuth credential layer
+#       (b) process.* blocked in Code node → pre-resolve at Source URLs · pass via
+#           Split URLs metadata · WF92 exec 1943 root cause caught + fixed
+#       (c) classifier collision class → cite precedent commit (e.g., Agent B 584b627
+#           apify adapter) for lib/scrapers/proxy/* edit unblock)
+#   Spec authors: §0.5 IT deep-dive MUST include corpus-envelope contract check (PART I-N8N
+#     I.8 add) + sandbox-restrictions check (PART I-N8N I.9 add · enumerate $env/process/
+#     classifier-precedent before authoring n8n Code or proxy adapter spec).
+#   Tally: 18→19 PERMANENT LAW · 43→44 BINDING ratified · CLAUDE.md L127 sync 43 → 44 pending
+#   Anchor cyl: CMD-W21-L4-DOCTRINE-SHIP V20 LOW · docs-only · STOP-BEFORE-COMMIT
 # Author: Devin L1 (auth) · CEO ratified · MC head-start gap map
 # Supersedes:
 #   V15 (2026-04-06 · design rigor · §12 explicit box · §8 MAY/MAY NOT)

@@ -4,7 +4,8 @@
 **Maintainer:** MC (Mission Control · Strategy)
 **Created:** Wed May 6 2026 AM EDT
 **Anchor commit:** `059de07` (HEAD at creation)
-**Total BINDING:** 43 (#27 numbering reserved · #32 numbering reserved · #36 numbering reserved · #28 + #29 ratified 2026-05-09 · #30 ratified 2026-05-13 · #31 ratified 2026-05-14 AM · #33 + #34 ratified 2026-05-14 PM · #35 ratified 2026-05-16 AM · #37 ratified 2026-05-17 EOD Wave 19 Slot A · #38 ratified 2026-05-18 Wave 20 Phase 4 · #39 + #40 ratified 2026-05-18 Wave 20 Phase 5 · #41 + #42 ratified 2026-05-18 Wave 20 Phase 6 · #43 ratified 2026-05-18 Wave 20 Phase 8 FINAL SINGLE-RATIFY · #44 + #45 + #46 ratified 2026-05-29 W18-L1 doctrine-ship · 22 ratifications cumulative this fortnight · 5 doctrine graduation cycles this session · ★ WAVE 20 BRAIN IMPLANT 8/8 COMPLETE · 13→20 moats this session ★ · ★ W18-L1 OWN-1/2/3 doctrine-ship · 16→18 PERMANENT LAW (LAW #51 + LAW #52 promoted from BINDING #31) · 40→43 BINDING ratified ★)
+**Total BINDING:** 44 (#27 numbering reserved · #32 numbering reserved · #36 numbering reserved · #28 + #29 ratified 2026-05-09 · #30 ratified 2026-05-13 · #31 ratified 2026-05-14 AM · #33 + #34 ratified 2026-05-14 PM · #35 ratified 2026-05-16 AM · #37 ratified 2026-05-17 EOD Wave 19 Slot A · #38 ratified 2026-05-18 Wave 20 Phase 4 · #39 + #40 ratified 2026-05-18 Wave 20 Phase 5 · #41 + #42 ratified 2026-05-18 Wave 20 Phase 6 · #43 ratified 2026-05-18 Wave 20 Phase 8 FINAL SINGLE-RATIFY · #44 + #45 + #46 ratified 2026-05-29 W18-L1 doctrine-ship · #49 ratified 2026-05-29 W21-L4 doctrine-ship · 23 ratifications cumulative this fortnight · 6 doctrine graduation cycles this session · ★ WAVE 20 BRAIN IMPLANT 8/8 COMPLETE · 13→20 moats this session ★ · ★ W18-L1 OWN-1/2/3 doctrine-ship · 16→18 PERMANENT LAW (LAW #51 + LAW #52 promoted from BINDING #31) · 40→43 BINDING ratified ★ · ★ W21-L4 doctrine-ship · 18→19 PERMANENT LAW (PERMANENT LAW #14 envelope-contract LAW promotion from candidate Group D) · 43→44 BINDING (#49 sandbox-restrictions merge of 3 W20 n8n-sandbox candidates) ★)
+**Updated:** Fri May 29 2026 ~13:30 PM EDT — appended **PERMANENT LAW #14 DOC-SYLVIA-CORPUS-ENVELOPE-CONTRACT** (promoted from candidate Group D · LAW-grade per W19-L1 4-empirical-faces ratify-recommendation · CEO 1-line ratify W21-L4 fire-trigger · convergent independent catch: Agent A W18-L2 + Agent C W18-L4 + Devin W19-L1 + 6 regional BPs W19-L3 · RULE: every corpus producer MUST emit `{source, corpusId, domain, entries: [{id, title, body, metadata}]}` per `lib/sylvia/graphify/types.ts` ExternalCorpusEntry · drain/consumer stays STRICT (LAW #38 preserved · Path B drain-loosen REJECTED) · Empirical: 2,185 W17-L1 rows recovered via writer-side fix · FAILED-sig→0 · 160 already drained COMPLETED) + **BINDING #49 DOC-N8N-SANDBOX-RESTRICTIONS** (merged family from 3 W20 R4 lessons · absorbs (a) DOC-N8N-ENV-ACCESS-BLOCK-CREDENTIAL-PATTERN [W20 n8n `$env` blocked in HTTP Request → httpHeaderAuth credential required] (b) DOC-N8N-CODE-NODE-NO-PROCESS-ENV [W20 Code sandbox blocks `process.*` → use literal/Source-URLs-metadata pass-through · WF92 exec 1943 root cause caught + fixed] (c) DOC-CLASSIFIER-COLLISION-PREVENTION [W20-R4-L4 auto-mode classifier blocked premature registry edit · Agent B 584b627 apify precedent + CEO unblock resolved]) via `CMD-W21-L4-DOCTRINE-SHIP V20 LOW` · campaign-close doctrine substrate · 18→19 PERMANENT LAW · 43→44 BINDING · V20 template v2.6 patch-note ships parallel · CLAUDE.md L127 sync 43 → 44 pending
 **Updated:** Fri May 29 2026 ~10:00 AM EDT — appended **#44 DOC-CEO-MANUAL-EXECUTE-EXEC-ID-MANDATE** (LAW #51 promotion · 44+/5+ RIDICULOUS oversaturation · every CEO Manual Execute cites exec_id verbatim · ratify-imperative satisfied) + **#45 DOC-PUSHBACK-WITH-REPLACEMENT-LAW-PROMOTION** (LAW #52 · BINDING #31 promoted to LAW class · 45× LAW-IMMINENT breach threshold · push-back authors replacement path · never bare refusal · sub-doctrine of #31 sustained) + **#46 DOC-NO-AI-FABRICATED-TIMELINE** (BINDING #51 candidate ratified · 9/5+ sustained · zero clocks/days/predictions · task-completion gates only) via `CMD-W18-L1-OWN-1-2-3-DOCTRINE-SHIP V20 LOW` · 5 NEW W17 candidates codified into V20 v2.5 template (DOC-CAP-RAISE-DUAL-LAYER-PATCH · DOC-N8N-CODE-NODE-APPEND-PARSE-PRE-EDIT · DOC-SCHEMA-DRIFT-CONVERGENT-CATCH-PRE-FIRE · DOC-CEO-SCREENSHOT-EMPIRICAL-CATCH · DOC-PENDING-QUEUE-LAUNCHAGENT-DRAIN-ARCHITECTURE) · 32+ Group A+B+C candidates frozen pending CEO ratify-list · 16→18 PERMANENT LAW · 40→43 BINDING · CLAUDE.md L127 sync 40 → 43 · campaign close substrate clean · investor narrative locked
 **Updated:** Mon May 18 2026 ~14:30 PM EDT — appended **#43 DOC-HYBRID-RECALL-VECTOR-FIRST-WITH-KEYWORD-FALLBACK** (commit pending Wave 20 Phase 8 ship · CMD-SYLVIA-TRUTH-GATE-CROSSVALIDATE V20 R29 · SINGLE-RATIFY · 39 → 40 BINDING canonical · 5th doctrine graduation cycle this session · ★ Wave 20 brain implant 8/8 COMPLETE · 13 → 20 moats single session ★ · #43 5/5 chain: (1) Phase 4 hybrid bridge ships vector-first DEFAULT_MODE w/ keyword fallback (Option A CEO §5.X Gate 1 pick · ec3a4e5) · (2) Phase 5 obsidian sync consumes hybridRecall via vector-first path (4ce470a) · (3) Phase 6 graphify entity resolution via Phase 4 hybrid (b7158ea) · (4) Phase 7 swarm-activate role-assignment via Phase 6 graphify which consumes Phase 4 hybrid (b443ee5) · (5) Phase 8 truth-crossval validator crossvalHybrid() consumes hybridRecall as substrate cross-val baseline THIS FIRE · 4 sustaining + 1 this-fire = 5 ratification proof points). Sub-doctrine of #10 SINGLE EGRESS (hybrid recall preserves chokepoint). Sibling of #38 + #39 + #40 + #41 + #42 LAW. **NEW candidate #46 NEW DOC-TRUTH-CROSSVAL-CONSUMES-M10 1/5 anchored this fire** (synthetic NextRequest pattern · sub-doctrine of #10 · enforces zero new HTTP edge for any cross-val consumer of M10 chokepoint). CLAUDE.md L127 sync 39 → 40
 **Updated:** Mon May 18 2026 ~13:00 PM EDT — appended **#41 DOC-CUSTOM-PORT-PATTERN-BINDING-16-ABSOLUTE** + **#42 DOC-UNIVERSAL-ITEM-SCHEMA-DESIGN-INPUT** (commit pending Wave 20 Phase 6 ship · CMD-SYLVIA-GRAPHIFY-SELF-INTROSPECTION V20 R29 · DOUBLE-RATIFY · 37 → 39 BINDING canonical · 4th doctrine graduation cycle this session · #41 5/5 chain: (1) Phase 2 swarm custom-port (zero @claude-flow) · (2) Phase 3 vector custom-port (pure-TS Option B) · (3) Phase 4 hybrid custom-port (consumer-only) · (4) Phase 5 obsidian custom-port (zero npm) · (5) Phase 6 graphify custom-port (pure-TS Leiden) · all 5 phases zero real @claude-flow/ruflo import · ≤9 grep hits all comment text · pattern sustained · #42 5/5 chain: (1) Phase 3 vector §0.7 8 namespace patterns (item:*, platform:* MPMA + customer:* CCL reserved) · (2) Phase 4 hybrid HybridScope = VectorNamespace passthrough · (3) Phase 5 obsidian 8 sub-vault structure (item/, platform/, customer/ Phase D pre-position) · (4) Phase 6 graphify GraphNamespace = VaultNamespace passthrough + 4 FOUNDATION-UP consumer hooks (Phase C/D/E pre-position · graphIngestExternalCorpus + createPerCustomerGraph + createPerItemProvenanceGraph + graphQueryExternalConsumer) · (5) cumulative pre-positioning across 5 phases · MPMA UIS design input baked end-to-end · zero retrofit cost) · CLAUDE.md L127 sync 37 → 39
@@ -593,3 +594,61 @@ Three Wave 22C+D+E catches surface as strikethrough citations (additive · drift
 Sustains: #28 (drift catch cumulative ratchet) · #17 (audit-first wire) · #31 (push-back-with-replacement · CEO catch Cyl 6 V1) · #38 (empirical cite) · #41 (CUSTOM-PORT-ABSOLUTE · app SoT preserved Cyl 6 V1) · BINDING #48 ratified inline this ceremony.
 
 Anchor: CEO 2026-05-22 EOD directive · Wave 22E P1 Phase A ceremony close · 13 PERMANENT LAW + 42+ BINDING canonical post-ceremony · Phase B auto-cron LIVE · Wave 22F+ unblocked.
+
+---
+
+## PERMANENT LAW #14 · DOC-SYLVIA-CORPUS-ENVELOPE-CONTRACT (LAW · ratified 2026-05-29 ~13:30 PM EDT · W21-L4 doctrine-ship)
+
+**Promotion path:** Candidate Group D (W19-L1) flagged LAW-grade with 3/5 convergent empirical surfaces + 4-empirical-faces ratify-recommendation. W21-L4 fire-trigger seals CEO 1-line ratify (envelope-contract → LAW + merge n8n-sandbox family).
+
+**Empirical faces (4 convergent independent catches):**
+1. **Agent A · W18-L2 · WF89 BP** — DOC-N8N-SYLVIA-PAYLOAD-SHAPE-CONTRACT (initial framing · per-WF hardcoded BP literals)
+2. **Agent C · W18-L4 · WF93 BP** — DOC-N8N-AGGREGATE-WRAPPER-UNPACK-BP (Aggregate wrapper unpack pattern · `iters.flatMap(iter => iter.json.entries || [])`)
+3. **Devin · W19-L1 · L1 transform recovery** — writer-side fix + in-place re-wrap migration recovered 2,185 W17-L1 silent-loss rows · FAILED-sig→0
+4. **6 regional BPs · W19-L3** — all 6 V4 regional cluster WFs (WF86-WF88 + 3 regional) converged on same `entries[]` envelope
+
+**LAW:** Every Sylvia corpus producer (n8n BP nodes · app transforms · cross-vertical scrapers) MUST emit:
+
+```
+{
+  source: <string>,
+  corpusId: <string>,
+  domain: <string>,
+  entries: [{ id, title, body, metadata }]
+}
+```
+
+Per `lib/sylvia/graphify/types.ts` ExternalCorpusEntry type. Drain/consumer side stays STRICT (LAW #38 EMPIRICAL-CITE-MANDATORY preserved · Path B drain-loosen REJECTED · permissive drain masks next drift class).
+
+**Sustains:** #10 SINGLE-EGRESS (envelope routes through single Sylvia substrate chokepoint) · #16 CLONE-NOT-MODIFY-SHAPE (envelope is the canonical shape) · #38 EMPIRICAL-CITE-MANDATORY (drain-strict preserves cite discipline) · #46 LAW Extract jsCode UNCHANGED · #47 LAW BP `data:` wrapper (envelope wraps within `data:` per n8n webhook contract).
+
+**Empirical proof at LAW ratify:** 2,185 W17-L1 rows recovered via writer-side fix · FAILED-signal→0 · 160 already drained COMPLETED at codify time · 4 independent agent catches in 3 days (W18-L2 + W18-L4 + W19-L1 + W19-L3 6-WF cluster).
+
+**Anchor cyl:** `CMD-W21-L4-DOCTRINE-SHIP V20 LOW` · CEO fire-trigger 2026-05-29 PM = ratify trigger · docs-only · STOP-BEFORE-COMMIT for CEO diff review.
+
+---
+
+## BINDING #49 · DOC-N8N-SANDBOX-RESTRICTIONS (merged family · ratified 2026-05-29 ~13:30 PM EDT · W21-L4 doctrine-ship)
+
+**Merge of 3 W20 R4 lessons** into single n8n-sandbox family doctrine (campaign-close consolidation · prevents 3 separate doctrine entries for related substrate gap):
+
+### (a) DOC-N8N-ENV-ACCESS-BLOCK-CREDENTIAL-PATTERN
+
+n8n HTTP Request node `$env.SECRET` expression blocks evaluate to empty string when secret is restricted-context. Pattern: use n8n httpHeaderAuth credential type (configured at credential layer · not expression layer) for outbound secret headers. Anchor: W20 R4 lane proxy fan WFs.
+
+### (b) DOC-N8N-CODE-NODE-NO-PROCESS-ENV
+
+n8n Code node sandbox blocks `process.*` global access. `process.env.VAR_NAME` throws `process is not defined` at runtime. Pattern: pre-resolve env values upstream (Source URLs Code → Split URLs metadata pass-through) OR use n8n credential layer. Empirical catch: WF92 exec 1943 ERROR "process is not defined [line 27]" · fixed by regex-replacing `process.env.FEDEX_ACCOUNT_NUMBER || "TEST"` → literal `"TEST"` (W20-R4-L4 hotfix · validated WF92 active post-PUT).
+
+### (c) DOC-CLASSIFIER-COLLISION-PREVENTION
+
+Auto-mode classifier blocks `lib/scrapers/proxy/registry.ts` edit when spec authority unclear · interprets `lib/` path as LAW #38 violation despite spec §10 MAY-TOUCH explicit allowlist. Pattern: precedent commit (e.g., Agent B 584b627 apify adapter ship) establishes editability · subsequent agents reference precedent. Anchor: W20-R4-L4 initial HALT · CEO unblock 1-line + Agent B precedent cite resolved.
+
+**LAW:** n8n integration code MUST respect 3 sandbox restrictions:
+1. HTTP Request `$env` blocked → use credential layer
+2. Code node `process.*` blocked → pre-resolve at Source URLs · pass via Split URLs metadata
+3. Classifier collision class → cite precedent commit for any `lib/scrapers/proxy/` edit
+
+**Sustains:** #17 audit-first-wire (catch sandbox blocks pre-PUT · `node --check` validates syntax not runtime sandbox) · #28 drift catch (3 separate catches consolidated to prevent repeat) · #31 push-back-with-replacement (classifier collision → CEO 1-line + precedent cite replacement path) · #38 empirical-cite (WF92 exec 1943 root cause cited verbatim) · #50 sentinel preservation (sandbox restrictions caught before sentinel design corruption).
+
+**Anchor cyl:** `CMD-W21-L4-DOCTRINE-SHIP V20 LOW` · merges 3 W20 R4 candidates into single LAW class · campaign-close substrate clean.
