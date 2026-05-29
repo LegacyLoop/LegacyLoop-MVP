@@ -21,6 +21,29 @@ function hash16(s) {
   return createHash("sha256").update(String(s)).digest("hex").slice(0, 16);
 }
 
+// W19-L1 recovery · canonical corpus envelope per `lib/sylvia/graphify/types.ts` ExternalCorpusEntry
+// Clones bidirectional-sync-app-data.mjs envelope shape (BINDING #16 delegate-canonical)
+function renderBody(flat) {
+  return Object.entries(flat)
+    .filter(([, v]) => v != null && v !== "")
+    .map(([k, v]) => `${k}: ${typeof v === "object" ? JSON.stringify(v) : v}`)
+    .join("\n");
+}
+
+function buildEnvelope({ id, vid, domain, flat }) {
+  return JSON.stringify({
+    source: "scraper",
+    corpusId: `app-data-${vid}`,
+    domain,
+    entries: [{
+      id,
+      title: flat.title || id,
+      body: renderBody(flat),
+      metadata: { verticalId: vid, ...flat },
+    }],
+  });
+}
+
 function classifyEventLog(eventType) {
   if (!eventType) return null;
   if (eventType.startsWith("PRICING_") || eventType.startsWith("PRICEBOT_")) return "V9";
@@ -92,7 +115,7 @@ for (const it of items) {
   const vid = classifyItem(it.condition);
   const id = `w17-l1-Item-${it.id}`;
   if (await existsById(id)) { counters.skipped_dedup++; continue; }
-  const payload = JSON.stringify({
+  const flat = {
     title: it.title,
     condition: it.condition,
     enrichment: {
@@ -103,7 +126,8 @@ for (const it of items) {
       aiShippingConfidence: it.aiShippingConfidence,
     },
     provenance: { app_table: "Item", app_id: it.id, ingested_via: RUN_TAG },
-  });
+  };
+  const payload = buildEnvelope({ id, vid, domain: "app-data-item", flat });
   try {
     await insertRow({ id, verticalId: vid, domain: "app-data-item", payload });
     bumpCounters("Item", vid);
@@ -130,7 +154,7 @@ for (const mc of comps) {
       continue;
     }
   }
-  const payload = JSON.stringify({
+  const flat = {
     platform: mc.platform,
     title: mc.title,
     price: mc.price,
@@ -138,7 +162,8 @@ for (const mc of comps) {
     url: mc.url,
     shipping: mc.shipping,
     provenance: { app_table: "MarketComp", app_id: mc.id, itemId: mc.itemId, ingested_via: RUN_TAG },
-  });
+  };
+  const payload = buildEnvelope({ id, vid, domain: "app-data-marketcomp", flat });
   try {
     await insertRow({ id, verticalId: vid, domain: "app-data-marketcomp", payload });
     bumpCounters("MarketComp", vid);
@@ -157,11 +182,12 @@ for (const ar of ais) {
   counters.read++;
   const id = `w17-l1-AiResult-${ar.id}`;
   if (await existsById(id)) { counters.skipped_dedup++; continue; }
-  const payload = JSON.stringify({
+  const flat = {
     rawJson: ar.rawJson,
     confidence: ar.confidence,
     provenance: { app_table: "AiResult", app_id: ar.id, itemId: ar.itemId, ingested_via: RUN_TAG },
-  });
+  };
+  const payload = buildEnvelope({ id, vid: "V9", domain: "app-data-airesult", flat });
   try {
     await insertRow({ id, verticalId: "V9", domain: "app-data-airesult", payload });
     bumpCounters("AiResult", "V9");
@@ -179,7 +205,7 @@ for (const v of vals) {
   counters.read++;
   const id = `w17-l1-Valuation-${v.id}`;
   if (await existsById(id)) { counters.skipped_dedup++; continue; }
-  const payload = JSON.stringify({
+  const flat = {
     low: v.low,
     mid: v.mid,
     high: v.high,
@@ -187,7 +213,8 @@ for (const v of vals) {
     source: v.source,
     rationale: v.rationale,
     provenance: { app_table: "Valuation", app_id: v.id, itemId: v.itemId, ingested_via: RUN_TAG },
-  });
+  };
+  const payload = buildEnvelope({ id, vid: "V9", domain: "app-data-valuation", flat });
   try {
     await insertRow({ id, verticalId: "V9", domain: "app-data-valuation", payload });
     bumpCounters("Valuation", "V9");
@@ -214,12 +241,13 @@ for (const ev of events) {
     continue;
   }
   const parsed = safeParseJSON(ev.payload);
-  const payload = JSON.stringify({
+  const flat = {
     eventType: ev.eventType,
     payload: parsed ?? ev.payload,
     appCreatedAt: ev.createdAt,
     provenance: { app_table: "EventLog", app_id: ev.id, ingested_via: RUN_TAG },
-  });
+  };
+  const payload = buildEnvelope({ id, vid, domain: "app-data-eventlog", flat });
   try {
     await insertRow({ id, verticalId: vid, domain: "app-data-eventlog", payload });
     bumpCounters("EventLog", vid);
@@ -237,14 +265,15 @@ for (const bl of leads) {
   counters.read++;
   const id = `w17-l1-BuyerLead-${bl.id}`;
   if (await existsById(id)) { counters.skipped_dedup++; continue; }
-  const payload = JSON.stringify({
+  const flat = {
     matchScore: bl.matchScore,
     aiConfidence: bl.aiConfidence,
     responseTextHash: hash16(bl.responseText || ""),
     platform: bl.platform,
     urgency: bl.urgency,
     provenance: { app_table: "BuyerLead", app_id: bl.id, itemId: bl.itemId, ingested_via: RUN_TAG, pii_redacted: true },
-  });
+  };
+  const payload = buildEnvelope({ id, vid: "V9", domain: "app-data-buyerlead", flat });
   try {
     await insertRow({ id, verticalId: "V9", domain: "app-data-buyerlead", payload });
     bumpCounters("BuyerLead", "V9");
@@ -263,7 +292,7 @@ for (const s of sul) {
   const id = `w17-l1-ScraperUsageLog-${s.id}`;
   if (await existsById(id)) { counters.skipped_dedup++; continue; }
   const parsed = safeParseJSON(s.payloadJson);
-  const payload = JSON.stringify({
+  const flat = {
     botName: s.botName,
     slug: s.slug,
     tier: s.tier,
@@ -272,7 +301,8 @@ for (const s of sul) {
     cost: s.cost,
     durationMs: s.durationMs,
     provenance: { app_table: "ScraperUsageLog", app_id: s.id, ingested_via: RUN_TAG },
-  });
+  };
+  const payload = buildEnvelope({ id, vid: "V9", domain: "app-data-scraperusagelog", flat });
   try {
     await insertRow({ id, verticalId: "V9", domain: "app-data-scraperusagelog", payload });
     bumpCounters("ScraperUsageLog", "V9");

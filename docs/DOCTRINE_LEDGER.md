@@ -189,6 +189,11 @@ Master Backlog §K Ambiguity #1 resolved · 5 floating 5/01 PM candidates classi
 | DOC-CEO-SCREENSHOT-EMPIRICAL-CATCH         | W17-L3 CEO visual QA faster than runtime sentinel | NEW · 1/5 |
 | DOC-PENDING-QUEUE-LAUNCHAGENT-DRAIN-ARCHITECTURE | W17-L1 + L2 write-fast + drain-managed backpressure | NEW · 1/5 |
 
+**Group D · W19 NEW candidate (merge ratification · LAW-grade):**
+| Candidate                                  | Anchor | Status |
+|---|---|---|
+| DOC-SYLVIA-CORPUS-ENVELOPE-CONTRACT (MERGE of DOC-N8N-SYLVIA-PAYLOAD-SHAPE-CONTRACT [Agent A W18-L2] + DOC-N8N-AGGREGATE-WRAPPER-UNPACK-BP [Agent C W18-L4]) | W19-L1 recovery cyl · 3× empirical surface (WF89 BP · WF93 BP · L1 transform) · convergent independent catch (Agent A + Agent C + Devin) · RULE: every corpus producer MUST emit `{source, corpusId, domain, entries: [{id, title, body, metadata}]}` per `lib/sylvia/graphify/types.ts` ExternalCorpusEntry · drain/consumer stay STRICT (LAW #38 preserved) · Path B drain-loosen REJECTED (permissive drain masks next drift class). Empirical proof: 2,185 W17-L1 rows recovered via writer-side fix + in-place re-wrap migration · FAILED-sig→0 · 160 already drained COMPLETED at codify time | NEW · 3/5 convergent · **LAW-grade ratify-recommended** · CEO 1-line final ratify pending |
+
 ---
 
 ## Sub-doctrine canopy under BINDING #22 · DOC-MULTI-COMPONENT-CHAIN-GROUNDING (Devin meta-fix · 7 siblings)
