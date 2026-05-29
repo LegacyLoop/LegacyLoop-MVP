@@ -11,6 +11,7 @@ import { dhlAdapter } from "./adapters/dhl";
 import { rainforestAdapter } from "./adapters/rainforest";
 import { metaAdapter } from "./adapters/meta";
 import { apifyAdapter } from "./adapters/apify";
+import { shipstationAdapter } from "./adapters/shipstation";
 
 const REGISTRY: Record<ProviderName, Adapter> = {
   shippo: shippoAdapter,
@@ -24,6 +25,7 @@ const REGISTRY: Record<ProviderName, Adapter> = {
   rainforest: rainforestAdapter,
   meta: metaAdapter,
   apify: apifyAdapter,
+  shipstation: shipstationAdapter,
 };
 
 export function getAdapter(provider: ProviderName): Adapter | null {
