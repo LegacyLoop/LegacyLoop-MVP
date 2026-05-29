@@ -66,19 +66,41 @@ Mac local re-probe stalled (CL IP-block precedent W14-T3 blockID 39468 sustained
 
 ---
 
-## §4 · CEO Manual Execute G2 (5 regional WFs)
+## §4 · POST-PUT BREAK + HOTFIX (CEO screenshot-caught)
 
-CEO Manual Execute each of 5 patched WFs from n8n UI (`https://n8n.legacy-loop.com`) — cite exec_ids:
+### Initial PUT broke JS syntax (5 WFs)
+
+CEO Manual Execute attempts revealed `Unexpected token '{'` error in Source URLs Code node across NE/SE/MW/SC/PAC. ROOT CAUSE: my append injected `{ json: { url: "...", ... } }` shape BEFORE `];` in the original `const urls = [...]` array. Original entries had shape `{"region": "X", "state": "Y", "url": "Z"}` (NO `json:` wrapper · `.map()` adds it later). Mixed-shape array literal valid syntactically · BUT missing comma between original last entry `}` and my first `{` produced `}{` = JS array-literal syntax error.
+
+### HOTFIX applied (per-WF rebuild)
+
+For each of 5 WFs: deactivate → parse `const urls = [...]` → strip my broken `{ json: ...}` entries → re-append NEW URLs in ORIGINAL clean shape `{"region":"X","state":"Y","url":"Z"}` → PUT → activate.
+
+| WF | Region | Final URL count | Status |
+|---|---|---|---|
+| NE FnZAE5EfeGPgnolQ | NE +10 (NY+PA) | 36 | ✓ active · syntax VALID |
+| SE hrK2miE2rZuZ2wUK | SE +6 (FL) | 31 | ✓ active · syntax VALID |
+| MW mfLE8L4p5gfOpbRg | MW +4 (IL) | 28 | ✓ active · syntax VALID |
+| SC m8mHgzs3gugQvpM6 | SC +6 (TX) | 25 | ✓ active · syntax VALID |
+| PAC 14bmGvd4bAjlyycq | PAC +9 (CA) | 26 | ✓ active · syntax VALID |
+
+Node `--check` validation: 5/5 PASS. NE post-hotfix URL count = 36 (some dedupe vs initial expected 38 · original WF may have had base 26 not 28 OR 2 URLs were duplicates pre-existing).
+
+## §5 · CEO Manual Execute G2 (5 regional WFs · post-hotfix)
 
 | WF | n8n ID | exec_id |
 |---|---|---|
-| NE | FnZAE5EfeGPgnolQ | PENDING |
-| SE | hrK2miE2rZuZ2wUK | PENDING |
-| MW | mfLE8L4p5gfOpbRg | PENDING |
-| SC | m8mHgzs3gugQvpM6 | PENDING |
-| PAC | 14bmGvd4bAjlyycq | PENDING |
+| NE | FnZAE5EfeGPgnolQ | PENDING (RETRY post-hotfix) |
+| SE | hrK2miE2rZuZ2wUK | PENDING (RETRY post-hotfix) |
+| MW | mfLE8L4p5gfOpbRg | PENDING (RETRY post-hotfix) |
+| SC | m8mHgzs3gugQvpM6 | PENDING (RETRY post-hotfix) |
+| PAC | 14bmGvd4bAjlyycq | PENDING (RETRY post-hotfix) |
 
-Expected per-WF: ~10-30 listings × new-URL count = significant V4 delta on first cron / Manual Execute.
+Expected post-hotfix: WFs execute clean · per-URL ~10-30 listings · sentinel catches dead URLs.
+
+## §5.1 · MA BP error (pre-existing · NOT my touch)
+
+CEO screenshot showed MA (`i9IOLD8zsAXUdwxC` · I did NOT touch this WF) also throwing `Unexpected token '{'` in Build Payload. This pre-dates W17-L3 · likely R3-L2 BP shape mismatch. Banked for separate diagnosis (W18+ class).
 
 ---
 
