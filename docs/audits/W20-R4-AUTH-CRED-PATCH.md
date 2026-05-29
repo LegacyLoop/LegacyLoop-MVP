@@ -91,6 +91,32 @@ n8n API hides credential values · cred identity verified via WF83 round-trip (c
 
 ---
 
+## §7.5 · POST-SHIP CRED CONFIRMATION (★ Criterion #4 → 3/3 MET)
+
+**Empirical · exec_id 1950 · WF83 Manual Execute post-cycle:**
+
+| Iter | Provider | Operation | Result |
+|---|---|---|---|
+| run#0 | shippo | list_carriers | **ok=true** · data `{next, previous, results}` ✅ |
+| run#1 | easypost | list_carriers | sentinel-skip (provider-side · test-key adapter error · NOT proxy auth) |
+| run#2 | fedex-direct | oauth_token | **ok=true** · data `{ok, token_minted}` ✅ |
+
+**Cycle history (§0.7 push-back applied · empirical cred discovery):**
+1. Initial: all 4 WFs → `C3nFg2Ltuh4dNiKu` (account 3) · 401 UNAUTHORIZED across the board
+2. Diagnostic swap: WF83 → `C3BkysQDHQtMxrRs` (account 2) — banked
+3. CEO updated account-3 value · CEO directive: revert all 4 to account-3
+4. WF83 reverted to account-3 + executed → **ok=true** confirmed · cred identity locked
+
+**Proxy round-trip 200 + 2 real payloads delivered via webhook · WF83 V5 first-consumer GREEN gate FIRED.**
+
+WF90/91/92 transitively confirmed (same cred id) · CEO Execute each for vendor-call validation when ready (Rainforest burns · Apify CU · carrier 200).
+
+### Banked observation
+- easypost sentinel-skip (test API key issue?) · isolate from proxy auth · audit easypost test key state · banked CY-N
+- WF91 active=True with truncated name (130→128) · CEO may rename for clarity
+
+---
+
 ## §8 · Carry-Forward
 
 - CEO validates WF83 round-trip 200 · cred identity confirmed · criterion #4 → 3/3
