@@ -8,7 +8,8 @@ export type ProviderName =
   | "usps"
   | "dhl"
   | "rainforest"
-  | "meta";
+  | "meta"
+  | "apify";
 
 export type OperationName = string;
 
