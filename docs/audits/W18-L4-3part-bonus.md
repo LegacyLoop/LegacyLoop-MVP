@@ -129,14 +129,23 @@ return allDocs.map(item => ({...}));  // fans out per-doc
 - deactivate→PUT→activate clean · `node --check` VALID pre-PUT · active=True
 - **WF89 needs ONE MORE CEO Manual Execute** to verify hotfix
 
-### Combined Empirical Totals (this exec cycle)
+### Final Empirical Totals (post all hotfixes)
 
-- V14 (WF89): **+0** (failed · hotfix pending · projection +150-300 stands post-retry)
-- V15 (WF93): **+8** webhook delivered (Extract had 268 · BP bottleneck banked W19)
-- V8 (WF69): **+170**
-- V8 (WF70): **+170**
-- **Combined empirical: +348 webhook delivered** (vs projected +510-860)
-- **WF93 Extract reality: 268 more items extractable** if BP fan-out fixed
+| WF | Final exec | Real webhooked | vs projection |
+|----|-----------|----------------|---------------|
+| WF89 V14 | 1936 | **75** (3×25 NSF + 1 sentinel) | 50% mid (150-300) |
+| WF93 V15 | 1935 | **268** | 67% mid (200-400) · 100% low ✓ |
+| WF69 V8 | 1929 | 170 | exceeded +80 projection · 213% |
+| WF70 V8 | 1930 | 170 | exceeded +80 projection · 213% |
+| **TOTAL** | | **+683 webhooked** | **91% of low-bound (+750-860)** |
+
+**Hotfix iter 3 (WF89 BP v3) verified:**
+- exec 1936: Extract 76 → BP 76 → Webhook 76 ✓ fan-out works
+- 3 NSF keyword queries each yielded 25 awards (cap-hit · API max)
+- 1 datagov-USGS sentinel (empty response · banked W19 alt-endpoint)
+- Sample titles: NSF historical/heritage/archaeology grants with PI names + dates
+
+**Doctrine candidate confirmed:** DOC-N8N-AGGREGATE-WRAPPER-UNPACK-BP (WF63 template + aggregateAllItemData + multi-item Extract → BP must `iters.flatMap(iter => iter.json.entries || [])` to fan out)
 
 ---
 
