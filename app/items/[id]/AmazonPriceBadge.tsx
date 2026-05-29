@@ -14,6 +14,22 @@ type AmazonData = {
 const MAX_RETRIES = 2;
 const RETRY_INTERVAL_MS = 5000;
 
+// CMD-W22-L2 affiliate tag injection · Amazon Associates Site-Stripe
+// Brand-canonical EXCEPTION (WCS §9): Amazon Associates store ID is "legacyloop-20" (hyphen stripped by Amazon).
+// Treat as system handle · do NOT alter case/format.
+const AMAZON_ASSOCIATES_TAG = "legacyloop-20";
+
+function withAffiliateTag(rawUrl: string): string {
+  try {
+    const u = new URL(rawUrl);
+    if (!u.hostname.includes("amazon.")) return rawUrl;
+    u.searchParams.set("tag", AMAZON_ASSOCIATES_TAG);
+    return u.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
 function timeAgo(isoDate: string): string {
   const diff = Date.now() - new Date(isoDate).getTime();
   const mins = Math.floor(diff / 60000);
@@ -370,6 +386,63 @@ export default function AmazonPriceBadge({ itemId }: { itemId: string }) {
               </button>
             )}
           </div>
+
+          {/* CMD-W22-L2 · Amazon Site-Stripe affiliate CTA · 44px touch · senior-friendly · legacyloop-20 tag */}
+          {topResult?.link && (
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderTop: "1px solid var(--border-default, rgba(255,255,255,0.06))",
+            }}>
+              <a
+                href={withAffiliateTag(topResult.link)}
+                target="_blank"
+                rel="sponsored noopener noreferrer"
+                aria-label="View this product on Amazon (affiliate partner link)"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                  width: "100%",
+                  minHeight: "44px",
+                  padding: "10px 14px",
+                  textDecoration: "none",
+                  fontFamily: "var(--font-body)",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  letterSpacing: "0.02em",
+                  color: "var(--accent, #00bcd4)",
+                  background: "rgba(0,188,212,0.04)",
+                  transition: "background 0.15s, color 0.15s",
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = "rgba(0,188,212,0.12)";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = "rgba(0,188,212,0.04)";
+                }}
+              >
+                <span>View on Amazon</span>
+                <span aria-hidden="true" style={{ fontSize: "12px", opacity: 0.7 }}>↗</span>
+              </a>
+            </div>
+          )}
+          {topResult?.link && (
+            <div style={{
+              padding: "4px 12px 6px",
+              textAlign: "center",
+              fontSize: "9px",
+              fontWeight: 500,
+              letterSpacing: "0.04em",
+              color: "var(--text-muted, #94a3b8)",
+              opacity: 0.55,
+              background: "rgba(0,0,0,0.02)",
+            }}>
+              Partner link · Legacy-Loop earns a small commission at no extra cost to you
+            </div>
+          )}
         </div>
       </div>
     </>
