@@ -2,6 +2,8 @@ import { authAdapter } from "@/lib/adapters/auth";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email/send";
 import { sellerRepliedEmail } from "@/lib/email/templates";
+import { sendMetaMessage } from "@/lib/messaging/meta/send";
+import type { MetaPlatform } from "@/lib/messaging/meta/types";
 
 export async function POST(
   req: Request,
@@ -33,6 +35,28 @@ export async function POST(
       isRead: true,
     },
   });
+
+  // ── Meta Send API · forward seller reply to FB/IG buyer ───────────────
+  // conv.buyerName carries the PSID/IGSID (set by ingest). Fire-and-forget so
+  // a Meta API hiccup never blocks the in-app reply UX. BINDING #10 not
+  // triggered — this is a platform messaging call, not an AI call.
+  if (
+    sender === "seller" &&
+    (conv.platform === "facebook" || conv.platform === "instagram") &&
+    conv.buyerName
+  ) {
+    void sendMetaMessage({
+      platform: conv.platform as MetaPlatform,
+      recipientId: conv.buyerName,
+      text: String(content).trim(),
+    })
+      .then((r) => {
+        if (!r.ok) console.error(`[meta-send] ${conv.platform} ${r.status} ${r.errorMessage ?? ""}`);
+      })
+      .catch((e: unknown) =>
+        console.error("[meta-send] threw:", e instanceof Error ? e.message : String(e)),
+      );
+  }
 
   // ── Email buyer when seller replies ──────────────────────────────────
   if (sender === "seller" && conv.buyerEmail) {

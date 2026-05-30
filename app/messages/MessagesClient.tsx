@@ -119,6 +119,43 @@ const TEMPLATES = [
   { label: "Estate Closing", text: "This is a one-time estate sale, so quantities are limited and items are first-come, first-served. Would you like to come view it in person or proceed with a purchase?" },
 ];
 
+// CMD-W25-META-L2 · Per-channel badge for thread row (Meta + future channels).
+// 44px-friendly via parent padding; high contrast; A11Y title attribute.
+function ChannelBadge({ platform }: { platform: string }) {
+  if (!platform || platform === "direct") return null;
+  const map: Record<string, { label: string; bg: string; color: string; border: string }> = {
+    facebook: { label: "FB", bg: "rgba(24,119,242,0.16)", color: "#4a8af4", border: "rgba(24,119,242,0.4)" },
+    instagram: { label: "IG", bg: "rgba(225,48,108,0.16)", color: "#e1306c", border: "rgba(225,48,108,0.4)" },
+  };
+  const key = platform.toLowerCase();
+  const style = map[key] ?? {
+    label: platform.slice(0, 2).toUpperCase(),
+    bg: "rgba(255,255,255,0.06)",
+    color: "var(--text-secondary)",
+    border: "rgba(255,255,255,0.18)",
+  };
+  return (
+    <span
+      title={`via ${platform}`}
+      aria-label={`Channel: ${platform}`}
+      style={{
+        flexShrink: 0,
+        fontSize: 10,
+        fontWeight: 700,
+        letterSpacing: "0.04em",
+        padding: "2px 6px",
+        borderRadius: 999,
+        background: style.bg,
+        color: style.color,
+        border: `1px solid ${style.border}`,
+        lineHeight: 1.2,
+      }}
+    >
+      {style.label}
+    </span>
+  );
+}
+
 export default function MessagesClient({ initialConversations, itemsForForm, stats }: Props) {
   const searchParams = useSearchParams();
   const initialItemId = searchParams.get("itemId") || "";
@@ -874,6 +911,7 @@ export default function MessagesClient({ initialConversations, itemsForForm, sta
                         >
                           {conv.buyerName}
                         </div>
+                        <ChannelBadge platform={conv.platform} />
                         <span
                           style={{
                             fontSize: "0.65rem",
