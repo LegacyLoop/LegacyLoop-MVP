@@ -1,13 +1,4 @@
-/**
- * @deprecated CMD-W27-A · World-B wind-down (2026-05-30).
- * Burner-identity validator presupposes the existence of synthetic burner
- * accounts (Meta ToS ban-evasion class). DO NOT ACTIVATE. Retained
- * @deprecated for git history. Barrel re-export in index.ts is transitively
- * deprecated · callers should not import.
- * Sibling safety primitives (isolation.ts · pace-floor.ts · kill-switch.ts)
- * remain ACTIVE — they are generic safety guards reusable beyond burner.
- */
-// CMD-W24-L1 · FB-Army Meta-Safety · burner identity validator [DEPRECATED W27-A]
+// CMD-W24-L1 · FB-Army Meta-Safety · burner identity validator
 // REJECT any burner identity that overlaps Ryan's real account or the Meta
 // dev account. Synthetic email pattern enforced. ZERO real-identity overlap.
 

@@ -1,11 +1,4 @@
-/**
- * @deprecated CMD-W27-A · World-B wind-down (2026-05-30).
- * Burner FB Marketplace headless scraper · ban-evasion ToS risk ·
- * DO NOT ACTIVATE. Retained @deprecated for git history.
- * Marketplace coverage moves to Apify logged-OUT ($29 cap · Meta v. Bright
- * Data defensible) + Meta Commerce Catalog API (W28).
- */
-// fb-army · FB Marketplace headless scraper · World-B only [DEPRECATED W27-A]
+// fb-army · FB Marketplace headless scraper · World-B only
 // Per-session human-paced · randomized fingerprint · proxy egress
 // Parses listing surface · emits canonical CorpusEntry[]
 // Reference: WF93 Apify FB Marketplace target surface (same input shape · own engine)

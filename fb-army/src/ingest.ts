@@ -1,9 +1,4 @@
-/**
- * @deprecated CMD-W27-A · World-B wind-down (2026-05-30).
- * Burner ingest egress · paired with removed proxy adapter · DO NOT ACTIVATE.
- * Retained @deprecated for git history. Salvage: envelope contract reusable.
- */
-// fb-army · POST envelope to T3b proxy fb-army adapter [DEPRECATED W27-A]
+// fb-army · POST envelope to T3b proxy fb-army adapter
 // Proxy secret read from DROPLET env · NEVER repo · BINDING #9
 
 import type { IngestPayload } from "./envelope.js";

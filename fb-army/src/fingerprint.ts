@@ -1,11 +1,4 @@
-/**
- * @deprecated CMD-W27-A · World-B wind-down (2026-05-30).
- * Fingerprint-evasion entropy (UA/viewport/timezone/locale randomization) =
- * Meta ToS ban-evasion · DO NOT ACTIVATE. Retained @deprecated for git history.
- * Salvage: human-pace throttle primitives (humanDwell/humanScroll/jitter) =
- * generic timing utilities — safe to reuse outside ban-evasion context.
- */
-// fb-army · World-B · droplet runtime · fingerprint randomization [DEPRECATED W27-A]
+// fb-army · World-B · droplet runtime · fingerprint randomization
 // Per-session entropy: UA · viewport · timezone · locale · human-pace throttle
 // ZERO World-A reference · ZERO Meta dev account · ZERO repo creds
 

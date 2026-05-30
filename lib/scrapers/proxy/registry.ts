@@ -12,12 +12,9 @@ import { rainforestAdapter } from "./adapters/rainforest";
 import { metaAdapter } from "./adapters/meta";
 import { apifyAdapter } from "./adapters/apify";
 import { shipstationAdapter } from "./adapters/shipstation";
-// CMD-W27-A · World-B wind-down · fbArmyAdapter removed from registry.
-// Adapter file retained @deprecated for git history. Provider key "fb-army"
-// kept in ProviderName union (back-compat) but no longer registered — calls
-// to getAdapter("fb-army") return null (fail-closed).
+import { fbArmyAdapter } from "./adapters/fb-army";
 
-const REGISTRY: Partial<Record<ProviderName, Adapter>> = {
+const REGISTRY: Record<ProviderName, Adapter> = {
   shippo: shippoAdapter,
   easypost: easypostAdapter,
   "fedex-direct": fedexDirectAdapter,
@@ -30,6 +27,7 @@ const REGISTRY: Partial<Record<ProviderName, Adapter>> = {
   meta: metaAdapter,
   apify: apifyAdapter,
   shipstation: shipstationAdapter,
+  "fb-army": fbArmyAdapter,
 };
 
 export function getAdapter(provider: ProviderName): Adapter | null {
@@ -41,9 +39,9 @@ export function listEnabledAdapters(): ReadonlyArray<{
   operations: ReadonlyArray<OperationName>;
 }> {
   return (Object.keys(REGISTRY) as ProviderName[])
-    .filter((p) => REGISTRY[p]?.enabled === true)
+    .filter((p) => REGISTRY[p].enabled)
     .map((p) => ({
       provider: p,
-      operations: REGISTRY[p]!.operations,
+      operations: REGISTRY[p].operations,
     }));
 }

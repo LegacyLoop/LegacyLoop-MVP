@@ -1,10 +1,4 @@
-/**
- * @deprecated CMD-W27-A · World-B wind-down (2026-05-30).
- * Burner droplet runtime · ban-evasion ToS risk · DO NOT ACTIVATE.
- * Retained @deprecated for git history (never-abandon · BINDING #20).
- * Reroute: Apify logged-OUT ($29 cap) + Meta Commerce Catalog API (W28).
- */
-// fb-army · droplet runner · single-session orchestrator [DEPRECATED W27-A]
+// fb-army · droplet runner · single-session orchestrator
 // Reads job spec from droplet env or CLI flag · World-B only
 
 import { assertEgressSafety } from "./proxy-egress.js";
