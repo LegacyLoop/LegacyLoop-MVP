@@ -23,7 +23,20 @@ export async function PATCH(req: Request, { params }: { params: Params }) {
     where: { id: leadId },
     include: { bot: { include: { item: true } } },
   });
-  if (!lead || lead.bot.item.userId !== user.id) {
+  // CMD-W25-META-L1 · botId now nullable (Lead-Ads leads have no bot owner).
+  // Guard: if bot present, owner-check via bot.item.userId; if absent (lead-ad
+  // path), require the new owner-of-item check via the lead's itemId.
+  if (!lead) {
+    return new Response("Not found", { status: 404 });
+  }
+  let authorized = false;
+  if (lead.bot) {
+    authorized = lead.bot.item.userId === user.id;
+  } else {
+    const item = await prisma.item.findUnique({ where: { id: lead.itemId }, select: { userId: true } });
+    authorized = !!item && item.userId === user.id;
+  }
+  if (!authorized) {
     return new Response("Not found", { status: 404 });
   }
 

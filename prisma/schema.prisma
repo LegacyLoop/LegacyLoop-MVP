@@ -704,11 +704,11 @@ model BuyerBot {
 
 model BuyerLead {
   id              String    @id @default(cuid())
-  botId           String
-  bot             BuyerBot  @relation(fields: [botId], references: [id])
+  botId           String?
+  bot             BuyerBot? @relation(fields: [botId], references: [id])
   itemId          String
   platform        String
-  sourceType      String    @default("group_post") // group_post | listing | profile | forum
+  sourceType      String    @default("group_post") // group_post | listing | profile | forum | lead_ad
   sourceUrl       String?
   buyerName       String
   buyerHandle     String?
@@ -730,11 +730,18 @@ model BuyerLead {
   madeOffer       Boolean   @default(false)
   offerAmount     Float?
   converted       Boolean   @default(false)
+  // CMD-W25-META-L1 · Lead Ads additive fields (CEO-approved by fire)
+  source          String    @default("bot_scan") // bot_scan | lead_ad
+  leadgenId       String?   @unique
+  formId          String?
+  pageId          String?
+  rawJson         String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   @@index([botId])
   @@index([itemId])
+  @@index([source])
 }
 
 model ItemEngagementMetrics {
