@@ -683,6 +683,86 @@ export default function PrivacyPage() {
             Settings &rarr; Apps and Websites
           </li>
         </ul>
+
+        {/* 7a. Specific Meta data categories (Meta Platform Terms §3.1) */}
+        <h3
+          style={{
+            fontSize: "0.95rem",
+            fontWeight: 700,
+            color: "var(--text-primary)",
+            margin: "1rem 0 0.5rem 0",
+          }}
+        >
+          Meta data we receive
+        </h3>
+        <ul
+          style={{
+            paddingLeft: "1.25rem",
+            fontSize: "0.88rem",
+            color: "var(--text-secondary)",
+            lineHeight: 1.8,
+          }}
+        >
+          <li>
+            <strong>Facebook Login data:</strong> your name, email address,
+            profile picture, and Facebook user ID, used only to create and
+            authenticate your Legacy-Loop account.
+          </li>
+          <li>
+            <strong>Page connection data:</strong> the name, ID, and access
+            tokens of any Facebook Page you connect, used solely to publish and
+            manage listings you authorize.
+          </li>
+          <li>
+            <strong>Instagram data:</strong> your connected Instagram business
+            account ID and the media required to post listings on your behalf.
+          </li>
+          <li>
+            <strong>Messenger data:</strong> messages exchanged through Messenger
+            and Instagram Direct that relate to your listings, used only to power
+            your Legacy-Loop buyer&ndash;seller inbox. We do not read unrelated
+            conversations.
+          </li>
+        </ul>
+        <p
+          style={{
+            fontSize: "0.88rem",
+            color: "var(--text-secondary)",
+            lineHeight: 1.7,
+            margin: "0.75rem 0",
+          }}
+        >
+          <strong>Storage &amp; retention:</strong> all Meta-derived data is
+          encrypted in transit and at rest, and retained only while your account
+          and the relevant connection remain active. When you disconnect an
+          account or request deletion, we remove the associated Meta data.
+        </p>
+        <p
+          style={{
+            fontSize: "0.88rem",
+            color: "var(--text-secondary)",
+            lineHeight: 1.7,
+            margin: "0.75rem 0 0 0",
+          }}
+        >
+          <strong>Data deletion:</strong> you can delete your Meta-derived data
+          at any time via our{" "}
+          <a
+            href="/data-deletion"
+            style={{ color: "var(--accent)", textDecoration: "underline" }}
+          >
+            Data Deletion
+          </a>{" "}
+          page, or by emailing{" "}
+          <a
+            href="mailto:privacy@legacy-loop.com"
+            style={{ color: "var(--accent)", textDecoration: "underline" }}
+          >
+            privacy@legacy-loop.com
+          </a>
+          . Facebook&apos;s data deletion requests are handled automatically via
+          our deletion callback endpoint.
+        </p>
       </div>
 
       {/* 8. Your Privacy Rights */}

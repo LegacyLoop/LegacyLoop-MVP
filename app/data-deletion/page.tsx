@@ -93,6 +93,13 @@ export default function DataDeletionPage() {
           <li>Find &ldquo;Legacy-Loop&rdquo; in the list</li>
           <li>Click &ldquo;Remove&rdquo; to revoke access</li>
         </ol>
+        <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: 1.7, marginTop: "0.75rem" }}>
+          When you remove Legacy-Loop from Facebook, Facebook sends us an automatic
+          data deletion request. We process it immediately and you can verify the
+          status at any time on our{" "}
+          <a href="/data-deletion-status" style={{ color: "#00bcd4", textDecoration: "underline" }}>data deletion status</a>{" "}
+          page using the confirmation code Facebook provides.
+        </p>
       </div>
 
       {/* Contact */}
@@ -100,7 +107,9 @@ export default function DataDeletionPage() {
         <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "var(--text-primary)", marginBottom: "0.5rem" }}>Contact Us</h2>
         <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: 1.7 }}>
           Questions about data deletion? Contact us at{" "}
-          <a href="mailto:support@legacy-loop.com" style={{ color: "#00bcd4", textDecoration: "none" }}>support@legacy-loop.com</a>
+          <a href="mailto:support@legacy-loop.com" style={{ color: "#00bcd4", textDecoration: "none" }}>support@legacy-loop.com</a>{" "}
+          or our privacy team at{" "}
+          <a href="mailto:privacy@legacy-loop.com" style={{ color: "#00bcd4", textDecoration: "none" }}>privacy@legacy-loop.com</a>
         </p>
       </div>
     </div>
