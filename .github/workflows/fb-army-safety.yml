@@ -1,0 +1,45 @@
+name: fb-army-safety
+
+# CMD-W24-L1 · FB-Army Meta-Safety · CI grep guard
+# Fails the build if fb-army/ contains any World-A reference.
+# DOC-META-SAFETY-ABSOLUTE: never infringe upon Meta · structural CI enforcement.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "fb-army/**"
+      - "lib/fb-army-safety/**"
+      - "scripts/fb-army-safety-guard.sh"
+      - ".github/workflows/fb-army-safety.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "fb-army/**"
+      - "lib/fb-army-safety/**"
+      - "scripts/fb-army-safety-guard.sh"
+      - ".github/workflows/fb-army-safety.yml"
+
+jobs:
+  world-a-grep-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run World-A grep guard
+        run: bash scripts/fb-army-safety-guard.sh
+
+  verify-suite:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run Meta-safety 6-check verify suite (sim mode)
+        run: node --test lib/fb-army-safety/verify-suite.mjs
