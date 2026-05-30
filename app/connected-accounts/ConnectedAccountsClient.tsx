@@ -77,6 +77,129 @@ const API_KEYS = [
 const DEMO_CONNECTED = new Set(["facebook", "instagram", "ebay", "craigslist", "square"]);
 const COMING_SOON = new Set(["icloud", "dropbox", "onedrive", "snapchat", "tiktok", "linkedin", "sendgrid", "twilio"]);
 
+/* ── Facebook Pages panel (App-Platform · W25-META-L3) ── */
+
+type GraphPage = { id: string; name: string; category: string | null };
+
+function FacebookPages({ connected }: { connected: boolean }) {
+  const [pages, setPages] = useState<GraphPage[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [insights, setInsights] = useState<Record<string, string>>({});
+
+  const loadPages = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/integrations/facebook/pages");
+      const json = await res.json();
+      if (!json.ok) {
+        setError(json.error || "Could not load Pages");
+        setPages([]);
+      } else {
+        setPages(json.pages ?? []);
+      }
+    } catch {
+      setError("Network error loading Pages");
+      setPages([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadInsights = async (pageId: string) => {
+    setInsights((s) => ({ ...s, [pageId]: "…" }));
+    try {
+      const res = await fetch(`/api/integrations/facebook/pages?insights=${encodeURIComponent(pageId)}`);
+      const json = await res.json();
+      if (!json.ok) {
+        setInsights((s) => ({ ...s, [pageId]: json.error || "unavailable" }));
+        return;
+      }
+      const metrics: Array<{ name: string; values: Array<{ value: number }> }> = json.insights ?? [];
+      const summary = metrics
+        .map((m) => `${m.name}: ${m.values?.[m.values.length - 1]?.value ?? 0}`)
+        .join(" · ");
+      setInsights((s) => ({ ...s, [pageId]: summary || "no data" }));
+    } catch {
+      setInsights((s) => ({ ...s, [pageId]: "error" }));
+    }
+  };
+
+  if (!connected) return null;
+
+  return (
+    <div style={{ marginTop: "2rem" }}>
+      <h2 style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: "0.4rem" }}>
+        Your Facebook Pages
+      </h2>
+      <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginBottom: "0.75rem", lineHeight: 1.5 }}>
+        Legacy-Loop reads the Pages you authorize via Facebook&apos;s official Graph API — only to list your Pages and
+        their engagement insights. We never post without your action.
+      </p>
+
+      <button
+        onClick={loadPages}
+        disabled={loading}
+        aria-busy={loading}
+        style={{
+          minHeight: "44px", padding: "0.6rem 1.1rem", borderRadius: "0.5rem", fontSize: "0.85rem", fontWeight: 600,
+          background: "var(--bg-card-solid)", border: "1px solid rgba(0,188,212,0.3)", color: "var(--accent)",
+          cursor: loading ? "default" : "pointer", opacity: loading ? 0.7 : 1,
+        }}
+      >
+        {loading ? "Loading Pages…" : pages ? "Refresh Pages" : "Load my Pages"}
+      </button>
+
+      {error && (
+        <div role="alert" style={{ marginTop: "0.6rem", fontSize: "0.78rem", color: "#f87171" }}>
+          ⚠ {error}
+        </div>
+      )}
+
+      {pages && pages.length > 0 && (
+        <div style={{ marginTop: "0.875rem", display: "grid", gap: "0.5rem" }}>
+          {pages.map((pg) => (
+            <div key={pg.id} style={{
+              padding: "0.875rem 1rem", borderRadius: "0.625rem",
+              background: "var(--bg-card-solid)", border: "1px solid var(--border-default)",
+              display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap",
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary)" }}>{pg.name}</div>
+                {pg.category && (
+                  <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.1rem" }}>{pg.category}</div>
+                )}
+                {insights[pg.id] && (
+                  <div style={{ fontSize: "0.72rem", color: "var(--text-secondary)", marginTop: "0.2rem", fontFamily: "var(--font-data)" }}>
+                    {insights[pg.id]}
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => loadInsights(pg.id)}
+                style={{
+                  minHeight: "44px", padding: "0.45rem 0.8rem", borderRadius: "0.45rem", fontSize: "0.75rem", fontWeight: 500,
+                  background: "transparent", border: "1px solid var(--border-default)", color: "var(--text-secondary)",
+                  cursor: "pointer",
+                }}
+              >
+                View Insights
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {pages && pages.length === 0 && !error && (
+        <div style={{ marginTop: "0.6rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
+          No Pages found for this connection yet.
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Component ── */
 
 export default function ConnectedAccountsClient({ connectedPlatforms }: Props) {
@@ -218,6 +341,11 @@ export default function ConnectedAccountsClient({ connectedPlatforms }: Props) {
       {renderSection("Selling Platforms", MARKETPLACES)}
       {renderSection("Payments & Banking", PAYMENTS)}
       {renderSection("Cloud Storage & Tools", CLOUD)}
+
+      {/* App-Platform: real FB Page Graph pull (only when a real connection exists) */}
+      <FacebookPages
+        connected={connectedPlatforms.some((p) => p.platform === "facebook" && p.isActive)}
+      />
 
       {/* API Keys — collapsible */}
       <div style={{ marginTop: "2rem" }}>
