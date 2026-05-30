@@ -10,16 +10,19 @@
 
 ## §1 · ★ THE CLEAN CITE (empirical · re-probed at closeout · file-routed output)
 
-| Cohort | COMPLETED | PENDING | Verdict |
+| Cohort | COMPLETED | non-COMPLETED | Verdict |
 |---|---|---|---|
 | **V4 regional-classifieds (W22-L1 cohort · criterion #2)** | **439** | **0** | ✅ **100% drained** |
-| V4 total | 938 | 15 | live tail (15 = legacy garage-yard-sale-craigslist WF86 cron inflow · NOT regional) |
-| CORPUS total | 11,185 | 15 | live system · 15 = same WF86 craigslist steady-state inflow |
+| V4 total | **998** | 1 | 1 = live inflow (legacy WF86 garage-yard-sale-craigslist · NOT regional) |
+| CORPUS total | **11,211** | 1 | live always-on system · 1 = same WF86 steady-state inflow |
 
-**Honest framing (DOC-COMPLETED-VS-ACCEPTED-CITE applied):** The criterion #2 cohort — the 439 regional rows from the 7-region WF87 cluster (exec_ids 1969-1975) — is **100% COMPLETED, 0 PENDING, 0 discarded**. The 15 corpus-wide PENDING are NOT part of this close: they are fresh inflow from the legacy WF86 garage-yard-sale-craigslist cron (a live, always-on system). A live corpus never sits at absolute 0 PENDING because crons feed it continuously. The honest, accurate close metric is: **the W22-L1 regional cohort is fully drained.**
+**Honest framing (DOC-COMPLETED-VS-ACCEPTED-CITE applied):** The criterion #2 cohort — the 439 regional rows from the 7-region WF87 cluster (exec_ids 1969-1975) — is **100% COMPLETED, 0 PENDING, 0 discarded**. The 1 corpus-wide non-COMPLETED is NOT part of this close: it is fresh inflow from the legacy WF86 garage-yard-sale-craigslist feed (a live, always-on system). A live corpus never sits at absolute 0 because feeds add rows continuously. The honest, accurate close metric is: **the W22-L1 regional cohort is fully drained — 439/439.**
 
-### Drain trajectory (verified live this session · daemon @ 60s + manual batches)
-305 → 145 → 75 → 65 → 55 → 35 → 25 → 15 (corpus) · regional cohort: 134 → 294 → 364 → 374 → 384 → **439 COMPLETED / 0 PENDING**. Zero silent loss: 439 webhook-accepted = 439 COMPLETED.
+### Drain trajectory (verified live this session · daemon @ 60s)
+Regional cohort: 134 → 294 → 364 → 374 → 384 → 434 → **439 COMPLETED / 0 PENDING**. Zero silent loss: 439 webhook-accepted = 439 COMPLETED = 0 discarded.
+
+### ★ Drain-tail incident (banked · honest)
+A 9-row tail (5 regional PENDING + 4 corpus CLAIMED) stalled briefly. Root cause: Devin `launchctl kickstart -k` force-killed a drain worker mid-batch → orphaned CLAIMED rows (the known stale-claim class · memory obs 2140/2150). Compounded by a Devin env-bug (manual drain ran with `--env-file=.env.drain --env-file=.env` → second file overrode TURSO with local dev.db → manual runs hit the wrong DB). Resolution: ran drain daemon-exact (`node --import tsx --env-file=.env.drain` only) once → all 9 cleared → regional 439/0. NO data loss · all payloads valid JSON · 0 FAILED. Bank: DOC-DRAIN-NO-FORCE-KILL-MID-BATCH candidate + never double-`--env-file` against prod.
 
 ---
 
@@ -27,7 +30,7 @@
 
 | # | Criterion | Empirical proof | State |
 |---|---|---|---|
-| 1 | 16 verticals draining | V8 3,675 · V9 2,999+60 · V15 2,365 · V4 938 · all 16 present · CORPUS 11,185 COMPLETED | 🟢 |
+| 1 | 16 verticals draining | V8 3,675 · V9 2,999+60 · V15 2,365 · V4 998 · all 16 present · CORPUS 11,211 COMPLETED | 🟢 |
 | 2 | V4 regional cluster LIVE | 7 regions (NE/SE/MW/SC/MTN/PAC/MA) · exec_ids 1969-1975 · 439 accepted / 0 discarded · **439 COMPLETED / 0 PENDING** | 🟢 **CLOSED** |
 | 3 | App-data → Sylvia transfer | 2,185/2,185 COMPLETED (W19-L1 recovery 100%) · FAILED-sig 0 | 🟢 |
 | 4 | T3b proxy LIVE + V5 migrated | 5 adapters POST 200 · WF83 V5 exec 1950 · (V5 corpus 0 = operational-data-not-training, expected) | 🟢 |
