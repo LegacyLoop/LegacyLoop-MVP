@@ -77,11 +77,20 @@ W27-A lifted backend-agnostic orchestration/safety out of the army into reusable
 - **`lib/scrapers/orchestration/{controller,cost,health,index,types}.ts}`** — rotation controller, cost optimizer, health state machine.
 - **`lib/scrapers/safety/{isolation,kill-switch,pace-floor,index}.ts`** — egress isolation, kill-switch (`fb-army-killed.flag`), human-pace floor.
 
-**Back-compat shims (KEEP · MOVE-with-shim by design · thin `export * from`):**
-- `lib/fb-army-safety/{isolation,kill-switch,pace-floor}.ts` → `scrapers/safety/*`
-- `lib/scrapers/rotation/index.ts` → `scrapers/orchestration`
+**`lib/fb-army-safety/` — complete inventory (6 files · NOT shim-only · correction 2026-05-30):**
 
-Shims are clean 1-line re-exports (EVIDENCE E). **Do NOT delete** — they preserve any import path and are part of the lift contract. Generic-core currently has **no live caller** (orphan-ready) — acceptable; it activates when Manus / Apify / burner-army calls it.
+| File | Lines | Role |
+|---|---|---|
+| `isolation.ts` | 7 | thin shim → `../scrapers/safety/isolation` (EVIDENCE E) |
+| `kill-switch.ts` | 7 | thin shim → `../scrapers/safety/kill-switch` |
+| `pace-floor.ts` | 7 | thin shim → `../scrapers/safety/pace-floor` |
+| `burner-identity.ts` | 106 | **ORIGINAL validator · NOT a shim** (CMD-W24-L1). Refuse-line *enforcement* primitive: `REAL_IDENTITY_PATTERNS` deny-list (rejects any burner whose accountId/email/name/phone overlaps Ryan / Legacy-Loop / Meta-dev / `annalyse07` test acct) + `SYNTHETIC_EMAIL_RE` (burner email MUST be synthetic) + `validateBurnerIdentity()` / `auditBurnerRoster()`. **Blocks misuse — it is enforcement, not evasion automation.** |
+| `index.ts` | 7 | barrel · re-exports isolation + pace-floor + burner-identity + kill-switch |
+| `verify-suite.mjs` | 328 | **6-check verification suite** (CMD-W24-L1 · built-in `node:test` · sim mode · live-mode path documented per check). This IS the Rule #11 **6/6 live-verify gate**; re-runs against real droplet/proxy/burner at Phase-1 provision. |
+
+The other lift shim: `lib/scrapers/rotation/index.ts` → `scrapers/orchestration`.
+
+**Do NOT delete any of these.** The shim trio + rotation shim preserve import paths (lift contract · EVIDENCE E thin `export * from`); `burner-identity.ts` + `verify-suite.mjs` are the **original Meta-safety enforcement substrate** (Rule #11 · the `lib/fb-army-safety/*` referenced in DOC-META-SAFETY-ABSOLUTE), not lifted/genericized. Generic-core (`scrapers/orchestration` + `scrapers/safety`) currently has **no live caller** (orphan-ready) — acceptable; it activates when Manus / Apify / burner-army calls it.
 
 ---
 
@@ -101,6 +110,18 @@ fb-army/
     ├── scrapers/marketplace.ts   FB Marketplace headless extractor
     ├── scrapers/groups.ts        FB Groups headless extractor
     └── smoke.mjs          zero-network fixture smoke (PASS above)
+```
+
+**`lib/fb-army-safety/` (in-app Meta-safety primitives · compiled by Next.js · NOT part of the `fb-army/` pkg · full role detail in §4 table):**
+
+```
+lib/fb-army-safety/
+├── isolation.ts       thin shim → ../scrapers/safety/isolation
+├── kill-switch.ts     thin shim → ../scrapers/safety/kill-switch
+├── pace-floor.ts      thin shim → ../scrapers/safety/pace-floor
+├── burner-identity.ts ORIGINAL validator (106L · CMD-W24-L1) · real-identity deny-list + synthetic-email enforcement · blocks misuse (NOT evasion)
+├── index.ts           barrel · re-exports isolation + pace-floor + burner-identity + kill-switch
+└── verify-suite.mjs   6-check verify suite (328L · node:test sim) · Rule #11 6/6 live-verify gate
 ```
 
 ---
