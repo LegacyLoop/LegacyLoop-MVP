@@ -51,3 +51,15 @@ git reset --hard origin/main
 
 NEW_HEAD="$(git rev-parse HEAD)"
 echo "✓ agent-$N reset to origin/main @ $NEW_HEAD"
+
+# CMD-W26-A-WORKTREE-BUILD-FIX (2026-05-30):
+# Re-assert sylvia-data as a real empty dir (NOT a symlink) so post-reset
+# npm builds succeed under Turbopack 16. Idempotent · safe on each reset.
+if [ -L "$WT_PATH/sylvia-data" ]; then
+  rm "$WT_PATH/sylvia-data"
+  echo "  ↺ sylvia-data symlink removed (Turbopack incompat · W26-A)"
+fi
+if [ ! -d "$WT_PATH/sylvia-data" ]; then
+  mkdir -p "$WT_PATH/sylvia-data"
+  echo "  ✓ sylvia-data real empty dir provisioned"
+fi

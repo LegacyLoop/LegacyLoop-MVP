@@ -109,9 +109,21 @@ for N in $(seq 1 $AGENT_COUNT); do
     ln -s "$MAIN_REPO/.env.sylvia" "$WT_PATH/.env.sylvia"
     echo "  ✓ .env.sylvia symlinked"
   fi
-  if [ ! -L "$WT_PATH/sylvia-data" ] && [ ! -e "$WT_PATH/sylvia-data" ]; then
-    ln -s "$MAIN_REPO/sylvia-data" "$WT_PATH/sylvia-data"
-    echo "  ✓ sylvia-data symlinked"
+  # CMD-W26-A-WORKTREE-BUILD-FIX (2026-05-30):
+  # sylvia-data MUST be a real empty dir per worktree · NOT a symlink to main.
+  # Turbopack 16 rejects symlinks pointing out of the filesystem root and
+  # fails npm build with "Symlink sylvia-data/audit/episodic-*.jsonl is
+  # invalid, it points out of the filesystem root". Slot worktrees previously
+  # symlinked → built-blind. Real empty dir keeps Turbopack happy and is
+  # gitignored so Vercel CI stays clean.
+  # main worktree is the data SoT and is left untouched (real dir already).
+  if [ -L "$WT_PATH/sylvia-data" ]; then
+    rm "$WT_PATH/sylvia-data"
+    echo "  ↺ sylvia-data symlink removed (Turbopack incompat · W26-A)"
+  fi
+  if [ ! -d "$WT_PATH/sylvia-data" ]; then
+    mkdir -p "$WT_PATH/sylvia-data"
+    echo "  ✓ sylvia-data real empty dir created"
   fi
 
   # Run prisma generate + db push to create per-worktree dev.db (idempotent)
