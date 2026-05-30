@@ -1,5 +1,9 @@
-// CMD-W23-L1 · FB-Army Rotation Controller (the brain)
-// Selects among 3-world prongs by:
+// CMD-W27-A · Generic Scraper Orchestration Controller (backend-agnostic)
+// Originally lifted from lib/scrapers/rotation/* (W23-L1). Reusable by ANY
+// backend prong: own-infra droplet, Apify logged-out, Manus autonomous, or
+// future backends. The legacy `lib/scrapers/rotation/` path remains as a
+// thin re-export shim for any back-compat caller.
+// Selects among prongs by:
 //   1) world-isolation respected (request's intended world)
 //   2) healthy AND past cooldown (health.ts)
 //   3) cheapest cost-per-record (cost.ts)

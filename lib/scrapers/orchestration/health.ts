@@ -1,4 +1,5 @@
-// CMD-W23-L1 · health state + block-signal classifier
+// CMD-W27-A · Generic prong health state + block-signal classifier
+// Originally lifted from lib/scrapers/rotation/health.ts (W23-L1).
 // Pure logic · no external HTTP. Inputs come from FetchOutcome telemetry.
 
 import type { BlockSignal, FetchOutcome, ProngHealth } from "./types";

@@ -1,4 +1,5 @@
-// CMD-W23-L1 · cost-per-record optimizer
+// CMD-W27-A · Generic cost-per-record optimizer
+// Originally lifted from lib/scrapers/rotation/cost.ts (W23-L1).
 // Telemetry-driven cheapest-healthy selector. Pure logic · no I/O.
 
 import type { FetchOutcome, ProngCost } from "./types";

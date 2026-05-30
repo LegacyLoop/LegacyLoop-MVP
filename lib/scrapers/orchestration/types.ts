@@ -1,6 +1,8 @@
-// CMD-W23-L1 · FB-Army Rotation Controller · two-world isolation absolute
-// World A (Graph API · Meta dev account) NEVER co-mingles with World B (droplet army).
-// Apify = co-equal rotation arm · NOT just fallback.
+// CMD-W27-A · Generic Scraper Orchestration · domain types (backend-agnostic)
+// Originally lifted from lib/scrapers/rotation/types.ts (W23-L1).
+// World A (official channel · e.g. Graph API) NEVER co-mingles with World B
+// (own-infra · e.g. droplet workload · burner / Manus / autonomous task).
+// `apify` (or any third-party vendor) = co-equal arm · separate from A/B.
 
 /**
  * World boundary marker.
