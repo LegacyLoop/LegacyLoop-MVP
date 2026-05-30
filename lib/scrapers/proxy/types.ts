@@ -10,7 +10,8 @@ export type ProviderName =
   | "rainforest"
   | "meta"
   | "apify"
-  | "shipstation";
+  | "shipstation"
+  | "fb-army";
 
 export type OperationName = string;
 
