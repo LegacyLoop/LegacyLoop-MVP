@@ -31,6 +31,11 @@ export async function sendLeadCapiEvent(input: CapiInput): Promise<CapiResult> {
   if (!pixelId || !accessToken) {
     return { ok: false, reason: "META_PIXEL_ID or META_CAPI_ACCESS_TOKEN not configured" };
   }
+  // event_id is the server↔pixel dedup key — without it Meta cannot collapse the
+  // duplicate browser/server events, so refuse to send a non-idempotent event.
+  if (!input.leadgenId) {
+    return { ok: false, reason: "missing leadgenId — event_id required for CAPI dedup" };
+  }
 
   const event = {
     event_name: "Lead",
