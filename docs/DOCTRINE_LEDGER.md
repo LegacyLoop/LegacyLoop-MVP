@@ -652,3 +652,31 @@ Auto-mode classifier blocks `lib/scrapers/proxy/registry.ts` edit when spec auth
 **Sustains:** #17 audit-first-wire (catch sandbox blocks pre-PUT · `node --check` validates syntax not runtime sandbox) · #28 drift catch (3 separate catches consolidated to prevent repeat) · #31 push-back-with-replacement (classifier collision → CEO 1-line + precedent cite replacement path) · #38 empirical-cite (WF92 exec 1943 root cause cited verbatim) · #50 sentinel preservation (sandbox restrictions caught before sentinel design corruption).
 
 **Anchor cyl:** `CMD-W21-L4-DOCTRINE-SHIP V20 LOW` · merges 3 W20 R4 candidates into single LAW class · campaign-close substrate clean.
+
+---
+
+## Candidate · DOC-META-SAFETY-ABSOLUTE (1/5) · ratified-as-candidate 2026-05-30 8:55am EDT · W24-L1
+
+**Source · CEO directive 2026-05-29 PM (verbatim):**
+> "We need to do everything we can to never infringe upon Meta and get kicked or banned at all ever. Our system needs to be flawless, but yet highly effective."
+
+**Codification (this lane · W24-L1):**
+
+1. **World-A ↔ World-B firewall** · structural at three layers:
+   - Compile-time TS types (`World = "A"|"B"|"apify"` in `lib/scrapers/rotation/types.ts`)
+   - Runtime assertions (`lib/fb-army-safety/isolation.ts`: env keys + host blocklist + module-path blocklist)
+   - CI grep guard (`scripts/fb-army-safety-guard.sh` + `.github/workflows/fb-army-safety.yml`) · fails build on any World-A reference in `fb-army/`
+2. **Hardcoded pace floor** (`lib/fb-army-safety/pace-floor.ts`) · no env override · no Sleep(0) · no downgrade path · floors: dwell≥2500ms · scroll≥800ms · ≤40 items/session · ≤12 min/session · ≥60s inter-session cooldown.
+3. **Synthetic-burner identity validator** (`lib/fb-army-safety/burner-identity.ts`) · hardcoded deny-list rejects Ryan / `legacyloop` / `meta-dev` / personal-gmail patterns · only synthetic email shapes permitted (`burner-NNN@proton.me` etc).
+4. **Kill-switch <30s** (`lib/fb-army-safety/kill-switch.ts`) · `killArmy()` flips persistent flag · all prongs poll · sim observed 252ms full-stop across 5 prongs.
+5. **6-check verification suite** (`lib/fb-army-safety/verify-suite.mjs`) · `node --test` · network-probe + fingerprint-diff + pace-sim + captcha-tripwire + burner-identity + kill-switch · each check cites `sim` (this lane) or `live` (Phase-1 provision).
+
+**Enforcement:** ALL FB-Army activation BLOCKED until BOTH:
+- 6/6 verify suite PASS in **live mode** at Phase-1 provision (re-run against real droplet + residential proxy + synthetic burner).
+- CEO sign-off `activate OK · FB-ARMY`.
+
+**Sustains:** #5 ENV-FILE-DUMP (proxy creds droplet-only · never repo) · #9 PASSWORD-PASTE (no creds in code) · #16 DELEGATE-CANONICAL (enforces existing rotation/health.ts ladder · does not rebuild) · #17 AUDIT-FIRST-WIRE · #30 IT-DEEP-DIVE · #38 LAW lib/sylvia LOCKED (W24-L1 diff=0 attested) · #49 N8N-SANDBOX (sibling structural-safety doctrine).
+
+**Anchor cyl:** `CMD-W24-L1-FB-ARMY-META-SAFETY-HARDENING V20 HIGH` · commit `95e97e5` · `dpl_HEbAqg2HojTXMcHuRChrAFC4hSxt` READY · curl `app.legacy-loop.com/search` 200.
+
+**Ratify path:** 1/5 candidates · ratifies to BINDING after 5 sustained applications across cylinders (next sustains: Phase-1 provision · subsequent army-touching cyls).

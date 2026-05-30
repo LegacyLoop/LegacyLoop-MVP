@@ -31,6 +31,7 @@ All agents post every step to Slack #all-legacyloop. Slack = source of truth.
 8. **CREATIVE LATITUDE.** MAY: improve beyond spec · flag gaps · add error handling. MAY NOT: touch locked files · change AI prompts · use Tailwind/className · add packages without approval · change schema without approval.
 9. **"Never assume. Never guess. Read first. Build second."**
 10. **Polish-mode only.** Additive · audit-first · single cylinder per ship · zero scope creep.
+11. **DOC-META-SAFETY-ABSOLUTE (candidate 1/5 · W24-L1 2026-05-30):** never infringe upon Meta · ALL FB-Army activation BLOCKED until live-mode 6/6 verify suite PASS at Phase-1 provision AND CEO `activate OK · FB-ARMY` sign-off. Substrate at `lib/fb-army-safety/*` + CI guard `scripts/fb-army-safety-guard.sh`.
 
 ## LOCKED FILES — surgical unlock per command
 
