@@ -1,0 +1,22 @@
+{
+  "name": "fb-army",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FB-Army droplet scraper engine · World-B · zero World-A reference",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "smoke": "node --enable-source-maps src/smoke.mjs",
+    "start": "node --enable-source-maps src/index.js"
+  },
+  "dependencies": {
+    "playwright": "^1.48.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
