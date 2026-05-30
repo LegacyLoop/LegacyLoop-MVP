@@ -1,7 +1,16 @@
 import type { Adapter } from "../base";
 import { envPresent } from "../base";
 
-// W23-L3 FB-Army ingest receiver.
+/**
+ * @deprecated CMD-W27-A · World-B wind-down (2026-05-30).
+ * Burner-army ingest adapter REMOVED from proxy registry (registry.ts) ·
+ * fail-closed via getAdapter("fb-army") → null.
+ * File retained @deprecated for git history (BINDING #20 never-abandon).
+ * Reason: Meta ToS ban-evasion risk + IT-agent refused + W26 App Review
+ * jeopardy. Marketplace coverage moves to Apify logged-OUT ($29 cap) and
+ * Meta Commerce Catalog API (W28). DO NOT ACTIVATE.
+ */
+// W23-L3 FB-Army ingest receiver. [DEPRECATED W27-A]
 // Receives results from World-B droplet army (W23-L2 sends → this validates → corpus).
 // DORMANT by default (envPresent gate). Activate via FB_ARMY_INGEST_SECRET in Vercel env.
 //

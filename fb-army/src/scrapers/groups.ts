@@ -1,4 +1,9 @@
-// fb-army · FB Groups headless scraper · World-B only
+/**
+ * @deprecated CMD-W27-A · World-B wind-down (2026-05-30).
+ * Burner FB Groups headless scraper · ban-evasion ToS risk · DO NOT ACTIVATE.
+ * Retained @deprecated for git history. Reroute: Apify WF94 (logged-out).
+ */
+// fb-army · FB Groups headless scraper · World-B only [DEPRECATED W27-A]
 // Reference: WF94 Apify FB Groups target surface (same input · own engine)
 
 import type { Browser, BrowserContext, Page } from "playwright";

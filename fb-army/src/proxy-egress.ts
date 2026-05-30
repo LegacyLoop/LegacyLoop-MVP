@@ -1,4 +1,10 @@
-// fb-army · World-B · residential-proxy egress config
+/**
+ * @deprecated CMD-W27-A · World-B wind-down (2026-05-30).
+ * Residential proxy + burner session loader · ban-evasion ToS risk ·
+ * DO NOT ACTIVATE. Retained @deprecated for git history.
+ * assertEgressSafety() pattern salvageable for any future egress validator.
+ */
+// fb-army · World-B · residential-proxy egress config [DEPRECATED W27-A]
 // ALL proxy credentials read from DROPLET env at runtime · NEVER repo · NEVER Vercel
 // BINDING #9 ABSOLUTE · ZERO creds committed
 
