@@ -13,8 +13,8 @@
 | Cohort | COMPLETED | non-COMPLETED | Verdict |
 |---|---|---|---|
 | **V4 regional-classifieds (W22-L1 cohort · criterion #2)** | **439** | **0** | ✅ **100% drained** |
-| V4 total | **998** | 1 | 1 = live inflow (legacy WF86 garage-yard-sale-craigslist · NOT regional) |
-| CORPUS total | **11,211** | 1 | live always-on system · 1 = same WF86 steady-state inflow |
+| V4 total | **999** | 0 | fully drained (incl. legacy WF86 garage-yard-sale-craigslist tail) |
+| CORPUS total | **11,215** | 0 | entire queue drained · 0 PENDING · 0 CLAIMED · 0 FAILED |
 
 **Honest framing (DOC-COMPLETED-VS-ACCEPTED-CITE applied):** The criterion #2 cohort — the 439 regional rows from the 7-region WF87 cluster (exec_ids 1969-1975) — is **100% COMPLETED, 0 PENDING, 0 discarded**. The 1 corpus-wide non-COMPLETED is NOT part of this close: it is fresh inflow from the legacy WF86 garage-yard-sale-craigslist feed (a live, always-on system). A live corpus never sits at absolute 0 because feeds add rows continuously. The honest, accurate close metric is: **the W22-L1 regional cohort is fully drained — 439/439.**
 
@@ -30,7 +30,7 @@ A 9-row tail (5 regional PENDING + 4 corpus CLAIMED) stalled briefly. Root cause
 
 | # | Criterion | Empirical proof | State |
 |---|---|---|---|
-| 1 | 16 verticals draining | V8 3,675 · V9 2,999+60 · V15 2,365 · V4 998 · all 16 present · CORPUS 11,211 COMPLETED | 🟢 |
+| 1 | 16 verticals draining | V8 3,675 · V9 2,999+60 · V15 2,365 · V4 999 · all 16 present · CORPUS 11,215 COMPLETED / 0 non-COMPLETED | 🟢 |
 | 2 | V4 regional cluster LIVE | 7 regions (NE/SE/MW/SC/MTN/PAC/MA) · exec_ids 1969-1975 · 439 accepted / 0 discarded · **439 COMPLETED / 0 PENDING** | 🟢 **CLOSED** |
 | 3 | App-data → Sylvia transfer | 2,185/2,185 COMPLETED (W19-L1 recovery 100%) · FAILED-sig 0 | 🟢 |
 | 4 | T3b proxy LIVE + V5 migrated | 5 adapters POST 200 · WF83 V5 exec 1950 · (V5 corpus 0 = operational-data-not-training, expected) | 🟢 |
