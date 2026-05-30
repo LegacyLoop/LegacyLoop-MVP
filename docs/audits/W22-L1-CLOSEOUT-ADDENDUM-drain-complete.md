@@ -43,7 +43,7 @@ A 9-row tail (5 regional PENDING + 4 corpus CLAIMED) stalled briefly. Root cause
 
 > Legacy-Loop's National Scraper Campaign delivered a verified 11,000+-record proprietary resale-intelligence corpus across 16 market verticals — including a complete 7-region national classifieds cluster — built entirely on an in-house n8n + proxy substrate at $0 marginal data cost. Every regional record is empirically verified end-to-end: 439 accepted, 439 completed, zero silent loss.
 >
-> **[HOLD: do not publish until CEO calls campaign close + MC posts verified headline. Pre-revenue posture — claim only what is empirically true. "11,000+" rounds down from 11,185; do not inflate.]**
+> **[HOLD: do not publish until CEO calls campaign close + MC posts verified headline. Pre-revenue posture — claim only what is empirically true. "11,000+" rounds down from 11,215; do not inflate.]**
 
 ---
 
