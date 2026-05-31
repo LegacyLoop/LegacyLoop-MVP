@@ -9,7 +9,7 @@
   <array>
     <string>/bin/bash</string>
     <string>-c</string>
-    <string>cd $HOME/legacy-loop-mvp &amp;&amp; /Users/ryanhallee/.nvm/versions/node/v20.18.0/bin/vercel env pull /tmp/.env.bidir-sync --environment=production --yes &amp;&amp; /usr/local/bin/node --env-file=/tmp/.env.bidir-sync scripts/sylvia/bidirectional-sync-app-data.mjs &gt;&gt; $HOME/Library/Logs/sylvia-bidir-sync.log 2&gt;&amp;1 ; shred -u /tmp/.env.bidir-sync 2&gt;/dev/null</string>
+    <string>export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.nvm/current/bin:$PATH"; cd $HOME/legacy-loop-mvp &amp;&amp; vercel env pull /tmp/.env.bidir-sync --environment=production --yes &amp;&amp; node --env-file=/tmp/.env.bidir-sync scripts/sylvia/bidirectional-sync-app-data.mjs &gt;&gt; $HOME/Library/Logs/sylvia-bidir-sync.log 2&gt;&amp;1 ; shred -u /tmp/.env.bidir-sync 2&gt;/dev/null</string>
   </array>
   <key>WorkingDirectory</key>
   <string>/Users/ryanhallee/legacy-loop-mvp</string>

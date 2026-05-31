@@ -28,7 +28,11 @@ if [ $# -ne 1 ]; then
 fi
 
 N="$1"
-WT_PATH="/Users/ryanhallee/legacy-loop-mvp-agent-$N"
+# Paths derived from this script's own location · portable across machines/users.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MAIN_REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
+PARENT_DIR="$(dirname "$MAIN_REPO")"
+WT_PATH="$PARENT_DIR/legacy-loop-mvp-agent-$N"
 
 if [ ! -d "$WT_PATH" ]; then
   echo "❌ Worktree not found: $WT_PATH" >&2

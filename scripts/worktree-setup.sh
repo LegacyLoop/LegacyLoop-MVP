@@ -23,8 +23,12 @@
 
 set -euo pipefail
 
-MAIN_REPO="/Users/ryanhallee/legacy-loop-mvp"
-PARENT_DIR="/Users/ryanhallee"
+# Paths derived from this script's own location · portable across machines,
+# usernames, and clone locations (Intel MBP → Apple Silicon Forge migration-safe).
+# Run from the MAIN worktree: <repo>/scripts/worktree-setup.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MAIN_REPO="$(cd "$SCRIPT_DIR/.." && pwd)"
+PARENT_DIR="$(dirname "$MAIN_REPO")"
 AGENT_COUNT=3
 
 # Pre-flight: must run from main worktree on main branch · clean tree · synced
